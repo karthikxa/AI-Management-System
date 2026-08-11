@@ -79,7 +79,7 @@ RUN printf '{"name":"zed-cli-build","private":true,"workspaces":["apps/cli","pac
 
 # ─── Stage 3: runtime ───────────────────────────────────────────────────
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
