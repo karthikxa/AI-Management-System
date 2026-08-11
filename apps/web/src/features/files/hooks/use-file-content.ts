@@ -1,0 +1,61 @@
+'use client';
+
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRuntimeStore } from '@kortix/sdk/react';
+import { readFile } from '../api/runtime-files';
+import type { FileContent } from '@/features/file-browser/types';
+import { fileReadRetryDelayMs, shouldRetryFileRead } from './file-read-retry';
+import { isSystemDirectoryPath } from './system-dir';
+
+export const fileContentKeys = {
+  all: ['runtime-files', 'content'] as const,
+  file: (serverUrl: string, filePath: string) =>
+    ['runtime-files', 'content', serverUrl, filePath] as const,
+};
+
+/**
+ * Fetch the content of a single file from the active OpenCode server.
+ *
+ * Uses GET /file/content?path=<path> which returns FileContent.
+ * Text files return plain content; images/binaries return base64-encoded content.
+ */
+export function useFileContent(
+  filePath: string | null,
+  options?: { enabled?: boolean; staleTime?: number },
+) {
+  const serverUrl = useRuntimeStore((s) => s.getActiveServerUrl());
+
+  return useQuery<FileContent>({
+    queryKey: filePath ? fileContentKeys.file(serverUrl, filePath) : [],
+    queryFn: () => readFile(filePath!),
+    enabled:
+      !!filePath &&
+      !isSystemDirectoryPath(filePath) &&
+      options?.enabled !== false,
+    staleTime: options?.staleTime ?? 10_000,
+    gcTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    retry: (failureCount, error) => shouldRetryFileRead(filePath, failureCount, error),
+    retryDelay: (attempt) => fileReadRetryDelayMs(attempt, filePath),
+  });
+}
+
+/**
+ * Utility to imperatively invalidate file content queries.
+ */
+export function useInvalidateFileContent() {
+  const queryClient = useQueryClient();
+  const serverUrl = useRuntimeStore((s) => s.getActiveServerUrl());
+
+  return (filePath?: string) => {
+    if (filePath) {
+      queryClient.invalidateQueries({
+        queryKey: fileContentKeys.file(serverUrl, filePath),
+      });
+    } else {
+      queryClient.invalidateQueries({
+        queryKey: fileContentKeys.all,
+      });
+    }
+  };
+}

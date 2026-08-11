@@ -1,0 +1,203 @@
+'use client';
+
+/**
+ * Global catch-all that intercepts clicks on any <a> whose href points to
+ * `localhost:PORT` (or 127.0.0.1:PORT) or an already-proxied preview URL.
+ *
+ * Routing:
+ *
+ *   - Plain left-click on a `/projects/[id]/sessions/[sessionId]` page →
+ *     populate that session's preview tab (`session-preview:{sessionId}`
+ *     in `useTabStore`), flip the side panel to Browser view, and let
+ *     `BrowserPanel` render the iframe through the proxy.
+ *
+ *   - Cmd / Ctrl / Shift / middle-click → the listener doesn't fire; the
+ *     anchor falls back to native browser behavior. Since the `href` was
+ *     already proxy-rewritten upstream (by the markdown renderer or
+ *     wherever the URL was emitted), the new tab loads the proxy URL.
+ *
+ *   - Off a session page (e.g. dashboards, settings) → window.open the
+ *     proxy URL. There's no in-app surface to host the iframe there.
+ *
+ *   - The in-panel `BrowserPanel` has its own "open externally"
+ *     button for explicitly popping the current iframe out to a new tab.
+ *
+ * Mount once at the app root — uses a single delegated `click` listener
+ * on `document`, so every link in the tree is covered (markdown, tool
+ * views, JSON viewers, etc.).
+ */
+
+import { openSessionQuickView } from '@/features/session/open-session-quick-view';
+import { createSandboxProxyContext, rewriteSandboxPath } from '@/lib/utils/sandbox-proxy';
+import {
+  buildWebProxyUrl,
+  isPreviewUrl,
+  isProxiableLocalhostUrl,
+  isWebProxyUrl,
+  parseLocalhostUrl,
+  parseWebProxyUrl,
+  proxyUrlToInternal,
+  toInternalUrl,
+} from '@/lib/utils/sandbox-url';
+import { enrichPreviewMetadata } from '@/lib/utils/session-context';
+import { getActivePanelSessionId, sessionPreviewTabId } from '@/stores/session-browser-store';
+import { useTabStore } from '@/stores/tab-store';
+import { useEffect } from 'react';
+
+// The session's panel is keyed by the OpenCode chatSessionId (registered by the
+// active SessionLayout), NOT the Kortix session id in the URL — those differ,
+// so the URL id would write to a key nothing reads (panel opens but the Browser
+// tab never selects). Null off-session → fall back to opening externally.
+function getCurrentSessionId(): string | null {
+  return getActivePanelSessionId();
+}
+
+export function LocalhostLinkInterceptor() {
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      // Resolved per click, never captured in the effect's closure.
+      //
+      // This component mounts at the app root — before any session exists, so
+      // any context captured here would carry `sandboxId: ''` forever and
+      // rewrite every preview link to `/v1/p//{port}/`, which 404s. The click
+      // is also the only moment the answer is knowable: by then the user has a
+      // session open and its runtime is bound. Reads are synchronous module
+      // state, so this costs nothing.
+      const { subdomainOpts, rewritePortPath } = resolveSandboxProxy();
+
+      if (e.defaultPrevented || e.button !== 0) return;
+      // Modifier-clicks fall through to native new-tab behavior.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+      const anchor = (e.target as HTMLElement)?.closest?.('a');
+      if (!anchor) return;
+
+      const href = anchor.href;
+      if (!href) return;
+
+      try {
+        if (new URL(href).origin === window.location.origin) return;
+      } catch {
+        /* not a valid URL, skip */
+      }
+
+      const consume = () => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+
+      /** Open URL into the active session's right-side panel. */
+      const openInPanel = (
+        sessionId: string,
+        meta: { url: string; port: number; originalUrl: string; path: string },
+      ) => {
+        consume();
+        useTabStore.getState().openTab({
+          id: sessionPreviewTabId(sessionId),
+          title: meta.port ? `localhost:${meta.port}` : safeHostname(meta.originalUrl),
+          type: 'preview',
+          href: window.location.pathname,
+          metadata: enrichPreviewMetadata(meta),
+        });
+        // Mode-aware: writing `viewBySession` here only ever worked in
+        // Advanced mode, so in Easy a clicked localhost link opened the panel
+        // on the Easy home and lost the URL. The target carries the page.
+        openSessionQuickView('browser', 'chat', {
+          url: meta.url,
+          title: meta.port ? `localhost:${meta.port}` : safeHostname(meta.originalUrl),
+        });
+      };
+
+      /** Off-session fallback: window.open the proxy URL. */
+      const openExternally = (url: string) => {
+        consume();
+        try {
+          window.open(url, '_blank', 'noopener,noreferrer');
+        } catch {}
+      };
+
+      // ── Case 1: Fresh localhost:PORT URL (not yet proxied) ──
+      if (isProxiableLocalhostUrl(href)) {
+        const parsed = parseLocalhostUrl(href);
+        if (!parsed) return;
+        const { port, path } = parsed;
+        const proxied = rewritePortPath(port, path);
+        const internal = toInternalUrl(port, path);
+        const sessionId = getCurrentSessionId();
+        if (sessionId) {
+          openInPanel(sessionId, { url: proxied, port, originalUrl: internal, path });
+        } else {
+          openExternally(proxied);
+        }
+        return;
+      }
+
+      // ── Case 2: Already-proxied URL ──
+      if (isPreviewUrl(href)) {
+        const internal = proxyUrlToInternal(href);
+        if (internal) {
+          const parsed = parseLocalhostUrl(internal);
+          if (parsed) {
+            const { port, path } = parsed;
+            const proxied = rewritePortPath(port, path);
+            const sessionId = getCurrentSessionId();
+            if (sessionId) {
+              openInPanel(sessionId, {
+                url: proxied,
+                port,
+                originalUrl: toInternalUrl(port, path),
+                path,
+              });
+            } else {
+              openExternally(proxied);
+            }
+            return;
+          }
+        }
+      }
+
+      // ── Case 3: /web-proxy/{scheme}/{host}/{path} URL ──
+      if (isWebProxyUrl(href)) {
+        const originalUrl = parseWebProxyUrl(href);
+        if (originalUrl) {
+          const proxied = buildWebProxyUrl(originalUrl, subdomainOpts);
+          if (proxied) {
+            const sessionId = getCurrentSessionId();
+            if (sessionId) {
+              openInPanel(sessionId, { url: proxied, port: 0, originalUrl, path: '/' });
+            } else {
+              openExternally(proxied);
+            }
+            return;
+          }
+        }
+      }
+    }
+
+    document.addEventListener('click', handleClick, { capture: true });
+    return () => document.removeEventListener('click', handleClick, { capture: true });
+  }, []);
+
+  return null;
+}
+
+/**
+ * Snapshot the active runtime's proxy helpers. Deliberately a plain function,
+ * not the `useSandboxProxy` hook: a delegated document-level handler must read
+ * the runtime at the moment of the click, and a hook would bind it at mount.
+ */
+function resolveSandboxProxy() {
+  const context = createSandboxProxyContext();
+  return {
+    subdomainOpts: context.subdomainOpts,
+    rewritePortPath: (port: number, path: string) => rewriteSandboxPath(port, path, context),
+  };
+}
+
+function safeHostname(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return 'preview';
+  }
+}

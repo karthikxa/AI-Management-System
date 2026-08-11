@@ -1,0 +1,1748 @@
+/**
+ * Sandbox image builder — thin orchestrator over the template service and the
+ * provider adapter.
+ *
+ *   1. Resolve `(project, slug)` → ResolvedTemplate via the template service.
+ *   2. Compute the content-addressed snapshot name.
+ *   3. Ask the provider: if active, return; else build inline.
+ *
+ * The boot path never trusts a DB row to decide "does this image exist?" —
+ * it asks the provider every time. The DB row is a cache + audit log only.
+ *
+ * Build attempts are written to the append-only `project_snapshot_builds`
+ * table for UI display + "Fix with agent."
+ */
+
+import { and, desc, eq, gt, inArray, lt, or } from 'drizzle-orm';
+import { createHash } from 'node:crypto';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { OPENCODE_VERSION } from '@kortix/shared';
+import { projectSnapshotBuilds } from '@kortix/db';
+import { db } from '../shared/db';
+import { resolveCommitSha, type GitBackedProject } from '../projects/git';
+import { getSandboxProvider, type BuildLogTap, type BuildSnapshotResult, type ProviderState, type SandboxProviderAdapter } from './providers';
+import { config, type SandboxProviderName } from '../config';
+import { warmPrebakeProviders } from '../projects/lib/provider-precedence';
+import { PPWARM_REAP_PROTECT_MS, excludePinnedTargets, legacyPerProjectWarmImageName, perProjectWarmImageName, ppwarmReapTargets, warmBuildSlug } from './ppwarm-names';
+import { collectPinnedImageRefs } from './pinned-images';
+import {
+  computeTemplateIdentity,
+  listTemplatesForProject,
+  recordTemplateBuilt,
+  recordTemplateFailed,
+  refreshTemplateState,
+  resolveTemplateBySlug,
+  resolveTemplateForBuildSlug,
+  type ResolvedTemplate,
+} from './templates';
+import { DEFAULT_SANDBOX_SLUG } from './dockerfile-layer';
+import { classifySnapshotError } from './error-classify';
+import type { WarmRepoContext } from './build-context';
+import {
+  enabledTemplateBuildProviders,
+  observeTemplateProviderCoverage,
+  resolveRoutedTemplateState,
+  type SandboxTemplateProvider,
+  type SandboxTemplateProviderCoverage,
+} from './provider-coverage';
+import { canServeLastKnownGoodRuntime } from './runtime-freshness';
+import { buildRuntimeArtifactFingerprint } from './runtime-fingerprint';
+
+export { resolveCommitSha };
+export { DEFAULT_SANDBOX_SLUG };
+
+class SnapshotBuildError extends Error {
+  constructor(message: string, readonly cause?: unknown) {
+    super(message);
+    this.name = 'SnapshotBuildError';
+  }
+}
+
+export type SnapshotBuildSource =
+  | 'session-start'
+  | 'project-create'
+  | 'cr-merge'
+  | 'manual'
+  | 'background'
+  | 'startup';
+
+const EXISTING_PROVIDER_BUILD_TIMEOUT_MS = 12 * 60 * 1000;
+const EXISTING_PROVIDER_BUILD_POLL_MS = 3_000;
+
+/**
+ * Cross-replica dedupe: once provider truth says a build exists, poll that same
+ * object to settlement rather than issuing a conflicting same-name build from
+ * this API replica. A timeout deliberately remains `building` so callers fail
+ * closed instead of creating a duplicate.
+ */
+export async function waitForProviderBuild(
+  provider: Pick<SandboxProviderAdapter, 'getSnapshotState'>,
+  snapshotName: string,
+  opts: { timeoutMs?: number; pollMs?: number } = {},
+): Promise<ProviderState> {
+  const timeoutMs = opts.timeoutMs ?? EXISTING_PROVIDER_BUILD_TIMEOUT_MS;
+  const pollMs = opts.pollMs ?? EXISTING_PROVIDER_BUILD_POLL_MS;
+  const deadline = Date.now() + timeoutMs;
+  do {
+    const state = await provider.getSnapshotState(snapshotName);
+    if (state !== 'building') return state;
+    if (Date.now() >= deadline) return 'building';
+    await new Promise((resolve) => setTimeout(resolve, pollMs));
+  } while (true);
+}
+
+export interface EnsureSandboxImageResult {
+  snapshotName: string;
+  slug: string;
+  contentHash: string;
+  built: boolean;
+  isDefault: boolean;
+}
+
+/**
+ * Whether `template` is allowed to get a per-project WARM image on
+ * `buildProvider` (the read-side gate for `ensureSandboxImage`'s warm-HIT
+ * lookup, and by extension the write-side bake it kicks on a miss).
+ *
+ * The shared default is always eligible — it's the pre-existing, already-safe
+ * 66%-hit-rate path. A CUSTOM (non-default-slug) template is eligible only on
+ * a provider allowlisted via `KORTIX_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS`
+ * (default: platinum only). Platinum's per-project templates warm-MISS 100% of
+ * the time today precisely because this gate used to be `template.isShared`
+ * unconditionally; Daytona's shared-default path is untouched by default and
+ * stays that way until its quota-gc cache-floor math (quota-gc-select.ts) is
+ * re-measured against real Daytona custom-template counts — a separate,
+ * later ops decision, not part of this change.
+ *
+ * TWO RESIDUAL RISKS accepted for custom-template warming (both narrow,
+ * bounded, self-healing — not blockers):
+ *  (a) TOCTOU: `computeTemplateIdentity` → `resolveUserDockerfile` reads the
+ *      Dockerfile at a commit sha it resolves internally (templates.ts), and
+ *      `ensurePerProjectWarmImage` resolves the warmRepo tip via its OWN,
+ *      separate `resolveCommitSha` call. For the shared default this is inert
+ *      (constant Dockerfile, zero git I/O). For a custom template, a push that
+ *      lands in that sub-second window between the two reads can bake
+ *      /workspace at a newer tip than the Dockerfile layer reflects. The next
+ *      push (or rebake) fixes it; it never affects the agent/CLI/opencode
+ *      runtime, only the repo-checkout layer.
+ *  (b) ppwarm-names.ts's `tpl8` (sha256(slug).slice(0,8)) scope key has no
+ *      collision backstop, unlike `proj8` (protected by
+ *      `excludePinnedTargets`) — see ppwarm-names.ts:94-104. Accepted as
+ *      negligible at realistic per-project template cardinality (1-3);
+ *      widening it now would force a second full warm-image-invalidating
+ *      name-format migration for a currently negligible risk.
+ */
+export function perProjectWarmEligible(
+  template: Pick<ResolvedTemplate, 'isShared'>,
+  buildProvider: string,
+): boolean {
+  if (template.isShared) return true;
+  return config.isCustomTemplateWarmEligible(buildProvider as SandboxProviderName);
+}
+
+/**
+ * Make sure a provider-side snapshot exists for `(project, slug)` and return
+ * its name. Builds inline if the provider doesn't have it yet.
+ */
+export async function ensureSandboxImage(
+  project: GitBackedProject,
+  opts: {
+    slug?: string;
+    accountId?: string;
+    source?: SnapshotBuildSource;
+    /**
+     * The provider the SESSION will run on (its sandbox provider). Build there,
+     * not on the template row's last-built provider — otherwise a template built
+     * on one provider (e.g. Daytona) makes a session on another (e.g. Platinum)
+     * reuse a snapshot that doesn't exist there → 404 on create. Defaults to the
+     * row's provider for non-session callers (pre-build/manual/background).
+     */
+    provider?: string;
+  } = {},
+): Promise<EnsureSandboxImageResult> {
+  const template = await resolveTemplateBySlug(project, opts.slug);
+  const buildProvider = opts.provider ?? template.provider;
+
+  const provider = getSandboxProvider(buildProvider);
+  if (!provider.isConfigured()) {
+    throw new SnapshotBuildError(`Sandbox provider ${buildProvider} is not configured`);
+  }
+
+  const identity = await computeTemplateIdentity(project, template);
+
+  // Per-project warm preference. On a session boot, if a per-project warm image
+  // — same runtime identity, current default-branch tip, repo baked into
+  // /workspace — is already active on this provider, boot off it (no clone at
+  // boot). On a MISS, kick a fire-and-forget background bake so the next
+  // session on this commit boots warm; this boot never blocks on the bake and
+  // falls through to the normal cold path when no warm image exists yet.
+  if (
+    config.KORTIX_WARM_SNAPSHOT_ENABLED &&
+    (opts.source ?? 'session-start') === 'session-start' &&
+    perProjectWarmEligible(template, buildProvider)
+  ) {
+    try {
+      const warmTip = await resolveCommitSha(project, project.defaultBranch);
+      if (warmTip) {
+        const warmName = perProjectWarmImageName(project.projectId, warmTip, identity.snapshotName, template.slug);
+        if ((await provider.getSnapshotState(warmName)) === 'active') {
+          console.log(
+            `[snapshots] per-project warm HIT: booting ${template.slug} from ${warmName} ` +
+            `(project ${project.projectId.slice(0, 8)}, tip ${warmTip.slice(0, 8)}, provider ${buildProvider})`,
+          );
+          return {
+            snapshotName: warmName,
+            slug: template.slug,
+            contentHash: identity.contentHash,
+            built: false,
+            isDefault: !!template.isShared,
+          };
+        }
+        // LEGACY-FORMAT FALLBACK. The ppwarm name gained a `<tpl8>` segment when
+        // warm images became (project, template)-scoped, so no image baked before
+        // that release can be recomputed under the new name. Without this lookup,
+        // that release would invalidate EVERY warm image simultaneously: ~65% of
+        // Daytona sessions currently hit one, so the first session per project
+        // would miss, clone cold, and kick a bake — a fleet-wide bake burst inside
+        // one deploy window, against a hard 100-snapshot org cap and with a
+        // 2026-07-22 storm already on record.
+        //
+        // A legacy image is already built and — for the SHARED DEFAULT only —
+        // already exactly right: same project, same tip, same base identity. Serve
+        // it. It keeps serving until this project's default branch actually moves,
+        // at which point the new-format name misses and bakes once; the stale
+        // legacy tip then ages out through quota-gc's idle/LRU rules (which match
+        // both name shapes). The fleet migrates at the natural rate of pushes
+        // instead of all at once.
+        //
+        // Gated on `isShared` because a legacy name encodes NO template: every
+        // caller that ever minted one passed the default slug, so resolving it for
+        // a custom template would hand that template a different one's image.
+        if (template.isShared) {
+          const legacyName = legacyPerProjectWarmImageName(
+            project.projectId,
+            warmTip,
+            identity.snapshotName,
+          );
+          if ((await provider.getSnapshotState(legacyName)) === 'active') {
+            console.log(
+              `[snapshots] per-project warm HIT (legacy name): booting ${template.slug} from ` +
+              `${legacyName} (project ${project.projectId.slice(0, 8)}, tip ${warmTip.slice(0, 8)}, ` +
+              `provider ${buildProvider}) — pre-dates template scoping; will re-bake under the ` +
+              `new name when this branch next moves`,
+            );
+            return {
+              snapshotName: legacyName,
+              slug: template.slug,
+              contentHash: identity.contentHash,
+              built: false,
+              isDefault: true,
+            };
+          }
+        }
+        // MISS — no warm image for this (project, tip) yet. Kick a fire-and-forget
+        // background bake so the NEXT session on this commit boots warm, and fall
+        // through to the cold path for THIS session (never block a boot on a bake).
+        kickBackgroundWarmBuild(project, {
+          accountId: opts.accountId,
+          provider: buildProvider,
+          snapshotName: warmName,
+          slug: template.slug,
+        });
+      }
+    } catch (err) {
+      console.warn(`[snapshots] per-project warm lookup failed (falling back to cold):`, err);
+    }
+  }
+
+  // Trust-the-row fast path. If the template row already recorded THIS exact
+  // snapshot (same content hash + name) as active, boot straight off it without
+  // a provider round-trip. Daytona's `snapshot.get` is a public-internet call
+  // that spikes to many seconds under load, and it runs on every warm boot —
+  // pure dead time when our own row already knows the answer. The auto-heal in
+  // session-sandbox.ts (rebuild + retry once on "snapshot not found") covers the
+  // rare race where the snapshot was dropped on the provider underneath us.
+  if (
+    template.provider === buildProvider &&
+    template.providerState === 'active' &&
+    template.contentHash === identity.contentHash &&
+    template.providerSnapshotName === identity.snapshotName
+  ) {
+    return {
+      snapshotName: identity.snapshotName,
+      slug: template.slug,
+      contentHash: identity.contentHash,
+      built: false,
+      isDefault: !!template.isShared,
+    };
+  }
+
+  // Cache hit? (checks the ACTIVE provider — so a row built elsewhere doesn't
+  // count, and we rebuild on this provider.)
+  let state = await provider.getSnapshotState(identity.snapshotName);
+  if (state === 'active') {
+    await recordTemplateBuilt(template.templateId, {
+      snapshotName: identity.snapshotName,
+      contentHash: identity.contentHash,
+      builtFromCommit: identity.builtFromCommit,
+      provider: buildProvider,
+      swapKey: identity.swapKey,
+    });
+    return {
+      snapshotName: identity.snapshotName,
+      slug: template.slug,
+      contentHash: identity.contentHash,
+      built: false,
+      isDefault: !!template.isShared,
+    };
+  }
+
+  // ─── Graceful background rebuild (hot path only) ──────────────────────────
+  // The computed identity drifted from what we last built — typically because
+  // a runtime/CLI source change bumped the fingerprint (constant in active
+  // local dev; once per release in prod). A session must NEVER block on a full
+  // image rebuild. If the previously-built snapshot is still usable, boot off
+  // it immediately and rebuild the new identity in the background; the next
+  // session to boot after that lands picks it up via the trust-the-row fast
+  // path above. Pre-builds and explicit manual/CR builds skip this and build
+  // inline, since their whole job is to produce the new image up front.
+  if (
+    canServeLastKnownGoodRuntime({
+      source: opts.source ?? 'session-start',
+    }) &&
+    template.providerSnapshotName &&
+    template.providerSnapshotName !== identity.snapshotName
+  ) {
+    const lastGood = await provider.getSnapshotState(template.providerSnapshotName);
+    if (lastGood === 'active') {
+      kickBackgroundRebuild(project, {
+        slug: opts.slug,
+        accountId: opts.accountId,
+        provider: buildProvider,
+        snapshotName: identity.snapshotName,
+      });
+      console.log(
+        `[snapshots] ${template.slug}: identity drifted to ${identity.snapshotName}; ` +
+        `booting last-known-good ${template.providerSnapshotName} and rebuilding in background`,
+      );
+      return {
+        snapshotName: template.providerSnapshotName,
+        slug: template.slug,
+        contentHash: template.contentHash ?? identity.contentHash,
+        built: false,
+        isDefault: !!template.isShared,
+      };
+    }
+  }
+
+  if (state === 'building') {
+    state = await waitForProviderBuild(provider, identity.snapshotName);
+    if (state === 'active') {
+      await recordTemplateBuilt(template.templateId, {
+        snapshotName: identity.snapshotName,
+        contentHash: identity.contentHash,
+        builtFromCommit: identity.builtFromCommit,
+        provider: buildProvider,
+        swapKey: identity.swapKey,
+      });
+      return {
+        snapshotName: identity.snapshotName,
+        slug: template.slug,
+        contentHash: identity.contentHash,
+        built: false,
+        isDefault: !!template.isShared,
+      };
+    }
+    if (state === 'building') {
+      throw new SnapshotBuildError(
+        `Sandbox image ${identity.snapshotName} is still building on ${buildProvider}`,
+      );
+    }
+  }
+  if (state === 'unknown') {
+    throw new SnapshotBuildError(
+      `Cannot verify sandbox image ${identity.snapshotName} on ${buildProvider}; provider state is unknown`,
+    );
+  }
+
+  // ─── Inline build (deduped across ALL sources) ───────────────────────────
+  // A burst of triggers for the same snapshot identity — e.g. a project-create
+  // pre-build, the first session boot, and a background rebuild all landing
+  // within the same build window — must produce exactly ONE provider build and
+  // ONE build-log row. `daytona.snapshot.create` calls racing under the same
+  // name conflict, and duplicate rows are what left two "Building" entries
+  // orphaned in the UI. We dedupe in-process by (provider, snapshot name); the
+  // cross-process case is deduped above by provider truth + settlement polling.
+  //
+  // The provider MUST be part of the key: the same identity can be requested for
+  // two providers at once (e.g. a background reconcile builds on the template's
+  // recorded provider while a session — or a failover — needs it on a DIFFERENT
+  // provider). Keying on the name alone would dedupe the session onto the wrong
+  // provider's build and, when that one fails, fail the session with it.
+  const buildKey = `${buildProvider}:${identity.snapshotName}`;
+  const existing = inflightBuilds.get(buildKey);
+  if (existing) return existing;
+
+  const buildPromise = runInlineBuild(project, template, identity, {
+    state,
+    accountId: opts.accountId,
+    source: opts.source ?? 'session-start',
+    buildProvider,
+  }).finally(() => inflightBuilds.delete(buildKey));
+  inflightBuilds.set(buildKey, buildPromise);
+  return buildPromise;
+}
+
+type TemplateIdentity = Awaited<ReturnType<typeof computeTemplateIdentity>>;
+
+/**
+ * Try the provider's agent-only swap instead of a full rebuild. Returns true iff
+ * the new snapshot was produced by swapping just the kortix-agent binary into the
+ * predecessor's rootfs. Conservative + CORRECT — fires ONLY when:
+ *   • the provider supports it (Platinum; Daytona has no `swapAgent`),
+ *   • a distinct predecessor snapshot exists (there's a real drift), and
+ *   • the drift is provably agent-ONLY: the new identity's swapKey (user image +
+ *     spec + NON-agent runtime layer) equals the predecessor's STORED swapKey, so
+ *     the ONLY thing that changed is the agent binary. A bumped opencode /
+ *     entrypoint / CLI / slack-cli / SDK / manifest-schema / browser /
+ *     layer version — or the user image or spec — moves swapKey → full rebuild.
+ *     (No isShared shortcut: the shared default's runtime LAYER is not constant,
+ *     so it must pass the same swapKey gate as everything else.)
+ * Any uncertainty/error → false → the caller rebuilds. On a swap that FAILED after
+ * the provider created the new-name row, that row is reaped so it can't 409 the
+ * fallback rebuild. A bad swap must never ship a wrong image, and a swap fault
+ * must never block the build.
+ */
+async function maybeSwapAgent(
+  template: ResolvedTemplate,
+  identity: TemplateIdentity,
+  provider: SandboxProviderAdapter,
+  prevSnapshot: string | null,
+): Promise<boolean> {
+  if (!provider.swapAgent || !prevSnapshot || prevSnapshot === identity.snapshotName) return false;
+  // Agent-ONLY drift ⇔ everything except the agent binary is byte-identical to the
+  // predecessor. The predecessor's swapKey must be STORED (null for pre-rollout or
+  // never-built rows → rebuild) and equal to the new identity's swapKey.
+  if (!template.swapKey || template.swapKey !== identity.swapKey) return false;
+  // The predecessor must still be materializable on the provider (its CAS chunks).
+  if ((await provider.getSnapshotState(prevSnapshot)) !== 'active') return false;
+
+  try {
+    console.log(
+      `[snapshots] ${template.slug}: agent-only drift ${prevSnapshot} → ${identity.snapshotName}; ` +
+      `CAS agent-swap (no rebuild)`,
+    );
+    await provider.swapAgent(identity.snapshotName, prevSnapshot);
+    return true;
+  } catch (err) {
+    console.warn(
+      `[snapshots] ${template.slug}: agent-swap failed, falling back to full rebuild: ` +
+      `${(err as Error)?.message ?? err}`,
+    );
+    // Reap any half-created new-name row so the fallback buildSnapshot (same name)
+    // isn't blocked by a name-collision 409 — pickBuildHost has no state filter for
+    // non-admin/org callers, which is exactly how Kortix builds authenticate.
+    await provider.deleteSnapshot(identity.snapshotName).catch(() => {});
+    return false;
+  }
+}
+
+/**
+ * Do the actual provider build for a resolved (template, identity) pair and
+ * record the result on the template row + build log. Always called behind the
+ * `inflightBuilds` dedup in `ensureSandboxImage` — never directly.
+ */
+async function runInlineBuild(
+  project: GitBackedProject,
+  template: ResolvedTemplate,
+  identity: TemplateIdentity,
+  opts: { state: ProviderState; accountId?: string; source: SnapshotBuildSource; buildProvider?: string },
+): Promise<EnsureSandboxImageResult> {
+  const provider = getSandboxProvider(opts.buildProvider ?? template.provider);
+
+  // Reap a failed/dead snapshot under the same name so the rebuild starts fresh.
+  if (opts.state === 'build_failed') {
+    await provider.deleteSnapshot(identity.snapshotName);
+  }
+
+  const buildId = opts.accountId
+    ? await openBuildLog({
+        accountId: opts.accountId,
+        projectId: project.projectId,
+        slug: template.slug,
+        snapshotName: identity.snapshotName,
+        contentHash: identity.contentHash,
+        commitSha: identity.builtFromCommit ?? '',
+        source: opts.source,
+        provider: provider.id,
+      })
+    : null;
+
+  const prevSnapshot = template.providerSnapshotName;
+  try {
+    // ── Agent-only fast path (Platinum CAS agent-swap) ────────────────────────
+    // If the predecessor differs from the new identity ONLY by the agent binary
+    // (same user image) and the provider can swap in place, skip the full rebuild:
+    // ship just the agent + have the host debugfs-swap it into the predecessor's
+    // rootfs (~seconds, ~one agent's worth of CAS chunks). Any miss/failure → a
+    // normal buildSnapshot below — the swap is a pure optimization, never a gate.
+    const swapped = await maybeSwapAgent(template, identity, provider, prevSnapshot);
+    if (!swapped) await provider.buildSnapshot({
+      snapshotName: identity.snapshotName,
+      image: template.image ?? undefined,
+      userDockerfile: identity.userDockerfile,
+      entrypoint: template.entrypoint ? [template.entrypoint] : undefined,
+      spec: {
+        cpu: template.cpu,
+        memoryGb: template.memoryGb,
+        diskGb: template.diskGb,
+      },
+      slug: template.slug,
+      isShared: !!template.isShared,
+      // Cold-only, unified with Daytona: Platinum builds a cold rootfs template
+      // and cold-boots it (entrypoint re-runs → opencode re-inits, ~6s) on spawn
+      // AND on resume — the SAME path Daytona takes, no provider divergence.
+      // Stateful/warm capture used to resume opencode mid-state off a CH memory
+      // snapshot, which intermittently wedged it (virtio-net RX stall after
+      // restore → /global/event + /pty hang while /kortix/health still
+      // answered). A cold boot avoids that entirely.
+    });
+    if (buildId) await closeBuildLogReady(buildId);
+    await recordTemplateBuilt(template.templateId, {
+      snapshotName: identity.snapshotName,
+      contentHash: identity.contentHash,
+      builtFromCommit: identity.builtFromCommit,
+      provider: opts.buildProvider,
+      swapKey: identity.swapKey,
+    });
+    // One-template invariant: a successful rebuild supersedes the previous
+    // snapshot. Delete it so old runtime fingerprints don't accumulate — this
+    // was leaking a full ~8 GB rootfs template per agent-source change (7 stale
+    // copies = 56 GB observed before this fix).
+    //
+    // EXCEPT when the predecessor itself was built (or is building) recently:
+    // that means another live code version — an overlapping rolling deploy, or
+    // dev's ECS/EKS split — computed a DIFFERENT identity and is actively
+    // serving it. Deleting it makes that version's sessions miss, rebuild, and
+    // (symmetrically) delete OURS — an infinite mutual-destruction loop of full
+    // image builds (observed live 2026-07-22: the shared default rebuilt 4× in
+    // 6 minutes). A genuinely superseded identity stops being rebuilt, ages out
+    // of the window, and is pruned by the next drift build or the quota GC.
+    if (prevSnapshot && prevSnapshot !== identity.snapshotName) {
+      const recent = await recentlyBuiltSnapshotNames([prevSnapshot], PREDECESSOR_PRUNE_PROTECT_MS);
+      if (recent.has(prevSnapshot)) {
+        console.log(
+          `[snapshots] keeping predecessor ${prevSnapshot}: it was built recently, so another ` +
+          `live replica/code version likely still serves it; it is pruned once it stops being rebuilt`,
+        );
+      } else {
+        await provider
+          .deleteSnapshot(prevSnapshot)
+          .catch((e) => console.warn(`[snapshots] prune predecessor ${prevSnapshot} failed: ${e?.message ?? e}`));
+      }
+    }
+    return {
+      snapshotName: identity.snapshotName,
+      slug: template.slug,
+      contentHash: identity.contentHash,
+      built: true,
+      isDefault: !!template.isShared,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (buildId) await closeBuildLogFailed(buildId, message);
+    await recordTemplateFailed(template.templateId, message);
+    throw new SnapshotBuildError(message, err);
+  }
+}
+
+/**
+ * In-flight inline builds, keyed by target snapshot name. Shared across every
+ * build source so concurrent triggers collapse onto one build + one log row.
+ */
+const inflightBuilds = new Map<string, Promise<EnsureSandboxImageResult>>();
+
+/**
+ * Force the next session to rebuild by deleting the provider-side snapshot
+ * for a given slug. No-op if nothing is there.
+ *
+ * Accepts a BUILD slug (`default-warm`) as well as a template slug: the retry
+ * surfaces hand us whatever `latest_failure.slug` held, and the warm bake's build
+ * row is never a template. Deleting the base template's snapshot is the correct
+ * response either way — the warm image is re-baked from it.
+ */
+export async function deleteSandboxImage(
+  project: GitBackedProject,
+  opts: { slug?: string; provider?: string } = {},
+): Promise<{ deleted: boolean; snapshotName: string; slug: string }> {
+  const template = await resolveTemplateForBuildSlug(project, opts.slug);
+  const provider = getSandboxProvider(opts.provider ?? template.provider);
+  const identity = await computeTemplateIdentity(project, template);
+  const before = await provider.getSnapshotState(identity.snapshotName);
+  await provider.deleteSnapshot(identity.snapshotName);
+  // Reflect on the template row.
+  if (template.templateId) {
+    try {
+      await refreshTemplateState(template.templateId);
+    } catch {
+      /* best-effort */
+    }
+  }
+  return {
+    deleted: before === 'active' || before === 'building',
+    snapshotName: identity.snapshotName,
+    slug: template.slug,
+  };
+}
+
+/** Stateless view of every template available to the project + live state. */
+export interface SandboxTemplateView {
+  templateId: string | null;
+  slug: string;
+  name: string;
+  isDefault: boolean;
+  source: 'platform' | 'toml' | 'ui';
+  hasDockerfile: boolean;
+  hasImage: boolean;
+  image: string | null;
+  dockerfilePath: string | null;
+  entrypoint: string | null;
+  cpu: number;
+  memoryGb: number;
+  diskGb: number;
+  snapshotName: string;
+  contentHash: string;
+  daytonaState: string;
+  providerState: string;
+  ready: boolean;
+  provider: string;
+  builtFromCommit: string | null;
+  lastBuiltAt: string | null;
+  lastError: string | null;
+  /** Fresh launch-readiness observations for this exact content identity. */
+  providerCoverage?: SandboxTemplateProviderCoverage[];
+}
+
+export async function listSandboxTemplates(
+  project: GitBackedProject,
+  opts: {
+    /** Explicit project pin. null means Automatic routing across enabled providers. */
+    selectedProvider?: SandboxTemplateProvider | null;
+    includeProviderCoverage?: boolean;
+  } = {},
+): Promise<SandboxTemplateView[]> {
+  const items = await listTemplatesForProject(project);
+  const results = await Promise.allSettled(items.map((t) => toView(project, t, opts)));
+  const views: SandboxTemplateView[] = [];
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+    if (r.status === 'fulfilled') {
+      views.push(r.value);
+    } else {
+      const reason = r.reason instanceof Error ? r.reason.message : String(r.reason);
+      console.warn(`[sandbox-templates] skipping template "${items[i]!.slug}": ${reason}`);
+    }
+  }
+  return views;
+}
+
+async function toView(
+  project: GitBackedProject,
+  t: ResolvedTemplate,
+  opts: {
+    selectedProvider?: SandboxTemplateProvider | null;
+    includeProviderCoverage?: boolean;
+  },
+): Promise<SandboxTemplateView> {
+  const identity = await computeTemplateIdentity(project, t);
+  let state: string = t.providerState ?? 'missing';
+  let providerCoverage: SandboxTemplateProviderCoverage[] | undefined;
+  if (opts.includeProviderCoverage) {
+    providerCoverage = await observeTemplateProviderCoverage(identity.snapshotName, {
+      isProviderEnabled: (provider) => config.isProviderEnabled(provider),
+      getProvider: (provider) => getSandboxProvider(provider),
+      now: () => new Date(),
+    });
+    state = resolveRoutedTemplateState(providerCoverage, opts.selectedProvider ?? null);
+  } else {
+    try {
+      const provider = getSandboxProvider(t.provider);
+      if (provider.isConfigured()) {
+        state = await provider.getSnapshotState(identity.snapshotName);
+      }
+    } catch {
+      /* keep cached */
+    }
+  }
+  return {
+    templateId: t.templateId,
+    slug: t.slug,
+    name: t.name,
+    isDefault: t.isShared,
+    source: t.source,
+    hasDockerfile: !!t.dockerfilePath,
+    hasImage: !!t.image,
+    image: t.image,
+    dockerfilePath: t.dockerfilePath,
+    entrypoint: t.entrypoint,
+    cpu: t.cpu,
+    memoryGb: t.memoryGb,
+    diskGb: t.diskGb,
+    snapshotName: identity.snapshotName,
+    contentHash: identity.contentHash,
+    daytonaState: state,
+    providerState: state,
+    ready: state === 'active',
+    provider: t.provider,
+    builtFromCommit: t.builtFromCommit,
+    lastBuiltAt: null,
+    lastError: null,
+    ...(providerCoverage ? { providerCoverage } : {}),
+  };
+}
+
+// Re-export for callers that still want the simple resolver entry point.
+export { resolveTemplateBySlug as resolveTemplate };
+
+// ─── Build log (UI-only, never read on boot) ─────────────────────────────
+
+export interface ProjectSnapshotBuildSummary {
+  buildId: string;
+  projectId: string;
+  slug: string;
+  snapshotName: string;
+  contentHash: string;
+  status: 'building' | 'ready' | 'failed';
+  error: string | null;
+  errorCategory: string | null;
+  source: SnapshotBuildSource | null;
+  provider: SandboxProviderName | null;
+  startedAt: Date;
+  finishedAt: Date | null;
+}
+
+function rowToSummary(row: typeof projectSnapshotBuilds.$inferSelect): ProjectSnapshotBuildSummary {
+  const meta = (row.metadata ?? {}) as Record<string, unknown>;
+  const slug = typeof meta.slug === 'string' ? meta.slug : row.branch || DEFAULT_SANDBOX_SLUG;
+  return {
+    buildId: row.buildId,
+    projectId: row.projectId,
+    slug,
+    snapshotName: row.snapshotName,
+    contentHash: row.contentHash,
+    status: row.status as 'building' | 'ready' | 'failed',
+    error: row.error,
+    errorCategory: row.errorCategory,
+    source: typeof meta.source === 'string' ? (meta.source as SnapshotBuildSource) : null,
+    provider: typeof meta.provider === 'string' && config.ALLOWED_SANDBOX_PROVIDERS.includes(meta.provider as SandboxProviderName)
+      ? meta.provider as SandboxProviderName
+      : null,
+    startedAt: row.startedAt,
+    finishedAt: row.finishedAt,
+  };
+}
+
+export async function listSnapshotBuilds(
+  projectId: string,
+  opts: { limit?: number } = {},
+): Promise<ProjectSnapshotBuildSummary[]> {
+  const limit = Math.max(1, Math.min(opts.limit ?? 25, 100));
+  const rows = await db
+    .select()
+    .from(projectSnapshotBuilds)
+    .where(eq(projectSnapshotBuilds.projectId, projectId))
+    .orderBy(desc(projectSnapshotBuilds.startedAt))
+    .limit(limit);
+  return rows.map(rowToSummary);
+}
+
+/**
+ * Builds that never reached a terminal state. The build log is closed inside
+ * the same in-process promise that runs the build, so a process restart (very
+ * common in dev) or crash mid-build orphans the row at `building` forever —
+ * which is exactly why the dashboard showed two stuck "Building" entries even
+ * though the image was actually live. This re-checks any `building` row older
+ * than the max build window against the provider and closes it: `ready` if the
+ * snapshot is active, `failed` otherwise. Idempotent and safe to run anywhere.
+ *
+ * The cutoff must exceed the longest legitimate build (Daytona build timeout +
+ * activation poll); below that we'd race a build that's genuinely still going.
+ */
+const STALE_BUILD_MS = 20 * 60 * 1000;
+const STALE_BUILD_BATCH = 50;
+
+export async function reconcileStaleBuilds(
+  opts: { projectId?: string; olderThanMs?: number } = {},
+): Promise<{ checked: number; closedReady: number; closedFailed: number }> {
+  const cutoff = new Date(Date.now() - (opts.olderThanMs ?? STALE_BUILD_MS));
+  const conds = [
+    eq(projectSnapshotBuilds.status, 'building'),
+    lt(projectSnapshotBuilds.startedAt, cutoff),
+  ];
+  if (opts.projectId) conds.push(eq(projectSnapshotBuilds.projectId, opts.projectId));
+
+  const rows = await db
+    .select()
+    .from(projectSnapshotBuilds)
+    .where(and(...conds))
+    .orderBy(desc(projectSnapshotBuilds.startedAt))
+    .limit(STALE_BUILD_BATCH);
+  if (rows.length === 0) return { checked: 0, closedReady: 0, closedFailed: 0 };
+
+  let closedReady = 0;
+  let closedFailed = 0;
+  for (const row of rows) {
+    const providerIds = buildLogProviderCandidates(row.metadata, config.ALLOWED_SANDBOX_PROVIDERS);
+    const providers = providerIds.flatMap((providerId) => {
+      try {
+        const provider = getSandboxProvider(providerId);
+        return provider.isConfigured() ? [provider] : [];
+      } catch {
+        return [];
+      }
+    });
+    if (providers.length === 0) continue;
+
+    const states = await Promise.all(providers.map(async (provider) => {
+      try {
+        return { provider: provider.id, state: await provider.getSnapshotState(row.snapshotName) };
+      } catch {
+        return { provider: provider.id, state: 'unknown' as ProviderState };
+      }
+    }));
+    if (states.some(({ state }) => state === 'active')) {
+      await closeBuildLogReady(row.buildId);
+      closedReady += 1;
+    } else if (states.some(({ state }) => state === 'building' || state === 'unknown')) {
+      // Provider truth still says this build is in flight. Never turn it into a
+      // false failure merely because a large provider build crossed our stale
+      // row cutoff; a later poll will close it when the provider settles.
+      continue;
+    } else {
+      await closeBuildLogFailed(
+        row.buildId,
+        `Build did not finish — provider state: ${states.map(({ provider, state }) => `${provider}=${state}`).join(', ')}.`,
+      );
+      closedFailed += 1;
+    }
+  }
+  return { checked: rows.length, closedReady, closedFailed };
+}
+
+/**
+ * New build rows record the exact provider in metadata. Historical rows do not,
+ * and multi-provider builds predate this provenance, so legacy rows remain
+ * unresolved instead of being guessed as Daytona or whichever provider happens
+ * to be enabled today.
+ */
+export function buildLogProviderCandidates(
+  metadata: unknown,
+  allowedProviders: readonly string[],
+): string[] {
+  const provider = metadata && typeof metadata === 'object'
+    ? (metadata as Record<string, unknown>).provider
+    : null;
+  return typeof provider === 'string' && allowedProviders.includes(provider)
+    ? [provider]
+    : [];
+}
+
+/** Reconcile only when provider truth confirms the current image needs a build. */
+export function shouldReconcileProviderState(state: ProviderState): boolean {
+  return state === 'missing' || state === 'build_failed';
+}
+
+async function openBuildLog(args: {
+  accountId: string;
+  projectId: string;
+  slug: string;
+  snapshotName: string;
+  contentHash: string;
+  commitSha?: string;
+  source: SnapshotBuildSource;
+  provider: string;
+}): Promise<string | null> {
+  try {
+    const [row] = await db
+      .insert(projectSnapshotBuilds)
+      .values({
+        accountId: args.accountId,
+        projectId: args.projectId,
+        commitSha: args.commitSha ?? '',
+        branch: args.slug,
+        snapshotName: args.snapshotName,
+        contentHash: args.contentHash,
+        status: 'building',
+        // FIX-K-lite forward hygiene: record the FULL projectId as first-class
+        // snapshot build metadata (alongside the projectId column), so a warm
+        // image's owning project is recoverable beyond the lossy 8-hex proj8 in
+        // its name. Forward-only — legacy warm images churn out on the next commit.
+        metadata: { source: args.source, slug: args.slug, provider: args.provider, projectId: args.projectId },
+      })
+      .returning({ buildId: projectSnapshotBuilds.buildId });
+    return row?.buildId ?? null;
+  } catch (err) {
+    console.warn('[snapshots] failed to open build log:', err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+async function closeBuildLogReady(buildId: string): Promise<void> {
+  await db
+    .update(projectSnapshotBuilds)
+    .set({ status: 'ready', finishedAt: new Date(), error: null, errorCategory: null })
+    .where(eq(projectSnapshotBuilds.buildId, buildId))
+    .catch((err) =>
+      console.warn('[snapshots] failed to close build log (ready):', err instanceof Error ? err.message : err),
+    );
+}
+
+async function closeBuildLogFailed(buildId: string, message: string): Promise<void> {
+  await db
+    .update(projectSnapshotBuilds)
+    .set({
+      status: 'failed',
+      error: message.slice(0, 2000),
+      errorCategory: classifySnapshotError(message),
+      finishedAt: new Date(),
+    })
+    .where(eq(projectSnapshotBuilds.buildId, buildId))
+    .catch((err) =>
+      console.warn('[snapshots] failed to close build log (failed):', err instanceof Error ? err.message : err),
+    );
+}
+
+/**
+ * How long a freshly-built PREDECESSOR identity is protected from the
+ * supersession prune in {@link runInlineBuild}. Long: a stale-but-live code
+ * version (dev's split-brain ran for days) keeps re-building its identity, so
+ * every prune within the window would re-arm the mutual-destruction loop, and a
+ * kept default costs only provider storage (Daytona's quota GC ranks defaults
+ * by freshness; Platinum templates are CAS-chunked).
+ */
+const PREDECESSOR_PRUNE_PROTECT_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * Of `snapshotNames`, the ones with a successful build finished — or a build
+ * started — within `withinMs`, per this environment's build log. Used as the
+ * "another live runtime still serves this" signal before pruning superseded
+ * snapshots. Fail-open (empty set) on a DB error: the callers' deletes then
+ * behave exactly as before this guard existed.
+ */
+async function recentlyBuiltSnapshotNames(
+  snapshotNames: string[],
+  withinMs: number,
+): Promise<Set<string>> {
+  if (snapshotNames.length === 0) return new Set();
+  try {
+    const cutoff = new Date(Date.now() - withinMs);
+    const rows = await db
+      .select({ snapshotName: projectSnapshotBuilds.snapshotName })
+      .from(projectSnapshotBuilds)
+      .where(
+        and(
+          inArray(projectSnapshotBuilds.snapshotName, snapshotNames),
+          or(
+            and(eq(projectSnapshotBuilds.status, 'ready'), gt(projectSnapshotBuilds.finishedAt, cutoff)),
+            and(eq(projectSnapshotBuilds.status, 'building'), gt(projectSnapshotBuilds.startedAt, cutoff)),
+          ),
+        ),
+      );
+    return new Set(rows.map((row) => row.snapshotName));
+  } catch (err) {
+    console.warn(
+      '[snapshots] recent-build lookup failed (skipping prune protection):',
+      err instanceof Error ? err.message : err,
+    );
+    return new Set();
+  }
+}
+
+/**
+ * In-flight background rebuilds, keyed by provider + target snapshot name. A
+ * burst of sessions booting off the same drifted identity must kick exactly
+ * one build on EACH provider; same-name builds on different providers are
+ * independent and must never suppress each other.
+ */
+const inflightBackgroundBuilds = new Set<string>();
+
+export function backgroundBuildKey(provider: string, snapshotName: string): string {
+  return `${provider}:${snapshotName}`;
+}
+
+/**
+ * Rebuild the drifted snapshot identity off the hot path. Deduped by target
+ * provider-qualified snapshot name so N concurrent session boots trigger one
+ * build per provider. Best-effort: a failure just means the next session
+ * retries (it'll keep booting last-good until this lands).
+ */
+function kickBackgroundRebuild(
+  project: GitBackedProject,
+  opts: { slug?: string; accountId?: string; provider: string; snapshotName: string },
+): void {
+  const key = backgroundBuildKey(opts.provider, opts.snapshotName);
+  if (inflightBackgroundBuilds.has(key)) return;
+  inflightBackgroundBuilds.add(key);
+  void ensureSandboxImage(project, {
+    slug: opts.slug,
+    accountId: opts.accountId,
+    source: 'background',
+    provider: opts.provider,
+  })
+    .catch((err) =>
+      console.warn(
+        `[snapshots] background rebuild of ${opts.snapshotName} failed for ${project.projectId}:`,
+        err instanceof Error ? err.message : err,
+      ),
+    )
+    .finally(() => inflightBackgroundBuilds.delete(key));
+}
+
+/**
+ * Minimum spacing between warm-bake STARTS per (project, provider). The warm
+ * image is a pure boot-latency cache, yet every default-branch push (and every
+ * session-start warm miss) used to kick a full multi-minute image bake, per
+ * enabled provider, with no pacing. A busy project pushing every few minutes
+ * baked continuously — observed live 2026-07-22: one prod project baked a new
+ * warm image every 3-8 minutes, ×2 providers, 227 builds/24h, which also
+ * rate-limited the whole Daytona org (429 ThrottlerException). Skipping a kick
+ * only delays warmth: the next kick after the window bakes the CURRENT tip.
+ */
+const WARM_BAKE_COOLDOWN_MS = (() => {
+  const raw = Number.parseInt(process.env.KORTIX_WARM_BAKE_COOLDOWN_MS || '', 10);
+  return Number.isFinite(raw) && raw >= 0 ? raw : 10 * 60 * 1000;
+})();
+const warmBakeLastKickAt = new Map<string, number>();
+
+/**
+ * True — and the kick is recorded — when a warm bake for (project, provider)
+ * is allowed to start now; false while a prior kick is inside the cooldown.
+ * Pure given injected `now`/`registry` (exported for tests).
+ */
+export function warmBakeCooldownGate(
+  projectId: string,
+  provider: string,
+  opts: { now?: number; cooldownMs?: number; registry?: Map<string, number> } = {},
+): boolean {
+  const now = opts.now ?? Date.now();
+  const cooldownMs = opts.cooldownMs ?? WARM_BAKE_COOLDOWN_MS;
+  const registry = opts.registry ?? warmBakeLastKickAt;
+  const key = `${projectId}:${provider}`;
+  const last = registry.get(key);
+  if (last !== undefined && now - last < cooldownMs) return false;
+  registry.set(key, now);
+  return true;
+}
+
+/**
+ * Warm bakes currently running, keyed by (project, provider) — a hot project
+ * whose tip moves mid-bake must NOT start a second concurrent bake for the new
+ * tip (the name-keyed inflight set can't see that: new tip = new name).
+ */
+const inflightWarmBakesByProject = new Set<string>();
+
+/**
+ * Cluster-wide cooldown: the in-memory gate above is per-replica (the api runs
+ * several pods under an HPA), so a burst spread across N replicas could still
+ * start N bakes per window. The build log is shared, so a warm-bake row STARTED
+ * by ANY replica within the window is visible here. Best-effort: rows exist
+ * only for account-attributed bakes, and any DB error fails open to the local
+ * gate — this narrows the cross-replica window, it does not have to be perfect
+ * (same-name races are still collapsed by provider-truth 'building' checks).
+ */
+async function warmBakeRecentlyStartedCluster(
+  projectId: string,
+  provider: string,
+  slug: string,
+  withinMs: number,
+): Promise<boolean> {
+  try {
+    const cutoff = new Date(Date.now() - withinMs);
+    const rows = await db
+      .select({ metadata: projectSnapshotBuilds.metadata })
+      .from(projectSnapshotBuilds)
+      .where(
+        and(
+          eq(projectSnapshotBuilds.projectId, projectId),
+          gt(projectSnapshotBuilds.startedAt, cutoff),
+        ),
+      )
+      .orderBy(desc(projectSnapshotBuilds.startedAt))
+      .limit(25);
+    const warmSlug = warmBuildSlug(slug);
+    return rows.some((row) => {
+      const meta = (row.metadata ?? {}) as Record<string, unknown>;
+      return meta.slug === warmSlug && meta.provider === provider;
+    });
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Pure scope key for per-(project, template) warm-bake pacing: the component
+ * `kickBackgroundWarmBuild` feeds as `warmBakeCooldownGate`'s first argument
+ * (opaque to that gate — see its own doc) and folds into
+ * `inflightWarmBakesByProject`'s key. `slug` defaults to `DEFAULT_SANDBOX_SLUG`
+ * so every pre-existing (default-slug) caller computes the EXACT SAME key as
+ * before a custom `slug` was ever threaded through — the cooldown/inflight
+ * pacing for the default template is byte-identical in behavior. A distinct
+ * `slug` gets its own independent budget instead of sharing (and fighting
+ * over) the default template's cooldown slot on the same (project, provider).
+ * Exported for unit coverage; not meant to be called outside this module.
+ */
+export function warmBakeScopeId(projectId: string, slug?: string): string {
+  return `${projectId}:${slug ?? DEFAULT_SANDBOX_SLUG}`;
+}
+
+/**
+ * Fire-and-forget per-project warm bake, off the session hot path. Deduped by the
+ * target warm snapshot name (via the same inflight set) so a burst of sessions on
+ * the same (project, tip) kicks exactly one bake, single-flighted per
+ * (project, provider), and paced by {@link warmBakeCooldownGate}. Best-effort: a
+ * skipped or failed kick just means the next session/push retries; sessions keep
+ * booting cold until a bake lands.
+ */
+function kickBackgroundWarmBuild(
+  project: GitBackedProject,
+  opts: { accountId?: string; provider: string; snapshotName: string; slug?: string },
+): void {
+  const key = backgroundBuildKey(opts.provider, opts.snapshotName);
+  if (inflightBackgroundBuilds.has(key)) return;
+  const slug = opts.slug ?? DEFAULT_SANDBOX_SLUG;
+  const scopedProjectId = warmBakeScopeId(project.projectId, slug);
+  const projectKey = `${scopedProjectId}:${opts.provider}`;
+  if (inflightWarmBakesByProject.has(projectKey)) return;
+  if (!warmBakeCooldownGate(scopedProjectId, opts.provider)) return;
+  inflightBackgroundBuilds.add(key);
+  inflightWarmBakesByProject.add(projectKey);
+  void (async () => {
+    if (await warmBakeRecentlyStartedCluster(project.projectId, opts.provider, slug, WARM_BAKE_COOLDOWN_MS)) {
+      console.log(
+        `[snapshots] warm bake for ${project.projectId.slice(0, 8)} (${opts.provider}) skipped: ` +
+        `another replica started one inside the cooldown window`,
+      );
+      return;
+    }
+    await ensurePerProjectWarmImage(project, {
+      accountId: opts.accountId,
+      provider: opts.provider,
+      source: 'background',
+      slug: opts.slug,
+    });
+  })()
+    .catch((err) =>
+      console.warn(
+        `[snapshots] background warm bake of ${opts.snapshotName} failed for ${project.projectId}:`,
+        err instanceof Error ? err.message : err,
+      ),
+    )
+    .finally(() => {
+      inflightBackgroundBuilds.delete(key);
+      inflightWarmBakesByProject.delete(projectKey);
+    });
+}
+
+/**
+ * Build-on-push warm prebake. Fire-and-forget: when a commit lands on a project's
+ * default branch (a successful push to the managed git), kick the per-project warm
+ * bake for the CURRENT tip so the FIRST session on the new commit boots warm —
+ * instead of waiting for a session to MISS and trigger the bake on demand (which
+ * leaves that first session cold). Reuses the exact resolve-tip + dedup path the
+ * session-start trigger uses: gated to the shared default, keyed on the
+ * default-branch tip, deduped by the target warm name. Idempotent — it no-ops when
+ * the default-branch tip is unchanged (the warm image for that tip is already
+ * active) or a bake for it is already in flight. Best-effort: never throws, never
+ * blocks the push; the session-start on-demand trigger remains the fallback.
+ *
+ * PROVIDER PARITY: a push must pre-warm the provider(s) a session on this project
+ * could actually land on — NOT just the default provider. With `opts.provider`
+ * set, warm exactly that one (the pre-existing single-provider behaviour, kept
+ * byte-identical for callers that already target a provider). Otherwise resolve
+ * the target set from the project's provider PIN, exactly as session creation does
+ * (`warmPrebakeProviders`): an enabled pin ⇒ that one provider; no/stale pin ⇒
+ * every enabled provider (the weighted balancer can route a session to any of
+ * them). This closes the gap where a git push only warmed the default provider
+ * while a Platinum-routed (or Platinum-pinned) session still baked lazily on its
+ * first miss.
+ */
+export async function kickProjectWarmPrebake(
+  project: GitBackedProject,
+  opts: { accountId?: string; provider?: string; projectPin?: string | null } = {},
+): Promise<void> {
+  if (!config.KORTIX_WARM_SNAPSHOT_ENABLED) return;
+
+  const providers = opts.provider
+    ? [opts.provider]
+    : warmPrebakeProviders({
+        // Pre-warm the provider(s) a session on this project could land on —
+        // exactly what session creation resolves from the pin (an enabled pin ⇒
+        // that provider; no/stale pin ⇒ every enabled provider).
+        projectPin: opts.projectPin ?? null,
+        allowed: config.ALLOWED_SANDBOX_PROVIDERS,
+        isEnabled: (p) => config.isProviderEnabled(p as SandboxProviderName),
+      });
+  // Per-provider: content-addressed name, own getSnapshotState check, own dedup
+  // in kickBackgroundWarmBuild. Independent + best-effort — one provider failing
+  // (or being unconfigured) must not skip the others, so each is its own try.
+  await Promise.all(providers.map((buildProvider) => prebakeForProvider(project, buildProvider, opts.accountId)));
+}
+
+async function prebakeForProvider(
+  project: GitBackedProject,
+  buildProvider: string,
+  accountId?: string,
+): Promise<void> {
+  try {
+    const template = await resolveTemplateBySlug(project, undefined);
+    if (!template.isShared) return; // same gate as the session-start warm trigger
+    const provider = getSandboxProvider(buildProvider);
+    if (!provider.isConfigured()) return;
+    const identity = await computeTemplateIdentity(project, template);
+    const tip = await resolveCommitSha(project, project.defaultBranch);
+    if (!tip) return;
+    const warmName = perProjectWarmImageName(project.projectId, tip, identity.snapshotName, template.slug);
+    // Tip unchanged (or already warm for this commit) → nothing to do.
+    if ((await provider.getSnapshotState(warmName)) === 'active') return;
+    kickBackgroundWarmBuild(project, { accountId, provider: buildProvider, snapshotName: warmName });
+    console.log(
+      `[snapshots] warm prebake-on-push kicked: project ${project.projectId.slice(0, 8)} ` +
+      `tip ${tip.slice(0, 8)} (${buildProvider})`,
+    );
+  } catch (err) {
+    console.warn(
+      `[snapshots] warm prebake-on-push skipped for ${project.projectId} (${buildProvider}):`,
+      err instanceof Error ? err.message : err,
+    );
+  }
+}
+
+/**
+ * Fire-and-forget pre-build. Used at project-create and CR-merge time so the
+ * first session for a new commit can boot off a cache hit.
+ */
+export function kickPreBuild(
+  project: GitBackedProject,
+  opts: { slug?: string; accountId: string; source: SnapshotBuildSource; provider?: string },
+): void {
+  void ensureSandboxImage(project, opts).catch((err) =>
+    console.warn(
+      `[snapshots] pre-build failed for ${project.projectId} (slug=${opts.slug ?? 'default'}, ${opts.source}):`,
+      err instanceof Error ? err.message : err,
+    ),
+  );
+}
+
+/** Providers a project can route a new session to for proactive template builds. */
+export function templateBuildProviders(): SandboxTemplateProvider[] {
+  return enabledTemplateBuildProviders({
+    allowed: config.ALLOWED_SANDBOX_PROVIDERS,
+    isEnabled: (provider) => config.isProviderEnabled(provider as SandboxProviderName),
+  });
+}
+
+/** Fire the same content-addressed build independently on every routed provider. */
+export function kickRoutedPreBuild(
+  project: GitBackedProject,
+  opts: {
+    slug?: string;
+    accountId: string;
+    source: SnapshotBuildSource;
+  },
+): void {
+  for (const provider of templateBuildProviders()) {
+    kickPreBuild(project, {
+      slug: opts.slug,
+      accountId: opts.accountId,
+      source: opts.source,
+      provider,
+    });
+  }
+}
+
+// ─── Platform default (global, project-independent) ──────────────────────────
+
+/**
+ * The platform default image is content-addressed and shared by EVERY project,
+ * user, and session — its identity is a constant Dockerfile, independent of any
+ * repo. So its build belongs to the platform lifecycle, not the project
+ * lifecycle: we build it once per process at startup (a no-op cache hit after
+ * the first global build, or after a release bumps the runtime fingerprint),
+ * and the session-boot graceful path is the lazy fallback. project-create no
+ * longer triggers it. No build-log row is written (it's global, not project-
+ * scoped). A throwaway project shell is fine — the default path never reads it.
+ */
+const PLATFORM_PROJECT_SHELL: GitBackedProject = {
+  projectId: '',
+  repoUrl: '',
+  defaultBranch: '',
+  manifestPath: '',
+};
+
+async function ensurePlatformDefaultImage(
+  opts: { source?: SnapshotBuildSource; provider: string },
+): Promise<EnsureSandboxImageResult> {
+  return ensureSandboxImage(PLATFORM_PROJECT_SHELL, {
+    slug: DEFAULT_SANDBOX_SLUG,
+    source: opts.source ?? 'startup',
+    provider: opts.provider,
+  });
+}
+
+const metaImageBuilds = new Map<string, Promise<EnsureSandboxImageResult>>();
+let metaRuntimeFingerprint: Promise<string> | null = null;
+
+function currentMetaRuntimeFingerprint(): Promise<string> {
+  if (metaRuntimeFingerprint) return metaRuntimeFingerprint;
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
+  metaRuntimeFingerprint = buildRuntimeArtifactFingerprint({
+    sandboxVersion: `meta-v3:opencode:${OPENCODE_VERSION}`,
+    opencodeVersion: OPENCODE_VERSION,
+    artifacts: [
+      { label: 'agent', path: resolve(root, 'apps/kortix-sandbox-agent-server/src') },
+      { label: 'agent-package', path: resolve(root, 'apps/kortix-sandbox-agent-server/package.json') },
+      { label: 'cli', path: resolve(root, 'apps/cli/src') },
+      { label: 'cli-package', path: resolve(root, 'apps/cli/package.json') },
+      { label: 'entrypoint', path: resolve(root, 'apps/sandbox/entrypoint.sh') },
+      { label: 'meta-renderer', path: resolve(root, 'packages/shared/src/sandbox/meta-dockerfile.ts') },
+      { label: 'sdk', path: resolve(root, 'packages/sdk/src') },
+      { label: 'llm-catalog', path: resolve(root, 'packages/llm-catalog/src') },
+      { label: 'manifest-schema', path: resolve(root, 'packages/manifest-schema/src') },
+      { label: 'registry', path: resolve(root, 'packages/registry/src') },
+      { label: 'shared', path: resolve(root, 'packages/shared/src') },
+      { label: 'starter', path: resolve(root, 'packages/starter/src') },
+      // The managed skills baked into the image live under templates/, not
+      // src/ — without this a SKILL.md edit never re-fingerprints the image.
+      { label: 'starter-templates', path: resolve(root, 'packages/starter/templates') },
+    ],
+  });
+  return metaRuntimeFingerprint;
+}
+
+export async function ensureMetaSandboxImage(opts: {
+  source?: SnapshotBuildSource;
+  provider: string;
+}): Promise<EnsureSandboxImageResult> {
+  const provider = getSandboxProvider(opts.provider);
+  if (!provider.isConfigured()) {
+    throw new SnapshotBuildError(`Sandbox provider ${opts.provider} is not configured`);
+  }
+  const fingerprint = await currentMetaRuntimeFingerprint();
+  const contentHash = createHash('sha256').update(`meta-runtime-v1\0${fingerprint}`).digest('hex');
+  const snapshotName = `kortix-meta-${contentHash.slice(0, 16)}`;
+  const buildKey = `${opts.provider}:${snapshotName}`;
+  const existing = metaImageBuilds.get(buildKey);
+  if (existing) return existing;
+
+  const build = (async () => {
+    let state = await provider.getSnapshotState(snapshotName);
+    if (state === 'building') state = await waitForProviderBuild(provider, snapshotName);
+    if (state === 'active') {
+      return { snapshotName, slug: 'meta', contentHash, built: false, isDefault: false };
+    }
+    if (state === 'build_failed') await provider.deleteSnapshot(snapshotName);
+    await provider.buildSnapshot({
+      snapshotName,
+      userDockerfile: '# platform meta runtime',
+      spec: { cpu: 1, memoryGb: 2, diskGb: 8 },
+      slug: 'meta',
+      isShared: true,
+      runtimeProfile: 'meta',
+    });
+    return { snapshotName, slug: 'meta', contentHash, built: true, isDefault: false };
+  })().finally(() => metaImageBuilds.delete(buildKey));
+  metaImageBuilds.set(buildKey, build);
+  return build;
+}
+
+let startupPreBuildKicked = false;
+
+/**
+ * Idempotent, fire-and-forget. Mints the platform default image independently
+ * on every enabled provider once per process boot, so an Automatic or pinned
+ * session never pays a provider-specific lazy build.
+ */
+export function kickStartupPreBuild(): void {
+  // Focused acceptance runs can skip the multi-gigabyte session and meta
+  // images. Production keeps the pre-build enabled by default.
+  if (process.env.KORTIX_SKIP_STARTUP_PREBUILD === 'true') return;
+  if (startupPreBuildKicked) return;
+  startupPreBuildKicked = true;
+  for (const providerId of templateBuildProviders()) {
+    void ensurePlatformDefaultImage({ source: 'startup', provider: providerId })
+      .then((r) =>
+        console.log(
+          `[snapshots] startup pre-build (${providerId}): default image ${r.snapshotName} ${r.built ? 'built' : 'ready'}`,
+        ),
+      )
+      .catch((err) =>
+        console.warn(
+          `[snapshots] startup pre-build of platform default failed (${providerId}):`,
+          err instanceof Error ? err.message : err,
+        ),
+      );
+    void ensureMetaSandboxImage({ source: 'startup', provider: providerId })
+      .then((r) =>
+        console.log(
+          `[snapshots] startup pre-build (${providerId}): meta image ${r.snapshotName} ${r.built ? 'built' : 'ready'}`,
+        ),
+      )
+      .catch((err) =>
+        console.warn(
+          `[snapshots] startup pre-build of platform meta failed (${providerId}):`,
+          err instanceof Error ? err.message : err,
+        ),
+      );
+  }
+}
+
+// ─── Custom (toml / UI) templates — explicit rebuilds ────────────────────────
+
+/**
+ * Reconcile a project's OWN templates (never the shared default): for each
+ * custom template whose built image is stale or missing relative to its
+ * currently-computed identity, kick a pre-build. Driven by project-create and
+ * CR-merge so a Dockerfile or spec change lands a fresh image proactively
+ * instead of stalling the next session that boots the slug. Forces a TOML sync
+ * so a `[[sandbox.templates]]` edit in the just-merged commit is picked up.
+ */
+async function reconcileProjectTemplates(
+  project: GitBackedProject,
+  opts: { accountId: string; source: SnapshotBuildSource },
+): Promise<{ checked: number; rebuilt: number }> {
+  const templates = await listTemplatesForProject(project, { forceTomlSync: true });
+  const providers = templateBuildProviders();
+  let rebuilt = 0;
+  for (const t of templates) {
+    if (t.isShared) continue; // the platform default is built globally
+    let identity: TemplateIdentity;
+    try {
+      identity = await computeTemplateIdentity(project, t);
+    } catch (err) {
+      console.warn(
+        `[snapshots] reconcile: cannot compute identity for ${project.projectId}/${t.slug}:`,
+        err instanceof Error ? err.message : err,
+      );
+      continue;
+    }
+    for (const providerId of providers) {
+      const provider = getSandboxProvider(providerId);
+      const state = await provider.getSnapshotState(identity.snapshotName);
+      if (!shouldReconcileProviderState(state)) continue;
+      kickPreBuild(project, {
+        slug: t.slug,
+        accountId: opts.accountId,
+        source: opts.source,
+        provider: providerId,
+      });
+      rebuilt += 1;
+    }
+  }
+  return { checked: templates.length, rebuilt };
+}
+
+/** Fire-and-forget wrapper around {@link reconcileProjectTemplates}. */
+export function kickProjectTemplatePrebuilds(
+  project: GitBackedProject,
+  opts: { accountId: string; source: SnapshotBuildSource },
+): void {
+  void reconcileProjectTemplates(project, opts).catch((err) =>
+    console.warn(
+      `[snapshots] project-template reconcile failed for ${project.projectId} (${opts.source}):`,
+      err instanceof Error ? err.message : err,
+    ),
+  );
+}
+
+// ─── Per-project COLD rootfs warm ────────────────────────────────────────────
+
+/** Managed name prefix for per-project COLD warm images. Reapable, disjoint
+ *  from the shared-default (`kortix-default-`) and custom (`kortix-tpl-`) names.
+ *  Provider-agnostic: the SAME cold image builds on Daytona and Platinum. */
+export interface PerProjectWarmResult {
+  snapshotName: string;
+  tip: string;
+  built: boolean;
+  provider: string;
+  /**
+   * FIX-B: the EXACT external template id the provider build produced (Platinum),
+   * threaded straight from `buildSnapshot` so the transition runner pins the id
+   * the build PROVED instead of a name-list re-derivation. Absent when no fresh
+   * build ran (idempotent reuse) or for providers with no external-id concept.
+   */
+  externalTemplateId?: string;
+}
+
+/**
+ * Build (or reuse) a project's COLD warm image: the requested template's runtime
+ * (`opts.slug`, defaulting to the shared default) with
+ * the project's repo checkout baked into /workspace at the default-branch tip.
+ * capture:'none' — NO memory snapshot, NO stateful CH; BOTH Daytona and Platinum
+ * boot it cold and the daemon (git.ts) fast-paths the baked `.git` with no clone.
+ *
+ * Idempotent: an active image under the computed name short-circuits. The name is
+ * tip-keyed, so a moved tip bakes a new one (self-superseding). This is the pure
+ * builder primitive — it does NOT rewrite session routing; a caller opts a
+ * session in by booting `snapshotName`. `provider` defaults to the platform
+ * default provider so it's testable on either backend.
+ */
+export async function ensurePerProjectWarmImage(
+  project: GitBackedProject,
+  opts: {
+    accountId?: string;
+    provider?: string;
+    source?: SnapshotBuildSource;
+    /** Template to warm-bake. Omitted/undefined → the shared default
+     *  (DEFAULT_SANDBOX_SLUG), preserving every pre-existing caller's exact
+     *  behavior (provider-transition-service.ts's resolvePrepIdentity/
+     *  ensureWarmImage, the push-triggered default-only prebakeForProvider,
+     *  and every default-slug session-start warm bake). A caller that passes
+     *  a CUSTOM (non-default-slug) template gets that template's OWN runtime
+     *  — see the identity comment below. */
+    slug?: string;
+    /** Lease-renewal hook, forwarded into the provider's build-wait poll loop so
+     *  a long build never lets the caller's lease TTL lapse. */
+    heartbeat?: () => void | Promise<void>;
+  } = {},
+): Promise<PerProjectWarmResult> {
+  if (!project.repoUrl) throw new SnapshotBuildError('project has no repo url — cannot bake per-project warm image');
+  const buildProvider = opts.provider ?? config.getDefaultProvider();
+  const provider = getSandboxProvider(buildProvider);
+  if (!provider.isConfigured()) throw new SnapshotBuildError(`Sandbox provider ${buildProvider} is not configured`);
+
+  // Base runtime == the REQUESTED template (opts.slug, defaulting to the shared
+  // default — same opencode/agent/CLI a cold session gets). The repo is layered
+  // ON TOP via warmRepo. `computeTemplateIdentity`/`resolveUserDockerfile` are
+  // fully generic over `template`: the shared default returns the constant
+  // PLATFORM_DEFAULT_USER_DOCKERFILE (zero git I/O), a custom template reads its
+  // real `dockerfilePath` at the current tip — exactly what the cold
+  // `ensureSandboxImage` path already does for that same template. So the warm
+  // runtime is byte-identical to what a cold boot of THIS template would
+  // produce, whichever template that is. Naming (`warmBuildSlug`,
+  // `perProjectWarmImageName`) below must stay keyed on `template.slug`, not a
+  // hardcoded default, or Retry-build / Fix-with-agent's build-slug round-trip
+  // breaks for a custom template's warm bake.
+  const template = await resolveTemplateBySlug(project, opts.slug ?? DEFAULT_SANDBOX_SLUG);
+  const baseIdentity = await computeTemplateIdentity(project, template);
+
+  const tip = await resolveCommitSha(project, project.defaultBranch);
+  if (!tip) throw new SnapshotBuildError(`could not resolve ${project.defaultBranch} tip for per-project warm`);
+
+  const snapshotName = perProjectWarmImageName(project.projectId, tip, baseIdentity.snapshotName, template.slug);
+
+  // Idempotency: active image under this (project, tip, runtime) → reuse it.
+  // Still reap here — this path also runs when a prior bake's reap failed or a
+  // moved-then-restored tip races to active, so it cleans lingering old tips.
+  const existingState = await provider.getSnapshotState(snapshotName);
+  if (existingState === 'active') {
+    await reapOldPerProjectWarm(project.projectId, snapshotName, buildProvider);
+    return { snapshotName, tip, built: false, provider: buildProvider };
+  }
+  if (existingState === 'building') {
+    // Another API replica already owns this provider build. Do not issue a
+    // duplicate same-name build; session-start will use the cold base image
+    // until the provider reports the warm template as active.
+    return { snapshotName, tip, built: false, provider: buildProvider };
+  }
+  if (existingState === 'build_failed') {
+    await provider.deleteSnapshot(snapshotName).catch(() => {});
+  }
+  if (existingState === 'unknown') {
+    throw new SnapshotBuildError(
+      `Cannot verify warm image ${snapshotName} on ${buildProvider}; provider state is unknown`,
+    );
+  }
+
+  // Pin the warm bake to the EXACT tip the cache key (`snapshotName`) is keyed on,
+  // so the staged checkout can never drift to a newer branch tip mid-bake and
+  // poison the content-addressed image (SHA_X name ⇒ SHA_X content).
+  const warmRepo = await resolveWarmRepoContext(project, tip);
+  const buildTap: BuildLogTap | undefined = opts.heartbeat ? { heartbeat: opts.heartbeat } : undefined;
+
+  // FAST PATH: FROM the already-built shared default image instead of
+  // recomposing + rebuilding the full ~15-layer toolchain (apt/pip/opencode/
+  // bun/agent-browser+Chromium). This is what actually stops per-project warm
+  // bakes from re-downloading Chromium under concurrency — see
+  // buildPerProjectWarmFromBaseDockerfile (dockerfile-layer.ts) for the full
+  // rationale. Only attempted when the provider can report a usable image ref
+  // AND the base snapshot is confirmed `active`; a `FROM` of a not-yet-built
+  // image would fail the whole bake, so this must never guess.
+  const baseImageRef = await resolveWarmBaseImageRef(provider, baseIdentity.snapshotName);
+
+  const buildId = opts.accountId
+    ? await openBuildLog({
+        accountId: opts.accountId,
+        projectId: project.projectId,
+        slug: warmBuildSlug(template.slug),
+        snapshotName,
+        contentHash: baseIdentity.contentHash,
+        commitSha: tip,
+        source: opts.source ?? 'manual',
+        provider: buildProvider,
+      })
+    : null;
+
+  try {
+    console.log(
+      `[snapshots] per-project warm: baking ${snapshotName} (project ${project.projectId.slice(0, 8)}, ` +
+      `tip ${tip.slice(0, 8)}, base ${baseIdentity.snapshotName}, provider=${buildProvider}, ` +
+      `fastPath=${baseImageRef ? 'from-base' : 'full-rebuild'})`,
+    );
+    // COLD build (capture:'none' — buildSnapshot on this branch never captures a
+    // memory snapshot). The only per-project delta over the shared default is
+    // warmRepo, which bakes /workspace at build time — either on top of a full
+    // rebuild of the toolchain, or (fast path) on top of the base image FROM'd
+    // verbatim.
+    const fullRebuildInput = {
+      snapshotName,
+      image: template.image ?? undefined,
+      userDockerfile: baseIdentity.userDockerfile,
+      entrypoint: template.entrypoint ? [template.entrypoint] : undefined,
+      spec: { cpu: template.cpu, memoryGb: template.memoryGb, diskGb: template.diskGb },
+      slug: warmBuildSlug(template.slug),
+      isShared: false,
+      warmRepo,
+    };
+    let buildResult: BuildSnapshotResult | void;
+    if (baseImageRef) {
+      try {
+        buildResult = await provider.buildSnapshot({ ...fullRebuildInput, image: undefined, userDockerfile: undefined, baseImageRef }, buildTap);
+      } catch (fastPathErr) {
+        // Never let a fast-path failure (a stale/unpullable base ref, a
+        // provider-side hiccup building FROM it, …) take down session boot —
+        // fall back to the always-correct full rebuild. This keeps the fast
+        // path strictly additive: worst case is the pre-existing behavior.
+        const msg = fastPathErr instanceof Error ? fastPathErr.message : String(fastPathErr);
+        console.warn(
+          `[snapshots] per-project warm: FROM-base fast path failed for ${snapshotName} ` +
+          `(base=${baseImageRef}) — falling back to full rebuild: ${msg.slice(0, 200)}`,
+        );
+        buildResult = await provider.buildSnapshot(fullRebuildInput, buildTap);
+      }
+    } else {
+      buildResult = await provider.buildSnapshot(fullRebuildInput, buildTap);
+    }
+    if (buildId) await closeBuildLogReady(buildId);
+    await reapOldPerProjectWarm(project.projectId, snapshotName, buildProvider);
+    // FIX-B: carry the build-proven external template id up to the transition runner.
+    return { snapshotName, tip, built: true, provider: buildProvider, externalTemplateId: buildResult?.externalTemplateId };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (buildId) await closeBuildLogFailed(buildId, message);
+    throw new SnapshotBuildError(message, err);
+  }
+}
+
+/** `true` iff a snapshot's provider state means it's safe to `FROM` its image
+ *  — anything short of a confirmed `active` snapshot risks a `FROM` of a
+ *  not-yet-built or vanished image, which would fail the whole warm bake
+ *  outright instead of falling back cleanly. */
+export function shouldAttemptWarmFromBase(baseState: ProviderState): boolean {
+  return baseState === 'active';
+}
+
+/**
+ * Resolve a registry-addressable ref for the already-built base image of the
+ * template being warmed, for use as `BuildableTemplate.baseImageRef` — the
+ * per-project warm fast path. Generic over the template: this used to serve only
+ * the shared default, but since `perProjectWarmEligible` allows custom templates
+ * on the providers in KORTIX_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS, the caller
+ * passes whichever template's base identity it is warming. Returns undefined (never throws) whenever the
+ * fast path isn't available: the provider doesn't implement
+ * `getSnapshotImageRef`, the base snapshot isn't `active` yet, or the lookup
+ * itself fails. Every one of those is a normal, expected condition (a fresh
+ * region where the default hasn't built yet, a provider without a registry
+ * concept, a transient lookup hiccup) — the caller always has the full
+ * rebuild path to fall back to.
+ */
+export async function resolveWarmBaseImageRef(
+  provider: Pick<SandboxProviderAdapter, 'getSnapshotState' | 'getSnapshotImageRef'>,
+  baseSnapshotName: string,
+): Promise<string | undefined> {
+  if (!provider.getSnapshotImageRef) return undefined;
+  const baseState = await provider.getSnapshotState(baseSnapshotName).catch((): ProviderState => 'unknown');
+  if (!shouldAttemptWarmFromBase(baseState)) return undefined;
+  const ref = await provider.getSnapshotImageRef(baseSnapshotName).catch(() => null);
+  return ref ?? undefined;
+}
+
+/**
+ * Resolve the build-time clone credentials + runtime proxy origin for a project's
+ * per-project warm bake. Reads the full project row (the GitBackedProject subset
+ * lacks the fields `resolveProjectUpstream` needs). The build-time auth header is
+ * a short-lived git-host credential embedded ONLY in a one-shot RUN; origin is
+ * reset to the Kortix proxy so the daemon re-auths per session at runtime.
+ */
+async function resolveWarmRepoContext(project: GitBackedProject, tip: string): Promise<WarmRepoContext> {
+  const { projects } = await import('@kortix/db');
+  const { resolveProjectUpstream } = await import('../projects/lib/git');
+  const { proxyGitUrl } = await import('../projects/lib/sessions');
+
+  const [row] = await db.select().from(projects).where(eq(projects.projectId, project.projectId)).limit(1);
+  if (!row) throw new SnapshotBuildError(`project ${project.projectId} not found for warm-repo resolution`);
+
+  const upstream = await resolveProjectUpstream(row as never, 'read');
+  if (!upstream?.url) throw new SnapshotBuildError('no git upstream configured for project — cannot bake per-project warm');
+
+  return {
+    cloneUrl: upstream.url,
+    cloneHeaders: upstream.headers ?? {},
+    branch: project.defaultBranch,
+    // Pin to the EXACT tip the snapshot name is keyed on (not just the branch),
+    // so the staged checkout is byte-identical to the cache key.
+    tip,
+    originUrl: proxyGitUrl(project.projectId),
+  };
+}
+
+/**
+ * On-bake reap of a project's SUPERSEDED per-project warm images — the aggressive
+ * cleanup prod does (warm-project.ts `reapOldProjectWarm` / `…Platinum`). A moved
+ * tip orphans the old content-addressed image; `REAPABLE_SNAPSHOT_PREFIXES` lets
+ * the *general* reaper sweep it eventually, but on Daytona (which has a
+ * snapshot-COUNT quota) that lag piles up, so we delete superseded tips the moment
+ * the new one is active — keeping ~1 image per active project, exactly like prod.
+ * Best-effort: a reap failure (list/delete error, provider hiccup) NEVER fails the
+ * bake. Listing/deletion are provider-adapter capabilities, so cleanup remains
+ * identical for Daytona, Platinum, and E2B.
+ */
+async function reapOldPerProjectWarm(projectId: string, currentName: string, buildProvider: string): Promise<void> {
+  try {
+    const provider = getSandboxProvider(buildProvider);
+    const names = (await provider.listSnapshots()).map((snapshot) => snapshot.name);
+    const rawTargets = ppwarmReapTargets(projectId, currentName, names);
+    if (rawTargets.length === 0) return;
+    // FIX-K-lite: proj8 is only the first 8 hex of the projectId, so this prefix-
+    // scoped selection over an ORG-WIDE list could pick another project's LIVE
+    // pinned image on a proj8 collision. Cross-check against the active pins of
+    // EVERY project and never delete one — a collision then just skips a reap.
+    const pinned = await collectPinnedImageRefs();
+    const targets = excludePinnedTargets(rawTargets, pinned);
+    for (const name of rawTargets) {
+      if (pinned.has(name)) {
+        console.log(`[snapshots] per-project warm: keeping ${name} (it is another project's ACTIVE pinned image)`);
+      }
+    }
+    if (targets.length === 0) return;
+    // A "superseded" name built minutes ago is very likely another live code
+    // version's CURRENT warm image (different runtime fingerprint → different
+    // base identity → different warm name for the SAME project+tip). Deleting
+    // it makes that runtime re-bake — and its reap symmetrically deletes OURS:
+    // an infinite loop of full image builds. Freshly-built names are skipped;
+    // once a name stops being rebuilt it ages out and is reaped normally.
+    const recent = await recentlyBuiltSnapshotNames(targets, PPWARM_REAP_PROTECT_MS);
+    for (const name of targets) {
+      if (recent.has(name)) {
+        console.log(`[snapshots] per-project warm: keeping ${name} (built recently — likely a live runtime's current tip)`);
+        continue;
+      }
+      await provider.deleteSnapshot(name);
+      console.log(`[snapshots] per-project warm: reaped superseded ${name}`);
+    }
+  } catch (err) {
+    console.warn(
+      `[snapshots] per-project warm: supersession reap skipped: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+}

@@ -1,0 +1,211 @@
+import { creditAccounts } from '@kortix/db';
+import { and, eq, isNull, lte, ne, or } from 'drizzle-orm';
+import { db } from '../../shared/db';
+
+export async function getCreditAccount(accountId: string) {
+  const [row] = await db
+    .select()
+    .from(creditAccounts)
+    .where(eq(creditAccounts.accountId, accountId))
+    .limit(1);
+
+  return row ?? null;
+}
+
+/** Whether the account has the self-serve enterprise demo toggled on. */
+export async function isDemoEnterprise(accountId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ demoEnterprise: creditAccounts.demoEnterprise })
+    .from(creditAccounts)
+    .where(eq(creditAccounts.accountId, accountId))
+    .limit(1);
+  return row?.demoEnterprise ?? false;
+}
+
+/**
+ * Flip the enterprise-demo flag. Upserts the credit row so a brand-new account
+ * (no billing row yet) can still preview the enterprise surface — all other
+ * columns fall back to their schema defaults (tier 'free', legacy billing, …).
+ */
+export async function setDemoEnterprise(accountId: string, enabled: boolean): Promise<void> {
+  await db
+    .insert(creditAccounts)
+    .values({ accountId, demoEnterprise: enabled })
+    .onConflictDoUpdate({
+      target: creditAccounts.accountId,
+      set: { demoEnterprise: enabled, updatedAt: new Date().toISOString() },
+    });
+}
+
+/** Whether the account is flagged as a contracted cloud Enterprise customer.
+ *  When true the account resolves all enterprise entitlements (SSO/SCIM/RBAC/
+ *  audit) regardless of its billing tier — decoupling feature entitlements
+ *  from the commercial billing model. Set by an operator when a contract is
+ *  signed. Distinct from the self-serve demo flag (`isDemoEnterprise`). */
+export async function isEnterpriseEntitled(accountId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ enterpriseEntitled: creditAccounts.enterpriseEntitled })
+    .from(creditAccounts)
+    .where(eq(creditAccounts.accountId, accountId))
+    .limit(1);
+  return row?.enterpriseEntitled ?? false;
+}
+
+/**
+ * Set the contracted-Enterprise entitlement flag. Upserts the credit row so a
+ * brand-new account (no billing row yet) can be flagged at sign-up — all other
+ * columns fall back to their schema defaults (tier 'free', legacy billing, …)
+ * and the Stripe webhook reconciliation will populate billing_model/tier/seat
+ * fields from the customer's subscription without clobbering this entitlement.
+ */
+export async function setEnterpriseEntitled(
+  accountId: string,
+  enabled: boolean,
+): Promise<void> {
+  await db
+    .insert(creditAccounts)
+    .values({ accountId, enterpriseEntitled: enabled })
+    .onConflictDoUpdate({
+      target: creditAccounts.accountId,
+      set: { enterpriseEntitled: enabled, updatedAt: new Date().toISOString() },
+    });
+}
+
+/**
+ * Set the operator managed-models override. null restores "the effective tier
+ * decides". Upserts so a brand-new account (no billing row yet) can be set.
+ */
+export async function setManagedModelsOverride(
+  accountId: string,
+  override: boolean | null,
+): Promise<void> {
+  await db
+    .insert(creditAccounts)
+    .values({ accountId, managedModelsOverride: override })
+    .onConflictDoUpdate({
+      target: creditAccounts.accountId,
+      set: { managedModelsOverride: override, updatedAt: new Date().toISOString() },
+    });
+}
+
+export async function getCreditBalance(accountId: string) {
+  const [row] = await db
+    .select({
+      balance: creditAccounts.balance,
+      expiringCredits: creditAccounts.expiringCredits,
+      nonExpiringCredits: creditAccounts.nonExpiringCredits,
+      dailyCreditsBalance: creditAccounts.dailyCreditsBalance,
+      tier: creditAccounts.tier,
+    })
+    .from(creditAccounts)
+    .where(eq(creditAccounts.accountId, accountId))
+    .limit(1);
+
+  return row ?? null;
+}
+
+export async function getSubscriptionInfo(accountId: string) {
+  const [row] = await db
+    .select({
+      tier: creditAccounts.tier,
+      provider: creditAccounts.provider,
+      planType: creditAccounts.planType,
+      stripeSubscriptionId: creditAccounts.stripeSubscriptionId,
+      stripeSubscriptionStatus: creditAccounts.stripeSubscriptionStatus,
+      trialStatus: creditAccounts.trialStatus,
+      trialEndsAt: creditAccounts.trialEndsAt,
+      trialStartedAt: creditAccounts.trialStartedAt,
+      trialTier: creditAccounts.trialTier,
+      trialSeats: creditAccounts.trialSeats,
+      managedModelsOverride: creditAccounts.managedModelsOverride,
+      commitmentType: creditAccounts.commitmentType,
+      commitmentEndDate: creditAccounts.commitmentEndDate,
+      scheduledTierChange: creditAccounts.scheduledTierChange,
+      scheduledTierChangeDate: creditAccounts.scheduledTierChangeDate,
+      scheduledPriceId: creditAccounts.scheduledPriceId,
+      billingCycleAnchor: creditAccounts.billingCycleAnchor,
+      nextCreditGrant: creditAccounts.nextCreditGrant,
+      lastDailyRefresh: creditAccounts.lastDailyRefresh,
+      paymentStatus: creditAccounts.paymentStatus,
+      revenuecatCustomerId: creditAccounts.revenuecatCustomerId,
+      revenuecatSubscriptionId: creditAccounts.revenuecatSubscriptionId,
+      revenuecatProductId: creditAccounts.revenuecatProductId,
+      revenuecatPendingChangeProduct: creditAccounts.revenuecatPendingChangeProduct,
+      revenuecatPendingChangeDate: creditAccounts.revenuecatPendingChangeDate,
+      revenuecatPendingChangeType: creditAccounts.revenuecatPendingChangeType,
+      revenuecatCancelledAt: creditAccounts.revenuecatCancelledAt,
+      revenuecatCancelAtPeriodEnd: creditAccounts.revenuecatCancelAtPeriodEnd,
+      // Billing v2 — per-seat fields surfaced for the account-state response.
+      billingModel: creditAccounts.billingModel,
+      seatCount: creditAccounts.seatCount,
+      seatSubscriptionItemId: creditAccounts.seatSubscriptionItemId,
+      autoTopupCustomized: creditAccounts.autoTopupCustomized,
+      // Operator-set per-account concurrent-session override (NULL = use tier).
+      maxConcurrentSessions: creditAccounts.maxConcurrentSessions,
+    })
+    .from(creditAccounts)
+    .where(eq(creditAccounts.accountId, accountId))
+    .limit(1);
+
+  return row ?? null;
+}
+
+export async function upsertCreditAccount(
+  accountId: string,
+  data: Partial<typeof creditAccounts.$inferInsert>,
+) {
+  const now = new Date().toISOString();
+
+  await db
+    .insert(creditAccounts)
+    .values({ accountId, ...data, createdAt: now, updatedAt: now })
+    .onConflictDoUpdate({
+      target: creditAccounts.accountId,
+      set: { ...data, updatedAt: now },
+    });
+}
+
+export async function updateCreditAccount(
+  accountId: string,
+  data: Partial<typeof creditAccounts.$inferInsert>,
+) {
+  await db
+    .update(creditAccounts)
+    .set({ ...data, updatedAt: new Date().toISOString() })
+    .where(eq(creditAccounts.accountId, accountId));
+}
+
+export async function getYearlyAccountsDueForRotation() {
+  const now = new Date().toISOString();
+
+  const rows = await db
+    .select()
+    .from(creditAccounts)
+    .where(
+      and(
+        eq(creditAccounts.planType, 'yearly'),
+        ne(creditAccounts.tier, 'free'),
+        eq(creditAccounts.stripeSubscriptionStatus, 'active'),
+        ne(creditAccounts.paymentStatus, 'past_due'),
+        or(isNull(creditAccounts.nextCreditGrant), lte(creditAccounts.nextCreditGrant, now)),
+      ),
+    );
+
+  return rows;
+}
+
+export async function getFreeAccountsDueForRotation() {
+  const now = new Date().toISOString();
+
+  const rows = await db
+    .select()
+    .from(creditAccounts)
+    .where(
+      and(
+        eq(creditAccounts.tier, 'free'),
+        or(isNull(creditAccounts.nextCreditGrant), lte(creditAccounts.nextCreditGrant, now)),
+      ),
+    );
+
+  return rows;
+}

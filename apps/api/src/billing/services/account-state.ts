@@ -1,0 +1,456 @@
+import { projectSessions, sandboxes } from '@kortix/db';
+import { AUTO_TOPUP_DEFAULT_AMOUNT, AUTO_TOPUP_DEFAULT_THRESHOLD } from '@kortix/shared';
+import { and, eq, inArray, sql } from 'drizzle-orm';
+import { config } from '../../config';
+import { effectiveTierForLimits, maxConcurrentSessionsForTier } from '../../shared/account-limits';
+import { db } from '../../shared/db';
+import { isPlatformAdmin } from '../../shared/platform-roles';
+import type { AccountStateResponse, CommitmentInfo, ScheduledChange } from '../../types';
+import { getCreditAccount } from '../repositories/credit-accounts';
+import { getAutoTopupSettings } from './auto-topup';
+import {
+  billingSnapshotFromAccount,
+  billingStateAllowsRun,
+  hasLiveSubscription,
+  resolveBillingState,
+} from './billing-state';
+import { getCreditSummary } from './credits';
+import { initializeFreeTierAccount } from './free-tier';
+import { countActiveMembers } from './seat-management';
+import {
+  PER_SEAT_PRICE_USD,
+  TYPICAL_COMPUTE_BUDGET_PER_SEAT_USD,
+  TYPICAL_LLM_BUDGET_PER_SEAT_USD,
+  canClaimPerSeat,
+  getDailyCreditConfig,
+  getTier,
+  getTierEntitlements,
+  isLegacyPaidTier,
+  isPaidTier,
+  isPerSeatAccount,
+} from './tiers';
+import { getAccountEntitlements } from './entitlements';
+import { currentPeriodStart, getUsageBreakdownThisPeriod } from './usage-breakdown';
+
+const ACTIVE_SESSION_STATUSES = ['queued', 'branching', 'provisioning', 'running'] as const;
+
+type CreditAccountRow = Awaited<ReturnType<typeof getCreditAccount>>;
+
+type InstanceSummary = AccountStateResponse['instances'][number] & {
+  stripe_subscription_id: string | null;
+  cancel_at_period_end: boolean;
+  cancel_at: string | null;
+};
+
+function metadataString(value: unknown): string | null {
+  return typeof value === 'string' ? value : null;
+}
+
+async function countActiveSessions(accountId: string): Promise<number> {
+  const [row] = await db
+    .select({ activeCount: sql<number>`count(*)::int` })
+    .from(projectSessions)
+    .where(
+      and(
+        eq(projectSessions.accountId, accountId),
+        inArray(projectSessions.status, [...ACTIVE_SESSION_STATUSES]),
+      ),
+    )
+    .limit(1);
+  return Number(row?.activeCount ?? 0);
+}
+
+export async function buildMinimalAccountState(accountId: string): Promise<AccountStateResponse> {
+  // Single source of truth for the credit_accounts row for this request.
+  // getCreditSummary / getAccountEntitlements / getAutoTopupSettings used to
+  // each independently re-fetch this identical row — now they take it as a
+  // param, cutting 4 reads of the same row down to 1. Request-scoped only, not
+  // cached across requests: this endpoint gates real spending, so it must
+  // always read the live balance.
+  let account = await getCreditAccount(accountId);
+  if (!account) {
+    await initializeFreeTierAccount(accountId);
+    account = await getCreditAccount(accountId);
+  }
+  const sub = account;
+
+  const tierName = sub ? (sub.tier ?? 'free') : 'none';
+  const tier = getTier(tierName);
+  const dailyConfig = getDailyCreditConfig(tierName);
+
+  const fetchInstances = async (): Promise<InstanceSummary[]> => {
+    try {
+      const sandboxRows = await db
+        .select()
+        .from(sandboxes)
+        .where(
+          and(
+            eq(sandboxes.accountId, accountId),
+            inArray(sandboxes.status, ['active', 'provisioning', 'stopped', 'error']),
+          ),
+        );
+
+      return sandboxRows.map((row) => {
+        const metadata = row.metadata as Record<string, unknown> | null;
+        const billingRow = row as typeof row & {
+          stripeSubscriptionId?: string | null;
+          cancelAtPeriodEnd?: boolean | null;
+          cancelAt?: string | null;
+        };
+        return {
+          sandbox_id: row.sandboxId,
+          external_id: row.externalId || null,
+          name: row.name,
+          provider: row.provider,
+          status: row.status,
+          server_type: metadataString(metadata?.serverType),
+          location: metadataString(metadata?.location),
+          error_message: metadataString(metadata?.errorMessage),
+          is_included: row.isIncluded ?? false,
+          stripe_subscription_id:
+            billingRow.stripeSubscriptionId || (metadata?.stripe_subscription_id as string) || null,
+          stripe_subscription_item_id: row.stripeSubscriptionItemId ?? null,
+          cancel_at_period_end: billingRow.cancelAtPeriodEnd || !!metadata?.cancel_at_period_end,
+          cancel_at: billingRow.cancelAt || (metadata?.cancel_at as string) || null,
+          created_at: row.createdAt.toISOString(),
+        };
+      });
+    } catch {
+      // DB may not be available in local mode
+      return [];
+    }
+  };
+
+  // All of these are independent of one another (each keyed only on accountId
+  // and/or the `account` row already fetched above) — run them concurrently
+  // instead of ~8 sequential round-trips.
+  const [credits, isAdmin, entitlements, autoTopup, instances, memberCount, usageThisPeriod, activeSessions] =
+    await Promise.all([
+      getCreditSummary(accountId, account),
+      isPlatformAdmin(accountId),
+      // Entitlements must honor the self-serve enterprise DEMO flag, not just the
+      // billing tier — otherwise flipping the demo on never surfaces the SSO/SCIM
+      // cards (the tier's static entitlements say sso:false). getAccountEntitlements
+      // applies the demo override.
+      getAccountEntitlements(accountId, account),
+      getAutoTopupSettings(accountId, account),
+      fetchInstances(),
+      countActiveMembers(accountId).catch(() => 1),
+      isPerSeatAccount(sub?.billingModel)
+        ? getUsageBreakdownThisPeriod(accountId, currentPeriodStart(sub?.billingCycleAnchor ?? null)).catch(() => null)
+        : Promise.resolve(null),
+      countActiveSessions(accountId).catch(() => 0),
+    ]);
+
+  let dailyRefresh = null;
+  if (dailyConfig) {
+    const lastRefresh = sub?.lastDailyRefresh ?? null;
+    const nextRefresh = lastRefresh
+      ? new Date(
+          new Date(lastRefresh).getTime() + dailyConfig.refreshIntervalHours * 3600000,
+        ).toISOString()
+      : null;
+    const secondsUntil = nextRefresh
+      ? Math.max(0, Math.floor((new Date(nextRefresh).getTime() - Date.now()) / 1000))
+      : null;
+
+    dailyRefresh = {
+      enabled: true,
+      daily_amount: dailyConfig.dailyAmount,
+      refresh_interval_hours: dailyConfig.refreshIntervalHours,
+      last_refresh: lastRefresh,
+      next_refresh_at: nextRefresh,
+      seconds_until_refresh: secondsUntil,
+    };
+  }
+
+  const isCancelled =
+    sub?.stripeSubscriptionStatus === 'canceled' || sub?.revenuecatCancelledAt != null;
+  const subscriptionStatus = getSubscriptionStatus(sub, tierName, isAdmin);
+  const subscriptionId =
+    sub?.provider === 'revenuecat'
+      ? (sub?.revenuecatSubscriptionId ?? sub?.revenuecatCustomerId ?? null)
+      : (sub?.stripeSubscriptionId ?? null);
+
+  const commitment = extractCommitment(sub);
+  const scheduledChange = extractScheduledChange(sub, tierName);
+
+  // Legacy paid users with no active machine can claim a free default computer
+  const hasActiveMachine = instances.some(
+    (i) => i.status === 'active' || i.status === 'provisioning',
+  );
+  const canClaimComputer = isLegacyPaidTier(tierName) && !hasActiveMachine;
+
+  // Only genuine legacy per-machine accounts (with a machine to move off of)
+  // should see the "Claim seat-based pricing" card — never new per-seat-era
+  // free users, whose claim would dead-end on "nothing to switch".
+  const canClaimPerSeatPricing = canClaimPerSeat({
+    billingModel: sub?.billingModel,
+    hasLegacyMachine: instances.length > 0,
+    commitmentType: sub?.commitmentType ?? null,
+    commitmentEndDate: sub?.commitmentEndDate ?? null,
+  });
+  const billingPeriod = (sub?.planType ??
+    null) as AccountStateResponse['subscription']['billing_period'];
+  const provider = (sub?.provider ?? 'stripe') as AccountStateResponse['subscription']['provider'];
+
+  // The SAME state machine the billing gate admits on (billing-state.ts).
+  // `credits.canRun` is a bare wallet-floor check and disagrees with the gate
+  // for an active per-seat subscription (which is not wallet-gated) — that
+  // divergence is what made the session page tell a paying Team account with a
+  // $0.0099 wallet "Your team isn't on a plan yet". can_run must answer the
+  // same question the gate answers, and `billing_state` says WHY.
+  const billingSnapshot = billingSnapshotFromAccount(sub);
+  const billingState = resolveBillingState(billingSnapshot);
+
+  const state = {
+    credits: {
+      total: credits.total,
+      daily: credits.daily,
+      monthly: credits.monthly,
+      extra: credits.extra,
+      can_run: isAdmin ? true : billingStateAllowsRun(billingState),
+      // Lifetime rollups, maintained from credit_ledger by the
+      // apply_credit_ledger_lifetime_rollup trigger (migration
+      // 20260729013905335). They read 0 on every account before that migration
+      // because nothing had incremented them since the Python -> TS rewrite —
+      // web and mobile both hardcoded 0 into their `credits` shape rather than
+      // reading a column that was always 0 anyway. Surfaced here so those
+      // surfaces show the real figures instead of a placeholder.
+      lifetime_granted: Number(sub?.lifetimeGranted ?? 0) || 0,
+      lifetime_purchased: Number(sub?.lifetimePurchased ?? 0) || 0,
+      lifetime_used: Number(sub?.lifetimeUsed ?? 0) || 0,
+      daily_refresh: dailyRefresh,
+    },
+    billing_state: isAdmin ? ('active' as const) : billingState,
+    has_active_subscription: hasLiveSubscription(billingSnapshot),
+    subscription: {
+      tier_key: tierName,
+      tier_display_name: isAdmin && tierName === 'none' ? 'Admin' : tier.displayName,
+      status: subscriptionStatus,
+      billing_period: billingPeriod,
+      provider,
+      subscription_id: subscriptionId,
+      current_period_end: null,
+      cancel_at_period_end: false,
+      is_cancelled: isCancelled,
+      cancellation_effective_date: null,
+      has_scheduled_change: scheduledChange !== null,
+      scheduled_change: scheduledChange,
+      commitment,
+      can_purchase_credits: isAdmin ? true : tier.canPurchaseCredits,
+    },
+    tier: {
+      name: tier.name,
+      display_name: isAdmin && tierName === 'none' ? 'Admin' : tier.displayName,
+      monthly_credits: tier.monthlyCredits,
+      can_purchase_credits: isAdmin ? true : tier.canPurchaseCredits,
+      entitlements,
+    },
+    enterprise_license_available: config.ENTERPRISE_LICENSE_AVAILABLE,
+    // Surface the per-account contracted-Enterprise flag so the admin console
+    // and the frontend can distinguish a real Enterprise contract (entitlements
+    // sourced from `enterprise_entitled`, independent of billing tier) from a
+    // self-serve demo or a self-host license. When true, the frontend hides
+    // the self-serve "Enterprise features — Demo" toggle (a real contract
+    // supersedes the demo) and the admin console shows the contract state.
+    enterprise_entitled: !!sub?.enterpriseEntitled,
+    models: [],
+    auto_topup: autoTopup,
+    instances,
+    can_add_instances: isAdmin || isPaidTier(tierName),
+    can_claim_computer: canClaimComputer,
+    can_claim_per_seat: canClaimPerSeatPricing,
+    billing_model: (isPerSeatAccount(sub?.billingModel) ? 'per_seat' : 'legacy') as
+      | 'per_seat'
+      | 'legacy',
+    // Live member count = the seat quantity a per-seat subscribe bills for now
+    // (matches createPerSeatCheckoutSession). Drives the modal's projected total.
+    member_count: memberCount,
+    seats: isPerSeatAccount(sub?.billingModel)
+      ? {
+          count: sub?.seatCount ?? 1,
+          price_per_seat_usd: PER_SEAT_PRICE_USD,
+          typical_compute_budget_per_seat_usd: TYPICAL_COMPUTE_BUDGET_PER_SEAT_USD,
+          typical_llm_budget_per_seat_usd: TYPICAL_LLM_BUDGET_PER_SEAT_USD,
+        }
+      : undefined,
+    usage_this_period: isPerSeatAccount(sub?.billingModel) ? usageThisPeriod : null,
+    limits: {
+      concurrent_sessions: {
+        active: activeSessions,
+        // Per-account override (credit_accounts.max_concurrent_sessions) wins
+        // over the tier limit — mirrors resolveAccountSessionLimit, reusing the
+        // `sub` row already fetched above instead of a second read.
+        limit:
+          typeof sub?.maxConcurrentSessions === 'number' && sub.maxConcurrentSessions > 0
+            ? Math.floor(sub.maxConcurrentSessions)
+            : // Same tier the SERVER will enforce, not the raw column.
+              // resolveAccountSessionLimit coerces a paying per-seat account
+              // whose stored tier is stale to 'per_seat' (shared/account-limits.ts)
+              // so bad tier data cannot gate a paying team as free. Reading the
+              // raw column here meant the dashboard showed such an account the
+              // FREE ceiling while the server admitted the per-seat one — two
+              // independent derivations of one number.
+              maxConcurrentSessionsForTier(effectiveTierForLimits(tierName, sub)),
+      },
+    },
+  };
+
+  return state;
+}
+
+export async function buildAccountState(accountId: string): Promise<AccountStateResponse> {
+  return buildMinimalAccountState(accountId);
+}
+
+/**
+ * Returns account state when there is no database (no-DB local mode).
+ * No fake numbers — just `can_run: true` so nothing blocks the user.
+ */
+export function buildLocalAccountState(): AccountStateResponse {
+  return {
+    credits: {
+      total: 0,
+      daily: 0,
+      monthly: 0,
+      extra: 0,
+      can_run: true,
+      lifetime_granted: 0,
+      lifetime_purchased: 0,
+      lifetime_used: 0,
+      daily_refresh: null,
+    },
+    billing_state: 'active',
+    has_active_subscription: false,
+    subscription: {
+      tier_key: 'free',
+      tier_display_name: 'Free',
+      status: 'active',
+      billing_period: null,
+      provider: 'stripe',
+      subscription_id: null,
+      current_period_end: null,
+      cancel_at_period_end: false,
+      is_cancelled: false,
+      cancellation_effective_date: null,
+      has_scheduled_change: false,
+      scheduled_change: null,
+      commitment: {
+        has_commitment: false,
+        can_cancel: true,
+        commitment_type: null,
+        months_remaining: null,
+        commitment_end_date: null,
+      },
+      can_purchase_credits: false,
+    },
+    tier: {
+      name: 'free',
+      display_name: 'Free',
+      monthly_credits: 0,
+      can_purchase_credits: false,
+      entitlements: getTierEntitlements('free'),
+    },
+    enterprise_license_available: config.ENTERPRISE_LICENSE_AVAILABLE,
+    // No-DB local mode has no credit_accounts row, so the contracted-Enterprise
+    // flag is false by construction (fail-closed).
+    enterprise_entitled: false,
+    models: [],
+    auto_topup: {
+      enabled: false,
+      threshold: AUTO_TOPUP_DEFAULT_THRESHOLD,
+      amount: AUTO_TOPUP_DEFAULT_AMOUNT,
+    },
+    instances: [],
+    can_add_instances: false,
+    can_claim_computer: false,
+    can_claim_per_seat: false,
+    billing_model: 'legacy',
+    member_count: 1,
+  };
+}
+
+function extractCommitment(sub: CreditAccountRow): CommitmentInfo {
+  if (!sub?.commitmentType || !sub.commitmentEndDate) {
+    return {
+      has_commitment: false,
+      can_cancel: true,
+      commitment_type: null,
+      months_remaining: null,
+      commitment_end_date: null,
+    };
+  }
+
+  const endDate = new Date(sub.commitmentEndDate);
+  const now = new Date();
+  const monthsRemaining = Math.max(
+    0,
+    Math.ceil((endDate.getTime() - now.getTime()) / (30 * 86400000)),
+  );
+  const canCancel = endDate <= now;
+
+  return {
+    has_commitment: true,
+    can_cancel: canCancel,
+    commitment_type: sub.commitmentType,
+    months_remaining: monthsRemaining,
+    commitment_end_date: sub.commitmentEndDate,
+  };
+}
+
+function getSubscriptionStatus(
+  sub: CreditAccountRow,
+  tierName: string,
+  isAdmin: boolean,
+): string {
+  if (isAdmin && tierName === 'none') return 'active';
+  if (!sub) return tierName === 'free' ? 'active' : 'no_subscription';
+  if (sub.provider === 'revenuecat') {
+    if (sub.revenuecatCancelledAt) return 'canceled';
+    if (tierName === 'free') return 'no_subscription';
+    if (sub.paymentStatus === 'past_due') return 'past_due';
+    return 'active';
+  }
+
+  return sub.stripeSubscriptionStatus ?? (tierName === 'free' ? 'active' : 'no_subscription');
+}
+
+function extractScheduledChange(
+  sub: CreditAccountRow,
+  currentTierName: string,
+): ScheduledChange | null {
+  if (sub?.scheduledTierChange && sub.scheduledTierChangeDate) {
+    const current = getTier(currentTierName);
+    const target = getTier(sub.scheduledTierChange);
+    return {
+      type: 'downgrade',
+      current_tier: {
+        name: current.name,
+        display_name: current.displayName,
+        monthly_credits: current.monthlyCredits,
+      },
+      target_tier: {
+        name: target.name,
+        display_name: target.displayName,
+        monthly_credits: target.monthlyCredits,
+      },
+      effective_date: sub.scheduledTierChangeDate,
+    };
+  }
+
+  if (sub?.revenuecatPendingChangeProduct && sub.revenuecatPendingChangeDate) {
+    const current = getTier(currentTierName);
+    return {
+      type: 'downgrade',
+      current_tier: { name: current.name, display_name: current.displayName },
+      target_tier: {
+        name: sub.revenuecatPendingChangeProduct,
+        display_name: sub.revenuecatPendingChangeProduct,
+      },
+      effective_date: sub.revenuecatPendingChangeDate,
+    };
+  }
+
+  return null;
+}

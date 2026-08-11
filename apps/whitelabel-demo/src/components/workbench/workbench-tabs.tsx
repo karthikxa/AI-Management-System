@@ -1,0 +1,318 @@
+'use client';
+
+import Loading from '@/components/ui/loading';
+
+import { AgentPicker } from '@/components/chat/agent-picker';
+import { Composer } from '@/components/chat/composer';
+import { MessageView } from '@/components/chat/message-view';
+import { ModelPicker } from '@/components/chat/model-picker';
+import { PermissionPrompt } from '@/components/chat/permission-prompt';
+import { ScopeBar } from '@/components/chat/scope-bar';
+import { QuestionPrompt } from '@/components/chat/question-prompt';
+import { Bubble, BubbleContent } from '@/components/ui/bubble';
+import { Button } from '@/components/ui/button';
+import { Marker, MarkerContent, MarkerIcon } from '@/components/ui/marker';
+import { Message } from '@/components/ui/message';
+import { NewSessionDialog } from '@/components/new-session-dialog';
+import { SessionScope } from '@/components/workbench/session-scope';
+import { agentSwitchRefusal } from '@/lib/mid-session-change';
+import { sendFailureTitle } from '@/lib/send-failure';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ChangesPanel } from '@/components/workbench/changes-panel';
+import { FilesPanel } from '@/components/workbench/files-panel';
+import { PreviewPanel } from '@/components/workbench/preview-panel';
+import { kortix } from '@/lib/kortix';
+import { qk } from '@/lib/query-keys';
+import { cn } from '@/lib/utils';
+import type { UseSessionResult } from '@kortix/sdk/react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle, Plus, RotateCw, Sparkles } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+
+/** The workbench tabs: Chat + the SDK-powered Files / Changes / Preview panels. */
+export function WorkbenchTabs({
+  session,
+  projectId,
+  sessionId,
+}: {
+  session: UseSessionResult;
+  projectId: string;
+  sessionId: string;
+}) {
+  return (
+    <Tabs defaultValue="chat" className="flex min-h-0 flex-1 flex-col gap-0">
+      <div className="px-5 pt-3.5">
+        <TabsList>
+          {(['chat', 'files', 'changes', 'preview', 'scope'] as const).map((v) => (
+            <TabsTrigger key={v} value={v} className="px-3.5 capitalize">
+              {v}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </div>
+      <TabsContent
+        value="chat"
+        className="flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
+      >
+        <Thread session={session} />
+      </TabsContent>
+      <TabsContent value="files" className="min-h-0 flex-1 overflow-hidden p-4">
+        <FilesPanel projectId={projectId} />
+      </TabsContent>
+      {/* What this session can still change. Shown as a first-class tab rather
+          than a settings footnote: 'can I switch the agent / secrets now?' is a
+          question people ask mid-session, and the answers genuinely differ. */}
+      <TabsContent value="scope" className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="mx-auto max-w-xl">
+          <h2 className="text-sm font-medium">What this session can change</h2>
+          <p className="mb-3 mt-0.5 text-xs text-muted-foreground">
+            Overrides are set when a session starts. These are the ones you can still move.
+          </p>
+          <SessionScope projectId={projectId} sessionId={sessionId} />
+        </div>
+      </TabsContent>
+      <TabsContent value="changes" className="min-h-0 flex-1 overflow-hidden p-4">
+        <ChangesPanel projectId={projectId} sessionId={sessionId} />
+      </TabsContent>
+      <TabsContent value="preview" className="min-h-0 flex-1 overflow-hidden p-4">
+        <PreviewPanel projectId={projectId} sessionId={sessionId} />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+/**
+ * The chat thread. Reads everything off the single `useSession` result — messages,
+ * optimistic send, interactive prompts, the model/agent picks, and the runtime
+ * phase. No second chat hook, provider-session resolver, or infrastructure wiring.
+ */
+function Thread({ session: c }: { session: UseSessionResult }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+  }, [c.messages, c.isBusy, c.hasPending]);
+
+  // ── Runtime recovery ──────────────────────────────────────────────────────
+  // Sandboxes idle-stop (and die) in the real world. Rather than silently
+  // disabling the composer (so Enter "does nothing"), surface the state and
+  // recover: restart() wakes the box and re-arms useSession's /start poll.
+  const qc = useQueryClient();
+  const restart = useMutation({
+    mutationFn: () => kortix.session(c.projectId, c.sessionId).restart(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: qk.sessionStart(c.projectId, c.sessionId) });
+      toast.success('Reconnecting the runtime…');
+    },
+    onError: () => toast.error('Could not reconnect the runtime'),
+  });
+
+  // A send refused because the message named an agent this session cannot run.
+  // It arrives as an ordinary runtime error, so it has to be recognised before
+  // the generic failure panel swallows the one refusal with a real remedy.
+  const agentSwitch = agentSwitchRefusal(c.sendError);
+
+  const runtimeReady = c.runtimePhase === 'ready';
+  // "Down" = was connected, now confirmed unreachable (a drop, not the initial boot).
+  const runtimeDown = c.switched && c.runtimePhase === 'unreachable';
+
+  // Auto-reconnect ONCE per down-episode. The ref guard prevents a restart loop
+  // on a box that can't recover; the flag resets when the runtime comes back, so
+  // a later drop is retried again.
+  const autoTriedRef = useRef(false);
+  useEffect(() => {
+    if (!runtimeDown) {
+      autoTriedRef.current = false;
+      return;
+    }
+    if (autoTriedRef.current || restart.isPending) return;
+    autoTriedRef.current = true;
+    restart.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runtimeDown]);
+
+  // Stall watchdog: if the agent is "working" but nothing has streamed for a
+  // while, the run likely lost its runtime — surface it instead of an endless
+  // spinner. Any new message/part or a busy-state change resets the timer.
+  const [stalled, setStalled] = useState(false);
+  const lastActivityRef = useRef(Date.now());
+  useEffect(() => {
+    lastActivityRef.current = Date.now();
+    setStalled(false);
+  }, [c.messages, c.isBusy, c.hasPending]);
+  useEffect(() => {
+    if (!c.isBusy) {
+      setStalled(false);
+      return;
+    }
+    const id = setInterval(() => {
+      if (Date.now() - lastActivityRef.current > 60_000) setStalled(true);
+    }, 5_000);
+    return () => clearInterval(id);
+  }, [c.isBusy]);
+
+  return (
+    <>
+      <div ref={scrollRef} className="scroll-fade flex-1 overflow-y-auto scrollbar-thin">
+        <div className="mx-auto max-w-3xl space-y-4 px-5 py-6">
+          {c.isLoading && (
+            <div className="flex items-center gap-2.5 py-10 text-sm text-muted-foreground">
+              <Loading className="size-4" /> Loading conversation…
+            </div>
+          )}
+          {!c.isLoading && c.messages.length === 0 && !c.hasPending && !c.pending && (
+            <div className="grid place-items-center py-16 text-center">
+              <Sparkles className="size-6 text-muted-foreground" />
+              <p className="mt-3 text-sm text-muted-foreground">
+                Send a message to get the agent working.
+              </p>
+            </div>
+          )}
+
+          {c.messages.map((m) => (
+            <MessageView key={m.info.id} message={m} />
+          ))}
+
+          {c.pending && (
+            <Message align="end">
+              <Bubble variant="secondary" align="end" className="opacity-70">
+                <BubbleContent>{c.pending}</BubbleContent>
+              </Bubble>
+            </Message>
+          )}
+
+          {c.permissions.map((p) => (
+            <PermissionPrompt
+              key={(p as { id: string }).id}
+              request={p}
+              onAnswer={c.answerPermission}
+            />
+          ))}
+          {c.questions.map((q) => (
+            <QuestionPrompt
+              key={(q as { id: string }).id}
+              request={q}
+              onAnswer={c.answerQuestion}
+              onCancel={c.cancel}
+            />
+          ))}
+
+          {c.isBusy && !c.hasPending && (
+            <Marker className="py-1">
+              <MarkerIcon>
+                <Loading />
+              </MarkerIcon>
+              <MarkerContent className="shimmer text-sm">
+                {c.pending ? 'Sending…' : 'Agent is working…'}
+              </MarkerContent>
+            </Marker>
+          )}
+        </div>
+      </div>
+
+      <div className="shrink-0 px-5 pb-5">
+        <div className="mx-auto max-w-3xl">
+          {runtimeDown ? (
+            <div className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5">
+              <div className="flex items-center gap-2 text-xs text-amber-200">
+                <AlertTriangle className="size-3.5 shrink-0" />
+                {restart.isPending
+                  ? 'Reconnecting the runtime…'
+                  : 'The runtime stopped. Reconnect to keep chatting.'}
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-7 gap-1.5"
+                onClick={() => restart.mutate()}
+                disabled={restart.isPending}
+              >
+                {restart.isPending ? (
+                  <Loading className="size-3.5" />
+                ) : (
+                  <RotateCw className="size-3.5" />
+                )}
+                Restart
+              </Button>
+            </div>
+          ) : !runtimeReady ? (
+            <p className="mb-2 text-center text-xs text-muted-foreground">
+              Connecting to the runtime…
+            </p>
+          ) : stalled && c.isBusy ? (
+            <div className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 px-3.5 py-2.5">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <AlertTriangle className="size-3.5 shrink-0" />
+                The agent has gone quiet — it may have lost its runtime.
+              </div>
+              <Button size="sm" variant="secondary" className="h-7 gap-1.5" onClick={c.cancel}>
+                Stop
+              </Button>
+            </div>
+          ) : null}
+          {/* A rejected send used to be SILENT: the optimistic bubble vanished,
+              the typed text was gone, and nothing said why. useSession surfaces
+              a typed sendError — read it, and name the KaaB refusals the
+              generic message would otherwise swallow. */}
+          {agentSwitch ? (
+            // Operators can opt into an immutable secret-grant boundary. When
+            // they do, retrying the same switch cannot succeed in this session.
+            <div className="mx-4 mb-2 rounded-lg border border-brand/40 bg-brand/5 px-3 py-2.5">
+              <div className="text-sm font-medium">
+                {agentSwitch.requestedAgent
+                  ? `${agentSwitch.requestedAgent} needs its own session`
+                  : 'That agent needs its own session'}
+              </div>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {agentSwitch.expectedAgent
+                  ? `This session is running as ${agentSwitch.expectedAgent}, and the two have different secret access. Start a new session to use it.`
+                  : 'It has different secret access than the agent this session started with. Start a new session to use it.'}
+              </p>
+              <div className="mt-2">
+                <NewSessionDialog
+                  projectId={c.projectId}
+                  initialAgent={agentSwitch.requestedAgent}
+                  trigger={
+                    <Button size="sm" variant="secondary" className="h-7 gap-1.5">
+                      <Plus className="size-3.5" /> Start a new session
+                    </Button>
+                  }
+                />
+              </div>
+            </div>
+          ) : c.sendError ? (
+            <div className="mx-4 mb-2 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm">
+              <div className="font-medium">{sendFailureTitle(c.sendError)}</div>
+              <p className="mt-0.5 text-xs text-muted-foreground">{c.sendError.message}</p>
+            </div>
+          ) : null}
+          <Composer
+            onSend={c.send}
+            onStop={c.cancel}
+            busy={c.isBusy}
+            disabled={!runtimeReady}
+            placeholder={
+              runtimeReady ? 'Message the agent…  (/ for commands)' : 'Waiting for the runtime…'
+            }
+            commands={c.commands}
+            onCommand={c.runCommand}
+            footer={<ScopeBar projectId={c.projectId} sessionId={c.sessionId} />}
+            toolbar={
+              <div className="flex items-center gap-0.5">
+                <ModelPicker models={c.models} value={c.picks.model} onChange={c.picks.setModel} />
+                <AgentPicker
+                  agents={c.agents}
+                  value={c.picks.agent}
+                  onChange={c.picks.setAgent}
+                  defaultName={c.defaultAgent}
+                />
+              </div>
+            }
+          />
+        </div>
+      </div>
+    </>
+  );
+}

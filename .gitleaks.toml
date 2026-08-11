@@ -1,0 +1,56 @@
+# gitleaks config — consumed by .github/workflows/secret-scan.yml (gitleaks 8.x
+# auto-detects .gitleaks.toml at the repo root).
+#
+# We keep ALL the default gitleaks rules (the array of provider patterns), and
+# only add a narrow allowlist so the dotenvx-ENCRYPTED apps/api/.env does not
+# trip the generic high-entropy rule. Its values are AES ciphertext
+# (`encrypted:…`) and a public key — neither is a usable secret.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "dotenvx-encrypted apps/api profiles (AES ciphertext + non-secret DOTENV_PUBLIC_KEY)"
+# Scope the exception to the encrypted profile files only — a plaintext secret
+# committed anywhere else still fails the scan.
+paths = [
+  '''apps/api/\.env$''',
+  '''apps/api/\.env\.dev$''',
+  '''apps/api/\.env\.prod$''',
+  '''apps/web/\.env$''',
+  '''apps/web/\.env\.dev$''',
+  '''apps/web/\.env\.prod$''',
+]
+
+[[allowlists]]
+description = "False-positive i18n content keys in the marketing security accordion (apps/web/src/features/marketing/security/content.ts). The generic-api-key rule matched on field names ending in 'Key' (titleKey/teaserKey/bodyKey/badgeKey) whose VALUES are i18n message keys like 'enterpriseAccordionSoc2Teaser' — not secrets. The fields were later renamed (teaser/body/badge), but the PR scan walks commit history so the original commit still trips."
+# condition=AND => a finding is exempt only if it is BOTH in this file AND the
+# matched value looks like an enterprise* i18n key. A real random-entropy secret
+# committed to this same file would still fail the scan.
+condition = "AND"
+paths = [
+  '''apps/web/src/features/marketing/security/content\.ts$''',
+]
+regexes = [
+  '''enterprise[A-Za-z0-9]+''',
+]
+
+[[allowlists]]
+description = "False-positive UUID defaults in the local Slack auth fixture seeder. These are deterministic local fixture IDs, not credentials. Keep the exception scoped to the script and the two literal UUIDs so any real secret still fails."
+condition = "AND"
+paths = [
+  '''apps/api/scripts/slack-auth-fixtures\.ts$''',
+]
+regexes = [
+  '''95788432-f5df-4ffe-af9e-0ed4e03cf96e''',
+  '''b4a01f33-d46c-4a96-8a1d-0a265e48978f''',
+]
+
+[[allowlists]]
+description = "Historical false-positive: an earlier commit in this branch used a fake ghp_-shaped sentinel in the warm-repo credential-removal test (since replaced with a non-secret marker). gitleaks scans PR history, so this scoped allowlist keeps that one old commit from tripping the scan. Not a real token."
+condition = "AND"
+paths = [
+  '''apps/api/src/snapshots/warm-repo-credential\.test\.ts$''',
+]
+regexes = [
+  '''ghp_PHASE1CredentialSentinel0+''',
+]

@@ -1,0 +1,63 @@
+import { supabase } from './supabase';
+import { ENV_MODE, EnvMode } from '@/lib/utils/env-config';
+import { resolveLocalUrl } from '@/lib/utils/resolve-local-url';
+import { log } from '@/lib/logger';
+import { inferFrontendUrl } from './frontend-url';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8008/v1';
+
+const FRONTEND_URL = process.env.EXPO_PUBLIC_FRONTEND_URL || '';
+
+export function getServerUrl(): string {
+  const url = resolveLocalUrl(BACKEND_URL);
+  log.log('📡 Using backend URL:', url);
+  return url;
+}
+
+/**
+ * Get the frontend URL based on environment
+ * Used for auth redirects, sharing links, etc.
+ *
+ * Priority:
+ * 1. EXPO_PUBLIC_FRONTEND_URL if set (explicit override)
+ * 2. Infer from backend URL (if backend is production, frontend should be too)
+ * 3. Environment-based defaults (staging by default for Expo apps)
+ */
+export function getFrontendUrl(): string {
+  // If explicitly set, use that
+  if (FRONTEND_URL) {
+    return FRONTEND_URL.replace(/\/$/, ''); // Remove trailing slash
+  }
+
+  // Infer from backend URL - if backend is production, frontend should be too
+  const inferredFrontendUrl = inferFrontendUrl(BACKEND_URL);
+  if (inferredFrontendUrl) return inferredFrontendUrl;
+
+  // Fall back to environment-based defaults
+  switch (ENV_MODE) {
+    case EnvMode.PRODUCTION:
+      return 'https://kortix.com';
+    case EnvMode.STAGING:
+      return 'https://staging.kortix.com';
+    case EnvMode.LOCAL:
+    default:
+      return 'http://localhost:3000';
+  }
+}
+
+export const API_URL = getServerUrl();
+export const FRONTEND_SHARE_URL = getFrontendUrl();
+
+export async function getAuthToken(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token || null;
+}
+
+export async function getAuthHeaders(): Promise<HeadersInit> {
+  const token = await getAuthToken();
+  
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}

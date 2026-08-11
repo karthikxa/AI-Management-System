@@ -1,0 +1,246 @@
+'use client';
+
+import { Badge } from '@/components/ui/badge';
+import { Field, FieldContent, FieldDescription, FieldTitle } from '@/components/ui/field';
+import { Switch } from '@/components/ui/switch';
+import { WallpaperBackground } from '@/components/ui/wallpaper-background';
+import { Monitor } from '@/features/icon/icons/monitor';
+import { Moon } from '@/features/icon/icons/moon';
+import { Sun } from '@/features/icon/icons/sun';
+import { track } from '@/lib/track';
+import { cn } from '@/lib/utils';
+import { DEFAULT_WALLPAPER_ID, WALLPAPERS, type Wallpaper } from '@/lib/wallpapers';
+import { useUserPreferencesStore } from '@/stores/user-preferences-store';
+import { CheckCircleIcon as CheckCircleSolid } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
+import { useTheme } from 'next-themes';
+import * as React from 'react';
+
+function WallpaperCard({
+  wallpaper,
+  thumbSrc,
+  isActive,
+  onSelect,
+}: {
+  wallpaper: Wallpaper;
+  /** Pre-rendered preview image — shader wallpapers never run a live canvas in the picker */
+  thumbSrc?: string;
+  isActive: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="group relative cursor-pointer rounded-md text-left"
+    >
+      <div
+        className={cn(
+          'bg-background relative isolate aspect-video w-full overflow-hidden rounded-md border transition-colors duration-200',
+          isActive ? 'border-primary/40' : 'border-border group-hover:border-border/80',
+        )}
+      >
+        <div className="absolute inset-0" aria-hidden="true">
+          {thumbSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={thumbSrc}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover select-none"
+              loading="lazy"
+              draggable={false}
+            />
+          ) : (
+            <WallpaperBackground wallpaperId={wallpaper.id} preview />
+          )}
+        </div>
+
+        <div
+          className={cn(
+            'pointer-events-none absolute inset-0 transition-colors duration-200',
+            isActive ? 'bg-transparent' : 'group-hover:bg-foreground/[0.06] bg-transparent',
+          )}
+        />
+
+        {isActive && (
+          <div className="absolute top-2.5 right-2.5">
+            <CheckCircleSolid weight="fill" className="size-4" />
+          </div>
+        )}
+      </div>
+      <div className="px-1.5 py-1">
+        <span className="text-foreground flex items-center gap-1 text-xs font-medium">
+          {wallpaper.name}
+          {wallpaper.id === DEFAULT_WALLPAPER_ID && (
+            <Badge size="sm" variant="secondary">
+              Default
+            </Badge>
+          )}
+        </span>
+      </div>
+    </button>
+  );
+}
+
+export function AppearanceTab() {
+  const tI18nHardcoded = useTranslations('hardcodedUi');
+  const tHardcodedUi = useTranslations('hardcodedUi');
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const wallpaperId = useUserPreferencesStore(
+    (s) => s.preferences.wallpaperId ?? DEFAULT_WALLPAPER_ID,
+  );
+  const setWallpaperId = useUserPreferencesStore((s) => s.setWallpaperId);
+  const disableTabSelector = useUserPreferencesStore(
+    (s) => s.preferences.disableTabSelector ?? false,
+  );
+  const setDisableTabSelector = useUserPreferencesStore((s) => s.setDisableTabSelector);
+  const panelMode = useUserPreferencesStore((s) => s.preferences.panelMode ?? 'easy');
+  const setPanelMode = useUserPreferencesStore((s) => s.setPanelMode);
+  const [mounted, setMounted] = React.useState(false);
+  const isSessionTabsEnabled = !disableTabSelector;
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isLight = mounted && resolvedTheme === 'light';
+
+  // Users may have a wallpaper persisted that no longer exists — reset it.
+  React.useEffect(() => {
+    if (!WALLPAPERS.some((w) => w.id === wallpaperId)) {
+      setWallpaperId(DEFAULT_WALLPAPER_ID);
+    }
+  }, [wallpaperId, setWallpaperId]);
+
+  return (
+    <div className="scrollbar-hide w-full max-w-full min-w-0 space-y-6 overflow-x-hidden px-6 py-5">
+      <div className="flex flex-col space-y-2">
+        <label className="text-muted-foreground text-sm font-medium">
+          {tHardcodedUi.raw('componentsSettingsAppearanceTab.line127JsxTextColorMode')}
+        </label>
+        <div className="bg-foreground/10 shadow-custom flex w-fit items-center gap-1 rounded-sm p-0.5">
+          <button
+            aria-label={tI18nHardcoded.raw(
+              'autoFeaturesAccountsSettingsAppearanceTabJsxAttrAriaLabelLightf3e8a707',
+            )}
+            className="[&amp;&gt;svg]:size-4 text-foreground inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2 transition-colors duration-150 ease-out"
+            style={{ backgroundColor: theme === 'light' ? 'var(--background)' : 'transparent' }}
+            type="button"
+            onClick={() => setTheme('light')}
+          >
+            <Sun />
+            <span className="text-sm font-medium">Light</span>
+          </button>
+          <button
+            aria-label={tI18nHardcoded.raw(
+              'autoFeaturesAccountsSettingsAppearanceTabJsxAttrAriaLabelDark294ccd51',
+            )}
+            className="[&amp;&gt;svg]:size-4 hover:text-foreground text-foreground inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2 transition-colors duration-150 ease-out"
+            type="button"
+            style={{ backgroundColor: theme === 'dark' ? 'var(--background)' : 'transparent' }}
+            onClick={() => setTheme('dark')}
+          >
+            <Moon />
+            <span className="text-sm font-medium">Dark</span>
+          </button>
+          <button
+            aria-label={tI18nHardcoded.raw(
+              'autoFeaturesAccountsSettingsAppearanceTabJsxAttrAriaLabelSystem89196afd',
+            )}
+            className="[&amp;&gt;svg]:size-4 hover:text-foreground text-foreground inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2 transition-colors duration-150 ease-out"
+            type="button"
+            style={{ backgroundColor: theme === 'system' ? 'var(--background)' : 'transparent' }}
+            onClick={() => setTheme('system')}
+          >
+            <Monitor />
+            <span className="text-sm font-medium">System</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col space-y-2">
+        <label className="text-muted-foreground text-sm font-medium">Wallpaper</label>
+        <div className="grid w-full grid-cols-3 gap-2">
+          {WALLPAPERS.map((wp) => (
+            <WallpaperCard
+              key={wp.id}
+              wallpaper={wp}
+              thumbSrc={wp.thumbs ? (isLight ? wp.thumbs.light : wp.thumbs.dark) : undefined}
+              isActive={wallpaperId === wp.id}
+              onSelect={() => setWallpaperId(wp.id)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col space-y-2">
+        <label className="text-muted-foreground text-sm font-medium">Session panel</label>
+        <div
+          role="radiogroup"
+          aria-label="Session panel mode"
+          className="bg-foreground/10 shadow-custom flex w-fit items-center gap-1 rounded-sm p-0.5"
+        >
+          <button
+            type="button"
+            role="radio"
+            aria-checked={panelMode === 'easy'}
+            aria-label="Easy mode"
+            className="text-foreground inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-3 transition-colors duration-150 ease-out"
+            style={{ backgroundColor: panelMode === 'easy' ? 'var(--background)' : 'transparent' }}
+            onClick={() => {
+              if (panelMode !== 'easy') track('panel_mode_switched', { to: 'easy' });
+              setPanelMode('easy');
+            }}
+          >
+            <span className="text-sm font-medium">Easy</span>
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={panelMode === 'advanced'}
+            aria-label="Advanced mode"
+            className="text-foreground inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-3 transition-colors duration-150 ease-out"
+            style={{
+              backgroundColor: panelMode === 'advanced' ? 'var(--background)' : 'transparent',
+            }}
+            onClick={() => {
+              if (panelMode !== 'advanced') track('panel_mode_switched', { to: 'advanced' });
+              setPanelMode('advanced');
+            }}
+          >
+            <span className="text-sm font-medium">Advanced</span>
+          </button>
+        </div>
+        <p className="text-muted-foreground text-xs">
+          {panelMode === 'easy'
+            ? "Explains what's happening step by step, in plain language. Click any step for more detail."
+            : 'Shows every action the agent takes, with full detail and step-by-step navigation.'}
+        </p>
+      </div>
+
+      <div className="flex flex-col space-y-2">
+        <label className="text-muted-foreground text-sm font-medium">Layout</label>
+        <Field orientation="horizontal">
+          <FieldContent
+            className="cursor-pointer"
+            onClick={() => setDisableTabSelector(isSessionTabsEnabled)}
+          >
+            <FieldTitle id="session-tabs-title">
+              {tHardcodedUi.raw('componentsSettingsAppearanceTab.line180JsxTextSessionTabs')}
+            </FieldTitle>
+            <FieldDescription>
+              {tHardcodedUi.raw(
+                'componentsSettingsAppearanceTab.line182JsxTextShowATabBarAtTheTopOf',
+              )}
+            </FieldDescription>
+          </FieldContent>
+          <Switch
+            id="session-tabs-switch"
+            checked={isSessionTabsEnabled}
+            onCheckedChange={(v) => setDisableTabSelector(!v)}
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}

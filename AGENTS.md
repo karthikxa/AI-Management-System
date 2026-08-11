@@ -1,0 +1,420 @@
+# Kortix project
+
+## Linear tracking
+
+Capability-page work uses Team `Jay`, project `customize`, and the milestone that
+matches the active phase. Search before creating issues. Move the active issue to
+`In Progress` before editing. Mark it `Done` only after the change is merged,
+deployed to dev, and verified there.
+
+## What "ownership" means
+
+The words "can you own this?", "are you on it?", and "can you take care of this?"
+all mean the same thing: you are 100% responsible. The person who handed it to
+you must be able to walk completely away, come back a week later, and find it
+done properly — because you cared about every edge and corner.
+
+- it's not done if it's not implemented
+- it's not done if the implementation is ugly
+- it's not done if it's not documented
+- it's not done if users can't discover it
+- it's not done if you can't market it
+
+Owning something means owning it end to end. The whole arc from "we have a
+problem" to "nobody has to think about this again." Not just the code change in
+the middle, the whole thing. If someone hands you something and still has to
+track whether it actually got solved, you didn't own it.
+
+Here's what that actually looks like in practice.
+
+**Start with the problem, not the solution.** A lot of the time you'll already
+have a fix in your head before you've understood what's broken. "We need to move
+from X to Y" isn't a problem, that's a solution you've pre-committed to. The real
+problem is probably "it's slow", "it's flaky", "it breaks for this customer".
+Name that first. Then ask what else could solve it, what the tradeoffs are, and
+which option actually wins.
+
+**Then pressure-test it before you build:**
+
+- **Edge cases.** Which exist, which matter, which we can safely ignore.
+- **Failures.** Networks fail, that's a given. Retry? How many times, for how
+  long?
+- **Data.** How much, does it need migrating or cleaning, how do you get real
+  data to test against, and what are you assuming about its shape that you
+  haven't actually verified?
+- **Testing.** How will you know it's correct? Are automated tests enough or do
+  you need to poke at it by hand? Is the result something you can see in a
+  screenshot or a video?
+- **The bigger picture.** How does this get announced, how does it fit the
+  roadmap, can you even picture it shipped? If something there bothers you, push
+  back. Ask.
+
+**Then actually do it**, with precision, care, urgency and calm all at once. No
+half-assing. The bar before you merge: am I proud of this? Would I put it in
+front of Steve Jobs and walk him through what I built, the constraints, the
+tradeoffs?
+
+**And then prove it works.** Not "the tests pass", prove it. In 99% of cases you
+can confirm it yourself: run it, ask an agent to walk through the scenarios, poke
+at the data before and after, take a screenshot, make a demo. Are you actually
+sure it solves the problem you started with?
+
+**Then make sure it lands in production and works in production**, which is not
+the same as merged. Did it deploy? Did the deploy quietly fail? Is there a flag
+to flip, and does the flag work? Can you use the thing in prod right now and
+confirm it's really there?
+
+**And then close the loop with everyone it touches:**
+
+- **The team.** If it's a new feature, a new convention, or a tricky thing people
+  should know about, tell them. Don't underestimate peripheral vision. You
+  knowing that someone changed Z yesterday can save someone else three hours of
+  debugging tomorrow when a bug report about Z comes in.
+- **Customers.** Whoever reported it, whoever's blocked, let them know it's
+  fixed.
+- **The world.** If it's worth announcing, announce it.
+- **Future you.** Are there follow-ups? Should you check the logs in a week to
+  make sure it's still healthy?
+
+But that's how we build a product in a small team. We don't have PMs, we don't
+have a QA department. We're small, but we're great, and we can do all of that.
+
+And it's always okay to ask for help, it's okay to ask questions, it's okay to
+redo things and triple-check. What's not okay is to quietly assume someone else
+will catch the parts you didn't think about.
+
+### The bar: autonomy, agency, ownership
+
+This is what I require from the agent I work with. In my own words:
+
+Either you are performing or you are not. Either you are taking on high
+ownership, are high agency and pushing without me having to micromanage you, or
+you are not.
+
+Especially in today's age you are limited by great talent more than ever. Because
+we can all AGI Max, you have a single chokepoint on good judgement.
+
+Every person that comes on the team has to have the capability to truly own
+something. If you have built products, you develop ownership because you owned
+something — whether it worked out or not — for a prolonged amount of time. You
+develop true agency.
+
+I hire you because I expect that if I am able to walk out of the room after
+giving you a high level thing and come back, it's going to be done good, ideally
+better than I would've done it.
+
+Most people are shit at their jobs, some are decent/good, but only people who are
+exceptional should be at Kortix.
+
+Being exceptional on paper is simple — it's a combination of Ownership, Agency
+and actual Merit/Skill. It's hard, because you have to not only be very smart but
+also crazy driven to push like a motherfucker and want to feel every edge and
+corner to make sure the output is good.
+
+## How to communicate: precise, technically accurate, no fluff
+
+Write every response — chat, PR text, commit messages, code comments, docs — in
+the spirit of **ASD-STE100 (Simplified Technical English)**. The goal is maximum
+technical precision with zero filler. Apply these rules:
+
+- **State facts, not vibes.** Every claim is specific and verifiable: name the
+  file, function, route, flag, SHA, status code, or number. No "should work",
+  "probably", "a bunch of", "various", "seems fine" — say what is true and how you
+  know, or say you do not know it yet.
+- **One idea per sentence.** Keep sentences short (aim ≤ 20 words) and each one
+  carries a single instruction or fact. Split compound thoughts instead of
+  chaining clauses.
+- **Active voice, present tense, direct.** "The gate rejects the request",
+  not "the request may end up being rejected". Give the instruction; do not
+  soften it.
+- **One term per concept.** Use the same word for the same thing every time —
+  do not alternate "session"/"run"/"task" for one concept. Match the codebase's
+  existing names exactly (`session_id`, not "session ID / run id").
+- **No filler, no hedging, no praise.** Cut "basically", "just", "simply",
+  "I think", "great question", "as we know", and marketing adjectives. Lead with
+  the answer; drop the throat-clearing.
+- **Quantify.** Prefer exact values over adjectives: "up to ~9 min", "returns
+  `402`", "3 of 7 flows", not "slow", "an error", "most".
+- **Show the evidence.** When you assert a behavior, cite the command you ran and
+  the real output. Distinguish verified fact from assumption explicitly.
+- **Structure over prose.** Use numbered/bulleted lists for steps, findings, and
+  status. Reserve paragraphs for genuine explanation, and keep them tight.
+- **Say the unknown plainly.** If something is unverified, blocked, or risky,
+  state it in one line — what, why, and what would resolve it — instead of
+  burying or omitting it.
+
+This standard governs how you talk. It does not override the technical rules
+below; it is how you report on them.
+
+## First, at session start: where do you work?
+
+Before starting any non-trivial change, **ask the user which environment to work
+in** — don't assume. Three choices:
+
+1. **A new isolated worktree** (`pnpm worktree`) — the default for any feature,
+   bugfix, refactor, or experiment beyond a one-line edit. Own branch, own port
+   block, own `node_modules`, own tunnel; runs in parallel without touching the
+   primary web/API stack. By default it reuses the primary checkout's standard
+   local Supabase DB for fast setup and consistent auth. Provision non-blocking with
+   `pnpm worktree create --name <feat> --yes --no-start`, then do all edits/runs
+   under the sibling checkout `../suna-<feat>`. If the change needs database
+   migrations, destructive data work, schema drift, or independent auth/storage
+   state, opt into the full isolated data plane with
+   `pnpm worktree create --name <feat> --db --yes --no-start`. See the
+   **worktree** skill.
+2. **Straight in this primary checkout** via `pnpm dev` (web `3000` / api `8008`)
+   — on `main` or whatever branch is already checked out here. Simplest; fine
+   for small or quick iterative work where isolation isn't needed.
+3. **An existing worktree** — list them with `git worktree list` and work in the
+   one the user names.
+
+Carve-outs where you don't need to ask — just proceed: read-only
+investigation/questions, and trivial single-file typo/comment fixes on the
+current branch.
+
+## Default delivery: PR, merge to main, then prove it on dev
+
+Unless the user explicitly asks for a different delivery path, complete every
+non-trivial change through this full lifecycle:
+
+1. Work on a dedicated branch in an isolated worktree and keep the commit scoped
+   to that change.
+2. Run the relevant local unit, type, integration, and end-to-end checks with
+   real inputs and outputs.
+3. Push the branch, open a PR against `main`, wait for required checks, and merge
+   it. Do not leave finished work only on a branch or stop after opening the PR.
+4. Follow the resulting **Deploy Dev** workflow through completion. Confirm the
+   deployed artifact contains the merged SHA; a successful `/health` response
+   alone is not deployment proof. If a newer push cancels or supersedes the run,
+   verify its path filters still rebuild every affected artifact. Manually
+   dispatch the workflow when necessary to avoid a skipped component.
+5. Re-run the user-visible behavior against `https://dev.kortix.com` and/or
+   `https://dev-api.kortix.com`. Prefer the real Kortix CLI configured for the
+   dev API for CLI/project/session flows, and direct authenticated HTTP calls for
+   API contracts. For web behavior, drive the deployed UI and assert its network
+   request plus visible result.
+
+Local verification and dev verification are both required. A local pass does
+not replace the deployed check, and a dev smoke test does not replace focused
+local tests. Record the PR, merge SHA, deploy run, deployed SHA evidence, and
+exact dev command or interaction in the final response.
+
+## Architecture: `@kortix/sdk` is the source of truth
+
+`@kortix/sdk` is the **single source of truth** for everything that talks to the
+Kortix backend — projects, accounts, sessions, files, secrets, triggers, the
+session runtime, OpenCode REST compatibility, SSE streaming, model state,
+and auth-token plumbing. The apps
+(`apps/web`, `apps/whitelabel-demo`, `apps/mobile`) are **thin consumers**. Treat
+these as standing rules whenever you touch the data/runtime layer:
+
+> **Editing `packages/sdk` itself? Read `packages/sdk/PROGRESS.md` (current state,
+> claim your task) and `packages/sdk/AGENTS.md` (the rules) first.** It is a
+> **published npm package** with its own hard rules that have no analogue
+> elsewhere in this repo: **TDD is mandatory** (failing test first — invoke the
+> `tdd` skill — and every turn ends with the gates run, the real output pasted,
+> and an explicit shippable YES/NO/NOT YET); exported names (including *types*)
+> are a public API contract and renaming one is a breaking change; the `version`
+> field is inert and must never be bumped by hand; adding an export requires
+> three synchronized edits; and the framework-free core is enforced by a static
+> import-graph tripwire.
+
+- **Logic lives in the SDK, never in a host.** No raw `fetch` to the Kortix API,
+  no `@opencode-ai/sdk` imports, no transport / runtime / data-state code written
+  in app code. New data or runtime behavior is added to the SDK and exposed
+  through its public surface — not hand-rolled or duplicated in a host. If you
+  need something the SDK doesn't expose, add it to the SDK.
+- **One client per host.** Create it once via `createKortix({ backendUrl,
+  getToken })` and read everything through `@kortix/sdk` + `@kortix/sdk/react`.
+  Auth is just `getToken` — an API key / PAT for programmatic use, or a Supabase
+  JWT for the logged-in web app. Hosts never instantiate a second client.
+- **A whole session is one hook.** `useSession(projectId, sessionId)` owns the
+  entire runtime lifecycle — `/start`, the sandbox switch, the live SSE stream,
+  readiness seeding, immutable runtime identity, the native conversation id,
+  and message sync. Hosts don't
+  hand-roll the mount, drive a server-store "switch", or mount a separate event
+  provider.
+- **Session-scoped + provider-agnostic.** The public API is session-scoped
+  (`kortix.session(pid, sid).health() / .previewUrl() / .restart() / …`).
+  The sandbox provider is a server-side concern. Every session uses the
+  OpenCode REST runtime. Host code must not implement a second transport.
+- **`apps/web` data modules are shims.** Files such as
+  `apps/web/src/stores/server-store`, `lib/projects-client`, and
+  `hooks/opencode/use-*` are thin re-exports (`export * from '@kortix/sdk/...'`).
+  Keep them as shims; put the real logic in the SDK. When a merge conflict lands
+  on one of these, **keep the shim (`--ours`) and port any new host-side logic
+  into the SDK** — do not revert to a host-local implementation.
+- **Docs are the spec.** `apps/web/content/docs/sdk/*` and
+  `packages/sdk/README.md` describe the intended surface. Keep them current with
+  the SDK, and flag legacy/deprecated surfaces in-doc rather than documenting them
+  as current.
+
+## You CAN run and verify everything end-to-end. Do it.
+
+This repo ships a **complete, runnable local stack with live cloud sandboxes**.
+Do not claim you "can't verify from here" or hand back unverified work — you
+have everything needed to run the app, hit the real API, provision real
+Daytona sandboxes, drive the real UI in a browser, and assert behavior. Use it.
+
+### Required verification standard — real inputs, real outputs
+
+For every behavior change, assume **100% autonomy** to verify the user-visible
+contract before handing the work back. Do not stop at typechecks, unit tests, or
+mocked internals when a real surface exists.
+
+- **API changes:** exercise the actual HTTP route with real request payloads
+  (`curl`, `bun fetch`, or the `ke2e` runner against a running API). Assert the
+  status code and exact response fields that prove the behavior. For writes,
+  also assert the persisted/read-back state or resulting repo/file output.
+- **CLI changes:** run the real CLI command as a process from bash, with the
+  same flags and stdin a user or agent would use. Assert exit code, stdout,
+  stderr, and any files/API calls/commits it should create. Do not rely only on
+  importing command functions.
+- **Web changes:** drive the real page in Chromium/Playwright/chrome-devtools.
+  Click/type/toggle the actual controls, intercept or observe the network
+  request, and assert the visible UI state plus the outgoing payload. Screenshots
+  are useful evidence, but assertions on DOM and network data are required.
+- **Cross-surface features:** verify each exposed surface independently. If the
+  same feature ships on API + CLI + web + mobile, each gets its own black-box
+  assertion for the inputs users can make and the outputs they receive.
+- **Default/negative paths count:** when changing defaults or removing implicit
+  behavior, assert both the new default and the explicit opt-in/alternate path.
+- **No silent gaps:** if a surface cannot be fully exercised in the current
+  turn, say exactly which input/output remains unverified and why. Otherwise
+  keep going until the real surface is verified.
+- **Final response format:** when work is finished, answer per the **How to
+  communicate** standard at the top of this file — numbered/bulleted, no fluff.
+  Include exactly what changed, what was verified (with the command + output),
+  what remains unverified or risky, and what the user should test next. Do not
+  bury the actionable testing path in a paragraph.
+
+### The stack (already wired)
+- **Web** — Next.js dev server on `http://localhost:3000`.
+- **API** — Bun server on `http://localhost:8008/v1` (`/health` returns JSON).
+- **Supabase** — local, on `http://127.0.0.1:54321` (Docker).
+- **Sandboxes** — REAL cloud sandboxes on the enabled provider (Daytona,
+  Platinum, or E2B; credentials in `apps/api/.env` / `.env.local`). Each project
+  session gets its own sandbox; `session_id == sandbox_id`. The sandbox daemon is
+  reached through `http://localhost:8008/v1/p/<external_id>/8000/...`.
+  OpenCode REST uses the compatibility proxy.
+- **Tunnel** — `scripts/dev-local.sh` (`pnpm dev`) auto-starts a cloudflared
+  quick tunnel so cloud sandboxes can call back to the local API (`KORTIX_URL`).
+
+Bring it up with `pnpm dev` from `suna/` (it loads `apps/api/.env` +
+`apps/web/.env`, starts Supabase, the API, the web app, and the tunnel). Check
+what's already running before starting a duplicate: `curl -s
+localhost:8008/v1/health`, `lsof -iTCP:3000 -sTCP:LISTEN`.
+
+> **Secrets are dotenvx-encrypted (mandatory).** `apps/api/.env` (+ `.env.dev`)
+> are committed as ciphertext (`KEY=encrypted:…`); keys live in Dotenv Armor.
+> **Never write a plaintext secret into a tracked file or commit** — add/change
+> values only via `dotenvx set KEY value -f apps/api/.env` (then commit), read
+> with `dotenvx get`, and machine-local overrides go in the gitignored
+> `apps/api/.env.local`. If the user pastes a key, store it with `dotenvx set`,
+> never paste it raw. A pre-commit hook + GitHub push protection enforce this —
+> don't bypass them. Full procedure: the **dotenvx-secrets** skill.
+
+### Authenticating to the live API (for scripts/tests)
+Mint a real JWT against local Supabase, then call the API with it:
+1. `SUPABASE_SERVICE_ROLE_KEY` lives in `apps/api/.env`; the anon key
+   (`NEXT_PUBLIC_SUPABASE_ANON_KEY`) in `apps/web/.env`.
+2. Create a confirmed user: `POST 127.0.0.1:54321/auth/v1/admin/users`
+   (`apikey` + `Authorization: Bearer <service_role>`, body
+   `{email,password,email_confirm:true}`).
+3. Password-grant for the token: `POST
+   127.0.0.1:54321/auth/v1/token?grant_type=password` (`apikey: <anon>`).
+4. Call the API: `Authorization: Bearer <access_token>` against
+   `localhost:8008/v1` (e.g. `/accounts`, `/projects/provision`,
+   `/projects/:id/sessions`, `/p/<ext>/8000/...`).
+
+See `tests/e2e/helpers/auth.ts` for the exact calls.
+
+### End-to-end harnesses
+- `pnpm --filter @kortix/tests test:e2e` — Playwright UI specs.
+- `pnpm --filter @kortix/tests test:e2e:gate5:local` — local Gate 5 verifier.
+- `pnpm --filter @kortix/tests test:e2e:gate5:target` — target Gate 5 rehearsal.
+- `tests/README.md` indexes the current E2E and Gate 5 harnesses.
+
+### End-to-end tests — `ke2e` (the canonical API suite + source of truth)
+- `suna/tests/` is the **one** black-box REST e2e suite (`ke2e` runner). It hits
+  a **live deployed API** over HTTP (`staging-api.kortix.com` / `dev-api.kortix.com` / local / prod) with
+  **real services** — no mocking. Every test maps 1:1 to a flow ID in
+  `tests/spec/end-to-end.md`; a coverage gate checks that mapping against the
+  authoritative route manifest (`tests/spec/routes.generated.json`).
+- **WIP — NOT yet enforced.** ke2e is still being built out (most flows aren't
+  written yet) and does **not** gate PRs, promotes, or deploys right now. The
+  intended end-state is test-as-source-of-truth (touch an API contract → update
+  `tests/spec/end-to-end.md` + add/adjust the flow + keep `ke2e coverage` green),
+  but treat that as aspirational guidance until the suite is complete and turned on.
+  See the `ke2e-tests` skill for how it works.
+- Run: `cd tests && bun bin/ke2e.ts run --domain system,access` (public, no creds);
+  auth'd domains need `KE2E_OWNER_EMAIL/PASSWORD` + `KE2E_LIVE_CONFIRM=1`. Open
+  `test-results/<runId>/report.html` for every request/response.
+- Regenerate the route manifest after adding/removing routes:
+  `bun run apps/api/scripts/dump-routes.ts`.
+- Provisioning is slow (snapshot build up to ~9 min, sandbox up to ~5 min) —
+  flows that boot sandboxes have generous timeouts; run long checks in the background.
+
+### Release topology — dev, staging, prod
+- **`main` = dev trunk.** It is the repo default branch and deploys to
+  `dev.kortix.com` / `dev-api.kortix.com`. Direct pushes are allowed; breaking or
+  incomplete development can live here while it is being shaken out.
+- **`staging` = release-candidate branch.** Nothing should land on staging unless
+  it is intended to be production-ready. Human/code changes enter staging by PR:
+  `main` -> `staging` for the full dev candidate, or a targeted branch ->
+  `staging` for a selective release candidate. Staging deploys to
+  `staging.kortix.com` / `staging-api.kortix.com` and must use the staging data
+  plane, not dev or prod.
+- Staging deploys must apply pending DB migrations against `STAGING_DATABASE_URL`
+  before the staging EKS rollout. If that secret is missing or points at dev/prod,
+  treat the deploy as broken; staging must never fall back to dev, KE2E, or prod DBs.
+- **`prod` = production.** Production moves only through **Promote to Production**,
+  which uses `staging` as the source, opens a reviewed release PR into `prod`,
+  publishes the release artifacts, and rolls production after merge.
+- If `qa-staging` or a staging runtime check points at `dev.kortix.com` or
+  `dev-api.kortix.com`, treat that as a broken staging setup, not a passing
+  staging gate.
+
+### Driving the real UI (chrome-devtools MCP)
+- Routes are auth-gated (`/dashboard`, `/projects/*` → redirect to `/auth`
+  unauthenticated); sign in first (seed a user as above, then log in via the
+  `/auth` form, or inject the Supabase session).
+- The MCP uses a dedicated Chrome profile at
+  `~/.cache/chrome-devtools-mcp/chrome-profile` (separate from your normal
+  browser). If launch fails with "browser is already running for … profile",
+  kill the orphaned Chrome using that profile and remove
+  `chrome-profile/Singleton{Lock,Cookie,Socket}`, then retry.
+- Next.js dev compiles routes on first hit — first navigation to a cold route
+  can take 30–60s; warm it with `curl` or use a generous navigation timeout.
+
+### Frontend type/lint gate
+- `apps/web` `tsc --noEmit` is clean apart from ~15 known `@types/bun`
+  `test.each` errors in 3 test files (`app/(system)/api/og/template/template-url.test.ts`,
+  `features/file-viewer/preview-fit.test.tsx`,
+  `features/session/action-panel/easy/easy-panel-logic.test.ts`).
+  The old ~1500 `TS2786` / `IntrinsicAttributes` noise from a React 19↔18
+  types mismatch (two copies of `@types/react` in one program — `packages/sdk`
+  had its own) is gone as of the Next 16 upgrade. If `TS2786` appears again,
+  treat it as a genuine duplicate-`@types/react` regression and investigate —
+  do not wave it through.
+- `npx eslint <files>` should be clean of errors. `eslint .` across the whole
+  app currently reports ~455 warnings, mostly `react-hooks/*` React Compiler
+  rules pending a dedicated audit — expected until that audit lands.
+
+### Frontend design standard — Jay/Kortix bar
+
+When touching any visual surface in `apps/web`, treat brand fit as a release
+gate, not polish:
+
+- Read `.claude/skills/kortix-design-system/SKILL.md` first and compose existing
+  primitives from `@/components/ui/*` before inventing local chrome.
+- Match the current Jay Suthar / Kortix product aesthetic: calm neutral surfaces,
+  dense-but-legible UI, black/white plus one earned accent, token-driven spacing,
+  and no decorative color, glow, or one-off rounded boxes.
+- Use recent product surfaces as references before editing: `/design-system`,
+  `apps/web/src/features/co-worker/project-layout/project-home.tsx`,
+  `apps/web/src/components/ui/wallpaper-background.tsx`, and the account/IAM
+  screens called out by the design-system skill.
+- Verify visual work in the browser and include the exact lint/typecheck commands
+  you ran in the PR. If it does not look native beside Jay-authored UI, keep
+  iterating before shipping.

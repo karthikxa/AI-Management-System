@@ -1,0 +1,264 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { InfoBanner } from '@/components/ui/info-banner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useTransactions } from '@/hooks/billing/use-transactions';
+import { isBillingEnabled } from '@/lib/config';
+import { cn } from '@/lib/utils';
+import { formatCredits, formatCreditsWithSign } from '@kortix/shared';
+import { CoinsIcon as Coins, ArrowClockwiseIcon as RefreshCw } from '@phosphor-icons/react';
+import { useState } from 'react';
+
+interface Props {
+  accountId?: string;
+}
+
+export default function CreditTransactions({ accountId }: Props) {
+  const tHardcodedUi = useTranslations('hardcodedUi');
+  const [offset, setOffset] = useState(0);
+  const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);
+  const limit = 50;
+  const billingActive = isBillingEnabled();
+
+  // Billing disabled on this deployment (e.g. self-host with
+  // KORTIX_BILLING_INTERNAL_ENABLED=false): there is no credit ledger to show.
+  // Skip the fetch entirely — the endpoint 404s "Billing is not enabled" and
+  // that raw error has no business reaching the UI — and render a friendly
+  // "not available" state instead.
+  const { data, isLoading, error, refetch } = useTransactions(limit, offset, typeFilter, {
+    enabled: billingActive,
+  });
+
+  if (!billingActive) {
+    return (
+      <div className="border-border text-muted-foreground flex flex-col items-center gap-2 rounded-md border border-dashed px-4 py-10 text-center text-sm">
+        <Coins className="text-muted-foreground/50 size-5" />
+        <p>Credits and billing are not available on this instance.</p>
+      </div>
+    );
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getTransactionBadge = (type: string) => {
+    const badges: Record<string, { label: string; variant: any }> = {
+      tier_grant: { label: 'Tier Grant', variant: 'default' },
+      free_tier_grant: { label: 'Tier Grant', variant: 'secondary' },
+      purchase: { label: 'Purchase', variant: 'default' },
+      auto_topup: { label: 'Auto Top-up', variant: 'default' },
+      machine_bonus: { label: 'Machine Bonus', variant: 'secondary' },
+      admin_grant: { label: 'Admin Grant', variant: 'secondary' },
+      promotional: { label: 'Promotional', variant: 'secondary' },
+      daily_refresh: { label: 'Daily Refresh', variant: 'secondary' },
+      usage: { label: 'Usage', variant: 'outline' },
+      llm_debit: { label: 'LLM', variant: 'outline' },
+      token_deduction: { label: 'LLM', variant: 'outline' },
+      token_overage: { label: 'LLM Overage', variant: 'outline' },
+      compute_debit: { label: 'Sandbox', variant: 'outline' },
+      compute_refund: { label: 'Sandbox Refund', variant: 'secondary' },
+      refund: { label: 'Refund', variant: 'secondary' },
+      adjustment: { label: 'Adjustment', variant: 'outline' },
+      expired: { label: 'Expired', variant: 'destructive' },
+    };
+
+    const badge = badges[type] || { label: type, variant: 'outline' };
+    return (
+      <Badge variant={badge.variant as any} size="sm">
+        {badge.label}
+      </Badge>
+    );
+  };
+
+  const handlePrevPage = () => {
+    setOffset(Math.max(0, offset - limit));
+  };
+
+  const handleNextPage = () => {
+    if (data?.pagination.has_more) {
+      setOffset(offset + limit);
+    }
+  };
+
+  if (isLoading && offset === 0) {
+    return (
+      <div className="space-y-2">
+        {[...Array(5)].map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full rounded-md" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <InfoBanner tone="destructive" title="Failed to load transactions">
+        {error.message || 'Failed to load transactions'}
+      </InfoBanner>
+    );
+  }
+
+  const transactions = data?.transactions || [];
+
+  return (
+    <div className="space-y-4">
+      {/* Filter */}
+      <div className="flex items-center gap-2">
+        <Select
+          value={typeFilter ?? 'all'}
+          onValueChange={(v) => {
+            setTypeFilter(v === 'all' ? undefined : v);
+            setOffset(0);
+          }}
+        >
+          <SelectTrigger className="h-9 w-[160px]">
+            <SelectValue
+              placeholder={tHardcodedUi.raw(
+                'componentsBillingCreditTransactions.line159JsxAttrPlaceholderAllTypes',
+              )}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">
+              {tHardcodedUi.raw('componentsBillingCreditTransactions.line162JsxTextAllTypes')}
+            </SelectItem>
+            <SelectItem value="tier_grant">
+              {tHardcodedUi.raw('componentsBillingCreditTransactions.line163JsxTextTierGrant')}
+            </SelectItem>
+            <SelectItem value="purchase">Purchase</SelectItem>
+            <SelectItem value="auto_topup">
+              {tHardcodedUi.raw('componentsBillingCreditTransactions.line165JsxTextAutoTopUp')}
+            </SelectItem>
+            <SelectItem value="machine_bonus">
+              {tHardcodedUi.raw('componentsBillingCreditTransactions.line166JsxTextMachineBonus')}
+            </SelectItem>
+            <SelectItem value="daily_refresh">
+              {tHardcodedUi.raw('componentsBillingCreditTransactions.line167JsxTextDailyRefresh')}
+            </SelectItem>
+            <SelectItem value="admin_grant">
+              {tHardcodedUi.raw('componentsBillingCreditTransactions.line168JsxTextAdminGrant')}
+            </SelectItem>
+            <SelectItem value="usage">Usage</SelectItem>
+            <SelectItem value="refund">Refund</SelectItem>
+            <SelectItem value="expired">Expired</SelectItem>
+            <SelectItem value="adjustment">Adjustment</SelectItem>
+            <SelectItem value="promotional">Promotional</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button variant="ghost" size="icon" aria-label="Refresh" onClick={() => refetch()}>
+          <RefreshCw className="size-4" />
+        </Button>
+      </div>
+
+      {transactions.length === 0 ? (
+        <p className="text-muted-foreground px-3 py-8 text-center text-sm">
+          {typeFilter ? `No ${typeFilter} transactions found.` : 'No transactions found.'}
+        </p>
+      ) : (
+        <>
+          <div className="bg-popover overflow-hidden rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[180px]">Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="text-center">
+                    {tHardcodedUi.raw(
+                      'componentsBillingCreditTransactions.line198JsxTextCreditType',
+                    )}
+                  </TableHead>
+                  <TableHead className="text-right">Credits</TableHead>
+                  <TableHead className="text-right">
+                    {tHardcodedUi.raw(
+                      'componentsBillingCreditTransactions.line200JsxTextCreditsAfter',
+                    )}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transactions.map((tx) => (
+                  <TableRow key={tx.id}>
+                    <TableCell className="font-mono text-xs">{formatDate(tx.created_at)}</TableCell>
+                    <TableCell>{getTransactionBadge(tx.type)}</TableCell>
+                    <TableCell className="text-sm">{tx.description || 'No description'}</TableCell>
+                    <TableCell className="text-center">
+                      {tx.is_expiring !== undefined && (
+                        <span className="text-muted-foreground text-xs">
+                          {tx.is_expiring ? 'Expiring' : 'Permanent'}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell
+                      className={cn(
+                        'text-right font-mono font-medium tabular-nums',
+                        tx.amount >= 0 ? 'text-kortix-green' : 'text-kortix-red',
+                      )}
+                    >
+                      {formatCreditsWithSign(tx.amount, { showDecimals: true })}
+                    </TableCell>
+                    <TableCell className="text-right font-mono tabular-nums">
+                      {formatCredits(tx.balance_after, { showDecimals: true })}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          {data?.pagination && (
+            <div className="flex items-center justify-between">
+              <p className="text-muted-foreground text-xs tabular-nums">
+                Showing {offset + 1}-{Math.min(offset + limit, data.pagination.total)} of{' '}
+                {data.pagination.total} transactions
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrevPage}
+                  disabled={offset === 0}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={!data.pagination.has_more}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}

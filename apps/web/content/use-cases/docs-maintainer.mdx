@@ -1,0 +1,145 @@
+---
+title: "How we keep our docs in sync with the code"
+description: The docs agent we run on Kortix — connected to GitHub and our codebase. Once a day it checks the code that landed since its last run and updates the docs those changes affected, opening a PR for review.
+date: "2026-07-05"
+author: team
+tags:
+  - Documentation
+  - Case Study
+  - Engineering
+template: docs-maintainer
+---
+
+Documentation tends to fall behind the code. The README, the setup guide, the
+API reference, and architecture notes drift a release or two back while the code
+keeps changing. The person who changes the code is usually not the person who
+owns the page it affects, so the two rarely get updated together. A renamed
+environment variable, a new setup step, or a removed endpoint is a small code
+change and a docs change that often goes unmade.
+
+We handle this by running a docs sweep close to when the code changes: once a
+day, over everything that merged since the last run. This writes up how we run
+that on Kortix — the connections, the steps, and the guardrails — so you can set
+up the same thing for your own repo.
+
+<KeyFacts>
+  <Fact label="Team">Kortix</Fact>
+  <Fact label="Source of truth">The codebase</Fact>
+  <Fact label="Connected systems">GitHub · Codebase · Docs site</Fact>
+  <Fact label="Mode">Daily sweep · PR-gated</Fact>
+</KeyFacts>
+
+## The problem
+
+The common fixes each have limits. "Docs are part of the PR" tends to get cut
+under deadline. A scheduled audit finds drift late and in bulk, when
+reconstructing what changed is hardest. And a generic AI writer pointed at the
+docs produces prose that doesn't match the code, because it never reads the code.
+
+We wanted the docs we already have to stay accurate to the code, updated on each
+merge rather than in periodic cleanups.
+
+## What we built
+
+On Kortix, a docs agent runs once a day in the same persistent session — a
+cloud sandbox — with scoped access to what a docs update needs: the commits
+that landed since its last run, the codebase for context, and the docs. It
+picks up from a checkpoint it kept from the previous run, determines what
+changed, rewrites the affected pages, and opens a single docs PR for review.
+Nothing publishes without a human merge.
+
+## How it works
+
+<Steps>
+<Step title="Connect GitHub as the trigger">
+
+A **cron trigger** fires once a day and resumes the same persistent
+**session** rather than spinning up a new one per merge. The session reads a
+checkpoint left by the previous run, then pulls every commit that landed on
+the default branch since that checkpoint — however many merges that turns out
+to be. Each affected doc page is handled as its own unit of work, so a problem
+with one page never blocks the rest of the sweep. One sweep, one PR, and the
+checkpoint advances at the end whether or not anything changed.
+
+</Step>
+<Step title="Give the agent the codebase and the docs standard">
+
+Our writing conventions are stored as **skills** and **memory** that load into
+every session: how the docs are structured, the terminology we use, which page
+covers which subject, and fixes that worked before. The agent writes to that
+standard rather than inventing one, and it updates as docs PRs get merged.
+
+</Step>
+<Step title="Connect what a docs update can touch">
+
+Through scoped **connectors**, brokered server-side so no raw token reaches the
+model, the agent can:
+
+- **Read the diff and the codebase** — it sees what changed, then reads the
+  surrounding code to understand intent, not just the delta.
+- **Search the docs** — it finds every page, README, and reference section that
+  mentions the changed behavior.
+- **Open a PR on GitHub** — the rewritten docs come back as a reviewable pull
+  request, linked to the change that prompted it.
+
+</Step>
+<Step title="Set the guardrails">
+
+The agent never pushes to a branch anyone reads from: every change lands as a
+**pull request** gated on a human merge. It edits only files under the docs and
+README paths; the code itself is read-only to it. Credentials are encrypted in
+the secrets manager and injected at runtime, scoped to the agents you grant them to or written
+to logs.
+
+</Step>
+<Step title="Let each merge update the affected docs">
+
+With that in place, each day's sweep triages what changed since the last
+checkpoint, finds the pages that drifted, rewrites them to match, and opens a
+docs PR with its reasoning attached. A renamed env var becomes an update to the
+setup guide. A new endpoint becomes a reference entry drafted from the actual
+handler. A removed feature becomes a PR that strips the stale section.
+
+</Step>
+</Steps>
+
+<Callout title="The pattern" tone="accent">
+  Connect the repo via a **trigger** on merge, give the agent scoped
+  **connectors** into the diff, the codebase, and the docs, encode the writing
+  standard as **skills** and **memory**, and gate every change behind a reviewed
+  **PR**.
+</Callout>
+
+## Guardrails
+
+Giving an agent write access to documentation is a trust question. The relevant
+controls on Kortix:
+
+- **Isolation.** The daily sweep runs in its own isolated sandbox, resuming the
+  same session across runs via a durable checkpoint rather than persisting the
+  raw repo state. The session can read the whole repo to understand a change,
+  and only the docs PR it opens is written back out.
+- **Scoped secrets.** The GitHub credential is encrypted in the secrets manager,
+  injected into the sandbox at runtime, and scoped to the agents you grant it to.
+- **PR-gated.** No change reaches a branch anyone reads without a person reviewing
+  the diff and merging it.
+- **Everything is code.** The agent's persona, skills, and permissions are files
+  in the repo — versioned and changed through a reviewed **change request**, not a
+  dashboard setting.
+
+## The outcome
+
+<StatGrid>
+  <Stat value="Daily" label="Docs re-checked against the code that landed since the last run" />
+  <Stat value="Same-day" label="Drift caught before it reaches a reader" />
+  <Stat value="3 systems" label="The diff, the codebase, and the docs — in one agent" />
+</StatGrid>
+
+The backlog of "someone should update the README" changes now arrives as small,
+reviewable PRs within a day of the code landing, with the reasoning written
+down. The team reviews a diff instead of reconstructing months of drift, and
+readers stop hitting instructions that are no longer accurate.
+
+The setup relies on four pieces working together: sandbox isolation for the
+daily session, a secrets manager to broker the GitHub token, a PR gate on every
+change, and a durable checkpoint that carries the sweep forward run to run.

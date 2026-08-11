@@ -1,0 +1,873 @@
+import { describe, expect, test } from 'bun:test';
+import {
+  KNOWN_SCHEMA_VERSION,
+  extractTriggers,
+  parseManifestString,
+  serializeManifest,
+  triggerSpecToTomlEntry,
+} from '../projects/triggers';
+
+const MIN_PROJECT = `
+[project]
+name = "test"
+`;
+
+function manifestWith(triggersBlock: string): string {
+  return [`kortix_version = ${KNOWN_SCHEMA_VERSION}`, MIN_PROJECT, triggersBlock].join('\n');
+}
+
+describe('kortix manifest — schema versioning', () => {
+  test('missing kortix_version is treated as v1 (back-compat)', () => {
+    const parsed = parseManifestString(MIN_PROJECT);
+    expect(parsed.schemaVersion).toBe(1);
+  });
+
+  test('explicit kortix_version = 1 round-trips', () => {
+    const parsed = parseManifestString(`kortix_version = 1\n${MIN_PROJECT}`);
+    expect(parsed.schemaVersion).toBe(1);
+  });
+
+  test('a future major version is rejected with a clear error', () => {
+    expect(() => parseManifestString(`kortix_version = 99\n${MIN_PROJECT}`)).toThrow(
+      /Unsupported kortix\.toml schema version 99/,
+    );
+  });
+
+  // kortix_version 2 (the `agents:` map manifest — spec §2.1/§2.2) must NOT
+  // throw here: this reader (readManifest → parseManifestString) is what the
+  // whole session/trigger grant pipeline reads through (extractAgents in
+  // ../projects/agents.ts is the v2-aware consumer). Rejecting v2 at THIS
+  // layer was the runtime-wiring bug the fix closes — every v2 project would
+  // otherwise resolve to either fully-unrestricted (a swallowed read error) or
+  // every-session-rejected, instead of the agent's declared grant.
+  test('kortix_version 2 no longer throws — the reader every consumer (agents/triggers) reads through', () => {
+    const parsed = parseManifestString(
+      'kortix_version: 2\ndefault_agent: support\nproject:\n  name: test\nagents:\n  support:\n    description: x\n',
+      'yaml',
+      'kortix.yaml',
+    );
+    expect(parsed.schemaVersion).toBe(2);
+  });
+
+  // V2 is the current ceiling. Any later schema version must stay rejected.
+  test('the current ceiling parses and anything above it is still rejected', () => {
+    expect(parseManifestString(`kortix_version = 2\n${MIN_PROJECT}`).schemaVersion).toBe(2);
+    expect(() => parseManifestString(`kortix_version = 3\n${MIN_PROJECT}`)).toThrow(
+      /schema version 3/,
+    );
+  });
+
+  test('serialize always emits kortix_version as the first key', () => {
+    const parsed = parseManifestString(`kortix_version = 1\n${MIN_PROJECT}`);
+    const out = serializeManifest(parsed);
+    expect(out.indexOf('kortix_version')).toBe(0);
+  });
+});
+
+describe('[[triggers]] — happy paths', () => {
+  test('parses a cron trigger end-to-end', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "daily-digest"
+name = "Daily digest"
+type = "cron"
+agent = "default"
+enabled = true
+cron = "0 0 9 * * 1-5"
+timezone = "UTC"
+prompt = """
+Pull the latest deploy logs and summarize regressions.
+"""
+`),
+    );
+    const { specs, errors } = extractTriggers(parsed);
+    expect(errors).toEqual([]);
+    expect(specs).toHaveLength(1);
+    expect(specs[0]).toMatchObject({
+      slug: 'daily-digest',
+      name: 'Daily digest',
+      type: 'cron',
+      agent: 'default',
+      enabled: true,
+      cron: '0 0 9 * * 1-5',
+      timezone: 'UTC',
+      secretEnv: null,
+    });
+    expect(specs[0]!.promptTemplate).toContain('Pull the latest deploy logs');
+  });
+
+  test('parses a one-off cron trigger with run_at (no cron)', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "launch-blast"
+type = "cron"
+run_at = "2099-01-01T09:00:00Z"
+prompt = "Send the launch announcement."
+`),
+    );
+    const { specs, errors } = extractTriggers(parsed);
+    expect(errors).toEqual([]);
+    expect(specs[0]).toMatchObject({
+      slug: 'launch-blast',
+      type: 'cron',
+      cron: null,
+      runAt: '2099-01-01T09:00:00.000Z',
+      secretEnv: null,
+    });
+  });
+
+  test('a one-off run_at round-trips through serialize (run_at, no cron)', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "once"
+type = "cron"
+run_at = "2099-01-01T09:00:00Z"
+prompt = "x"
+`),
+    );
+    const out = serializeManifest(parsed);
+    expect(out).toContain('run_at');
+  });
+
+  test('an invalid run_at is rejected with a clear error', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "bad-once"
+type = "cron"
+run_at = "not-a-date"
+prompt = "x"
+`),
+    );
+    const { errors } = extractTriggers(parsed);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]!.error).toMatch(/run_at must be an ISO-8601 datetime/);
+  });
+
+  test('a cron trigger with neither cron nor run_at is rejected', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "empty"
+type = "cron"
+prompt = "x"
+`),
+    );
+    const { errors } = extractTriggers(parsed);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]!.error).toMatch(/expression or a one-off/);
+  });
+
+  test('a bad IANA timezone is rejected at parse time', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "bad-tz"
+type = "cron"
+cron = "0 0 9 * * 1"
+timezone = "Not/AZone"
+prompt = "x"
+`),
+    );
+    const { errors } = extractTriggers(parsed);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]!.error).toMatch(/timezone must be a valid IANA name/);
+  });
+
+  test('a valid named timezone is accepted', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "good-tz"
+type = "cron"
+cron = "0 0 9 * * 1"
+timezone = "America/New_York"
+prompt = "x"
+`),
+    );
+    const { specs, errors } = extractTriggers(parsed);
+    expect(errors).toEqual([]);
+    expect(specs[0]!.timezone).toBe('America/New_York');
+  });
+
+  test('parses a webhook trigger with secret_env reference', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "slack"
+type = "webhook"
+secret_env = "WEBHOOK_SLACK_SECRET"
+prompt = "New {{ message.text }}"
+`),
+    );
+    const { specs, errors } = extractTriggers(parsed);
+    expect(errors).toEqual([]);
+    expect(specs[0]).toMatchObject({
+      slug: 'slack',
+      type: 'webhook',
+      agent: 'default',
+      enabled: true,
+      cron: null,
+      timezone: 'UTC',
+      secretEnv: 'WEBHOOK_SLACK_SECRET',
+    });
+    expect(specs[0]!.promptTemplate).toBe('New {{ message.text }}');
+  });
+
+  test('multiple triggers in one manifest — sorted A-Z by slug', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "zeta"
+type = "cron"
+cron = "* * * * * *"
+prompt = "z"
+
+[[triggers]]
+slug = "alpha"
+type = "cron"
+cron = "* * * * * *"
+prompt = "a"
+`),
+    );
+    const { specs } = extractTriggers(parsed);
+    expect(specs.map((s) => s.slug)).toEqual(['alpha', 'zeta']);
+  });
+
+  test('defaults: name falls back to slug, enabled defaults to true', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "unnamed"
+type = "cron"
+cron = "* * * * * *"
+prompt = "do the thing"
+`),
+    );
+    const { specs } = extractTriggers(parsed);
+    expect(specs[0]!.name).toBe('unnamed');
+    expect(specs[0]!.enabled).toBe(true);
+  });
+
+  test('schedule is accepted as an alias for cron', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "aliased"
+type = "cron"
+schedule = "0 */5 * * * *"
+prompt = "body"
+`),
+    );
+    const { specs } = extractTriggers(parsed);
+    expect(specs[0]!.cron).toBe('0 */5 * * * *');
+  });
+
+  test('prompt_template is accepted as an alias for prompt', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "old-shape"
+type = "cron"
+cron = "* * * * * *"
+prompt_template = "legacy field name"
+`),
+    );
+    const { specs } = extractTriggers(parsed);
+    expect(specs[0]!.promptTemplate).toBe('legacy field name');
+  });
+});
+
+describe('[[triggers]] — validation errors', () => {
+  test('an empty manifest yields zero triggers, no errors', () => {
+    const parsed = parseManifestString(MIN_PROJECT);
+    expect(extractTriggers(parsed)).toEqual({ specs: [], errors: [] });
+  });
+
+  test('a [triggers] table (single brackets) is rejected with guidance', () => {
+    const parsed = parseManifestString(`${MIN_PROJECT}\n[triggers]\nslug = "x"\n`);
+    const { specs, errors } = extractTriggers(parsed);
+    expect(specs).toEqual([]);
+    expect(errors[0]!.error).toMatch(/array of tables/);
+  });
+
+  test('rejects an invalid slug', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "Bad Slug"
+type = "cron"
+cron = "* * * * * *"
+prompt = "x"
+`),
+    );
+    const { specs, errors } = extractTriggers(parsed);
+    expect(specs).toEqual([]);
+    expect(errors[0]!.error).toMatch(/Invalid slug/);
+  });
+
+  test('rejects an unknown type', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "bad-type"
+type = "scheduled"
+prompt = "x"
+`),
+    );
+    const { errors } = extractTriggers(parsed);
+    expect(errors[0]!.error).toMatch(/type must be/);
+  });
+
+  test('rejects an empty prompt', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "empty"
+type = "cron"
+cron = "* * * * * *"
+prompt = ""
+`),
+    );
+    const { errors } = extractTriggers(parsed);
+    expect(errors[0]!.error).toMatch(/prompt is required/);
+  });
+
+  test('rejects a cron trigger missing the cron expression', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "nocron"
+type = "cron"
+prompt = "x"
+`),
+    );
+    const { errors } = extractTriggers(parsed);
+    expect(errors[0]!.error).toMatch(/cron triggers must declare/);
+  });
+
+  test('rejects a webhook trigger missing secret_env', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "opensecret"
+type = "webhook"
+prompt = "x"
+`),
+    );
+    const { errors } = extractTriggers(parsed);
+    expect(errors[0]!.error).toMatch(/secret_env/);
+  });
+
+  test('rejects secret_env that does not look like an env var name', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "wronglysecret"
+type = "webhook"
+secret_env = "my-secret"
+prompt = "x"
+`),
+    );
+    const { errors } = extractTriggers(parsed);
+    expect(errors[0]!.error).toMatch(/project_secrets name/);
+  });
+
+  test('rejects duplicate slugs — first wins, second errors', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "dupe"
+type = "cron"
+cron = "* * * * * *"
+prompt = "first"
+
+[[triggers]]
+slug = "dupe"
+type = "cron"
+cron = "* * * * * *"
+prompt = "second"
+`),
+    );
+    const { specs, errors } = extractTriggers(parsed);
+    expect(specs).toHaveLength(1);
+    expect(specs[0]!.promptTemplate).toBe('first');
+    expect(errors[0]!.error).toMatch(/Duplicate trigger slug/);
+  });
+
+  test('an entry missing a slug surfaces an index-based error', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+type = "cron"
+cron = "* * * * * *"
+prompt = "x"
+`),
+    );
+    const { errors } = extractTriggers(parsed);
+    expect(errors[0]!.error).toMatch(/missing a slug/);
+  });
+});
+
+describe('[[triggers]] — session_mode (session reuse)', () => {
+  test('defaults to "fresh" when session_mode is absent', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "no-mode"
+type = "cron"
+cron = "* * * * * *"
+prompt = "x"
+`),
+    );
+    const { specs } = extractTriggers(parsed);
+    expect(specs[0]!.sessionMode).toBe('fresh');
+  });
+
+  test('parses session_mode = "reuse" on a cron trigger', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "error-sweep"
+type = "cron"
+cron = "0 0 */6 * * *"
+session_mode = "reuse"
+prompt = "sweep"
+`),
+    );
+    const { specs, errors } = extractTriggers(parsed);
+    expect(errors).toEqual([]);
+    expect(specs[0]!.sessionMode).toBe('reuse');
+  });
+
+  test('rejects an invalid session_mode', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "bad-mode"
+type = "cron"
+cron = "* * * * * *"
+session_mode = "persistent"
+prompt = "x"
+`),
+    );
+    const { specs, errors } = extractTriggers(parsed);
+    expect(specs).toEqual([]);
+    expect(errors[0]!.error).toMatch(/session_mode must be one of/);
+    // The message enumerates the live mode list, so adding a mode can't leave
+    // this assertion silently pinned to a stale set.
+    expect(errors[0]!.error).toContain('"keyed"');
+  });
+
+  test('session_mode = "reuse" round-trips through serialize', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "rt-reuse"
+type = "cron"
+cron = "0 0 */6 * * *"
+session_mode = "reuse"
+prompt = "x"
+`),
+    );
+    const out = serializeManifest(parsed);
+    expect(out).toContain('session_mode');
+    const reparsed = extractTriggers(parseManifestString(out)).specs;
+    expect(reparsed[0]!.sessionMode).toBe('reuse');
+  });
+
+  test('triggerSpecToTomlEntry omits the default "fresh" but writes "reuse"', () => {
+    const { specs } = extractTriggers(
+      parseManifestString(
+        manifestWith(`
+[[triggers]]
+slug = "fresh-one"
+type = "cron"
+cron = "* * * * * *"
+prompt = "x"
+
+[[triggers]]
+slug = "reuse-one"
+type = "cron"
+cron = "* * * * * *"
+session_mode = "reuse"
+prompt = "x"
+`),
+      ),
+    );
+    const fresh = triggerSpecToTomlEntry(specs.find((s) => s.slug === 'fresh-one')!);
+    const reuse = triggerSpecToTomlEntry(specs.find((s) => s.slug === 'reuse-one')!);
+    expect(fresh.session_mode).toBeUndefined();
+    expect(reuse.session_mode).toBe('reuse');
+  });
+});
+
+/**
+ * `session_key` alone IS the opt-in to keyed sessions — writing both
+ * `session_mode = "keyed"` and `session_key = "…"` was redundant ceremony. An
+ * explicit `session_mode` still wins over the inference, so an existing
+ * manifest can never change meaning behind the author's back.
+ */
+describe('[[triggers]] — session_key implies keyed', () => {
+  test('a session_key with no session_mode infers keyed', () => {
+    const { specs, errors } = extractTriggers(
+      parseManifestString(
+        manifestWith(`
+[[triggers]]
+slug = "whatsapp"
+type = "webhook"
+secret_env = "WAG_WEBHOOK_SECRET"
+session_key = "{{ body.data.chat_jid }}"
+prompt = "{{ body.data.text }}"
+`),
+      ),
+    );
+    expect(errors).toEqual([]);
+    expect(specs[0]!.sessionMode).toBe('keyed');
+    expect(specs[0]!.sessionKey).toBe('{{ body.data.chat_jid }}');
+  });
+
+  test('the sessionKey alias infers keyed too', () => {
+    const { specs } = extractTriggers(
+      parseManifestString(
+        manifestWith(`
+[[triggers]]
+slug = "aliased"
+type = "cron"
+cron = "* * * * * *"
+sessionKey = "{{ cron.timezone }}"
+prompt = "x"
+`),
+      ),
+    );
+    expect(specs[0]!.sessionMode).toBe('keyed');
+    expect(specs[0]!.sessionKey).toBe('{{ cron.timezone }}');
+  });
+
+  test('an explicit session_mode = "keyed" with a key still parses', () => {
+    const { specs, errors } = extractTriggers(
+      parseManifestString(
+        manifestWith(`
+[[triggers]]
+slug = "explicit-keyed"
+type = "cron"
+cron = "* * * * * *"
+session_mode = "keyed"
+session_key = "{{ body.customer_id }}"
+prompt = "x"
+`),
+      ),
+    );
+    expect(errors).toEqual([]);
+    expect(specs[0]!.sessionMode).toBe('keyed');
+  });
+
+  test('an explicit session_mode = "keyed" with NO key is still an error', () => {
+    const { specs, errors } = extractTriggers(
+      parseManifestString(
+        manifestWith(`
+[[triggers]]
+slug = "keyless"
+type = "cron"
+cron = "* * * * * *"
+session_mode = "keyed"
+prompt = "x"
+`),
+      ),
+    );
+    expect(specs).toEqual([]);
+    expect(errors[0]!.error).toMatch(/requires a `session_key`/);
+  });
+
+  test('an explicit non-keyed mode wins over a stray session_key, which is dropped', () => {
+    const { specs, errors } = extractTriggers(
+      parseManifestString(
+        manifestWith(`
+[[triggers]]
+slug = "explicit-fresh"
+type = "cron"
+cron = "* * * * * *"
+session_mode = "fresh"
+session_key = "{{ body.data.chat_jid }}"
+prompt = "x"
+
+[[triggers]]
+slug = "explicit-reuse"
+type = "cron"
+cron = "* * * * * *"
+session_mode = "reuse"
+session_key = "{{ body.data.chat_jid }}"
+prompt = "x"
+`),
+      ),
+    );
+    expect(errors).toEqual([]);
+    const fresh = specs.find((s) => s.slug === 'explicit-fresh')!;
+    const reuse = specs.find((s) => s.slug === 'explicit-reuse')!;
+    expect(fresh.sessionMode).toBe('fresh');
+    expect(fresh.sessionKey).toBeNull();
+    expect(reuse.sessionMode).toBe('reuse');
+    expect(reuse.sessionKey).toBeNull();
+  });
+
+  test('a keyed trigger writes session_key ALONE and re-reads as keyed', () => {
+    const { specs } = extractTriggers(
+      parseManifestString(
+        manifestWith(`
+[[triggers]]
+slug = "rt-keyed"
+type = "webhook"
+secret_env = "WAG_WEBHOOK_SECRET"
+session_key = "{{ body.data.chat_jid }}"
+prompt = "x"
+`),
+      ),
+    );
+    const entry = triggerSpecToTomlEntry(specs[0]!);
+    expect(entry.session_key).toBe('{{ body.data.chat_jid }}');
+    // The key implies the mode, so writing both would be redundant in the file
+    // a human reads — and `session_mode: "keyed"` would fail the manifest-schema
+    // enum that `kortix validate` / the CR-merge gate applies.
+    expect(entry.session_mode).toBeUndefined();
+    // Genuine round-trip: what we wrote must parse back to the same mode+key.
+    const rewritten = [
+      '[[triggers]]',
+      ...Object.entries(entry)
+        .filter(([, v]) => v !== undefined && typeof v !== 'object')
+        .map(([k, v]) => `${k} = ${JSON.stringify(v)}`),
+    ].join('\n');
+    const reparsed = extractTriggers(parseManifestString(manifestWith(rewritten))).specs[0]!;
+    expect(reparsed.sessionMode).toBe('keyed');
+    expect(reparsed.sessionKey).toBe('{{ body.data.chat_jid }}');
+  });
+
+  test('an EXPLICIT session_mode = "keyed" is still written through verbatim', () => {
+    // Only the inferred form is compacted; a caller that pins the mode keeps it.
+    const { specs } = extractTriggers(
+      parseManifestString(
+        manifestWith(`
+[[triggers]]
+slug = "rt-explicit"
+type = "webhook"
+secret_env = "WAG_WEBHOOK_SECRET"
+session_mode = "keyed"
+session_key = "{{ body.data.chat_jid }}"
+prompt = "x"
+`),
+      ),
+    );
+    expect(specs[0]!.sessionMode).toBe('keyed');
+    expect(specs[0]!.sessionKey).toBe('{{ body.data.chat_jid }}');
+  });
+
+  test('no session_key and no session_mode is still plain fresh', () => {
+    const { specs } = extractTriggers(
+      parseManifestString(
+        manifestWith(`
+[[triggers]]
+slug = "plain"
+type = "cron"
+cron = "* * * * * *"
+prompt = "x"
+`),
+      ),
+    );
+    expect(specs[0]!.sessionMode).toBe('fresh');
+    expect(specs[0]!.sessionKey).toBeNull();
+  });
+});
+
+describe('[[triggers]] — model', () => {
+  test('absent model parses to null (the "Default" path)', () => {
+    const { specs } = extractTriggers(
+      parseManifestString(
+        manifestWith(`
+[[triggers]]
+slug = "no-model"
+type = "cron"
+cron = "* * * * * *"
+prompt = "x"
+`),
+      ),
+    );
+    expect(specs[0]!.model).toBeNull();
+  });
+
+  test('an explicit model round-trips through serialize', () => {
+    const parsed = parseManifestString(
+      manifestWith(`
+[[triggers]]
+slug = "with-model"
+type = "cron"
+cron = "0 0 9 * * *"
+model = "anthropic/claude-sonnet-4-6"
+prompt = "x"
+`),
+    );
+    const out = serializeManifest(parsed);
+    expect(out).toContain('anthropic/claude-sonnet-4-6');
+    const reparsed = extractTriggers(parseManifestString(out)).specs;
+    expect(reparsed[0]!.model).toBe('anthropic/claude-sonnet-4-6');
+  });
+
+  test('triggerSpecToTomlEntry omits a null model but writes a set one', () => {
+    const { specs } = extractTriggers(
+      parseManifestString(
+        manifestWith(`
+[[triggers]]
+slug = "plain"
+type = "cron"
+cron = "* * * * * *"
+prompt = "x"
+
+[[triggers]]
+slug = "pinned"
+type = "cron"
+cron = "* * * * * *"
+model = "openai/gpt-5"
+prompt = "x"
+`),
+      ),
+    );
+    const plain = triggerSpecToTomlEntry(specs.find((s) => s.slug === 'plain')!);
+    const pinned = triggerSpecToTomlEntry(specs.find((s) => s.slug === 'pinned')!);
+    expect(plain.model).toBeUndefined();
+    expect(pinned.model).toBe('openai/gpt-5');
+  });
+});
+
+describe('serializeManifest — round-trip', () => {
+  test('a parsed-then-serialized manifest re-parses to the same shape', () => {
+    const input = manifestWith(`
+[[triggers]]
+slug = "rt"
+name = "Round-trip"
+type = "cron"
+agent = "default"
+enabled = true
+cron = "0 0 9 * * 1-5"
+timezone = "UTC"
+prompt = "Hello"
+`);
+    const parsed = parseManifestString(input);
+    const serialized = serializeManifest(parsed);
+    const reparsed = parseManifestString(serialized);
+    const a = extractTriggers(parsed).specs;
+    const b = extractTriggers(reparsed).specs;
+    expect(b).toEqual(a);
+  });
+});
+
+/**
+ * Drift guard: the runtime trigger parser (extractTriggers) and the canonical
+ * schema gate (@kortix/manifest-schema, run on CR-merge) must agree on which
+ * `[[triggers]]` shapes are valid. The runtime accepts several alias keys
+ * (prompt_template, schedule/runAt, secretEnv, sessionMode) and coerces enabled
+ * / lowercases session_mode; the gate must accept the same, or it falsely blocks
+ * a manifest that materializes fine — the bug class behind the missing `channel`
+ * connector provider. Keep them locked together.
+ */
+describe('[[triggers]] — runtime parser ⇄ schema gate agreement', () => {
+  const { validateManifest } = require('@kortix/manifest-schema') as typeof import('@kortix/manifest-schema');
+
+  function schemaTriggerErrors(block: string): string[] {
+    return validateManifest(manifestWith(block))
+      .issues.filter((i) => i.severity === 'error' && i.path.startsWith('triggers['))
+      .map((i) => i.path);
+  }
+
+  const cases: Array<{ name: string; block: string; accept: boolean }> = [
+    {
+      name: 'prompt_template alias',
+      accept: true,
+      block: `[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\nprompt_template = "go"`,
+    },
+    {
+      name: 'schedule alias',
+      accept: true,
+      block: `[[triggers]]\nslug = "t"\ntype = "cron"\nschedule = "0 9 * * *"\nprompt = "go"`,
+    },
+    {
+      name: 'runAt alias',
+      accept: true,
+      block: `[[triggers]]\nslug = "t"\ntype = "cron"\nrunAt = "2099-01-01T09:00:00Z"\nprompt = "go"`,
+    },
+    {
+      name: 'secretEnv alias',
+      accept: true,
+      block: `[[triggers]]\nslug = "t"\ntype = "webhook"\nsecretEnv = "WEBHOOK_SECRET"\nprompt = "go"`,
+    },
+    {
+      name: 'session_mode case-insensitive',
+      accept: true,
+      block: `[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\nprompt = "go"\nsession_mode = "Reuse"`,
+    },
+    {
+      name: 'enabled coercible',
+      accept: true,
+      block: `[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\nprompt = "go"\nenabled = 1`,
+    },
+    {
+      name: 'missing prompt',
+      accept: false,
+      block: `[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"`,
+    },
+    {
+      name: 'unknown type',
+      accept: false,
+      block: `[[triggers]]\nslug = "t"\ntype = "made-up"\nprompt = "go"`,
+    },
+  ];
+
+  for (const { name, block, accept } of cases) {
+    test(`${name}: parser and schema agree (accept=${accept})`, () => {
+      const runtimeOk =
+        extractTriggers(parseManifestString(manifestWith(block))).errors.length === 0;
+      const schemaOk = schemaTriggerErrors(block).length === 0;
+      expect(runtimeOk).toBe(accept);
+      expect(schemaOk).toBe(accept);
+    });
+  }
+});
+
+// Regression guard: trigger `path` / error `path` breadcrumbs used to
+// hard-code `kortix.toml` regardless of which file the manifest actually came
+// from. They now derive the filename from the parsed manifest's own `path`
+// (set by `parseManifestString`), so a `kortix.yaml` project's spec/error
+// paths say `kortix.yaml`, not a lie about a file that doesn't exist there.
+describe("[[triggers]] — spec/error `path` derives from the manifest's own filename", () => {
+  test("a yaml manifest's trigger spec path says kortix.yaml", () => {
+    const manifest = parseManifestString(
+      `kortix_version: ${KNOWN_SCHEMA_VERSION}\nproject:\n  name: test\ntriggers:\n  - slug: nightly\n    type: cron\n    cron: "0 9 * * *"\n    prompt: go\n`,
+      'yaml',
+      'kortix.yaml',
+    );
+    const { specs, errors } = extractTriggers(manifest);
+    expect(errors).toEqual([]);
+    expect(specs[0]?.path).toBe('kortix.yaml#triggers.nightly');
+  });
+
+  test("a yaml manifest's `[triggers]` (non-array) error path says kortix.yaml", () => {
+    const manifest = parseManifestString(
+      `kortix_version: ${KNOWN_SCHEMA_VERSION}\nproject:\n  name: test\ntriggers:\n  slug: nightly\n`,
+      'yaml',
+      'kortix.yaml',
+    );
+    const { errors } = extractTriggers(manifest);
+    expect(errors[0]?.path).toBe('kortix.yaml');
+  });
+
+  test('a toml manifest still says kortix.toml (default, unchanged)', () => {
+    const { specs } = extractTriggers(
+      parseManifestString(
+        manifestWith(
+          `[[triggers]]\nslug = "nightly"\ntype = "cron"\ncron = "0 9 * * *"\nprompt = "go"`,
+        ),
+      ),
+    );
+    expect(specs[0]?.path).toBe('kortix.toml#triggers.nightly');
+  });
+});

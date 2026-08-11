@@ -1,0 +1,2015 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+@import 'tw-animate-css';
+@plugin 'tailwind-scrollbar';
+@plugin 'tailwind-scrollbar-hide';
+
+@source "../node_modules/streamdown/dist/*.js";
+@source "../node_modules/fumadocs-ui/dist/**/*.js";
+
+/* ─── Fumadocs → Kortix brand overrides ─── */
+/* fd-* tokens inherit the app's semantic tokens so light/dark stay in parity
+   automatically and color has a single source of truth. `--color-fd-card`
+   deliberately maps to --popover: fumadocs cards and code-block chrome sit on
+   the flat elevated surface, not the washed-gray --card token. The `.dark`
+   selector is required so these win over the `.dark` block that ships in
+   fumadocs-ui/css/neutral.css. */
+:root,
+.dark {
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-muted: var(--muted);
+  --color-fd-muted-foreground: var(--muted-foreground);
+  --color-fd-popover: var(--popover);
+  --color-fd-popover-foreground: var(--popover-foreground);
+  --color-fd-card: var(--popover);
+  --color-fd-card-foreground: var(--popover-foreground);
+  --color-fd-border: var(--border);
+  --color-fd-primary: var(--primary);
+  --color-fd-primary-foreground: var(--primary-foreground);
+  --color-fd-secondary: var(--secondary);
+  --color-fd-secondary-foreground: var(--secondary-foreground);
+  --color-fd-accent: var(--accent);
+  --color-fd-accent-foreground: var(--accent-foreground);
+  --color-fd-ring: var(--ring);
+}
+
+/* Docs borders run a step darker than the app's hairline --border — the
+   default reads too faint on docs surfaces (callouts, tables, code chrome).
+   Scoped to the fumadocs layout root so the rest of the app keeps the lighter
+   token. --color-fd-border must be re-declared here: the :root mapping above
+   already resolved var(--border) at the root, so it would not pick up this
+   scoped override on its own. */
+#nd-docs-layout {
+  --border: oklch(0.86 0 0);
+  --color-fd-border: var(--border);
+}
+.dark #nd-docs-layout {
+  /* In dark theme a literally darker border would vanish into the background —
+     step lighter instead for the same contrast boost. */
+  --border: oklch(0.34 0.006 286.033);
+}
+
+/* Legacy --sidebar-* values used by the app's own sidebar components. The
+   canonical app token blocks further down redeclare these; kept here verbatim
+   from the original override block. */
+:root {
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+  --sidebar-primary: hsl(240 5.9% 10%);
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+.dark {
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-primary: hsl(224.3 76.3% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(240 3.7% 15.9%);
+  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+/* ─── Docs polish layer ─── */
+/* Everything below is scoped to the fumadocs layout ids (#nd-*) so the rest
+   of the app is untouched. Quiet, flat, better-auth-grade surfaces. */
+
+/* Sidebar: one flat surface with the page, split by a hairline. */
+#nd-sidebar {
+  background-color: var(--background);
+  border-color: var(--border);
+}
+
+/* Nav rows: compact (~30px), quiet, rounded-md. Covers page links and folder
+   triggers — both carry the shared ps-(--sidebar-item-offset) item class.
+   padding-inline-start is left alone: it drives nested indentation. */
+#nd-sidebar a[data-active],
+#nd-sidebar button[class*='ps-(--sidebar-item-offset)'] {
+  border-radius: 6px;
+  padding-block: 5px;
+  color: var(--muted-foreground);
+}
+#nd-sidebar a[data-active]:hover,
+#nd-sidebar button[class*='ps-(--sidebar-item-offset)']:hover {
+  background-color: var(--accent);
+  color: var(--foreground);
+}
+/* Active page: foreground + primary tint (Kortix law: active = primary 5-8%). */
+#nd-sidebar a[data-active='true'] {
+  background-color: color-mix(in oklab, var(--primary) 6%, transparent);
+  color: var(--foreground);
+  font-weight: 500;
+}
+#nd-sidebar a[data-active='true']:hover {
+  background-color: color-mix(in oklab, var(--primary) 8%, transparent);
+}
+
+/* Section separator labels (Learn / Reference / SDK / Contribute): quiet.
+   Size is owned by DocsSidebarSeparator (docs-controls.tsx) — its text-sm
+   reaches both this desktop aside and the mobile drawer, so no font-size
+   here or the id specificity would override it on desktop only. */
+#nd-sidebar p[class*='ps-(--sidebar-item-offset)'] {
+  margin-top: 1.5rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+/* Prose rhythm: tighten the page title only; body sizes stay stock. */
+#nd-page h1 {
+  letter-spacing: -0.02em;
+}
+
+/* TOC-less pages (e.g. /docs): the article otherwise stretches past 1100px.
+   Cap it at a readable column; `md:mx-auto` on the article keeps it centered.
+   Pages with a TOC already sit under ~868px, so this is a no-op there.
+   padding-bottom: the stock article has none (pt-8 only) and our custom
+   prev/next footer replaces the built-in one that used to provide end space,
+   so without this the cards sit flush against the viewport bottom. */
+#nd-page article {
+  max-width: 56rem;
+  padding-bottom: 2rem;
+}
+
+/* Sidebar search shortcut: collapse the two bordered ⌘ / K chips into one
+   quiet "⌘K" hint. Scoped to the sidebar search toggle (data-search-full)
+   so prose <kbd> styling is untouched. */
+#nd-sidebar button[data-search-full] div:has(> kbd) {
+  gap: 0;
+}
+#nd-sidebar button[data-search-full] kbd {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* TOC rail ("On this page"): keep fumadocs' stock code chips but slim them —
+   the prose default pads 3px on every side, which makes each chip tall and
+   opens the rows up. Only the vertical padding drops; horizontal padding,
+   border, background and mono size stay stock. Covers the desktop rail
+   (#nd-toc) and the mobile popover (#nd-tocnav). */
+#nd-toc a code,
+#nd-tocnav a code {
+  padding-block: 1px;
+}
+
+/* Fumadocs cards + tab/code containers: rounded-md family, never rounded-xl. */
+#nd-page a[class*='bg-fd-card'],
+#nd-page div[class*='bg-fd-card'] {
+  border-radius: 8px;
+  border-color: var(--border);
+}
+/* Linked cards: colors-only hover onto the flat accent surface. */
+#nd-page a[class*='bg-fd-card']:hover {
+  background-color: var(--accent);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-pane: var(--pane);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-roobert);
+  --font-mono: var(--font-roobert-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  /* Interaction overlays — translucent ink, not solid surfaces, so a hover or
+     selection tint blends over whatever substrate is behind it (canvas,
+     surface-1, an image). Used by Card's proximity highlight + selected fill. */
+  --color-hover: var(--hover);
+  --color-active: var(--active);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-kortix-base: var(--kortix-base);
+  --color-kortix-blue: var(--kortix-blue);
+  --color-kortix-yellow: var(--kortix-yellow);
+  --color-kortix-orange: var(--kortix-orange);
+  --color-kortix-green: var(--kortix-green);
+  --color-kortix-purple: var(--kortix-purple);
+  --color-kortix-red: var(--kortix-red);
+  /* Emoji-picker active-cell tints (src/components/ui/emoji-picker.tsx).
+     Six hues the picker rotates through so the hovered/keyboard-active cell is
+     never the same colour as the cell above it. They live here rather than as
+     raw hsl() in the component because raw palette values in app code are
+     against the design system, and because the light/dark pair belongs in one
+     place. light-dark() works because :root sets color-scheme: light and .dark
+     sets color-scheme: dark (see the base layer below) — so these need no
+     `dark:` variant at the call site.
+
+     Two families, paired by hue. The fill stays pale so the grid reads calm;
+     the 1px inset ring carries the contrast. That split exists because the
+     active cell is the only visible cue for which emoji is selected —
+     frimousse gives the buttons tabIndex={-1} and no focus ring — so the state
+     indicator has to clear WCAG 1.4.11's 3:1 against --popover. A pale fill
+     cannot reach 3:1 on white at any saturation (it needs relative luminance
+     <= 0.30, i.e. roughly L <= 63%), so the ring is what meets the bar and the
+     fill is free to stay quiet. Measured ring ratios are 3.03–3.19:1. */
+  --color-emoji-fill-red: light-dark(hsl(4 46% 88%), hsl(4 28% 26%));
+  --color-emoji-fill-amber: light-dark(hsl(32 52% 87%), hsl(32 30% 25%));
+  --color-emoji-fill-green: light-dark(hsl(96 34% 87%), hsl(96 22% 24%));
+  --color-emoji-fill-teal: light-dark(hsl(178 36% 86%), hsl(178 26% 24%));
+  --color-emoji-fill-blue: light-dark(hsl(212 46% 88%), hsl(212 30% 27%));
+  --color-emoji-fill-violet: light-dark(hsl(280 32% 88%), hsl(280 22% 27%));
+  --color-emoji-ring-red: light-dark(hsl(4 46% 63%), hsl(4 46% 45%));
+  --color-emoji-ring-amber: light-dark(hsl(32 52% 51%), hsl(32 52% 35%));
+  --color-emoji-ring-green: light-dark(hsl(96 34% 46%), hsl(96 34% 32%));
+  --color-emoji-ring-teal: light-dark(hsl(178 36% 46%), hsl(178 36% 32%));
+  --color-emoji-ring-blue: light-dark(hsl(212 46% 60%), hsl(212 46% 42%));
+  --color-emoji-ring-violet: light-dark(hsl(280 32% 63%), hsl(280 32% 46%));
+  /* Glyph icon palette — a SEPARATE family from the emoji hues above.
+     The emoji hues are DERIVED from the glyph (see emoji-tint.ts) and must stay
+     stable, or every existing project changes colour. These eight are CHOSEN by
+     the user. Merging the two would have meant remapping the emoji six onto a
+     new eight; two palettes serving two masters is the honest model.
+
+     `light-dark()` works because :root sets color-scheme: light and .dark sets
+     color-scheme: dark — so these need no `dark:` variant anywhere.
+
+     The ring token paints BOTH the 1px inset ring and the glyph itself, so its
+     lightness has to clear 3:1 against the pale fill AND against --popover/
+     --card. Task 10 measured all 48 ring-vs-surface pairs (8 hues x 2 themes x
+     3 surfaces) against WCAG's 3:1 non-text threshold and tuned the L channel
+     only — hue and saturation are untouched, so all eight stay recognisable.
+     Light mode needed a small darkening on red/yellow/blue only (their L
+     started too close to the fill). Dark mode needed a much bigger lightening
+     across ALL EIGHT hues: the dark fills sit at L 24-27%, close enough to the
+     near-black --card/--popover (relative luminance ~0.007) that sRGB's gamma
+     curve compresses the ring-vs-fill gap far below 3:1 at the original
+     L 38-48%; every dark ring now sits at L 46-61% to clear it. See
+     .superpowers/sdd/2026-08-01-project-glyph-icons/task-10-report.md for the
+     full before/after table. */
+  --color-glyph-fill-grey: light-dark(hsl(220 8% 88%), hsl(220 6% 26%));
+  --color-glyph-fill-red: light-dark(hsl(4 46% 88%), hsl(4 28% 26%));
+  --color-glyph-fill-orange: light-dark(hsl(24 60% 88%), hsl(24 32% 26%));
+  --color-glyph-fill-yellow: light-dark(hsl(46 62% 87%), hsl(46 34% 25%));
+  --color-glyph-fill-lime: light-dark(hsl(84 42% 87%), hsl(84 26% 24%));
+  --color-glyph-fill-blue: light-dark(hsl(212 46% 88%), hsl(212 30% 27%));
+  --color-glyph-fill-purple: light-dark(hsl(275 34% 88%), hsl(275 24% 27%));
+  --color-glyph-fill-magenta: light-dark(hsl(318 40% 88%), hsl(318 26% 27%));
+  --color-glyph-ring-grey: light-dark(hsl(220 8% 50%), hsl(220 8% 58%));
+  --color-glyph-ring-red: light-dark(hsl(4 46% 53%), hsl(4 46% 60%));
+  --color-glyph-ring-orange: light-dark(hsl(24 60% 46%), hsl(24 60% 55%));
+  --color-glyph-ring-yellow: light-dark(hsl(46 62% 37%), hsl(46 55% 47%));
+  --color-glyph-ring-lime: light-dark(hsl(84 42% 37%), hsl(84 40% 46%));
+  --color-glyph-ring-blue: light-dark(hsl(212 46% 50%), hsl(212 46% 59%));
+  --color-glyph-ring-purple: light-dark(hsl(275 34% 56%), hsl(275 34% 61%));
+  --color-glyph-ring-magenta: light-dark(hsl(318 40% 52%), hsl(318 40% 61%));
+  /* App typography scale. Keep html at 100% so browser and OS zoom
+     preferences remain intact; adjust readable UI sizes through tokens. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: calc(1 / 0.8125);
+  --text-sm: 0.875rem;
+  --text-sm--line-height: calc(1.25 / 0.875);
+  --text-base: 1rem;
+  --text-base--line-height: calc(1.5 / 1);
+  --text-lg: 1.125rem;
+  --text-lg--line-height: calc(1.75 / 1.125);
+  --text-xl: 1.25rem;
+  --text-xl--line-height: calc(1.75 / 1.25);
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: calc(2 / 1.5);
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: calc(2.25 / 1.875);
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: calc(2.5 / 2.25);
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 1;
+  --text-6xl: 3.75rem;
+  --text-6xl--line-height: 1;
+  --text-7xl: 4.5rem;
+  --text-7xl--line-height: 1;
+  --text-8xl: 6rem;
+  --text-8xl--line-height: 1;
+  /* Standard border radius values */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  /* Standard radius for all main form elements and UI components */
+  --radius-2xl: 1rem;
+  --border-width: 1.5px;
+  --spacing-sidebar: 1.5rem;
+  /* Motion — duration scale (see /design-system → Motion) */
+  --duration-fast: 100ms;
+  --duration-normal: 150ms;
+  --duration-moderate: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+  /* Motion — easing curves */
+  --ease-default: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-collapsible-down: collapsible-down 0.2s ease-out;
+  --animate-collapsible-up: collapsible-up 0.15s ease-out;
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-reverse: marquee-reverse var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  --animate-orbit: orbit calc(var(--duration) * 1s) linear infinite;
+  --animate-slide-down: slide-down 300ms cubic-bezier(0.87, 0, 0.13, 1);
+  --animate-slide-up: slide-up 300ms cubic-bezier(0.87, 0, 0.13, 1);
+  --scaleIn: scaleIn 200ms ease;
+  --scaleOut: scaleOut 200ms ease;
+  --fadeIn: fadeIn 200ms ease;
+  --fadeOut: fadeOut 200ms ease;
+  --enterFromLeft: enterFromLeft 250ms ease;
+  --enterFromRight: enterFromRight 250ms ease;
+  --exitToLeft: exitToLeft 250ms ease;
+  --exitToRight: exitToRight 250ms ease;
+  --animate-elliptical-orbit: elliptical-orbit 20s linear infinite;
+  --animate-shiny-text: shiny-text 8s infinite;
+  --animate-kortix-bullet-flow: kortix-bullet-flow 4s ease-in-out infinite;
+  /* Error feedback — damped horizontal shake (decaying amplitude, transform-only) */
+  --animate-shake: shake 400ms var(--ease-in-out) both;
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    10% {
+      transform: translateX(-6px);
+    }
+    30% {
+      transform: translateX(5px);
+    }
+    50% {
+      transform: translateX(-3px);
+    }
+    70% {
+      transform: translateX(2px);
+    }
+    90% {
+      transform: translateX(-1px);
+    }
+  }
+
+  @keyframes kortix-bullet-flow {
+    0%,
+    100% {
+      background-position: 0% 0%;
+    }
+    50% {
+      background-position: 0% 100%;
+    }
+  }
+
+  @keyframes orbit {
+    0% {
+      transform: rotate(calc(var(--angle) * 1deg)) translateY(calc(var(--radius) * 1px))
+        rotate(calc(var(--angle) * -1deg));
+    }
+    100% {
+      transform: rotate(calc(var(--angle) * 1deg + 360deg)) translateY(calc(var(--radius) * 1px))
+        rotate(calc((var(--angle) * -1deg) - 360deg));
+    }
+  }
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes collapsible-down {
+    from {
+      height: 0;
+      opacity: 0;
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+      opacity: 1;
+    }
+  }
+
+  @keyframes collapsible-up {
+    from {
+      height: var(--radix-collapsible-content-height);
+      opacity: 1;
+    }
+    to {
+      height: 0;
+      opacity: 0;
+    }
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+
+  @keyframes marquee-reverse {
+    from {
+      transform: translateX(calc(-100% - var(--gap)));
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes marquee-vertical {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes slide-down {
+    from {
+      height: 0px;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0px;
+    }
+  }
+
+  /* Add this to your globals.css */
+  @keyframes enterFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(200px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes enterFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-200px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes exitToRight {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(200px);
+    }
+  }
+
+  @keyframes exitToLeft {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-200px);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: rotateX(-30deg) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: rotateX(0deg) scale(1);
+    }
+  }
+
+  @keyframes scaleOut {
+    from {
+      opacity: 1;
+      transform: rotateX(0deg) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: rotateX(-10deg) scale(0.95);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes elliptical-orbit {
+    from {
+      transform: rotate(var(--angle, 0) deg) translate(var(--h-radius, 160px), 0)
+        rotate(calc(var(--angle, 0) deg * -1));
+    }
+    to {
+      transform: rotate(calc(var(--angle, 0) deg + 360deg)) translate(var(--h-radius, 160px), 0)
+        rotate(calc((var(--angle, 0) deg + 360deg) * -1));
+    }
+  }
+
+  @keyframes shiny-text {
+    0%,
+    90%,
+    100% {
+      background-position: calc(-100% - var(--shiny-width)) 0;
+    }
+    30%,
+    60% {
+      background-position: calc(100% + var(--shiny-width)) 0;
+    }
+  }
+
+  @keyframes meteor {
+    0% {
+      transform: rotate(var(--angle)) translateX(0);
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(var(--angle)) translateX(-500px);
+      opacity: 0;
+    }
+  }
+
+  --animate-blink-cursor: blink-cursor 1.2s step-end infinite
+;
+  @keyframes blink-cursor {
+  0%, 49% {
+    opacity: 1;
+    }
+  50%, 100% {
+    opacity: 0;
+    }
+  }}
+
+/*
+ * Neutral ramp — Framer design system (VoltAgent/awesome-design-md).
+ * Hierarchy comes from surface lift (canvas -> surface-1 -> surface-2), never
+ * from opacity on type. Blue is a signal only: hyperlinks, focus, selection —
+ * never a fill or a background.
+ *
+ * Dark is the doc's palette verbatim. The doc ships no light mode, so light
+ * mirrors each surface's lift distance from canvas, anchored on the doc's own
+ * inverse-canvas (#ffffff) and inverse-ink (#000000).
+ *
+ *   role           dark        light
+ *   canvas         #090909     #ffffff
+ *   base           #0c0c0c     #ffffff
+ *   surface-1      #141414     #f4f4f4
+ *   surface-2      #1c1c1c     #ececec
+ *   ink            #ffffff     #000000
+ *   ink-muted      #999999     #666666
+ *   hairline       #262626     #e2e2e2
+ *   hairline-soft  #1a1a1a     #eeeeee
+ *   accent-blue    #0099ff     #0099ff
+ */
+:root {
+  --background: oklch(1 0 0); /* canvas */
+  --pane: oklch(1 0 0); /* #ffffff */
+  --foreground: oklch(0 0 0); /* ink */
+  --card: oklch(0.9672 0 0); /* surface-1 */
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(1 0 0); /* canvas — top surface, separated by hairline + shadow */
+  --popover-foreground: oklch(0 0 0);
+  --primary: oklch(0 0 0); /* ink — black pill CTA */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.9431 0 0); /* surface-2 */
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.9431 0 0); /* surface-2 */
+  --muted-foreground: oklch(0.5103 0 0); /* ink-muted */
+  --accent: oklch(0.9672 0 0); /* surface-1 */
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.583 0.2387 28.4765);
+  --destructive-foreground: oklch(0.9851 0 0);
+  --border: oklch(0.9128 0 0); /* hairline */
+  --input: oklch(0.9431 0 0); /* surface-2 */
+  --ring: oklch(0.669 0.1837 248.8066); /* accent-blue — focus only */
+  --hover: oklch(0 0 0 / 0.045); /* ink @ 4.5% — transient hover tint */
+  --active: oklch(0 0 0 / 0.075); /* ink @ 7.5% — persistent selected fill */
+  --focus-ring: var(--ring);
+  --chart-1: oklch(0.8781 0.1688 91.8567);
+  --chart-2: oklch(0.7724 0.1728 65.367);
+  --chart-3: oklch(0.6671 0.1685 53.3814);
+  --chart-4: oklch(0.557 0.1583 45.3594);
+  --chart-5: oklch(0.4747 0.1358 44.9806);
+  --sidebar: oklch(0.9672 0 0); /* surface-1 */
+  --sidebar-foreground: oklch(0 0 0);
+  --sidebar-primary: oklch(0.669 0.1837 248.8066); /* accent-blue — selection */
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.9431 0 0); /* surface-2 */
+  --sidebar-accent-foreground: oklch(0 0 0);
+  --sidebar-border: oklch(0.9128 0 0); /* hairline */
+  --sidebar-ring: oklch(0.669 0.1837 248.8066);
+
+  --radius: 0.625rem;
+
+  --tracking-normal: 0em;
+  --spacing: 0.23rem;
+
+  --kortix-base: var(--color-ring);
+  --kortix-blue: oklch(0.652 0.177 252.624);
+  --kortix-yellow: oklch(0.732 0.15 90.688);
+  --kortix-orange: oklch(0.691 0.142 71.784);
+  --kortix-green: oklch(0.581 0.165 146.619);
+  --kortix-purple: oklch(0.675 0.131 306.212);
+  --kortix-red: oklch(0.648 0.202 24.745);
+
+  /* Motion tokens (canonical values; mirrored in @theme for utilities) */
+  --duration-fast: 100ms;
+  --duration-normal: 150ms;
+  --duration-moderate: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+  --ease-default: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark {
+  --background: oklch(0.17 0 0); /* canvas #090909 */
+  --pane: oklch(0.1543 0 0); /* #0c0c0c */
+  --foreground: oklch(1 0 0); /* ink #ffffff */
+  --card: oklch(0.1913 0 0); /* surface-1 #141414 */
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.1913 0 0); /* surface-1 */
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(1 0 0); /* white pill CTA */
+  --primary-foreground: oklch(0.1398 0 0);
+  --secondary: oklch(0.2264 0 0); /* surface-2 #1c1c1c */
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.2264 0 0); /* surface-2 */
+  --muted-foreground: oklch(0.683 0 0); /* ink-muted #999999 */
+  --accent: oklch(0.1913 0 0); /* surface-1 */
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.7022 0.1892 22.2279);
+  --destructive-foreground: oklch(0.9851 0 0);
+  --border: oklch(0.2686 0 0); /* hairline #262626 */
+  --input: oklch(0.2264 0 0); /* surface-2 */
+  --ring: oklch(0.669 0.1837 248.8066); /* accent-blue #0099ff — focus only */
+  --hover: oklch(1 0 0 / 0.06); /* ink @ 6% — transient hover tint */
+  --active: oklch(1 0 0 / 0.1); /* ink @ 10% — persistent selected fill */
+  --focus-ring: var(--ring);
+  --chart-1: oklch(0.8781 0.1688 91.8567);
+  --chart-2: oklch(0.7724 0.1728 65.367);
+  --chart-3: oklch(0.6671 0.1685 53.3814);
+  --chart-4: oklch(0.557 0.1583 45.3594);
+  --chart-5: oklch(0.4747 0.1358 44.9806);
+  --sidebar: oklch(0.1913 0 0); /* surface-1 */
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.669 0.1837 248.8066); /* accent-blue — selection */
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.2264 0 0); /* surface-2 */
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0.2178 0 0); /* hairline-soft #1a1a1a */
+  --sidebar-ring: oklch(0.669 0.1837 248.8066);
+
+  --radius: 0.625rem;
+
+  --kortix-base: var(--color-ring);
+  --kortix-blue: oklch(0.652 0.177 252.624);
+  --kortix-yellow: oklch(0.732 0.15 90.688);
+  --kortix-orange: oklch(0.691 0.142 71.784);
+  --kortix-green: oklch(0.581 0.165 146.619);
+  --kortix-purple: oklch(0.675 0.131 306.212);
+  --kortix-red: oklch(0.648 0.202 24.745);
+}
+
+@layer base {
+  ::selection {
+    background: color-mix(in oklch, var(--primary) 72%, transparent);
+    color: var(--primary-foreground);
+  }
+
+  ::-moz-selection {
+    background: color-mix(in oklch, var(--primary) 72%, transparent);
+    color: var(--primary-foreground);
+  }
+
+  * {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply border-border outline-ring/50;
+  }
+
+  /* Tailwind v4 makes <button> default to `cursor: default`; restore the
+     pointer on genuinely interactive elements (buttons, tabs, ARIA buttons,
+     menu items, options, summaries). Disabled elements keep the default. */
+  button:not(:disabled),
+  summary,
+  [role='button']:not([aria-disabled='true']),
+  [role='tab']:not([aria-disabled='true']),
+  [role='menuitem']:not([aria-disabled='true']),
+  [role='menuitemradio']:not([aria-disabled='true']),
+  [role='option']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-size: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings:
+      'ss10' on,
+      'ss09' on,
+      'ss03' on,
+      'ss04' on,
+      'ss14' on,
+      'palt';
+  }
+  :root {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  body {
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      'ss10' on,
+      'ss09' on,
+      'ss03' on,
+      'ss04' on,
+      'ss14' on,
+      'palt';
+    min-height: 100dvh;
+  }
+
+  /* Add font fallbacks for CJK characters */
+  .cjk-text,
+  .markdown-content {
+    font-family:
+      var(--font-sans),
+      ui-sans-serif,
+      -apple-system,
+      'Segoe UI',
+      'Helvetica Neue',
+      'Noto Sans',
+      'Noto Sans CJK JP',
+      'Noto Sans CJK KR',
+      'Noto Sans CJK SC',
+      'Noto Sans CJK TC',
+      sans-serif;
+    line-height: 1.7;
+  }
+
+  /* Specific handling for monospace/code with CJK character support */
+  code,
+  pre,
+  .font-mono {
+    font-family:
+      var(--font-mono), ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas,
+      'Liberation Mono', 'Courier New', monospace, 'Noto Sans Mono CJK JP', 'Noto Sans Mono CJK KR',
+      'Noto Sans Mono CJK SC', 'Noto Sans Mono CJK TC';
+    font-weight: 500;
+    line-height: 1.2;
+  }
+}
+
+.kortix-markdown pre .line,
+.kortix-markdown pre code span {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* stylelint-disable-next-line at-rule-no-unknown */
+@theme inline {
+  --animate-shiny-text: shiny-text 5s infinite;
+
+  @keyframes shiny-text {
+    0%,
+    90%,
+    100% {
+      background-position: calc(-100% - var(--shiny-width)) 0;
+    }
+    30%,
+    60% {
+      background-position: calc(100% + var(--shiny-width)) 0;
+    }
+  }
+}
+
+.scrollbar-minimal {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.scrollbar-minimal::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-minimal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-minimal::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.2s ease;
+}
+
+.scrollbar-minimal:hover::-webkit-scrollbar-thumb {
+  background: oklch(0.5 0 0 / 0.2);
+}
+
+.scrollbar-minimal.dark:hover::-webkit-scrollbar-thumb,
+.dark .scrollbar-minimal:hover::-webkit-scrollbar-thumb {
+  background: oklch(0.7 0 0 / 0.3);
+}
+
+.kortix-markdown [data-streamdown-animating='true'] > * {
+  animation: stream-fade-in 200ms ease-out forwards;
+}
+
+.kortix-markdown [data-streamdown-animating='true'] p,
+.kortix-markdown [data-streamdown-animating='true'] li,
+.kortix-markdown [data-streamdown-animating='true'] h1,
+.kortix-markdown [data-streamdown-animating='true'] h2,
+.kortix-markdown [data-streamdown-animating='true'] h3,
+.kortix-markdown [data-streamdown-animating='true'] h4,
+.kortix-markdown [data-streamdown-animating='true'] h5,
+.kortix-markdown [data-streamdown-animating='true'] h6 {
+  animation: stream-word-pop 180ms ease-out forwards;
+}
+
+.kortix-markdown [data-streamdown-animating='true'] code {
+  animation: stream-char-reveal 150ms ease-out forwards;
+}
+
+/* Page-enter motion: soft fade-up for standalone pages (/projects). `both`
+   keeps delayed elements hidden until their turn. Stagger delays are capped
+   so long lists never feel slow — everything past the sixth child enters
+   together. */
+@keyframes kx-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kx-fade-up,
+.kx-stagger > * {
+  animation: kx-fade-up 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.kx-stagger > :nth-child(2) {
+  animation-delay: 40ms;
+}
+.kx-stagger > :nth-child(3) {
+  animation-delay: 80ms;
+}
+.kx-stagger > :nth-child(4) {
+  animation-delay: 120ms;
+}
+.kx-stagger > :nth-child(5) {
+  animation-delay: 160ms;
+}
+.kx-stagger > :nth-child(n + 6) {
+  animation-delay: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kx-fade-up,
+  .kx-stagger > * {
+    animation-name: kx-fade;
+    animation-delay: 0ms;
+  }
+}
+
+@keyframes kx-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Catalogue card reveal — the cards a "View all" uncovers in a category grid.
+
+   Deliberately NOT `.kx-fade-up`. That is page-enter motion for a handful of
+   large blocks, where 300ms and 8px read as considered. This fires on 20+
+   dense cards at once, and at that count the same values read as a wave
+   crawling down the grid: half the travel and two thirds the duration land the
+   whole reveal inside the 300ms UI budget (200ms + a 90ms delay ceiling).
+
+   The delay arrives as a custom property rather than an inline
+   `animation-delay`, so the reduced-motion rule below can actually win. An
+   inline style beats a stylesheet declaration, which meant the stagger
+   survived `prefers-reduced-motion` on `.kx-fade-up` — the movement stopped
+   but the staged reveal did not. */
+@keyframes kx-card-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kx-card-reveal {
+  animation: kx-card-reveal 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: var(--kx-card-reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kx-card-reveal {
+    animation-name: kx-fade;
+    animation-delay: 0ms;
+  }
+}
+
+@keyframes blur-fade-in {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(2px);
+  }
+  50% {
+    opacity: 0.7;
+    filter: blur(3px);
+    transform: translateY(1px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+.kortix-markdown.streaming-active {
+  position: relative;
+}
+
+.kortix-markdown.streaming-active p:last-child,
+.kortix-markdown.streaming-active li:last-child,
+.kortix-markdown.streaming-active
+  div:last-child:not(:has(table)):not(:has(.katex)):not(.katex-math-block) {
+  display: inline;
+}
+
+/* KaTeX — block/display math scrolls horizontally; keep inline math in flow */
+.kortix-markdown .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+
+.kortix-markdown .katex {
+  font-size: 1.05em;
+}
+
+.kortix-markdown[data-streaming='true'] > *:last-child {
+  animation: stream-fade-in 180ms ease-out;
+}
+
+@keyframes text-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.kortix-markdown[data-streaming='true'] > *:last-child {
+  animation: blur-fade-in 0.3s ease-out forwards;
+}
+
+/* Pulse heartbeat animation for reasoning section Kortix icon */
+@keyframes pulse-heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.85;
+  }
+}
+
+.animate-pulse-heartbeat {
+  animation: pulse-heartbeat 1.2s ease-in-out infinite;
+}
+
+/* Shake is pure positional motion; the error state is already conveyed by
+   color/message, so drop it entirely under reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-shake {
+    animation: none;
+  }
+}
+
+/* Limited-iteration pulse — e.g. animate-pulse-3 runs the default pulse 3 times */
+@utility animate-pulse-* {
+  animation-name: pulse;
+  animation-duration: 2s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  animation-iteration-count: --value(integer);
+  animation-iteration-count: --value([integer]);
+}
+
+/* CookieYes consent banner (injected at runtime via Google Tag Manager) is
+   only relevant on the public marketing site. Hide every CookieYes surface by
+   default so it never appears inside the authenticated app (dashboard,
+   settings, etc.); the marketing layout adds `.consent-enabled` to <html>
+   while mounted (see ConsentGate), which re-enables CookieYes's own styles. */
+html:not(.consent-enabled) .cky-consent-container,
+html:not(.consent-enabled) .cky-consent-bar,
+html:not(.consent-enabled) .cky-overlay,
+html:not(.consent-enabled) .cky-modal,
+html:not(.consent-enabled) .cky-btn-revisit-wrapper,
+html:not(.consent-enabled) #cookieyes {
+  display: none !important;
+}
+
+/* CookieYes consent button - right side on desktop, left side on mobile */
+.cky-btn-revisit-wrapper {
+  left: auto !important;
+  right: 20px !important;
+}
+
+@media (max-width: 768px) {
+  .cky-btn-revisit-wrapper {
+    left: 20px !important;
+    right: auto !important;
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  filter: blur(20px);
+  animation: view-transition-sharpen 400ms ease-in-out forwards;
+}
+
+@keyframes view-transition-sharpen {
+  0% {
+    filter: blur(20px);
+  }
+  60% {
+    filter: blur(6px);
+  }
+  100% {
+    filter: blur(0px);
+  }
+}
+
+@keyframes kortix-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes connect-progress-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.animate-connect-progress {
+  animation: connect-progress-slide 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes skeleton-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+@keyframes skeleton-shimmer {
+  to {
+    transform: translateX(300%);
+  }
+}
+.skeleton-animate {
+  background-size: 200% 200%;
+  animation: skeleton-gradient 1s ease infinite;
+}
+.skeleton-shimmer-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.skeleton-shimmer-bar {
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: skeleton-shimmer 1s infinite;
+  position: absolute;
+  top: 0;
+  transform: translateX(-300%);
+}
+
+@keyframes canvas-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.animate-canvas-shimmer {
+  animation: canvas-shimmer 1.8s ease-in-out infinite;
+}
+
+/* ─── Desktop shell chrome (Tauri) ───────────────────────────────────────
+   No visible chrome — the web app's UI extends to the window edge, with
+   the OS traffic lights floating over the sidebar's top-left on macOS.
+   This layer just provides a 28px invisible drag strip + Win/Linux
+   controls. `[data-desktop]` is set on <html> pre-hydration. */
+.kx-desktop-chrome {
+  display: none;
+}
+html[data-desktop='true'] .kx-desktop-chrome {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  z-index: 100;
+  display: flex;
+  align-items: stretch;
+  background: transparent;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+html[data-desktop='true'] .kx-desktop-chrome > * {
+  pointer-events: auto;
+}
+html[data-desktop='true'] .kx-desktop-drag {
+  flex: 1;
+  -webkit-app-region: drag;
+}
+/* macOS: skip the traffic-light gutter so the OS's own click handling owns
+   that area. */
+html[data-desktop-platform='macos'] .kx-desktop-drag {
+  margin-left: 80px;
+}
+html[data-desktop='true'] .kx-desktop-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 4px;
+}
+html[data-desktop-platform='macos'] .kx-desktop-controls {
+  display: none;
+}
+html[data-desktop='true'] .kx-desktop-ctrl {
+  width: 36px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--foreground, #111);
+  opacity: 0.7;
+  cursor: default;
+  border-radius: 4px;
+  transition:
+    background-color 120ms ease,
+    opacity 120ms ease;
+}
+html[data-desktop='true'] .kx-desktop-ctrl:hover {
+  background: color-mix(in oklab, currentColor 12%, transparent);
+  opacity: 1;
+}
+html[data-desktop='true'] .kx-desktop-ctrl-close:hover {
+  background: #e81123;
+  color: #fff;
+  opacity: 1;
+}
+
+/* ─── Native macOS feel — Linear-style title-bar zone ───────────────────
+   Both columns reserve the same 32px title-bar zone at top so their
+   first content rows align (sidebar workspace selector ↔ inset page
+   header), exactly like Linear. The OS traffic lights live in that zone
+   on the sidebar side; the inset side stays clean. The collapse chevron
+   sits underneath the lights in the sidebar's chevron-row, then the
+   workspace selector below — full width, untouched. */
+html[data-desktop-platform='macos'] [data-side='left'] [data-sidebar='header'] {
+  padding-top: var(--kx-titlebar-inset);
+  -webkit-app-region: drag;
+  app-region: drag;
+  transition: padding 240ms ease;
+}
+/* Right sidebar header sits in the same vertical band as the inset's
+   tab bar so the expand/collapse toggle aligns visually with the
+   back/forward/home controls. The React class is h-[38px] (web). On
+   desktop we bump to 52px to give window-control / drag-region room;
+   macOS overrides that to 40px to line up with the traffic lights. */
+html[data-desktop='true'] [data-side='right'] [data-sidebar='header'] {
+  height: 52px;
+}
+html[data-desktop-platform='macos'] [data-side='right'] [data-sidebar='header'] {
+  height: var(--kx-titlebar-inset) !important;
+}
+/* Desktop has no collapsed icon rail: the project sidebar switches to
+   `collapsible="offcanvas"` in the shell (project-sidebar.tsx), so a
+   collapsed sidebar is fully hidden and reopened from the shell toggle
+   next to the window controls. Web keeps the icon rail. */
+/* The inset's title-bar row is the tab bar (`role="tablist"`). The React
+   class is h-[38px] for web. On desktop we bump to 52px to give the
+   window-drag region room; macOS overrides that to 40px to line up with
+   the traffic lights, and turns the bar into a drag region. */
+html[data-desktop='true'] [role='tablist'] {
+  height: 52px;
+  /* Win/Linux only (0px on macOS): the min/max/close cluster floats over this
+     row's right end, so tabs must stop before it. */
+  padding-right: var(--kx-titlebar-controls-width);
+}
+html[data-desktop-platform='macos'] [role='tablist'] {
+  -webkit-app-region: drag;
+  app-region: drag;
+  height: var(--kx-titlebar-inset) !important;
+}
+/* Tab-bar back/forward left padding for the macOS-collapsed-sidebar
+   case is handled in JS (tab-bar.tsx) — read sidebar.state +
+   desktopPlatform(), apply pl-7 conditionally. CSS-only is hard to
+   keep correct as the sidebar state changes. */
+/* Tab label size in the shell.
+   NOTE: this wins over `tabsTriggerTextVariants` in components/ui/tabs.tsx —
+   a descendant selector on <html> outranks the utility class — so it is the
+   ONLY place desktop tab text can be changed. Editing the cva variants alone
+   looks correct and does nothing here.
+
+   Deliberately NOT divided by --kx-desktop-zoom. The band offsets above cancel
+   the zoom because they align to OS-drawn chrome that never scales; text has
+   nothing to align to and must shrink with the rest of the page, or it drifts
+   out of step with every label beside it. So this is an apparent
+   13 × 0.94 ≈ 12.2px, up from 12 × 0.94 ≈ 11.3px. */
+html[data-desktop='true'] [role='tablist'] [role='tab'] {
+  font-size: 13px;
+}
+html[data-desktop-platform='macos'] [data-side='left'] [data-sidebar='header'] button,
+html[data-desktop-platform='macos'] [data-side='left'] [data-sidebar='header'] a,
+html[data-desktop-platform='macos'] [data-side='left'] [data-sidebar='header'] input,
+html[data-desktop-platform='macos'] [data-side='left'] [data-sidebar='header'] [role='button'],
+html[data-desktop-platform='macos'] [role='tablist'] button,
+html[data-desktop-platform='macos'] [role='tablist'] a,
+html[data-desktop-platform='macos'] [role='tablist'] input,
+html[data-desktop-platform='macos'] [role='tablist'] [role='tab'],
+html[data-desktop-platform='macos'] [role='tablist'] [role='button'] {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+/* Inset's first row (the 32px tab bar) sits at y=0 so it occupies the
+   same horizontal band as the traffic lights — tabs align cleanly with
+   the lights instead of being pushed below them. */
+/* macOS top-edge drag strip: a 6px sliver at the very top of the window
+   sits ABOVE all content with `-webkit-app-region: drag`, so the user
+   can grab the window from any horizontal position along its top edge —
+   even areas not covered by the sidebar header or tab bar. The strip is
+   thin enough not to occlude any visible UI. */
+html[data-desktop-platform='macos'] .kx-desktop-chrome {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  z-index: 9999;
+  display: block;
+  pointer-events: auto;
+  background: transparent;
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+html[data-desktop-platform='macos'] .kx-desktop-drag {
+  -webkit-app-region: drag;
+  app-region: drag;
+  flex: none;
+  height: 100%;
+  width: 100%;
+}
+html[data-desktop-platform='macos'] .kx-desktop-controls {
+  display: none;
+}
+/* Drag region: the chrome strip covers the title-bar zone. On macOS the
+   first 80px is the OS traffic-light area; rest is freely draggable. */
+
+/* ─── Desktop title-bar inset (shared) ───────────────────────────────────
+   Vertical space reserved at the very top of the window for the OS window
+   controls, so top-reaching surfaces (the AppHeader, full-screen modals)
+   never sit under them. Zero on the web; on desktop, tall enough to clear
+   the macOS traffic lights / the Win-Linux control cluster. */
+/* Win/Linux baseline. The window controls are drawn by the web layer
+   (.kx-desktop-ctrl) top-RIGHT, so the top-LEFT corner is free and the app's
+   own control can hug it.
+
+   ─── The shell zoom, and who has to cancel it ───
+   The shell runs the page at DESKTOP_BASE_ZOOM (lib/desktop.ts) — real browser
+   zoom via webContents.setZoomFactor, which rescales the CSS pixel itself.
+
+   These baseline values are NOT compensated, on purpose. Every control this
+   block clears is drawn by the WEB layer (.kx-desktop-ctrl), so it shrinks by
+   exactly the same factor the reservation does; cancelling the zoom here would
+   reserve 124 window px for a cluster that now occupies 111.6. On Win/Linux
+   the top-LEFT corner has no OS chrome to align to at all, so the band simply
+   scales with the page.
+
+   macOS is the exception and compensates below — see that block. */
+html[data-desktop='true'] {
+  --kx-desktop-zoom: 0.94;
+  /* Box of a control sitting IN the band. `control-top` is derived from this
+     size, so the two must share a coordinate space or the centring drifts. */
+  --kx-titlebar-control-size: 28px;
+  --kx-titlebar-inset: 28px;
+  /* min/max/close: 3 × 36px + 2px gaps + 4px padding. Any row reaching the top
+     of the window keeps its trailing controls out from under them. */
+  --kx-titlebar-controls-width: 124px;
+  /* Placement of the one control the app draws in the band, and of whatever
+     follows it. Consumed as `top-[var(…)]` / `left-[var(…)]` so the React
+     components carry no platform branch of their own. */
+  --kx-titlebar-control-top: 12px;
+  --kx-titlebar-control-left: 8px;
+  --kx-titlebar-content-left: 44px;
+}
+
+/* macOS band geometry. DERIVED — do not hand-edit: these mirror
+   MAC_TITLEBAR / macBandMetrics() in apps/desktop-electron/src/window-chrome.js,
+   which is what positions the traffic lights. The pair is asserted by
+   apps/web/src/features/workspace/project-layout/desktop-titlebar.test.ts. */
+html[data-desktop-platform='macos'] {
+  /* THE reason this block divides and the baseline does not: the traffic
+     lights are drawn by the OS in WINDOW pixels and do not zoom. A literal
+     `left: 72px` would render at 72 × 0.9 = 64.8 window px and slide back
+     toward them — the exact overlap this file exists to prevent.
+
+     Dividing cancels it: 72/0.9 = 80 CSS px × 0.9 = 72 window px, whatever the
+     user's Cmd+/Cmd- has done. Numerators stay the true window-pixel geometry
+     from window-chrome.js, so there is still one source of truth.
+     setDesktopZoom() keeps the variable current; the seed above means the
+     FIRST paint is right rather than snapping after hydration. */
+  --kx-titlebar-control-size: calc(28px / var(--kx-desktop-zoom));
+  /* Band height. The lights are centered in it, so is everything else. */
+  --kx-titlebar-inset: calc(40px / var(--kx-desktop-zoom));
+  /* Right edge of the traffic-light cluster (10 + 12 + 20 × 2). */
+  --kx-titlebar-lights-end: calc(62px / var(--kx-desktop-zoom));
+  /* Top of a 28px control centered on the lights' midline. */
+  --kx-titlebar-control-top: calc(6px / var(--kx-desktop-zoom));
+  /* Left of that control — one gutter clear of the lights. */
+  --kx-titlebar-control-left: calc(72px / var(--kx-desktop-zoom));
+  /* Where content after that control starts. */
+  --kx-titlebar-content-left: calc(108px / var(--kx-desktop-zoom));
+  /* macOS controls are on the LEFT, so the right edge is free. */
+  --kx-titlebar-controls-width: 0px;
+}
+
+/* AppHeader (the breadcrumb bar on standalone pages like /projects, /accounts):
+   Win/Linux shells clear the OS window controls by reserving space ABOVE the
+   header (a blank strip that holds the control cluster). */
+html[data-desktop='true'] .kx-app-header {
+  padding-top: calc(var(--kx-titlebar-inset) + 1rem);
+}
+/* macOS: no reserved strip — the header row IS the title-bar band, shared
+   with the traffic lights (same Linear-style approach as the workspace tab
+   bar). Height is the band itself, with `py-4` zeroed and content
+   flex-centered, so the row's midline is the lights' midline by
+   construction. It used to be a hand-picked 52px against lights centered at
+   30 — 4px out, and silently wrong again after any change to either number.
+
+   The left indent clears the light gutter only while the centered max-w-6xl
+   container would underlap it; on wide windows it falls back to the web's
+   px-mobile values (1.5rem below xl, 0 at xl+) so the header stays aligned
+   with the page. It lands on --kx-titlebar-control-left, the same x as the
+   shell's sidebar toggle, so everything the app draws in the band starts on
+   one vertical line. */
+html[data-desktop-platform='macos'] .kx-app-header {
+  min-height: var(--kx-titlebar-inset);
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: max(
+    1.5rem,
+    calc(var(--kx-titlebar-control-left) - max(0px, (100vw - 72rem) / 2))
+  );
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+@media (min-width: 1280px) {
+  html[data-desktop-platform='macos'] .kx-app-header {
+    padding-left: max(0px, calc(var(--kx-titlebar-control-left) - (100vw - 72rem) / 2));
+  }
+}
+html[data-desktop-platform='macos'] .kx-app-header button,
+html[data-desktop-platform='macos'] .kx-app-header a,
+html[data-desktop-platform='macos'] .kx-app-header input,
+html[data-desktop-platform='macos'] .kx-app-header [role='button'] {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+/* Reusable title-bar spacer: a blank, draggable strip the height of the OS
+   window-control zone. Used by full-screen surfaces (e.g. the Customize modal)
+   whose own header has a fixed height and so can't just grow its top padding.
+   Collapses to nothing on the web. */
+.kx-titlebar-spacer {
+  display: none;
+}
+html[data-desktop='true'] .kx-titlebar-spacer {
+  display: block;
+  height: var(--kx-titlebar-inset);
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+/* (`.kx-customize-header` used to live here. The Customize overlay is a
+   two-column grid now with no header bar of its own, so the class had no
+   element to match — the rules were dead. The overlay clears the band with a
+   `.kx-titlebar-spacer` as its first child instead, which also covers the
+   narrow-window nav variant the old left-only indent never did.) */
+
+/* ─── Rows that reach the top of the window ──────────────────────────────
+   A row rendered as the first in-flow child of the project shell starts at
+   y=0, so it shares the band with the OS window controls: the macOS traffic
+   lights on the left, the Win/Linux cluster on the right. Wear
+   `.kx-titlebar-row` and it indents past whichever applies. Indent only — the
+   row keeps its own height, exactly like .kx-files-header below.
+
+   `data-sidebar-collapsed` gates the left indent: an expanded sidebar covers
+   the lights (and the shell's toggle self-hides), so indenting then would
+   leave a visible hole. Set it from the same `state === 'collapsed'` the row
+   already reads. The right indent is unconditional — the Win/Linux controls
+   are always there, and the variable is 0px on macOS. */
+html[data-desktop='true'] .kx-titlebar-row {
+  padding-right: calc(0.5rem + var(--kx-titlebar-controls-width));
+}
+html[data-desktop='true'] .kx-titlebar-row[data-sidebar-collapsed] {
+  padding-left: var(--kx-titlebar-content-left);
+}
+
+/* Files page header (/projects/[id]/files) — the one page header that reaches
+   the top of the window with nothing above it, so it shares the title-bar row
+   with the OS window controls. No extra vertical space, indent only.
+
+   Below md the header already drops the title under the chrome (`pt-14`), so
+   both indents are scoped to md+ where the title shares the traffic-light row. */
+@media (min-width: 768px) {
+  /* macOS: indent past the lights AND the shell's floating sidebar toggle —
+     --kx-titlebar-content-left is exactly "after both". Only while collapsed;
+     an expanded sidebar covers the lights itself. */
+  html[data-desktop-platform='macos'] .kx-files-header[data-sidebar-collapsed] {
+    padding-left: var(--kx-titlebar-content-left);
+  }
+  /* Win/Linux: window controls live top-right, where the history / proposed-
+     changes / view-mode controls sit. Left stays at the web's `pl-14`. */
+  html[data-desktop='true']:not([data-desktop-platform='macos']) .kx-files-header {
+    padding-right: var(--kx-titlebar-controls-width);
+  }
+}
+
+/* Full-screen / top-reaching modals (e.g. the File Preview modal) start
+   below the title-bar inset on desktop so their own chrome never underlaps
+   the OS window controls. Pairs with `inset-3 sm:inset-4` for the sides. */
+.kx-fullscreen-modal {
+  top: calc(0.75rem + var(--kx-titlebar-inset, 0px));
+}
+@media (min-width: 640px) {
+  .kx-fullscreen-modal {
+    top: calc(1rem + var(--kx-titlebar-inset, 0px));
+  }
+}
+
+/* For a full-bleed (inset-0) modal whose chrome floats from the top via a
+   margin (e.g. the Files file-preview top bar): drop it past the inset too. */
+.kx-titlebar-safe-mt {
+  margin-top: calc(0.75rem + var(--kx-titlebar-inset, 0px));
+}
+
+/* ─── Hit area — expand interactive targets without layout shift ───────────
+   https://bazza.dev/craft/2026/hit-area */
+@utility hit-area-debug {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+    @apply border border-dashed border-blue-500 bg-blue-500/10;
+  }
+  &:hover::before {
+    @apply border border-dashed border-green-500 bg-green-500/10;
+  }
+}
+
+@utility hit-area {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-* {
+  position: relative;
+  --hit-area-t: --spacing(--value(number) * -1);
+  --hit-area-t: calc(--value([*]) * -1);
+  --hit-area-b: --spacing(--value(number) * -1);
+  --hit-area-b: calc(--value([*]) * -1);
+  --hit-area-l: --spacing(--value(number) * -1);
+  --hit-area-l: calc(--value([*]) * -1);
+  --hit-area-r: --spacing(--value(number) * -1);
+  --hit-area-r: calc(--value([*]) * -1);
+  &::before {
+    content: '';
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-x-* {
+  position: relative;
+  --hit-area-l: --spacing(--value(number) * -1);
+  --hit-area-l: calc(--value([*]) * -1);
+  --hit-area-r: --spacing(--value(number) * -1);
+  --hit-area-r: calc(--value([*]) * -1);
+  &::before {
+    content: '';
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-y-* {
+  position: relative;
+  --hit-area-t: --spacing(--value(number) * -1);
+  --hit-area-t: calc(--value([*]) * -1);
+  --hit-area-b: --spacing(--value(number) * -1);
+  --hit-area-b: calc(--value([*]) * -1);
+  &::before {
+    content: '';
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-t-* {
+  position: relative;
+  --hit-area-t: --spacing(--value(number) * -1);
+  --hit-area-t: calc(--value([*]) * -1);
+  &::before {
+    content: '';
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-r-* {
+  position: relative;
+  --hit-area-r: --spacing(--value(number) * -1);
+  --hit-area-r: calc(--value([*]) * -1);
+  &::before {
+    content: '';
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-b-* {
+  position: relative;
+  --hit-area-b: --spacing(--value(number) * -1);
+  --hit-area-b: calc(--value([*]) * -1);
+  &::before {
+    content: '';
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-l-* {
+  position: relative;
+  --hit-area-l: --spacing(--value(number) * -1);
+  --hit-area-l: calc(--value([*]) * -1);
+  &::before {
+    content: '';
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility font-kerning-none {
+  font-kerning: none;
+}
+
+@utility font-kerning-normal {
+  font-kerning: normal;
+}
+
+@utility font-kerning-auto {
+  font-kerning: auto;
+}
+
+@keyframes typing {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+}
+
+@keyframes loading-dots {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.6);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes text-blink {
+  0%,
+  100% {
+    color: var(--primary);
+  }
+  50% {
+    color: var(--muted-foreground);
+  }
+}
+
+@keyframes bounce-dots {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+@keyframes thin-pulse {
+  0%,
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.4;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer-text {
+  0% {
+    background-position: 150% center;
+  }
+  100% {
+    background-position: -150% center;
+  }
+}
+
+@keyframes wave-bars {
+  0%,
+  100% {
+    transform: scaleY(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(0.6);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 50%;
+  }
+  100% {
+    background-position: -200% 50%;
+  }
+}
+
+@keyframes spinner-fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Google/Material circular spinner. Two INDEPENDENTLY-SEAMLESS animations
+   compose into the signature "arc sweeps forward, growing then shrinking":
+     • the <svg> rotates the whole thing at a CONSTANT rate (linear) — base spin.
+     • the arc <circle> rotates a further 360° per cycle (ease-in-out, so it
+       speeds up then slows down) while its length grows then shrinks via
+       stroke-dashoffset.
+   Both loops return to their EXACT start state at 100% (offset 58→58, rotate
+   360°≡0°) AND meet at matching velocity (ease-in-out is ~0 at both ends, linear
+   is constant), so the loop boundary is invisible — no stop/restart glitch.
+   The old version jumped: its dash ended long (dasharray 37) and restarted as a
+   dot (dasharray 1) at a different offset, collapsing visibly every cycle. */
+@keyframes spinner-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinner-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* r=10 → circumference ≈ 62.83. Visible arc = 62.83 − dashoffset, so it breathes
+   between ~28° (offset 58) and ~280° (offset 14). Rotate advances monotonically,
+   so the arc's head and tail only ever move forward — they never rewind. */
+@keyframes spinner-dash {
+  0% {
+    stroke-dashoffset: 58;
+    transform: rotate(0deg);
+  }
+  50% {
+    stroke-dashoffset: 14;
+    transform: rotate(180deg);
+  }
+  100% {
+    stroke-dashoffset: 58;
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spinner-orbit {
+  transform-origin: center;
+  animation: spinner-orbit 1.4s linear infinite;
+}
+
+/* Refresh icon etc. — constant rotation, so linear. (ease-in-out on an infinite
+   full turn visibly stutters at every seam: ends fast, restarts slow.) */
+.animate-spinner-spin {
+  transform-origin: center;
+  animation: spinner-spin 1s linear infinite;
+}
+
+.animate-spinner-dash {
+  transform-origin: center;
+  transform-box: fill-box;
+  stroke-dasharray: 62.83;
+  animation: spinner-dash 1.4s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+@keyframes spinner-spokes {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The spoke spinner TICKS rather than sweeps: steps(8) over a full turn lands
+   each frame exactly one spoke on (45°), so the opacity ramp appears to chase
+   itself around the wheel while the geometry never sits between positions. A
+   smooth rotation here would just look like a spinning asterisk. 0.8s/8 = 100ms
+   a tick — near the classic platform cadence, fast enough to read as busy. */
+.animate-spinner-spokes {
+  transform-origin: center;
+  animation: spinner-spokes 0.8s steps(8) infinite;
+}
+
+/* Reduced motion: keep a calm, constant-speed spin (a loader still needs to
+   signal activity) but drop the arc's grow/shrink and speed modulation. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-spinner-orbit,
+  .animate-spinner-spin {
+    animation: spinner-orbit 1.4s linear infinite;
+  }
+
+  .animate-spinner-dash {
+    animation: none;
+    stroke-dashoffset: 34;
+    transform: none;
+  }
+
+  /* Same bargain as above: a loader still has to signal activity, so keep the
+     rotation but drop the stepping — the 100ms strobe is the part that grates. */
+  .animate-spinner-spokes {
+    animation: spinner-spokes 1.4s linear infinite;
+  }
+}
+
+@keyframes sweep-out {
+  0% {
+    width: 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  60% {
+    width: 100%;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 0;
+  }
+}
+
+.horizontal-sweep {
+  width: 0;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--kortix-blue),
+    var(--kortix-blue),
+    transparent
+  );
+  animation: sweep-out 2.5s ease-out infinite;
+  /* delay so it starts ~when the vertical mask reaches bottom */
+  animation-delay: 1.25s;
+}
+
+@utility px-mobile {
+  @apply px-6 xl:px-0;
+}
+
+.border-overlay {
+  outline: 1px solid rgba(0, 0, 0, 0.1);
+  outline-offset: -1px;
+}
+
+.dark .border-overlay {
+  outline-color: rgba(255, 255, 255, 0.1);
+}

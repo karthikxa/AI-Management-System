@@ -1,0 +1,184 @@
+import { describe, expect, it, beforeAll } from 'bun:test';
+import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
+// DEADLINE_MS is read from env at module load, and static imports are hoisted
+// above top-level code — so we must set the env var and then *dynamically*
+// import the middleware, otherwise it captures the default 28s budget.
+type RequestDeadlineModule = typeof import('../middleware/request-deadline');
+
+let requestDeadline: RequestDeadlineModule['requestDeadline'];
+let isRequestDeadlineHTTPException: RequestDeadlineModule['isRequestDeadlineHTTPException'];
+let RequestDeadlineHTTPException: RequestDeadlineModule['RequestDeadlineHTTPException'];
+let REQUEST_DEADLINE_CODE: RequestDeadlineModule['REQUEST_DEADLINE_CODE'];
+
+beforeAll(async () => {
+  process.env.REQUEST_DEADLINE_MS = '50';
+  const mod = await import('../middleware/request-deadline');
+  requestDeadline = mod.requestDeadline;
+  isRequestDeadlineHTTPException = mod.isRequestDeadlineHTTPException;
+  RequestDeadlineHTTPException = mod.RequestDeadlineHTTPException;
+  REQUEST_DEADLINE_CODE = mod.REQUEST_DEADLINE_CODE;
+});
+
+function makeApp() {
+  const app = new Hono();
+  app.use('/v1/*', (c, next) => requestDeadline(c, next));
+  app.onError((err, c) => {
+    if (err instanceof HTTPException) {
+      return c.json(
+        {
+          error: err.message,
+          code: (err as HTTPException & { code?: string }).code,
+        },
+        err.status,
+      );
+    }
+    return c.json({ error: String(err) }, 500);
+  });
+  const slow = async (c: any) => {
+    await new Promise((r) => setTimeout(r, 500)); // exceeds the 50ms deadline
+    return c.json({ ok: true });
+  };
+  app.get('/v1/projects/x/change-requests', slow); // bounded
+  app.get('/v1/p/sandbox/3000/index.html', slow); // exempt prefix
+  app.get('/v1/projects/x/turn-stream', slow); // JSON relay, bounded
+  app.get('/v1/router/chat/completions', slow); // exempt prefix
+  app.get('/v1/llm/chat/completions', slow); // exempt prefix (LLM streaming)
+  app.post('/v1/connectors/projects/x/connectors', slow); // exempt prefix (git + provider sync)
+  app.post('/v1/billing/webhooks/stripe', slow); // exempt prefix (webhook)
+  app.post('/v1/projects/x/sessions/y/start', slow); // exempt fragment (long sync op)
+  app.post('/v1/projects/x/oauth/openai/start', slow); // exempt fragment (OAuth device flow — start can be slow on a cold replica)
+  app.post('/v1/projects', slow); // exempt method+path (provision)
+  app.get('/v1/projects', slow); // bounded — only POST is exempt
+  app.get('/v1/projects/x/fast', (c) => c.json({ ok: true })); // bounded, fast
+  return app;
+}
+
+describe('requestDeadline', () => {
+  it('returns 503 when a non-streaming request exceeds the deadline', async () => {
+    const res = await makeApp().request('/v1/projects/x/change-requests');
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({
+      error: expect.stringContaining('deadline'),
+      code: 'request_deadline',
+    });
+  });
+
+  it('lets a fast non-streaming request through', async () => {
+    const res = await makeApp().request('/v1/projects/x/fast');
+    expect(res.status).toBe(200);
+  });
+
+  it('exempts the sandbox preview proxy prefix from the deadline', async () => {
+    const res = await makeApp().request('/v1/p/sandbox/3000/index.html');
+    expect(res.status).toBe(200); // would be 503 if bounded
+  });
+
+  it('bounds the JSON turn-stream relay', async () => {
+    const res = await makeApp().request('/v1/projects/x/turn-stream');
+    expect(res.status).toBe(503);
+  });
+
+  it('exempts the LLM router prefix from the deadline', async () => {
+    const res = await makeApp().request('/v1/router/chat/completions');
+    expect(res.status).toBe(200);
+  });
+
+  it('exempts SSE requests via the Accept header', async () => {
+    const res = await makeApp().request('/v1/projects/x/change-requests', {
+      headers: { accept: 'text/event-stream' },
+    });
+    expect(res.status).toBe(200); // exempted despite being slow
+  });
+
+  it('exempts the LLM completions prefix from the deadline', async () => {
+    const res = await makeApp().request('/v1/llm/chat/completions');
+    expect(res.status).toBe(200);
+  });
+
+  it('exempts connector routes that can perform git and provider synchronization', async () => {
+    const res = await makeApp().request('/v1/connectors/projects/x/connectors', {
+      method: 'POST',
+    });
+    expect(res.status).toBe(200);
+  });
+
+  it('exempts billing webhooks from the deadline', async () => {
+    const res = await makeApp().request('/v1/billing/webhooks/stripe', {
+      method: 'POST',
+    });
+    expect(res.status).toBe(200);
+  });
+
+  it('exempts long sync sandbox ops (start) via fragment', async () => {
+    const res = await makeApp().request('/v1/projects/x/sessions/y/start', {
+      method: 'POST',
+    });
+    expect(res.status).toBe(200);
+  });
+
+  it('exempts the provider OAuth device flow start (can be slow on a cold replica)', async () => {
+    const res = await makeApp().request('/v1/projects/x/oauth/openai/start', {
+      method: 'POST',
+    });
+    expect(res.status).toBe(200);
+  });
+
+  it('exempts POST /v1/projects (provision) but keeps GET /v1/projects bounded', async () => {
+    const post = await makeApp().request('/v1/projects', { method: 'POST' });
+    expect(post.status).toBe(200);
+    const get = await makeApp().request('/v1/projects');
+    expect(get.status).toBe(503);
+  });
+});
+
+describe('requestDeadline Sentry classification', () => {
+  // Regression for Better Stack pattern 29af03… "Request exceeded the 25s
+  // server processing deadline": the deadline 503 must be identifiable so the
+  // global onError can skip captureException (it's an expected, retryable
+  // degradation, not a crash) while still surfacing as a 503 response.
+  it('throws a RequestDeadlineHTTPException (identifiable, not a bare HTTPException)', async () => {
+    const app = makeApp();
+    const res = await app.request('/v1/projects/x/change-requests');
+    expect(res.status).toBe(503);
+    // The handler in makeApp returns the raw HTTPException; pull it out via a
+    // spy that captures the thrown error before it is serialized.
+    let thrown: unknown;
+    const app2 = new Hono();
+    app2.use('/v1/*', (c, next) => requestDeadline(c, next));
+    app2.get('/v1/projects/x/change-requests', async (c) => {
+      await new Promise((r) => setTimeout(r, 500));
+      return c.json({ ok: true });
+    });
+    app2.onError((err, c) => {
+      thrown = err;
+      if (err instanceof HTTPException) return c.json({ error: err.message }, err.status);
+      return c.json({ error: String(err) }, 500);
+    });
+    await app2.request('/v1/projects/x/change-requests');
+    expect(isRequestDeadlineHTTPException(thrown)).toBe(true);
+    expect(thrown).toBeInstanceOf(RequestDeadlineHTTPException);
+    expect(thrown).toBeInstanceOf(HTTPException);
+    expect((thrown as HTTPException).status).toBe(503);
+  });
+
+  it('isRequestDeadlineHTTPException is false for an unrelated 503 HTTPException', () => {
+    const other = new HTTPException(503, { message: 'sandbox waking up' });
+    expect(isRequestDeadlineHTTPException(other)).toBe(false);
+  });
+
+  it('isRequestDeadlineHTTPException is false for non-errors', () => {
+    expect(isRequestDeadlineHTTPException(null)).toBe(false);
+    expect(isRequestDeadlineHTTPException(undefined)).toBe(false);
+    expect(isRequestDeadlineHTTPException(new Error('boom'))).toBe(false);
+  });
+
+  it('the deadline message reflects the configured budget', () => {
+    const err = new RequestDeadlineHTTPException();
+    // REQUEST_DEADLINE_MS=50 → Math.round(50/1000) = 0s; just assert shape + 503.
+    expect(err.status).toBe(503);
+    expect(err.message).toContain('server processing deadline');
+    expect((err as { code?: string }).code).toBe(REQUEST_DEADLINE_CODE);
+    expect(REQUEST_DEADLINE_CODE).toBe('request_deadline');
+  });
+});

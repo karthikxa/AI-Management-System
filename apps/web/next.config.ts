@@ -1,0 +1,516 @@
+import { withBetterStack } from '@logtail/next';
+import { withSentryConfig } from '@sentry/nextjs';
+import fs from 'fs';
+import { createMDX } from 'fumadocs-mdx/next';
+import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
+import path from 'path';
+import { refreshContentTimestamps } from './scripts/build-content-timestamps.mjs';
+import { copyEmojibaseData, getEmojibaseDataOutputPaths } from './scripts/emojibase-data.mjs';
+import { copyViewerWasm, getViewerWasmOutputPaths } from './scripts/viewer-wasm.mjs';
+
+// --- Content timestamps manifest -----------------------------------------
+// Public AEO surfaces (/api/ai, /llms.txt) expose a `last_modified` field per
+// content record so recency-aware answer-engine retrievers can prefer fresh
+// content. Blog posts and use-cases carry an explicit `date` frontmatter
+// value that public-content.ts reads directly, but docs MDX files and
+// code-rendered marketing pages do not — their lastModified was `null`,
+// deprioritizing 42% of the public index. scripts/build-content-timestamps.mjs
+// (imported above) derives a timestamp for each from the most recent git
+// commit on the source file and writes src/lib/seo/content-timestamps.json,
+// which public-content.ts reads at runtime with a graceful fallback to
+// `undefined` when absent. Runs here (belt-and-suspenders, same pattern as
+// viewer-wasm) so any path that invokes `next build`/`next dev` directly
+// regenerates the manifest. A missing git binary, shallow clone, or write
+// failure leaves the committed manifest in place rather than blocking a build.
+refreshContentTimestamps();
+
+// --- Viewer wasm asset guarantee ------------------------------------------
+// Document viewers (PDF/DOCX/XLSX) fetch their wasm engines from `public/`
+// (see scripts/viewer-wasm.mjs for why). Normally `pnpm dev`/`pnpm build`
+// prepend `node scripts/copy-viewer-wasm.mjs` to populate them, but any path
+// that invokes `next build`/`next dev` directly bypasses that and would
+// silently 404 on these assets at runtime. Belt-and-suspenders: repeat the
+// same copy here as a side effect of loading this config, then verify the
+// outputs actually exist regardless of how the attempt went.
+let viewerWasmCopyError: unknown = null;
+try {
+  copyViewerWasm();
+} catch (err) {
+  viewerWasmCopyError = err;
+}
+const missingViewerWasmOutputs = getViewerWasmOutputPaths().filter(
+  (output) => !fs.existsSync(output),
+);
+if (missingViewerWasmOutputs.length > 0) {
+  throw new Error(
+    `[next.config.ts] scripts/viewer-wasm.mjs failed to produce required viewer wasm asset(s): ` +
+      `${missingViewerWasmOutputs.join(', ')}` +
+      (viewerWasmCopyError ? ` (${(viewerWasmCopyError as Error).message})` : '') +
+      `. Run \`node scripts/copy-viewer-wasm.mjs\` manually to diagnose.`,
+  );
+} else if (viewerWasmCopyError) {
+  // Expected in a slim prod image: `next start` ships a `public/` populated
+  // at build time but not the node_modules the wasm ships in. Only reach
+  // here when the outputs already exist, so it's safe to continue.
+  console.warn(
+    `[next.config.ts] Could not refresh viewer wasm assets (${(viewerWasmCopyError as Error).message}), ` +
+      `but all expected outputs already exist in public/ — continuing.`,
+  );
+}
+
+// --- Emoji dataset guarantee ----------------------------------------------
+// The emoji picker fetches the emojibase dataset from `public/` at first open
+// (see scripts/emojibase-data.mjs for why it is self-hosted rather than pulled
+// from a CDN). Same belt-and-suspenders as the viewer wasm above, and it
+// matters more here: frimousse has no error slot, so a missing dataset is not a
+// 404 anyone sees — it is a picker that spins forever with nothing on screen.
+let emojibaseCopyError: unknown = null;
+try {
+  copyEmojibaseData();
+} catch (err) {
+  emojibaseCopyError = err;
+}
+const missingEmojibaseOutputs = getEmojibaseDataOutputPaths().filter(
+  (output) => !fs.existsSync(output),
+);
+if (missingEmojibaseOutputs.length > 0) {
+  throw new Error(
+    `[next.config.ts] scripts/emojibase-data.mjs failed to produce required emoji dataset file(s): ` +
+      `${missingEmojibaseOutputs.join(', ')}` +
+      (emojibaseCopyError ? ` (${(emojibaseCopyError as Error).message})` : '') +
+      `. Run \`node scripts/copy-emojibase-data.mjs\` manually to diagnose.`,
+  );
+} else if (emojibaseCopyError) {
+  // Expected in a slim prod image: `next start` ships a `public/` populated at
+  // build time but not the node_modules the dataset comes from. Only reach here
+  // when the outputs already exist, so it's safe to continue.
+  console.warn(
+    `[next.config.ts] Could not refresh the emoji dataset (${(emojibaseCopyError as Error).message}), ` +
+      `but all expected outputs already exist in public/ — continuing.`,
+  );
+}
+
+// Unified platform version. Prefer the explicit build env (CI passes
+// NEXT_PUBLIC_KORTIX_VERSION = X.Y.Z-dev.<sha> on dev, clean X.Y.Z on prod);
+// otherwise read the root VERSION file so Vercel builds (which don't pass the
+// build-arg) still report the version. On Vercel, the `prod` branch is the only
+// clean release — any other branch (dev) is a pre-release, so suffix
+// `-dev.<sha8>` so dev.kortix.com tracks the in-progress version instead of
+// showing a bare release number. Falls back to 'dev' locally.
+function resolveKortixVersion(): string {
+  if (process.env.NEXT_PUBLIC_KORTIX_VERSION) return process.env.NEXT_PUBLIC_KORTIX_VERSION;
+  let base = 'dev';
+  try {
+    base = fs.readFileSync(path.join(__dirname, '../../VERSION'), 'utf8').trim();
+  } catch {
+    return 'dev';
+  }
+  const ref = process.env.VERCEL_GIT_COMMIT_REF;
+  if (ref && ref !== 'prod') {
+    const sha = (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 8);
+    return sha ? `${base}-dev.${sha}` : `${base}-dev`;
+  }
+  return base;
+}
+const KORTIX_VERSION = resolveKortixVersion();
+
+// --- Turbopack dev memory eviction ----------------------------------------
+// `experimental.turbopackMemoryEviction` takes exactly `false | 'auto' | 'full'`
+// (docs: /docs/app/api-reference/config/next-config-js/turbopackMemoryEviction).
+// Validate rather than cast: an unset var, an empty string (`FOO= pnpm dev`),
+// and a typo are three different mistakes, and only the first should silently
+// mean "use the default". Casting a raw env string would forward `''` or
+// `'ful'` straight into the config as a value Next never defined.
+function resolveTurbopackMemoryEviction(): false | 'auto' | 'full' {
+  const raw = process.env.KORTIX_TURBOPACK_EVICTION;
+  if (raw === undefined || raw === '') return 'auto';
+  if (raw === 'false') return false;
+  if (raw === 'auto' || raw === 'full') return raw;
+  console.warn(
+    `[next.config.ts] Ignoring KORTIX_TURBOPACK_EVICTION=${JSON.stringify(raw)} — ` +
+      `expected one of 'auto', 'full', 'false'. Falling back to 'auto'.`,
+  );
+  return 'auto';
+}
+
+// Local `pnpm preview` (scripts/dev-local.sh --build) sets KORTIX_PREVIEW_BUILD=1
+// to trade prod-build fidelity for speed: skip the `standalone` file-tracing pass
+// (next start never reads .next/standalone) and skip ESLint.
+const IS_PREVIEW_BUILD = process.env.KORTIX_PREVIEW_BUILD === '1';
+
+// --- Cross-origin dev / preview access -----------------------------------
+// The app is frequently reached through a proxy whose hostname differs from the
+// origin the browser sends: the Kortix platform proxy (p<port>-<id>.localhost:<port>),
+// a Daytona sandbox (<port>-<id>.daytonaproxy01.net), or a Cloudflare quick
+// tunnel (<id>.trycloudflare.com). Next's Server Action CSRF guard
+// (app-render/action-handler.ts) rejects requests where the browser `Origin`
+// doesn't match the `host`/`x-forwarded-host` it sees — surfacing as
+// "Invalid Server Actions request." — and the dev `/_next/*` guard
+// (block-cross-site.ts) blocks the same mismatch for internal assets.
+//
+// Allowlist the known proxy patterns so proxied requests are trusted. Two
+// matchers consume this list with different semantics, so we cover both:
+//   - serverActions.allowedOrigins matches `new URL(origin).host` (INCLUDES port)
+//   - allowedDevOrigins matches `parsedOrigin.hostname` (STRIPS port)
+// Hence both port-qualified (`*.localhost:8008`) and bare (`*.localhost`)
+// patterns are present. Never loosen in production, where this is a real CSRF
+// surface — there, only an explicit KORTIX_ALLOWED_DEV_ORIGINS opt-in applies.
+const EXTRA_ALLOWED_ORIGINS = (process.env.KORTIX_ALLOWED_DEV_ORIGINS ?? '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const ALLOWED_PROXY_ORIGINS =
+  process.env.NODE_ENV === 'production'
+    ? EXTRA_ALLOWED_ORIGINS
+    : [
+        // Direct localhost + Kortix platform proxy (web:3000 exposed on api:8008)
+        '*.localhost',
+        '*.localhost:3000',
+        '*.localhost:8008',
+        // Daytona cloud sandbox proxy
+        '*.daytonaproxy01.net',
+        // Cloudflare quick tunnel (KORTIX_URL in scripts/dev-local.sh)
+        '*.trycloudflare.com',
+        ...EXTRA_ALLOWED_ORIGINS,
+      ];
+
+const nextConfig = (): NextConfig => ({
+  // The frontend data layer lives in the @kortix/sdk workspace package (TS
+  // source), so Next must transpile it.
+  transpilePackages: ['@kortix/sdk'],
+  // Standalone bundles the app for Docker via a slow monorepo-wide file-tracing
+  // pass. Vercel injects a Next adapter. Next 16.3 does not emit the whole-app
+  // NFT for adapter builds, but its standalone finalizer still requires that
+  // file. Disable standalone on Vercel, where the platform does not use it.
+  // See https://github.com/vercel/next.js/issues/96646.
+  output: IS_PREVIEW_BUILD || process.env.VERCEL ? undefined : 'standalone',
+  // Inline the resolved version so NEXT_PUBLIC_KORTIX_VERSION is available in
+  // both the server (runtime-config) and client bundles, even on Vercel.
+  env: {
+    NEXT_PUBLIC_KORTIX_VERSION: KORTIX_VERSION,
+  },
+  // Hide Next.js's persistent dev badge in the corner. It only ever
+  // really matters when there's a build error / route compile issue —
+  // the error overlay still shows in those cases.
+  devIndicators: false,
+
+  // Pin tracing root to monorepo root so standalone preserves
+  // the correct `apps/web/server.js` path structure.
+  outputFileTracingRoot: path.join(__dirname, '../../'),
+
+  // Trust proxied dev/preview origins for internal `/_next/*` requests
+  // (see ALLOWED_PROXY_ORIGINS above for the rationale).
+  allowedDevOrigins: ALLOWED_PROXY_ORIGINS,
+
+  // Skip type checking during build (done in CI via `pnpm typecheck`)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
+  // --- Next.js 16.3 posture ------------------------------------------------
+  // Recording WHY each 16.3 knob is set or left alone, so nobody "adds the
+  // missing config" later or wonders whether we missed the release. The only
+  // knob we set is turbopackMemoryEviction (below) — and only as an escape
+  // hatch, keeping upstream's default.
+  //
+  // Already default-ON in 16.3 — restating them here would be dead config that
+  // silently diverges the day upstream changes a default:
+  //   · experimental.turbopackFileSystemCacheForDev    (default true since 16.1)
+  //   · experimental.turbopackFileSystemCacheForBuild  (default true as of 16.3)
+  //     Measured: warm `next build` compile 36.3s -> 1.9s. Only pays off where
+  //     .next/cache survives between builds — Vercel does this automatically;
+  //     GitHub Actions needs the actions/cache step added in ci.yml.
+  //   · experimental.prefetchInlining                  (default true as of 16.3)
+  //
+  // BEHAVIOUR CHANGE worth knowing even though this app dodges it:
+  //   · experimental.useTypeScriptCli (default true in 16.3) makes `next build`
+  //     shell out to the project's `tsc` instead of loading the TypeScript API.
+  //     Per its docs that checks "the complete project selected by the
+  //     configured tsconfig file ... INCLUDING TEST FILES". 16.2 only checked
+  //     the app's module graph. So on 16.3 a latent type error in a test can
+  //     fail a production build.
+  //     This app is immune ONLY because `typescript.ignoreBuildErrors: true`
+  //     above skips the type-check step entirely (including the CLI checker).
+  //     apps/whitelabel-demo does NOT set it, and 16.3 duly failed its build on
+  //     a pre-existing error in tests/e2e/session-scope.test.ts. Any new app in
+  //     this monorepo inherits that same trap.
+  //     Not adopted here: TypeScript 7 (`typescript@^7`, the 10x native port)
+  //     would speed up the real gate — the separate `tsc --noEmit` — but that
+  //     is a compiler swap with its own diagnostics surface, not part of a
+  //     framework bump. Deliberately left for its own change.
+  //
+  // Not applicable to this app:
+  //   · next/root-params — root params only exist for a dynamic segment ABOVE
+  //     the root layout. src/app's top level is (app)/(auth)/(public)/(system)/
+  //     (utility)/admin/docs/api — all static. Locale comes from next-intl's
+  //     request.ts, not a [lang] segment.
+  //
+  // Deliberately NOT enabled — each is a migration, not a flag flip:
+  //   · cacheComponents + partialPrefetching (Instant Navigations). Requires
+  //     every request-time access to sit under Suspense or `use cache`.
+  //     See https://nextjs.org/docs/app/guides/migrating-to-cache-components
+  //   · reactCompiler + experimental.turbopackRustReactCompiler. The Rust port
+  //     only pays off once Babel is out of the pipeline, and we do not run
+  //     React Compiler at all today — the outstanding react-hooks/* warnings
+  //     need an audit first.
+  //   · experimental.useOffline. Network-resilience retry semantics change how
+  //     failed Server Actions surface; needs its own testing pass.
+  //   · next/error `catchError` boundaries. The clearest win left on the table:
+  //     src/app/error.tsx currently hard-reloads via window.location.reload()
+  //     because React's reset() can only reset client state, and it polls
+  //     reset() on an interval for the transient runtime-not-ready throw. 16.3's
+  //     retry() re-fetches the boundary's children INCLUDING Server Components,
+  //     which is what that code actually wants. Deliberately not done here —
+  //     rewriting the global error boundary is not an upgrade-PR change.
+  //
+  // Automatic in 16.3, nothing to configure, listed so the audit is complete:
+  //   · App Router SSR now uses native Node streams instead of web streams
+  //     (~22% more requests under load upstream). Runtime-only, no API change.
+  //   · import.meta.glob is a Turbopack capability, available without a flag.
+  //   · Immutable static assets reusable across deploys is an ADAPTER feature
+  //     (/docs/app/api-reference/adapters/immutable-static-assets). This app
+  //     uses Vercel's injected adapter and `standalone` only for Docker, so
+  //     there is no custom adapter to configure here.
+  //
+  // Turbopack configuration
+  turbopack: {
+    // Handle Node.js modules that shouldn't be bundled for browser builds
+    // Canvas is a Node.js native module that needs to be externalized (required for Konva & react-konva)
+    resolveAlias: {
+      canvas: {
+        browser: './src/lib/empty-module.ts', // Exclude canvas from browser builds
+      },
+    },
+  },
+
+  // Performance optimizations
+  experimental: {
+    // Next 16 gives a dynamic page segment a client-cache TTL of 0, so every
+    // navigation to a route under `projects/[id]/layout.tsx` (which awaits
+    // cookies(), making the whole subtree dynamic) discards the segment and
+    // repaints its `loading.tsx`. Returning to a tab you visited ten seconds
+    // ago cost a full server roundtrip and a full-page skeleton.
+    //
+    // `prefetch={true}` cannot fix this: with a `loading.js` present, prefetch
+    // only covers layout-to-boundary and the TTL stays in the `dynamic` bucket
+    // (node_modules/next/dist/docs/01-app/02-guides/prefetching.md:61).
+    //
+    // 300s is safe here because every page under `projects/[id]` is a client
+    // component — its RSC payload references a chunk and carries no rendered
+    // data. Page data comes from React Query under its own contract.
+    staleTimes: { dynamic: 300, static: 300 },
+    // Trust proxied dev/preview origins for Server Actions so the email
+    // sign-in (and every other action) isn't rejected as a CSRF mismatch
+    // (see ALLOWED_PROXY_ORIGINS above for the rationale).
+    serverActions: {
+      allowedOrigins: ALLOWED_PROXY_ORIGINS,
+    },
+    // Escape hatch for memory-constrained machines. 16.3 advertises "up to 90%
+    // less dev RAM". That number is eviction-OFF vs eviction-ON within 16.3
+    // (see the chart in /blog/next-16-3-turbopack), not 16.2 vs 16.3. It did
+    // not reproduce here in EITHER framing. Dev-server tree RSS, 24GB Mac,
+    // same 46 routes, sampled 30s after the last compile:
+    //   16.2.0                       5085 MB   (swap 17.9G used at sample)
+    //   16.3.0 eviction false        5559 MB   (swap 15.0G)  <- upstream "Before"
+    //   16.3.0 eviction 'full'       5382 MB   (swap 14.6G)
+    //   16.3.0 eviction 'auto'       7842 MB   (swap 10.7G)  <- shipped default
+    // Turning eviction OFF was not 10x worse; it was the CHEAPEST 16.3 config.
+    // Note the swap column: the run with the MOST free RAM produced the HIGHEST
+    // RSS. On a machine this size the reading tracks OS memory pressure more
+    // than the flag, so treat the deltas as indicative, not exact. The safe
+    // claim: no 16.3 config measured below 16.2, and 90% never appeared.
+    // Default stays 'auto' (upstream's). Set KORTIX_TURBOPACK_EVICTION=full
+    // when the laptop is thrashing. Disk cost is real either way:
+    // .next/dev/cache grew 3.8GB -> 14-15GB.
+    turbopackMemoryEviction: resolveTurbopackMemoryEviction(),
+    // Optimize package imports for faster builds and smaller bundles
+    optimizePackageImports: [
+      '@phosphor-icons/react',
+      'recharts',
+      'date-fns',
+      '@tanstack/react-query',
+      'cmdk',
+      'next-intl',
+    ],
+  },
+
+  // Enable compression
+  compress: true,
+
+  // Optimize images
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    qualities: [75, 100],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ke4pydspzeg0nm0o.public.blob.vercel-storage.com',
+      },
+      // The desktop shell historically launched at /dashboard, which never
+      // existed and fell through to the marketing 404. The authed home is
+      // /projects (see middleware). Redirect so already-shipped desktop builds
+      // (URL baked in at compile time) recover instead of 404ing on launch.
+      // {
+      //   source: '/dashboard',
+      //   destination: '/projects',
+      //   permanent: false,
+      // },
+    ],
+  },
+
+  async redirects() {
+    return [
+      // Canonical self-host doc lives at /docs/self-hosting (fumadocs derives
+      // the slug from content/docs/self-hosting.mdx). The CLI, README, and
+      // most people say "self-host" (no -ing) out loud and in links, which
+      // 404'd here before this redirect existed. Keep this even if the CLI
+      // copy changes — it's cheap insurance against the shorter form living
+      // on in bookmarks, chat history, and muscle memory.
+      {
+        source: '/docs/self-hosting',
+        destination: '/docs/guides/self-hosting',
+        permanent: true,
+      },
+      {
+        source: '/docs/self-host',
+        destination: '/docs/guides/self-hosting',
+        permanent: true,
+      },
+      // Removed pages that may live on in old links and search indexes.
+      // /credits-explained became the help-center credits article; the
+      // /compare section was retired with no direct replacement.
+      {
+        source: '/credits-explained',
+        destination: '/help/credits',
+        permanent: true,
+      },
+      {
+        source: '/compare',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/compare/:path*',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
+
+  async rewrites() {
+    return [
+      // Proxy API calls to backend to avoid CORS in local dev. The target is
+      // env-driven so an isolated `pnpm worktree` instance proxies the browser
+      // to ITS api port; unset (primary `pnpm dev`) keeps the default :8008.
+      {
+        source: '/v1/:path*',
+        destination: `${process.env.KORTIX_API_PROXY_TARGET ?? 'http://localhost:8008'}/v1/:path*`,
+      },
+      // SCIM mounts at the API ROOT (no /v1 prefix) and identity providers call
+      // it server-to-server at whatever origin the admin was shown. In
+      // same-origin deployments that shown origin is the web origin, so /scim
+      // must forward to the API too — without this, the Tenant URL a
+      // self-hosted admin pastes into Entra/Okta would 404.
+      {
+        source: '/scim/:path*',
+        destination: `${process.env.KORTIX_API_PROXY_TARGET ?? 'http://localhost:8008'}/scim/:path*`,
+      },
+      // Same-origin Supabase proxy for the sandbox preview. ENV-GATED: only
+      // active when KORTIX_SUPABASE_PROXY_TARGET is set (scripts/dev-local.sh
+      // run_sandbox_dev), so prod/normal deployments are untouched. The browser
+      // is served SUPABASE_URL=/supabase (same origin it loaded from, reachable
+      // through whatever preview proxy), and this rewrite forwards it to the
+      // in-sandbox Supabase (e.g. http://127.0.0.1:54321) which the browser
+      // cannot reach directly. Covers auth (/supabase/auth/v1/*) and rest
+      // (/supabase/rest/v1/*) and storage paths. Mirrors the /v1 API proxy.
+      ...(process.env.KORTIX_SUPABASE_PROXY_TARGET
+        ? [
+            {
+              source: '/supabase/:path*',
+              destination: `${process.env.KORTIX_SUPABASE_PROXY_TARGET}/:path*`,
+            },
+          ]
+        : []),
+      {
+        source: '/ingest/static/:path*',
+        destination: 'https://eu-assets.i.posthog.com/static/:path*',
+      },
+      {
+        source: '/ingest/:path*',
+        destination: 'https://eu.i.posthog.com/:path*',
+      },
+      {
+        source: '/ingest/flags',
+        destination: 'https://eu.i.posthog.com/flags',
+      },
+    ];
+  },
+
+  // HTTP headers for security, caching and performance
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self';",
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+        ],
+      },
+      {
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/:path*.woff2',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
+  },
+
+  skipTrailingSlashRedirect: true,
+});
+
+const withMDX = createMDX();
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+// Compose config wrappers: next-intl → MDX → Better Stack (structured logs) → Sentry (error tracking)
+export default withSentryConfig(withBetterStack(withMDX(withNextIntl(nextConfig()))), {
+  // Suppresses source map uploading logs during build
+  silent: true,
+
+  // Don't upload source maps during build (we can enable this later)
+  sourcemaps: {
+    disable: true,
+  },
+
+  // Disable Sentry CLI telemetry
+  telemetry: false,
+
+  // Tree-shake Sentry debug logger statements to reduce bundle size
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+  },
+
+  // Route Sentry envelopes through our server to bypass ad-blockers.
+  // Creates an auto-generated route at /monitoring that forwards to the DSN host.
+  tunnelRoute: '/monitoring',
+});

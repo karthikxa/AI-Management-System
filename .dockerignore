@@ -1,0 +1,73 @@
+# ── Exclude everything heavy first ──
+/.git
+.DS_Store
+**/.DS_Store
+*.log
+**/*.log
+.cache
+**/.cache
+**/.venv
+**/__pycache__
+**/.mypy_cache
+**/.pytest_cache
+**/.ruff_cache
+.turbo
+**/.turbo
+**/.terraform
+**/*.tfstate
+**/*.tfstate.*
+.vercel
+**/.vercel
+.buildx-cache
+**/.buildx-cache
+.local
+**/.local
+
+# ── Env files ──
+**/.env
+**/.env.*
+
+# ── Test files ──
+tests
+**/tests
+!core/tests
+!core/tests/**
+!core/kortix-master/tests
+!core/kortix-master/tests/**
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+**/__tests__
+coverage
+**/coverage
+
+# ── Build artifacts ──
+dist
+**/dist
+docs
+**/docs
+*.md
+!core/kortix-master/opencode/**/*.md
+
+# ── Node modules (exclude all EXCEPT standalone output) ──
+# The standalone output is self-contained and MUST keep its node_modules.
+# We exclude node_modules broadly, then whitelist the standalone tree.
+node_modules
+**/node_modules
+
+# ── Next.js build outputs ──
+.next
+**/.next
+
+# ── Whitelist: frontend standalone output (MUST come LAST to override excludes above) ──
+!apps/web/.next
+!apps/web/.next/standalone
+!apps/web/.next/standalone/**
+!apps/web/.next/static
+!apps/web/.next/static/**
+apps/web/.next/cache
+apps/web/.next/cache/**
+
+apps/mobile/.env.example

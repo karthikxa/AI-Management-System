@@ -1,0 +1,155 @@
+import type {
+  AuthedPrincipal,
+  GatewayTrace,
+  ModelRouteInput,
+  UsageEvent,
+} from '@kortix/llm-gateway';
+import { GatewayResolutionError } from '@kortix/llm-gateway';
+import { Hono } from 'hono';
+import { logger } from '../lib/logger';
+import { checkBudget } from './budgets';
+import {
+  authenticatePrincipal,
+  assertLlmBillingActive,
+  authorizeRequest,
+  persistGatewayTrace,
+  recordGatewayUsage,
+} from './hooks';
+import { matchesInternalToken, weakInternalTokenWarnings } from './internal-auth';
+import { gatewayModelCatalog } from './models/catalog-models';
+import { resolveCandidates } from './resolution/resolve-candidates';
+import { resolveGatewayRoute } from './routing';
+
+// HTTP control plane for the OUT-OF-PROCESS gateway pod. Every handler is a thin
+// wrapper over the shared in-process hooks in ./hooks — the standalone service
+// and the in-API mount run identical logic; only the transport (HTTP vs direct
+// call) differs.
+export function createInternalGatewayRoutes() {
+  const app = new Hono();
+  const internalToken = process.env.GATEWAY_INTERNAL_TOKEN;
+
+  for (const warning of weakInternalTokenWarnings(internalToken)) {
+    logger.warn(`[gateway-internal-auth] ${warning}`);
+  }
+
+  app.use('*', async (c, next) => {
+    if (!internalToken) return c.json({ error: 'internal gateway disabled' }, 503);
+    if (!matchesInternalToken(c.req.header('authorization'), internalToken)) {
+      return c.json({ error: 'unauthorized' }, 401);
+    }
+    return next();
+  });
+
+  app.post('/authenticate', async (c) => {
+    const { token } = await c.req.json();
+    if (typeof token !== 'string' || !token) return c.json({ principal: null });
+    return c.json({ principal: await authenticatePrincipal(token) });
+  });
+
+  // Combined gate (auth + billing + budget) — lets the standalone gateway fold
+  // three sequential RPCs into one on the chat-completions hot path.
+  app.post('/authorize', async (c) => {
+    const { token } = await c.req.json();
+    if (typeof token !== 'string' || !token) {
+      return c.json({
+        ok: false,
+        status: 401,
+        errorCode: 'invalid_token',
+        message: 'Invalid token',
+      });
+    }
+    return c.json(await authorizeRequest(token));
+  });
+
+  app.post('/resolve-upstream', async (c) => {
+    const { principal, model } = await c.req.json();
+    try {
+      const candidates = await resolveCandidates(
+        principal as AuthedPrincipal,
+        typeof model === 'string' ? model : '',
+      );
+      return c.json({ candidates });
+    } catch (err) {
+      // resolveCandidates throws a GatewayResolutionError (instead of returning
+      // []) when it can pin down WHY there's no upstream — provider_not_connected
+      // ("Connect Codex to use this model."), plan_upgrade_required, expired
+      // Codex OAuth, model_disabled_on_deployment, model_not_found. These are
+      // EXPECTED, user-facing resolution outcomes the gateway pipeline is
+      // designed to catch and surface as a clean 400 with an actionable
+      // suggestion (see packages/llm-gateway/src/pipeline/handler.ts's dispatch
+      // loop, which treats a thrown GatewayResolutionError as "no candidates,
+      // with a reason"). Letting it propagate here would (a) turn an expected
+      // 4xx into a 500 to the gateway pod, (b) get captured to Sentry/Better
+      // Stack Errors as an unhandled exception (the "Connect Codex" spike,
+      // incident 991624588), and (c) be retried 3x by the api-client. Instead,
+      // return the typed error in a 200 body so the api-client can re-throw it
+      // as a GatewayResolutionError and the in-process hook contract holds.
+      if (err instanceof GatewayResolutionError) {
+        logger.warn(`[gateway-internal] resolution failed for "${model}": ${err.code} — ${err.message}`);
+        return c.json({
+          candidates: [],
+          resolutionError: { code: err.code, message: err.message, suggestion: err.suggestion },
+        });
+      }
+      throw err;
+    }
+  });
+
+  app.post('/resolve-route', async (c) => {
+    const { principal, input } = await c.req.json();
+    const route = await resolveGatewayRoute(principal as AuthedPrincipal, input as ModelRouteInput);
+    return c.json({ route });
+  });
+
+  app.post('/budget-check', async (c) => {
+    const { principal } = await c.req.json();
+    return c.json(await checkBudget(principal as AuthedPrincipal));
+  });
+
+  app.post('/models', async (c) => {
+    const { principal } = await c.req.json();
+    const p = principal as AuthedPrincipal;
+    return c.json({
+      models: gatewayModelCatalog(p.projectId, {
+        freeManagedOnly: !!p.freeModelsOnly,
+      }),
+    });
+  });
+
+  app.post('/billing', async (c) => {
+    const { accountId } = await c.req.json();
+    try {
+      const result = await assertLlmBillingActive(accountId);
+      return c.json({ active: true, holdUsd: result?.holdUsd });
+    } catch (err) {
+      return c.json({
+        active: false,
+        message: err instanceof Error ? err.message : 'subscription required',
+      });
+    }
+  });
+
+  app.post('/usage', async (c) => {
+    const { event } = await c.req.json();
+    await recordGatewayUsage(event as UsageEvent);
+    return c.json({ ok: true });
+  });
+
+  app.post('/trace', async (c) => {
+    const { trace } = await c.req.json();
+    if (!trace || typeof trace.requestId !== 'string') return c.json({ ok: false }, 400);
+    // Trace persistence is best-effort observability — never 500 the gateway's
+    // fire-and-forget trace post if the write fails.
+    try {
+      await persistGatewayTrace(trace as GatewayTrace);
+    } catch (err) {
+      logger.warn(`[gateway] persistGatewayTrace failed for ${trace.requestId}`, {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return c.json({ ok: false }, 200);
+    }
+    return c.json({ ok: true });
+  });
+
+  return app;
+}
