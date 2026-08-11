@@ -1,0 +1,222 @@
+# ── prod environment — api.kortix.com on ECS Fargate (autoscaled, HA) ─────────
+#
+#   api.kortix.com → Cloudflare (proxied, Full strict) → ALB → ECS Fargate
+#   service (autoscaled on CPU/memory, min 3 tasks across 2 AZs) in private
+#   subnets, egress via per-AZ NAT.
+#
+# SAME modules as dev (../dev) — prod just runs bigger numbers, no Spot, a NAT
+# per AZ, and Container Insights on. min_capacity=3 preserves one healthy
+# replica if two tasks fail together. Not applied
+# automatically. See README.md.
+
+terraform {
+  required_version = ">= 1.5"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0"
+    }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = ">= 4.0, < 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
+provider "cloudflare" {
+  # Auth precedence (mirrors ../dev): scoped API token → global API key
+  # (email + key) → format-valid dummy token (so an apply with no CF creds, e.g.
+  # plan-only, doesn't reject an empty token). DNS/ACM validation needs real creds.
+  api_token = var.cloudflare_api_token != "" ? var.cloudflare_api_token : (var.cloudflare_api_key != "" ? null : "0000000000000000000000000000000000000000")
+  email     = var.cloudflare_api_key != "" ? var.cloudflare_email : null
+  api_key   = var.cloudflare_api_key != "" ? var.cloudflare_api_key : null
+}
+
+locals {
+  name   = "kortix-prod"
+  domain = var.api_domain
+  # Cloudflare record name = the subdomain label(s) before the zone apex. For
+  # "new-api.kortix.com" → "new-api"; for "api.kortix.com" → "api". (Single-label
+  # subdomain on the kortix.com zone, which is all we use here.)
+  dns_record_name = replace(var.api_domain, ".kortix.com", "")
+  # Cloudflare's published IPv4 edge ranges. Lock the public ALB to these so the
+  # origin can only be reached THROUGH Cloudflare — no direct-to-origin bypass of
+  # the WAF / rate limiting. Mirrors the EKS chart inboundCidrs and the
+  # devops/argocd ingress allowlist. Refresh from https://www.cloudflare.com/ips-v4.
+  cloudflare_ip_ranges = [
+    "173.245.48.0/20", "103.21.244.0/22", "103.22.200.0/22", "103.31.4.0/22",
+    "141.101.64.0/18", "108.162.192.0/18", "190.93.240.0/20", "188.114.96.0/20",
+    "197.234.240.0/22", "198.41.128.0/17", "162.158.0.0/15", "104.16.0.0/13",
+    "104.24.0.0/14", "172.64.0.0/13", "131.0.72.0/22",
+  ]
+  tags = {
+    Environment = "prod"
+    Service     = "kortix-api"
+    ManagedBy   = "terraform"
+  }
+}
+
+module "network" {
+  source             = "../../modules/network"
+  name               = local.name
+  cidr               = "10.20.0.0/16"
+  az_count           = 2
+  single_nat_gateway = false # prod: NAT per AZ for HA
+  tags               = local.tags
+}
+
+module "acm" {
+  source                    = "../../modules/acm-cloudflare"
+  domain_name               = local.domain
+  subject_alternative_names = var.extra_api_hostnames
+  zone_id                   = var.cloudflare_zone_id
+  tags                      = local.tags
+  providers = {
+    aws        = aws
+    cloudflare = cloudflare
+  }
+}
+
+# The env secret blob is the source of truth for the container environment.
+# ECS injects the complete JSON document through one stable selector. The
+# application expands it before any configuration module reads process.env.
+# Looked up by name so the random ARN suffix is never hard-coded.
+data "aws_secretsmanager_secret" "env" {
+  name = "kortix-prod-env"
+}
+
+module "api" {
+  source     = "../../modules/ecs-api"
+  name       = local.name
+  aws_region = var.aws_region
+
+  vpc_id = module.network.vpc_id
+  public_subnet_ids = [
+    module.network.public_subnet_ids[0],
+    module.network.public_subnet_ids[1],
+  ]
+  private_subnet_ids = module.network.private_subnet_ids
+
+  image             = var.api_image
+  container_port    = var.container_port
+  certificate_arn   = module.acm.certificate_arn
+  health_check_path = "/health/ready"
+  environment       = var.api_environment
+  secrets           = var.api_secrets
+  secrets_blob_arn  = data.aws_secretsmanager_secret.env.arn
+
+  # Only Cloudflare's edge may reach the ALB (no direct-to-origin WAF bypass).
+  alb_ingress_cidrs = local.cloudflare_ip_ranges
+
+  # prod sizing: bigger tasks, HA floor of 2, no spot, insights on
+  task_cpu           = 1024
+  task_memory        = 4096
+  desired_count      = 3
+  min_capacity       = 3
+  max_capacity       = 10
+  use_fargate_spot   = false
+  container_insights = true
+  cpu_target         = 55
+  memory_target      = 65
+  # Load-proportional scaling. CPU/mem alone left the service flat during the
+  # 2026-06-08 DB-contention incident. ~200 req/min/target is normal and peaks
+  # ~256; 600 only scales out on a genuine sustained surge (no flapping). Tune
+  # down once steady-state per-target load is confirmed. NOTE: the incident was
+  # slow-operation-driven, not load-driven, so this is general resilience, not
+  # the primary fix (that's the DB pool + statement_timeout in app code).
+  requests_per_target_target = 600
+  tags                       = local.tags
+}
+
+# ── Gateway (LLM proxy) — its own ECS Fargate service + CF-validated cert ─────
+# The prod gateway leaves EKS onto Fargate too. eu-west-2 has no *.kortix.com
+# wildcard, so it gets a dedicated cert for its ECS origin hostname
+# (gateway-ecs-fargate.kortix.com) — required for Cloudflare Full(strict). Unlike
+# dev/staging it runs on-demand (NOT Spot — it's the LLM path) with an HA floor of
+# 2 across AZs. gateway.kortix.com stays the Worker's hostname (not managed here).
+module "acm_gateway" {
+  source      = "../../modules/acm-cloudflare"
+  domain_name = var.gateway_domain
+  zone_id     = var.cloudflare_zone_id
+  tags        = local.tags
+  providers = {
+    aws        = aws
+    cloudflare = cloudflare
+  }
+}
+
+module "gateway" {
+  source     = "../../modules/ecs-api"
+  name       = "${local.name}-gateway"
+  aws_region = var.aws_region
+
+  vpc_id             = module.network.vpc_id
+  public_subnet_ids  = module.network.public_subnet_ids
+  private_subnet_ids = module.network.private_subnet_ids
+
+  image             = var.gateway_image
+  container_name    = "gateway"
+  container_port    = 8090
+  health_check_path = "/health/live"
+  certificate_arn   = module.acm_gateway.certificate_arn
+  environment       = merge(var.gateway_environment, { KORTIX_API_URL = "https://api.kortix.com" })
+  secrets           = var.api_secrets
+  secrets_blob_arn  = data.aws_secretsmanager_secret.env.arn
+
+  alb_ingress_cidrs = local.cloudflare_ip_ranges
+
+  # prod gateway: on-demand (no Spot — LLM path), HA floor of 2, insights on
+  task_cpu           = 512
+  task_memory        = 1024
+  desired_count      = 2
+  min_capacity       = 2
+  max_capacity       = 6
+  use_fargate_spot   = false
+  container_insights = true
+  tags               = local.tags
+}
+
+# DNS for the public API hostname. Gated by manage_dns so the stack (VPC/ALB/
+# ECS/cert) can be built and validated WITHOUT touching the live api.kortix.com
+# record — the cutover (repoint api.kortix.com → this ALB) is done deliberately
+# once the new stack is verified against the prod DB, and is instantly
+# reversible. ACM validation records (in module.acm) are unique and always created.
+module "dns" {
+  source  = "../../modules/cloudflare-dns"
+  count   = var.manage_dns ? 1 : 0
+  zone_id = var.cloudflare_zone_id
+
+  records = {
+    api = {
+      name    = local.dns_record_name
+      type    = "CNAME"
+      value   = module.api.alb_dns_name
+      proxied = true
+      ttl     = 1
+    }
+  }
+}
+
+# Extra public API hostnames → the ALB. Used to expose the new stack under an
+# UNLOCKED hostname (e.g. api-prod.kortix.com) while the canonical
+# api.kortix.com record stays tunnel-locked on the old box. Each is a proxied
+# CNAME and is covered by the cert via var.extra_api_hostnames (the ACM SANs).
+module "dns_extra" {
+  source  = "../../modules/cloudflare-dns"
+  count   = length(var.extra_api_hostnames) > 0 ? 1 : 0
+  zone_id = var.cloudflare_zone_id
+
+  records = {
+    for h in var.extra_api_hostnames : replace(h, ".kortix.com", "") => {
+      name    = replace(h, ".kortix.com", "")
+      type    = "CNAME"
+      value   = module.api.alb_dns_name
+      proxied = true
+      ttl     = 1
+    }
+  }
+}
