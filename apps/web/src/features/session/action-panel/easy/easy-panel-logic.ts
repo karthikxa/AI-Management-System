@@ -5,7 +5,7 @@
 
 import { parseLocalhostUrl } from '@/lib/utils/sandbox-url';
 import type { BrowserRecent } from '@/stores/browser-recents-store';
-import type { PreviewPortProbe } from '@kortix/sdk';
+import type { PreviewPortProbe } from '@zed/sdk';
 import type { OutputItem } from '../shared/derive-panels';
 import type { Step } from '../shared/group-steps';
 import type { RunOutcome } from '../shared/run-outcome';

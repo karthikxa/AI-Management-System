@@ -13,7 +13,7 @@ describe('hasFileExtension', () => {
   test('treats dot-directories as having no extension (the .opencode bug)', () => {
     expect(hasFileExtension('/workspace/.opencode')).toBe(false);
     expect(hasFileExtension('.github')).toBe(false);
-    expect(hasFileExtension('/repo/.kortix')).toBe(false);
+    expect(hasFileExtension('/repo/.zed')).toBe(false);
   });
 
   test('treats extensionless dotfiles as having no extension', () => {

@@ -3,7 +3,7 @@
  * members-view).
  *
  * Cards:
- *   • Invite by email — add a Kortix user at a chosen role; non-Kortix emails get
+ *   • Invite by email — add a Zed user at a chosen role; non-Zed emails get
  *     an invitation.
  *   • Pending invitations — emailed invites not yet accepted; resend / revoke.
  *   • Project access — everyone with access: implicit owners/admins (Manager),
@@ -211,7 +211,7 @@ function InviteCard({ projectId, isDark }: { projectId: string; isDark: boolean 
 
   return (
     <View style={{ borderRadius: 16, borderWidth: 1, borderColor: c.border, backgroundColor: c.cardBg, padding: 16 }}>
-      <CardHeader title="Invite by email" description="Add a Kortix user. If they don't have an account yet, they'll get an invitation email." isDark={isDark} />
+      <CardHeader title="Invite by email" description="Add a Zed user. If they don't have an account yet, they'll get an invitation email." isDark={isDark} />
       <View style={{ marginTop: 12 }}>
         <TextInput
           value={email}

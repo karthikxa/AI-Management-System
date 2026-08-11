@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test';
-import { parseManifestText } from '@kortix/manifest-schema';
+import { parseManifestText } from '@zed/manifest-schema';
 
 // compile-agent-config.ts's I/O half imports the real ../git module, which
 // shells out to git + pulls in config/db — none of that runs in a bun:test
@@ -66,30 +66,30 @@ const {
 type OpencodeConfig = Awaited<ReturnType<typeof compileAgentConfig>> & object;
 
 // Governance-only v2 manifest — the 2026-07-05 redirect's shape. Behavior
-// lives in each agent's own `.kortix/opencode/agents/<name>.md`.
+// lives in each agent's own `.zed/opencode/agents/<name>.md`.
 const GOVERNANCE_FIXTURE = `
-kortix_version: 2
+zed_version: 2
 default_agent: support
 
 agents:
   support:
     connectors: [github, slack]
     secrets: [STRIPE_KEY, GH_TOKEN]
-    kortix_cli: [project.session.start, project.cr.open]
+    zed_cli: [project.session.start, project.cr.open]
     workspace: runtime
   pr-bot:
     connectors: [github]
-    kortix_cli: [project.cr.open, project.cr.merge, project.review.submit]
+    zed_cli: [project.cr.open, project.cr.merge, project.review.submit]
 `;
 
 const V1_FIXTURE_TOML = `
-kortix_version = 1
+zed_version = 1
 
 [project]
 name = "acme"
 
 [[agents]]
-name = "kortix"
+name = "zed"
 connectors = "all"
 `;
 
@@ -129,8 +129,8 @@ describe('KNOWN_BEHAVIOR_KEYS / OpencodeAgentConfigSchema coordination', () => {
 });
 
 describe('agentMarkdownPath', () => {
-  test('defaults to .kortix/opencode/agents/<name>.md', () => {
-    expect(agentMarkdownPath({}, 'support')).toBe('.kortix/opencode/agents/support.md');
+  test('defaults to .zed/opencode/agents/<name>.md', () => {
+    expect(agentMarkdownPath({}, 'support')).toBe('.zed/opencode/agents/support.md');
   });
 
   test('honors a custom top-level [opencode] config_dir', () => {
@@ -141,12 +141,12 @@ describe('agentMarkdownPath', () => {
 });
 
 describe('compileAgentConfig — v1 is a compiler no-op', () => {
-  test('returns null for a kortix_version 1 manifest', () => {
+  test('returns null for a zed_version 1 manifest', () => {
     const manifest = parseManifestText(V1_FIXTURE_TOML, 'toml');
     expect(compileAgentConfig(manifest)).toBeNull();
   });
 
-  test('returns null when kortix_version is missing entirely', () => {
+  test('returns null when zed_version is missing entirely', () => {
     expect(compileAgentConfig({ project: { name: 'x' } })).toBeNull();
   });
 
@@ -159,7 +159,7 @@ describe('compileAgentConfig — v1 is a compiler no-op', () => {
 describe('compileAgentConfig — behavior comes from the agent .md, not the manifest', () => {
   const manifest = parseYaml(GOVERNANCE_FIXTURE);
   const agentMdFiles = {
-    '.kortix/opencode/agents/support.md': supportMd(
+    '.zed/opencode/agents/support.md': supportMd(
       [
         'description: "Handles customer support triage"',
         'model: anthropic/claude-sonnet-5',
@@ -175,7 +175,7 @@ describe('compileAgentConfig — behavior comes from the agent .md, not the mani
       ].join('\n'),
       'You triage customer support tickets with empathy and precision.',
     ),
-    '.kortix/opencode/agents/pr-bot.md': supportMd(
+    '.zed/opencode/agents/pr-bot.md': supportMd(
       ['mode: subagent'].join('\n'),
       'You review and land pull requests, following the house style guide.',
     ),
@@ -205,12 +205,12 @@ describe('compileAgentConfig — behavior comes from the agent .md, not the mani
     });
   });
 
-  test('never copies governance fields (connectors/secrets/kortix_cli/workspace) — no runtime representation', () => {
+  test('never copies governance fields (connectors/secrets/zed_cli/workspace) — no runtime representation', () => {
     const compiled = compileAgentConfig(manifest, 'opencode', agentMdFiles) as OpencodeConfig;
     for (const agentConfig of Object.values(compiled.agent)) {
       expect(agentConfig).not.toHaveProperty('connectors');
       expect(agentConfig).not.toHaveProperty('secrets');
-      expect(agentConfig).not.toHaveProperty('kortix_cli');
+      expect(agentConfig).not.toHaveProperty('zed_cli');
       expect(agentConfig).not.toHaveProperty('workspace');
     }
   });
@@ -223,14 +223,14 @@ describe('compileAgentConfig — behavior comes from the agent .md, not the mani
 
   test('omits top-level model when the default agent declares none', () => {
     const noModelManifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: pr-bot
 agents:
   pr-bot:
-    kortix_cli: []
+    zed_cli: []
 `);
     const compiled = compileAgentConfig(noModelManifest, 'opencode', {
-      '.kortix/opencode/agents/pr-bot.md': supportMd('mode: subagent', 'Reviews PRs'),
+      '.zed/opencode/agents/pr-bot.md': supportMd('mode: subagent', 'Reviews PRs'),
     }) as OpencodeConfig;
     expect(compiled.model).toBeUndefined();
   });
@@ -239,28 +239,28 @@ agents:
 describe('compileAgentConfig — a stock OpenCode agent .md with frontmatter compiles cleanly', () => {
   test('no illegal-frontmatter error — frontmatter is expected, never illegal', () => {
     const manifest = parseYaml(`
-kortix_version: 2
-default_agent: kortix
+zed_version: 2
+default_agent: zed
 agents:
-  kortix:
+  zed:
     connectors: all
     secrets: all
 `);
     const content = supportMd(
       ['mode: primary', 'model: anthropic/claude-sonnet-5', 'permission: allow'].join('\n'),
-      'You are a general-purpose Kortix agent.',
+      'You are a general-purpose Zed agent.',
     );
     expect(() =>
-      compileAgentConfig(manifest, 'opencode', { '.kortix/opencode/agents/kortix.md': content }),
+      compileAgentConfig(manifest, 'opencode', { '.zed/opencode/agents/zed.md': content }),
     ).not.toThrow();
     const compiled = compileAgentConfig(manifest, 'opencode', {
-      '.kortix/opencode/agents/kortix.md': content,
+      '.zed/opencode/agents/zed.md': content,
     }) as OpencodeConfig;
-    expect(compiled.agent.kortix).toEqual({
+    expect(compiled.agent.zed).toEqual({
       mode: 'primary',
       model: 'anthropic/claude-sonnet-5',
       permission: 'allow',
-      prompt: 'You are a general-purpose Kortix agent.',
+      prompt: 'You are a general-purpose Zed agent.',
     });
   });
 });
@@ -268,7 +268,7 @@ agents:
 describe('compileAgentConfig — governance-only agent block with no .md yet', () => {
   test('an agent with no `.md` content supplied compiles to governance overlay only', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: fresh
 agents:
   fresh:
@@ -280,13 +280,13 @@ agents:
 
   test('a body-only .md (no frontmatter at all) compiles with just the prompt', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a: {}
 `);
     const compiled = compileAgentConfig(manifest, 'opencode', {
-      '.kortix/opencode/agents/a.md': 'Just the body, no frontmatter.',
+      '.zed/opencode/agents/a.md': 'Just the body, no frontmatter.',
     }) as OpencodeConfig;
     expect(compiled.agent.a).toEqual({ prompt: 'Just the body, no frontmatter.' });
   });
@@ -295,27 +295,27 @@ agents:
 describe('compileAgentConfig — `enabled: false` governance overlay', () => {
   test('forces `disable: true` regardless of the .md', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a:
     enabled: false
 `);
     const compiled = compileAgentConfig(manifest, 'opencode', {
-      '.kortix/opencode/agents/a.md': supportMd('disable: false', 'Body.'),
+      '.zed/opencode/agents/a.md': supportMd('disable: false', 'Body.'),
     }) as OpencodeConfig;
     expect(compiled.agent.a.disable).toBe(true);
   });
 
   test('a hand-authored `disable: true` in the .md passes through when `enabled` is omitted', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a: {}
 `);
     const compiled = compileAgentConfig(manifest, 'opencode', {
-      '.kortix/opencode/agents/a.md': supportMd('disable: true', 'Body.'),
+      '.zed/opencode/agents/a.md': supportMd('disable: true', 'Body.'),
     }) as OpencodeConfig;
     expect(compiled.agent.a.disable).toBe(true);
   });
@@ -324,7 +324,7 @@ agents:
 describe('compileAgentConfig — malformed .md frontmatter throws', () => {
   test('an invalid mode value throws a clear CompileAgentConfigError', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: support
 agents:
   support: {}
@@ -332,24 +332,24 @@ agents:
     const content = supportMd('mode: bogus', 'Body.');
     expect(() =>
       compileAgentConfig(manifest, 'opencode', {
-        '.kortix/opencode/agents/support.md': content,
+        '.zed/opencode/agents/support.md': content,
       }),
     ).toThrow(CompileAgentConfigError);
     try {
-      compileAgentConfig(manifest, 'opencode', { '.kortix/opencode/agents/support.md': content });
+      compileAgentConfig(manifest, 'opencode', { '.zed/opencode/agents/support.md': content });
       throw new Error('unreachable');
     } catch (err) {
       expect(err).toBeInstanceOf(CompileAgentConfigError);
       const message = (err as InstanceType<typeof CompileAgentConfigError>).message;
       expect(message).toContain('support');
-      expect(message).toContain('.kortix/opencode/agents/support.md');
+      expect(message).toContain('.zed/opencode/agents/support.md');
       expect(message).toContain('mode');
     }
   });
 
   test('a malformed permission tree throws', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: support
 agents:
   support: {}
@@ -357,7 +357,7 @@ agents:
     const content = supportMd('permission: sometimes', 'Body.');
     expect(() =>
       compileAgentConfig(manifest, 'opencode', {
-        '.kortix/opencode/agents/support.md': content,
+        '.zed/opencode/agents/support.md': content,
       }),
     ).toThrow(CompileAgentConfigError);
   });
@@ -366,7 +366,7 @@ agents:
 describe('compileAgentConfig — `skills` governance maps to permission.skill', () => {
   test('"all" compiles to a bare allow', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a:
@@ -378,7 +378,7 @@ agents:
 
   test('"none" compiles to a bare deny', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a:
@@ -390,7 +390,7 @@ agents:
 
   test('an empty list behaves like "none" (safe default)', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a:
@@ -402,7 +402,7 @@ agents:
 
   test('a specific list compiles to a glob map — named skills allow, `*` denies the rest', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a:
@@ -416,14 +416,14 @@ agents:
 
   test('governance `skills` overrides a hand-authored permission.skill rule in the .md', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a:
     skills: all
 `);
     const compiled = compileAgentConfig(manifest, 'opencode', {
-      '.kortix/opencode/agents/a.md': supportMd(
+      '.zed/opencode/agents/a.md': supportMd(
         ['permission:', '  skill: deny', '  edit: ask'].join('\n'),
         'Body.',
       ),
@@ -433,14 +433,14 @@ agents:
 
   test('a bare whole-agent permission action from the .md is expanded so `skills` can own just `skill`', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a:
     skills: none
 `);
     const compiled = compileAgentConfig(manifest, 'opencode', {
-      '.kortix/opencode/agents/a.md': supportMd('permission: allow', 'Body.'),
+      '.zed/opencode/agents/a.md': supportMd('permission: allow', 'Body.'),
     }) as OpencodeConfig;
     const permission = compiled.agent.a.permission as Record<string, unknown>;
     expect(permission.skill).toBe('deny');
@@ -450,13 +450,13 @@ agents:
 
   test('omitting `skills` leaves a hand-authored permission.skill untouched', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a: {}
 `);
     const compiled = compileAgentConfig(manifest, 'opencode', {
-      '.kortix/opencode/agents/a.md': supportMd(
+      '.zed/opencode/agents/a.md': supportMd(
         ['permission:', '  skill:', '    "trusted-*": allow', '    "*": deny'].join('\n'),
         'Body.',
       ),
@@ -468,7 +468,7 @@ agents:
 
   test('never surfaces as a `skills` key on the compiled agent config (no runtime representation of its own)', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a:
@@ -482,7 +482,7 @@ agents:
 describe('compileAgentConfig — unsupported runtime (v2 manifest)', () => {
   test('throws for a runtime other than opencode', () => {
     const manifest = parseYaml(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a: {}
@@ -497,7 +497,7 @@ const PROJECT = {
   projectId: 'proj-1',
   repoUrl: 'https://example.test/acme/repo.git',
   defaultBranch: 'main',
-  manifestPath: 'kortix.yaml',
+  manifestPath: 'zed.yaml',
   gitAuthToken: null,
 };
 
@@ -508,15 +508,15 @@ describe('resolveCompiledAgentConfigForSession', () => {
   });
 
   test('returns null for a v1 manifest — v1 projects are unaffected', async () => {
-    manifestFile = { path: 'kortix.toml', content: V1_FIXTURE_TOML };
+    manifestFile = { path: 'zed.toml', content: V1_FIXTURE_TOML };
     expect(await resolveCompiledAgentConfigForSession(PROJECT)).toBeNull();
   });
 
   test("reads each declared agent's conventional .md and returns the compiled JSON for a v2 manifest", async () => {
-    manifestFile = { path: 'kortix.yaml', content: GOVERNANCE_FIXTURE };
+    manifestFile = { path: 'zed.yaml', content: GOVERNANCE_FIXTURE };
     mdFileContent = {
-      '.kortix/opencode/agents/support.md': 'Support body.',
-      '.kortix/opencode/agents/pr-bot.md': 'PR bot body.',
+      '.zed/opencode/agents/support.md': 'Support body.',
+      '.zed/opencode/agents/pr-bot.md': 'PR bot body.',
     };
     readRepoFileCalls = [];
     const result = await resolveCompiledAgentConfigForSession(PROJECT);
@@ -525,15 +525,15 @@ describe('resolveCompiledAgentConfigForSession', () => {
     expect(parsed.agent.support.prompt).toBe('Support body.');
     expect(parsed.agent['pr-bot'].prompt).toBe('PR bot body.');
     expect(
-      new Set(readRepoFileCalls.filter((p) => p.startsWith('.kortix/opencode/agents/'))),
+      new Set(readRepoFileCalls.filter((p) => p.startsWith('.zed/opencode/agents/'))),
     ).toEqual(
-      new Set(['.kortix/opencode/agents/support.md', '.kortix/opencode/agents/pr-bot.md']),
+      new Set(['.zed/opencode/agents/support.md', '.zed/opencode/agents/pr-bot.md']),
     );
   });
 
   test('degrades gracefully (never throws) when a declared agent has no .md yet', async () => {
-    manifestFile = { path: 'kortix.yaml', content: GOVERNANCE_FIXTURE };
-    mdFileContent = { '.kortix/opencode/agents/support.md': 'Support body.' }; // pr-bot.md missing
+    manifestFile = { path: 'zed.yaml', content: GOVERNANCE_FIXTURE };
+    mdFileContent = { '.zed/opencode/agents/support.md': 'Support body.' }; // pr-bot.md missing
     const result = await resolveCompiledAgentConfigForSession(PROJECT);
     expect(result).not.toBeNull();
     const parsed = JSON.parse(result!) as OpencodeConfig;
@@ -543,16 +543,16 @@ describe('resolveCompiledAgentConfigForSession', () => {
 
   test('never throws — a malformed .md frontmatter compile error resolves to null instead', async () => {
     manifestFile = {
-      path: 'kortix.yaml',
+      path: 'zed.yaml',
       content: `
-kortix_version: 2
+zed_version: 2
 default_agent: support
 agents:
   support: {}
 `,
     };
     mdFileContent = {
-      '.kortix/opencode/agents/support.md': supportMd('mode: bogus', 'Body.'),
+      '.zed/opencode/agents/support.md': supportMd('mode: bogus', 'Body.'),
     };
     expect(await resolveCompiledAgentConfigForSession(PROJECT)).toBeNull();
   });
@@ -564,10 +564,10 @@ describe('resolveCompiledAgentConfigForSession — the ref it compiles from', ()
     // manifest and main's agent .md files, so editing an agent, pushing the
     // branch and starting a session on it changed nothing. It read as "config
     // never reloads" when in truth the branch was never read.
-    manifestFile = { path: 'kortix.yaml', content: GOVERNANCE_FIXTURE };
+    manifestFile = { path: 'zed.yaml', content: GOVERNANCE_FIXTURE };
     mdFileContent = {
-      '.kortix/opencode/agents/support.md': 'Support body.',
-      '.kortix/opencode/agents/pr-bot.md': 'PR bot body.',
+      '.zed/opencode/agents/support.md': 'Support body.',
+      '.zed/opencode/agents/pr-bot.md': 'PR bot body.',
     };
     refsRead = [];
 
@@ -580,8 +580,8 @@ describe('resolveCompiledAgentConfigForSession — the ref it compiles from', ()
   test('falls back to the default branch when the session names no ref', async () => {
     // Every caller before this took the default branch; omitting the argument
     // must stay byte-identical to that.
-    manifestFile = { path: 'kortix.yaml', content: GOVERNANCE_FIXTURE };
-    mdFileContent = { '.kortix/opencode/agents/support.md': 'x', '.kortix/opencode/agents/pr-bot.md': 'y' };
+    manifestFile = { path: 'zed.yaml', content: GOVERNANCE_FIXTURE };
+    mdFileContent = { '.zed/opencode/agents/support.md': 'x', '.zed/opencode/agents/pr-bot.md': 'y' };
     refsRead = [];
 
     await resolveCompiledAgentConfigForSession(PROJECT);
@@ -592,8 +592,8 @@ describe('resolveCompiledAgentConfigForSession — the ref it compiles from', ()
   test('a blank ref is treated as absent, not as a ref named ""', async () => {
     // `base_ref` is a plain text column; an empty string would otherwise ask git
     // for a ref that cannot exist and drop the whole agent config to null.
-    manifestFile = { path: 'kortix.yaml', content: GOVERNANCE_FIXTURE };
-    mdFileContent = { '.kortix/opencode/agents/support.md': 'x', '.kortix/opencode/agents/pr-bot.md': 'y' };
+    manifestFile = { path: 'zed.yaml', content: GOVERNANCE_FIXTURE };
+    mdFileContent = { '.zed/opencode/agents/support.md': 'x', '.zed/opencode/agents/pr-bot.md': 'y' };
     refsRead = [];
 
     await resolveCompiledAgentConfigForSession(PROJECT, '   ');
@@ -618,14 +618,14 @@ describe('resolveCompiledAgentConfigForSession — read failures', () => {
     projectId: 'proj-1',
     repoUrl: 'https://example.test/r.git',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     gitAuthToken: null,
   };
 
   test('a MISSING .md still compiles — that agent simply has no behavior', async () => {
-    manifestFile = { path: 'kortix.yaml', content: GOVERNANCE_FIXTURE };
+    manifestFile = { path: 'zed.yaml', content: GOVERNANCE_FIXTURE };
     mdFileContent = {
-      '.kortix/opencode/agents/support.md': supportMd('mode: primary', 'Support prompt.'),
+      '.zed/opencode/agents/support.md': supportMd('mode: primary', 'Support prompt.'),
       // pr-bot.md deliberately absent
     };
 
@@ -640,9 +640,9 @@ describe('resolveCompiledAgentConfigForSession — read failures', () => {
     // null means "no compiled config": the session keeps what it is running and
     // `stale` reads null ("could not tell") rather than a confident, wrong
     // "up to date". Far better than swapping in an agent with no instructions.
-    manifestFile = { path: 'kortix.yaml', content: GOVERNANCE_FIXTURE };
+    manifestFile = { path: 'zed.yaml', content: GOVERNANCE_FIXTURE };
     mdFileContent = {};
-    transientFailurePaths = new Set(['.kortix/opencode/agents/support.md']);
+    transientFailurePaths = new Set(['.zed/opencode/agents/support.md']);
     try {
       expect(await resolveCompiledAgentConfigForSession(project)).toBeNull();
     } finally {
@@ -653,13 +653,13 @@ describe('resolveCompiledAgentConfigForSession — read failures', () => {
 
 describe('resolveSelectedAgentConfigForSession', () => {
   test('reads and emits only the selected agent', async () => {
-    manifestFile = { path: 'kortix.yaml', content: GOVERNANCE_FIXTURE };
+    manifestFile = { path: 'zed.yaml', content: GOVERNANCE_FIXTURE };
     mdFileContent = {
-      '.kortix/opencode/agents/support.md': supportMd(
+      '.zed/opencode/agents/support.md': supportMd(
         'model: anthropic/claude-sonnet-4-5',
         'Support body.',
       ),
-      '.kortix/opencode/agents/pr-bot.md': 'PR bot body.',
+      '.zed/opencode/agents/pr-bot.md': 'PR bot body.',
     };
     readRepoFileCalls = [];
 
@@ -669,13 +669,13 @@ describe('resolveSelectedAgentConfigForSession', () => {
     expect(Object.keys(parsed.agent)).toEqual(['support']);
     expect(parsed.agent.support.prompt).toBe('Support body.');
     expect(parsed.model).toBe('anthropic/claude-sonnet-4-5');
-    expect(readRepoFileCalls).toEqual(['.kortix/opencode/agents/support.md']);
+    expect(readRepoFileCalls).toEqual(['.zed/opencode/agents/support.md']);
   });
 
   test('fails closed when the selected agent configuration cannot be read', async () => {
-    manifestFile = { path: 'kortix.yaml', content: GOVERNANCE_FIXTURE };
+    manifestFile = { path: 'zed.yaml', content: GOVERNANCE_FIXTURE };
     mdFileContent = {};
-    transientFailurePaths = new Set(['.kortix/opencode/agents/support.md']);
+    transientFailurePaths = new Set(['.zed/opencode/agents/support.md']);
 
     try {
       await expect(
@@ -687,7 +687,7 @@ describe('resolveSelectedAgentConfigForSession', () => {
   });
 
   test('fails closed when the selected agent is not declared', async () => {
-    manifestFile = { path: 'kortix.yaml', content: GOVERNANCE_FIXTURE };
+    manifestFile = { path: 'zed.yaml', content: GOVERNANCE_FIXTURE };
 
     await expect(
       resolveSelectedAgentConfigForSession(PROJECT, 'missing', 'main'),

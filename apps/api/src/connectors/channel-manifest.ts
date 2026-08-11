@@ -1,19 +1,19 @@
 /**
- * Persist a channel connector (Slack today) into kortix.yaml so it's a
+ * Persist a channel connector (Slack today) into zed.yaml so it's a
  * first-class, git-tracked connector — not just an install-driven
  * synthetic row. Connecting Slack in the Channels tab writes a `connectors`
- * entry (`slug: kortix_slack`, `provider: channel`, `platform: slack`) here,
+ * entry (`slug: zed_slack`, `provider: channel`, `platform: slack`) here,
  * and disconnecting removes it.
  *
  * Best-effort by design: `synthesizeChannelConnectors` still materializes the
  * connector from the install at sync time, so a project whose repo is read-only
  * or unreachable keeps working — this only makes the connector EXPLICIT where one
  * can be written. It also converts a legacy channel entry declared under the old
- * public `slack` slug to the reserved `kortix_slack` slug (the rename that closes
- * the user-connector shadowing bug). See KORTIX-206.
+ * public `slack` slug to the reserved `zed_slack` slug (the rename that closes
+ * the user-connector shadowing bug). See ZED-206.
  */
 import { eq } from 'drizzle-orm';
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import { db } from '../shared/db';
 import type { ChannelPlatform } from '../projects/connectors';
 import { channelDefaultSlug, channelLabel } from './channels';
@@ -27,7 +27,7 @@ function connectorsOf(manifest: { raw: Record<string, unknown> }): Entry[] {
 }
 
 /**
- * Ensure kortix.yaml declares the reserved channel connector for `platform`.
+ * Ensure zed.yaml declares the reserved channel connector for `platform`.
  * Idempotent — once declared, subsequent calls are a no-op (no commit). Returns
  * whether a commit was made. Never throws.
  */
@@ -62,7 +62,7 @@ export async function ensureChannelConnectorDeclared(
 }
 
 /**
- * Remove the reserved channel connector for `platform` from kortix.yaml — the
+ * Remove the reserved channel connector for `platform` from zed.yaml — the
  * platform was disconnected. Best-effort; never throws.
  */
 export async function removeChannelConnectorDeclared(

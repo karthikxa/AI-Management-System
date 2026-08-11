@@ -1,9 +1,9 @@
-# ── Cloudflare Access (Zero Trust) gate for qa.kortix.com ─────────────────────
+# ── Cloudflare Access (Zero Trust) gate for qa.zed.com ─────────────────────
 #
 # The report bucket is private and the portal is served by the in-cluster nginx
-# pod behind the ALB, with the qa.kortix.com record proxied through Cloudflare
+# pod behind the ALB, with the qa.zed.com record proxied through Cloudflare
 # (orange-cloud). This puts Cloudflare Access in front of that hostname so only
-# authenticated Kortix identities can open any report (including the per-PR
+# authenticated Zed identities can open any report (including the per-PR
 # links posted by qa-pr). Access denies by default; the single allow policy
 # below is the allowlist.
 #
@@ -38,7 +38,7 @@ resource "cloudflare_zero_trust_access_policy" "qa_allow" {
   count          = var.enable_access && var.create_access_policy ? 1 : 0
   application_id = cloudflare_zero_trust_access_application.qa[0].id
   account_id     = var.cloudflare_account_id
-  name           = "Allow Kortix team"
+  name           = "Allow Zed team"
   precedence     = 1
   decision       = "allow"
 

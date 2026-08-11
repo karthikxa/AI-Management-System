@@ -10,7 +10,7 @@ hook). Each task is a single focused commit.
 ## Global Constraints (bind every task)
 
 - **Worktree only.** All work happens in the `marketplace-pagination` worktree at
-  `/Users/jay/root/kortix/suna-marketplace-pagination`. Never touch another checkout.
+  `/Users/jay/root/zed/suna-marketplace-pagination`. Never touch another checkout.
 - **Tests ship with the change** (repo rule, `.claude/skills/testing/SKILL.md`):
   co-located `*.test.ts` run by `bun:test`. Deterministic, isolated, no network in
   unit tests, Arrange→Act→Assert, **no comments in test files**, no `.only`. A test
@@ -60,7 +60,7 @@ which is the main contributor to the 25s install timeout for many-file skills.
   multi-file item (with and without a failing file → warning preserved, file skipped).
 - A `readFile` rejection produces the same warning text and does not abort the plan.
 
-**Acceptance.** `pnpm --filter @kortix/registry test` + `typecheck` green;
+**Acceptance.** `pnpm --filter @zed/registry test` + `typecheck` green;
 output determinism preserved.
 
 ---

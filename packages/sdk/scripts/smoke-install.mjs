@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Packs @kortix/sdk and the final @kortix/executor-sdk adapter exactly as npm
+ * Packs @zed/sdk and the final @zed/executor-sdk adapter exactly as npm
  * publishes them, installs the tarballs into a throwaway project, and imports
  * both in Node ESM.
  *
@@ -8,7 +8,7 @@
  * resolution. `npm pack --dry-run` lists tarball contents; stage-npm-publish.mjs
  * asserts publishConfig paths exist in dist/. Neither proves the thing imports.
  *
- * @kortix/llm-catalog is a workspace:* dependency that stage-npm-publish.mjs
+ * @zed/llm-catalog is a workspace:* dependency that stage-npm-publish.mjs
  * pins to the release version — the SDK and the catalog co-publish in lockstep.
  * The smoke run mirrors that: it packs the catalog at the same synthetic
  * version and installs both tarballs together, so the pinned dependency
@@ -36,10 +36,10 @@ const stage = (dir) =>
     VERSION: '0.0.0-smoke',
   });
 
-const backup = join(tmpdir(), `kortix-sdk-pkg-${process.pid}.json`);
-const catalogBackup = join(tmpdir(), `kortix-llm-catalog-pkg-${process.pid}.json`);
-const executorBackup = join(tmpdir(), `kortix-executor-sdk-pkg-${process.pid}.json`);
-const workdir = mkdtempSync(join(tmpdir(), 'kortix-sdk-smoke-'));
+const backup = join(tmpdir(), `zed-sdk-pkg-${process.pid}.json`);
+const catalogBackup = join(tmpdir(), `zed-llm-catalog-pkg-${process.pid}.json`);
+const executorBackup = join(tmpdir(), `zed-executor-sdk-pkg-${process.pid}.json`);
+const workdir = mkdtempSync(join(tmpdir(), 'zed-sdk-smoke-'));
 let staged = false;
 let catalogStaged = false;
 let executorStaged = false;
@@ -49,8 +49,8 @@ let executorTarballPath;
 
 try {
   console.log('→ building dist/');
-  // build:bundles also emits the tsup browser bundles (dist/kortix.esm.min.js,
-  // dist/kortix.global.js) that publishConfig.browser/unpkg/jsdelivr point at.
+  // build:bundles also emits the tsup browser bundles (dist/zed.esm.min.js,
+  // dist/zed.global.js) that publishConfig.browser/unpkg/jsdelivr point at.
   // stage() below promotes those fields and verifies they exist in dist/, so
   // they must be built before staging — plain `build` only runs tsc.
   run('pnpm', ['run', 'build:bundles'], PKG_DIR);
@@ -100,24 +100,24 @@ try {
   writeFileSync(
     join(workdir, 'smoke.mjs'),
     [
-      "import { createKortix, ApiError, classifyTurn, getSessionCostRecord, listSessionCosts } from '@kortix/sdk';",
-      "import { createScopedKortix } from '@kortix/sdk/server';",
-      "import { createExecutorClient, ExecutorClient, ExecutorError } from '@kortix/executor-sdk';",
-      "if (typeof createKortix !== 'function') throw new Error('createKortix is not a function');",
+      "import { createZed, ApiError, classifyTurn, getSessionCostRecord, listSessionCosts } from '@zed/sdk';",
+      "import { createScopedZed } from '@zed/sdk/server';",
+      "import { createExecutorClient, ExecutorClient, ExecutorError } from '@zed/executor-sdk';",
+      "if (typeof createZed !== 'function') throw new Error('createZed is not a function');",
       "if (typeof classifyTurn !== 'function') throw new Error('classifyTurn is not a function');",
-      "if (typeof createScopedKortix !== 'function') throw new Error('createScopedKortix missing');",
+      "if (typeof createScopedZed !== 'function') throw new Error('createScopedZed missing');",
       "if (typeof getSessionCostRecord !== 'function') throw new Error('getSessionCostRecord missing');",
       "if (typeof listSessionCosts !== 'function') throw new Error('listSessionCosts missing');",
       "if (!(new ApiError('x') instanceof Error)) throw new Error('ApiError is not an Error');",
       "if (typeof createExecutorClient !== 'function') throw new Error('createExecutorClient missing');",
       "if (!(createExecutorClient({ apiUrl: 'http://smoke.test', token: 'x' }) instanceof ExecutorClient)) throw new Error('ExecutorClient compatibility missing');",
       "if (!(new ExecutorError('x', 400, {}) instanceof Error)) throw new Error('ExecutorError compatibility missing');",
-      "const k = createKortix({ backendUrl: 'http://smoke.test/v1', getToken: async () => null });",
+      "const k = createZed({ backendUrl: 'http://smoke.test/v1', getToken: async () => null });",
       "if (typeof k.projects.list !== 'function') throw new Error('facade is not wired');",
       "if (typeof k.billing.sessionCosts.list !== 'function') throw new Error('sessionCosts.list missing');",
       "if (typeof k.billing.sessionCosts.get !== 'function') throw new Error('sessionCosts.get missing');",
       "if (typeof k.session('project', 'session').cost !== 'function') throw new Error('session.cost missing');",
-      "console.log('OK: @kortix/sdk and @kortix/executor-sdk import and construct from packed tarballs');",
+      "console.log('OK: @zed/sdk and @zed/executor-sdk import and construct from packed tarballs');",
     ].join('\n'),
   );
   process.stdout.write(run('node', ['smoke.mjs'], workdir));

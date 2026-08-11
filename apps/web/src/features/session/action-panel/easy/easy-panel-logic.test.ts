@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from 'bun:test';
-import { PREVIEW_PROBE_TIMEOUT_MS } from '@kortix/sdk';
+import { PREVIEW_PROBE_TIMEOUT_MS } from '@zed/sdk';
 import type { OutputItem } from '../shared/derive-panels';
 import type { Step } from '../shared/group-steps';
 import {
@@ -695,7 +695,7 @@ describe('sandboxRecents (AppPreview landing "Recents")', () => {
   test('keeps only localhost recents the sandbox address bar can actually open', () => {
     const recents = [
       { url: 'http://localhost:3000', visitedAt: 1 },
-      { url: 'https://github.com/kortix-ai/suna', visitedAt: 2 },
+      { url: 'https://github.com/zed-ai/suna', visitedAt: 2 },
       { url: 'http://127.0.0.1:8008/health', visitedAt: 3 },
       { url: 'http://localhost', visitedAt: 4 },
     ];

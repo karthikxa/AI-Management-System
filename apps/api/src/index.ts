@@ -62,7 +62,7 @@ import { GitOperationError, isGitOperationError } from './projects/git/mirror';
 import { db, hasDatabase } from './shared/db';
 import { computeEtag, etagMatches } from './shared/http-cache';
 import { getPlatformRole } from './shared/platform-roles';
-import { platformSettings } from '@kortix/db';
+import { platformSettings } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { ensureSchema } from './ensure-schema';
 import { initModelPricing, stopModelPricing } from './router/config/model-pricing';
@@ -218,7 +218,7 @@ const extraOrigins = process.env.CORS_ALLOWED_ORIGINS
 app.use(
   '*',
   createCorsMiddleware({
-    internalEnvironment: config.INTERNAL_KORTIX_ENV,
+    internalEnvironment: config.INTERNAL_ZED_ENV,
     extraOrigins,
   }),
 );
@@ -300,7 +300,7 @@ app.use('*', async (c, next) => {
   const isProxyStartupProbe =
     isSandboxProxyPath &&
     (path.includes('/global/health') ||
-      path.includes('/kortix/health') ||
+      path.includes('/zed/health') ||
       /\/sessions(?:\/|$)/.test(path));
   const isExpectedProxyNoise =
     method === 'GET' &&
@@ -349,7 +349,7 @@ app.use('*', async (c, next) => {
 });
 
 // Pretty JSON in dev mode for easier debugging
-if (config.INTERNAL_KORTIX_ENV === 'dev') {
+if (config.INTERNAL_ZED_ENV === 'dev') {
   app.use('*', prettyJSON());
 }
 
@@ -363,15 +363,15 @@ app.use('/v1/*', requestDeadline);
 // === Top-Level Health Check (no auth) ===
 
 // Unified platform version (the root VERSION file). Baked into the image via the
-// Dockerfile ARG KORTIX_VERSION (dev builds → 0.9.0-dev.<sha8>) and overridden by
+// Dockerfile ARG ZED_VERSION (dev builds → 0.9.0-dev.<sha8>) and overridden by
 // the prod ECS task-def env to the clean X.Y.Z. Deliberately NOT SANDBOX_VERSION —
 // that drives snapshot content-hashing and must stay constant across releases.
 // Falls back to 'dev' for local development.
-const API_VERSION = process.env.KORTIX_VERSION || 'dev';
+const API_VERSION = process.env.ZED_VERSION || 'dev';
 // Exact source commit the image was built from (baked at build, preserved across
-// the prod retag — unlike KORTIX_VERSION which prod overrides to the clean tag).
+// the prod retag — unlike ZED_VERSION which prod overrides to the clean tag).
 // Lets the team verify precisely which code is live. 'unknown' for local dev.
-const API_COMMIT = process.env.KORTIX_COMMIT || 'unknown';
+const API_COMMIT = process.env.ZED_COMMIT || 'unknown';
 // When this process booted — confirms a deploy actually rolled fresh pods.
 const STARTED_AT = new Date().toISOString();
 // Which replica answered (pod name in k8s, task/container id in ECS).
@@ -401,9 +401,9 @@ const HealthSchema = z
 const healthHandler = (c: any) =>
   c.json({
     status: 'ok',
-    service: 'kortix-api',
+    service: 'zed-api',
     timestamp: new Date().toISOString(),
-    environment: config.INTERNAL_KORTIX_ENV,
+    environment: config.INTERNAL_ZED_ENV,
     version: API_VERSION,
     commit: API_COMMIT,
     started_at: STARTED_AT,
@@ -435,7 +435,7 @@ app.openapi(
 // NOTE: the chart's livenessProbe still points at the shallow /v1/health by
 // default — flip health.livenessPath to /health/live only AFTER an image that
 // serves this route is confirmed live (otherwise old pods 404 their liveness
-// probe and crash-loop). See infra/k8s/charts/kortix-api.
+// probe and crash-loop). See infra/k8s/charts/zed-api.
 const MAX_EVENT_LOOP_LAG_MS = Number(process.env.HEALTH_MAX_EVENT_LOOP_LAG_MS || 5000);
 let eventLoopLagMs = 0;
 {
@@ -501,7 +501,7 @@ app.get('/v1/health/ready', readinessHandler);
 function hasInternalObservabilityAuth(c: any): boolean {
   const authHeader = c.req.header('Authorization');
   const bearer = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : '';
-  const header = c.req.header('X-Kortix-Internal-Key') ?? '';
+  const header = c.req.header('X-Zed-Internal-Key') ?? '';
   const expected = config.INTERNAL_SERVICE_KEY;
   const safeEq = (a: string, b: string) => {
     const aa = Buffer.from(a);
@@ -561,7 +561,7 @@ app.openapi(
 );
 
 // ─── Maintenance config (DB-backed; replaces Vercel Edge Config) ─────────────
-// One row in kortix.platform_settings under 'maintenance_config'. GET is public
+// One row in zed.platform_settings under 'maintenance_config'. GET is public
 // (banner + maintenance page read it); PUT is admin-only. Set via /admin/utils.
 const MAINTENANCE_KEY = 'maintenance_config';
 const DEFAULT_MAINTENANCE = {
@@ -814,18 +814,18 @@ registerSunaMigrationRoutes(projectsApp); // /v1/projects/suna-migration/* (OG S
 // Voice routes are registered BEFORE projectsApp: Hono matches in registration
 // order, and projectsApp's auth middleware would otherwise claim the worker's
 // MCP callback (/sessions/:id/mcp/voice) and reject it with a generic 401
-// before its own per-call HMAC check ever runs. The worker is not a Kortix
+// before its own per-call HMAC check ever runs. The worker is not a Zed
 // session and cannot present session auth.
 app.route('/v1/projects', voiceMcpRoutes);
-app.route('/v1/projects', projectsApp); // /v1/projects — Git-backed Kortix projects
+app.route('/v1/projects', projectsApp); // /v1/projects — Git-backed Zed projects
 app.route('/v1/marketplace', marketplaceApp); // /v1/marketplace — browse the registry catalog
 
-// /v1/skills — the kortix-managed system skills (how Kortix itself works), served
-// straight out of @kortix/starter so the text always matches this deploy. This is
-// what lets an agent in ANY harness, holding only the `kortix` binary and a token,
+// /v1/skills — the zed-managed system skills (how Zed itself works), served
+// straight out of @zed/starter so the text always matches this deploy. This is
+// what lets an agent in ANY harness, holding only the `zed` binary and a token,
 // read the platform's own instructions with no repo checkout and no sandbox.
-// combinedAuth (not supabaseAuth) so a CLI `kortix_pat_` and the in-sandbox
-// KORTIX_CLI_TOKEN works; see ./skills/index.ts for the full auth rationale.
+// combinedAuth (not supabaseAuth) so a CLI `zed_pat_` and the in-sandbox
+// ZED_CLI_TOKEN works; see ./skills/index.ts for the full auth rationale.
 app.use('/v1/skills', combinedAuth);
 app.use('/v1/skills/*', combinedAuth);
 app.route('/v1/skills', skillsApp); // GET /v1/skills, /v1/skills/:name[?full=1], /v1/skills/:name/file?path=
@@ -839,7 +839,7 @@ app.route('/v1/skills', skillsApp); // GET /v1/skills, /v1/skills/:name[?full=1]
 }
 
 // Connector — unified connector layer. Gateway routes (/catalog, /call) use
-// KORTIX_CLI_TOKEN (validated inside the router); admin routes
+// ZED_CLI_TOKEN (validated inside the router); admin routes
 // (/projects/:id/connectors*) need user auth, so combinedAuth runs first.
 {
   const { connectorApp } = await import('./connectors');
@@ -908,7 +908,7 @@ app.route('/v1/public/voice-join', voiceJoinPublicApp); // /v1/public/voice-join
 
 // Setup — local/self-hosted only. Hidden when billing is enabled so the admin
 // surface isn't exposed on managed/cloud deployments.
-if (!config.KORTIX_BILLING_INTERNAL_ENABLED) {
+if (!config.ZED_BILLING_INTERNAL_ENABLED) {
   app.route('/v1/setup', setupApp); // /v1/setup/install-status (public), rest (auth inside router)
 }
 // /v1/admin/* — admin console (accounts/users/ledger/credits). supabaseAuth +
@@ -937,7 +937,7 @@ app.route('/v1/tunnel', tunnelApp);
 // Preview Proxy — unified route for sandbox HTTP access.
 // Pattern: /v1/p/{sandboxId}/{port}/* — sandboxId is the provider external ID,
 // resolved to a reachable upstream URL via the provider ingress contract.
-// Auth: unified previewProxyAuth (accepts Supabase JWT and kortix_ tokens).
+// Auth: unified previewProxyAuth (accepts Supabase JWT and zed_ tokens).
 // MUST be after all explicit routes (wildcard catch-all).
 app.route('/v1/p', sandboxProxyApp);
 
@@ -1012,7 +1012,7 @@ app.onError((err, c) => {
   // (SIGTERM mid-transfer, large repo, transient network) is EXPECTED and
   // retryable — the mirror already retries once internally before surfacing.
   // Previously these surfaced as the opaque Better Stack pattern `8d0cffbb…`
-  // ("Cloning into bare repository '/tmp/kortix/git-cache/….git'…" — git's
+  // ("Cloning into bare repository '/tmp/zed/git-cache/….git'…" — git's
   // progress line captured on stderr before the kill, masking the real cause).
   // `runGit` now throws a typed `GitOperationError` (kind 'timeout') whose
   // message names the timeout; classify the transient kind into a retryable
@@ -1238,10 +1238,10 @@ void primeDaytonaTransientClassifier();
 
 console.log(`
 ╔═══════════════════════════════════════════════════════════╗
-║                  Kortix API Starting                      ║
+║                  Zed API Starting                      ║
 ╠═══════════════════════════════════════════════════════════╣
 ║  Port: ${config.PORT.toString().padEnd(49)}║
-║  Env:  ${config.INTERNAL_KORTIX_ENV.padEnd(49)}║
+║  Env:  ${config.INTERNAL_ZED_ENV.padEnd(49)}║
 ╠═══════════════════════════════════════════════════════════╣
 ║  Services:                                                ║
 ║    /v1/router     (search, LLM, proxy)                    ║
@@ -1255,7 +1255,7 @@ console.log(`
 ║  Database:   ${config.DATABASE_URL ? '✓ Configured'.padEnd(42) : '✗ NOT SET'.padEnd(42)}║
 ║  Supabase:   ${config.SUPABASE_URL ? '✓ Configured'.padEnd(42) : '✗ NOT SET'.padEnd(42)}║
 ║  Stripe:     ${config.STRIPE_SECRET_KEY ? '✓ Configured'.padEnd(42) : '✗ NOT SET'.padEnd(42)}║
-║  Billing:    ${(config.KORTIX_BILLING_INTERNAL_ENABLED ? 'ENABLED' : 'DISABLED').padEnd(42)}║
+║  Billing:    ${(config.ZED_BILLING_INTERNAL_ENABLED ? 'ENABLED' : 'DISABLED').padEnd(42)}║
 ║  Tunnel:     ${(config.TUNNEL_ENABLED ? 'ENABLED' : 'DISABLED').padEnd(42)}║
 ║  Providers:  ${config.ALLOWED_SANDBOX_PROVIDERS.join(', ').padEnd(42)}║
 ╚═══════════════════════════════════════════════════════════╝

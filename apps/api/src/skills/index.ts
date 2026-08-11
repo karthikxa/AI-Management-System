@@ -1,10 +1,10 @@
 /**
- * /v1/skills — the kortix-managed system skills, served over HTTP.
+ * /v1/skills — the zed-managed system skills, served over HTTP.
  *
- * The point: an OpenCode agent holding only the `kortix` binary and a token can
- * discover and read everything it needs to drive Kortix. No repo checkout, no
- * baked sandbox image. `kortix skills` /
- * `kortix skills get <name>` are thin wrappers over these two routes.
+ * The point: an OpenCode agent holding only the `zed` binary and a token can
+ * discover and read everything it needs to drive Zed. No repo checkout, no
+ * baked sandbox image. `zed skills` /
+ * `zed skills get <name>` are thin wrappers over these two routes.
  *
  * SHAPE — list + fetch, not one overloaded endpoint, because an agent pays tokens
  * for whatever it reads:
@@ -14,19 +14,19 @@
  *   GET /v1/skills/{name}                the complete SKILL.md text, plus the
  *                                        paths of its reference files.
  *   GET /v1/skills/{name}?full=1         …with every reference file inlined. Opt-in:
- *                                        kortix-system's full tree is ~230 KB.
+ *                                        zed-system's full tree is ~230 KB.
  *   GET /v1/skills/{name}/file?path=…    one reference file on its own.
  *
  * Frontmatter is parsed server-side (see catalog.ts) precisely so the list is
  * decision-grade without downloading a single body.
  *
  * AUTH — `combinedAuth`, the same gate the rest of the CLI surface uses. These are
- * operating instructions for Kortix, not secrets, but they are not public either:
+ * operating instructions for Zed, not secrets, but they are not public either:
  * they enumerate internal endpoints, token families, and connector plumbing, so
  * they stay behind a token rather than becoming an anonymous crawl target. Using
  * combinedAuth (rather than supabaseAuth) is what makes the two callers that
- * matter work with no new auth scheme: the CLI holding a `kortix_pat_`, and an
- * in-sandbox agent holding the platform-injected `KORTIX_CLI_TOKEN` session PAT.
+ * matter work with no new auth scheme: the CLI holding a `zed_pat_`, and an
+ * in-sandbox agent holding the platform-injected `ZED_CLI_TOKEN` session PAT.
  * Content is identical for every caller —
  * this is authentication, not authorization; no account scoping applies.
  */
@@ -71,15 +71,15 @@ skillsApp.openapi(
     method: 'get',
     path: '/',
     tags: ['skills'],
-    summary: 'GET /skills — list the Kortix system skills',
+    summary: 'GET /skills — list the Zed system skills',
     description:
-      'Name + description for every kortix-managed system skill. Bodies are not ' +
+      'Name + description for every zed-managed system skill. Bodies are not ' +
       'included; fetch one with GET /v1/skills/{name}.',
     ...auth,
     responses: {
       200: json(
         z.object({ skills: z.array(SkillSummarySchema), count: z.number().int() }),
-        'Kortix system skills',
+        'Zed system skills',
       ),
       ...errors(401),
     },
@@ -116,7 +116,7 @@ skillsApp.openapi(
     const file = getManagedSkillFile(name, path);
     if (!file) {
       return c.json(
-        { error: true, message: `No file "${path}" in Kortix skill "${name}"`, status: 404 },
+        { error: true, message: `No file "${path}" in Zed skill "${name}"`, status: 404 },
         404,
       );
     }
@@ -132,7 +132,7 @@ skillsApp.openapi(
     summary: 'GET /skills/:name — the full SKILL.md body',
     description:
       'The complete markdown the agent is meant to follow. `?full=1` also inlines ' +
-      'every reference file (large — kortix-system is ~230 KB with references).',
+      'every reference file (large — zed-system is ~230 KB with references).',
     ...auth,
     request: {
       params: SkillNameParams,
@@ -148,7 +148,7 @@ skillsApp.openapi(
     const skill = getManagedSkill(name);
     if (!skill) {
       return c.json(
-        { error: true, message: `No Kortix system skill named "${name}"`, status: 404 },
+        { error: true, message: `No Zed system skill named "${name}"`, status: 404 },
         404,
       );
     }

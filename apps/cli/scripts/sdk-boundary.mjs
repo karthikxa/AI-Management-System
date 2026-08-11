@@ -9,15 +9,15 @@ const SOURCE_EXTENSIONS = new Set(['.ts']);
 const SELF_TEST = join('src', '__tests__', 'sdk-boundary.test.ts');
 
 /**
- * The ONE file allowed to hold a raw transport. It IS the @kortix/sdk adapter,
- * so it is the single place a Kortix-bound request may be constructed. Kept as a
+ * The ONE file allowed to hold a raw transport. It IS the @zed/sdk adapter,
+ * so it is the single place a Zed-bound request may be constructed. Kept as a
  * named constant (and length-locked by a test) so a second escape hatch cannot
  * be added without the diff being obvious.
  */
 export const TRANSPORT_ALLOWLIST = ['src/api/sdk.ts'];
 
 /**
- * Hosts the CLI legitimately talks to directly — none of them are the Kortix
+ * Hosts the CLI legitimately talks to directly — none of them are the Zed
  * backend, so none of them belong in the SDK. Judged by static URL prefix.
  */
 const ALLOWED_FETCH_ORIGINS = [
@@ -45,8 +45,8 @@ const RULES = [
   {
     scope: 'all',
     rule: 'sdk-internal-import',
-    pattern: /['"](?:@kortix\/sdk\/src(?:\/[^'"]*)?|[^'"]*packages\/sdk\/src(?:\/[^'"]*)?)['"]/g,
-    message: 'CLI code must import the public @kortix/sdk surface only.',
+    pattern: /['"](?:@zed\/sdk\/src(?:\/[^'"]*)?|[^'"]*packages\/sdk\/src(?:\/[^'"]*)?)['"]/g,
+    message: 'CLI code must import the public @zed/sdk surface only.',
   },
   {
     scope: 'source',
@@ -101,7 +101,7 @@ function isTransportFile(relativePath) {
  * Resolve the static target of a `fetch(` call, or `null` when the target is
  * dynamic. A bare variable and a template whose base is interpolated
  * (`` fetch(`${base}/v1/projects`) ``) both resolve to `null` — that is exactly
- * the shape the hand-rolled Kortix transport used, so it must not pass.
+ * the shape the hand-rolled Zed transport used, so it must not pass.
  */
 function staticFetchTarget(expression) {
   const quote = expression[0];
@@ -137,10 +137,10 @@ function rawFetchViolations(source) {
     const expression = source.slice((match.index ?? 0) + match[0].length).trimStart();
     if (isAllowedFetchTarget(staticFetchTarget(expression))) continue;
     violations.push({
-      rule: 'raw-kortix-fetch',
+      rule: 'raw-zed-fetch',
       index: match.index,
       match: match[0],
-      message: `Kortix transport must go through @kortix/sdk (only ${TRANSPORT_ALLOWLIST.join(', ')} may hold a raw transport).`,
+      message: `Zed transport must go through @zed/sdk (only ${TRANSPORT_ALLOWLIST.join(', ')} may hold a raw transport).`,
     });
   }
   return violations;

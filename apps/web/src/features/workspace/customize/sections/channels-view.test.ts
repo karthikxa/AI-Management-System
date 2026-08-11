@@ -34,7 +34,7 @@ describe('Channels view — connect in place', () => {
 
   test('keeps Email behind its feature flag and uses the reserved inbox slug', () => {
     expect(channelsSource).toContain("useFeatureFlag(projectId, 'agentmail_email')");
-    expect(channelsSource).toContain("EMAIL_CONNECTOR_SLUG = 'kortix_email'");
+    expect(channelsSource).toContain("EMAIL_CONNECTOR_SLUG = 'zed_email'");
     expect(channelsSource).toMatch(/emailChannelEnabled \? \(\s*<EmailChannelRow/);
   });
 });

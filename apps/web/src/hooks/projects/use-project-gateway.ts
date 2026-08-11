@@ -21,7 +21,7 @@ import {
   runGatewayPlayground,
   setGatewayBudget,
 } from '@/lib/projects-gateway-client';
-import { contract, qk } from '@kortix/sdk/react';
+import { contract, qk } from '@zed/sdk/react';
 
 export function useGatewayOverview(projectId: string | undefined, days = 30) {
   return useQuery({

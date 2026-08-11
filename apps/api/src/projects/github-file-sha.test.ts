@@ -20,7 +20,7 @@ describe('GitHub file revision reads', () => {
       getFileSha({
         owner: 'example',
         repo: 'repository',
-        path: 'kortix.yaml',
+        path: 'zed.yaml',
         auth: { token: 'test-token', source: 'pat' },
       }),
     ).resolves.toBeNull();
@@ -38,7 +38,7 @@ describe('GitHub file revision reads', () => {
       getFileSha({
         owner: 'example',
         repo: 'repository',
-        path: 'kortix.yaml',
+        path: 'zed.yaml',
         auth: { token: 'test-token', source: 'pat' },
       }),
     ).rejects.toBeInstanceOf(GitHubApiError);

@@ -1,4 +1,4 @@
-import { creditAccounts } from '@kortix/db';
+import { creditAccounts } from '@zed/db';
 import { and, eq, isNull, lte, ne, or } from 'drizzle-orm';
 import { db } from '../../shared/db';
 

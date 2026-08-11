@@ -16,5 +16,5 @@ set statement_timeout = '5min';
 --
 -- Cannot fail on real data: the new constraint is a strict superset of the old
 -- one, and the old one was already enforced for every row.
-alter table "kortix"."credit_accounts"
-  validate constraint "kortix_credit_accounts_billing_model_check";
+alter table "zed"."credit_accounts"
+  validate constraint "zed_credit_accounts_billing_model_check";

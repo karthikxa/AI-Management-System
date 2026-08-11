@@ -1,9 +1,9 @@
 /**
  * Run EVERY playground script in order, in one go, with a summary table.
  *
- * - Creates ONE session up front and pins it via KORTIX_SESSION_ID, so the
+ * - Creates ONE session up front and pins it via ZED_SESSION_ID, so the
  *   five sandbox scripts (04, 06, 07, 09, 11) share a single boot.
- * - Defaults KORTIX_MODEL to claude-sonnet-4.6 when unset (the local stack's
+ * - Defaults ZED_MODEL to claude-sonnet-4.6 when unset (the local stack's
  *   default model currently 400s on `max_tokens`).
  * - Keeps going after a failure; exits 1 if anything failed.
  * - Skipped on purpose: 14-change-default-model (mutates the project's
@@ -11,7 +11,7 @@
  *
  * Run (from packages/sdk):  bun run playground/run-all.ts
  */
-import { makeKortix, pickProjectId, run } from "./_shared";
+import { makeZed, pickProjectId, run } from "./_shared";
 
 const SCRIPTS = [
   "projects/01-list-projects.ts",
@@ -51,19 +51,19 @@ const SCRIPTS = [
 ];
 
 run("run-all", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed);
 
-  const model = process.env.KORTIX_MODEL ?? "claude-sonnet-4.6";
-  if (!process.env.KORTIX_MODEL) {
+  const model = process.env.ZED_MODEL ?? "claude-sonnet-4.6";
+  if (!process.env.ZED_MODEL) {
     console.log(
-      `KORTIX_MODEL not set — defaulting to ${model} (local gateway bug workaround)`,
+      `ZED_MODEL not set — defaulting to ${model} (local gateway bug workaround)`,
     );
   }
 
-  let sessionId = process.env.KORTIX_SESSION_ID;
+  let sessionId = process.env.ZED_SESSION_ID;
   if (!sessionId) {
-    const created = await kortix.projects.createSession(projectId, {
+    const created = await zed.projects.createSession(projectId, {
       name: "sdk run-all",
     });
     sessionId = created.session_id;
@@ -79,9 +79,9 @@ run("run-all", async () => {
     const proc = Bun.spawn(["bun", "run", `playground/${script}`], {
       env: {
         ...process.env,
-        KORTIX_PROJECT_ID: projectId,
-        KORTIX_SESSION_ID: sessionId,
-        KORTIX_MODEL: model,
+        ZED_PROJECT_ID: projectId,
+        ZED_SESSION_ID: sessionId,
+        ZED_MODEL: model,
       },
       stdout: "inherit",
       stderr: "inherit",

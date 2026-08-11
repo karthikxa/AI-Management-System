@@ -175,7 +175,7 @@ describe('the browser human (regression: the Supabase sessionId collision)', () 
     // threading that raw value in as callerSessionId made this branch
     // unreachable: every logged-in human tripped the session-bound refusal
     // above and got 403 "An agent cannot resolve its own approval" on every
-    // approval, forever. callerKortixSessionId() is what keeps it null here.
+    // approval, forever. callerZedSessionId() is what keeps it null here.
     const result = mayResolveApproval({
       isManager: true,
       targetSessionOrigin: 'backend',
@@ -188,7 +188,7 @@ describe('the browser human (regression: the Supabase sessionId collision)', () 
   });
 
   test('a browser human still sees a session’s approvals when unbound', () => {
-    // Same collision: comparing a Supabase auth-session UUID to a Kortix session
+    // Same collision: comparing a Supabase auth-session UUID to a Zed session
     // id made needs-input return 0 for every browser caller.
     expect(
       maySeeSessionApprovals({
@@ -211,7 +211,7 @@ describe('the browser human (regression: the Supabase sessionId collision)', () 
         targetSessionCreatedBy: WRAPPER,
         callerUserId: WRAPPER,
         callerAuthType: 'supabase',
-        callerSessionId: 'sess-real-kortix-session',
+        callerSessionId: 'sess-real-zed-session',
       }).allowed,
     ).toBe(false);
   });

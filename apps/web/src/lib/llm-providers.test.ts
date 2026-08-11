@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { isProviderAuthSatisfied } from '@kortix/llm-catalog';
+import { isProviderAuthSatisfied } from '@zed/llm-catalog';
 
 import {
   LLM_PROVIDERS,
@@ -17,7 +17,7 @@ function connectedProviderIds(secretNames: Set<string>): Set<string> {
   return new Set(
     LLM_PROVIDERS.filter(
       (p) =>
-        p.id !== 'kortix' && isProviderAuthSatisfied(p.authRequirement, (v) => secretNames.has(v)),
+        p.id !== 'zed' && isProviderAuthSatisfied(p.authRequirement, (v) => secretNames.has(v)),
     ).map((p) => p.id),
   );
 }

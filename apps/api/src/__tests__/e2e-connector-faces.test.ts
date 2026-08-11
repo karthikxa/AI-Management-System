@@ -8,7 +8,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createKortix } from '@kortix/sdk';
+import { createZed } from '@zed/sdk';
 import type {
   ExecutionRecord,
   GatewayAction,
@@ -25,12 +25,12 @@ import {
 const ACCOUNT = 'acct-faces';
 const PROJECT = 'proj-faces';
 const USER = 'user-faces';
-const TOKEN = 'kortix_test_connector_faces';
-const DENIED_TOKEN = 'kortix_test_connector_faces_no_email';
+const TOKEN = 'zed_test_connector_faces';
+const DENIED_TOKEN = 'zed_test_connector_faces_no_email';
 const SERVER_SECRET = 'server_side_secret';
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
-// The Connector's CLI + MCP faces are now subcommands of the one kortix CLI:
-// `kortix connectors …` and `kortix connectors mcp`.
+// The Connector's CLI + MCP faces are now subcommands of the one zed CLI:
+// `zed connectors …` and `zed connectors mcp`.
 const CLI_ENTRY = resolve(REPO_ROOT, 'apps/cli/src/index.ts');
 
 interface World {
@@ -90,8 +90,8 @@ function principal(): ConnectorPrincipal {
     subject: { userId: USER, groupIds: [] },
     agentGrant: {
       agent: 'test-agent',
-      connectors: ['echo', 'kortix_email'],
-      kortixCli: 'all',
+      connectors: ['echo', 'zed_email'],
+      zedCli: 'all',
     },
   };
 }
@@ -187,7 +187,7 @@ function makeDeps(): ConnectorRouterDeps {
       if (authorization === `Bearer ${DENIED_TOKEN}`) {
         return {
           ...principal(),
-          agentGrant: { agent: 'test-agent', connectors: [], kortixCli: 'all' },
+          agentGrant: { agent: 'test-agent', connectors: [], zedCli: 'all' },
         };
       }
       return null;
@@ -202,7 +202,7 @@ function makeDeps(): ConnectorRouterDeps {
       if (authorization === `Bearer ${DENIED_TOKEN}`) {
         return {
           ...principal(),
-          agentGrant: { agent: 'test-agent', connectors: [], kortixCli: 'all' },
+          agentGrant: { agent: 'test-agent', connectors: [], zedCli: 'all' },
         };
       }
       return null;
@@ -222,8 +222,8 @@ async function runCli(args: string[], extraEnv: Record<string, string | undefine
     env: {
       PATH: process.env.PATH,
       HOME: process.env.HOME,
-      KORTIX_API_URL: apiUrl,
-      KORTIX_CLI_TOKEN: TOKEN,
+      ZED_API_URL: apiUrl,
+      ZED_CLI_TOKEN: TOKEN,
       ...extraEnv,
     },
     stdout: 'pipe',
@@ -281,7 +281,7 @@ afterEach(() => {
 
 describe('TS SDK face', () => {
   test('connectors, discover, describe, and call work against the gateway', async () => {
-    const sdk = createKortix({
+    const sdk = createZed({
       backendUrl: `${apiUrl}/v1`,
       getToken: async () => TOKEN,
     }).project(PROJECT).connectors;
@@ -304,7 +304,7 @@ describe('TS SDK face', () => {
   });
 
   test('supports a durable multi-step script workflow without provider secrets in code', async () => {
-    const sdk = createKortix({
+    const sdk = createZed({
       backendUrl: `${apiUrl}/v1`,
       getToken: async () => TOKEN,
     }).project(PROJECT).connectors;
@@ -421,7 +421,7 @@ describe('HTTP call validation', () => {
 
 describe('Project-explicit gateway face (the local-connector unlock)', () => {
   test('SDK with a projectId hits /projects/:id/{catalog,call}', async () => {
-    const sdk = createKortix({
+    const sdk = createZed({
       backendUrl: `${apiUrl}/v1`,
       getToken: async () => TOKEN,
     }).project(PROJECT).connectors;
@@ -431,27 +431,27 @@ describe('Project-explicit gateway face (the local-connector unlock)', () => {
     expect(result.data?.url).toBe('https://example.test/anything?q=proj-sdk');
   });
 
-  test('CLI with KORTIX_PROJECT_ID set routes through the project-explicit gateway', async () => {
+  test('CLI with ZED_PROJECT_ID set routes through the project-explicit gateway', async () => {
     // This is exactly the local path: a project (here via env, in practice
-    // .kortix/link.json or --project) makes `kortix connectors` use the routes that
+    // .zed/link.json or --project) makes `zed connectors` use the routes that
     // accept a plain user token. Same command, same result as in-sandbox.
     const connectors = await runCli(['ls', '--session', 'sess-faces'], {
-      KORTIX_PROJECT_ID: PROJECT,
-      KORTIX_SESSION_ID: 'sess-faces',
+      ZED_PROJECT_ID: PROJECT,
+      ZED_SESSION_ID: 'sess-faces',
     });
     expect(connectors.connectors[0]).toMatchObject({
       slug: 'echo',
       tools: ['echo.get', 'echo.reply'],
     });
     const call = await runCli(['call', 'echo', 'get', '{"q":"proj-cli"}'], {
-      KORTIX_PROJECT_ID: PROJECT,
+      ZED_PROJECT_ID: PROJECT,
     });
     expect(call).toMatchObject({ ok: true, risk: 'read' });
     expect(call.data.url).toBe('https://example.test/anything?q=proj-cli');
   });
 
   test('an unauthorized project is rejected (403 → SDK throws)', async () => {
-    const sdk = createKortix({
+    const sdk = createZed({
       backendUrl: `${apiUrl}/v1`,
       getToken: async () => TOKEN,
     }).project('someone-elses-project').connectors;
@@ -468,7 +468,7 @@ describe('Project-explicit gateway face (the local-connector unlock)', () => {
         headers: {
           Authorization: `Bearer ${DENIED_TOKEN}`,
           'Content-Type': 'application/pdf',
-          'X-Kortix-Attachment-Filename': 'memo.pdf',
+          'X-Zed-Attachment-Filename': 'memo.pdf',
         },
         body: 'must-not-be-staged',
       });
@@ -492,8 +492,8 @@ describe('MCP face', () => {
       env: {
         PATH: process.env.PATH,
         HOME: process.env.HOME,
-        KORTIX_API_URL: apiUrl,
-        KORTIX_CLI_TOKEN: TOKEN,
+        ZED_API_URL: apiUrl,
+        ZED_CLI_TOKEN: TOKEN,
       },
       stdin: 'pipe',
       stdout: 'pipe',
@@ -504,7 +504,7 @@ describe('MCP face', () => {
       expect(
         await requestMcp(proc, reader, 1, 'initialize', { protocolVersion: '2025-06-18' }),
       ).toMatchObject({
-        serverInfo: { name: 'kortix-connectors' },
+        serverInfo: { name: 'zed-connectors' },
       });
 
       // tools/list is the fixed meta-tool surface — NOT one tool per action.
@@ -565,7 +565,7 @@ describe('MCP face', () => {
   });
 
   test('uploads attachment_files as raw bytes and sends only opaque handles', async () => {
-    const workspace = await mkdtemp(join(tmpdir(), 'kortix-connectors-mcp-'));
+    const workspace = await mkdtemp(join(tmpdir(), 'zed-connectors-mcp-'));
     const output = join(workspace, 'output');
     const memo = join(output, 'memo.pdf');
     await mkdir(output);
@@ -577,9 +577,9 @@ describe('MCP face', () => {
       env: {
         PATH: process.env.PATH,
         HOME: process.env.HOME,
-        KORTIX_API_URL: apiUrl,
-        KORTIX_CLI_TOKEN: TOKEN,
-        KORTIX_INTERNAL_WORKSPACE_ROOT: workspace,
+        ZED_API_URL: apiUrl,
+        ZED_CLI_TOKEN: TOKEN,
+        ZED_INTERNAL_WORKSPACE_ROOT: workspace,
       },
       stdin: 'pipe',
       stdout: 'pipe',

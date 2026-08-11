@@ -27,8 +27,8 @@ mock.module('../billing/services/entitlements', () => ({
 const scimTokenRow = {
   tokenId: 'tok-1',
   name: 'Okta',
-  secret: 'kortix_scim_secret',
-  publicPrefix: 'kortix_scim_ab…',
+  secret: 'zed_scim_secret',
+  publicPrefix: 'zed_scim_ab…',
   createdAt: new Date('2026-01-01T00:00:00Z'),
   expiresAt: null as Date | null,
 };

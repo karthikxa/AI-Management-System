@@ -50,8 +50,8 @@ import {
   normalizeCustomProviderForm,
   validateCustomProviderForm,
 } from '@/features/providers/custom-provider-config';
-import { configKeys } from '@kortix/sdk/react';
-import type { ProviderListResponse } from '@kortix/sdk/react';
+import { configKeys } from '@zed/sdk/react';
+import type { ProviderListResponse } from '@zed/sdk/react';
 import {
   authorizeRuntimeProvider,
   completeRuntimeProviderOAuth,
@@ -61,7 +61,7 @@ import {
   refreshRuntimeConfiguration,
   setRuntimeProviderApiKey,
   updateRuntimeConfig,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 import { useQueryClient } from '@tanstack/react-query';
 
 const FALLBACK_PROVIDER_CARDS: Array<{ id: string; name: string }> = [];

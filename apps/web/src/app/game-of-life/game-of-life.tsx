@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * Conway's Game of Life that seeds itself from the current Kortix logo,
- * then lets the simulation evolve. A port of the original kortix-web
- * landing animation (github.com/kortix-ai/kortix-web) onto the latest
- * Kortix brandmark, rendered on a blank white page.
+ * Conway's Game of Life that seeds itself from the current Zed logo,
+ * then lets the simulation evolve. A port of the original zed-web
+ * landing animation (github.com/zed-ai/zed-web) onto the latest
+ * Zed brandmark, rendered on a blank white page.
  */
 export function GameOfLife() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -37,7 +37,7 @@ export function GameOfLife() {
     let lastChangeCount = 0;
     let stagnantFrames = 0;
 
-    // Current Kortix logo: full horizontal logomark on desktop, brandmark on mobile.
+    // Current Zed logo: full horizontal logomark on desktop, brandmark on mobile.
     const logoPath = isMobile
       ? '/brandkit/Logo/Brandmark/SVG/Brandmark Black.svg'
       : '/brandkit/Logo/Logomark/SVG/Logomark Black.svg';
@@ -64,7 +64,7 @@ export function GameOfLife() {
       }
     };
 
-    const setKortixLogo = () => {
+    const setZedLogo = () => {
       const img = new Image();
       img.src = logoPath;
 
@@ -207,13 +207,13 @@ export function GameOfLife() {
         cancelAnimationFrame(animationRef.current);
       }
       initializeGrid();
-      setKortixLogo();
+      setZedLogo();
       frameCount = 0;
       animationRef.current = requestAnimationFrame(animate);
     }, 250);
 
     initializeGrid();
-    setKortixLogo();
+    setZedLogo();
     animate();
 
     window.addEventListener('resize', handleResize);

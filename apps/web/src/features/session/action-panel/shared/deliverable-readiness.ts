@@ -3,7 +3,7 @@
  * panel is closed? Pure so the transition rules are testable without React.
  */
 
-import type { ReadyChipState } from '@/stores/kortix-computer-store';
+import type { ReadyChipState } from '@/stores/zed-computer-store';
 import type { RunOutcome } from './run-outcome';
 
 /**

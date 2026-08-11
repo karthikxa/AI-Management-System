@@ -5,7 +5,7 @@ import {
   type MaintenanceLevel,
 } from '@/lib/maintenance-store';
 import { createClient } from '@/lib/supabase/server';
-import { getUserRolesWithToken } from '@kortix/sdk';
+import { getUserRolesWithToken } from '@zed/sdk';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';

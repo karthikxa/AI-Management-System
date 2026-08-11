@@ -22,52 +22,52 @@ describe('validateManifest — syntax', () => {
     expect(result.issues[0].message).toContain('Syntax error');
   });
 
-  test('empty TOML is invalid without kortix_version', () => {
+  test('empty TOML is invalid without zed_version', () => {
     const result = validateManifest('');
     expect(result.valid).toBe(false);
     expect(result.issues.length).toBe(1);
     expect(result.issues[0].severity).toBe('error');
-    expect(result.issues[0].path).toBe('kortix_version');
+    expect(result.issues[0].path).toBe('zed_version');
   });
 });
 
-describe('validateManifest — kortix_version', () => {
-  test('rejects non-integer kortix_version', () => {
-    const { errorPaths } = summarize(`kortix_version = "one"`);
-    expect(errorPaths).toContain('kortix_version');
+describe('validateManifest — zed_version', () => {
+  test('rejects non-integer zed_version', () => {
+    const { errorPaths } = summarize(`zed_version = "one"`);
+    expect(errorPaths).toContain('zed_version');
   });
 
-  test('rejects string kortix_version', () => {
-    const { errorPaths } = summarize(`kortix_version = "1"`);
-    expect(errorPaths).toContain('kortix_version');
+  test('rejects string zed_version', () => {
+    const { errorPaths } = summarize(`zed_version = "1"`);
+    expect(errorPaths).toContain('zed_version');
   });
 
-  test('rejects decimal kortix_version', () => {
-    const { errorPaths } = summarize('kortix_version = 1.5');
-    expect(errorPaths).toContain('kortix_version');
+  test('rejects decimal zed_version', () => {
+    const { errorPaths } = summarize('zed_version = 1.5');
+    expect(errorPaths).toContain('zed_version');
   });
 
   test('rejects a version higher than known', () => {
-    const { errorPaths } = summarize('kortix_version = 2');
-    expect(errorPaths).toContain('kortix_version');
+    const { errorPaths } = summarize('zed_version = 2');
+    expect(errorPaths).toContain('zed_version');
   });
 
-  test('rejects when kortix_version is missing', () => {
+  test('rejects when zed_version is missing', () => {
     const { errorPaths } = summarize(`[project]\nname = "x"`);
-    expect(errorPaths).toContain('kortix_version');
+    expect(errorPaths).toContain('zed_version');
   });
 });
 
 describe('validateManifest — [env]', () => {
   test('rejects non-array env.required', () => {
-    const { errorPaths, valid } = summarize(`kortix_version = 1\n[env]\nrequired = "ANTHROPIC_API_KEY"`);
+    const { errorPaths, valid } = summarize(`zed_version = 1\n[env]\nrequired = "ANTHROPIC_API_KEY"`);
     expect(valid).toBe(false);
     expect(errorPaths).toContain('env.required');
   });
 
   test('accepts lowercase env names (upper-cased by the runtime)', () => {
     const { valid } = summarize(
-      `kortix_version = 1\n[env]\nrequired = ["api_key"]`,
+      `zed_version = 1\n[env]\nrequired = ["api_key"]`,
     );
     // The runtime canonicalizes to uppercase; we don't fail the build for casing.
     expect(valid).toBe(true);
@@ -75,7 +75,7 @@ describe('validateManifest — [env]', () => {
 
   test('rejects names that start with a digit', () => {
     const { errorPaths, valid } = summarize(
-      `kortix_version = 1\n[env]\nrequired = ["1API_KEY"]`,
+      `zed_version = 1\n[env]\nrequired = ["1API_KEY"]`,
     );
     expect(valid).toBe(false);
     expect(errorPaths.some((p) => p.startsWith('env.required'))).toBe(true);
@@ -83,7 +83,7 @@ describe('validateManifest — [env]', () => {
 
   test('rejects names with hyphens or punctuation', () => {
     const { errorPaths, valid } = summarize(
-      `kortix_version = 1\n[env]\nrequired = ["MY-KEY"]`,
+      `zed_version = 1\n[env]\nrequired = ["MY-KEY"]`,
     );
     expect(valid).toBe(false);
     expect(errorPaths.some((p) => p.startsWith('env.required'))).toBe(true);
@@ -91,7 +91,7 @@ describe('validateManifest — [env]', () => {
 
   test('warns on unknown [env] keys', () => {
     const { warningPaths, valid } = summarize(
-      `kortix_version = 1\n[env]\nrequired = ["ANTHROPIC_API_KEY"]\noptional = ["X"]\nmystery = "?"`,
+      `zed_version = 1\n[env]\nrequired = ["ANTHROPIC_API_KEY"]\noptional = ["X"]\nmystery = "?"`,
     );
     expect(valid).toBe(true);
     expect(warningPaths).toContain('env.mystery');
@@ -101,7 +101,7 @@ describe('validateManifest — [env]', () => {
 describe('validateManifest — [[sandbox.templates]]', () => {
   test('valid image-based template passes', () => {
     const { valid, issues } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "py"
 name = "Python"
@@ -116,18 +116,18 @@ disk = 20
 
   test('rejects entries with both image AND dockerfile', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "bad"
 image = "python:3.12-slim"
-dockerfile = ".kortix/Dockerfile.x"
+dockerfile = ".zed/Dockerfile.x"
 `);
     expect(errorPaths).toContain('sandbox.templates[0]');
   });
 
   test('rejects entries with neither image nor dockerfile', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "empty"
 `);
@@ -136,7 +136,7 @@ slug = "empty"
 
   test('rejects "default" as a reserved slug', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "default"
 image = "ubuntu:22.04"
@@ -146,7 +146,7 @@ image = "ubuntu:22.04"
 
   test('rejects "latest" image tag with a warning (does not block)', () => {
     const { valid, warningPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "ml"
 image = "python:latest"
@@ -157,7 +157,7 @@ image = "python:latest"
 
   test('rejects image without a tag or digest', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "x"
 image = "ubuntu"
@@ -167,7 +167,7 @@ image = "ubuntu"
 
   test('rejects bad slug format', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "Bad Slug!"
 image = "ubuntu:22.04"
@@ -177,7 +177,7 @@ image = "ubuntu:22.04"
 
   test('rejects duplicate slugs', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "ml"
 image = "python:3.12-slim"
@@ -191,7 +191,7 @@ image = "python:3.11-slim"
 
   test('rejects out-of-bounds cpu', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "tiny"
 image = "alpine:3.20"
@@ -202,7 +202,7 @@ cpu = 0
 
   test('rejects relative-path-escape Dockerfiles', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "esc"
 dockerfile = "../etc/Dockerfile"
@@ -212,17 +212,17 @@ dockerfile = "../etc/Dockerfile"
 
   test('rejects legacy singular [sandbox] table', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 
 [sandbox]
-dockerfile = ".kortix/Dockerfile"
+dockerfile = ".zed/Dockerfile"
 `);
     expect(errorPaths).toContain('sandbox');
   });
 
   test('accepts [sandbox] default pointing at a defined template', () => {
     const { valid } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "dev"
 image = "ubuntu:24.04"
@@ -234,7 +234,7 @@ default = "dev"
 
   test('accepts [sandbox] default = "default" (the platform image)', () => {
     const { valid } = summarize(`
-kortix_version = 1
+zed_version = 1
 [sandbox]
 default = "default"
 `);
@@ -243,7 +243,7 @@ default = "default"
 
   test('rejects [sandbox] default that names no defined template', () => {
     const { valid, errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandbox.templates]]
 slug = "dev"
 image = "ubuntu:24.04"
@@ -256,7 +256,7 @@ default = "ghost"
 
   test('rejects the renamed legacy [[sandboxes]] form with a migration error', () => {
     const { valid, errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[sandboxes]]
 slug = "ml"
 image = "python:3.12-slim"
@@ -267,7 +267,7 @@ image = "python:3.12-slim"
 
   test('warns on gpu key (not supported)', () => {
     const { warningPaths, valid } = summarize(`
-kortix_version = 1
+zed_version = 1
 
 [[sandbox.templates]]
 slug = "gpu"
@@ -282,7 +282,7 @@ gpu = 1
 describe('validateManifest — [[triggers]]', () => {
   test('cron trigger requires cron expression and prompt', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[triggers]]
 slug = "no-cron"
 type = "cron"
@@ -293,7 +293,7 @@ type = "cron"
 
   test('webhook trigger requires secret_env', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[triggers]]
 slug = "hook"
 type = "webhook"
@@ -304,7 +304,7 @@ prompt = "hi"
 
   test('valid cron trigger passes', () => {
     const { valid } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[triggers]]
 slug = "daily"
 type = "cron"
@@ -316,7 +316,7 @@ prompt = "Daily digest"
 
   test('session_mode = "reuse" is accepted', () => {
     const { valid } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[triggers]]
 slug = "sweep"
 type = "cron"
@@ -329,7 +329,7 @@ prompt = "Error sweep"
 
   test('an invalid session_mode is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[triggers]]
 slug = "sweep"
 type = "cron"
@@ -344,7 +344,7 @@ prompt = "Error sweep"
 describe('validateManifest — [[connectors]]', () => {
   test('provider must be one of the known values', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
 slug = "wat"
 provider = "made-up"
@@ -354,7 +354,7 @@ provider = "made-up"
 
   test('mcp connector requires url', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
 slug = "mcp1"
 provider = "mcp"
@@ -364,7 +364,7 @@ provider = "mcp"
 
   test('postman connector accepts a repository source and requires spec', () => {
     const accepted = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
 slug = "hubspot"
 provider = "postman"
@@ -374,7 +374,7 @@ spec = "https://github.com/HubSpot/HubSpot-public-api-spec-collection"
     expect(accepted.valid).toBe(true);
 
     const missing = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
 slug = "hubspot"
 provider = "postman"
@@ -384,7 +384,7 @@ provider = "postman"
 
   test('auth.secret is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
 slug = "stripe"
 provider = "openapi"
@@ -398,7 +398,7 @@ spec = "https://example.com/openapi.json"
 
   test('a valid `headers` table is accepted', () => {
     const { valid, errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
 slug = "acme"
 provider = "http"
@@ -413,7 +413,7 @@ base_url = "https://api.acme.com"
 
   test('an illegal header name is an error', () => {
     const { errorPaths, issues } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
 slug = "acme"
 provider = "http"
@@ -427,7 +427,7 @@ base_url = "https://api.acme.com"
 
   test('CR/LF in a header value is an error (header injection)', () => {
     const { errorPaths, issues } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
 slug = "acme"
 provider = "http"
@@ -441,7 +441,7 @@ base_url = "https://api.acme.com"
 
   test('headers on a platform-called provider are a warning (inert at runtime)', () => {
     const { valid, warningPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
 slug = "gmail"
 provider = "pipedream"
@@ -455,7 +455,7 @@ app = "gmail"
 
   test('policy action must be one of the known values', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
 slug = "stripe"
 provider = "openapi"
@@ -469,15 +469,15 @@ spec = "https://example.com/openapi.json"
     expect(errorPaths).toContain('connectors[0].policies[0].action');
   });
 
-  // The platform itself writes an equivalent entry into kortix.yaml when a Slack
+  // The platform itself writes an equivalent entry into zed.yaml when a Slack
   // channel is connected (connector/channel-manifest.ts); this exercises the same
-  // shape against the legacy v1 (kortix.toml) validator. The gate must accept it,
+  // shape against the legacy v1 (zed.toml) validator. The gate must accept it,
   // or it blocks merging a manifest the backend produced.
   test('a platform-written channel connector is valid', () => {
     const { valid, errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
-slug = "kortix_slack"
+slug = "zed_slack"
 provider = "channel"
 platform = "slack"
 `);
@@ -487,9 +487,9 @@ platform = "slack"
 
   test('channel connector requires a known platform', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
-slug = "kortix_slack"
+slug = "zed_slack"
 provider = "channel"
 `);
     expect(errorPaths).toContain('connectors[0].platform');
@@ -497,9 +497,9 @@ provider = "channel"
 
   test('channel connector must not declare [connectors.auth]', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
-slug = "kortix_slack"
+slug = "zed_slack"
 provider = "channel"
 platform = "slack"
   [connectors.auth]
@@ -510,9 +510,9 @@ platform = "slack"
 
   test('a reserved slug rejects the wrong provider', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
-slug = "kortix_slack"
+slug = "zed_slack"
 provider = "http"
 base_url = "https://example.com"
 `);
@@ -521,7 +521,7 @@ base_url = "https://example.com"
 
   test('computer cannot be declared by hand', () => {
     const result = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
 slug = "computer"
 provider = "computer"
@@ -532,13 +532,13 @@ provider = "computer"
 
   // The platform now also writes a `meet` channel connector — mirrors
   // connectors.ts's CHANNEL_PLATFORMS (which already included it) and
-  // RESERVED_SLUG_PROVIDERS (`kortix_voice`). Was previously rejected by the
+  // RESERVED_SLUG_PROVIDERS (`zed_voice`). Was previously rejected by the
   // schema gate even though the runtime accepted it.
   test('a platform-written "voice" channel connector is valid', () => {
     const { valid, errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
-slug = "kortix_voice"
+slug = "zed_voice"
 provider = "channel"
 platform = "voice"
 `);
@@ -546,11 +546,11 @@ platform = "voice"
     expect(valid).toBe(true);
   });
 
-  test('reserved slug "kortix_voice" rejects a mismatched provider', () => {
+  test('reserved slug "zed_voice" rejects a mismatched provider', () => {
     const { errorPaths } = summarize(`
-kortix_version = 1
+zed_version = 1
 [[connectors]]
-slug = "kortix_voice"
+slug = "zed_voice"
 provider = "http"
 base_url = "https://example.com"
 `);
@@ -558,11 +558,11 @@ base_url = "https://example.com"
   });
 });
 
-describe('validateManifest — Kortix Apps', () => {
+describe('validateManifest — Zed Apps', () => {
   test('rejects the retired v1 section and accepts the provider-neutral v2 map', () => {
-    expect(summarize('kortix_version = 1\n[[apps]]\nslug = "site"').errorPaths).toContain('apps');
+    expect(summarize('zed_version = 1\n[[apps]]\nslug = "site"').errorPaths).toContain('apps');
     const v2 = validateManifest(
-      `kortix_version: 2
+      `zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -590,7 +590,7 @@ apps:
 
   test('rejects invalid v2 App ports, commands, resources, and secret mappings', () => {
     const result = validateManifest(
-      `kortix_version: 2
+      `zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -618,7 +618,7 @@ apps:
 // `channel` provider. These lock the gate to the runtime's input tolerance.
 describe('validateManifest — input tolerance (mirrors runtime parser)', () => {
   function connectorErrors(body: string): string[] {
-    return validateManifest(`kortix_version = 1\n${body}`)
+    return validateManifest(`zed_version = 1\n${body}`)
       .issues.filter((i) => i.severity === 'error')
       .map((i) => i.path);
   }
@@ -657,7 +657,7 @@ describe('validateManifest — input tolerance (mirrors runtime parser)', () => 
 
   test('an empty-string grant is accepted as deny', () => {
     expect(
-      connectorErrors(`[[agents]]\nname = "a"\nkortix_cli = ""\nconnectors = ""`),
+      connectorErrors(`[[agents]]\nname = "a"\nzed_cli = ""\nconnectors = ""`),
     ).toEqual([]);
   });
 
@@ -672,6 +672,6 @@ image = "ubuntu:22.04"
 `);
     const text = formatIssues(issues, { color: false });
     expect(text).toContain('error sandbox.templates[0].slug');
-    expect(text).toContain('kortix_version');
+    expect(text).toContain('zed_version');
   });
 });

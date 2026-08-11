@@ -23,7 +23,7 @@
 // in its original position before any routes), and the shared helpers all live
 // in `./app`, which every route module imports first.
 
-import { accounts } from '@kortix/db';
+import { accounts } from '@zed/db';
 import { scimRouter } from './app';
 
 // Register routes in their original order (side-effect imports).

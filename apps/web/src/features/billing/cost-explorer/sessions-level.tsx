@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import type { SessionCostSort, SessionCostsPage, SessionCostSummary } from '@kortix/sdk';
+import type { SessionCostSort, SessionCostsPage, SessionCostSummary } from '@zed/sdk';
 import { ReceiptIcon as ReceiptText } from '@phosphor-icons/react';
 
 import { Badge } from '@/components/ui/badge';

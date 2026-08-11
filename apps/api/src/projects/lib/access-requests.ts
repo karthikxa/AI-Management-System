@@ -1,12 +1,12 @@
 import { and, eq, inArray } from 'drizzle-orm';
-import { accountMembers, projectMembers, projects } from '@kortix/db';
+import { accountMembers, projectMembers, projects } from '@zed/db';
 import { sendProjectAccessRequestEmail } from '../../accounts/email';
 import { config } from '../../config';
 import { db } from '../../shared/db';
 import { lookupEmailsByUserIds } from './access';
 
 function projectMembersUrl(projectId: string): string {
-  const base = (config.FRONTEND_URL || 'https://kortix.com').replace(/\/+$/, '');
+  const base = (config.FRONTEND_URL || 'https://zed.com').replace(/\/+$/, '');
   return `${base}/projects/${projectId}/customize/members`;
 }
 export async function notifyProjectAccessRequestManagers(input: {

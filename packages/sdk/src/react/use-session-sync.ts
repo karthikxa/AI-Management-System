@@ -44,22 +44,22 @@ const BUSY_STATUS = { type: 'busy' } as SessionStatus;
  */
 interface UseSessionSyncOptions {
   /**
-   * Stable Kortix `(projectId, sessionId)` scope for disk transcript ownership.
+   * Stable Zed `(projectId, sessionId)` scope for disk transcript ownership.
    * This prevents equal OpenCode ids in different sandboxes from sharing data.
    */
-  kortixSessionScope?: string;
+  zedSessionScope?: string;
   /**
    * Allow live REST reconciliation against the current runtime.
-   * Set false while `/start` has not switched this Kortix session's sandbox.
+   * Set false while `/start` has not switched this Zed session's sandbox.
    */
   networkEnabled?: boolean;
 }
 
 export function useSessionSync(sessionId: string, options: UseSessionSyncOptions = {}) {
-  const { kortixSessionScope, networkEnabled = true } = options;
+  const { zedSessionScope, networkEnabled = true } = options;
   const runtimeHealthy = useSandboxConnectionStore((state) => state.healthy === true);
   const runtimeScope = useCurrentRuntime((state) => state.sandboxId) ?? 'none';
-  const cacheOwnerScope = resolveSessionCacheOwnerScope(runtimeScope, kortixSessionScope);
+  const cacheOwnerScope = resolveSessionCacheOwnerScope(runtimeScope, zedSessionScope);
   const currentOwner = getSessionCacheOwnership(sessionId);
   const cacheBelongsToAnotherRuntime =
     !!sessionId && sessionCacheOwnerScopesConflict(currentOwner, cacheOwnerScope);
@@ -107,7 +107,7 @@ export function useSessionSync(sessionId: string, options: UseSessionSyncOptions
     if (!canQueryOpenCodeSession(sessionId)) return;
     let cancelled = false;
     void (async () => {
-      const cached = await readCachedTranscript(sessionId, kortixSessionScope);
+      const cached = await readCachedTranscript(sessionId, zedSessionScope);
       if (cancelled || !cached) return;
       const store = useSyncStore.getState();
       if (
@@ -124,7 +124,7 @@ export function useSessionSync(sessionId: string, options: UseSessionSyncOptions
     return () => {
       cancelled = true;
     };
-  }, [kortixSessionScope, sessionId]);
+  }, [zedSessionScope, sessionId]);
 
   useEffect(() => {
     if (
@@ -157,11 +157,11 @@ export function useSessionSync(sessionId: string, options: UseSessionSyncOptions
       if (state.messages[sessionId] === lastMessages && state.parts === lastParts) return;
       lastMessages = state.messages[sessionId];
       lastParts = state.parts;
-      void writeCachedTranscript(state, sessionId, kortixSessionScope);
+      void writeCachedTranscript(state, sessionId, zedSessionScope);
     };
     persist(useSyncStore.getState());
     return useSyncStore.subscribe(persist);
-  }, [kortixSessionScope, sessionId]);
+  }, [zedSessionScope, sessionId]);
 
   const messages = useSyncStore((state) =>
     state.buildSessionMessages(

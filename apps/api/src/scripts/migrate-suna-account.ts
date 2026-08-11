@@ -2,7 +2,7 @@
  * Migrate a Suna (legacy agentpress) account's chats + files into ONE new
  * opencode project: 14 chats become 14 sessions in one opencode.db, and each
  * Suna sandbox's /workspace lands under legacy/<slug>/ (his content only — one
- * root kortix.yaml for the repo).
+ * root zed.yaml for the repo).
  *
  *   --plan          READ-ONLY: discover projects/threads, Daytona sandbox state,
  *                   and build the opencode.db locally to prove the conversion.
@@ -137,7 +137,7 @@ async function main() {
         } else files = ex.state;
       }
       manifest.push({ slug: u.slug, project_id: u.project.project_id, external_id: u.project.external_id, files, bytes, messages: u.session.messages.length });
-      writeFileSync(join(dest, '.kortix-origin.json'), JSON.stringify(manifest[manifest.length - 1], null, 2));
+      writeFileSync(join(dest, '.zed-origin.json'), JSON.stringify(manifest[manifest.length - 1], null, 2));
       console.log(`  ${u.slug.padEnd(40)} files:${files.padEnd(14)} ${(bytes / 1024).toFixed(0)}KB  ${u.session.messages.length} msgs`);
     }
     const dbPath = join(out, 'opencode.db');
@@ -156,13 +156,13 @@ async function main() {
     console.log(`  repo:       ${repo.upstreamUrl}`);
     console.log(`  project_id: ${repo.projectId}`);
     console.log(`  opencode.db kept aside: ${join(pushDir!, '..')}/${repo.projectId}.opencode.db`);
-    console.log(`\n  Next: create the kortix.projects row for ${repo.projectId} pointed at this repo,`);
+    console.log(`\n  Next: create the zed.projects row for ${repo.projectId} pointed at this repo,`);
     console.log(`        then provision its sessions + ship the opencode.db (the API-side step).\n`);
     return;
   }
 
   // ── APPLY: enqueue + drive the real migration inline (extract → repo → push
-  //    → db). Needs the full infra (GitHub App, Daytona, reachable KORTIX_URL).
+  //    → db). Needs the full infra (GitHub App, Daytona, reachable ZED_URL).
   //    Run against STAGING first, bounded with --limit. ──
   if (mode === 'apply') {
     const { startSunaMigration, driveSunaMigration, latestSunaMigration } = await import('../projects/suna-migration/suna-migration-runner');

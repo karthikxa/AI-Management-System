@@ -3,7 +3,7 @@ import { describe, expect, mock, test } from 'bun:test';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import type { PanelMode } from '@/stores/user-preferences-store';
 import { AdvancedPanel } from './advanced/advanced-panel';
 import { EasyPanel } from './easy/easy-panel';
@@ -170,16 +170,16 @@ describe('shouldDiscardPendingPrimaryOpen (W7)', () => {
   });
 
   test('end to end: Advanced mode consumes this session\'s pending request via the store', () => {
-    useKortixComputerStore.getState().reset();
-    useKortixComputerStore.getState().requestPrimaryOpen('s1');
+    useZedComputerStore.getState().reset();
+    useZedComputerStore.getState().requestPrimaryOpen('s1');
     expect(
       shouldDiscardPendingPrimaryOpen(
         'advanced',
-        useKortixComputerStore.getState().pendingPrimaryOpenSessionId,
+        useZedComputerStore.getState().pendingPrimaryOpenSessionId,
         's1',
       ),
     ).toBe(true);
-    expect(useKortixComputerStore.getState().consumePrimaryOpen('s1')).toBe(true);
-    expect(useKortixComputerStore.getState().pendingPrimaryOpenSessionId).toBeNull();
+    expect(useZedComputerStore.getState().consumePrimaryOpen('s1')).toBe(true);
+    expect(useZedComputerStore.getState().pendingPrimaryOpenSessionId).toBeNull();
   });
 });

@@ -31,7 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
-import { IconInbox } from '@/components/ui/kortix-icons';
+import { IconInbox } from '@/components/ui/zed-icons';
 import { PageSearchBar } from '@/components/ui/page-search-bar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -1741,7 +1741,7 @@ function EntitlementsTab({ account }: { account: AdminAccount }) {
       <div className="border-border/60 bg-card space-y-3 rounded-2xl border p-4">
         <EntitlementRow
           title="Managed models"
-          description="Force Kortix-credential models on, restrict the account to its own BYOK keys, or leave the decision to the effective tier."
+          description="Force Zed-credential models on, restrict the account to its own BYOK keys, or leave the decision to the effective tier."
         >
           <div className="flex flex-wrap gap-1.5">
             {managedModelsChoices.map((choice) => (

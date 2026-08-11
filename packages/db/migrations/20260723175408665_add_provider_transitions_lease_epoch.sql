@@ -13,5 +13,5 @@ set statement_timeout = '30s';
 -- without rewriting existing rows.
 --   [x] New column has a constant DEFAULT. No backfill is required.
 
-ALTER TABLE "kortix"."provider_transitions"
+ALTER TABLE "zed"."provider_transitions"
   ADD COLUMN "lease_epoch" bigint DEFAULT 0 NOT NULL;

@@ -22,7 +22,7 @@
 
 import { cn } from '@/lib/utils';
 import { parseLocalhostUrl } from '@/lib/utils/sandbox-url';
-import { useRuntimeConnectionStore } from '@kortix/sdk/react';
+import { useRuntimeConnectionStore } from '@zed/sdk/react';
 import { useSyncExternalStore } from 'react';
 import type { OutputItem } from '../shared/derive-panels';
 import { PanelCard } from './panel-card';
@@ -90,12 +90,12 @@ export function AppsCard({
                 <span className="flex size-7 shrink-0 items-center justify-center" aria-hidden>
                   <span className="relative flex size-2">
                     {sandboxAlive && (
-                      <span className="bg-kortix-green absolute inline-flex size-2 animate-ping rounded-full opacity-60 motion-reduce:animate-none" />
+                      <span className="bg-zed-green absolute inline-flex size-2 animate-ping rounded-full opacity-60 motion-reduce:animate-none" />
                     )}
                     <span
                       className={cn(
                         'relative inline-flex size-2 rounded-full',
-                        sandboxAlive ? 'bg-kortix-green' : 'bg-muted-foreground/40',
+                        sandboxAlive ? 'bg-zed-green' : 'bg-muted-foreground/40',
                       )}
                     />
                   </span>

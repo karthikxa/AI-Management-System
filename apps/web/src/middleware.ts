@@ -7,7 +7,7 @@ import {
   PROJECT_LANDING_PATH,
   resolveDefaultLandingPath,
 } from '@/lib/onboarding/landing-destination';
-import { KORTIX_SUPABASE_AUTH_COOKIE } from '@/lib/supabase/constants';
+import { ZED_SUPABASE_AUTH_COOKIE } from '@/lib/supabase/constants';
 import { redirectPreservingCookies } from '@/lib/supabase/redirect-preserving-session';
 import { createServerClient } from '@supabase/ssr';
 import type { NextRequest } from 'next/server';
@@ -17,7 +17,7 @@ import { NextResponse } from 'next/server';
 const MARKETING_ROUTES = ['/', '/legal', '/support'];
 
 // Pure marketing/promo routes that a self-host with the landing page disabled
-// (KORTIX_PUBLIC_DISABLE_LANDING_PAGE) should NOT serve — they bounce to the
+// (ZED_PUBLIC_DISABLE_LANDING_PAGE) should NOT serve — they bounce to the
 // app. Functional public routes (/auth, /docs, /help, /legal, /support,
 // /marketplace, /share, /download, /maintenance, …) stay reachable; only the
 // marketing site itself is deactivated.
@@ -77,7 +77,7 @@ const PUBLIC_ROUTES = [
   '/download', // Desktop installer redirector (per-platform latest)
   '/design-system', // Living design system / brand guidelines should be public
   '/presentation', // Standalone product deck (/presentation) should be public
-  '/rauch', // Rauch-style particle rendering of the Kortix symbol — public, unauthenticated
+  '/rauch', // Rauch-style particle rendering of the Zed symbol — public, unauthenticated
   '/contact', // Request-a-demo / contact page should be public
   '/developers', // Developer walkthrough landing page should be public
   '/countryerror', // Country restriction error page should be public
@@ -89,7 +89,7 @@ const PUBLIC_ROUTES = [
   '/security', // Security & trust page should be public
   '/maintenance', // Maintenance page must be accessible without auth
   '/debug', // Dev-only visual harnesses (tools, connecting, error) — unlinked
-  '/game-of-life', // Conway's Game of Life seeded from the Kortix logo — public, unauthenticated
+  '/game-of-life', // Conway's Game of Life seeded from the Zed logo — public, unauthenticated
   '/a1o', // "All in one" — WebGL stack-layer cube landing page, public, unauthenticated
   '/voice', // Direct join page for a live voice call — token-gated, MUST load with no login
   ...locales.flatMap((locale) =>
@@ -114,7 +114,7 @@ const MARKDOWN_NEGOTIATION_ROUTES = new Set([
 
 const AGENT_DISCOVERY_LINK_HEADER =
   '</.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", ' +
-  '<https://api.kortix.com/v1/openapi.json>; rel="service-desc"; type="application/json", ' +
+  '<https://api.zed.com/v1/openapi.json>; rel="service-desc"; type="application/json", ' +
   '</docs>; rel="service-doc"; type="text/html", ' +
   '</llms.txt>; rel="describedby"; type="text/plain"';
 
@@ -128,7 +128,7 @@ function supportsMarkdownNegotiation(pathname: string): boolean {
   );
 }
 
-// Desktop app (KortixDesktop UA) is a pure logged-in product surface. ONLY
+// Desktop app (ZedDesktop UA) is a pure logged-in product surface. ONLY
 // these route prefixes — plus /auth/* for sign-in — are allowed to render
 // inside the desktop window. Every other route (the marketing homepage, blog,
 // pricing, careers, contact, legal, help, docs, share, design-system, … which
@@ -172,7 +172,7 @@ export async function middleware(request: NextRequest) {
     markdownUrl.search = '';
     markdownUrl.searchParams.set('path', pathname);
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('x-kortix-markdown-path', pathname);
+    requestHeaders.set('x-zed-markdown-path', pathname);
     return NextResponse.rewrite(markdownUrl, {
       request: { headers: requestHeaders },
     });
@@ -209,7 +209,7 @@ export async function middleware(request: NextRequest) {
   // When maintenance level is "blocking" (Full Lockdown), redirect DASHBOARD /
   // app traffic to /maintenance — but NOT the public marketing/landing site.
   // A release lockdown should take the product surface offline while new
-  // visitors can still reach kortix.com, the blog, pricing, docs, etc.
+  // visitors can still reach zed.com, the blog, pricing, docs, etc.
   // So we bypass the redirect for every public route (which already includes
   // /, /auth, /maintenance, marketing pages, docs, …) plus the admin panel
   // (so admins can disable the lockdown). Everything else — /projects,
@@ -270,14 +270,14 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── Desktop app: logged-in product surface only ─────────────────────────
-  // The desktop shell (KortixDesktop UA) must never render marketing/docs/
+  // The desktop shell (ZedDesktop UA) must never render marketing/docs/
   // public pages. Allow only product + auth routes; bounce everything else to
   // /projects. Runs AFTER the Supabase-at-root handling (so OAuth callbacks
   // still work) and BEFORE the locale/marketing logic (irrelevant for desktop).
   // This is the authoritative gate — it catches initial loads, SSR, and
   // Next.js client/RSC navigations alike. The Tauri shell separately opens
   // docs/external links in the user's real browser.
-  if (request.headers.get('user-agent')?.includes('KortixDesktop')) {
+  if (request.headers.get('user-agent')?.includes('ZedDesktop')) {
     const isAuthPath = pathname === '/auth' || pathname.startsWith('/auth/');
     const isAllowed =
       isAuthPath ||
@@ -354,15 +354,15 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl =
     process.env.SUPABASE_SERVER_URL ||
     process.env.SUPABASE_URL ||
-    process.env.KORTIX_PUBLIC_SUPABASE_URL ||
+    process.env.ZED_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseAnonKey =
     process.env.SUPABASE_ANON_KEY ||
-    process.env.KORTIX_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.ZED_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookieOptions: {
-      name: KORTIX_SUPABASE_AUTH_COOKIE,
+      name: ZED_SUPABASE_AUTH_COOKIE,
       path: '/',
       sameSite: 'lax',
     },
@@ -424,7 +424,7 @@ export async function middleware(request: NextRequest) {
       /invalid.*(jwt|token)/i.test(message)
     ) {
       for (const { name } of request.cookies.getAll()) {
-        if (name === KORTIX_SUPABASE_AUTH_COOKIE || name.startsWith(`${KORTIX_SUPABASE_AUTH_COOKIE}.`)) {
+        if (name === ZED_SUPABASE_AUTH_COOKIE || name.startsWith(`${ZED_SUPABASE_AUTH_COOKIE}.`)) {
           supabaseResponse.cookies.delete(name);
         }
       }
@@ -448,22 +448,22 @@ export async function middleware(request: NextRequest) {
   }
 
   // Desktop shell never shows the marketing homepage — bounce into the product.
-  if (pathname === '/' && request.headers.get('user-agent')?.includes('KortixDesktop')) {
+  if (pathname === '/' && request.headers.get('user-agent')?.includes('ZedDesktop')) {
     return redirectPreservingSession(new URL(defaultLandingPath, request.url));
   }
 
   // Self-host: when the landing/marketing site is disabled
-  // (KORTIX_PUBLIC_DISABLE_LANDING_PAGE — default ON for self-host), the WHOLE
+  // (ZED_PUBLIC_DISABLE_LANDING_PAGE — default ON for self-host), the WHOLE
   // marketing surface is deactivated: the homepage and every marketing route
   // bounce straight to the app — authenticated users to /projects, everyone
   // else to /auth. Functional public routes (/docs, /help, /legal, /support,
   // /marketplace, /share, …) are unaffected. Read via process.env directly —
   // NEXT_PUBLIC_ vars are inlined at build time, so in Docker containers they'd
   // carry the image's placeholder value; the runtime container env
-  // (KORTIX_PUBLIC_/NEXT_PUBLIC_ set at `docker run`) is what must win here,
+  // (ZED_PUBLIC_/NEXT_PUBLIC_ set at `docker run`) is what must win here,
   // same convention as the Supabase vars below.
   const disableLandingPage =
-    (process.env.KORTIX_PUBLIC_DISABLE_LANDING_PAGE || process.env.NEXT_PUBLIC_DISABLE_LANDING_PAGE) === 'true';
+    (process.env.ZED_PUBLIC_DISABLE_LANDING_PAGE || process.env.NEXT_PUBLIC_DISABLE_LANDING_PAGE) === 'true';
   if (disableLandingPage) {
     const isMarketingContent =
       pathname === '/' ||

@@ -1,6 +1,6 @@
 // Migration: admin_analytics_time_indexes  (NON-TRANSACTIONAL -- CONCURRENTLY escape hatch)
 //
-// Adds kortix.project_sessions (created_at) for the admin activity dashboard
+// Adds zed.project_sessions (created_at) for the admin activity dashboard
 // (apps/api/src/admin/analytics.ts -> GET /v1/admin/analytics/activity).
 //
 // WHY: that route runs `... where created_at >= $1 group by date_trunc('day', ...)`
@@ -16,7 +16,7 @@
 // four grouped uuid columns would roughly triple the index size for a window
 // whose heap pages are already physically clustered at the end of the table.
 //
-// Companion migration 20260807202731278 does the same for kortix.credit_ledger.
+// Companion migration 20260807202731278 does the same for zed.credit_ledger.
 // They are separate files because a .concurrent.ts migration must contain
 // exactly ONE concurrent operation (see the house rules in MIGRATIONS.md).
 
@@ -31,7 +31,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create index concurrently if not exists idx_project_sessions_created_at
-      on kortix.project_sessions (created_at)
+      on zed.project_sessions (created_at)
   `);
 };
 

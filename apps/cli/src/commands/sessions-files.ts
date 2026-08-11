@@ -13,14 +13,14 @@ import {
 } from 'node:path';
 import { posix } from 'node:path';
 
-import { toSandboxAbsolutePath } from '@kortix/sdk';
+import { toSandboxAbsolutePath } from '@zed/sdk';
 
-import { kortixFromAuth } from '../api/sdk.ts';
+import { zedFromAuth } from '../api/sdk.ts';
 import { emitJson, surfaceApiError, takeFlagBool, takeFlagValue } from '../command-helpers.ts';
 import { C, help, status } from '../style.ts';
 import { loadSessionForChat } from './sessions-chat.ts';
 
-const HELP = help`Usage: kortix sessions cp <src> <dst> [options]
+const HELP = help`Usage: zed sessions cp <src> <dst> [options]
 
 Copy files between your machine and a session's sandbox, or directly
 between two sandboxes in the project. scp-style refs:
@@ -33,14 +33,14 @@ Sandbox paths resolve under /workspace unless absolute (/workspace, /tmp,
 relayed through this process — both sandboxes are woken if needed.
 
 Examples:
-  kortix sessions cp report.pdf ses_abc:out/report.pdf
-  kortix sessions cp ses_abc:/workspace/dist/app.tar.gz .
-  kortix sessions cp ses_abc:build/site ses_def:/workspace/site -r
+  zed sessions cp report.pdf ses_abc:out/report.pdf
+  zed sessions cp ses_abc:/workspace/dist/app.tar.gz .
+  zed sessions cp ses_abc:build/site ses_def:/workspace/site -r
 
 Options:
   -r, --recursive    Copy directories recursively.
   --project <id>     Operate on this project id (default: linked).
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   --json             Print the transferred files as JSON.
   -h, --help         Show this help.
 `;
@@ -94,14 +94,14 @@ export async function writeSessionFile(
 ): Promise<{ path: string; bytes: number }> {
   const parent = posix.dirname(absPath);
   await files.mkdir(parent).catch(() => undefined);
-  const temporaryName = `.${posix.basename(absPath)}.kortix-cp-${crypto.randomUUID()}`;
+  const temporaryName = `.${posix.basename(absPath)}.zed-cp-${crypto.randomUUID()}`;
   const results = await files.upload(content, parent, temporaryName);
   const uploaded = results[0]?.path;
   if (!uploaded) {
     throw new Error(`upload returned no file for ${absPath}`);
   }
   const actual = toSandboxAbsolutePath(uploaded);
-  const backupPath = `${absPath}.kortix-cp-backup-${crypto.randomUUID()}`;
+  const backupPath = `${absPath}.zed-cp-backup-${crypto.randomUUID()}`;
   let backedUp = false;
   try {
     await files.rename(absPath, backupPath);
@@ -166,7 +166,7 @@ export function buildPromptWithFiles(prompt: string, sandboxPaths: string[]): st
 export const SESSION_CONTRACT = [
   '--- session contract ---',
   'You are a specialized work session. Do the task above yourself, in this sandbox, with your own tools.',
-  'Do not spawn other sessions (no `kortix sessions new`) — the coordinator that started you manages the fleet.',
+  'Do not spawn other sessions (no `zed sessions new`) — the coordinator that started you manages the fleet.',
   'For Python use the preinstalled `uv` (`uv run` / `uvx` / `uv pip`), never bare `pip`.',
   'Write your deliverables to files under /workspace/out/ and state the exact paths in your final reply.',
 ].join('\n');
@@ -181,7 +181,7 @@ export function buildSpawnPrompt(prompt: string, opts: { fromSandbox: boolean })
  * The persisted model + agent a prompt to this session must carry (mirrors
  * the SDK's own `send()` resolution). An async prompt WITHOUT them lets
  * OpenCode fall back to its built-in default model, which is not provisioned
- * in Kortix sandboxes — the message lands but the agent loop never starts.
+ * in Zed sandboxes — the message lands but the agent loop never starts.
  */
 export function sessionPromptDefaults(session: {
   agent_name?: string | null;
@@ -314,7 +314,7 @@ export async function runSessionsCp(argv: string[]): Promise<number> {
       requireRunning: false,
     });
     if (!resolved) return 1;
-    const handle = kortixFromAuth(resolved.auth).session(
+    const handle = zedFromAuth(resolved.auth).session(
       resolved.ctx.projectId,
       resolved.session.session_id,
     );

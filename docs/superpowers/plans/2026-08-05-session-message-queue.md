@@ -9,7 +9,7 @@
 only when the turn genuinely ends, one message per turn — and the user can see
 the queue and edit, reorder, remove, or stop-and-send any item.
 
-**Architecture:** Pure queue transitions move into `@kortix/sdk`
+**Architecture:** Pure queue transitions move into `@zed/sdk`
 (`core/session/message-queue.ts`, framework-free, isomorphic tier). `apps/web`
 keeps three thin layers over it: a persisted zustand store, a drain hook that
 owns boundary detection, and the composer UI. The tool-completion trigger and
@@ -100,7 +100,7 @@ the `isBusy` trigger are deleted outright.
 - [ ] **Step 3:** Add the `SUBPATH_TIERS` row, tier `isomorphic-core`.
 - [ ] **Step 4:** Add a doc note to `send-queue.ts` — it stays exported and
       tested (public API), and is superseded by `message-queue.ts` for host use.
-- [ ] **Step 5: Run** `pnpm --filter @kortix/sdk test` → the tripwire and
+- [ ] **Step 5: Run** `pnpm --filter @zed/sdk test` → the tripwire and
       `package-exports.test.ts` pass; check the count against the baseline.
 
 ### Task 3: Persisted per-session store
@@ -123,7 +123,7 @@ the `isBusy` trigger are deleted outright.
       - A corrupt / non-array payload hydrates to an empty queue, not a throw.
 - [ ] **Step 2: Run** → FAIL.
 - [ ] **Step 3: Implement.** zustand over the task-1 reducer. Key
-      `kortix_message_queue_v3`. Writes are debounced and wrapped in
+      `zed_message_queue_v3`. Writes are debounced and wrapped in
       `try/catch` — a full or blocked `localStorage` must never break sending.
       Guard `typeof window`.
 - [ ] **Step 4: Run** → PASS.
@@ -226,7 +226,7 @@ new `apps/web/src/features/session/composer/queued-messages-logic.ts`; new
       Rehydrated items that lost attachments show an explicit note.
 - [ ] **Step 5: Accessibility.** `role="list"`, per-action `aria-label`, polite
       live region announcing queue depth, full keyboard operability.
-- [ ] **Step 6:** Read `.claude/skills/kortix-design-system/SKILL.md` and compose
+- [ ] **Step 6:** Read `.claude/skills/zed-design-system/SKILL.md` and compose
       from `@/components/ui/*`. Motion: `AnimatePresence` + `layout`, spring
       `{ duration: 0.3, bounce: 0 }`, transform/opacity only.
 
@@ -255,9 +255,9 @@ new `apps/web/src/features/session/composer/queued-messages-logic.ts`; new
 
 **Files:** none — this task runs commands and records output.
 
-- [ ] `pnpm --filter @kortix/sdk test` — full suite, count checked against the
+- [ ] `pnpm --filter @zed/sdk test` — full suite, count checked against the
       baseline.
-- [ ] `pnpm --filter @kortix/sdk typecheck`
+- [ ] `pnpm --filter @zed/sdk typecheck`
 - [ ] `cd apps/web && bun test src/stores/message-queue-store.test.ts src/features/session/message-queue-boundary.test.ts src/features/session/composer/queued-messages-logic.test.ts`
 - [ ] `cd apps/web && bunx tsc --noEmit` — no new errors over the known
       `@types/bun` `test.each` baseline in 3 files.

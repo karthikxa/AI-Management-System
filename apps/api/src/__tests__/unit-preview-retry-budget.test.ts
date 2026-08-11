@@ -20,7 +20,7 @@ describe('preview proxy retry budget', () => {
     expect(
       proxyAttemptTimeoutMs(PROXY_RETRY_BUDGET_MS, {
         method: 'GET',
-        path: '/kortix/health',
+        path: '/zed/health',
       }),
     ).toBe(PROXY_ATTEMPT_TIMEOUT_MS);
   });

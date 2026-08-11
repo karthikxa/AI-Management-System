@@ -7,7 +7,7 @@ import Loading from '@/components/ui/loading';
  * box (`session.commit`), branches (`git.branches`), the commit list
  * (`git.commits`) with a detail dialog (`git.commit`, `git.commitDiff`), and the
  * compare-to-base summary (`git.versionDiff`). Everything routes through the
- * `@kortix/sdk` facade — no raw HTTP.
+ * `@zed/sdk` facade — no raw HTTP.
  */
 
 import { Badge } from '@/components/ui/badge';
@@ -24,9 +24,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { relativeTime } from '@/lib/utils';
-import type { ProjectBranch, ProjectCommit } from '@kortix/sdk';
+import type { ProjectBranch, ProjectCommit } from '@zed/sdk';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, GitBranch, GitCommitHorizontal, Scale } from 'lucide-react';
 import { useState } from 'react';
@@ -47,12 +47,12 @@ export function CommitsView({
 
   const branches = useQuery({
     queryKey: ['project-branches', projectId],
-    queryFn: () => kortix.project(projectId).git.branches(),
+    queryFn: () => zed.project(projectId).git.branches(),
   });
 
   const commits = useQuery({
     queryKey: ['project-commits', projectId],
-    queryFn: () => kortix.project(projectId).git.commits(),
+    queryFn: () => zed.project(projectId).git.commits(),
   });
 
   const defaultBranch = branches.data?.default_branch;
@@ -62,7 +62,7 @@ export function CommitsView({
     queryKey: ['project-version-diff', projectId, defaultBranch, sessionId],
     enabled: comparing && !!defaultBranch,
     queryFn: () =>
-      kortix.project(projectId).git.versionDiff({
+      zed.project(projectId).git.versionDiff({
         from: defaultBranch as string,
         into: sessionId,
       }),
@@ -70,7 +70,7 @@ export function CommitsView({
 
   const commitSession = useMutation({
     mutationFn: () =>
-      kortix
+      zed
         .session(projectId, sessionId)
         .commit(message.trim() ? { message: message.trim() } : undefined),
     onSuccess: (res) => {
@@ -266,13 +266,13 @@ function CommitDetailDialog({
   const detail = useQuery({
     queryKey: ['project-commit', projectId, sha],
     enabled: !!sha,
-    queryFn: () => kortix.project(projectId).git.commit(sha as string),
+    queryFn: () => zed.project(projectId).git.commit(sha as string),
   });
 
   const diff = useQuery({
     queryKey: ['project-commit-diff', projectId, sha],
     enabled: !!sha,
-    queryFn: () => kortix.project(projectId).git.commitDiff(sha as string),
+    queryFn: () => zed.project(projectId).git.commitDiff(sha as string),
   });
 
   const d = detail.data;

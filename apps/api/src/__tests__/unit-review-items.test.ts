@@ -4,7 +4,7 @@
  * ke2e review flow).
  */
 import { describe, expect, test } from 'bun:test';
-import type { connectorCalls, reviewItems } from '@kortix/db';
+import type { connectorCalls, reviewItems } from '@zed/db';
 import {
   collectInboxItems,
   isReviewVerdict,

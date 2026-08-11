@@ -59,12 +59,12 @@ describe('tierGrantsAllModels', () => {
 });
 
 describe('accountIsFreeTierForModels', () => {
-  // The no-arg form reads the AMBIENT config.INTERNAL_KORTIX_ENV, which varies
+  // The no-arg form reads the AMBIENT config.INTERNAL_ZED_ENV, which varies
   // by where the suite runs (provisioned dev box vs CI vs a bare worktree) —
   // so assert only self-consistency with an explicit same-env call, never a
   // specific ambient value.
   test('no-arg form matches the explicit call for the ambient env', () => {
-    const ambient = config.INTERNAL_KORTIX_ENV;
+    const ambient = config.INTERNAL_ZED_ENV;
     for (const tier of ['free', 'none', 'totally-made-up-tier']) {
       expect(accountIsFreeTierForModels(tier)).toBe(accountIsFreeTierForModels(tier, ambient));
     }

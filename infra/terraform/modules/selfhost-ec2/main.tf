@@ -1,9 +1,9 @@
-# selfhost-ec2 — a thin, optional convenience provisioner for `kortix
+# selfhost-ec2 — a thin, optional convenience provisioner for `zed
 # self-host`. This is NOT a parallel deployment system: Terraform provisions
 # the box exactly once (instance + data volume + security group + DNS), and
-# cloud-init runs the exact same `kortix self-host init` / `start` any
+# cloud-init runs the exact same `zed self-host init` / `start` any
 # self-host user runs by hand. After that, the box keeps itself current via
-# the in-compose nightly `kortix-updater` service — re-running `terraform
+# the in-compose nightly `zed-updater` service — re-running `terraform
 # apply` does not redeploy the app, and there is no Terraform-side update
 # path to keep in sync with it.
 
@@ -11,7 +11,7 @@ locals {
   name = var.name
 
   # Route53 record for the API subdomain — defaults to api.<domain>, matching
-  # the kortix CLI's own default (KORTIX_API_DOMAIN), so this is normally left
+  # the zed CLI's own default (ZED_API_DOMAIN), so this is normally left
   # unset.
   api_domain = var.api_domain != "" ? var.api_domain : "api.${var.domain}"
 
@@ -35,7 +35,7 @@ locals {
   is_graviton_instance_type = can(regex("^(a1|c6g|c6gd|c6gn|c7g|c7gd|c7gn|c7gh|c8g|c8gd|c8gn|g5g|hpc7g|hpc7g4|im4gn|is4gen|m6g|m6gd|m7g|m7gd|m8g|m8gd|r6g|r6gd|r7g|r7gd|r8g|r8gd|t4g|x2gd|i4g|i8g)\\.", var.instance_type))
 
   # Namespace CloudWatch agent metrics + alarms both key off (see monitoring.tf).
-  cloudwatch_namespace = "KortixSelfHost"
+  cloudwatch_namespace = "ZedSelfHost"
 
   tags = merge(var.tags, {
     Name      = local.name
@@ -100,7 +100,7 @@ resource "aws_security_group" "this" {
   #checkov:skip=CKV_AWS_260:Public port 80 is limited to ACME HTTP-01 certificate issuance and redirects application traffic to HTTPS.
   #checkov:skip=CKV_AWS_382:this is a general-purpose self-host box, not an internal service — it needs outbound to Docker Hub/GHCR (image pulls + the in-compose updater), GitHub Releases (CLI install/update), ACME servers, apt/package mirrors, and whatever a sandboxed build reaches; there is no fixed egress allowlist to scope this to.
   name        = "${local.name}-sg"
-  description = "kortix self-host box: 80/443 in, all out"
+  description = "zed self-host box: 80/443 in, all out"
   vpc_id      = local.vpc_id
 
   dynamic "ingress" {
@@ -147,8 +147,8 @@ resource "aws_security_group" "this" {
     Name           = "${local.name}-sg"
     Module         = "selfhost-ec2"
     Environment    = lookup(var.tags, "Environment", "managed")
-    Project        = lookup(var.tags, "Project", "kortix")
-    KortixInstance = lookup(var.tags, "KortixInstance", local.name)
+    Project        = lookup(var.tags, "Project", "zed")
+    ZedInstance = lookup(var.tags, "ZedInstance", local.name)
   }
 }
 
@@ -171,8 +171,8 @@ resource "aws_iam_role" "this" {
     Name           = "${local.name}-role"
     Module         = "selfhost-ec2"
     Environment    = lookup(var.tags, "Environment", "managed")
-    Project        = lookup(var.tags, "Project", "kortix")
-    KortixInstance = lookup(var.tags, "KortixInstance", local.name)
+    Project        = lookup(var.tags, "Project", "zed")
+    ZedInstance = lookup(var.tags, "ZedInstance", local.name)
   }
 }
 
@@ -217,10 +217,10 @@ resource "aws_instance" "this" {
     domain                  = var.domain
     api_domain              = local.api_domain
     instance_name           = var.instance_name
-    kortix_channel          = var.kortix_channel
-    kortix_version          = var.kortix_version
-    kortix_cli_install_url  = var.kortix_cli_install_url
-    kortix_cli_channel      = var.kortix_cli_channel
+    zed_channel          = var.zed_channel
+    zed_version          = var.zed_version
+    zed_cli_install_url  = var.zed_cli_install_url
+    zed_cli_channel      = var.zed_cli_channel
     auto_update             = var.auto_update
     admin_email             = var.admin_email
     acme_email              = var.acme_email

@@ -5,7 +5,7 @@
  *    appear in the manifest. We exercise the router's auth/disallowed boundary
  *    via the manifest-present `POST /v1/router/web-search` (apiKeyAuth: no/garbage
  *    token → 401) and prove the router is mounted via the public
- *    `GET /v1/router/health`. We deliberately never send a valid Kortix token to
+ *    `GET /v1/router/health`. We deliberately never send a valid Zed token to
  *    a billed endpoint (that would make a real upstream call).
  */
 import { flow } from '../core/flow';
@@ -74,7 +74,7 @@ flow(
   async (ctx) => {
     await ctx.step('router is mounted: GET /router/health is public → 200', async () => {
       const r = await ctx.client.as(ctx.P.ANON).get('/v1/router/health');
-      r.status(200).body().has('$.status', 'ok').has('$.service', 'kortix-router');
+      r.status(200).body().has('$.status', 'ok').has('$.service', 'zed-router');
     });
     await ctx.step('billed endpoint without any token → 401 (apiKeyAuth)', async () => {
       // No Authorization header at all — apiKeyAuth rejects before any upstream call.
@@ -82,11 +82,11 @@ flow(
       r.status(401);
     });
     await ctx.step(
-      'billed endpoint with a non-kortix bearer → 401 (bad token format)',
+      'billed endpoint with a non-zed bearer → 401 (bad token format)',
       async () => {
-        // A garbage bearer that isn't a kortix_ token — rejected on format, never billed.
+        // A garbage bearer that isn't a zed_ token — rejected on format, never billed.
         const r = await ctx.client
-          .withBearer('definitely-not-a-kortix-token', 'BOGUS')
+          .withBearer('definitely-not-a-zed-token', 'BOGUS')
           .post('/v1/router/web-search', { query: 'noop' });
         r.status([401, 403]);
       },

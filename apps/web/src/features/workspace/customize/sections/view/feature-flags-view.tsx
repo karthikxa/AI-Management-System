@@ -24,11 +24,11 @@ import {
   updateProjectSandboxProvider,
   type FeatureFlagStability,
   type FeatureFlagView,
-  type KortixProject,
+  type ZedProject,
   type ProjectDetail,
   type SandboxProviderName,
-} from '@kortix/sdk';
-import { contract, invalidateProject, qk, refreshProjectProviderState } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, invalidateProject, qk, refreshProjectProviderState } from '@zed/sdk/react';
 import { FlagIcon } from '@phosphor-icons/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -48,7 +48,7 @@ import {
  * Reads are consolidated onto the project DETAIL query (`qk.project.detail`) —
  * the same entry `useFeatureFlag`, the Customize rail, and the command palette
  * read — so one cache write lights every gated surface up together. The write
- * ALSO patches the summary entry because the PATCH response IS a `KortixProject`
+ * ALSO patches the summary entry because the PATCH response IS a `ZedProject`
  * (the summary payload) and `settings-view` still renders off it.
  */
 export function FeatureFlagsView({ projectId }: { projectId: string }) {
@@ -232,7 +232,7 @@ function SandboxProviderRow({
   project,
   canWrite,
 }: {
-  project: KortixProject;
+  project: ZedProject;
   canWrite: boolean;
 }) {
   const queryClient = useQueryClient();

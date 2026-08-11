@@ -18,13 +18,13 @@ const PROJECT_ID = '00000000-0000-4000-a000-000000000201';
 const OTHER_PROJECT_ID = '00000000-0000-4000-a000-000000000202';
 const NEW_PROJECT_ID = '00000000-0000-4000-a000-000000000203';
 const SECOND_NEW_PROJECT_ID = '00000000-0000-4000-a000-000000000205';
-const TEST_AUTH_KEY = '__KORTIX_E2E_AUTH__';
+const TEST_AUTH_KEY = '__ZED_E2E_AUTH__';
 
 const repoFiles = [
   { path: 'README.md', type: 'file', size: 18 },
-  { path: 'kortix.yaml', type: 'file', size: 42 },
-  { path: '.kortix/opencode/opencode.jsonc', type: 'file', size: 90 },
-  { path: '.kortix/opencode/agents/default.md', type: 'file', size: 120 },
+  { path: 'zed.yaml', type: 'file', size: 42 },
+  { path: '.zed/opencode/opencode.jsonc', type: 'file', size: 90 },
+  { path: '.zed/opencode/agents/default.md', type: 'file', size: 120 },
 ];
 
 let currentUserId: string;
@@ -67,12 +67,12 @@ function resetState() {
     projectRow({
       projectId: OTHER_PROJECT_ID,
       name: 'Other Project',
-      repoUrl: 'https://github.com/kortix/other-project.git',
+      repoUrl: 'https://github.com/zed/other-project.git',
     }),
     projectRow({
       projectId: '00000000-0000-4000-a000-000000000204',
       name: 'Archived Project',
-      repoUrl: 'https://github.com/kortix/archived-project.git',
+      repoUrl: 'https://github.com/zed/archived-project.git',
       status: 'archived',
     }),
   ];
@@ -81,7 +81,7 @@ function resetState() {
     installationRowId: '00000000-0000-4000-a000-000000000041',
     accountId: ACCOUNT_ID,
     installationId: '42',
-    ownerLogin: 'kortix-org',
+    ownerLogin: 'zed-org',
     ownerType: 'Organization',
     repositorySelection: 'all',
     permissions: { contents: 'write' },
@@ -236,14 +236,14 @@ mock.module('../projects/lib/project-deletion', () => ({
 }));
 
 mock.module("../snapshots/builder", () => ({
-  ensureSandboxImage: async () => ({ snapshotName: "kortix-default-test", slug: "default", contentHash: "a".repeat(64), built: false, isDefault: true }),
-  ensureMetaSandboxImage: async () => ({ snapshotName: "kortix-meta-test", slug: "meta", contentHash: "b".repeat(64), built: false, isDefault: false }),
-  deleteSandboxImage: async () => ({ deleted: false, snapshotName: "kortix-default-test", slug: "default" }),
+  ensureSandboxImage: async () => ({ snapshotName: "zed-default-test", slug: "default", contentHash: "a".repeat(64), built: false, isDefault: true }),
+  ensureMetaSandboxImage: async () => ({ snapshotName: "zed-meta-test", slug: "meta", contentHash: "b".repeat(64), built: false, isDefault: false }),
+  deleteSandboxImage: async () => ({ deleted: false, snapshotName: "zed-default-test", slug: "default" }),
   listSnapshotBuilds: async () => [],
   listSandboxTemplates: async () => [],
   resolveTemplate: async () => ({ slug: "default", spec: {}, isDefault: true }),
   reconcileStaleBuilds: async () => ({ checked: 0, updated: 0 }),
-  ensurePlatformDefaultImage: async () => ({ snapshotName: "kortix-default-test", slug: "default", contentHash: "a".repeat(64), built: false, isDefault: true }),
+  ensurePlatformDefaultImage: async () => ({ snapshotName: "zed-default-test", slug: "default", contentHash: "a".repeat(64), built: false, isDefault: true }),
   kickPreBuild: () => {},
   kickRoutedPreBuild: () => {},
   templateBuildProviders: () => ['daytona', 'platinum', 'e2b'],
@@ -252,7 +252,7 @@ mock.module("../snapshots/builder", () => ({
   kickProjectTemplatePrebuilds: () => {},
   resolveCommitSha: async () => "a".repeat(40),
   ensurePerProjectWarmImage: async () => ({
-    snapshotName: "kortix-ppwarm-test",
+    snapshotName: "zed-ppwarm-test",
     tip: "a".repeat(40),
     built: false,
     provider: "daytona",
@@ -265,7 +265,7 @@ mock.module('../projects/github', () => ({
   ...actualGithub,
   parseGitHubRepoUrl: () => null,
   isOrgAccount: async () => false,
-  buildGitHubAppInstallUrl: () => 'https://github.com/apps/kortix-test/installations/new',
+  buildGitHubAppInstallUrl: () => 'https://github.com/apps/zed-test/installations/new',
   createGitHubAppJwt: () => 'jwt-test',
   verifyGitHubAppInstallState: (state: string) => state,
   verifyGitHubAppInstallStatePayload: (state: string) => ({
@@ -273,7 +273,7 @@ mock.module('../projects/github', () => ({
     nonce: 'test-nonce',
     issuedAt: Math.floor(Date.now() / 1000),
   }),
-  getGitHubPatAuthContext: () => ({ token: 'pat-token', source: 'pat', owner: 'kortix-org' }),
+  getGitHubPatAuthContext: () => ({ token: 'pat-token', source: 'pat', owner: 'zed-org' }),
   addCollaborator: async () => undefined,
   deleteFile: async () => undefined,
   deleteRepo: async () => undefined,
@@ -288,18 +288,18 @@ mock.module('../projects/github', () => ({
   },
   getFileSha: async () => null,
   getGitHubAppInstallation: async () => ({
-    account: { login: 'kortix-org', type: 'Organization' },
+    account: { login: 'zed-org', type: 'Organization' },
     repository_selection: 'all',
     permissions: {},
   }),
   getRepo: async () => ({
     id: 7,
     name: 'new-project',
-    full_name: 'kortix-org/new-project',
+    full_name: 'zed-org/new-project',
     private: true,
-    html_url: 'https://github.com/kortix-org/new-project',
-    clone_url: 'https://github.com/kortix-org/new-project.git',
-    ssh_url: 'git@github.com:kortix-org/new-project.git',
+    html_url: 'https://github.com/zed-org/new-project',
+    clone_url: 'https://github.com/zed-org/new-project.git',
+    ssh_url: 'git@github.com:zed-org/new-project.git',
     default_branch: 'trunk',
     description: null,
   }),
@@ -386,9 +386,9 @@ describe('projects API contract', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         account_id: ACCOUNT_ID,
-        repo_url: 'https://github.com/kortix-org/new-project.git/',
+        repo_url: 'https://github.com/zed-org/new-project.git/',
         name: 'New Project',
-        manifest_path: 'config/kortix.yaml',
+        manifest_path: 'config/zed.yaml',
       }),
     });
     expect(res.status).toBe(201);
@@ -396,9 +396,9 @@ describe('projects API contract', () => {
       project_id: NEW_PROJECT_ID,
       account_id: ACCOUNT_ID,
       name: 'New Project',
-      repo_url: 'https://github.com/kortix-org/new-project.git',
+      repo_url: 'https://github.com/zed-org/new-project.git',
       default_branch: 'trunk',
-      manifest_path: 'config/kortix.yaml',
+      manifest_path: 'config/zed.yaml',
       status: 'active',
       project_role: 'manager',
       effective_project_role: 'manager',
@@ -407,8 +407,8 @@ describe('projects API contract', () => {
     expect(dbState.gitConnectionRows).toContainEqual(expect.objectContaining({
       projectId: NEW_PROJECT_ID,
       provider: 'github',
-      repoUrl: 'https://github.com/kortix-org/new-project.git',
-      repoOwner: 'kortix-org',
+      repoUrl: 'https://github.com/zed-org/new-project.git',
+      repoOwner: 'zed-org',
       repoName: 'new-project',
       externalRepoId: '7',
       authMethod: 'github_app',
@@ -427,7 +427,7 @@ describe('projects API contract', () => {
     const app = createApp();
     const payload = {
       account_id: ACCOUNT_ID,
-      repo_url: 'https://github.com/kortix-org/new-project.git',
+      repo_url: 'https://github.com/zed-org/new-project.git',
     };
     const request = (name: string, defaultBranch: string) => app.request('/v1/projects', {
       method: 'POST',
@@ -468,14 +468,14 @@ describe('projects API contract', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         account_id: ACCOUNT_ID,
-        repo_url: 'https://github.com/kortix-org/new-project.git',
+        repo_url: 'https://github.com/zed-org/new-project.git',
         default_branch: rejectedBranch,
       }),
     });
 
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
-      error: 'Selected branch "missing-branch" does not exist in kortix-org/new-project',
+      error: 'Selected branch "missing-branch" does not exist in zed-org/new-project',
     });
     expect(dbState.projectRows.some((row) => row.defaultBranch === rejectedBranch)).toBe(false);
   });
@@ -597,16 +597,16 @@ describe('projects API contract', () => {
 
     // ref + subtree path → archives just that subtree, filename derived from path.
     const subtree = await app.request(
-      `/v1/projects/${PROJECT_ID}/files/archive?ref=dev&path=.kortix/opencode/agents`,
+      `/v1/projects/${PROJECT_ID}/files/archive?ref=dev&path=.zed/opencode/agents`,
     );
     expect(subtree.status).toBe(200);
     expect(subtree.headers.get('content-type')).toBe('application/zip');
     expect(subtree.headers.get('content-disposition')).toBe('attachment; filename="agents.zip"');
-    expect(await subtree.text()).toBe(`zip:${PROJECT_ID}:dev:.kortix/opencode/agents`);
+    expect(await subtree.text()).toBe(`zip:${PROJECT_ID}:dev:.zed/opencode/agents`);
     expect(archiveCalls.at(-1)).toEqual({
       projectId: PROJECT_ID,
       ref: 'dev',
-      path: '.kortix/opencode/agents',
+      path: '.zed/opencode/agents',
     });
 
     // Absolute / workspace-prefixed paths are rejected (the UI must strip them).
@@ -657,8 +657,8 @@ describe('projects API contract', () => {
       body: JSON.stringify({
         name: 'Renamed Project',
         default_branch: 'release',
-        manifest_path: 'ops/kortix.yaml',
-        repo_url: 'https://github.com/kortix/should-not-change.git',
+        manifest_path: 'ops/zed.yaml',
+        repo_url: 'https://github.com/zed/should-not-change.git',
       }),
     });
     expect(patch.status).toBe(200);
@@ -666,7 +666,7 @@ describe('projects API contract', () => {
       project_id: PROJECT_ID,
       name: 'Renamed Project',
       default_branch: 'release',
-      manifest_path: 'ops/kortix.yaml',
+      manifest_path: 'ops/zed.yaml',
       repo_url: beforeRepoUrl,
     });
 

@@ -2,23 +2,23 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  createKortixPty,
-  getKortixPtyWebSocketUrl,
-  listKortixPty,
-  removeKortixPty,
-  updateKortixPty,
-  type KortixPty,
+  createZedPty,
+  getZedPtyWebSocketUrl,
+  listZedPty,
+  removeZedPty,
+  updateZedPty,
+  type ZedPty,
 } from '../core/runtime/pty';
 import { getActiveOpenCodeUrl } from '../browser/stores/server-store';
 import { isPtyQueryEnabled, resolvePtyServerUrl } from './pty-query-state';
 import { useCurrentRuntime } from './use-current-runtime';
 
-// Kortix's own PTY implementation (routes/pty.ts in kortix-sandbox-agent-
+// Zed's own PTY implementation (routes/pty.ts in zed-sandbox-agent-
 // server) — independent of whatever agent runtime is running. Kept as `Pty`
 // for backward compatibility: this file's exported hook names/signatures are
 // unchanged, and the shape matches OpenCode's own `Pty` entity 1:1, so every
 // consumer of these hooks needed zero changes when this swapped over.
-export type Pty = KortixPty;
+export type Pty = ZedPty;
 
 // ============================================================================
 // Query Keys
@@ -64,11 +64,11 @@ export function useOpenCodePtyList(options?: { enabled?: boolean; serverUrl?: st
   const serverUrl = resolvePtyServerUrl(options?.serverUrl, activeUrl);
   return useQuery<Pty[]>({
     queryKey: ptyKeys.list(serverUrl),
-    queryFn: () => listKortixPty(serverUrl),
+    queryFn: () => listZedPty(serverUrl),
     staleTime: Infinity, // SSE pty.* events trigger refetch
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    // `/kortix/pty` belongs to the sandbox daemon. It does not depend on the
+    // `/zed/pty` belongs to the sandbox daemon. It does not depend on the
     // OpenCode health signal. Waiting for that signal can disable this query
     // forever even when the terminal endpoint is already reachable.
     enabled: isPtyQueryEnabled(serverUrl, options?.enabled ?? true),
@@ -90,7 +90,7 @@ export function useCreatePty(hookOptions?: PtyMutationOptions) {
       cwd?: string;
       title?: string;
       env?: Record<string, string>;
-    }) => createKortixPty(serverUrl, options),
+    }) => createZedPty(serverUrl, options),
     onSuccess: () => {
       // SSE pty.created will also fire; this is instant feedback
       queryClient.refetchQueries({ queryKey: ptyKeys.listPrefix(), type: 'active' });
@@ -103,7 +103,7 @@ export function useRemovePty() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => removeKortixPty(getActiveOpenCodeUrl(), id),
+    mutationFn: (id: string) => removeZedPty(getActiveOpenCodeUrl(), id),
     onSuccess: () => {
       // SSE pty.deleted will also fire
       queryClient.refetchQueries({ queryKey: ptyKeys.listPrefix(), type: 'active' });
@@ -126,7 +126,7 @@ export function useUpdatePty(options?: PtyMutationOptions) {
       id: string;
       title?: string;
       size?: { rows: number; cols: number };
-    }) => updateKortixPty(serverUrl, id, { title, size }),
+    }) => updateZedPty(serverUrl, id, { title, size }),
     ...ptyMutationOverrides(options),
   });
 }
@@ -136,5 +136,5 @@ export function useUpdatePty(options?: PtyMutationOptions) {
 // ============================================================================
 
 export async function getPtyWebSocketUrl(ptyId: string, serverUrl?: string): Promise<string> {
-  return getKortixPtyWebSocketUrl(ptyId, serverUrl || getActiveOpenCodeUrl());
+  return getZedPtyWebSocketUrl(ptyId, serverUrl || getActiveOpenCodeUrl());
 }

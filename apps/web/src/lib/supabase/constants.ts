@@ -9,12 +9,12 @@
  */
 function resolveAuthCookieName() {
   const appUrl =
-    process.env.KORTIX_PUBLIC_APP_URL ||
+    process.env.ZED_PUBLIC_APP_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.NEXT_PUBLIC_URL ||
     process.env.PUBLIC_URL;
 
-  if (!appUrl) return 'sb-kortix-auth-token';
+  if (!appUrl) return 'sb-zed-auth-token';
 
   try {
     const url = new URL(appUrl);
@@ -22,13 +22,13 @@ function resolveAuthCookieName() {
     const port = url.port;
 
     if (isLocalhost && port) {
-      return `sb-kortix-auth-token-${port}`;
+      return `sb-zed-auth-token-${port}`;
     }
   } catch {
     // Fall back to the historical cookie name.
   }
 
-  return 'sb-kortix-auth-token';
+  return 'sb-zed-auth-token';
 }
 
-export const KORTIX_SUPABASE_AUTH_COOKIE = resolveAuthCookieName();
+export const ZED_SUPABASE_AUTH_COOKIE = resolveAuthCookieName();

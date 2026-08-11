@@ -512,7 +512,7 @@ flow(
         params: { projectId: project.id },
         headers: {
           'x-correlation-id': correlationId,
-          'x-kortix-client': 'cli',
+          'x-zed-client': 'cli',
         },
       });
       action.status(200);

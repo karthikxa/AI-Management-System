@@ -13,7 +13,7 @@
 //   3. POST /oauth/token (authorization_code grant, with the server-issued PKCE
 //        code_verifier) → {access_token, refresh_token, expires_in, id_token}
 
-import { OPENCODE_USER_AGENT } from '@kortix/shared';
+import { OPENCODE_USER_AGENT } from '@zed/shared';
 
 const OPENAI_AUTH_BASE = 'https://auth.openai.com';
 const CODEX_CLIENT_ID = 'app_EMoamEEZ73f0CkXaXp7hrann';

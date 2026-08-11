@@ -7,8 +7,8 @@ import {
   listPipedreamApps,
   setConnectorAuthorizationStrategy,
   setConnectorName,
-} from '@kortix/sdk';
-import { useProjectAccountId } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { useProjectAccountId } from '@zed/sdk/react';
 import { CheckIcon, KeyIcon, PencilSimpleIcon, PlusIcon } from '@phosphor-icons/react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useMutation, useQuery } from '@tanstack/react-query';

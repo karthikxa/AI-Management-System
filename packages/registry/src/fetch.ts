@@ -30,7 +30,7 @@ export interface RegistryLoaderOptions {
   readFile?: (path: string) => Promise<string>;
   /** Git refs to try for an unpinned GitHub registry. Default: main, master. */
   defaultRefs?: string[];
-  /** Namespace → item URL template, e.g. "@kortix" → "https://h/r/{name}.json". */
+  /** Namespace → item URL template, e.g. "@zed" → "https://h/r/{name}.json". */
   namespaces?: Record<string, string>;
   /** Resolve a bare item name against this registry. */
   defaultRegistry?: RegistryRef;

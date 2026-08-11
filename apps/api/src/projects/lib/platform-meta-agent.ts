@@ -1,8 +1,8 @@
 import {
   META_AGENT_NAME,
   META_SANDBOX_SLUG,
-} from '@kortix/shared';
-import type { AgentGrant } from '@kortix/db';
+} from '@zed/shared';
+import type { AgentGrant } from '@zed/db';
 import { resolveFeatureFlag } from '../../feature-flags/registry';
 import type { ProjectConfigSummary } from '../git/types';
 
@@ -19,7 +19,7 @@ export function addPlatformMetaAgent(config: ProjectConfigSummary): ProjectConfi
       {
         name: META_AGENT_NAME,
         path: '/workspace/AGENTS.md',
-        description: 'Starts specialized Kortix sessions and coordinates their work.',
+        description: 'Starts specialized Zed sessions and coordinates their work.',
         mode: 'primary',
         source: 'opencode',
         enabled: true,
@@ -27,7 +27,7 @@ export function addPlatformMetaAgent(config: ProjectConfigSummary): ProjectConfi
         scope: {
           env: [],
           connectors: [],
-          kortix_cli: 'all',
+          zed_cli: 'all',
         },
       },
       ...config.agents.filter((agent) => agent.name !== META_AGENT_NAME),
@@ -39,10 +39,10 @@ export function buildPlatformMetaOpenCodeConfig(): string {
   return JSON.stringify({
     agent: {
       [META_AGENT_NAME]: {
-        description: 'Starts specialized Kortix sessions and coordinates their work.',
+        description: 'Starts specialized Zed sessions and coordinates their work.',
         mode: 'primary',
         prompt:
-          'Follow /workspace/AGENTS.md. Coordinate work through the Kortix CLI. You are the only coordinator: spawn specialized sessions to do the work, give each one bounded task via --prompt, and never ask a session to spawn further sessions.',
+          'Follow /workspace/AGENTS.md. Coordinate work through the Zed CLI. You are the only coordinator: spawn specialized sessions to do the work, give each one bounded task via --prompt, and never ask a session to spawn further sessions.',
       },
     },
   });
@@ -58,7 +58,7 @@ export function buildPlatformMetaOpenCodeConfig(): string {
 export function platformMetaAgentGrant(): AgentGrant {
   return {
     agent: META_AGENT_NAME,
-    kortixCli: 'all',
+    zedCli: 'all',
     connectors: [],
     env: [],
   };

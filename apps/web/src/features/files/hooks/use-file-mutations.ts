@@ -13,7 +13,7 @@ import {
 import { fileListKeys } from './use-file-list';
 import { fileContentKeys } from './use-file-content';
 import { gitStatusKeys } from './use-git-status';
-import { useRuntimeStore } from '@kortix/sdk/react';
+import { useRuntimeStore } from '@zed/sdk/react';
 import type { FileNode } from '@/features/file-browser/types';
 
 // ---------------------------------------------------------------------------

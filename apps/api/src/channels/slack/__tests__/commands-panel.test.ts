@@ -1,21 +1,21 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
 
-// The consolidated `/kortix` panel + the real-catalog model picker + the
+// The consolidated `/zed` panel + the real-catalog model picker + the
 // servability gate (a stored model can never 404). Heavy deps are mocked; the
 // pure resolver module (effective.ts) is used for real.
 
 process.env.SLACK_REQUIRE_USER_IDENTITY = 'false';
 
 mock.module('../../../config', () => ({
-  // KORTIX_MANAGED_PROVIDER_ENABLED must be on: RUNTIME_MANAGED_MODELS is empty
+  // ZED_MANAGED_PROVIDER_ENABLED must be on: RUNTIME_MANAGED_MODELS is empty
   // without it, so `isRuntimeManagedModelId('glm-5.2')` is false and
-  // `toOpencodeModelRef` skips the `kortix/` prefix — which silently defeats the
+  // `toOpencodeModelRef` skips the `zed/` prefix — which silently defeats the
   // canonicalization this file exists to pin. (scripts/test.env sets it, but a
   // config mock replaces the module, so it has to be restated here.)
   config: {
     FRONTEND_URL: 'https://app.test',
     SLACK_REQUIRE_USER_IDENTITY: false,
-    KORTIX_MANAGED_PROVIDER_ENABLED: true,
+    ZED_MANAGED_PROVIDER_ENABLED: true,
   },
 }));
 
@@ -45,8 +45,8 @@ mock.module('../model-gate', () => ({ channelModelContext: async () => gate }));
 mock.module('../../../llm-gateway/models/picker', () => ({
   listPickerModels: async () => ({
     models: [
-      { id: 'kortix/glm-5.2', label: 'GLM 5.2', provider: 'kortix', managed: true, hint: 'Balanced, fast' },
-      { id: 'kortix/claude-opus-4.8', label: 'Claude Opus 4.8', provider: 'kortix', managed: true, hint: 'Most capable' },
+      { id: 'zed/glm-5.2', label: 'GLM 5.2', provider: 'zed', managed: true, hint: 'Balanced, fast' },
+      { id: 'zed/claude-opus-4.8', label: 'Claude Opus 4.8', provider: 'zed', managed: true, hint: 'Most capable' },
     ],
     projectDefault: { model: 'glm-5.2', source: 'platform', label: 'GLM 5.2' },
   }),
@@ -72,7 +72,7 @@ mock.module('../../../accounts/core/app', () => ({ lookupEmailsByUserIds: async 
 const { handleSlashCommand } = await import('../commands');
 const { setChannelModel } = (await import('../selection')) as any;
 
-const ctx = { teamId: 'T1', channelId: 'C1', slackUserId: 'U1', command: '/kortix' };
+const ctx = { teamId: 'T1', channelId: 'C1', slackUserId: 'U1', command: '/zed' };
 
 function actionIds(resp: any): string[] {
   const ids: string[] = [];
@@ -91,7 +91,7 @@ beforeEach(() => {
   setChannelModel.mockClear();
 });
 
-describe('bare /kortix → channel panel', () => {
+describe('bare /zed → channel panel', () => {
   test('renders the project + inline change buttons (one command for everything)', async () => {
     dbResults = [[{ projectId: 'p1', name: 'acme/api', repoUrl: 'https://github.com/acme/api', metadata: {} }]];
     const resp = await handleSlashCommand('', '', ctx);
@@ -110,20 +110,20 @@ describe('bare /kortix → channel panel', () => {
   });
 });
 
-describe('/kortix models → real served catalog', () => {
+describe('/zed models → real served catalog', () => {
   test('lists the picker models as set_model_<ref> buttons + a project-default reset', async () => {
     const resp = await handleSlashCommand('models', '', ctx);
     const ids = actionIds(resp);
     expect(ids).toContain('set_model_default');
-    expect(ids).toContain('set_model_kortix/glm-5.2');
-    expect(ids).toContain('set_model_kortix/claude-opus-4.8');
+    expect(ids).toContain('set_model_zed/glm-5.2');
+    expect(ids).toContain('set_model_zed/claude-opus-4.8');
   });
 });
 
-describe('/kortix model <id> → servability gate (never store a 404)', () => {
+describe('/zed model <id> → servability gate (never store a 404)', () => {
   test('servable id is stored as the opencode ref', async () => {
     const resp = await handleSlashCommand('model', 'glm-5.2', ctx);
-    expect(setChannelModel).toHaveBeenCalledWith(expect.anything(), 'kortix/glm-5.2');
+    expect(setChannelModel).toHaveBeenCalledWith(expect.anything(), 'zed/glm-5.2');
     expect(resp.text).toContain('set to');
   });
 

@@ -14,11 +14,11 @@ describe('white-label SDK boundary', () => {
   test('detects runtime imports, URLs, legacy stores, raw fetches, and native controls', () => {
     const fixture = `
       import { createClient } from '@opencode-ai/sdk';
-      import { stream } from '@kortix/sdk/event-stream';
+      import { stream } from '@zed/sdk/event-stream';
       const legacy = 'server-store';
       const runtime = '/p/sandbox-1/8000/global/event';
       session.previewUrl(3000);
-      fetch('/api/kortix/projects');
+      fetch('/api/zed/projects');
       export const View = () => <button><Loader2 className="animate-spin" /></button>;
     `;
 
@@ -33,7 +33,7 @@ describe('white-label SDK boundary', () => {
         'runtime-url-api',
         'opencode-rest-path',
         'provider-term',
-        'raw-kortix-fetch',
+        'raw-zed-fetch',
         'native-control',
         'spinner-icon',
       ]),
@@ -61,7 +61,7 @@ describe('white-label SDK boundary', () => {
   test('rejects dynamic fetch targets in client code', () => {
     const fixture = `fetch(resolveRuntimeEndpoint(projectId));`;
     expect(scanSource(fixture).map((violation) => violation.rule)).toContain(
-      'raw-kortix-fetch',
+      'raw-zed-fetch',
     );
   });
 
@@ -69,24 +69,24 @@ describe('white-label SDK boundary', () => {
     const fixture = `fetch(upstreamUrl, { headers: { authorization } });`;
     expect(
       scanSource(fixture, { client: false }).map((violation) => violation.rule),
-    ).toContain('raw-kortix-fetch');
+    ).toContain('raw-zed-fetch');
   });
 
-  test('rejects raw Kortix transport in application tests', () => {
+  test('rejects raw Zed transport in application tests', () => {
     const fixture = `
-      await fetch(app.baseUrl + '/api/kortix/projects');
-      const result = await fetch(\`\${app.baseUrl}/api/kortix/p/\${runtime}/8000/status\`);
+      await fetch(app.baseUrl + '/api/zed/projects');
+      const result = await fetch(\`\${app.baseUrl}/api/zed/p/\${runtime}/8000/status\`);
     `;
 
     expect(scanTestSource(fixture).map((violation) => violation.rule)).toEqual([
-      'test-raw-kortix-transport',
-      'test-raw-kortix-transport',
+      'test-raw-zed-transport',
+      'test-raw-zed-transport',
     ]);
   });
 
   test('rejects SDK source imports in application tests', () => {
     const fixture = `
-      import { createScopedKortix } from '../../../packages/sdk/src/node/server';
+      import { createScopedZed } from '../../../packages/sdk/src/node/server';
     `;
 
     expect(scanTestSource(fixture).map((violation) => violation.rule)).toEqual([
@@ -98,7 +98,7 @@ describe('white-label SDK boundary', () => {
     expect(scanWhiteLabelBoundary()).toEqual([]);
   });
 
-  test('all application tests use the SDK for Kortix calls', () => {
+  test('all application tests use the SDK for Zed calls', () => {
     expect(scanWhiteLabelTestBoundary()).toEqual([]);
   });
 

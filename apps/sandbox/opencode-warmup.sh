@@ -33,15 +33,15 @@ warm_migration() {
 }
 
 warm_instance() {
-  mkdir -p /workspace/.kortix
+  mkdir -p /workspace/.zed
   staged_starter_config=0
-  if [ ! -d /workspace/.kortix/opencode ]; then
-    cp -a /opt/kortix/warm-config/.kortix/opencode /workspace/.kortix/opencode
+  if [ ! -d /workspace/.zed/opencode ]; then
+    cp -a /opt/zed/warm-config/.zed/opencode /workspace/.zed/opencode
     staged_starter_config=1
   fi
-  rm -rf /workspace/.kortix/opencode/node_modules
-  ln -s /opt/kortix/opencode-config-deps/node_modules /workspace/.kortix/opencode/node_modules
-  export OPENCODE_CONFIG_DIR=/workspace/.kortix/opencode
+  rm -rf /workspace/.zed/opencode/node_modules
+  ln -s /opt/zed/opencode-config-deps/node_modules /workspace/.zed/opencode/node_modules
+  export OPENCODE_CONFIG_DIR=/workspace/.zed/opencode
   cd /workspace || return 0
   opencode serve --port 4096 --hostname 127.0.0.1 >/tmp/oc-warm.log 2>&1 &
   oc_pid=$!
@@ -59,13 +59,13 @@ warm_instance() {
     keep) echo "warm-repo: keeping baked /workspace checkout" ;;
     wipe) find /workspace -mindepth 1 -delete 2>/dev/null ;;
     targeted)
-      [ "$staged_starter_config" = 1 ] && rm -rf /workspace/.kortix/opencode
-      rmdir /workspace/.kortix 2>/dev/null
+      [ "$staged_starter_config" = 1 ] && rm -rf /workspace/.zed/opencode
+      rmdir /workspace/.zed 2>/dev/null
       ;;
     *) echo "unknown instance cleanup mode: $cleanup" >&2 ;;
   esac
 
-  rm -rf /opt/kortix/warm-config
+  rm -rf /opt/zed/warm-config
   echo "=== instance-warm: opencode log tail ==="
   tail -20 /tmp/oc-warm.log
   rm -f /tmp/oc-warm.log

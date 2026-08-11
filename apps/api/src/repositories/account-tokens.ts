@@ -1,5 +1,5 @@
 import { eq, and, desc, inArray } from 'drizzle-orm';
-import { accountTokens, accounts } from '@kortix/db';
+import { accountTokens, accounts } from '@zed/db';
 import { db } from '../shared/db';
 import {
   hashSecretKey,
@@ -8,7 +8,7 @@ import {
   isApiKeySecretConfigured,
   isAccountToken,
 } from '../shared/crypto';
-import type { AgentGrant } from '@kortix/db';
+import type { AgentGrant } from '@zed/db';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -24,7 +24,7 @@ export interface AccountTokenValidationResult {
    *  token, session_id = sandbox_id). Used to attribute LLM usage per-session. */
   sessionId?: string | null;
   /** Non-null = this is an agent-session token; the running agent's resolved
-   *  authorization (which Kortix CLI/API actions + connectors it may use,
+   *  authorization (which Zed CLI/API actions + connectors it may use,
    *  already ∩ the launching user). Null = full access (laptop CLI PAT). */
   agentGrant?: AgentGrant | null;
   error?: string;
@@ -269,7 +269,7 @@ export async function revokeAllAccountTokensForUser(
  * the PAT idle-revoke sweep ("lifetime tied to the sandbox" — see
  * `validateAccountToken`). Nothing else expired them, so until this existed the
  * only thing that ever revoked one was offboarding the whole USER: every session
- * a Kortix-as-a-Backend wrapper ever ran left behind a permanently-valid,
+ * a Zed-as-a-Backend wrapper ever ran left behind a permanently-valid,
  * project-scoped bearer carrying that agent's grant.
  *
  * Call this only where the sandbox can never legitimately come back — session
@@ -303,7 +303,7 @@ export async function revokeSessionConnectorTokens(
 // ─── Validation ──────────────────────────────────────────────────────────────
 
 /**
- * Validate a CLI Personal Access Token (kortix_pat_... prefix).
+ * Validate a CLI Personal Access Token (zed_pat_... prefix).
  * Returns the account + user id on success.
  */
 export async function validateAccountToken(
@@ -314,7 +314,7 @@ export async function validateAccountToken(
   }
 
   if (!isAccountToken(secretKey)) {
-    return { isValid: false, error: 'Invalid PAT format — expected kortix_pat_ prefix' };
+    return { isValid: false, error: 'Invalid PAT format — expected zed_pat_ prefix' };
   }
 
   try {

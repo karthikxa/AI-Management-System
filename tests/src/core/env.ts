@@ -1,7 +1,7 @@
 /**
  * Typed environment/config resolution for ke2e.
  *
- * The suite is environment-agnostic: point it at a local dev API, dev-api.kortix.com,
+ * The suite is environment-agnostic: point it at a local dev API, dev-api.zed.com,
  * or prod via env vars. Primary names are KE2E_(star), with E2E_(star) + standard fallbacks so
  * the existing gate5/playwright secrets keep working.
  *
@@ -36,7 +36,7 @@ export interface Env {
   apiUrl: string;
   /** Dashboard/web origin (for CLI-login callback flows). */
   baseUrl: string;
-  /** LLM gateway base — separate host, NOT /v1-suffixed. e.g. https://gateway-dev.kortix.com */
+  /** LLM gateway base — separate host, NOT /v1-suffixed. e.g. https://gateway-dev.zed.com */
   gatewayUrl: string;
   supabaseUrl: string;
   supabaseAnonKey: string | null;
@@ -45,7 +45,7 @@ export interface Env {
   /** Seeded long-lived owner (confirmed, billing-capable). */
   ownerEmail: string | null;
   ownerPassword: string | null;
-  /** Platform-admin bearer token (kortix_pat_* or kortix_*). */
+  /** Platform-admin bearer token (zed_pat_* or zed_*). */
   adminToken: string | null;
   /** Internal service bearer used only by the cron-contract flows. */
   internalServiceKey: string | null;
@@ -100,15 +100,15 @@ export function inferTarget(apiUrl: string): TargetName {
   if (host === 'localhost' || host === '127.0.0.1' || host.endsWith('.localhost')) return 'local';
   if (host.startsWith('dev-api.') || host.startsWith('dev-')) return 'dev';
   if (host.startsWith('staging-api.') || host.startsWith('staging-')) return 'staging';
-  if (host === 'api.kortix.com' || host.startsWith('api-prod.') || host === 'kortix.com')
+  if (host === 'api.zed.com' || host.startsWith('api-prod.') || host === 'zed.com')
     return 'prod';
   return 'custom';
 }
 
 export function defaultGatewayUrl(target: TargetName): string {
-  if (target === 'prod') return 'https://gateway.kortix.com';
-  if (target === 'staging') return 'https://gateway-staging.kortix.com';
-  if (target === 'dev') return 'https://gateway-dev.kortix.com';
+  if (target === 'prod') return 'https://gateway.zed.com';
+  if (target === 'staging') return 'https://gateway-staging.zed.com';
+  if (target === 'dev') return 'https://gateway-dev.zed.com';
   return 'http://localhost:8009';
 }
 
@@ -177,7 +177,7 @@ export function loadEnv(): Env {
     liveConfirm,
     target,
     capabilities,
-    testEmailDomain: pick('KE2E_EMAIL_DOMAIN') || 'ke2e.kortix.test',
+    testEmailDomain: pick('KE2E_EMAIL_DOMAIN') || 'ke2e.zed.test',
   };
   return cached;
 }

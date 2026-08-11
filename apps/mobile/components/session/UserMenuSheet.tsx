@@ -225,7 +225,7 @@ export const UserMenuSheet = forwardRef<BottomSheetModal, UserMenuSheetProps>(fu
                   <View className="flex-1">
                     <View className="flex-row items-center">
                       <Text className="font-roobert-medium text-[15px] text-foreground">
-                        New Kortix version
+                        New Zed version
                       </Text>
                       <View className="ml-2 rounded-full bg-muted/60 px-1.5 py-0.5">
                         <Text className="text-[10px] font-roobert-medium text-muted-foreground">v{latestVersion}</Text>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useRuntimeStore } from '@kortix/sdk/react';
+import { useRuntimeStore } from '@zed/sdk/react';
 import { getFileStatus } from '../api/runtime-files';
 import type { GitFileStatus } from '@/features/file-browser/types';
 import { useCurrentProject, useServerHealth } from './use-server-health';

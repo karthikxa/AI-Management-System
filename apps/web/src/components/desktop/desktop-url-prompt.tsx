@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
  * Custom frontend-URL prompt for the desktop app (self-hosting).
  *
  * This has NO visible entry point of its own. It only opens when the hidden
- * native menu item (Kortix → Frontend URL → "Custom URL…") fires the
- * `kortix-open-frontend-url` DOM event — native menus can't take text input, so
+ * native menu item (Zed → Frontend URL → "Custom URL…") fires the
+ * `zed-open-frontend-url` DOM event — native menus can't take text input, so
  * this tiny dialog is the text-entry surface. The value is persisted locally by
  * the Tauri shell and the window reloads onto it. Renders nothing on the web.
  */
@@ -40,8 +40,8 @@ export function DesktopUrlPrompt() {
         setOpen(true);
       });
     };
-    window.addEventListener('kortix-open-frontend-url', onOpen);
-    return () => window.removeEventListener('kortix-open-frontend-url', onOpen);
+    window.addEventListener('zed-open-frontend-url', onOpen);
+    return () => window.removeEventListener('zed-open-frontend-url', onOpen);
   }, []);
 
   const apply = async () => {
@@ -84,7 +84,7 @@ export function DesktopUrlPrompt() {
             id="desktop-custom-frontend-url"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder="https://kortix.your-company.com/projects"
+            placeholder="https://zed.your-company.com/projects"
             disabled={busy}
             autoFocus
             onKeyDown={(e) => {

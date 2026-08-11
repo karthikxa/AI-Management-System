@@ -24,10 +24,10 @@ import { createHmac, hkdfSync, timingSafeEqual } from 'node:crypto';
  *
  * - `runtime` — plaintext into the sandbox env. Today's behaviour, and the
  *   default, so nothing changes for an existing project until someone opts in.
- * - `egress`  — a format-shaped handle goes in the box; a Kortix proxy OUTSIDE
+ * - `egress`  — a format-shaped handle goes in the box; a Zed proxy OUTSIDE
  *   the guest swaps it for the real value on a matching outbound request.
  * - `broker`  — the value never leaves the server; the agent reaches the
- *   upstream through a named Kortix chokepoint.
+ *   upstream through a named Zed chokepoint.
  * - `denied`  — nothing is emitted; the name does not even appear.
  */
 export type SecretStrategy = 'runtime' | 'egress' | 'broker' | 'denied';
@@ -73,7 +73,7 @@ export function deliversPlaintextToSandbox(strategy: SecretStrategy): boolean {
 }
 
 /** True when the name should not appear in the sandbox at all — not even as a
- *  handle, and not in `KORTIX_PROJECT_SECRET_NAMES`. */
+ *  handle, and not in `ZED_PROJECT_SECRET_NAMES`. */
 export function isFullyWithheld(strategy: SecretStrategy): boolean {
   return strategy === 'denied';
 }
@@ -81,14 +81,14 @@ export function isFullyWithheld(strategy: SecretStrategy): boolean {
 // ── Egress policy ───────────────────────────────────────────────────────────
 
 /**
- * The policy shape lives in `@kortix/db` because it is a STORED document
+ * The policy shape lives in `@zed/db` because it is a STORED document
  * (`project_secrets.egress_policy`, and frozen into `policy_snapshot` on every
  * handle). Declaring a second copy here is how the two drift: a row can outlive
  * the code that wrote it, so the parser and the column must agree by
  * construction rather than by review.
  */
-import type { SecretEgressPolicy, SecretEgressRule, SecretInjectionSlot } from '@kortix/db';
-import type { SecretConsumer } from '@kortix/api-contract';
+import type { SecretEgressPolicy, SecretEgressRule, SecretInjectionSlot } from '@zed/db';
+import type { SecretConsumer } from '@zed/api-contract';
 
 export type { SecretConsumer, SecretEgressPolicy, SecretEgressRule, SecretInjectionSlot };
 
@@ -224,7 +224,7 @@ export function parseEgressPolicy(input: unknown): EgressPolicyParse {
   const backend = raw.backend;
   if (
     backend !== undefined &&
-    !['llm_gateway', 'connector', 'git_proxy', 'kortix_fetch'].includes(String(backend))
+    !['llm_gateway', 'connector', 'git_proxy', 'zed_fetch'].includes(String(backend))
   ) {
     return { ok: false, error: `unknown backend: ${String(backend)}` };
   }
@@ -297,7 +297,7 @@ export function matchRule(
 /** The default prefix. Self-describing on purpose: when a stray SDK sends this
  *  somewhere it should not, the upstream's 401 puts a remediation hint straight
  *  into the model's own context instead of an opaque failure. */
-export const DEFAULT_HANDLE_PREFIX = 'kortix_brokered__use_kortix_fetch__';
+export const DEFAULT_HANDLE_PREFIX = 'zed_brokered__use_zed_fetch__';
 
 const HANDLE_MARKER = 'KXS1';
 const LOOKUP_LEN = 20;
@@ -312,7 +312,7 @@ function base32(bytes: Buffer, length: number): string {
 
 function handleKey(rootSecret: string): Buffer {
   return Buffer.from(
-    hkdfSync('sha256', rootSecret, 'kortix-secret-handle', 'kxs-v1', 32) as ArrayBuffer,
+    hkdfSync('sha256', rootSecret, 'zed-secret-handle', 'kxs-v1', 32) as ArrayBuffer,
   );
 }
 
@@ -372,7 +372,7 @@ export function parseHandle(value: string, rootSecret: string): HandleParse {
   return { ok: true, lookupId, prefix: value.slice(0, marker) };
 }
 
-/** Cheap pre-filter: does this look like a Kortix handle at all? Used to decide
+/** Cheap pre-filter: does this look like a Zed handle at all? Used to decide
  *  whether a value is worth parsing, never as an authorization check. */
 export function looksLikeHandle(value: string): boolean {
   return value.includes(HANDLE_MARKER);
@@ -403,7 +403,7 @@ export type SecretWithheldReason =
  * credential in `env`, `handle` puts a mintable placeholder there (so the caller
  * must go and mint one), and `nothing` must also suppress the NAME. Collapsing
  * the last two into "no value" is exactly the mistake that desynchronises
- * `KORTIX_PROJECT_SECRET_NAMES` from the env map.
+ * `ZED_PROJECT_SECRET_NAMES` from the env map.
  */
 export type SecretDelivery =
   | { emit: 'plaintext'; strategy: 'runtime' }
@@ -440,7 +440,7 @@ export interface SecretDeliveryInput {
 }
 
 /** Grant/allowlist membership. Case-insensitive, matching `agentMayUseEnv` and
- *  `intersectSecretGrants` — a hand-written `secrets:` list in kortix.yaml may
+ *  `intersectSecretGrants` — a hand-written `secrets:` list in zed.yaml may
  *  use any case. */
 function listAdmits(list: string[], identifier: string): boolean {
   const target = identifier.toUpperCase();
@@ -521,7 +521,7 @@ export interface DeliveredSecret {
 }
 
 /**
- * Exactly what belongs in `KORTIX_PROJECT_SECRET_NAMES`.
+ * Exactly what belongs in `ZED_PROJECT_SECRET_NAMES`.
  *
  * The invariant, which is not cosmetic: **a name appears here IFF a value (real
  * or handle) is emitted for it.** The daemon's env store seeds `knownNames` from

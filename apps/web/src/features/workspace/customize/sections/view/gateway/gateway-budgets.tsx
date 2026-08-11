@@ -49,7 +49,7 @@ function fmtUsd(n: number): string {
 // Calm by default, red only when over the cap. The 80% "approaching" warning
 // is carried by the InfoBanner, not by painting the bar amber.
 function meterTone(pct: number): string {
-  return pct >= 100 ? 'bg-destructive' : 'bg-kortix-blue';
+  return pct >= 100 ? 'bg-destructive' : 'bg-zed-blue';
 }
 
 function meterTextTone(pct: number): string {

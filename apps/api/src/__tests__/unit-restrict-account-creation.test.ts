@@ -1,11 +1,11 @@
 /**
- * Self-host account-creation restriction: KORTIX_RESTRICT_ACCOUNT_CREATION=true
+ * Self-host account-creation restriction: ZED_RESTRICT_ACCOUNT_CREATION=true
  * must block POST /v1/accounts (creating an ADDITIONAL/org account) with 403
  * for everyone except a platform admin — while GET /v1/accounts (which
  * bootstraps the caller's own personal account on first login via
  * bootstrapPersonalAccount) stays completely unaffected.
  *
- * This is deliberately narrower than the removed KORTIX_SINGLE_ACCOUNT_MODE:
+ * This is deliberately narrower than the removed ZED_SINGLE_ACCOUNT_MODE:
  * it only gates the "create a brand-new organization" path, never the
  * personal-account bootstrap every user needs to land in the app.
  *
@@ -20,7 +20,7 @@ import { HTTPException } from 'hono/http-exception';
 const ADMIN_ID = '00000000-0000-4000-a000-000000000001';
 const MEMBER_ID = '00000000-0000-4000-a000-000000000002';
 
-process.env.KORTIX_RESTRICT_ACCOUNT_CREATION = 'true';
+process.env.ZED_RESTRICT_ACCOUNT_CREATION = 'true';
 
 let callerId = MEMBER_ID;
 let isPlatformAdminMock = false;
@@ -87,16 +87,16 @@ function createApp() {
   return app;
 }
 
-describe('account-creation restriction (KORTIX_RESTRICT_ACCOUNT_CREATION=true)', () => {
+describe('account-creation restriction (ZED_RESTRICT_ACCOUNT_CREATION=true)', () => {
   beforeEach(() => {
     callerId = MEMBER_ID;
     isPlatformAdminMock = false;
     insertedAccount = null;
   });
 
-  test('config.KORTIX_RESTRICT_ACCOUNT_CREATION reflects the env var', async () => {
+  test('config.ZED_RESTRICT_ACCOUNT_CREATION reflects the env var', async () => {
     const { config } = await import('../config');
-    expect(config.KORTIX_RESTRICT_ACCOUNT_CREATION).toBe(true);
+    expect(config.ZED_RESTRICT_ACCOUNT_CREATION).toBe(true);
   });
 
   test('blocks POST /v1/accounts for a non-admin with 403 + account_creation_restricted', async () => {

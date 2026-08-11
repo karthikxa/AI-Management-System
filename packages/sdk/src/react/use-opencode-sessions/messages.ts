@@ -137,7 +137,7 @@ export function useOpenCodeMessages(sessionId: string) {
   // that preview is still on screen; those previews have no re-hydrate path of
   // their own, so they would simply go empty.
   //
-  // Guarded exactly like use-session-sync.ts. Callers pass Kortix route ids
+  // Guarded exactly like use-session-sync.ts. Callers pass Zed route ids
   // here as well as OpenCode ids — a booting session renders this hook with the
   // project-session UUID — and those can never hold runtime data. Retaining one
   // would park a permanently empty id in the detach window on unmount, spending

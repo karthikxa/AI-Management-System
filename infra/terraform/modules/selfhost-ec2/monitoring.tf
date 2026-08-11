@@ -104,8 +104,8 @@ resource "aws_sns_topic" "alarms" {
     Name           = "${local.name}-alarms"
     Module         = "selfhost-ec2"
     Environment    = lookup(var.tags, "Environment", "managed")
-    Project        = lookup(var.tags, "Project", "kortix")
-    KortixInstance = lookup(var.tags, "KortixInstance", local.name)
+    Project        = lookup(var.tags, "Project", "zed")
+    ZedInstance = lookup(var.tags, "ZedInstance", local.name)
   }
 }
 
@@ -251,7 +251,7 @@ resource "aws_cloudwatch_metric_alarm" "auto_recovery" {
 # AWS recommends the reboot action specifically for Instance (as opposed to
 # System) status-check failures — an OS-level reboot, not a host migration.
 # Safe as a default here because of how this box bootstraps: Docker and
-# containerd are `systemctl enable`d and kortix-selfhost-bootstrap.service is
+# containerd are `systemctl enable`d and zed-selfhost-bootstrap.service is
 # `enable`d (WantedBy=multi-user.target) — see templates/user-data.sh.tftpl —
 # so the entire stack self-starts again after any reboot, with zero operator
 # involvement (this is the exact mechanism the README's "Bootstrap

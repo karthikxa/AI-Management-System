@@ -1,7 +1,7 @@
 /**
- * Backend-owned OpenCode ↔ Kortix session mapping.
+ * Backend-owned OpenCode ↔ Zed session mapping.
  *
- * The authoritative source of a Kortix session's OpenCode root id is the
+ * The authoritative source of a Zed session's OpenCode root id is the
  * sandbox's own local OpenCode DB. This module lets the API resolve and pin
  * that id SERVER-SIDE so the mapping no longer depends on any client (browser,
  * CLI, cron) doing the right thing.
@@ -18,18 +18,18 @@
  *
  * Reachability mirrors the preview proxy exactly (the path the live session's
  * OpenCode traffic already uses): resolve the per-sandbox service key + provider
- * ingress for the daemon port, and sign an X-Kortix-User-Context header so
+ * ingress for the daemon port, and sign an X-Zed-User-Context header so
  * the daemon authorizes the proxied call into OpenCode.
  */
 
 import { and, eq } from 'drizzle-orm';
 
-import { projectSessions } from '@kortix/db';
+import { projectSessions } from '@zed/db';
 import { db } from '../shared/db';
 import {
-  KORTIX_USER_CONTEXT_HEADER,
-  encodeKortixUserContext,
-} from '../shared/kortix-user-context';
+  ZED_USER_CONTEXT_HEADER,
+  encodeZedUserContext,
+} from '../shared/zed-user-context';
 import { resolvePreviewUserContext } from '../shared/preview-ownership';
 import { resolveSandboxIngress, resolveServiceKey } from '../sandbox-proxy/backend';
 import {
@@ -43,7 +43,7 @@ export { pickCanonicalRoot, resolveRootSessionId, type OpencodeSessionLite };
 
 /** Workspace directory the session's OpenCode root lives under. */
 const WORKSPACE = '/workspace';
-/** Daemon (kortix-sandbox-agent-server) port; it reverse-proxies to OpenCode. */
+/** Daemon (zed-sandbox-agent-server) port; it reverse-proxies to OpenCode. */
 const DAEMON_PORT = 8000;
 
 // ── Server-side reachability into the sandbox's OpenCode runtime ────────────
@@ -61,7 +61,7 @@ export async function sandboxOpencodeEndpoint(
     Authorization: `Bearer ${serviceKey}`,
   };
   const payload = await resolvePreviewUserContext(externalId, userId);
-  if (payload) headers[KORTIX_USER_CONTEXT_HEADER] = encodeKortixUserContext(payload, serviceKey);
+  if (payload) headers[ZED_USER_CONTEXT_HEADER] = encodeZedUserContext(payload, serviceKey);
   return { url: ingress.url.replace(/\/$/, ''), headers };
 }
 

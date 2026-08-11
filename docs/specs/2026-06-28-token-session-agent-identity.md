@@ -2,13 +2,13 @@
 
 ## Principals
 
-Kortix sandboxes carry two different credentials with different principals.
+Zed sandboxes carry two different credentials with different principals.
 
-1. Sandbox service credential: `KORTIX_SANDBOX_TOKEN` with legacy alias `KORTIX_TOKEN`.
+1. Sandbox service credential: `ZED_SANDBOX_TOKEN` with legacy alias `ZED_TOKEN`.
    This authenticates API-to-daemon control-plane calls, signed user context, clone credentials, turn relays, and proxy plumbing. The CLI must not treat it as a user token.
 
-2. Session connector credential: `KORTIX_CLI_TOKEN`.
-   This is a Kortix account token acting as the launching user, scoped to exactly one project and, for real sandbox sessions, exactly one session. It is the only token the agent-facing CLI and Connector SDK should use.
+2. Session connector credential: `ZED_CLI_TOKEN`.
+   This is a Zed account token acting as the launching user, scoped to exactly one project and, for real sandbox sessions, exactly one session. It is the only token the agent-facing CLI and Connector SDK should use.
 
 3. User/account PAT: a laptop or automation token without `session_id`.
    It can be account-wide or project-scoped depending on `project_id`, and is governed by normal IAM plus PAT lifecycle policy.
@@ -25,17 +25,17 @@ A sandbox session connector token must include:
 
 Cold provisioning and restored warm-snapshot sessions must mint the same shape of token. The token is unique per session; a restored session must never keep a project-only token from its seed capture.
 
-`/accounts/me` exposes this as `token_context` so CLI and debugging surfaces can say whether the active credential is a user, project, or session token and show its agent/connectors/Kortix CLI grant.
+`/accounts/me` exposes this as `token_context` so CLI and debugging surfaces can say whether the active credential is a user, project, or session token and show its agent/connectors/Zed CLI grant.
 
 ## Agent Switching Policy
 
-The connector credential is bound to the session boot agent. A prompt that explicitly asks OpenCode to run a **different concrete agent** inside the same running sandbox is rejected by the API proxy before the request reaches OpenCode. This prevents a switched agent from inheriting the original agent's connector or Kortix CLI grant.
+The connector credential is bound to the session boot agent. A prompt that explicitly asks OpenCode to run a **different concrete agent** inside the same running sandbox is rejected by the API proxy before the request reaches OpenCode. This prevents a switched agent from inheriting the original agent's connector or Zed CLI grant.
 
 The supported secure flow for a different agent is to start a new session with that agent selected. A future per-turn token model may relax this, but it must mint and inject a new connector token per requested agent before the prompt reaches tool execution.
 
 ### The `default` sentinel is non-binding
 
-`project_sessions.agent_name` defaults to the literal string `default`, and no agent is ever named `default` — it is a placeholder that the runtime resolves to OpenCode's configured `default_agent` (conventionally `kortix`). Because the session actually *runs* as that general-purpose default agent (granted `"all"`), the **grant resolution must resolve `default` the same way the proxy and the runtime do**: a `default` session carries the configured `default_agent`'s grant. When no concrete `default_agent` is declared in `[[agents]]`, the sentinel is **non-binding → `null`** (full access, still capped at the launching user's role — identical to a project that never adopted `[[agents]]`). It must **not** be treated as an unlisted concrete agent (default-deny): doing so stripped every connector from `default`-booted sessions — `kortix connectors ls` returned `[]` and synthetic `channel`/`computer` connectors never reached the agent — even though OpenCode runs them as the fully-privileged default agent (`grantFromLoadedAgents`, `apps/api/src/projects/agents.ts`). A project locks its default down by setting `default_agent` to a **concrete** declared agent, which then arrives by that name and gets its (possibly narrow) grant. There is no agent-specific grant for a *switch* to inherit.
+`project_sessions.agent_name` defaults to the literal string `default`, and no agent is ever named `default` — it is a placeholder that the runtime resolves to OpenCode's configured `default_agent` (conventionally `zed`). Because the session actually *runs* as that general-purpose default agent (granted `"all"`), the **grant resolution must resolve `default` the same way the proxy and the runtime do**: a `default` session carries the configured `default_agent`'s grant. When no concrete `default_agent` is declared in `[[agents]]`, the sentinel is **non-binding → `null`** (full access, still capped at the launching user's role — identical to a project that never adopted `[[agents]]`). It must **not** be treated as an unlisted concrete agent (default-deny): doing so stripped every connector from `default`-booted sessions — `zed connectors ls` returned `[]` and synthetic `channel`/`computer` connectors never reached the agent — even though OpenCode runs them as the fully-privileged default agent (`grantFromLoadedAgents`, `apps/api/src/projects/agents.ts`). A project locks its default down by setting `default_agent` to a **concrete** declared agent, which then arrives by that name and gets its (possibly narrow) grant. There is no agent-specific grant for a *switch* to inherit.
 
 Consequently the proxy treats `default` as non-binding on **either** side of the comparison:
 
@@ -49,12 +49,12 @@ This is required for correctness, not just leniency: the web client resolves "th
 
 ## CLI Behavior
 
-`kortix token` is an identity probe, not a project scaffold name. It aliases `kortix whoami --token-only` and prints the active token context. Inside a sandbox, the host banner must say `authenticated (session token)` when `KORTIX_SESSION_ID` is present.
+`zed token` is an identity probe, not a project scaffold name. It aliases `zed whoami --token-only` and prints the active token context. Inside a sandbox, the host banner must say `authenticated (session token)` when `ZED_SESSION_ID` is present.
 
 The CLI auth order remains:
 
-1. `KORTIX_CLI_TOKEN` from the process environment
-2. `KORTIX_CLI_TOKEN` from `/dev/shm/kortix/agent-env.sh`
+1. `ZED_CLI_TOKEN` from the process environment
+2. `ZED_CLI_TOKEN` from `/dev/shm/zed/agent-env.sh`
 3. stored host auth
 
-`KORTIX_TOKEN` is intentionally excluded from CLI auth resolution.
+`ZED_TOKEN` is intentionally excluded from CLI auth resolution.

@@ -5,9 +5,9 @@
  * the assistant turn renders full-width as ordered content blocks — clean and
  * monochrome.
  *
- * Rendering is driven by `classifyTurn`/`classifyPart` (`@kortix/sdk`):
+ * Rendering is driven by `classifyTurn`/`classifyPart` (`@zed/sdk`):
  * every supported runtime part is classified into a typed
- * `ClassifiedPart`, and `renderParts` (`@kortix/sdk/react`) requires a
+ * `ClassifiedPart`, and `renderParts` (`@zed/sdk/react`) requires a
  * renderer for every kind at compile time — so a new part type (or one we
  * used to silently drop) fails the build here instead of quietly vanishing
  * from the transcript. See the per-kind comments below for what each
@@ -18,8 +18,8 @@ import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Marker, MarkerContent, MarkerIcon } from '@/components/ui/marker';
 import { Message } from '@/components/ui/message';
-import { type MessageWithParts, type PartRenderers, renderParts } from '@kortix/sdk/react';
-import { classifyTurn } from '@kortix/sdk';
+import { type MessageWithParts, type PartRenderers, renderParts } from '@zed/sdk/react';
+import { classifyTurn } from '@zed/sdk';
 import {
   Brain,
   ChevronRight,

@@ -10,7 +10,7 @@
  *   HOST      t0 ─ POST /sessions returns              → api_create_ms
  *             ─ session_sandboxes.external_id set      → vm_created_ms   (VM exists)
  *             ─ session_sandboxes.status = 'active'    → row_active_ms
- *   IN-GUEST  ─ first 2xx from /kortix/health          → daemon_reachable_ms
+ *   IN-GUEST  ─ first 2xx from /zed/health          → daemon_reachable_ms
  *             ─ health.runtimeReady = true             → runtime_ready_ms  (usable)
  *
  * plus the daemon's own `boot_timeline` (BootMark[]) harvested off the health
@@ -26,15 +26,15 @@
  * Usage:
  *   cd apps/api
  *   BENCH_DB_URL="$(dotenvx get DATABASE_URL -f .env.prod)" \
- *   BENCH_TOKEN=... BENCH_API=https://api.kortix.com \
+ *   BENCH_TOKEN=... BENCH_API=https://api.zed.com \
  *   BENCH_TARGETS='[{"label":"daytona","projectId":"..."},{"label":"platinum","projectId":"..."}]' \
  *   bun run scripts/bench-boot-attribution.ts
  *
  * Env:
  *   BENCH_TARGETS   JSON array of {label, projectId}. Required.
  *   BENCH_DB_URL    Postgres URL for host-side transitions. Required.
- *   BENCH_API       API base origin (default https://api.kortix.com).
- *   BENCH_TOKEN     kortix_pat_… Required. Read from env only, never from a
+ *   BENCH_API       API base origin (default https://api.zed.com).
+ *   BENCH_TOKEN     zed_pat_… Required. Read from env only, never from a
  *                   config file — see the comment on TOKEN below.
  *   BENCH_ROUNDS    boots per target (default 3).
  *   BENCH_TIMEOUT_S per-boot ceiling (default 180).
@@ -47,14 +47,14 @@
 import { writeFileSync } from 'node:fs';
 import { SQL } from 'bun';
 
-const API = (process.env.BENCH_API ?? 'https://api.kortix.com').replace(/\/+$/, '');
+const API = (process.env.BENCH_API ?? 'https://api.zed.com').replace(/\/+$/, '');
 const ROUNDS = Number(process.env.BENCH_ROUNDS ?? 3);
 const TIMEOUT_MS = Number(process.env.BENCH_TIMEOUT_S ?? 180) * 1000;
 const KEEP = process.env.BENCH_KEEP === '1';
 const DB_URL = process.env.BENCH_DB_URL ?? '';
 
 // Token comes from the environment ONLY — deliberately not read out of
-// ~/.config/kortix/config.json. Two reasons, and the second is the important one:
+// ~/.config/zed/config.json. Two reasons, and the second is the important one:
 //   1. This harness points at whatever BENCH_API says, including production.
 //      Silently pairing an explicit host with an implicitly-discovered credential
 //      from a config file is how you benchmark the wrong deployment with the wrong
@@ -91,16 +91,16 @@ interface Boot {
   runtimeReadyMs: number | null;
   /** Host-side ProvisionTimeline marks, as persisted by the API. */
   hostMarks: Array<{ label: string; deltaMs: number }> | null;
-  /** In-guest BootMark[] read off /kortix/health. */
+  /** In-guest BootMark[] read off /zed/health. */
   bootTimeline: BootMark[] | null;
   error?: string;
 }
 
 function classifyImage(ref: string | null): Boot['imageKind'] {
   if (!ref) return 'unknown';
-  if (ref.startsWith('kortix-ppwarm-')) return 'ppwarm';
-  if (ref.startsWith('kortix-default-')) return 'default-cold';
-  if (ref.startsWith('kortix-tpl-')) return 'per-project-tpl';
+  if (ref.startsWith('zed-ppwarm-')) return 'ppwarm';
+  if (ref.startsWith('zed-default-')) return 'default-cold';
+  if (ref.startsWith('zed-tpl-')) return 'per-project-tpl';
   return 'unknown';
 }
 
@@ -143,7 +143,7 @@ async function measureBoot(target: Target, round: number): Promise<Boot> {
     const pollHealth = async (eid: string) => {
       while (performance.now() - t0 < TIMEOUT_MS) {
         try {
-          const h = await fetch(`${API}/v1/p/${eid}/8000/kortix/health`, {
+          const h = await fetch(`${API}/v1/p/${eid}/8000/zed/health`, {
             headers: { Authorization: `Bearer ${TOKEN}` },
             signal: AbortSignal.timeout(10_000),
           });
@@ -161,7 +161,7 @@ async function measureBoot(target: Target, round: number): Promise<Boot> {
     while (performance.now() - t0 < TIMEOUT_MS) {
       const rows = await sql`
         select provider::text as provider, external_id, status::text as status, metadata
-        from kortix.session_sandboxes where sandbox_id = ${sessionId} limit 1`;
+        from zed.session_sandboxes where sandbox_id = ${sessionId} limit 1`;
       const row = rows[0];
       if (row) {
         boot.provider = row.provider;

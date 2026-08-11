@@ -94,7 +94,7 @@ const ext = (name: string) => {
 
 // Pinned, described config dirs (web parity).
 const ELEVATED: Record<string, string> = {
-  '.kortix': 'Project config, tasks, context',
+  '.zed': 'Project config, tasks, context',
   '.opencode': 'Agents, skills, commands',
 };
 

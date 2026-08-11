@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { type Database, auditEvents } from '@kortix/db';
+import { type Database, auditEvents } from '@zed/db';
 import type { Context, Next } from 'hono';
 import { getRequestContext } from '../lib/request-context';
 import type { AppEnv } from '../types';
@@ -145,7 +145,7 @@ export function inferAuditSource(c: AuditContext, actorType: AuditActorType | nu
 }
 
 export function clientReportedAuditSource(c: AuditContext): string | null {
-  return normalizeAuditClientSource(c.req.header('x-kortix-client'));
+  return normalizeAuditClientSource(c.req.header('x-zed-client'));
 }
 
 function outcomeForStatus(status: number): AuditOutcome {
@@ -171,7 +171,7 @@ function uuidOrNull(value: string | null | undefined): string | null {
 }
 
 const SECRET_VALUE_RE =
-  /(?:bearer\s+[a-z0-9._~+/=-]+|sk-[a-z0-9_-]{12,}|gh[opusr]_[a-z0-9_]{12,}|kortix_(?:pat|sbx)_[a-z0-9_-]+|(?:token|secret|password|api[_-]?key)=\S+)/i;
+  /(?:bearer\s+[a-z0-9._~+/=-]+|sk-[a-z0-9_-]{12,}|gh[opusr]_[a-z0-9_]{12,}|zed_(?:pat|sbx)_[a-z0-9_-]+|(?:token|secret|password|api[_-]?key)=\S+)/i;
 const CONTENT_KEYS = new Set([
   'access_token',
   'api_key',

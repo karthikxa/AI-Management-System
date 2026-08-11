@@ -3,7 +3,7 @@ import { homedir, platform, userInfo } from 'os';
 import { dirname, join } from 'path';
 import { spawnSync } from 'child_process';
 
-export const SERVICE_LABEL = 'ai.kortix.agent-tunnel';
+export const SERVICE_LABEL = 'ai.zed.agent-tunnel';
 
 export interface ServiceInstallOptions {
   keepAwake?: boolean;
@@ -60,7 +60,7 @@ function currentRunnerParts(): { command: string; args: string[] } {
   if (script && existsSync(script)) {
     return { command: exec, args: [script, 'run', '--service'] };
   }
-  return { command: 'npx', args: ['--yes', '@kortix/agent-tunnel@latest', 'run', '--service'] };
+  return { command: 'npx', args: ['--yes', '@zed/agent-tunnel@latest', 'run', '--service'] };
 }
 
 function currentRunnerCommand(): string {
@@ -77,7 +77,7 @@ export function buildServiceShellCommand(options: ServiceInstallOptions = {}): s
   }
 
   if (platform() === 'linux') {
-    return `if command -v systemd-inhibit >/dev/null 2>&1; then exec systemd-inhibit --what=sleep:idle --why='Kortix Agent Tunnel' ${runner}; else exec ${runner}; fi`;
+    return `if command -v systemd-inhibit >/dev/null 2>&1; then exec systemd-inhibit --what=sleep:idle --why='Zed Agent Tunnel' ${runner}; else exec ${runner}; fi`;
   }
 
   return `exec ${runner}`;
@@ -95,12 +95,12 @@ export function renderWindowsPowerShellScript(
 ${keepAwake ? `Add-Type -TypeDefinition @'
 using System;
 using System.Runtime.InteropServices;
-public static class KortixPower {
+public static class ZedPower {
   [DllImport("kernel32.dll", SetLastError = true)]
   public static extern UInt32 SetThreadExecutionState(UInt32 esFlags);
 }
 '@
-[KortixPower]::SetThreadExecutionState(0x80000000 -bor 0x00000001 -bor 0x00000040) | Out-Null
+[ZedPower]::SetThreadExecutionState(0x80000000 -bor 0x00000001 -bor 0x00000040) | Out-Null
 ` : ''}while ($true) {
   & ${command}${args ? ` ${args}` : ''}
   Start-Sleep -Seconds 5
@@ -151,7 +151,7 @@ export function renderSystemdUnit(command: string, paths: ServicePaths = getServ
   const stdout = join(paths.logDir, 'agent-tunnel.out.log');
   const stderr = join(paths.logDir, 'agent-tunnel.err.log');
   return `[Unit]
-Description=Kortix Agent Tunnel
+Description=Zed Agent Tunnel
 After=network-online.target
 Wants=network-online.target
 

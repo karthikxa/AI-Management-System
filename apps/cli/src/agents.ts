@@ -14,28 +14,28 @@ export const SUPPORTED_AGENTS: readonly CodingAgent[] = [
 export const DEFAULT_PRIMARY: CodingAgent = 'codex';
 
 /**
- * Path of the canonical Kortix skill, relative to repo root.
+ * Path of the canonical Zed skill, relative to repo root.
  *
- * `kortix-cli`, not `kortix-system`: the rest of the `kortix-*` family is
+ * `zed-cli`, not `zed-system`: the rest of the `zed-*` family is
  * injected into sandboxes at boot rather than committed, so it is absent from a
  * local checkout — and this path is handed to LOCAL coding agents via the
  * generated AGENTS.md, where a dangling reference just wastes a file read.
- * `kortix-cli` ships in the scaffold and is the front door to the others.
+ * `zed-cli` ships in the scaffold and is the front door to the others.
  */
-export const CANONICAL_SKILL = '.kortix/opencode/skills/kortix-cli/SKILL.md';
+export const CANONICAL_SKILL = '.zed/opencode/skills/zed-cli/SKILL.md';
 
 /** The starter's canonical project skill source. */
-const OPENCODE_DIR = '.kortix/opencode';
+const OPENCODE_DIR = '.zed/opencode';
 
 /**
  * Native discovery paths each agent reads:
  *
- *   .opencode → .kortix/opencode   (OpenCode native; recursive skill discovery)
- *   .claude/skills → ../.kortix/opencode/skills
- *   .claude/agents → ../.kortix/opencode/agents
- *   .claude/commands → ../.kortix/opencode/commands
- *   .agents   → .kortix/opencode   (Codex + the cross-tool AGENTS standard: .agents/skills, recursive)
- *   .pi/skills → ../.kortix/opencode/skills
+ *   .opencode → .zed/opencode   (OpenCode native; recursive skill discovery)
+ *   .claude/skills → ../.zed/opencode/skills
+ *   .claude/agents → ../.zed/opencode/agents
+ *   .claude/commands → ../.zed/opencode/commands
+ *   .agents   → .zed/opencode   (Codex + the cross-tool AGENTS standard: .agents/skills, recursive)
+ *   .pi/skills → ../.zed/opencode/skills
  *
  * Codex's documented project skills dir is `.agents/skills` (not `.codex/`), and
  * `.agents/skills` is what OpenCode + other agent tools read too — so the codex
@@ -57,12 +57,12 @@ interface AgentLink {
 const AGENT_LINKS: Partial<Record<CodingAgent, readonly AgentLink[]>> = {
   opencode: [{ path: '.opencode', target: OPENCODE_DIR }],
   claude: [
-    { path: '.claude/skills', target: '../.kortix/opencode/skills' },
-    { path: '.claude/agents', target: '../.kortix/opencode/agents' },
-    { path: '.claude/commands', target: '../.kortix/opencode/commands' },
+    { path: '.claude/skills', target: '../.zed/opencode/skills' },
+    { path: '.claude/agents', target: '../.zed/opencode/agents' },
+    { path: '.claude/commands', target: '../.zed/opencode/commands' },
   ],
   codex: [{ path: '.agents', target: OPENCODE_DIR }],
-  pi: [{ path: '.pi/skills', target: '../.kortix/opencode/skills' }],
+  pi: [{ path: '.pi/skills', target: '../.zed/opencode/skills' }],
 };
 
 export interface WireAgentsInput {
@@ -144,14 +144,14 @@ function handleExisting(abs: string, overwrite: boolean): boolean {
 }
 
 function agentsPointer(): string {
-  return `# Kortix project
+  return `# Zed project
 
-This repository is a [Kortix](https://kortix.ai) project — its agent runtime
-config lives under \`.kortix/\` and the manifest is \`kortix.yaml\`. The starter's
+This repository is a [Zed](https://zed.ai) project — its agent runtime
+config lives under \`.zed/\` and the manifest is \`zed.yaml\`. The starter's
 canonical system skills are available through each wired tool's native discovery
 location.
 
-Whenever the user asks about Kortix — \`kortix.yaml\`, triggers, secrets, the
+Whenever the user asks about Zed — \`zed.yaml\`, triggers, secrets, the
 sandbox image, sessions, connectors, or OpenCode,
 Claude Code, Codex, and Pi configuration — read \`${CANONICAL_SKILL}\` first.
 It is the canonical reference.

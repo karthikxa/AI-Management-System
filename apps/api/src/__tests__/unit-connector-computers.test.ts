@@ -3,7 +3,7 @@
  * connector).
  *   • catalog — the tunnel RPC method set normalizes to `tunnel` bindings. Each
  *     relayed action accepts a selector from the profile's machine allowlist.
- *   • parse   — `provider="computer"` cannot be declared in kortix.yaml (it is
+ *   • parse   — `provider="computer"` cannot be declared in zed.yaml (it is
  *     synth-only; connecting a machine materializes it).
  *   • gateway — a computer call routes through executeComputerCall (NOT an HTTP
  *     call); the connector's machine allowlist is used; a permission_required
@@ -73,12 +73,12 @@ describe('computerCatalog()', () => {
 /* ─── parse ───────────────────────────────────────────────────────────────── */
 
 function parse(body: string) {
-  const src = [`kortix_version: ${KNOWN_SCHEMA_VERSION}`, 'project:\n  name: t', body].join('\n');
-  return extractConnectors(parseManifestString(src, 'yaml', 'kortix.yaml'));
+  const src = [`zed_version: ${KNOWN_SCHEMA_VERSION}`, 'project:\n  name: t', body].join('\n');
+  return extractConnectors(parseManifestString(src, 'yaml', 'zed.yaml'));
 }
 
 describe('connectors: provider="computer"', () => {
-  test('cannot be declared in kortix.yaml because profiles are API-managed', () => {
+  test('cannot be declared in zed.yaml because profiles are API-managed', () => {
     const { specs, errors } = parse(`
 connectors:
   - slug: computer

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import {
   MODEL_SELECTOR_PROVIDER_IDS as SHARED_MODEL_SELECTOR_PROVIDER_IDS,
   PROVIDER_LABELS as SHARED_PROVIDER_LABELS,
-} from '@kortix/llm-catalog';
+} from '@zed/llm-catalog';
 import Image from 'next/image';
 
 export const POPULAR_PROVIDER_IDS = [
@@ -40,7 +40,7 @@ const PROVIDER_ICON_MAP: Record<string, { src?: string; fallback: string }> = {
   openai: { src: '/provider-icons/openai.svg', fallback: 'OA' },
   codex: { src: '/provider-icons/openai.svg', fallback: 'GPT' },
   opencode: { src: '/provider-icons/opencode.svg', fallback: 'OC' },
-  kortix: { src: '/kortix-symbol.svg', fallback: 'KX' },
+  zed: { src: '/zed-symbol.svg', fallback: 'KX' },
   'github-copilot': { src: '/provider-icons/github-copilot.svg', fallback: 'GH' },
   google: { src: '/provider-icons/google.svg', fallback: 'GO' },
   openrouter: { src: '/provider-icons/openrouter.svg', fallback: 'OR' },

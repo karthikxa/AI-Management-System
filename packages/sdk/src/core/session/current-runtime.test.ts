@@ -9,7 +9,7 @@ import {
 
 // This is a process-wide singleton (`state` is module-level) — several OTHER
 // files exercise real session-start flows that call the real
-// `setCurrentRuntime` too (e.g. `kortix.test.ts`, `session/session.test.ts`,
+// `setCurrentRuntime` too (e.g. `zed.test.ts`, `session/session.test.ts`,
 // `files/client.test.ts`), so this module's state is NOT guaranteed to be
 // untouched by the time this file's tests run, and `version` is a
 // process-cumulative counter with no reset-to-zero — never assert an absolute

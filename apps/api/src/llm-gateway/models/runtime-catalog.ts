@@ -1,4 +1,4 @@
-import { CATALOG, type Catalog, type CatalogModel } from '@kortix/llm-catalog';
+import { CATALOG, type Catalog, type CatalogModel } from '@zed/llm-catalog';
 
 const DEFAULT_SOURCE_URL = 'https://models.dev/api.json';
 // Was 24h — a full day for a new model launch (or a provider's own metadata
@@ -22,7 +22,7 @@ interface ModelsDevModel extends CatalogModel {
 // Passed straight through from models.dev — no transformation needed, unlike
 // `released`/`release_date` above. Kept as its own list (rather than
 // spreading `model` wholesale) so a stray upstream field never leaks into
-// the normalized `Catalog` shape @kortix/llm-catalog's `CatalogModel`
+// the normalized `Catalog` shape @zed/llm-catalog's `CatalogModel`
 // declares. Mirrors apps/web/scripts/enrich-llm-catalog-capabilities.ts's
 // field set exactly — the baked snapshot and this live path must never
 // diverge in SHAPE, only in freshness (see that script's header comment).

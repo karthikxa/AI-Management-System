@@ -1,5 +1,5 @@
 import type { GlyphSelection } from '@/components/ui/glyph-picker';
-import type { ProjectInput } from '@kortix/sdk';
+import type { ProjectInput } from '@zed/sdk';
 
 import type { ProjectIconValue } from './project-icon-field';
 

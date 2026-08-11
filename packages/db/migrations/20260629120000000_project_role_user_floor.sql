@@ -13,15 +13,15 @@
 -- value was added by 20260628140000000_project_role_user_tier.sql, so it is
 -- already committed and safe to use here.
 
-ALTER TABLE "kortix"."project_members"
+ALTER TABLE "zed"."project_members"
   ALTER COLUMN "project_role" SET DEFAULT 'user';
-UPDATE "kortix"."project_members"
+UPDATE "zed"."project_members"
   SET "project_role" = 'user'
   WHERE "project_role" = 'viewer';
 
-ALTER TABLE "kortix"."project_group_grants"
+ALTER TABLE "zed"."project_group_grants"
   ALTER COLUMN "role" SET DEFAULT 'user';
-UPDATE "kortix"."project_group_grants"
+UPDATE "zed"."project_group_grants"
   SET "role" = 'user'
   WHERE "role" = 'viewer';
 
@@ -33,7 +33,7 @@ UPDATE "kortix"."project_group_grants"
 --
 -- Forward-only: we can't tell which `user` rows were originally `viewer`, and
 -- the distinction is gone by design. Restore only the prior column defaults.
-ALTER TABLE "kortix"."project_members"
+ALTER TABLE "zed"."project_members"
   ALTER COLUMN "project_role" SET DEFAULT 'viewer';
-ALTER TABLE "kortix"."project_group_grants"
+ALTER TABLE "zed"."project_group_grants"
   ALTER COLUMN "role" SET DEFAULT 'viewer';

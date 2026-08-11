@@ -1,4 +1,4 @@
-import { hydrateEnvironmentSecret } from '@kortix/shared';
+import { hydrateEnvironmentSecret } from '@zed/shared';
 
 // This module must be the first import in main.ts. Server and observability
 // modules read process.env during module evaluation.

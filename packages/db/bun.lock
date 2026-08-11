@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@kortix/db",
+      "name": "@zed/db",
       "dependencies": {
         "dotenv": "^16",
         "dotenv-expand": "^12",

@@ -5,7 +5,7 @@
 // transaction node-pg-migrate wraps around `pnpm migrate`. `pgm.noTransaction()`
 // is the supported opt-out. See MIGRATIONS.md "Roll-forward safety".
 //
-// Why this index: per-end-user metering for Kortix-as-a-Backend. It serves both
+// Why this index: per-end-user metering for Zed-as-a-Backend. It serves both
 // "spend for origin_ref X between two timestamps" and the group_by=origin_ref
 // rollup on GET /v1/usage, which are otherwise a full scan of the billing ledger.
 // Leading account_id keeps it tenant-scoped (every usage read is already scoped
@@ -31,7 +31,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create index concurrently if not exists idx_usage_events_account_origin_time
-      on kortix.usage_events (account_id, origin_ref, created_at)
+      on zed.usage_events (account_id, origin_ref, created_at)
       where origin_ref is not null
   `);
 };

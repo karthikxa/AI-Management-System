@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { serializeProject } from './serializers';
 
-// `metadata` is nullable: packages/db/src/schema/kortix.ts:330 declares
+// `metadata` is nullable: packages/db/src/schema/zed.ts:330 declares
 // jsonb('metadata').default({}) with NO .notNull(), which is why
 // serializeProject guards it with `?.`.
 function projectRow(metadata: Record<string, unknown> | null) {
@@ -12,7 +12,7 @@ function projectRow(metadata: Record<string, unknown> | null) {
     name: 'demo',
     repoUrl: 'https://github.com/acme/demo.git',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     idempotencyKey: null,
     status: 'active' as const,
     secretDefaultStrategy: 'runtime' as const,

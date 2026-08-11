@@ -15,7 +15,7 @@ test('exports and publishConfig.exports declare the same subpaths', () => {
   const { exports: src, publishConfig } = pkg();
   // A subpath present in one map and absent from the other is invisible in the
   // workspace (which resolves `exports` → src/) and only explodes for someone
-  // who ran `npm install @kortix/sdk` (which resolves publishConfig → dist/).
+  // who ran `npm install @zed/sdk` (which resolves publishConfig → dist/).
   expect(Object.keys(publishConfig.exports).sort()).toEqual(Object.keys(src).sort());
 });
 

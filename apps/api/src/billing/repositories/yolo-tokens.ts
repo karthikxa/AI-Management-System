@@ -1,5 +1,5 @@
 import { and, eq, isNull } from 'drizzle-orm';
-import { yoloMemberTokens } from '@kortix/db';
+import { yoloMemberTokens } from '@zed/db';
 import { db } from '../../shared/db';
 
 export async function getActiveYoloTokenRow(userId: string, accountId: string) {

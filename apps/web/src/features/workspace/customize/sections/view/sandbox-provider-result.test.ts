@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 import type { QueryClient } from '@tanstack/react-query';
 import type {
-  KortixProject,
+  ZedProject,
   SandboxProviderTransitionState,
   UpdateProjectSandboxProviderResult,
-} from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 import {
   applySandboxProviderResult,
   isSandboxProviderTransitionTerminal,
@@ -38,7 +38,7 @@ const projectResult = (): UpdateProjectSandboxProviderResult =>
     name: 'Proj',
     repo_url: 'https://example.test/r.git',
     default_branch: 'main',
-    manifest_path: 'kortix.toml',
+    manifest_path: 'zed.toml',
     status: 'active',
     metadata: {},
     last_opened_at: null,
@@ -57,7 +57,7 @@ const preparationResult = (): UpdateProjectSandboxProviderResult => ({
   active_provider: 'daytona',
   label: 'Preparing Platinum',
   generation: 1,
-  snapshot_name: 'kortix-ppwarm-secret',
+  snapshot_name: 'zed-ppwarm-secret',
   external_template_id: 'tpl_secret',
   commit_sha: 'abc',
   attempts: 0,
@@ -79,7 +79,7 @@ describe('applySandboxProviderResult (FIX-L)', () => {
       (c) => Array.isArray(c.key) && JSON.stringify(c.key) === JSON.stringify(summaryKey),
     );
     expect(projectWrite).toBeDefined();
-    const cached = projectWrite!.value as KortixProject & { kind?: string };
+    const cached = projectWrite!.value as ZedProject & { kind?: string };
     expect(cached.project_id).toBe('p1');
     expect(cached.default_sandbox_provider).toBe('daytona');
     expect('kind' in cached).toBe(false); // discriminant stripped from the cached project

@@ -18,22 +18,22 @@
  * the audio track — because this code runs in a browser with its token
  * visible in the URL. That token is a room-scoped LiveKit access token and
  * nothing else — it authorises joining one room as one participant, not
- * calling the Kortix API.
+ * calling the Zed API.
  *
  * TWO SOURCES FEED THE TRANSCRIPT, and which one is authoritative matters:
  *
- *   - `kortix.voice_call_turns`, polled from
+ *   - `zed.voice_call_turns`, polled from
  *     `/v1/public/voice-join/:token/transcript`, IS the transcript. It holds
- *     every spoken turn on both sides, everything the KORTIX agent put into
+ *     every spoken turn on both sides, everything the ZED agent put into
  *     the call from outside it (`send_prompt`, a finished turn's result, an
- *     error), and every MCP tool call the voice made (`ask_kortix`,
+ *     error), and every MCP tool call the voice made (`ask_zed`,
  *     `run_command`).
  *   - LiveKit's client-side `TranscriptionReceived` is a LIVE TAIL on the end
  *     of it, nothing more.
  *
  * This page used to render only the second one, which is why it showed a call
  * with holes in it: that stream carries the two voices in this room and
- * nothing else, so the Kortix agent's own lines and every tool call were
+ * nothing else, so the Zed agent's own lines and every tool call were
  * missing entirely — they are written server-side and never reach the
  * browser's LiveKit connection at all. The tail is still worth having, but
  * only for latency: it shows a sentence the instant it is spoken, and drops
@@ -82,7 +82,7 @@ import {
   type RemoteTrack,
   type TranscriptionSegment,
 } from 'livekit-client';
-import { getPublicVoiceJoin, getPublicVoiceTranscript, PublicVoiceJoinError } from '@kortix/sdk';
+import { getPublicVoiceJoin, getPublicVoiceTranscript, PublicVoiceJoinError } from '@zed/sdk';
 
 import { AudioGestureOverlay, ConnectingScreen, EndedScreen, ReconnectingBanner } from './_components/connection-states';
 import { CallControls } from './_components/call-controls';
@@ -166,7 +166,7 @@ export default function VoiceBridgePage() {
         },
         ...Array.from(room.remoteParticipants.values()).map((p) => ({
           identity: p.identity,
-          name: p.isAgent ? p.name || 'Kortix' : p.name || p.identity,
+          name: p.isAgent ? p.name || 'Zed' : p.name || p.identity,
           isLocal: false,
           isAgent: p.isAgent,
           micEnabled: p.isMicrophoneEnabled,
@@ -184,7 +184,7 @@ export default function VoiceBridgePage() {
       if (cancelled) return;
       const isLocal = participant ? participant.identity === room.localParticipant.identity : false;
       const isAgent = participant?.isAgent ?? false;
-      const name = isLocal ? 'You' : isAgent ? participant?.name || 'Kortix' : participant?.name || participant?.identity || 'Guest';
+      const name = isLocal ? 'You' : isAgent ? participant?.name || 'Zed' : participant?.name || participant?.identity || 'Guest';
       for (const segment of segments) {
         // Keyed by segment id, which is stable across the interim revisions of
         // one utterance — so a sentence being revised updates in place instead
@@ -247,7 +247,7 @@ export default function VoiceBridgePage() {
             setPhase('left');
           } else {
             setPhase('failed');
-            setError('lost connection to Kortix');
+            setError('lost connection to Zed');
           }
         })
         .on(RoomEvent.ParticipantConnected, syncRoster)

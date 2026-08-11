@@ -1,4 +1,4 @@
-import type { UseSessionResult } from '@kortix/sdk/react';
+import type { UseSessionResult } from '@zed/sdk/react';
 
 export function gatedRuntimeError(input: {
   phase: UseSessionResult['phase'];

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import {
   CROSSFADE_TRANSITION,
   detailCardVariants,
@@ -212,19 +212,19 @@ describe('DetailSidebarToggle (F3v2)', () => {
   // comment) so a future regression that reorders the gates can't
   // accidentally pass by riding the (also-false) fullscreen gate instead.
   test('renders null without a SidebarProvider', () => {
-    useKortixComputerStore.setState({ isExpanded: true });
+    useZedComputerStore.setState({ isExpanded: true });
     try {
       expect(() => {
         const html = renderToStaticMarkup(<DetailSidebarToggle />);
         expect(html).toBe('');
       }).not.toThrow();
     } finally {
-      useKortixComputerStore.setState({ isExpanded: false });
+      useZedComputerStore.setState({ isExpanded: false });
     }
   });
 
   test('with a provider, not fullscreen renders null', () => {
-    useKortixComputerStore.setState({ isExpanded: false });
+    useZedComputerStore.setState({ isExpanded: false });
     const html = renderToStaticMarkup(
       <SidebarProvider>
         <DetailSidebarToggle />
@@ -234,7 +234,7 @@ describe('DetailSidebarToggle (F3v2)', () => {
   });
 
   test('with a provider, fullscreen + collapsed sidebar renders the toggle', () => {
-    useKortixComputerStore.setState({ isExpanded: true });
+    useZedComputerStore.setState({ isExpanded: true });
     try {
       const html = renderToStaticMarkup(
         <SidebarProvider defaultOpen={false}>
@@ -243,12 +243,12 @@ describe('DetailSidebarToggle (F3v2)', () => {
       );
       expect(html).toContain('aria-label="Open sidebar"');
     } finally {
-      useKortixComputerStore.setState({ isExpanded: false });
+      useZedComputerStore.setState({ isExpanded: false });
     }
   });
 
   test('with a provider, fullscreen + docked sidebar renders NOTHING — the sidebar carries its own collapse control', () => {
-    useKortixComputerStore.setState({ isExpanded: true });
+    useZedComputerStore.setState({ isExpanded: true });
     try {
       const html = renderToStaticMarkup(
         <SidebarProvider defaultOpen>
@@ -260,7 +260,7 @@ describe('DetailSidebarToggle (F3v2)', () => {
       expect(html).not.toContain('<button');
       expect(html).not.toContain('aria-label');
     } finally {
-      useKortixComputerStore.setState({ isExpanded: false });
+      useZedComputerStore.setState({ isExpanded: false });
     }
   });
 });

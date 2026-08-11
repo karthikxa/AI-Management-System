@@ -7,7 +7,7 @@ set statement_timeout = '30s';
 -- function had changed. The ledger repair maps the applied name to the renamed
 -- file. This roll-forward migration ensures every existing environment receives
 -- the final trigger behavior. CREATE OR REPLACE keeps the existing trigger live.
-CREATE OR REPLACE FUNCTION "kortix"."session_sandboxes_anchor_guard"()
+CREATE OR REPLACE FUNCTION "zed"."session_sandboxes_anchor_guard"()
 RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
   derived boolean := false;
@@ -63,5 +63,5 @@ BEGIN
 END;
 $$;
 
-COMMENT ON COLUMN "kortix"."session_sandboxes"."active_since" IS
-  'Start of this box''s current continuous running stretch. Anchor operand of the 24h cap. Assigned ONLY by kortix.session_sandboxes_anchor_guard(); never movable by application code in any state, and re-anchored only on resume of a park the trigger itself witnessed.';
+COMMENT ON COLUMN "zed"."session_sandboxes"."active_since" IS
+  'Start of this box''s current continuous running stretch. Anchor operand of the 24h cap. Assigned ONLY by zed.session_sandboxes_anchor_guard(); never movable by application code in any state, and re-anchored only on resume of a park the trigger itself witnessed.';

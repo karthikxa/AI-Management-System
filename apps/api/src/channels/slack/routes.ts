@@ -1,6 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { and, eq } from 'drizzle-orm';
-import { chatInstalls } from '@kortix/db';
+import { chatInstalls } from '@zed/db';
 import { db } from '../../shared/db';
 import { config } from '../../config';
 import { generateSlackManifest, resolveBaseUrl } from '../slack-manifest';
@@ -36,7 +36,7 @@ async function runSlashCommandBody(rawBody: string, projectScopedProjectId?: str
   const teamId = params.get('team_id') ?? '';
   const channelId = params.get('channel_id') ?? '';
   const slackUserId = params.get('user_id') ?? '';
-  const command = params.get('command') || '/kortix';
+  const command = params.get('command') || '/zed';
   const responseUrl = params.get('response_url') ?? undefined;
 
   if (projectScopedProjectId && teamId && channelId) {
@@ -130,14 +130,14 @@ slackWebhookApp.openapi(
       await publishHomeForUser(teamId, envelope.event.user);
       return;
     }
-    // Opening the Kortix DM (AI-Assistant pane) → greet with the project picker.
+    // Opening the Zed DM (AI-Assistant pane) → greet with the project picker.
     // The channel/thread live on event.assistant_thread, NOT the top-level event,
     // so resolveOauthProject can't see it — handle it before that branch.
     if (envelope.event?.type === 'assistant_thread_started') {
       await handleAssistantThreadStarted(teamId, envelope.event);
       return;
     }
-    // A `/kortix …` typed in a DM (the Assistant pane can't run real slash
+    // A `/zed …` typed in a DM (the Assistant pane can't run real slash
     // commands) arrives as a plain message — run it as the command it is.
     if (envelope.event && (await maybeHandleDmCommand(teamId, envelope.event))) {
       return;
@@ -193,7 +193,7 @@ slackWebhookApp.openapi(
 );
 
 // Slash commands — Slack POSTs application/x-www-form-urlencoded here when
-// a user runs `/kortix …` in any channel/DM. Must respond within 3s.
+// a user runs `/zed …` in any channel/DM. Must respond within 3s.
 slackWebhookApp.openapi(
   createRoute({
     method: 'post',
@@ -246,7 +246,7 @@ slackWebhookApp.openapi(
   const envelope = parseEnvelope(rawBody);
   if (!envelope) return c.json({ error: 'Invalid JSON' }, 400);
   // Slack verifies the Events API request URL before a manual/BYO app can be
-  // installed and saved back to Kortix, so there is no project signing secret
+  // installed and saved back to Zed, so there is no project signing secret
   // yet. Only the bootstrap challenge is allowed through this unsigned path;
   // every real callback below remains project-secret verified.
   if (envelope.type === 'url_verification') return c.json({ challenge: envelope.challenge });
@@ -307,7 +307,7 @@ slackWebhookApp.openapi(
 );
 
 // Per-project (BYO app) interactivity — parity with the canonical /interactivity
-// (block-action pickers + the "Open in Kortix" message shortcut), verified with
+// (block-action pickers + the "Open in Zed" message shortcut), verified with
 // the project's own signing secret. The BYO manifest points interactivity here.
 slackWebhookApp.openapi(
   createRoute({
@@ -340,7 +340,7 @@ slackWebhookApp.openapi(
 );
 
 // The per-project (BYO) Slack manifest — served from the SAME builder the
-// canonical app uses, so the in-sandbox `kortix-agent slack manifest` command
+// canonical app uses, so the in-sandbox `zed-agent slack manifest` command
 // fetches this instead of carrying its own copy. No secrets, no DB: it's a
 // scaffolding template (the project may not have Slack configured yet), so it's
 // intentionally unauthenticated and works for any projectId.
@@ -363,7 +363,7 @@ slackWebhookApp.openapi(
   const name = c.req.query('name') || undefined;
   const command = c.req.query('command') || undefined;
   // Prefer the configured public URL; fall back to the request host.
-  const baseUrl = resolveBaseUrl(new URL(c.req.url), config.KORTIX_URL || undefined);
+  const baseUrl = resolveBaseUrl(new URL(c.req.url), config.ZED_URL || undefined);
   return c.json(generateSlackManifest({ baseUrl, projectId, appName: name, botName: name, command }));
 },
 );

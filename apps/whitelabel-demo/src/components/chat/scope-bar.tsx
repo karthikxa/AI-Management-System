@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { ModelSwitcher } from '@/components/workbench/model-switcher';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { invalidateSessions, qk } from '@/lib/query-keys';
 import { getSessionToken } from '@/lib/session';
 import { sessionCreateFailure } from '@/lib/session-create-failure';
@@ -48,7 +48,7 @@ import {
   readScopeBindingIds,
   sessionScopeIsReadable,
 } from '@/lib/session-scope';
-import { generateSessionId } from '@kortix/sdk';
+import { generateSessionId } from '@zed/sdk';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AlertTriangle,
@@ -88,17 +88,17 @@ export function ScopeBar({
   const session = useQuery({
     queryKey: qk.session(projectId, sessionId),
     queryFn: () =>
-      kortix.session(projectId, sessionId).get({ showErrors: false }),
+      zed.session(projectId, sessionId).get({ showErrors: false }),
     retry: false,
   });
   const secrets = useQuery({
     queryKey: qk.secrets(projectId),
-    queryFn: () => kortix.project(projectId).secrets.list(),
+    queryFn: () => zed.project(projectId).secrets.list(),
     retry: false,
   });
   const scope = useQuery({
     queryKey: qk.sessionScope(projectId, sessionId),
-    queryFn: () => kortix.session(projectId, sessionId).scope(),
+    queryFn: () => zed.session(projectId, sessionId).scope(),
     retry: false,
   });
   const connectors = useConnectorBindingChoices(projectId);
@@ -163,7 +163,7 @@ export function ScopeBar({
   const start = useMutation({
     mutationFn: async () => {
       const nextId = generateSessionId();
-      await kortix.project(projectId).sessions.create(
+      await zed.project(projectId).sessions.create(
         buildSessionCreateInput(
           // The agent comes along too, or "with this scope" would quietly drop
           // the one part of the scope that is already right.
@@ -198,7 +198,7 @@ export function ScopeBar({
       if (!authoritativeScope) {
         throw new Error('The current session scope is not available');
       }
-      return kortix
+      return zed
         .session(projectId, sessionId)
         .rescope(
           buildCompleteSessionScopeReplacement(authoritativeScope, patch),

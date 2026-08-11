@@ -1,10 +1,10 @@
 export function buildSessionCacheKey(
   userScope: string,
   openCodeSessionId: string,
-  kortixSessionScope?: string,
+  zedSessionScope?: string,
 ): string {
-  if (!kortixSessionScope) {
+  if (!zedSessionScope) {
     return `${userScope}:session:${openCodeSessionId}`;
   }
-  return `${userScope}:kortix-session:${encodeURIComponent(kortixSessionScope)}`;
+  return `${userScope}:zed-session:${encodeURIComponent(zedSessionScope)}`;
 }

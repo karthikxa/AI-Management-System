@@ -1,9 +1,9 @@
 ---
 title: React hooks
-description: Run a Kortix session in React with the useSession hook.
+description: Run a Zed session in React with the useSession hook.
 ---
 
-`@kortix/sdk/react` adds React hooks on top of the SDK. This page covers
+`@zed/sdk/react` adds React hooks on top of the SDK. This page covers
 `useSession`, the hook that runs a session end to end, and the other hooks
 confirmed stable for React apps.
 
@@ -13,7 +13,7 @@ confirmed stable for React apps.
 syncs messages, status, and pending prompts. Call it once per session view.
 
 ```tsx
-import { useSession } from '@kortix/sdk/react';
+import { useSession } from '@zed/sdk/react';
 
 function Chat({ projectId, sessionId }: { projectId: string; sessionId: string }) {
   const s = useSession(projectId, sessionId);
@@ -44,10 +44,10 @@ Readiness is server truth. The runtime is ready when `POST /start` returns
 | `isBusy` | `boolean` | The agent is generating a reply. |
 | `questions`, `permissions` | array | Pending agent questions and permission requests. |
 | `diffs`, `todos` | array | Live file diffs and todo items. |
-| `sendError` | `KortixSendError \| null` | The last `send` failure: `billing`, `runtime-not-ready`, or `runtime-error`. |
+| `sendError` | `ZedSendError \| null` | The last `send` failure: `billing`, `runtime-not-ready`, or `runtime-error`. |
 | `rewindMessageId` | `string \| null` | The selected user message while a reversible rewind is staged. |
 | `rewindPending` | `boolean` | A rewind or restore request is in progress. |
-| `rewindError` | `KortixSendError \| null` | The last rewind or restore failure. |
+| `rewindError` | `ZedSendError \| null` | The last rewind or restore failure. |
 | `models`, `agents`, `defaultAgent`, `commands` | — | Selectable models, selectable agents, the default agent, and slash commands. Available before the runtime starts. |
 | `retry` | `() => void` | Force a re-check of `/start`. |
 
@@ -88,7 +88,7 @@ path recoverable. The next accepted prompt commits the replacement path.
 
 ## Other stable hooks
 
-`@kortix/sdk/react` also exports React Query hooks for data that does not
+`@zed/sdk/react` also exports React Query hooks for data that does not
 need a running session. Each mirrors a method on the
 [client](/docs/sdk/reference) and needs no provider.
 
@@ -103,5 +103,5 @@ need a running session. Each mirrors a method on the
 
 ## Next
 
-- [Sessions](/docs/sdk/sessions) — the session handle `useSession` wraps, and the `KortixSendError` kinds.
+- [Sessions](/docs/sdk/sessions) — the session handle `useSession` wraps, and the `ZedSendError` kinds.
 - [Reference](/docs/sdk/reference) — the full REST surface these hooks read from.

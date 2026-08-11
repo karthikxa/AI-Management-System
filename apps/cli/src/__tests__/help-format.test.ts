@@ -2,9 +2,9 @@ import { describe, expect, test } from 'bun:test';
 
 import { formatHelp, help, stripAnsi } from '../style.ts';
 
-const SAMPLE = `Usage: kortix demo <subcommand> [options]
+const SAMPLE = `Usage: zed demo <subcommand> [options]
 
-Do a demo thing. Run \`kortix ship\` to apply.
+Do a demo thing. Run \`zed ship\` to apply.
 
 Subcommands:
   ls               List things.
@@ -22,7 +22,7 @@ describe('formatHelp', () => {
   test('keeps the Usage line contiguous so `toContain` assertions survive', () => {
     // ANSI is inserted between "Usage:" and the command, but it must remain a
     // single readable string once codes are stripped (as in non-TTY runs).
-    expect(out).toContain('Usage: kortix demo');
+    expect(out).toContain('Usage: zed demo');
   });
 
   test('preserves every section header and description verbatim', () => {
@@ -52,7 +52,7 @@ describe('formatHelp', () => {
     // second 2-space base bolted onto its existing indent (regression: it used
     // to render at col 4 while its 2-space-gap siblings stayed at col 2).
     const listed = stripAnsi(
-      formatHelp('Usage: kortix x\n\nSteps:\n  1. first thing happens here\n  2. second\n'),
+      formatHelp('Usage: zed x\n\nSteps:\n  1. first thing happens here\n  2. second\n'),
     );
     expect(listed).toContain('\n  1. first thing happens here');
     expect(listed).not.toContain('\n    1. first thing happens here');
@@ -68,11 +68,11 @@ describe('formatHelp', () => {
 describe('help tagged template', () => {
   test('applies formatHelp and interpolates values', () => {
     const providers = ['pipedream', 'mcp'];
-    const rendered = stripAnsi(help`Usage: kortix x <sub>
+    const rendered = stripAnsi(help`Usage: zed x <sub>
 
 Providers: ${providers.join('|')}
 `);
-    expect(rendered).toContain('Usage: kortix x');
+    expect(rendered).toContain('Usage: zed x');
     expect(rendered).toContain('Providers: pipedream|mcp');
   });
 });

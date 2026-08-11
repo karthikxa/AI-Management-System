@@ -4,12 +4,12 @@
  * ProjectManifestUpgradeAlert — the left-sidebar nudge that makes a project's
  * still-on-v1 manifest impossible to miss. Sits just above Files/Customize and
  * mirrors `ProjectSandboxAlert` exactly (same `Disclosure` shell, same expand
- * -to-explain-then-act shape) — the only differences are the tone (kortix
+ * -to-explain-then-act shape) — the only differences are the tone (zed
  * accent, since this is a recommended upgrade rather than a failure) and the
  * action, which is the one-click, end-to-end `useMigrateToV2`: it mints a
  * session seeded with the migration prompt, boots the project's default agent
  * (git/CR powers), and drops the user into the thread where it auto-runs —
- * converting kortix.toml → kortix.yaml and opening a change request for review.
+ * converting zed.toml → zed.yaml and opening a change request for review.
  *
  * Only renders while the project is on v1 AND the viewer can actually act on it
  * (`project.write` — the people who can push and open the CR); it disappears
@@ -57,11 +57,11 @@ export function ProjectManifestUpgradeAlertView({
         onOpenChange={setIsOpen}
         className={cn(
           'w-full overflow-hidden rounded-md border-none text-sm shadow-none',
-          isOpen && 'bg-kortix-base/[0.06]',
+          isOpen && 'bg-zed-base/[0.06]',
         )}
       >
         <DisclosureTrigger>
-          <SidebarMenuButton className="text-kortix-base px-2.5 text-sm! font-medium [&_svg]:size-3.5!">
+          <SidebarMenuButton className="text-zed-base px-2.5 text-sm! font-medium [&_svg]:size-3.5!">
             <ArrowUpCircle className="size-4" />
             <span>Upgrade to v2</span>
           </SidebarMenuButton>
@@ -70,8 +70,8 @@ export function ProjectManifestUpgradeAlertView({
           <div className="w-full overflow-hidden">
             <div className="px-2 pt-1 pb-3">
               <p className="text-muted-foreground text-xs text-balance">
-                This project still runs the v1 <span className="font-mono">kortix.toml</span>.
-                Migrate to the governance-first <span className="font-mono">kortix.yaml</span> — an
+                This project still runs the v1 <span className="font-mono">zed.toml</span>.
+                Migrate to the governance-first <span className="font-mono">zed.yaml</span> — an
                 agent converts it, refreshes platform-managed skills, and opens a change request for
                 you to review.
               </p>

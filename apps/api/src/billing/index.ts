@@ -44,7 +44,7 @@ billingApp.use('*', async (c, next) => {
   if (c.req.path.includes('/account-state') || c.req.path.includes('/webhooks') || c.req.path.includes('/cron/')) {
     return next();
   }
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) {
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) {
     return c.json({ error: 'Billing is not enabled', billing_disabled: true }, 404);
   }
   return next();
@@ -61,7 +61,7 @@ billingApp.route('/account', accountDeletionRouter);
 // Backwards-compatible account deletion API (mounted at /v1/account/*)
 accountDeletionApp.use('*', supabaseAuth);
 accountDeletionApp.use('*', async (c, next) => {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) {
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) {
     return c.json({ error: 'Billing is not enabled', billing_disabled: true }, 404);
   }
   return next();
@@ -77,7 +77,7 @@ function timingSafeStringEqual(a: string, b: string): boolean {
 function requireInternalCronAuth(c: Context<AppEnv>): Response | null {
   const authHeader = c.req.header('Authorization');
   const bearer = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : '';
-  const header = c.req.header('X-Kortix-Internal-Key') ?? '';
+  const header = c.req.header('X-Zed-Internal-Key') ?? '';
   const expected = config.INTERNAL_SERVICE_KEY;
   const ok =
     (bearer && timingSafeStringEqual(bearer, expected)) ||
@@ -104,7 +104,7 @@ billingApp.openapi(
   async (c: Context<AppEnv>) => {
     const authError = requireInternalCronAuth(c);
     if (authError) return authError as any;
-    if (!config.KORTIX_BILLING_INTERNAL_ENABLED) {
+    if (!config.ZED_BILLING_INTERNAL_ENABLED) {
       return c.json({ skipped: true, reason: 'billing disabled' });
     }
     const { processYearlyCreditRotation } = await import('./services/yearly-rotation');
@@ -128,7 +128,7 @@ billingApp.openapi(
   async (c: Context<AppEnv>) => {
     const authError = requireInternalCronAuth(c);
     if (authError) return authError as any;
-    if (!config.KORTIX_BILLING_INTERNAL_ENABLED) {
+    if (!config.ZED_BILLING_INTERNAL_ENABLED) {
       return c.json({ skipped: true, reason: 'billing disabled' });
     }
     const { processFreeTierCreditRotation } = await import('./services/free-tier-rotation');
@@ -154,7 +154,7 @@ billingApp.openapi(
   async (c: Context<AppEnv>) => {
     const authError = requireInternalCronAuth(c);
     if (authError) return authError as any;
-    if (!config.KORTIX_BILLING_INTERNAL_ENABLED) {
+    if (!config.ZED_BILLING_INTERNAL_ENABLED) {
       return c.json({ skipped: true, reason: 'billing disabled' });
     }
     const { sweepExpiredTrials } = await import('./services/trial-admin');

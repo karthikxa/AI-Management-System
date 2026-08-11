@@ -3,16 +3,16 @@
  *
  * The user's Dockerfile defines whatever workspace they want (language
  * toolchains, system packages, seed data). We append a final stage that
- * makes the result *connectable* by the Kortix dashboard:
+ * makes the result *connectable* by the Zed dashboard:
  *
  *   1. apt-get install ca-certificates curl git nodejs npm
  *   2. npm install -g opencode-ai@<pinned-version>
- *   3. COPY the kortix-agent + kortix-entrypoint binaries to /usr/local/bin
- *   4. ENV KORTIX_WORKSPACE=/workspace, WORKDIR /workspace, EXPOSE 8000
- *   5. ENTRYPOINT ["/usr/local/bin/kortix-entrypoint"]
+ *   3. COPY the zed-agent + zed-entrypoint binaries to /usr/local/bin
+ *   4. ENV ZED_WORKSPACE=/workspace, WORKDIR /workspace, EXPOSE 8000
+ *   5. ENTRYPOINT ["/usr/local/bin/zed-entrypoint"]
  *
  * The project workspace is NOT baked in — the daemon git-clones it at boot
- * via `KORTIX_PROJECT_AUTO_CLONE`. That keeps the image identity decoupled
+ * via `ZED_PROJECT_AUTO_CLONE`. That keeps the image identity decoupled
  * from project source code, so a code change never invalidates a snapshot
  * and most projects share a single global default image.
  *
@@ -60,26 +60,26 @@ import {
 
 /**
  * Hardcoded "platform default" Dockerfile. Used when a session boots from
- * Kortix's default template — no user customization, just Ubuntu plus the
- * Kortix runtime layer on top. The workspace gets cloned at boot.
+ * Zed's default template — no user customization, just Ubuntu plus the
+ * Zed runtime layer on top. The workspace gets cloned at boot.
  *
  * This is fed into `buildLayeredDockerfile` like any other user Dockerfile.
  * Exposed so the snapshot identity hash treats it as a stable input.
  */
 /**
- * The `kortix` user's toolchain directories — everything the runtime resolves
+ * The `zed` user's toolchain directories — everything the runtime resolves
  * from PATH (opencode via pnpm-global, pnpm itself, uv-managed Python, bun). Shared
  * between the toolchain layer's `ENV PATH` and the staged entrypoint script.
  * Some providers discard `ENV` at boot, so the entrypoint restores this value.
  */
-export const KORTIX_USER_PATH_DIRS =
-  '/home/kortix/.local/bin:/home/kortix/.local/share/pnpm/bin:/home/kortix/.bun/bin';
+export const ZED_USER_PATH_DIRS =
+  '/home/zed/.local/bin:/home/zed/.local/share/pnpm/bin:/home/zed/.bun/bin';
 
 export const PLATFORM_DEFAULT_USER_DOCKERFILE = [
   '# syntax=docker/dockerfile:1.7',
-  '# Kortix platform default sandbox base.',
+  '# Zed platform default sandbox base.',
   '# Sessions clone the project workspace at boot — nothing project-specific',
-  '# is baked in here. Customize via `sandbox.templates` in kortix.yaml.',
+  '# is baked in here. Customize via `sandbox.templates` in zed.yaml.',
   'FROM ubuntu:24.04',
   '',
   'WORKDIR /workspace',
@@ -93,7 +93,7 @@ export const PLATFORM_DEFAULT_USER_DOCKERFILE = [
  * renders against an empty build context for the CLI's local sandbox; snapshot
  * builders stage it to enable the cache-only warm-up steps.
  */
-export interface KortixToolchainLayerOpts {
+export interface ZedToolchainLayerOpts {
   /** Pinned opencode CLI version (matches platform-wide `OPENCODE_VERSION`). */
   opencodeVersion: string;
   /**
@@ -105,7 +105,7 @@ export interface KortixToolchainLayerOpts {
   /** Build-context path to the cache-only OpenCode warm-up script. */
   opencodeWarmupScriptPath?: string;
   /**
-   * Path (in the build context) to the canonical starter `.kortix/opencode`
+   * Path (in the build context) to the canonical starter `.zed/opencode`
    * config tree (pty plugin + standard tools + skills). When provided, the
    * layer warms a real opencode PROJECT INSTANCE against it at build time so the
    * costly first-instance work (Bun plugin auto-install/transpile, models.dev
@@ -159,12 +159,12 @@ export interface KortixToolchainLayerOpts {
 
 /**
  * Render-time inputs for baking a per-project COLD warm repo checkout into the
- * image. Shared between `kortixToolchainLayer` (the full monolithic build) and
+ * image. Shared between `zedToolchainLayer` (the full monolithic build) and
  * `buildPerProjectWarmFromBaseDockerfile` (the FROM-base fast path) so both
  * render the identical COPY step — see `buildWarmRepoCopyLines`.
  *
  * SECURITY (PHASE 1): this shape carries NO credentials. The repo is cloned
- * with the git-host credential, origin-reset to the Kortix proxy, and scrubbed
+ * with the git-host credential, origin-reset to the Zed proxy, and scrubbed
  * of all auth material API-side in Suna (`stageWarmRepoCheckout`,
  * build-context.ts) BEFORE the Dockerfile is rendered. The rendered image only
  * `COPY`s the already-sanitized plain bytes at `stagedPath`, so a git auth
@@ -198,24 +198,24 @@ export interface WarmRepoConfig {
 
 /**
  * Inputs for the artifact half of the layer — the contiguous tail that COPYs
- * Kortix's own staged build artifacts (agent + CLI binaries, entrypoint,
+ * Zed's own staged build artifacts (agent + CLI binaries, entrypoint,
  * slack-cli, scaffold.git) and wires the container's entrypoint.
  *
  * Every artifact path is REQUIRED, deliberately: an agent-less image would
  * still build, still hash to a fresh snapshot identity, and only fail once a
  * session tried to connect to it. Callers that legitimately have no artifacts
- * to stage call `kortixToolchainLayer` alone — "no artifacts" is a different
+ * to stage call `zedToolchainLayer` alone — "no artifacts" is a different
  * call, not a forgotten field.
  */
-export interface KortixArtifactLayerOpts {
-  /** Path the snapshot builder will reference for the gzipped kortix-agent binary. */
+export interface ZedArtifactLayerOpts {
+  /** Path the snapshot builder will reference for the gzipped zed-agent binary. */
   agentBinaryPath: string;
   /**
-   * Path the snapshot builder will reference for the gzipped `kortix` CLI
+   * Path the snapshot builder will reference for the gzipped `zed` CLI
    * binary. This is the admin CLI every in-sandbox agent reaches for
-   * (`kortix cr open`, `secrets`, `sessions`, …); it lands on PATH as
-   * `/usr/local/bin/kortix`, pre-authenticated via the injected
-   * KORTIX_CLI_TOKEN. Always provided by the production builder.
+   * (`zed cr open`, `secrets`, `sessions`, …); it lands on PATH as
+   * `/usr/local/bin/zed`, pre-authenticated via the injected
+   * ZED_CLI_TOKEN. Always provided by the production builder.
    */
   cliBinaryPath: string;
   /** Path the snapshot builder will reference for the entrypoint script. */
@@ -225,11 +225,11 @@ export interface KortixArtifactLayerOpts {
   /**
    * Path the snapshot builder will reference for the slack-cli source tree
    * (apps/sandbox/slack-cli). The layer COPYs it into
-   * /opt/kortix/apps/sandbox/slack-cli
+   * /opt/zed/apps/sandbox/slack-cli
    * and runs install-shims.sh to wire each *.ts (excluding lib/) as a
    * /usr/local/bin/<name> shim — that's how `slack` lands on PATH for the
    * agent to invoke from inside the sandbox. (The Connector moved into the
-   * `kortix` CLI as `kortix connectors` / `kortix connectors mcp`.)
+   * `zed` CLI as `zed connectors` / `zed connectors mcp`.)
    */
   slackCliPath: string;
   /**
@@ -242,20 +242,20 @@ export interface KortixArtifactLayerOpts {
 }
 
 export interface BuildLayeredDockerfileOpts
-  extends KortixToolchainLayerOpts,
-    KortixArtifactLayerOpts {
+  extends ZedToolchainLayerOpts,
+    ZedArtifactLayerOpts {
   /** Literal contents of the user's project Dockerfile. */
   userDockerfile: string;
 }
 
 /**
- * The network-install half of the Kortix runtime layer: the apt floor, the
+ * The network-install half of the Zed runtime layer: the apt floor, the
  * uv-managed Python, opencode + its baked config deps, bun, the
  * build-time opencode warm-ups (incl. the optional per-project repo bake), and
  * agent-browser + its Playwright Chromium.
  *
  * Renders against an EMPTY build context — it stages nothing. Ends with a
- * trailing newline so it concatenates directly onto `kortixArtifactLayer`.
+ * trailing newline so it concatenates directly onto `zedArtifactLayer`.
  */
 // Single-quote a value for safe embedding in a build-time bash RUN.
 const shq = (v: string) => `'${String(v).replace(/'/g, `'\\''`)}'`;
@@ -268,7 +268,7 @@ const shq = (v: string) => `'${String(v).replace(/'/g, `'\\''`)}'`;
  * caused (the git auth header used to be embedded in a `RUN` that shipped to
  * object storage, baked into OCI history, and printed to build logs).
  *
- * Shared verbatim between `kortixToolchainLayer` (the monolithic build) and
+ * Shared verbatim between `zedToolchainLayer` (the monolithic build) and
  * `buildPerProjectWarmFromBaseDockerfile` (the FROM-base fast path) — the two
  * MUST render byte-identical steps so the baked checkout is the same either
  * way. Returns `[]` when there's no repo to bake (the shared,
@@ -280,7 +280,7 @@ function buildWarmRepoCopyLines(warmRepo: WarmRepoConfig | undefined): string[] 
     '',
     '# ─── Per-project COLD warm: bake repo checkout into /workspace ──────',
     '# The repo was cloned with the git-host credential, origin-reset to the',
-    '# Kortix proxy, and scrubbed of ALL auth material API-side in Suna before',
+    '# Zed proxy, and scrubbed of ALL auth material API-side in Suna before',
     '# this Dockerfile was rendered. This image only COPYs the sanitized plain',
     '# bytes — no git credential ever enters the Dockerfile, build args, image',
     '# history, or build logs. See PHASE 1 provider-migration hardening.',
@@ -288,16 +288,16 @@ function buildWarmRepoCopyLines(warmRepo: WarmRepoConfig | undefined): string[] 
     // checkout. `cd /` first so the build shell CWD isn't an inode we delete
     // (WORKDIR is /workspace); `-mindepth 1` keeps the /workspace dir itself.
     'RUN cd / && mkdir -p /workspace && find /workspace -mindepth 1 -maxdepth 1 -exec rm -rf {} +',
-    // `--chown=kortix:kortix` so the baked checkout lands owned by the non-root
+    // `--chown=zed:zed` so the baked checkout lands owned by the non-root
     // runtime user (COPY defaults to uid/gid 0). opencode + the daemon run as
-    // `kortix` and must be able to write /workspace and its `.git` at runtime.
-    `COPY --chown=kortix:kortix ${warmRepo.stagedPath}/ /workspace/`,
+    // `zed` and must be able to write /workspace and its `.git` at runtime.
+    `COPY --chown=zed:zed ${warmRepo.stagedPath}/ /workspace/`,
     // Daytona uploads each COPY source as a separate context object. Transfer
     // Git metadata as one visible file, then restore the canonical directory.
     // Daytona exposes that copied context object as non-removable during RUN.
     // Keep the credential-free archive instead of failing the image build.
-    `COPY ${warmRepo.stagedGitPath} /tmp/kortix-warm-repo-git.tar`,
-    'RUN rm -rf /workspace/.git && mkdir -p /workspace/.git && tar -xf /tmp/kortix-warm-repo-git.tar -C /workspace/.git --strip-components=1 && chown -R kortix:kortix /workspace/.git',
+    `COPY ${warmRepo.stagedGitPath} /tmp/zed-warm-repo-git.tar`,
+    'RUN rm -rf /workspace/.git && mkdir -p /workspace/.git && tar -xf /tmp/zed-warm-repo-git.tar -C /workspace/.git --strip-components=1 && chown -R zed:zed /workspace/.git',
     // Verify the baked checkout is a real repo. The branch is shell-quoted via
     // `shq` (never interpolated raw), so a hostile branch name cannot inject a
     // build-time shell command — closing the latent sink in the old echo.
@@ -308,7 +308,7 @@ function buildWarmRepoCopyLines(warmRepo: WarmRepoConfig | undefined): string[] 
 
 /**
  * Warm a real opencode PROJECT INSTANCE at build time. The first time opencode
- * creates an instance for a project dir it loads that dir's .kortix/opencode
+ * creates an instance for a project dir it loads that dir's .zed/opencode
  * surface — importing the pty plugin + tools — which makes Bun auto-install /
  * transpile the plugin dep tree and opencode fetch its model catalog +
  * ripgrep. On a fresh VM that's a one-time ~6s stall (up to ~60s when npm /
@@ -320,14 +320,14 @@ function buildWarmRepoCopyLines(warmRepo: WarmRepoConfig | undefined): string[] 
  * already baked at /workspace and we KEEP it — the daemon boots off the baked
  * checkout with NO clone. For a CUSTOM template we remove only the config we
  * staged: /workspace is the user's. Either way the warmed caches under
- * the `kortix` user's home persist in the image layer. Measured: cold first-instance
+ * the `zed` user's home persist in the image layer. Measured: cold first-instance
  * 6–60s → ~2–4s after this bake. Requires opencode + bun + the baked config
  * deps to already be present in the image (either from the toolchain layer
  * above, or inherited via FROM on the fast path), so it must come after them.
  * Best effort: a build without network (or a warm-up failure) just falls back
  * to the runtime cost — set +e + trailing `true` keep the image build green.
  *
- * Shared between `kortixToolchainLayer` and `buildPerProjectWarmFromBaseDockerfile`
+ * Shared between `zedToolchainLayer` and `buildPerProjectWarmFromBaseDockerfile`
  * so both render byte-identical warm-up text. Returns `[]` when there's no
  * starter config to warm against.
  */
@@ -341,7 +341,7 @@ function buildOpencodeInstanceWarmupLines(opts: {
   if (!opencodeConfigPath || !opencodeWarmupScriptPath) return [];
   const cleanup = warmRepo ? 'keep' : isSharedDefault ? 'wipe' : 'targeted';
   return [
-    `COPY --chown=kortix:kortix ${opencodeConfigPath}/ /opt/kortix/warm-config/.kortix/opencode/`,
+    `COPY --chown=zed:zed ${opencodeConfigPath}/ /opt/zed/warm-config/.zed/opencode/`,
     // Same "does it actually bundle" check as the opencode-config-deps
     // verification above, but exercised against the REAL starter tool
     // files (web_search / scrape_webpage / image_search / memory / show)
@@ -354,19 +354,19 @@ function buildOpencodeInstanceWarmupLines(opts: {
     // it must fail the build — the warm-up readiness probe below stays
     // best-effort as before.
     // E2B's Dockerfile parser does not preserve COPY --chown. Correct the
-    // ownership explicitly before the standard kortix user changes this tree.
-    'RUN sudo chown -R kortix:kortix /opt/kortix/warm-config',
-    'RUN cd /opt/kortix/warm-config/.kortix/opencode \\',
+    // ownership explicitly before the standard zed user changes this tree.
+    'RUN sudo chown -R zed:zed /opt/zed/warm-config',
+    'RUN cd /opt/zed/warm-config/.zed/opencode \\',
     '    && rm -rf node_modules \\',
-    '    && ln -s /opt/kortix/opencode-config-deps/node_modules node_modules \\',
+    '    && ln -s /opt/zed/opencode-config-deps/node_modules node_modules \\',
     '    && bun build tools/*.ts --target=bun --outdir=/tmp/opencode-tools-bundle-check \\',
     '    && rm -rf /tmp/opencode-tools-bundle-check \\',
     '    && echo "opencode-config-deps: starter tool files bundle cleanly"',
     '',
-    `COPY --chown=kortix:kortix ${opencodeWarmupScriptPath} /tmp/kortix-opencode-warmup`,
+    `COPY --chown=zed:zed ${opencodeWarmupScriptPath} /tmp/zed-opencode-warmup`,
     // Stage the canonical starter opencode config so the instance warm-up
     // has the pty plugin + tools to load. For a per-project warm the baked
-    // repo may already ship its own .kortix/opencode — keep it (its config
+    // repo may already ship its own .zed/opencode — keep it (its config
     // is what the session actually resolves at runtime) and only fall back
     // to the staged starter when the repo has none.
     // The warm-up script records whether the starter config in /workspace is
@@ -379,15 +379,15 @@ function buildOpencodeInstanceWarmupLines(opts: {
     //    WORKDIR), so wiping it is exact, and it also clears anything opencode
     //    itself dropped while serving. The session clones into it at boot.
     //  • CUSTOM template: the user's Dockerfile owns /workspace. Remove ONLY
-    //    the starter config we staged (and the .kortix dir if that leaves it
+    //    the starter config we staged (and the .zed dir if that leaves it
     //    empty) — never their bytes. `rmdir` is the no-op-unless-empty form on
-    //    purpose; a user's own /workspace/.kortix survives untouched.
-    `RUN bash /tmp/kortix-opencode-warmup instance ${cleanup}; rm -f /tmp/kortix-opencode-warmup`,
+    //    purpose; a user's own /workspace/.zed survives untouched.
+    `RUN bash /tmp/zed-opencode-warmup instance ${cleanup}; rm -f /tmp/zed-opencode-warmup`,
     '',
   ];
 }
 
-export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
+export function zedToolchainLayer(opts: ZedToolchainLayerOpts): string {
   const {
     opencodeVersion,
     agentBrowserVersion = DEFAULT_AGENT_BROWSER_VERSION,
@@ -401,8 +401,8 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
 
   return [
     '',
-    '# ─── Kortix runtime layer (auto-injected) ──────────────────────────',
-    '# Everything below is added by the Kortix snapshot builder. Do not',
+    '# ─── Zed runtime layer (auto-injected) ──────────────────────────',
+    '# Everything below is added by the Zed snapshot builder. Do not',
     "# edit by hand — your project Dockerfile above is preserved verbatim.",
     '',
     'USER root',
@@ -434,17 +434,17 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     '        texlive-latex-extra texlive-latex-recommended \\',
     '    && rm -rf /var/lib/apt/lists/*',
     '',
-    'RUN useradd --create-home --shell /bin/bash --user-group kortix \\',
+    'RUN useradd --create-home --shell /bin/bash --user-group zed \\',
     // E2B's Dockerfile parser removes the backslash from a quoted `\\n`.
     // Use echo so every provider writes the same valid sudoers line.
-    "    && echo 'kortix ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/kortix \\",
-    '    && chmod 0440 /etc/sudoers.d/kortix \\',
-    '    && mkdir -p /workspace /opt/kortix /opt/pw-browsers /ephemeral/kortix-master/opencode \\',
-    '        /home/kortix/.local/bin /home/kortix/.local/share/pnpm/bin /home/kortix/.bun/bin \\',
-    '    && chown -R kortix:kortix /workspace /opt/kortix /opt/pw-browsers /ephemeral /home/kortix',
-    'ENV PNPM_HOME=/home/kortix/.local/share/pnpm \\',
-    `    PATH=${KORTIX_USER_PATH_DIRS}:$PATH`,
-    'USER kortix',
+    "    && echo 'zed ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/zed \\",
+    '    && chmod 0440 /etc/sudoers.d/zed \\',
+    '    && mkdir -p /workspace /opt/zed /opt/pw-browsers /ephemeral/zed-master/opencode \\',
+    '        /home/zed/.local/bin /home/zed/.local/share/pnpm/bin /home/zed/.bun/bin \\',
+    '    && chown -R zed:zed /workspace /opt/zed /opt/pw-browsers /ephemeral /home/zed',
+    'ENV PNPM_HOME=/home/zed/.local/share/pnpm \\',
+    `    PATH=${ZED_USER_PATH_DIRS}:$PATH`,
+    'USER zed',
     '',
     // Install one exact managed Python and expose it as python/python3. Agents
     // use `uv run --with` for dependencies instead of sharing a global venv.
@@ -456,7 +456,7 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     '    && curl -fsSL --retry 3 --retry-delay 2 -o /tmp/uv.tar.gz \\',
     `         "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-\${uv_arch}-unknown-linux-gnu.tar.gz" \\`,
     '    && echo "${uv_sha}  /tmp/uv.tar.gz" | sha256sum -c - \\',
-    '    && tar -xzf /tmp/uv.tar.gz --strip-components=1 -C /home/kortix/.local/bin \\',
+    '    && tar -xzf /tmp/uv.tar.gz --strip-components=1 -C /home/zed/.local/bin \\',
     '    && rm /tmp/uv.tar.gz \\',
     `    && uv --version | grep -Eq '^uv ${UV_VERSION}( |$)' \\`,
     `    && UV_PYTHON_DOWNLOADS=automatic uv python install --default ${PYTHON_VERSION} \\`,
@@ -478,14 +478,14 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     // The install targets the managed interpreter by EXPLICIT PATH, never by
     // discovery: `--system` skips uv-managed interpreters by design, and the
     // apt floor above drags in Ubuntu's distro python3 via LibreOffice — so
-    // `--system` resolved /usr/bin/python3, where `kortix` cannot write, and
+    // `--system` resolved /usr/bin/python3, where `zed` cannot write, and
     // the v39 bake failed on every provider (dev, 2026-08-03). The local-repro
     // gap: a test container without the apt floor has no distro python, so
     // `--system` happens to fall back to the managed shim and "passes".
     // The import check is a single-line `python3 -c` on purpose: E2B's
     // Dockerfile parser reads a heredoc body's first line as an instruction
     // and aborts the build.
-    'RUN uv pip install --python /home/kortix/.local/bin/python3 --break-system-packages \\',
+    'RUN uv pip install --python /home/zed/.local/bin/python3 --break-system-packages \\',
     ...Object.entries(PYTHON_PACKAGE_FLOOR).map(
       ([pkg, version]) => `        "${pkg}==${version}" \\`,
     ),
@@ -506,7 +506,7 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     '    && curl -fsSL --retry 3 --retry-delay 2 -o /tmp/pnpm.tar.gz \\',
     `         "https://github.com/pnpm/pnpm/releases/download/v${PNPM_VERSION}/pnpm-linux-\${pnpm_arch}.tar.gz" \\`,
     '    && echo "${pnpm_sha}  /tmp/pnpm.tar.gz" | sha256sum -c - \\',
-    '    && tar -xzf /tmp/pnpm.tar.gz -C /home/kortix/.local/bin \\',
+    '    && tar -xzf /tmp/pnpm.tar.gz -C /home/zed/.local/bin \\',
     '    && rm /tmp/pnpm.tar.gz \\',
     `    && test "$(pnpm --version)" = "${PNPM_VERSION}" \\`,
     `    && pnpm runtime set node ${NODE_VERSION} -g \\`,
@@ -525,7 +525,7 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     //      — it WAS, historically (vercel-labs/agent-browser#422). Belt + braces.
     // PLAYWRIGHT_BROWSERS_PATH is set BEFORE the install so Chromium lands in
     // /opt/pw-browsers (a stable system path the symlinks resolve against). The
-    // build runs as the same `kortix` user as runtime, so the cache symlink lands
+    // build runs as the same `zed` user as runtime, so the cache symlink lands
     // under its normal home. The build FAILS LOUDLY
     // (chromium --version + `agent-browser doctor`) if Chromium didn't wire up —
     // every sandbox ships a working browser; we never install one on the session
@@ -544,7 +544,7 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     // Docker-style instruction-text cache and no `swapAgent` fast path), so ANY
     // non-deterministic layer BUSTS the cache for everything chained BELOW it.
     //
-    // The kortix-agent SOURCE feeds the snapshot fingerprint (see
+    // The zed-agent SOURCE feeds the snapshot fingerprint (see
     // AGENT_RUNTIME_ARTIFACTS in apps/api/src/snapshots/templates.ts), so any
     // agent-server code change mints a BRAND-NEW snapshot name → a full rebuild on
     // Daytona (no agent-swap). If Chromium sat below the migration-bake (as it did
@@ -556,7 +556,7 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     // agent-browser version and cache-reused for every rebuild after. The retry
     // loop + 30-min timeout below are the SAFETY NET for that one cold fetch.
     'ENV PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \\',
-    '    AGENT_BROWSER_EXECUTABLE_PATH=/home/kortix/.local/bin/chromium \\',
+    '    AGENT_BROWSER_EXECUTABLE_PATH=/home/zed/.local/bin/chromium \\',
     '    AGENT_BROWSER_ARGS=--no-sandbox,--disable-dev-shm-usage \\',
     // Playwright's browser download defaults to a 30s socket timeout
     // (NET_DEFAULT_TIMEOUT in playwright-core), which a ~150MB Chrome-for-Testing
@@ -582,9 +582,9 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     '    && sudo rm -rf /var/lib/apt/lists/* \\',
     `    && pw_chrome="$(find /opt/pw-browsers -type f -path '*chrome-linux*/chrome' | head -n1)" \\`,
     '    && test -n "$pw_chrome" \\',
-    '    && ln -sf "$pw_chrome" /home/kortix/.local/bin/chromium \\',
-    '    && mkdir -p /home/kortix/.agent-browser/browsers \\',
-    '    && ln -sf "$(dirname "$pw_chrome")" /home/kortix/.agent-browser/browsers/chrome-linux64 \\',
+    '    && ln -sf "$pw_chrome" /home/zed/.local/bin/chromium \\',
+    '    && mkdir -p /home/zed/.agent-browser/browsers \\',
+    '    && ln -sf "$(dirname "$pw_chrome")" /home/zed/.agent-browser/browsers/chrome-linux64 \\',
     '    && chromium --version \\',
     // Assert agent-browser RESOLVES the browser via its env-independent cache —
     // match the resolved path (deterministic), not the browser NAME (which is
@@ -604,19 +604,19 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     // before opencode replies to /session; on a restored warm snapshot that
     // window is exactly what surfaces as the FE's "sandbox not ready" 503s.
     // opencode's db
-    // lives in the baked `kortix` home, so we
+    // lives in the baked `zed` home, so we
     // run opencode here once to complete the migration and bake the migrated db
     // into the image layer. Every boot afterwards — cold or warm-snapshot restore —
     // then finds an already-migrated db and answers in ~2-3s. Env MUST match the
-    // daemon's spawn (apps/kortix-sandbox-agent-server/src/opencode.ts). Best
+    // daemon's spawn (apps/zed-sandbox-agent-server/src/opencode.ts). Best
     // effort: if opencode can't serve at build time it just falls back to the
     // old boot-time migration — never fail the whole image build over a warm-up.
     ...(opencodeWarmupScriptPath ? [
-      `COPY --chown=kortix:kortix ${opencodeWarmupScriptPath} /tmp/kortix-opencode-warmup`,
-      'RUN bash /tmp/kortix-opencode-warmup migration; rm -f /tmp/kortix-opencode-warmup',
+      `COPY --chown=zed:zed ${opencodeWarmupScriptPath} /tmp/zed-opencode-warmup`,
+      'RUN bash /tmp/zed-opencode-warmup migration; rm -f /tmp/zed-opencode-warmup',
     ] : []),
     '',
-    // Bun runtime for the agent CLIs (slack, …) + `kortix connectors mcp`.
+    // Bun runtime for the agent CLIs (slack, …) + `zed connectors mcp`.
     // Download one versioned release artifact and verify its checksum before
     // extracting it. The public installer script is not part of the trust path.
     'RUN case "$(uname -m)" in \\',
@@ -628,8 +628,8 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     `         "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-\${bun_arch}.zip" \\`,
     '    && echo "${bun_sha}  /tmp/bun.zip" | sha256sum -c - \\',
     '    && unzip -q /tmp/bun.zip -d /tmp/bun \\',
-    '    && install -m 0755 "/tmp/bun/bun-linux-${bun_arch}/bun" /home/kortix/.bun/bin/bun \\',
-    '    && ln -sf bun /home/kortix/.bun/bin/bunx \\',
+    '    && install -m 0755 "/tmp/bun/bun-linux-${bun_arch}/bun" /home/zed/.bun/bin/bun \\',
+    '    && ln -sf bun /home/zed/.bun/bin/bunx \\',
     '    && rm -rf /tmp/bun /tmp/bun.zip \\',
     `    && test "$(bun --version)" = "${BUN_VERSION}"`,
     '',
@@ -666,14 +666,14 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     // Baking the binary version makes opencode find it already present → no fetch.
     // Bump RUNTIME_LAYER_VERSION in templates.ts when this step changes.
     // NOTE: this dependency set (and the "axios"/"form-data" security overrides
-    // below) is duplicated in packages/starter/templates/base/.kortix/opencode/package.json.
+    // below) is duplicated in packages/starter/templates/base/.zed/opencode/package.json.
     // Keep both in sync —
     // a version bump made in only one place is exactly how this file's axios
     // override once diverged and shipped a bundle-breaking install (see the
     // verification RUN step right below, added after that incident).
-    'RUN mkdir -p /opt/kortix/opencode-config-deps \\',
-    '    && cd /opt/kortix/opencode-config-deps \\',
-    `    && printf '{"name":"kortix-opencode-config","private":true,"dependencies":{"@mendable/firecrawl-js":"^4.25.1","@opencode-ai/plugin":"${opencodeVersion}","@tavily/core":"^0.7.3","replicate":"^1.4.0"},"overrides":{"axios":"1.16.0","form-data":"4.0.6"}}' > package.json \\`,
+    'RUN mkdir -p /opt/zed/opencode-config-deps \\',
+    '    && cd /opt/zed/opencode-config-deps \\',
+    `    && printf '{"name":"zed-opencode-config","private":true,"dependencies":{"@mendable/firecrawl-js":"^4.25.1","@opencode-ai/plugin":"${opencodeVersion}","@tavily/core":"^0.7.3","replicate":"^1.4.0"},"overrides":{"axios":"1.16.0","form-data":"4.0.6"}}' > package.json \\`,
     '    && bun install',
     '',
     // Verify the baked tree is actually usable by OpenCode's own runtime
@@ -687,7 +687,7 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     // at build time, turns that failure mode into a build failure instead —
     // intentionally NOT `set +e`: an unbundlable dependency tree must fail
     // the image build, unlike the best-effort warm-up steps below.
-    'RUN cd /opt/kortix/opencode-config-deps \\',
+    'RUN cd /opt/zed/opencode-config-deps \\',
     '    && bun build node_modules/axios/lib/utils.js node_modules/form-data/lib/form_data.js --target=bun --outdir=/tmp/opencode-deps-bundle-check \\',
     '    && rm -rf /tmp/opencode-deps-bundle-check \\',
     '    && echo "opencode-config-deps: baked tree bundles cleanly"',
@@ -702,22 +702,22 @@ export function kortixToolchainLayer(opts: KortixToolchainLayerOpts): string {
     // cache-stable, so nothing cache-sensitive may sit downstream of it).
     ...warmRepoClone,
     ...buildOpencodeInstanceWarmupLines({ opencodeConfigPath, opencodeWarmupScriptPath, warmRepo, isSharedDefault }),
-    // The staged-artifact tail lives in `kortixArtifactLayer`. The split is
+    // The staged-artifact tail lives in `zedArtifactLayer`. The split is
     // here — everything above installs from the network into an empty build
     // context; everything below COPYs bytes the caller had to stage first.
   ].join('\n') + '\n';
 }
 
 /**
- * The staged-artifact half of the Kortix runtime layer: the COPYs of Kortix's
+ * The staged-artifact half of the Zed runtime layer: the COPYs of Zed's
  * own build outputs (agent + CLI binaries, entrypoint, slack-cli, the optional
  * LLM catalog, scaffold.git), the unpack/shim RUN
  * that puts them on PATH, and the container's ENV/WORKDIR/EXPOSE/ENTRYPOINT.
  *
  * Every path here must exist in the build context — see
- * `KortixArtifactLayerOpts` for why none of them are optional.
+ * `ZedArtifactLayerOpts` for why none of them are optional.
  */
-export function kortixArtifactLayer(opts: KortixArtifactLayerOpts): string {
+export function zedArtifactLayer(opts: ZedArtifactLayerOpts): string {
   const {
     agentBinaryPath,
     cliBinaryPath,
@@ -729,47 +729,47 @@ export function kortixArtifactLayer(opts: KortixArtifactLayerOpts): string {
 
   return [
     'USER root',
-    `COPY ${agentBinaryPath} /tmp/kortix-agent.gz`,
-    `COPY ${cliBinaryPath} /tmp/kortix.gz`,
-    `COPY ${entrypointScriptPath} /usr/local/bin/kortix-entrypoint`,
+    `COPY ${agentBinaryPath} /tmp/zed-agent.gz`,
+    `COPY ${cliBinaryPath} /tmp/zed.gz`,
+    `COPY ${entrypointScriptPath} /usr/local/bin/zed-entrypoint`,
     `COPY ${machineDocPath} /MACHINE.md`,
-    // The channel shims delegate Connector calls to the compiled `kortix` CLI.
-    `COPY ${slackCliPath}/ /opt/kortix/apps/sandbox/slack-cli/`,
+    // The channel shims delegate Connector calls to the compiled `zed` CLI.
+    `COPY ${slackCliPath}/ /opt/zed/apps/sandbox/slack-cli/`,
     // Full gateway model catalog, baked at build so the token-less no-restart
-    // warm seed serves the full picker (daemon reads KORTIX_LLM_CATALOG_FILE).
-    ...(catalogPath ? [`COPY ${catalogPath} /opt/kortix/llm-catalog.json`] : []),
+    // warm seed serves the full picker (daemon reads ZED_LLM_CATALOG_FILE).
+    ...(catalogPath ? [`COPY ${catalogPath} /opt/zed/llm-catalog.json`] : []),
     // Canonical scaffold repo (bare). Its root commit matches every seeded
     // project's root (pinned dates, seed.ts), enabling local-clone +
     // delta-fetch repo materialization in the daemon (git.ts).
-    `COPY scaffold.git /opt/kortix/scaffold.git`,
-    'RUN gunzip -c /tmp/kortix-agent.gz > /usr/local/bin/kortix-agent \\',
-    '    && gunzip -c /tmp/kortix.gz > /usr/local/bin/kortix \\',
-    '    && rm /tmp/kortix-agent.gz /tmp/kortix.gz \\',
-    '    && bash -n /usr/local/bin/kortix-entrypoint \\',
-    '    && chmod +x /usr/local/bin/kortix-agent /usr/local/bin/kortix /usr/local/bin/kortix-entrypoint \\',
-    '        /opt/kortix/apps/sandbox/slack-cli/install-shims.sh \\',
-    '    && bash /opt/kortix/apps/sandbox/slack-cli/install-shims.sh /opt/kortix/apps/sandbox/slack-cli \\',
+    `COPY scaffold.git /opt/zed/scaffold.git`,
+    'RUN gunzip -c /tmp/zed-agent.gz > /usr/local/bin/zed-agent \\',
+    '    && gunzip -c /tmp/zed.gz > /usr/local/bin/zed \\',
+    '    && rm /tmp/zed-agent.gz /tmp/zed.gz \\',
+    '    && bash -n /usr/local/bin/zed-entrypoint \\',
+    '    && chmod +x /usr/local/bin/zed-agent /usr/local/bin/zed /usr/local/bin/zed-entrypoint \\',
+    '        /opt/zed/apps/sandbox/slack-cli/install-shims.sh \\',
+    '    && bash /opt/zed/apps/sandbox/slack-cli/install-shims.sh /opt/zed/apps/sandbox/slack-cli \\',
     // Fail the build loudly if the CLI didn't land — every sandbox must ship it.
-    '    && kortix --version \\',
-    '    && chown -R kortix:kortix /opt/kortix /workspace /ephemeral',
+    '    && zed --version \\',
+    '    && chown -R zed:zed /opt/zed /workspace /ephemeral',
     '',
-    // The daemon clones the project workspace at boot using KORTIX_PROJECT_AUTO_CLONE
+    // The daemon clones the project workspace at boot using ZED_PROJECT_AUTO_CLONE
     // — nothing project-specific is baked into the image. /workspace is created
     // empty here; the daemon's materializeRepo path fills it.
-    'ENV KORTIX_WORKSPACE=/workspace',
-    'USER kortix',
+    'ENV ZED_WORKSPACE=/workspace',
+    'USER zed',
     'WORKDIR /workspace',
     'EXPOSE 8000',
-    'ENTRYPOINT ["/usr/local/bin/kortix-entrypoint"]',
+    'ENTRYPOINT ["/usr/local/bin/zed-entrypoint"]',
     '',
   ].join('\n');
 }
 
 /**
  * The production composition: the user's Dockerfile verbatim, then the full
- * Kortix runtime layer (toolchain + artifacts).
+ * Zed runtime layer (toolchain + artifacts).
  *
- * The two halves are concatenated with NO separator — `kortixToolchainLayer`
+ * The two halves are concatenated with NO separator — `zedToolchainLayer`
  * already ends with the newline that used to sit between them in the single
  * array this was split out of, so the output is byte-identical to the
  * pre-split renderer by construction. That identity is what lets
@@ -778,7 +778,7 @@ export function kortixArtifactLayer(opts: KortixArtifactLayerOpts): string {
  */
 export function buildLayeredDockerfile(opts: BuildLayeredDockerfileOpts): string {
   const trimmed = normalizeUserDockerfileForSnapshot(opts.userDockerfile).trimEnd();
-  return `${trimmed}\n${kortixToolchainLayer(opts)}${kortixArtifactLayer(opts)}`;
+  return `${trimmed}\n${zedToolchainLayer(opts)}${zedArtifactLayer(opts)}`;
 }
 
 /** Inputs for the FROM-base per-project warm fast path — see
@@ -786,7 +786,7 @@ export function buildLayeredDockerfile(opts: BuildLayeredDockerfileOpts): string
 export interface PerProjectWarmFromBaseOpts {
   /**
    * Registry-addressable reference to an ALREADY-BUILT, ACTIVE image that has
-   * the full Kortix runtime layer baked in (apt/pip/opencode/bun/agent-browser
+   * the full Zed runtime layer baked in (apt/pip/opencode/bun/agent-browser
    * + Chromium + the artifact tail) — in practice the shared default image's
    * provider-reported image ref (e.g. Daytona `Snapshot.imageName`). The
    * caller (ensurePerProjectWarmImage in apps/api/src/snapshots/builder.ts) is
@@ -799,7 +799,7 @@ export interface PerProjectWarmFromBaseOpts {
   /** Repo to bake into /workspace — always set; a per-project warm with no
    *  repo to clone has nothing for this fast path to add over the base. */
   warmRepo: WarmRepoConfig;
-  /** Same meaning as {@link KortixToolchainLayerOpts.opencodeConfigPath}. */
+  /** Same meaning as {@link ZedToolchainLayerOpts.opencodeConfigPath}. */
   opencodeConfigPath?: string;
   /** Build-context path to the cache-only OpenCode warm-up script. */
   opencodeWarmupScriptPath?: string;
@@ -811,7 +811,7 @@ export interface PerProjectWarmFromBaseOpts {
  * (apt/pip/opencode/bun/agent-browser+Chromium) from scratch.
  *
  * THIS is the actual fix for the Chromium re-download bug (prod incident,
- * v0.10.11 rollback): `kortixToolchainLayer`'s comment already establishes
+ * v0.10.11 rollback): `zedToolchainLayer`'s comment already establishes
  * that the toolchain RUN text up to and including the Chromium install is
  * byte-identical between the shared default build and every per-project warm
  * bake — so in principle a build-cache hit should always be available. In
@@ -845,14 +845,14 @@ export function buildPerProjectWarmFromBaseDockerfile(opts: PerProjectWarmFromBa
     '# baked in) — nothing below re-installs any of it. This is what makes the',
     '# Chromium install a guaranteed inherit instead of an opportunistic',
     '# build-cache hit. Do not add toolchain RUNs here — they belong in',
-    '# kortixToolchainLayer, which this stage deliberately skips.',
+    '# zedToolchainLayer, which this stage deliberately skips.',
     '',
-    // Run as the base image's non-root runtime user (`kortix`): /workspace is
-    // kortix-owned in the base, and the opencode instance re-warm below resolves
-    // its baked caches from HOME=/home/kortix. The warm-repo step is MY
+    // Run as the base image's non-root runtime user (`zed`): /workspace is
+    // zed-owned in the base, and the opencode instance re-warm below resolves
+    // its baked caches from HOME=/home/zed. The warm-repo step is MY
     // credential-free COPY (buildWarmRepoCopyLines) — NOT the old credentialed
     // clone — so no git auth header is ever rendered into this FROM-base stage.
-    'USER kortix',
+    'USER zed',
     ...buildWarmRepoCopyLines(warmRepo),
     ...buildOpencodeInstanceWarmupLines({ opencodeConfigPath, opencodeWarmupScriptPath, warmRepo, isSharedDefault: false }),
   ].join('\n') + '\n';
@@ -860,16 +860,16 @@ export function buildPerProjectWarmFromBaseDockerfile(opts: PerProjectWarmFromBa
 
 export function normalizeUserDockerfileForSnapshot(dockerfile: string): string {
   // The legacy starter Dockerfile installed baseline tools that the injected
-  // Kortix layer installs again. Strip that exact starter block so existing
+  // Zed layer installs again. Strip that exact starter block so existing
   // user Dockerfiles still build cleanly.
   const starterBlock =
-    /# Bring in baseline tooling\. The Kortix layer on top also installs\n# git\/curl\/ca-certificates\/nodejs\/npm, but having them in your base\n# makes interactive sessions snappier\.\nRUN apt-get update \\\n    && apt-get install -y --no-install-recommends \\\n        ca-certificates \\\n        curl \\\n        git \\\n        build-essential \\\n    && rm -rf \/var\/lib\/apt\/lists\/\*\n\n?/;
+    /# Bring in baseline tooling\. The Zed layer on top also installs\n# git\/curl\/ca-certificates\/nodejs\/npm, but having them in your base\n# makes interactive sessions snappier\.\nRUN apt-get update \\\n    && apt-get install -y --no-install-recommends \\\n        ca-certificates \\\n        curl \\\n        git \\\n        build-essential \\\n    && rm -rf \/var\/lib\/apt\/lists\/\*\n\n?/;
   return dockerfile.replace(starterBlock, '');
 }
 
 /**
  * A sandbox template defines one bootable image. Projects can declare multiple
- * via `sandbox.templates` in kortix.yaml; sessions pick one by slug. The platform
+ * via `sandbox.templates` in zed.yaml; sessions pick one by slug. The platform
  * default template is always available without any config.
  */
 export interface SandboxTemplate {
@@ -879,12 +879,12 @@ export interface SandboxTemplate {
   name?: string;
   /**
    * Repo-relative path to a Dockerfile. The builder reads its bytes and layers
-   * the Kortix runtime on top. Mutually exclusive with `image`.
+   * the Zed runtime on top. Mutually exclusive with `image`.
    */
   dockerfile?: string;
   /**
    * Public Docker image reference (e.g. `python:3.12-slim`). The builder
-   * generates a tiny `FROM <image>` shim and layers the Kortix runtime on top.
+   * generates a tiny `FROM <image>` shim and layers the Zed runtime on top.
    * Mutually exclusive with `dockerfile`.
    */
   image?: string;
@@ -892,7 +892,7 @@ export interface SandboxTemplate {
   spec: SandboxSpec;
   /**
    * True iff this is the platform default (no user customization). Never
-   * declared in kortix.yaml — the platform synthesizes one of these.
+   * declared in zed.yaml — the platform synthesizes one of these.
    */
   isDefault?: boolean;
 }
@@ -903,7 +903,7 @@ export const DEFAULT_SANDBOX_SLUG = 'default';
 /**
  * Build the canonical platform default template. Always available, identity
  * derived purely from the platform runtime fingerprint — every project on the
- * same Kortix release shares one image.
+ * same Zed release shares one image.
  */
 export function buildDefaultSandboxTemplate(spec: SandboxSpec = {}): SandboxTemplate {
   return {
@@ -916,7 +916,7 @@ export function buildDefaultSandboxTemplate(spec: SandboxSpec = {}): SandboxTemp
 
 /**
  * Hardware spec for the sandbox, read from `sandbox.templates` entries in
- * kortix.yaml. Fields map onto Daytona's snapshot `Resources` (vCPU cores,
+ * zed.yaml. Fields map onto Daytona's snapshot `Resources` (vCPU cores,
  * memory & disk in GiB). GPU is intentionally omitted. Every field is
  * optional; an unset field uses the platform default.
  */
@@ -982,7 +982,7 @@ export function extractSandboxTemplates(
   const out: SandboxTemplate[] = [];
   const seenSlugs = new Set<string>();
 
-  // kortix.yaml: `sandbox: { templates: [...] }` — legacy kortix.toml:
+  // zed.yaml: `sandbox: { templates: [...] }` — legacy zed.toml:
   // `[[sandbox.templates]]` (array of tables). Both parse to the same
   // `sandbox.templates` shape below.
   const sandbox = manifestRaw.sandbox;

@@ -40,7 +40,7 @@ mock.module('@logtail/node', () => ({
 
 process.env.BETTERSTACK_API_LOG_TOKEN = 'log-token-test';
 process.env.BETTERSTACK_API_LOG_HOST = 'logs.example.test';
-process.env.INTERNAL_KORTIX_ENV = 'dev';
+process.env.INTERNAL_ZED_ENV = 'dev';
 process.env.SANDBOX_VERSION = 'test-version';
 
 const { logger } = await import('../lib/logger');
@@ -76,7 +76,7 @@ describe('managed structured logger', () => {
     expect(logCalls[0].level).toBe('info');
     expect(logCalls[0].message).toContain('Request completed');
     expect(logCalls[0].context).toMatchObject({
-      service: 'kortix-api',
+      service: 'zed-api',
       env: 'dev',
       version: 'test-version',
       method: 'POST',

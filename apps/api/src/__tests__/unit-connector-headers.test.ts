@@ -2,7 +2,7 @@
  * Connector `headers:` — arbitrary static request headers on a connector.
  *
  * Two layers, both exercised here:
- *   1. the shared ruleset (`@kortix/manifest-schema`) that the CR-merge gate,
+ *   1. the shared ruleset (`@zed/manifest-schema`) that the CR-merge gate,
  *      apps/api's manifest parser and the connector all validate against —
  *      RFC 7230 token names, no CR/LF (header injection), caps, and the
  *      round-trip of a header table through parse → normalized map;
@@ -12,7 +12,7 @@
  *
  * Deliberately imports only config-free modules (manifest-schema + execute) so
  * the file runs without the API's env validation. The manifest-level
- * round-trip (kortix.yaml → ConnectorSpec → kortix.yaml) lives in
+ * round-trip (zed.yaml → ConnectorSpec → zed.yaml) lives in
  * unit-connectors-parse.test.ts, which already imports the manifest parser.
  */
 import { describe, expect, test } from 'bun:test';
@@ -22,7 +22,7 @@ import {
   CONNECTOR_HEADER_VALUE_MAX_LENGTH,
   parseConnectorHeaders,
   sanitizeConnectorHeaders,
-} from '@kortix/manifest-schema';
+} from '@zed/manifest-schema';
 import {
   applyConnectorHeaders,
   executeCall,
@@ -61,11 +61,11 @@ describe('parseConnectorHeaders — happy paths', () => {
     const parsed = parseConnectorHeaders({
       Accept: 'application/json',
       'X-Tenant-Id': '  acme  ',
-      'user-agent': 'kortix/1.0',
+      'user-agent': 'zed/1.0',
     });
     expect(parsed).toEqual({
       ok: true,
-      value: { Accept: 'application/json', 'X-Tenant-Id': 'acme', 'user-agent': 'kortix/1.0' },
+      value: { Accept: 'application/json', 'X-Tenant-Id': 'acme', 'user-agent': 'zed/1.0' },
     });
     expect(parsed.ok && Object.keys(parsed.value)).toEqual(['Accept', 'X-Tenant-Id', 'user-agent']);
   });

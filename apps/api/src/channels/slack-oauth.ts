@@ -2,7 +2,7 @@ import { createRoute, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
 import { eq } from 'drizzle-orm';
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import { db } from '../shared/db';
 import { config } from '../config';
 import { slackOauthMode } from './slack-oauth-mode';
@@ -21,7 +21,7 @@ interface StatePayload {
 }
 
 function stateSigningKey(): string {
-  return config.SLACK_SIGNING_SECRET ?? 'kortix-dev-state-key';
+  return config.SLACK_SIGNING_SECRET ?? 'zed-dev-state-key';
 }
 
 function signState(payload: Omit<StatePayload, 'nonce'>): string {
@@ -79,7 +79,7 @@ slackOauthApp.openapi(
       }),
     },
     responses: {
-      302: { description: 'Redirect to the Kortix dashboard' },
+      302: { description: 'Redirect to the Zed dashboard' },
       ...errors(400, 503),
     },
   }),
@@ -196,7 +196,7 @@ function redirectToDashboard(
   // Mirror dashboardBaseUrl()'s fallback chain so an OAuth callback never
   // redirects to localhost in a deployed environment where FRONTEND_URL
   // happens to be unset.
-  const base = (config.FRONTEND_URL || 'https://kortix.com').replace(/\/+$/, '');
+  const base = (config.FRONTEND_URL || 'https://zed.com').replace(/\/+$/, '');
   const params = new URLSearchParams();
   for (const [k, v] of Object.entries(qs)) {
     if (v) params.set(k, v);

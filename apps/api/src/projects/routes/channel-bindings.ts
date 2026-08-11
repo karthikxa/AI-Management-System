@@ -1,7 +1,7 @@
 // Channel → agent binding CRUD — the web surface for `chat_channel_bindings`.
 //
 // Today the only way to point a chat channel (Slack, so far) at a specific
-// project agent / model / join-policy is the in-Slack `/kortix agent|model|policy`
+// project agent / model / join-policy is the in-Slack `/zed agent|model|policy`
 // slash commands (channels/slack/commands.ts → selection.ts). That leaves the
 // mapping unmanageable from the dashboard — this is the read/write surface spec
 // §2.5 ("Channels become manageable") asks for. It's a thin HTTP wrapper: every
@@ -231,7 +231,7 @@ projectsApp.openapi(
           // Validate against the declared manifest catalog ONLY when the project
           // has adopted `[[agents]]` — a legacy (undeclared) project has no fixed
           // catalog to check against, so any name is accepted there (same
-          // permissiveness as the Slack `/kortix agent <name>` command).
+          // permissiveness as the Slack `/zed agent <name>` command).
           const governance = await loadProjectAgentGovernance(projectId);
           if (governance.declared && !governance.agents.some((a) => a.name === trimmed)) {
             return c.json(

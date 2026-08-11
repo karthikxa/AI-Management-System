@@ -16,7 +16,7 @@ import { propagateProjectSecretsToActiveSandboxes } from '../lib/sandbox-env-syn
 import { isGatewayManagedEnv } from '../../llm-gateway/sandbox-credentials';
 import { seedProjectDefaultModelOnConnect } from '../../llm-gateway/models/seed-default';
 import { createRoute, z } from '@hono/zod-openapi';
-import { SecretConsumerSchema, UpdateSecretStrategyInputSchema } from '@kortix/api-contract';
+import { SecretConsumerSchema, UpdateSecretStrategyInputSchema } from '@zed/api-contract';
 import { parseEgressPolicy } from '../../secrets/strategy';
 import {
   connectors,
@@ -24,7 +24,7 @@ import {
   projectSessionSecretHandles,
   projects,
   sessionSandboxes,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import {
   assertAgentSessionWorkspaceAllowsRepository,
@@ -102,11 +102,11 @@ projectsApp.openapi(
 );
 
 // ─── Project-scoped CLI tokens ─────────────────────────────────────────────
-// These are PATs (`kortix_pat_...`) bound to a single project. The auth
+// These are PATs (`zed_pat_...`) bound to a single project. The auth
 // middleware enforces that the URL's `:projectId` matches the token's
 // project_id, so the token is useless outside this one project. They're
 // auto-minted at session-create time and injected into the sandbox as
-// `KORTIX_CLI_TOKEN` so the in-container CLI works with zero config.
+// `ZED_CLI_TOKEN` so the in-container CLI works with zero config.
 
 
 projectsApp.openapi(
@@ -249,7 +249,7 @@ projectsApp.openapi(
 
 // GET /v1/projects/:projectId/git/clone-credential
 // Runtime-only clone credential fetch. A session sandbox calls this endpoint
-// with its sandbox-scoped KORTIX_TOKEN and gets a fresh provider credential
+// with its sandbox-scoped ZED_TOKEN and gets a fresh provider credential
 // just-in-time. Browser sessions must not receive raw Git tokens.
 
 projectsApp.openapi(
@@ -385,7 +385,7 @@ projectsApp.openapi(
   await assertProjectCapability(c, loaded.userId, loaded.row.accountId, projectId, PROJECT_ACTIONS.PROJECT_CONNECTOR_WRITE);
 
   if (await hasServerManagedGitAuth(loaded.row)) {
-    return c.json({ error: 'Git auth is already managed by Kortix for this project' }, 409);
+    return c.json({ error: 'Git auth is already managed by Zed for this project' }, 409);
   }
 
   const token =
@@ -469,12 +469,12 @@ projectsApp.openapi(
   const loaded = await loadProjectForUser(c, projectId, 'read');
   if (!loaded) return c.json({ error: 'Not found' }, 404);
   // Leaf-gate the read (a custom role can omit project.secret.read) — and, via
-  // the central agent-grant fold, an agent token must hold it in its kortixCli.
+  // the central agent-grant fold, an agent token must hold it in its zedCli.
   await assertProjectCapability(c, loaded.userId, loaded.row.accountId, projectId, PROJECT_ACTIONS.PROJECT_SECRET_READ);
 
   const canManageShared = roleAllows(loaded.effectiveRole, 'manage');
 
-  // Manifest is optional — a project without kortix.yaml just gets empty
+  // Manifest is optional — a project without zed.yaml just gets empty
   // required/optional lists. We surface loaded/missing/error explicitly so the
   // UI can distinguish "no envs declared" from "we couldn't read the manifest".
   let required: string[] = [];
@@ -556,8 +556,8 @@ projectsApp.openapi(
   if (!isValidSecretName(name)) {
     return c.json({ error: 'name must be a valid env var name (A-Z, 0-9, _; max 64 chars)' }, 400);
   }
-  if (name.startsWith('KORTIX_')) {
-    return c.json({ error: 'KORTIX_* names are reserved for platform/runtime-managed variables' }, 400);
+  if (name.startsWith('ZED_')) {
+    return c.json({ error: 'ZED_* names are reserved for platform/runtime-managed variables' }, 400);
   }
   if (name === CODEX_AUTH_JSON_SECRET_NAME) {
     return c.json({ error: `${CODEX_AUTH_JSON_SECRET_NAME} is managed by ChatGPT subscription onboarding` }, 400);
@@ -633,8 +633,8 @@ projectsApp.openapi(
   let explicitPolicy = null;
   if (explicitConsumer === 'http_broker') {
     const policy = parseEgressPolicy(body.egress_policy);
-    if (!policy.ok || policy.policy.backend !== 'kortix_fetch') {
-      return c.json({ error: policy.ok ? 'HTTP broker requires the kortix_fetch backend' : policy.error }, 400);
+    if (!policy.ok || policy.policy.backend !== 'zed_fetch') {
+      return c.json({ error: policy.ok ? 'HTTP broker requires the zed_fetch backend' : policy.error }, 400);
     }
     explicitPolicy = policy.policy;
   } else if (body.egress_policy !== undefined) {
@@ -812,7 +812,7 @@ projectsApp.openapi(
       return c.json({ error: 'Agent sessions cannot change secret delivery policy' }, 403);
     }
     if (isSystemProjectSecretName(identifier)) {
-      return c.json({ error: `${identifier} is managed by Kortix` }, 403);
+      return c.json({ error: `${identifier} is managed by Zed` }, 403);
     }
     let nextPolicy = null;
     const policyBackend = parsed.data.egress_policy?.backend;
@@ -823,7 +823,7 @@ projectsApp.openapi(
           ? null
           : parsed.data.strategy === 'egress'
             ? 'network'
-            : policyBackend === 'kortix_fetch'
+            : policyBackend === 'zed_fetch'
               ? 'http_broker'
               : policyBackend === 'llm_gateway' || policyBackend === 'git_proxy'
                 ? policyBackend
@@ -1037,11 +1037,11 @@ projectsApp.openapi(
 //        background task on this replica, returns the device challenge.
 //   POST …/oauth/:provider/poll  → ANY replica reads the shared DB flow row;
 //        once the user finishes authorizing, writes the secret and returns it.
-// The in-flight flow lives in `kortix.oauth_provider_flows` (not replica
+// The in-flight flow lives in `zed.oauth_provider_flows` (not replica
 // memory), so start and poll need not hit the same pod. The detached task
 // isn't tied to a client connection, so nothing the edge does can kill it.
 
-// Kortix provider id → the secret we persist the resulting auth.json under.
+// Zed provider id → the secret we persist the resulting auth.json under.
 // Only OpenAI (ChatGPT) is wired today; the shape generalizes to others.
 const OAUTH_PROVIDERS: Record<string, { secretName: string }> = {
   openai: { secretName: CODEX_AUTH_JSON_SECRET_NAME },
@@ -1460,11 +1460,11 @@ projectsApp.openapi(
   if (!identifier || !isValidIdentifier(identifier)) {
     return c.json({ error: 'Invalid secret identifier' }, 400);
   }
-  // A system row's identifier always equals its reserved KORTIX_* key (the
+  // A system row's identifier always equals its reserved ZED_* key (the
   // manifest never lets a human create one), so this alone protects it — no
   // DB read needed before the delete.
   if (isSystemProjectSecretName(identifier)) {
-    return c.json({ error: `${identifier} is managed by Kortix and cannot be removed` }, 403);
+    return c.json({ error: `${identifier} is managed by Zed and cannot be removed` }, 403);
   }
   if (identifier.toUpperCase() === CODEX_AUTH_JSON_SECRET_NAME) {
     return c.json(
@@ -1579,7 +1579,7 @@ projectsApp.openapi(
     return c.json({ error: 'Invalid secret name' }, 400);
   }
   if (isSystemProjectSecretName(name)) {
-    return c.json({ error: 'KORTIX_* names are reserved and cannot be overridden' }, 400);
+    return c.json({ error: 'ZED_* names are reserved and cannot be overridden' }, 400);
   }
   if (name === CODEX_AUTH_JSON_SECRET_NAME) {
     return c.json({ error: `${CODEX_AUTH_JSON_SECRET_NAME} is managed by ChatGPT subscription onboarding` }, 400);

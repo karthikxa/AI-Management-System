@@ -2,7 +2,7 @@
 /**
  * Phase 0 benchmark harness for the session-boot 1-second threshold (goal §1).
  *
- * Times session boot (create → runtime-ready) N times against a live Kortix
+ * Times session boot (create → runtime-ready) N times against a live Zed
  * deployment, aggregates P50/P95/P99, and prints a numbers table. This is
  * MEASUREMENT ONLY — no optimization, no behavior change. The numbers this
  * produces unblock the entire session-boot-1s workstream (see
@@ -12,9 +12,9 @@
  *   cd apps/api && bun run scripts/bench-session-boot.ts
  *
  * Env:
- *   KORTIX_API_URL       — the API base URL (default: https://api.kortix.com/v1)
- *   KORTIX_CLI_TOKEN     — project-scoped auth token
- *   KORTIX_PROJECT_ID    — project to start sessions in
+ *   ZED_API_URL       — the API base URL (default: https://api.zed.com/v1)
+ *   ZED_CLI_TOKEN     — project-scoped auth token
+ *   ZED_PROJECT_ID    — project to start sessions in
  *   BENCH_ROUNDS         — number of boot measurements (default: 10)
  *   BENCH_CONCURRENCY    — parallel sessions (default: 1; >1 stresses the pool)
  *   BENCH_TIMEOUT_S      — per-session timeout (default: 120)
@@ -26,16 +26,16 @@
  */
 import { performance } from 'node:perf_hooks';
 
-const API_URL = process.env.KORTIX_API_URL ?? 'https://api.kortix.com/v1';
-const TOKEN = process.env.KORTIX_CLI_TOKEN ?? '';
-const PROJECT_ID = process.env.KORTIX_PROJECT_ID ?? '';
+const API_URL = process.env.ZED_API_URL ?? 'https://api.zed.com/v1';
+const TOKEN = process.env.ZED_CLI_TOKEN ?? '';
+const PROJECT_ID = process.env.ZED_PROJECT_ID ?? '';
 const ROUNDS = Number(process.env.BENCH_ROUNDS ?? 10);
 const CONCURRENCY = Number(process.env.BENCH_CONCURRENCY ?? 1);
 const TIMEOUT_S = Number(process.env.BENCH_TIMEOUT_S ?? 120);
 const SKIP_COLD = process.env.BENCH_WARM === '1';
 
 if (!TOKEN || !PROJECT_ID) {
-  console.error('Missing KORTIX_CLI_TOKEN or KORTIX_PROJECT_ID.');
+  console.error('Missing ZED_CLI_TOKEN or ZED_PROJECT_ID.');
   process.exit(1);
 }
 

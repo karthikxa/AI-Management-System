@@ -5,8 +5,8 @@ Status: Stage 1 landed (uncommitted, branch `sdk-wave4`). Stages 2-4 planned, no
 ## Why
 
 `apps/web/src/features/files` (live-sandbox, read/write file browser over
-`@kortix/sdk`'s OpenCode-server client) and `apps/web/src/features/project-files`
-(read-only, git-ref-scoped "Drive" view over `@kortix/sdk`'s projects client)
+`@zed/sdk`'s OpenCode-server client) and `apps/web/src/features/project-files`
+(read-only, git-ref-scoped "Drive" view over `@zed/sdk`'s projects client)
 are two independent React feature trees that render the same UI — a tree
 sidebar, a grid/list "Drive" view, a file viewer, history panels, search —
 over two different data backends. Before this change: `files/` was 9,947
@@ -101,7 +101,7 @@ its own verified increment (tsc + targeted tests), same as Stage 1.
 | `components/file-icon.tsx` | 450 | 305 | 67% |
 
 `files/file-icon.tsx` is a strict superset of `project-files/file-icon.tsx` —
-same icon-import list (just reordered) plus extra cases (a `kortix.yaml`
+same icon-import list (just reordered) plus extra cases (a `zed.yaml`
 special SVG glyph, a few more extension branches) that `project-files` lacks.
 Merging into one file (the superset) is mechanically simple and would unlock
 sharing `file-breadcrumbs.tsx`, `file-explorer-toolbar.tsx`,
@@ -150,7 +150,7 @@ themselves — only the components that consume them, via the seam.
 
 `api/git-history.ts` (13% identity), `api/opencode-files.ts` (15%),
 `search/workspace-search-service.ts` (9%) each hit a different backend
-(`@kortix/sdk/files` vs `@kortix/sdk/projects-client`) with a different
+(`@zed/sdk/files` vs `@zed/sdk/projects-client`) with a different
 request/response shape. These stay separate permanently; they're the actual
 "data source" half of `FileBrowserSource`, referenced from each tree's
 `file-source.tsx`, never imported directly by a shared component.

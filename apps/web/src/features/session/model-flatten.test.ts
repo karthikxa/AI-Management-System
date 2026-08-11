@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { ProviderListResponse } from '@kortix/sdk/react';
+import type { ProviderListResponse } from '@zed/sdk/react';
 import { flattenModels } from './model-flatten';
 
 // `provider` must survive from the API catalog (`GatewayModel.provider`)
@@ -10,9 +10,9 @@ import { flattenModels } from './model-flatten';
 // pin the DECLARED path.
 function gatewayProviders(models: Record<string, unknown>): ProviderListResponse {
   return {
-    default: { kortix: 'auto' },
-    connected: ['kortix'],
-    all: [{ id: 'kortix', name: 'Kortix', source: 'gateway', models }],
+    default: { zed: 'auto' },
+    connected: ['zed'],
+    all: [{ id: 'zed', name: 'Zed', source: 'gateway', models }],
   } as unknown as ProviderListResponse;
 }
 
@@ -27,8 +27,8 @@ describe('flattenModels — gateway provider pass-through', () => {
       }),
     );
     expect(flat.provider).toBe('amazon-bedrock');
-    expect(flat.providerID).toBe('kortix');
-    expect(flat.providerName).toBe('Kortix');
+    expect(flat.providerID).toBe('zed');
+    expect(flat.providerName).toBe('Zed');
   });
 
   test('carries the models.dev passthrough fields', () => {
@@ -76,7 +76,7 @@ describe('flattenModels — gateway provider pass-through', () => {
       flattenModels({
         default: {},
         connected: [],
-        all: [{ id: 'kortix', name: 'Kortix', source: 'gateway', models: { a: { name: 'A' } } }],
+        all: [{ id: 'zed', name: 'Zed', source: 'gateway', models: { a: { name: 'A' } } }],
       } as unknown as ProviderListResponse),
     ).toEqual([]);
   });

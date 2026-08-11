@@ -1,4 +1,4 @@
-import type { SessionConfigState } from '@kortix/sdk';
+import type { SessionConfigState } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -47,7 +47,7 @@ describe('sessionConfigNotice', () => {
   });
 
   test('a v1 project is hidden — the concept does not apply, so inventing a problem is wrong', () => {
-    // kortix.toml compiles to nothing. `stale` is null forever for these, and a
+    // zed.toml compiles to nothing. `stale` is null forever for these, and a
     // warning here would be unfixable by design.
     expect(
       sessionConfigNotice(

@@ -1,8 +1,8 @@
 # Review Center — human-friendly review for CRs, approvals & agent outputs
 
 **Status:** Design + clickable prototype + **native-items vertical slice implemented** (DB · API · web data layer).
-**Owner:** ino@kortix.ai
-**Related:** KORTIX-207 (one-call Connector approval UX), KORTIX-208 (sandbox git authorization / CR-only main merge path)
+**Owner:** ino@zed.ai
+**Related:** ZED-207 (one-call Connector approval UX), ZED-208 (sandbox git authorization / CR-only main merge path)
 **Prototype:** `apps/web/src/features/review-center/*`, route `/review` (mock data only).
 
 ### Implementation status (this branch)
@@ -46,7 +46,7 @@ Also built since:
 
 ## 1. Why
 
-Today a human reviewing agent work in Kortix is handed something that reads like a raw GitHub pull
+Today a human reviewing agent work in Zed is handed something that reads like a raw GitHub pull
 request: branch UUIDs, commit SHAs, `fast-forward` vs `3-way` merge jargon, raw conflict file-lists, and
 `@@` diff hunks. That is fine for engineers and wrong for everyone else. Meanwhile the other moments where
 a human needs to weigh in — "the agent wants to send a real email," "the agent finished 15 tasks," "the
@@ -64,9 +64,9 @@ in plain language, from the web or from Slack.
 | Change Requests | **Mature backend**, technical UI. `changeRequests` table; full `/v1/projects/:id/change-requests/*` API (list/detail/diff/merge-preview/merge/close/reopen); IAM gates `project.cr.merge`, `project.gitops.merge`; reusable hooks. UI exposes branch UUIDs, SHAs, merge-mode jargon, raw conflicts, diff hunks. | `apps/api/src/projects/change-requests.ts`, `routes/r8.ts`, `routes/r9.ts`, `git/merge.ts`; `apps/web/src/features/project-files/components/change-request-detail-dialog.tsx`, `change-requests-panel.tsx`; `hooks/use-change-requests.ts` |
 | Tool-call approvals (Connector) | **Implemented.** `require_approval` records one exact pending call and returns HTTP `202` with an authenticated `approval_url`. The standalone page, session Audit panel, and Review Center use the same full-parameter component. Approve or deny creates one durable session callback. | `apps/api/src/connector/gateway.ts`, `setup-links/approval-app.ts`, `projects/routes/r7.ts`; `apps/web/src/components/approvals/approval-request.tsx` |
 | Permission approvals (Tunnel) | **The one real structured approval surface.** `tunnelPermissionRequests` table (pending/approved/denied/expired) + SSE stream + approve/deny/scoped/expiry dialog. The reuse template. | `apps/api/src/tunnel/routes/permission-requests.ts`; `apps/web/src/features/tunnel/tunnel-permission-request-dialog.tsx`; `hooks/tunnel/use-tunnel.ts` |
-| Agent outputs / tasks | **Proto-primitive already exists.** `KortixTask` has statuses `awaiting_review` and `input_needed`, a `result`, a `blocking_question`, an events timeline, and an approve endpoint. But no generic "submit an artifact/decision for review" separate from a code diff. | `apps/web/src/hooks/kortix/use-kortix-tasks.ts`; `components/kortix/task-*.tsx`; `lib/kortix/task-meta.ts` |
+| Agent outputs / tasks | **Proto-primitive already exists.** `ZedTask` has statuses `awaiting_review` and `input_needed`, a `result`, a `blocking_question`, an events timeline, and an approve endpoint. But no generic "submit an artifact/decision for review" separate from a code diff. | `apps/web/src/hooks/zed/use-zed-tasks.ts`; `components/zed/task-*.tsx`; `lib/zed/task-meta.ts` |
 | Slack | Agent questions render as Block Kit **buttons**; a click resumes the agent via `spawnAgentTurn`. No pending-items surface; App Home shows projects only. | `apps/api/src/channels/slack/questions.ts`, `interactivity.ts`, `home.ts` |
-| Unifying data | **None.** No generic `notification`/`inbox`/`review_item` table. Approval state is scattered across `projectAccessRequests`, `chatThreadParticipants`, `connectorExecutions`, `tunnelPermissionRequests`, `KortixTask`. Web notifications are transient (toast/OS only). | `packages/db/src/schema/kortix.ts`; `apps/web/src/lib/web-notifications.ts` |
+| Unifying data | **None.** No generic `notification`/`inbox`/`review_item` table. Approval state is scattered across `projectAccessRequests`, `chatThreadParticipants`, `connectorExecutions`, `tunnelPermissionRequests`, `ZedTask`. Web notifications are transient (toast/OS only). | `packages/db/src/schema/zed.ts`; `apps/web/src/lib/web-notifications.ts` |
 
 **Conclusion:** most of the parts already exist but are scattered and engineer-facing. The win is
 **activation + fusion**, not greenfield. The Review Center is a thin friendly layer + the few missing
@@ -114,7 +114,7 @@ The five kinds map onto the existing systems:
 - **`output`** → an artifact/result the agent submits for feedback (landing page, document, API result,
   image, dataset). The genuinely new capability.
 - **`decision`** → a question / "input needed" — the agent is blocked on a human choice. Mirrors the
-  existing Slack question primitive and `KortixTask.blocking_question`.
+  existing Slack question primitive and `ZedTask.blocking_question`.
 - **`batch`** → a roll-up ("15 tasks finished — approve all"). Models high-level progress + bulk sign-off.
 
 ### Storage architecture (for the build, documented not built)
@@ -157,13 +157,13 @@ Replace the PR feel. The detail for a `change` item shows, top to bottom:
    100% of today's power; it's just collapsed by default.
 
 Nothing about the CR backend changes — this is presentation over the existing `ChangeRequest` shape +
-`useChangeRequests` / `useMergeChangeRequest` hooks. This directly addresses **KORTIX-208**: the CR-only
+`useChangeRequests` / `useMergeChangeRequest` hooks. This directly addresses **ZED-208**: the CR-only
 main merge path becomes the human-friendly "Ship it" button, and the guardrail reads as a calm
 "changes reach `main` through review," not a git error.
 
 ---
 
-## 4. Approval inbox (`approval`) — KORTIX-207
+## 4. Approval inbox (`approval`) — ZED-207
 
 Each approval row reads as an intention in plain words: **"Agent wants to send a launch email"**,
 **"Agent wants to charge a card"**, **"Agent wants to run a command"** — with the connector/action named
@@ -216,7 +216,7 @@ review.submit({
   "Approve all" affordance.
 - The human's verdict (`approve` / `reject` / `answer` + free-text **feedback**) is delivered back to the
   agent as a **follow-up turn**, reusing the existing resume mechanism (`spawnAgentTurn` / tunnel notify) —
-  no new transport. `KortixTask`'s `awaiting_review` / `input_needed` statuses and events timeline are the
+  no new transport. `ZedTask`'s `awaiting_review` / `input_needed` statuses and events timeline are the
   spiritual ancestor and can back `output`/`decision` directly.
 
 **Proposed HTTP surface** (fits the repo's `/v1/<domain>` + `r1..r10` convention):
@@ -237,7 +237,7 @@ GET    /v1/projects/:projectId/review/stream           # SSE — live updates (r
 The center must work for Slack-triggered sessions, not just the web.
 
 - **In-thread cards.** A review request posts in the session's thread as a Block Kit card: title + summary +
-  risk + buttons — **Approve · Deny · Ask for changes · View in Kortix** — mirroring the existing
+  risk + buttons — **Approve · Deny · Ask for changes · View in Zed** — mirroring the existing
   `buildQuestionBlocks` button structure. Action ids `review_<id>_<verb>` are handled by a generalized
   `handleReviewAction` that routes to the same dispatcher as `handleQuestionAnswer` → `spawnAgentTurn`, so
   the agent resumes exactly as it does for questions today.
@@ -259,7 +259,7 @@ tangible during review.
 | Need | Reuse |
 | --- | --- |
 | Approval record + approve/deny + SSE + scoped/expiry dialog | Tunnel permission-request system (`permission-requests.ts`, `tunnel-permission-request-dialog.tsx`, `use-tunnel.ts`) |
-| "Agent output awaiting review" + events timeline + approve | `KortixTask` (`awaiting_review`/`input_needed`, `use-kortix-tasks.ts`, `task-meta.ts`) |
+| "Agent output awaiting review" + events timeline + approve | `ZedTask` (`awaiting_review`/`input_needed`, `use-zed-tasks.ts`, `task-meta.ts`) |
 | Friendly CR data + actions | `useChangeRequests` / `useMergeChangeRequest` / `useCloseChangeRequest` |
 | Decision options + resume | Slack question primitive (`questions.ts`, `interactivity.ts`, `spawnAgentTurn`) |
 | Explicit unattended policy | connector policies + `policy.ts` `resolveEffectiveAction` |
@@ -272,7 +272,7 @@ tangible during review.
 - **Phase A — primitives.** `review_items` table; the read/submit/act/bulk API; the source adapters
   (CR, connector, tunnel); connector approval record + **resume** (close the 202 gap). Ships with tests.
 - **Phase B — web Review Center.** Productionize the prototype against the real read model + the
-  tunnel/kortix-task hooks. Add a nav entry. A11y + visual tests.
+  tunnel/zed-task hooks. Add a nav entry. A11y + visual tests.
 - **Phase C — Slack.** ✅ Review cards in-thread (`postReviewCard`) + `handleReviewAction` (verdict +
   resume) built. Remaining: App Home "Needs you (N)". Connector approvals stay one action per decision.
 - Each phase follows the repo testing discipline (unit/integration/contract/api/e2e as the change demands).

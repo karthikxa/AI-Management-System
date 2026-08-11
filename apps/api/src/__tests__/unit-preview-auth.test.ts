@@ -36,29 +36,29 @@ mock.module('../shared/platform-roles', () => ({
 
 mock.module('../repositories/api-keys', () => ({
   validateSecretKey: async (token: string) => {
-    if (token === 'kortix_owner') {
+    if (token === 'zed_owner') {
       return { isValid: true, accountId: 'acct-owner' };
     }
-    if (token === 'kortix_other') {
+    if (token === 'zed_other') {
       return { isValid: true, accountId: 'acct-other' };
     }
-    return { isValid: false, error: 'Invalid Kortix token' };
+    return { isValid: false, error: 'Invalid Zed token' };
   },
 }));
 
 mock.module('../shared/crypto', () => ({
   // Constants
-  KEY_PREFIX: 'kortix_',
-  KEY_PREFIX_PAT: 'kortix_pat_',
-  KEY_PREFIX_PUBLIC: 'kortix_pk_',
-  KEY_PREFIX_SA: 'kortix_sa_',
-  KEY_PREFIX_SANDBOX: 'kortix_sb_',
-  KEY_PREFIX_TUNNEL: 'kortix_tun_',
+  KEY_PREFIX: 'zed_',
+  KEY_PREFIX_PAT: 'zed_pat_',
+  KEY_PREFIX_PUBLIC: 'zed_pk_',
+  KEY_PREFIX_SA: 'zed_sa_',
+  KEY_PREFIX_SANDBOX: 'zed_sb_',
+  KEY_PREFIX_TUNNEL: 'zed_tun_',
   // Token predicates (behaviorally relevant to this suite)
-  isKortixToken: (token: string) => token.startsWith('kortix_'),
-  isAccountToken: (token: string) => token.startsWith('kortix_pat_'),
-  isServiceAccountToken: (token: string) => token.startsWith('kortix_sa_'),
-  isTunnelToken: (token: string) => token.startsWith('kortix_tun_'),
+  isZedToken: (token: string) => token.startsWith('zed_'),
+  isAccountToken: (token: string) => token.startsWith('zed_pat_'),
+  isServiceAccountToken: (token: string) => token.startsWith('zed_sa_'),
+  isTunnelToken: (token: string) => token.startsWith('zed_tun_'),
   isApiKeySecretConfigured: () => true,
   // Generators / hashing (existence-only for import resolution)
   randomAlphanumeric: (length: number) => 'a'.repeat(length),
@@ -69,9 +69,9 @@ mock.module('../shared/crypto', () => ({
   generateDeviceCode: () => 'device-code',
   generateTunnelToken: () => 'tunnel-token',
   generateSandboxKeyPair: () => ({ publicKey: 'pub', privateKey: 'priv' }),
-  generateServiceAccountSecret: () => 'kortix_sa_secret',
-  generateAccountTokenPair: () => ({ secretKey: 'kortix_pat_secret', keyHash: 'hash' }),
-  generateApiKeyPair: () => ({ secretKey: 'kortix_secret', keyHash: 'hash' }),
+  generateServiceAccountSecret: () => 'zed_sa_secret',
+  generateAccountTokenPair: () => ({ secretKey: 'zed_pat_secret', keyHash: 'hash' }),
+  generateApiKeyPair: () => ({ secretKey: 'zed_secret', keyHash: 'hash' }),
   deriveSigningKey: () => 'signing-key',
   signMessage: () => 'signature',
   verifyMessageSignature: () => true,
@@ -85,10 +85,10 @@ mock.module('../shared/jwt-verify', () => ({
   decodeSupabaseJwtPayload: () => null,
   verifySupabaseJwt: async (token: string) => {
     if (token === 'jwt-owner') {
-      return { ok: true, userId: 'user-owner', email: 'owner@kortix.dev' };
+      return { ok: true, userId: 'user-owner', email: 'owner@zed.dev' };
     }
     if (token === 'jwt-other') {
-      return { ok: true, userId: 'user-other', email: 'other@kortix.dev' };
+      return { ok: true, userId: 'user-other', email: 'other@zed.dev' };
     }
     if (token === 'jwt-fallback-owner' || token === 'jwt-fallback-other') {
       return { ok: false, reason: 'no-keys' };
@@ -142,48 +142,48 @@ describe('preview auth ownership', () => {
     expect(res.status).toBe(401);
   });
 
-  test('allows owner via Bearer kortix token', async () => {
+  test('allows owner via Bearer zed token', async () => {
     const app = createApp();
     const res = await app.request('/v1/p/8c70e5be-2f95-45ae-bd8d-5d07b65c631b/8000/session/status', {
-      headers: { Authorization: 'Bearer kortix_owner' },
+      headers: { Authorization: 'Bearer zed_owner' },
     });
     expect(res.status).toBe(200);
   });
 
-  test('allows owner via X-Kortix-Token header', async () => {
+  test('allows owner via X-Zed-Token header', async () => {
     const app = createApp();
     const res = await app.request('/v1/p/8c70e5be-2f95-45ae-bd8d-5d07b65c631b/8000/session/status', {
-      headers: { 'X-Kortix-Token': 'kortix_owner' },
+      headers: { 'X-Zed-Token': 'zed_owner' },
     });
     expect(res.status).toBe(200);
   });
 
-  test('allows owner via preview session cookie with kortix token', async () => {
+  test('allows owner via preview session cookie with zed token', async () => {
     const app = createApp();
     const res = await app.request('/v1/p/8c70e5be-2f95-45ae-bd8d-5d07b65c631b/8000/session/status', {
-      headers: { Cookie: '__preview_session=kortix_owner' },
+      headers: { Cookie: '__preview_session=zed_owner' },
     });
     expect(res.status).toBe(200);
   });
 
   test('rejects query-string bearer tokens on ordinary HTTP preview routes', async () => {
     const app = createApp();
-    const res = await app.request('/v1/p/8c70e5be-2f95-45ae-bd8d-5d07b65c631b/8000/session/status?token=kortix_owner');
+    const res = await app.request('/v1/p/8c70e5be-2f95-45ae-bd8d-5d07b65c631b/8000/session/status?token=zed_owner');
     expect(res.status).toBe(401);
   });
 
-  test('rejects non-owner kortix token', async () => {
+  test('rejects non-owner zed token', async () => {
     const app = createApp();
     const res = await app.request('/v1/p/8c70e5be-2f95-45ae-bd8d-5d07b65c631b/8000/session/status', {
-      headers: { Authorization: 'Bearer kortix_other' },
+      headers: { Authorization: 'Bearer zed_other' },
     });
     expect(res.status).toBe(403);
   });
 
-  test('rejects invalid X-Kortix-Token', async () => {
+  test('rejects invalid X-Zed-Token', async () => {
     const app = createApp();
     const res = await app.request('/v1/p/8c70e5be-2f95-45ae-bd8d-5d07b65c631b/8000/session/status', {
-      headers: { 'X-Kortix-Token': 'kortix_invalid' },
+      headers: { 'X-Zed-Token': 'zed_invalid' },
     });
     expect(res.status).toBe(401);
   });
@@ -216,11 +216,11 @@ describe('preview auth ownership', () => {
     expect(res.status).toBe(200);
   });
 
-  test('allows admin kortix token without direct ownership', async () => {
+  test('allows admin zed token without direct ownership', async () => {
     const app = createApp();
     mockAdminAccounts = new Set(['acct-other']);
     const res = await app.request('/v1/p/8c70e5be-2f95-45ae-bd8d-5d07b65c631b/8000/session/status', {
-      headers: { Authorization: 'Bearer kortix_other' },
+      headers: { Authorization: 'Bearer zed_other' },
     });
     expect(res.status).toBe(200);
   });
@@ -237,7 +237,7 @@ describe('preview auth ownership', () => {
   test('allows jwt owner via Supabase fallback path', async () => {
     const app = createApp();
     mockResolvedAccountId = 'acct-owner';
-    mockSupabaseUser = { id: 'user-fallback-owner', email: 'fallback@kortix.dev' };
+    mockSupabaseUser = { id: 'user-fallback-owner', email: 'fallback@zed.dev' };
     const res = await app.request('/v1/p/8c70e5be-2f95-45ae-bd8d-5d07b65c631b/8000/session/status', {
       headers: { Authorization: 'Bearer jwt-fallback-owner' },
     });
@@ -247,7 +247,7 @@ describe('preview auth ownership', () => {
   test('rejects jwt via Supabase fallback without ownership', async () => {
     const app = createApp();
     mockResolvedAccountId = 'acct-other';
-    mockSupabaseUser = { id: 'user-fallback-other', email: 'other@kortix.dev' };
+    mockSupabaseUser = { id: 'user-fallback-other', email: 'other@zed.dev' };
     const res = await app.request('/v1/p/8c70e5be-2f95-45ae-bd8d-5d07b65c631b/8000/session/status', {
       headers: { Authorization: 'Bearer jwt-fallback-other' },
     });
@@ -258,7 +258,7 @@ describe('preview auth ownership', () => {
     const app = createApp();
     mockSandboxAccountId = null;
     const res = await app.request('/v1/p/8c70e5be-2f95-45ae-bd8d-5d07b65c631b/8000/session/status', {
-      headers: { Authorization: 'Bearer kortix_owner' },
+      headers: { Authorization: 'Bearer zed_owner' },
     });
     expect(res.status).toBe(403);
   });
@@ -268,7 +268,7 @@ describe('preview auth ownership', () => {
     mockSandboxAccountId = null;
     const res = await app.request('/v1/p/share', {
       method: 'POST',
-      headers: { Authorization: 'Bearer kortix_owner' },
+      headers: { Authorization: 'Bearer zed_owner' },
     });
     expect(res.status).toBe(200);
   });
@@ -281,7 +281,7 @@ describe('preview auth ownership', () => {
 
   test('still requires auth for remote hosts hitting the sandbox preview route', async () => {
     const app = createApp();
-    const res = await app.request('https://app.kortix.com/v1/p/sb-ext-1/8000/session/status');
+    const res = await app.request('https://app.zed.com/v1/p/sb-ext-1/8000/session/status');
     expect(res.status).toBe(401);
   });
 });

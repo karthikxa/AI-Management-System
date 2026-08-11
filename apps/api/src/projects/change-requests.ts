@@ -1,11 +1,11 @@
 /**
- * Change Requests — Kortix-native PR layer.
+ * Change Requests — Zed-native PR layer.
  *
  * The CR is metadata that proposes merging `head_ref` into `base_ref` for a
  * project. All underlying git work goes through `./git.ts`, which talks to
  * whichever backend the project's repo URL points to (GitHub, GitLab,
  * plain git). The CR system is therefore backend-agnostic — the
- * review UI lives in Kortix even when the repo is hosted elsewhere.
+ * review UI lives in Zed even when the repo is hosted elsewhere.
  *
  * v1 is intentionally minimal: status (open / merged / closed), head/base
  * refs, an auto-refreshed head_commit_sha. No reviews, no comments, no
@@ -14,7 +14,7 @@
  */
 
 import { and, eq, sql } from 'drizzle-orm';
-import { changeRequests } from '@kortix/db';
+import { changeRequests } from '@zed/db';
 import { db } from '../shared/db';
 
 type ChangeRequestStatus = 'open' | 'merged' | 'closed';

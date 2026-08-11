@@ -8,7 +8,7 @@
 @source "../node_modules/streamdown/dist/*.js";
 @source "../node_modules/fumadocs-ui/dist/**/*.js";
 
-/* ─── Fumadocs → Kortix brand overrides ─── */
+/* ─── Fumadocs → Zed brand overrides ─── */
 /* fd-* tokens inherit the app's semantic tokens so light/dark stay in parity
    automatically and color has a single source of truth. `--color-fd-card`
    deliberately maps to --popover: fumadocs cards and code-block chrome sit on
@@ -99,7 +99,7 @@
   background-color: var(--accent);
   color: var(--foreground);
 }
-/* Active page: foreground + primary tint (Kortix law: active = primary 5-8%). */
+/* Active page: foreground + primary tint (Zed law: active = primary 5-8%). */
 #nd-sidebar a[data-active='true'] {
   background-color: color-mix(in oklab, var(--primary) 6%, transparent);
   color: var(--foreground);
@@ -214,13 +214,13 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --color-kortix-base: var(--kortix-base);
-  --color-kortix-blue: var(--kortix-blue);
-  --color-kortix-yellow: var(--kortix-yellow);
-  --color-kortix-orange: var(--kortix-orange);
-  --color-kortix-green: var(--kortix-green);
-  --color-kortix-purple: var(--kortix-purple);
-  --color-kortix-red: var(--kortix-red);
+  --color-zed-base: var(--zed-base);
+  --color-zed-blue: var(--zed-blue);
+  --color-zed-yellow: var(--zed-yellow);
+  --color-zed-orange: var(--zed-orange);
+  --color-zed-green: var(--zed-green);
+  --color-zed-purple: var(--zed-purple);
+  --color-zed-red: var(--zed-red);
   /* Emoji-picker active-cell tints (src/components/ui/emoji-picker.tsx).
      Six hues the picker rotates through so the hovered/keyboard-active cell is
      never the same colour as the cell above it. They live here rather than as
@@ -354,7 +354,7 @@
   --exitToRight: exitToRight 250ms ease;
   --animate-elliptical-orbit: elliptical-orbit 20s linear infinite;
   --animate-shiny-text: shiny-text 8s infinite;
-  --animate-kortix-bullet-flow: kortix-bullet-flow 4s ease-in-out infinite;
+  --animate-zed-bullet-flow: zed-bullet-flow 4s ease-in-out infinite;
   /* Error feedback — damped horizontal shake (decaying amplitude, transform-only) */
   --animate-shake: shake 400ms var(--ease-in-out) both;
 
@@ -380,7 +380,7 @@
     }
   }
 
-  @keyframes kortix-bullet-flow {
+  @keyframes zed-bullet-flow {
     0%,
     100% {
       background-position: 0% 0%;
@@ -682,13 +682,13 @@
   --tracking-normal: 0em;
   --spacing: 0.23rem;
 
-  --kortix-base: var(--color-ring);
-  --kortix-blue: oklch(0.652 0.177 252.624);
-  --kortix-yellow: oklch(0.732 0.15 90.688);
-  --kortix-orange: oklch(0.691 0.142 71.784);
-  --kortix-green: oklch(0.581 0.165 146.619);
-  --kortix-purple: oklch(0.675 0.131 306.212);
-  --kortix-red: oklch(0.648 0.202 24.745);
+  --zed-base: var(--color-ring);
+  --zed-blue: oklch(0.652 0.177 252.624);
+  --zed-yellow: oklch(0.732 0.15 90.688);
+  --zed-orange: oklch(0.691 0.142 71.784);
+  --zed-green: oklch(0.581 0.165 146.619);
+  --zed-purple: oklch(0.675 0.131 306.212);
+  --zed-red: oklch(0.648 0.202 24.745);
 
   /* Motion tokens (canonical values; mirrored in @theme for utilities) */
   --duration-fast: 100ms;
@@ -742,13 +742,13 @@
 
   --radius: 0.625rem;
 
-  --kortix-base: var(--color-ring);
-  --kortix-blue: oklch(0.652 0.177 252.624);
-  --kortix-yellow: oklch(0.732 0.15 90.688);
-  --kortix-orange: oklch(0.691 0.142 71.784);
-  --kortix-green: oklch(0.581 0.165 146.619);
-  --kortix-purple: oklch(0.675 0.131 306.212);
-  --kortix-red: oklch(0.648 0.202 24.745);
+  --zed-base: var(--color-ring);
+  --zed-blue: oklch(0.652 0.177 252.624);
+  --zed-yellow: oklch(0.732 0.15 90.688);
+  --zed-orange: oklch(0.691 0.142 71.784);
+  --zed-green: oklch(0.581 0.165 146.619);
+  --zed-purple: oklch(0.675 0.131 306.212);
+  --zed-red: oklch(0.648 0.202 24.745);
 }
 
 @layer base {
@@ -846,8 +846,8 @@
   }
 }
 
-.kortix-markdown pre .line,
-.kortix-markdown pre code span {
+.zed-markdown pre .line,
+.zed-markdown pre code span {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
@@ -899,22 +899,22 @@
   background: oklch(0.7 0 0 / 0.3);
 }
 
-.kortix-markdown [data-streamdown-animating='true'] > * {
+.zed-markdown [data-streamdown-animating='true'] > * {
   animation: stream-fade-in 200ms ease-out forwards;
 }
 
-.kortix-markdown [data-streamdown-animating='true'] p,
-.kortix-markdown [data-streamdown-animating='true'] li,
-.kortix-markdown [data-streamdown-animating='true'] h1,
-.kortix-markdown [data-streamdown-animating='true'] h2,
-.kortix-markdown [data-streamdown-animating='true'] h3,
-.kortix-markdown [data-streamdown-animating='true'] h4,
-.kortix-markdown [data-streamdown-animating='true'] h5,
-.kortix-markdown [data-streamdown-animating='true'] h6 {
+.zed-markdown [data-streamdown-animating='true'] p,
+.zed-markdown [data-streamdown-animating='true'] li,
+.zed-markdown [data-streamdown-animating='true'] h1,
+.zed-markdown [data-streamdown-animating='true'] h2,
+.zed-markdown [data-streamdown-animating='true'] h3,
+.zed-markdown [data-streamdown-animating='true'] h4,
+.zed-markdown [data-streamdown-animating='true'] h5,
+.zed-markdown [data-streamdown-animating='true'] h6 {
   animation: stream-word-pop 180ms ease-out forwards;
 }
 
-.kortix-markdown [data-streamdown-animating='true'] code {
+.zed-markdown [data-streamdown-animating='true'] code {
   animation: stream-char-reveal 150ms ease-out forwards;
 }
 
@@ -1025,29 +1025,29 @@
   }
 }
 
-.kortix-markdown.streaming-active {
+.zed-markdown.streaming-active {
   position: relative;
 }
 
-.kortix-markdown.streaming-active p:last-child,
-.kortix-markdown.streaming-active li:last-child,
-.kortix-markdown.streaming-active
+.zed-markdown.streaming-active p:last-child,
+.zed-markdown.streaming-active li:last-child,
+.zed-markdown.streaming-active
   div:last-child:not(:has(table)):not(:has(.katex)):not(.katex-math-block) {
   display: inline;
 }
 
 /* KaTeX — block/display math scrolls horizontally; keep inline math in flow */
-.kortix-markdown .katex-display {
+.zed-markdown .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
   max-width: 100%;
 }
 
-.kortix-markdown .katex {
+.zed-markdown .katex {
   font-size: 1.05em;
 }
 
-.kortix-markdown[data-streaming='true'] > *:last-child {
+.zed-markdown[data-streaming='true'] > *:last-child {
   animation: stream-fade-in 180ms ease-out;
 }
 
@@ -1060,11 +1060,11 @@
   }
 }
 
-.kortix-markdown[data-streaming='true'] > *:last-child {
+.zed-markdown[data-streaming='true'] > *:last-child {
   animation: blur-fade-in 0.3s ease-out forwards;
 }
 
-/* Pulse heartbeat animation for reasoning section Kortix icon */
+/* Pulse heartbeat animation for reasoning section Zed icon */
 @keyframes pulse-heartbeat {
   0%,
   100% {
@@ -1148,7 +1148,7 @@ html:not(.consent-enabled) #cookieyes {
   }
 }
 
-@keyframes kortix-spin {
+@keyframes zed-spin {
   to {
     transform: rotate(360deg);
   }
@@ -1992,8 +1992,8 @@ html[data-desktop='true'] .kx-titlebar-row[data-sidebar-collapsed] {
   background: linear-gradient(
     to right,
     transparent,
-    var(--kortix-blue),
-    var(--kortix-blue),
+    var(--zed-blue),
+    var(--zed-blue),
     transparent
   );
   animation: sweep-out 2.5s ease-out infinite;

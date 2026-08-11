@@ -1,6 +1,6 @@
 import { Children, isValidElement, cloneElement, type ReactNode } from 'react';
 
-import { KortixAsterisk } from '@/components/ui/kortix-asterisk';
+import { ZedAsterisk } from '@/components/ui/zed-asterisk';
 import { cn } from '@/lib/utils';
 
 /**
@@ -50,10 +50,10 @@ export function Callout({
     <div
       className={cn(
         'border-border my-8 flex gap-4 rounded-sm border p-6 md:p-7',
-        tone === 'accent' ? 'bg-kortix-base/[0.06]' : 'bg-card',
+        tone === 'accent' ? 'bg-zed-base/[0.06]' : 'bg-card',
       )}
     >
-      <KortixAsterisk index={0} parentClass="mt-0.5 size-5 shrink-0" />
+      <ZedAsterisk index={0} parentClass="mt-0.5 size-5 shrink-0" />
       <div className={cn('min-w-0', proseReset)}>
         {title && (
           <p className="text-foreground !mb-2 text-base font-medium tracking-tight">{title}</p>
@@ -138,7 +138,7 @@ export function Figure({
           style={{ aspectRatio: aspect }}
         >
           <span className="flex items-center gap-2 font-mono text-xs tracking-wider uppercase">
-            <KortixAsterisk index={0} parentClass="size-3.5" variant="solid" />
+            <ZedAsterisk index={0} parentClass="size-3.5" variant="solid" />
             {caption ? `Screenshot — ${caption}` : 'Screenshot'}
           </span>
         </div>
@@ -176,7 +176,7 @@ export function Stat({ value, label }: { value: string; label: string }) {
 export function PullQuote({ children }: { children: ReactNode }) {
   return (
     <blockquote className="my-12 !border-l-0 !pl-0 text-center">
-      <KortixAsterisk index={0} parentClass="mx-auto mb-5 size-6" />
+      <ZedAsterisk index={0} parentClass="mx-auto mb-5 size-6" />
       <p className="text-foreground mx-auto max-w-2xl text-xl leading-snug font-medium tracking-tight text-balance !not-italic sm:text-2xl">
         {children}
       </p>

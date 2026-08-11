@@ -120,7 +120,7 @@ export function ProjectSidebar({ projectId }: { projectId: string }) {
             and the session header no longer has to carry a toggle while the
             panel is docked open.
 
-            The Kortix mark used to be a separate button sitting beside the
+            The Zed mark used to be a separate button sitting beside the
             switcher. Same subject, two mismatched controls, and dead space
             between them. It is one segmented control now (see
             ProjectSwitcher): the mark still links to the project's home, the

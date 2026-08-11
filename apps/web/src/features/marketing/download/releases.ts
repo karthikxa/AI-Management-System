@@ -7,15 +7,15 @@
  * drift apart.
  *
  * Verified against release v0.11.0 (2026-07-28):
- *   macOS   Kortix-<v>-universal.dmg          (universal: Apple Silicon + Intel)
- *   Windows Kortix-Setup-<v>.exe
- *   Linux   Kortix-<v>-x86_64.AppImage        (x86_64 ONLY — no arm64 build)
- *   CLI     kortix-{darwin,linux}-{arm64,x64} (no Windows binary)
+ *   macOS   Zed-<v>-universal.dmg          (universal: Apple Silicon + Intel)
+ *   Windows Zed-Setup-<v>.exe
+ *   Linux   Zed-<v>-x86_64.AppImage        (x86_64 ONLY — no arm64 build)
+ *   CLI     zed-{darwin,linux}-{arm64,x64} (no Windows binary)
  */
 
 import type { DesktopOs } from './detect-os';
 
-const REPO = 'kortix-ai/suna';
+const REPO = 'zed-ai/suna';
 const LATEST_API = `https://api.github.com/repos/${REPO}/releases/latest`;
 
 /** Where every download falls back to when the API is unreachable. */
@@ -49,14 +49,14 @@ export function pickDesktopAsset(assets: ReleaseAsset[], os: DesktopOs): Release
   return matches.find((a) => a.name.toLowerCase().includes('universal')) ?? matches[0];
 }
 
-/** CLI binaries are named `kortix-<goos>-<arch>`. Windows publishes none. */
+/** CLI binaries are named `zed-<goos>-<arch>`. Windows publishes none. */
 export function pickCliAsset(
   assets: ReleaseAsset[],
   os: DesktopOs,
   arch: CliArch,
 ): ReleaseAsset | undefined {
   if (os === 'windows') return undefined;
-  const target = `kortix-${os === 'macos' ? 'darwin' : 'linux'}-${arch}`;
+  const target = `zed-${os === 'macos' ? 'darwin' : 'linux'}-${arch}`;
   return assets.find((a) => a.name.toLowerCase() === target);
 }
 
@@ -79,7 +79,7 @@ type GithubAsset = { name?: string; browser_download_url?: string; size?: number
 export async function getLatestRelease(): Promise<Release | null> {
   try {
     const res = await fetch(LATEST_API, {
-      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'kortix-download' },
+      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'zed-download' },
       next: { revalidate: 600 },
     });
     if (!res.ok) return null;

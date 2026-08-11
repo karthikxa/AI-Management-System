@@ -1,10 +1,10 @@
 import { eq } from 'drizzle-orm';
-import { sandboxes, sessionSandboxes } from '@kortix/db';
+import { sandboxes, sessionSandboxes } from '@zed/db';
 import { db } from '../shared/db';
 
 /**
- * The serviceKey == the sandbox's KORTIX_TOKEN — the bearer the daemon's
- * `/kortix/*` control routes (e.g. git/commit-push) authenticate against.
+ * The serviceKey == the sandbox's ZED_TOKEN — the bearer the daemon's
+ * `/zed/*` control routes (e.g. git/commit-push) authenticate against.
  *
  * Product sandboxes persist it in `sandboxes.config`; project-session
  * sandboxes persist it in `session_sandboxes.config`. resolveEndpoint must

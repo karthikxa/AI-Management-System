@@ -3,10 +3,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIST = join(import.meta.dir, '..', 'dist');
-const ESM = join(DIST, 'kortix.esm.min.js');
-const IIFE = join(DIST, 'kortix.global.js');
+const ESM = join(DIST, 'zed.esm.min.js');
+const IIFE = join(DIST, 'zed.global.js');
 
-// These tests require `pnpm --filter @kortix/sdk run build:bundles` to have run.
+// These tests require `pnpm --filter @zed/sdk run build:bundles` to have run.
 const built = existsSync(ESM) && existsSync(IIFE);
 
 test.skipIf(!built)('no browser bundle contains node:child_process', () => {
@@ -19,9 +19,9 @@ test.skipIf(!built)('no browser bundle contains node:child_process', () => {
   }
 });
 
-test.skipIf(!built)('the IIFE bundle assigns a Kortix global with the core API', () => {
+test.skipIf(!built)('the IIFE bundle assigns a Zed global with the core API', () => {
   const source = readFileSync(IIFE, 'utf8');
   expect(source.length).toBeGreaterThan(1000);
-  // `globalName: 'Kortix'` makes tsup emit `var Kortix=(()=>{…})()`.
-  expect(/\bKortix\b/.test(source)).toBe(true);
+  // `globalName: 'Zed'` makes tsup emit `var Zed=(()=>{…})()`.
+  expect(/\bZed\b/.test(source)).toBe(true);
 });

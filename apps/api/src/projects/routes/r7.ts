@@ -1,5 +1,5 @@
 import { isCallLive, readTurns } from '../../channels/voice/runtime';
-import { SessionScopeInputSchema, SessionScopeSchema } from '@kortix/api-contract';
+import { SessionScopeInputSchema, SessionScopeSchema } from '@zed/api-contract';
 import { approvalResolvedAuditEvent } from '../../connectors/call-audit';
 import {
   loadSessionGrants,
@@ -42,7 +42,7 @@ import {
   sessionSandboxes,
   projectSessionConnectorBindings,
   serviceAccounts,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, asc, desc, eq, gt, inArray, isNull, or } from 'drizzle-orm';
 import { mayResolveApproval, maySeeSessionApprovals } from '../lib/approval-authority';
 import { accountMayUseManagedModels } from '../../billing/services/entitlements';
@@ -126,7 +126,7 @@ import {
 } from '../../shared/audit-query';
 import { AuditEventSchema, AuditListSchema } from '../../shared/audit-schema';
 import { parseOpenCodeAuditBatch } from '../../shared/opencode-audit-ingestion';
-import { callerKortixSessionId } from '../lib/caller-session';
+import { callerZedSessionId } from '../lib/caller-session';
 import { sandboxTokenMayActOnSession } from '../lib/sandbox-token-session';
 import {
   isConfigStale,
@@ -356,7 +356,7 @@ projectsApp.openapi(
           authType: c.get('authType') as string | undefined,
           apiKeyType: c.get('apiKeyType') as string | undefined,
           inSession: isProjectSessionPrincipal(c),
-          callerSessionId: callerKortixSessionId(c),
+          callerSessionId: callerZedSessionId(c),
           request: requestAuditContext(c),
         });
         if (result.error) throw new WarmSessionCreateFailure(result.error);
@@ -814,7 +814,7 @@ projectsApp.openapi(
     authType: c.get('authType') as string | undefined,
     apiKeyType: c.get('apiKeyType') as string | undefined,
     inSession: isProjectSessionPrincipal(c),
-    callerSessionId: callerKortixSessionId(c),
+    callerSessionId: callerZedSessionId(c),
     request: requestAuditContext(c),
     idempotencyKey,
     mayManageSystemConnections,
@@ -842,7 +842,7 @@ projectsApp.openapi(
     201,
   );
 },
-// The KaaB contract (backend.mdx, KORTIX_AS_A_BACKEND_GUIDE.md) promises coded
+// The KaaB contract (backend.mdx, ZED_AS_A_BACKEND_GUIDE.md) promises coded
 // 400s for the three structured create fields. Schema validation runs before
 // the handler, so without this hook zod failures collapse into the generic
 // defaultHook envelope and the documented codes never reach HTTP callers.
@@ -935,7 +935,7 @@ projectsApp.openapi(
     subject,
     grantsBySession,
     runtimeStatusBySession,
-    callerSessionId: callerKortixSessionId(c),
+    callerSessionId: callerZedSessionId(c),
   });
   if (!selected.authorized) {
     return c.json({ error: 'Project manager access is required to list every session' }, 403);
@@ -1350,7 +1350,7 @@ projectsApp.openapi(
       projectId,
       PROJECT_ACTIONS.PROJECT_SESSION_READ,
     );
-    const visible = await loadVisibleSession(loaded, sessionId, callerKortixSessionId(c));
+    const visible = await loadVisibleSession(loaded, sessionId, callerZedSessionId(c));
     if (!visible) return c.json({ error: 'Not found' }, 404);
     // The historical trail is Enterprise (`auditAccess`), but this endpoint is
     // also the approval CONTROL PLANE: write/destructive connector actions
@@ -1495,7 +1495,7 @@ projectsApp.openapi(
 
 // GET /v1/projects/:projectId/sessions/:sessionId/voice-transcript
 // The live-call transcript for a session's voice connector call — every spoken
-// turn (role 'user'/'agent', from voice_call_turns) PLUS every ask_kortix/
+// turn (role 'user'/'agent', from voice_call_turns) PLUS every ask_zed/
 // run_command the worker issued through the voice MCP (role 'tool', recorded
 // by mcp.ts's callTool). A session's callId IS its sessionId (see
 // channels/voice/runtime.ts's file header), so there is nothing to look up
@@ -1503,19 +1503,19 @@ projectsApp.openapi(
 //
 // `role` alone does not identify a turn — read `speaker` with it:
 //   user  + <null>          a human in the room
-//   agent + 'kortix'        what the Kortix agent put into the call
-//                           (channels/voice/utterance.ts's KORTIX_SPEAKER,
+//   agent + 'zed'        what the Zed agent put into the call
+//                           (channels/voice/utterance.ts's ZED_SPEAKER,
 //                           written server-side the moment it is delivered)
 //   agent + <bot name>      what the voice actually said, as the worker heard
 //                           itself say it (apps/voice-agent/src/transcripts.ts)
-//   tool  + <tool name>     an ask_kortix/run_command the worker issued; the
+//   tool  + <tool name>     an ask_zed/run_command the worker issued; the
 //                           text carries the argument and the outcome
-// The two `agent` rows are not duplicates: one is the instruction Kortix sent,
+// The two `agent` rows are not duplicates: one is the instruction Zed sent,
 // the other the model's spoken phrasing of it, and either can appear alone.
 //
 // This is a THIN read wrapper around `readTurns`/`isCallLive` (already used
 // internally by the voice runtime) for the one thing they didn't have yet: a
-// route a Kortix-authenticated browser session can call. Same visibility gate
+// route a Zed-authenticated browser session can call. Same visibility gate
 // as /transcript and /audit above — project read + the session must be
 // visible to the caller — deliberately NOT the worker's per-call HMAC auth
 // (routes.ts), which authorizes exactly one call and would be the wrong tool
@@ -1723,14 +1723,14 @@ projectsApp.openapi(
         ),
       );
 
-    // Count per (Kortix) session id.
-    const byKortix: Record<string, number> = {};
+    // Count per (Zed) session id.
+    const byZed: Record<string, number> = {};
     for (const r of pendingRows) {
       const sid = r.sessionId ? String(r.sessionId) : null;
-      if (sid) byKortix[sid] = (byKortix[sid] ?? 0) + 1;
+      if (sid) byZed[sid] = (byZed[sid] ?? 0) + 1;
     }
-    const kortixIds = Object.keys(byKortix);
-    if (kortixIds.length === 0) return c.json({ total: 0, sessions: {} });
+    const zedIds = Object.keys(byZed);
+    if (zedIds.length === 0) return c.json({ total: 0, sessions: {} });
 
     // Look these sessions up to (a) gate non-managers to their own and (b) map to
     // the OpenCode session id the sidebar list keys on. The response carries BOTH
@@ -1746,7 +1746,7 @@ projectsApp.openapi(
       .where(
         and(
           eq(projectSessions.projectId, projectId),
-          inArray(projectSessions.sessionId, kortixIds),
+          inArray(projectSessions.sessionId, zedIds),
         ),
       );
 
@@ -1763,12 +1763,12 @@ projectsApp.openapi(
           targetSessionOrigin: s.origin ?? null,
           targetSessionCreatedBy: s.createdBy,
           callerUserId: loaded.userId,
-          callerSessionId: callerKortixSessionId(c),
+          callerSessionId: callerZedSessionId(c),
         })
       ) {
         continue;
       }
-      const n = byKortix[s.sessionId] ?? 0;
+      const n = byZed[s.sessionId] ?? 0;
       if (n <= 0) continue;
       sessions[s.sessionId] = n;
       if (s.opencodeSessionId) sessions[s.opencodeSessionId] = n;
@@ -1891,7 +1891,7 @@ projectsApp.openapi(
       targetSessionCreatedBy: targetCreatedBy,
       callerUserId: loaded.userId,
       callerAuthType: (c.get('authType') as string | undefined) ?? null,
-      callerSessionId: callerKortixSessionId(c),
+      callerSessionId: callerZedSessionId(c),
     });
     if (!verdict.allowed) {
       return c.json(
@@ -1902,7 +1902,7 @@ projectsApp.openapi(
             }
           : verdict.reason === 'non_human_caller'
             ? {
-                error: 'Sign in with a Kortix account to resolve this approval',
+                error: 'Sign in with a Zed account to resolve this approval',
                 code: 'APPROVAL_REQUIRES_HUMAN',
               }
             : { error: 'Only a project manager or the session launcher can resolve this' },
@@ -2126,7 +2126,7 @@ projectsApp.openapi(
   }
 
   // opencode_session_id is SERVER-MANAGED: the backend is the sole authority
-  // for the OpenCode↔Kortix mapping (see ensure-opencode + opencode-mapping.ts).
+  // for the OpenCode↔Zed mapping (see ensure-opencode + opencode-mapping.ts).
   // Clients must never set it, so a stale/forged client value can't drift it.
     const opencodeManagedField = ['opencode_session_id', 'opencodeSessionId'].find((f) =>
       hasOwn(body, f),
@@ -2608,7 +2608,7 @@ projectsApp.openapi(
       projectId,
       PROJECT_ACTIONS.PROJECT_SESSION_READ,
     );
-    const visible = await loadVisibleSession(loaded, sessionId, callerKortixSessionId(c));
+    const visible = await loadVisibleSession(loaded, sessionId, callerZedSessionId(c));
     if (!visible) return c.json({ error: 'Not found' }, 404);
     let grant: Awaited<ReturnType<typeof resolveSessionAgentGrant>>;
     try {
@@ -2680,7 +2680,7 @@ projectsApp.openapi(
       projectId,
       PROJECT_ACTIONS.PROJECT_SESSION_READ,
     );
-    const visible = await loadVisibleSession(loaded, sessionId, callerKortixSessionId(c));
+    const visible = await loadVisibleSession(loaded, sessionId, callerZedSessionId(c));
     if (!visible) return c.json({ error: 'Not found' }, 404);
 
     const baseRef = visible.row.baseRef ?? loaded.row.defaultBranch;
@@ -2737,7 +2737,7 @@ projectsApp.openapi(
       PROJECT_ACTIONS.PROJECT_SESSION_STOP,
     );
     assertAgentScope(c, PROJECT_ACTIONS.PROJECT_SESSION_STOP);
-    const visible = await loadVisibleSession(loaded, sessionId, callerKortixSessionId(c));
+    const visible = await loadVisibleSession(loaded, sessionId, callerZedSessionId(c));
     if (!visible) return c.json({ error: 'Not found' }, 404);
     // Same gate as re-scoping and changing the model: seeing a session is not
     // permission to restart the runtime underneath someone else's work.
@@ -2823,7 +2823,7 @@ projectsApp.openapi(
       PROJECT_ACTIONS.PROJECT_SESSION_STOP,
     );
     assertAgentScope(c, PROJECT_ACTIONS.PROJECT_SESSION_STOP);
-    const visible = await loadVisibleSession(loaded, sessionId, callerKortixSessionId(c));
+    const visible = await loadVisibleSession(loaded, sessionId, callerZedSessionId(c));
     if (!visible) return c.json({ error: 'Not found' }, 404);
     // Seeing a session is not permission to re-scope it — same gate as the model
     // change, for the same reason.
@@ -3221,7 +3221,7 @@ projectsApp.openapi(
 /**
  * Change the model a session uses, mid-flight.
  *
- * `opencode_model` was create-only: the sandbox reads `KORTIX_OPENCODE_MODEL`
+ * `opencode_model` was create-only: the sandbox reads `ZED_OPENCODE_MODEL`
  * when opencode builds its config at spawn, and nothing re-pushed it — so a live
  * box kept its boot model for the rest of the session. The only way to "change"
  * it was to plant a value through PATCH metadata, which skipped the account

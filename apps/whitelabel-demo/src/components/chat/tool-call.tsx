@@ -9,7 +9,7 @@ import Loading from '@/components/ui/loading';
  * search, shell, file read/write/edit, grep/glob search, task, todowrite,
  * and question, with a pretty-JSON `generic` fallback for everything else.
  *
- * Takes a normalized `ToolView` from `@kortix/sdk` (`classifyPart`'s
+ * Takes a normalized `ToolView` from `@zed/sdk` (`classifyPart`'s
  * tool variant) instead of the raw wire tool part — status is already mapped
  * to 'pending'|'running'|'done'|'error' (including router/connector tools like
  * `web_search` that report `state.status: "completed"` but wrap a failure in
@@ -28,7 +28,7 @@ import {
   type ToolViewModel,
   toolInfo,
   toolViewModel,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import {
   Bot,
   Check,

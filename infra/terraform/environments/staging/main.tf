@@ -1,14 +1,14 @@
 # ── staging environment — ECS Fargate (api + gateway), autoscaled ─────────────
 #
-#   staging-api-ecs-fargate.kortix.com  → Cloudflare (proxied, Full strict) → ALB
-#   gateway-staging-ecs-fargate.kortix.com → Cloudflare → ALB → gateway service
+#   staging-api-ecs-fargate.zed.com  → Cloudflare (proxied, Full strict) → ALB
+#   gateway-staging-ecs-fargate.zed.com → Cloudflare → ALB → gateway service
 #
 # These are the ECS backends the `api-router` Worker (env=staging) routes to via
-# its ACTIVE_BACKEND / GATEWAY_ACTIVE_BACKEND toggles; staging-api.kortix.com and
-# gateway-staging.kortix.com are the Worker's route/custom-domain hostnames and
+# its ACTIVE_BACKEND / GATEWAY_ACTIVE_BACKEND toggles; staging-api.zed.com and
+# gateway-staging.zed.com are the Worker's route/custom-domain hostnames and
 # are NOT managed here. Same module set as dev/prod.
 #
-# To avoid a Cloudflare dependency at apply time, this env uses the *.kortix.com
+# To avoid a Cloudflare dependency at apply time, this env uses the *.zed.com
 # wildcard ACM cert directly (no per-host module.acm) and leaves DNS records to be
 # created out-of-band (manage_dns=false); the wildcard already passes CF Full(strict).
 
@@ -39,7 +39,7 @@ provider "cloudflare" {
 }
 
 locals {
-  name = "kortix-staging"
+  name = "zed-staging"
   cloudflare_ip_ranges = [
     "173.245.48.0/20", "103.21.244.0/22", "103.22.200.0/22", "103.31.4.0/22",
     "141.101.64.0/18", "108.162.192.0/18", "190.93.240.0/20", "188.114.96.0/20",
@@ -48,7 +48,7 @@ locals {
   ]
   tags = {
     Environment = "staging"
-    Service     = "kortix-api"
+    Service     = "zed-api"
     ManagedBy   = "terraform"
   }
 }
@@ -68,7 +68,7 @@ module "network" {
 # ecs-deploy.sh wires every key in it into each task-def revision. Looked up by
 # name so the random ARN suffix is never hard-coded.
 data "aws_secretsmanager_secret" "env" {
-  name = "kortix-staging-env"
+  name = "zed-staging-env"
 }
 
 module "api" {
@@ -118,7 +118,7 @@ module "gateway" {
   container_port    = 8090
   health_check_path = "/health/live"
   certificate_arn   = var.wildcard_certificate_arn
-  environment       = merge(var.gateway_environment, { KORTIX_API_URL = "https://staging-api.kortix.com" })
+  environment       = merge(var.gateway_environment, { ZED_API_URL = "https://staging-api.zed.com" })
   secrets           = var.api_secrets
   secrets_blob_arn  = data.aws_secretsmanager_secret.env.arn
 

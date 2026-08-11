@@ -13,7 +13,7 @@ function parseEnvBoolean(value: string | undefined, defaultValue: boolean): bool
  * Parse a raw env string into a flag override: recognized truthy/falsy values
  * map to true/false, anything else (including unset) is `undefined` = "no
  * opinion, fall through". Exported for hosts that wire literal
- * `process.env.NEXT_PUBLIC_*` reads into `configureKortix({ featureFlags })` —
+ * `process.env.NEXT_PUBLIC_*` reads into `configureZed({ featureFlags })` —
  * required on Next.js, whose client bundles only inline LITERAL dotted
  * `process.env.NEXT_PUBLIC_X` expressions; the dynamic `safeEnv(name)` lookup
  * here can never be inlined and always yields undefined in the browser.
@@ -27,10 +27,10 @@ export function parseFlagOverride(value: string | undefined): boolean | undefine
 }
 
 /**
- * Resolve one flag: an explicit `configureKortix({ featureFlags })` override
+ * Resolve one flag: an explicit `configureZed({ featureFlags })` override
  * wins (the portable path — works on any host); otherwise fall back to the
  * legacy `NEXT_PUBLIC_*` build-time env var (so web keeps working unchanged
- * without calling `configureKortix` for this at all); otherwise the default.
+ * without calling `configureZed` for this at all); otherwise the default.
  */
 function resolveFlag(override: boolean | undefined, envName: string, defaultValue: boolean): boolean {
   if (override !== undefined) return override;
@@ -47,7 +47,7 @@ export interface FeatureFlags {
 
 /**
  * Every property below is a getter, so it's resolved lazily on each read
- * rather than frozen at module-eval time — a host's `configureKortix({
+ * rather than frozen at module-eval time — a host's `configureZed({
  * featureFlags })` is honored immediately, even if it runs after this module
  * was first imported (module eval on non-Next hosts has no guaranteed order
  * relative to the host's own startup/provider code).
@@ -58,7 +58,7 @@ export const featureFlags: FeatureFlags = {
    *
    * Default: false (shown)
    * Set NEXT_PUBLIC_DISABLE_MOBILE_ADVERTISING=true, or
-   * configureKortix({ featureFlags: { disableMobileAdvertising: true } }), to hide.
+   * configureZed({ featureFlags: { disableMobileAdvertising: true } }), to hide.
    */
   get disableMobileAdvertising(): boolean {
     return resolveFlag(
@@ -83,9 +83,9 @@ export const featureFlags: FeatureFlags = {
    * channel/trigger UI, no @project mentions, no `Add to board` triggers.
    *
    * When true (via NEXT_PUBLIC_ENABLE_PROJECTS=true or
-   * configureKortix({ featureFlags: { enableProjects: true } })), the legacy
+   * configureZed({ featureFlags: { enableProjects: true } })), the legacy
    * project UI (board, milestones, members, project agents/credentials/templates)
-   * is surfaced. The sandbox MUST also have KORTIX_PROJECTS_ENABLED=true for the
+   * is surfaced. The sandbox MUST also have ZED_PROJECTS_ENABLED=true for the
    * LLM-side project/ticket tools to register; without that the UI exists but
    * tool calls 503.
    */

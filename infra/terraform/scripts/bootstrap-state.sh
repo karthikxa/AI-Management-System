@@ -4,8 +4,8 @@
 set -euo pipefail
 
 REGION="${AWS_REGION:-us-west-2}"
-BUCKET="${TF_STATE_BUCKET:-kortix-terraform-state}"
-TABLE="${TF_LOCK_TABLE:-kortix-terraform-locks}"
+BUCKET="${TF_STATE_BUCKET:-zed-terraform-state}"
+TABLE="${TF_LOCK_TABLE:-zed-terraform-locks}"
 
 echo "Region: $REGION  Bucket: $BUCKET  Lock table: $TABLE"
 

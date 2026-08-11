@@ -16,7 +16,7 @@ import { InlineMeta } from '@/components/ui/inline-meta';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/features/providers/auth-provider';
 import { usePermission } from '@/lib/use-permission';
-import { listAccountTokens } from '@kortix/sdk';
+import { listAccountTokens } from '@zed/sdk';
 
 function formatDate(iso: string | null | undefined) {
   if (!iso) return '—';

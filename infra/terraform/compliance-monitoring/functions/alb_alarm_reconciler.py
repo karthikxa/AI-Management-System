@@ -6,7 +6,7 @@ import os
 from collections.abc import Iterable
 from typing import Any
 
-ALARM_PREFIX = "kortix-alb-"
+ALARM_PREFIX = "zed-alb-"
 TARGET_GROUP_METRICS = {
     "target-response-time",
     "unhealthy-hosts",
@@ -132,7 +132,7 @@ def _alarm_configuration(
         "Dimensions": dimensions,
         "TreatMissingData": "notBreaching",
         "Tags": [
-            {"Key": "ManagedBy", "Value": "kortix-compliance"},
+            {"Key": "ManagedBy", "Value": "zed-compliance"},
             {"Key": "Control", "Value": "DCF-86"},
         ],
     }

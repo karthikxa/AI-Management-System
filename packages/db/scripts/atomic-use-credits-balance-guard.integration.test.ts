@@ -20,7 +20,7 @@ import { resolve } from 'node:path';
 const dockerAvailable =
   Bun.spawnSync(['docker', 'version'], { stdout: 'ignore', stderr: 'ignore' }).exitCode === 0;
 
-const container = `kortix-credit-guard-${crypto.randomUUID().slice(0, 8)}`;
+const container = `zed-credit-guard-${crypto.randomUUID().slice(0, 8)}`;
 
 function psql(sql: string, allowFailure = false, extraArgs: string[] = []) {
   const result = Bun.spawnSync(
@@ -57,9 +57,9 @@ const ACCOUNT = '00000000-0000-4000-a000-000000000001';
 
 function reseed(daily: string, expiring: string, nonExpiring: string) {
   psql(`
-    DELETE FROM kortix.credit_ledger WHERE account_id = '${ACCOUNT}';
-    DELETE FROM kortix.credit_accounts WHERE account_id = '${ACCOUNT}';
-    INSERT INTO kortix.credit_accounts(
+    DELETE FROM zed.credit_ledger WHERE account_id = '${ACCOUNT}';
+    DELETE FROM zed.credit_accounts WHERE account_id = '${ACCOUNT}';
+    INSERT INTO zed.credit_accounts(
       account_id, daily_credits_balance_precise, expiring_credits_precise,
       non_expiring_credits_precise, balance_precise
     ) VALUES (
@@ -72,14 +72,14 @@ function reseed(daily: string, expiring: string, nonExpiring: string) {
 function balance(): number {
   return Number(
     scalar(
-      `SELECT balance_precise FROM kortix.credit_accounts WHERE account_id = '${ACCOUNT}';`,
+      `SELECT balance_precise FROM zed.credit_accounts WHERE account_id = '${ACCOUNT}';`,
     ),
   );
 }
 
 function ledgerRowCount(): number {
   return Number(
-    scalar(`SELECT count(*) FROM kortix.credit_ledger WHERE account_id = '${ACCOUNT}';`),
+    scalar(`SELECT count(*) FROM zed.credit_ledger WHERE account_id = '${ACCOUNT}';`),
   );
 }
 
@@ -120,8 +120,8 @@ describe.skipIf(!dockerAvailable)('atomic_use_credits overdraft guard — real P
     psql(`
       CREATE ROLE service_role;
       CREATE ROLE authenticated;
-      CREATE SCHEMA kortix;
-      CREATE TABLE kortix.credit_accounts (
+      CREATE SCHEMA zed;
+      CREATE TABLE zed.credit_accounts (
         account_id uuid PRIMARY KEY,
         daily_credits_balance_precise numeric(20,10),
         expiring_credits_precise numeric(20,10),
@@ -129,7 +129,7 @@ describe.skipIf(!dockerAvailable)('atomic_use_credits overdraft guard — real P
         balance_precise numeric(20,10),
         updated_at timestamptz NOT NULL DEFAULT now()
       );
-      CREATE TABLE kortix.credit_ledger (
+      CREATE TABLE zed.credit_ledger (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         account_id uuid NOT NULL,
         amount numeric(12,4) NOT NULL DEFAULT 0,
@@ -142,7 +142,7 @@ describe.skipIf(!dockerAvailable)('atomic_use_credits overdraft guard — real P
         idempotency_key text,
         created_at timestamptz DEFAULT now()
       );
-      CREATE INDEX idx_credit_ledger_idempotency ON kortix.credit_ledger(idempotency_key)
+      CREATE INDEX idx_credit_ledger_idempotency ON zed.credit_ledger(idempotency_key)
         WHERE idempotency_key IS NOT NULL;
     `);
 
@@ -234,7 +234,7 @@ describe.skipIf(!dockerAvailable)('atomic_use_credits overdraft guard — real P
   });
 
   test('refuses an account that has no credit account row', () => {
-    psql(`DELETE FROM kortix.credit_accounts WHERE account_id = '${ACCOUNT}';`);
+    psql(`DELETE FROM zed.credit_accounts WHERE account_id = '${ACCOUNT}';`);
     const result = useCredits(`'${ACCOUNT}'::uuid, 1::numeric, 'No account', 'usage'`);
 
     expect(result.success).toBe(false);
@@ -274,7 +274,7 @@ describe.skipIf(!dockerAvailable)('atomic_use_credits overdraft guard — real P
 
     expect(
       scalar(
-        `SELECT metadata ->> 'ledger_type' FROM kortix.credit_ledger WHERE account_id = '${ACCOUNT}';`,
+        `SELECT metadata ->> 'ledger_type' FROM zed.credit_ledger WHERE account_id = '${ACCOUNT}';`,
       ),
     ).toBe('llm_debit');
   });

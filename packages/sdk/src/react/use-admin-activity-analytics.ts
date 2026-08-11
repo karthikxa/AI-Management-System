@@ -31,7 +31,7 @@ export const ADMIN_ANALYTICS_MIN_DAYS = 1;
 export interface AdminActivityDay {
   /** `YYYY-MM-DD`, UTC. */
   date: string;
-  /** Rows created in `kortix.project_sessions` that day. */
+  /** Rows created in `zed.project_sessions` that day. */
   sessionsCreated: number;
   /** Distinct accounts that created at least one session that day. */
   activeAccounts: number;

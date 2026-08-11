@@ -1,6 +1,6 @@
 /**
  * Wrapper-mode session tokens — Lumen's OWN auth, entirely separate from the
- * Kortix API key. HMAC-signed, `node:crypto` only (no JWT dependency):
+ * Zed API key. HMAC-signed, `node:crypto` only (no JWT dependency):
  *
  *   token := base64url(JSON payload) + "." + base64url(HMAC-SHA256(payload))
  *

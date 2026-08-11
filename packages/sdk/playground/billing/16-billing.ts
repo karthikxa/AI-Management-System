@@ -5,27 +5,27 @@
  *
  * Run (from packages/sdk):  bun run playground/billing/16-billing.ts
  */
-import { makeKortix, run } from "../_shared";
+import { makeZed, run } from "../_shared";
 
 run("billing", async () => {
-  const kortix = makeKortix();
+  const zed = makeZed();
 
-  const state = await kortix.billing.accountState();
+  const state = await zed.billing.accountState();
   console.log(`✓ accountState(): ${JSON.stringify(state).slice(0, 300)}…`);
 
-  const summary = await kortix.billing.transactionsSummary();
+  const summary = await zed.billing.transactionsSummary();
   console.log(
     `✓ transactionsSummary(): ${JSON.stringify(summary).slice(0, 200)}`,
   );
 
-  const breakdown = await kortix.billing.creditBreakdown();
+  const breakdown = await zed.billing.creditBreakdown();
   console.log(
     `✓ creditBreakdown(): ${JSON.stringify(breakdown).slice(0, 200)}`,
   );
 
-  const usage = await kortix.billing.usageHistory();
+  const usage = await zed.billing.usageHistory();
   console.log(`✓ usageHistory(): ${JSON.stringify(usage).slice(0, 200)}`);
 
-  const tiers = await kortix.billing.tierConfigurations();
+  const tiers = await zed.billing.tierConfigurations();
   console.log(`✓ tierConfigurations(): ${JSON.stringify(tiers).slice(0, 200)}`);
 });

@@ -15,7 +15,7 @@ import {
   listLinkableGitHubInstallations,
   saveGitHubInstallation,
   type LinkableGitHubInstallation,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { GithubLogoIcon as Github } from '@phosphor-icons/react';
 import { useAppHome } from '@/lib/onboarding/use-app-home';
 
@@ -128,8 +128,8 @@ function GitHubSetup() {
           setState('empty');
           setMessage(
             result.installations.length > 0
-              ? `Every installation available to ${result.github_login} is already linked to this Kortix account.`
-              : `No existing Kortix App installation is available to ${result.github_login}.`,
+              ? `Every installation available to ${result.github_login} is already linked to this Zed account.`
+              : `No existing Zed App installation is available to ${result.github_login}.`,
           );
         } else {
           setState('select');
@@ -278,7 +278,7 @@ function GitHubSetup() {
         ) : state === 'error' ? (
           <Rise delay={0.06}>
             <Button size="lg" className="w-full" onClick={() => router.replace(appHome)}>
-              Back to Kortix
+              Back to Zed
             </Button>
           </Rise>
         ) : null}
@@ -315,7 +315,7 @@ function getHeading(
 }
 
 // sessionStorage-based guard — prevents multiple popups across re-mounts AND HMR
-const GITHUB_PROOF_GUARD_KEY = 'kortix-github-proof-in-flight';
+const GITHUB_PROOF_GUARD_KEY = 'zed-github-proof-in-flight';
 
 function isGithubProofInFlight(): boolean {
   try {
@@ -349,7 +349,7 @@ function requestGitHubUserProof(): Promise<string> {
 
   const proofPopup = window.open(
     '/auth/github-connect',
-    'kortix-github-proof',
+    'zed-github-proof',
     'popup,width=520,height=720',
   );
   if (!proofPopup) {
@@ -391,8 +391,8 @@ function requestGitHubUserProof(): Promise<string> {
 
 function consumeGitHubSetupReturn(): string | null {
   try {
-    const value = window.localStorage.getItem('kortix:github_setup_return');
-    window.localStorage.removeItem('kortix:github_setup_return');
+    const value = window.localStorage.getItem('zed:github_setup_return');
+    window.localStorage.removeItem('zed:github_setup_return');
     if (!value || !value.startsWith('/') || value.startsWith('//')) return null;
     return value;
   } catch {

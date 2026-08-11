@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import type { ProjectSnapshotBuild } from '@kortix/sdk';
+import type { ProjectSnapshotBuild } from '@zed/sdk';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -14,7 +14,7 @@ const build = (overrides: Partial<ProjectSnapshotBuild> = {}): ProjectSnapshotBu
   build_id: 'build-1',
   slug: 'essentia',
   template_slug: 'essentia',
-  snapshot_name: 'kortix-tpl-abc123',
+  snapshot_name: 'zed-tpl-abc123',
   content_hash: 'abc123',
   status: 'failed',
   error: null,
@@ -34,7 +34,7 @@ describe('project accelerator build presentation', () => {
         build({
           slug: 'default-warm',
           template_slug: 'default',
-          snapshot_name: 'kortix-ppwarm-00ead866-f5c859f984f2',
+          snapshot_name: 'zed-ppwarm-00ead866-f5c859f984f2',
         }),
       ),
     ).toBe(true);
@@ -43,7 +43,7 @@ describe('project accelerator build presentation', () => {
         build({
           slug: 'worker-warm',
           template_slug: 'worker-warm',
-          snapshot_name: 'kortix-tpl-worker',
+          snapshot_name: 'zed-tpl-worker',
         }),
       ),
     ).toBe(false);
@@ -53,7 +53,7 @@ describe('project accelerator build presentation', () => {
     const html = renderBuildRow('automatic', {
       slug: 'default-warm',
       template_slug: 'default',
-      snapshot_name: 'kortix-ppwarm-00ead866-f5c859f984f2',
+      snapshot_name: 'zed-ppwarm-00ead866-f5c859f984f2',
     });
 
     expect(html).toContain('Repository accelerator');
@@ -89,20 +89,20 @@ describe('failed build rows that no longer apply', () => {
       const html = renderBuildRow('automatic', {}, relevance);
 
       expect(html).toContain(label);
-      expect(html).not.toContain('bg-kortix-red/15');
-      expect(html).not.toContain('text-kortix-red');
+      expect(html).not.toContain('bg-zed-red/15');
+      expect(html).not.toContain('text-zed-red');
     }
   });
 
   test('keeps the red tile while the failure still blocks sessions', () => {
     const html = renderBuildRow('automatic', {}, 'blocking');
 
-    expect(html).toContain('bg-kortix-red/15');
+    expect(html).toContain('bg-zed-red/15');
     expect(html).not.toContain('superseded');
   });
 
   test('leaves an unclassified failure exactly as it was', () => {
-    expect(renderBuildRow('automatic', {}, null)).toContain('bg-kortix-red/15');
+    expect(renderBuildRow('automatic', {}, null)).toContain('bg-zed-red/15');
   });
 });
 
@@ -113,7 +113,7 @@ describe('sandbox template build row provider disclosure', () => {
     expect(html).not.toContain('Daytona');
     // Everything else about the build should still render.
     expect(html).toContain('essentia');
-    expect(html).toContain('kortix-tpl-abc123');
+    expect(html).toContain('zed-tpl-abc123');
     expect(html).toContain('Manual rebuild');
   });
 

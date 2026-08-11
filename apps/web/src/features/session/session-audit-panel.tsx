@@ -29,7 +29,7 @@ import {
   useSessionAudit,
   useSessionAuditTimeline,
 } from '@/features/session/session-audit-shared';
-import type { AuditEvent, SessionAuditAction } from '@kortix/sdk';
+import type { AuditEvent, SessionAuditAction } from '@zed/sdk';
 import { CaretRightIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 

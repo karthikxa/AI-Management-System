@@ -19,7 +19,7 @@ export interface GitHubAppStatus {
   installation_id: string | null;
   /** 'db' = a GitHub App created via the manifest flow or pasted in via
    *  `setGitHubAppFromExisting`. 'env' = a GitHub App configured via
-   *  KORTIX_GITHUB_APP_ (or GITHUB_APP_) env vars (the hosted deployment).
+   *  ZED_GITHUB_APP_ (or GITHUB_APP_) env vars (the hosted deployment).
    *  'pat' = a personal/fine-grained access token, via `setGitHubAppPat` or
    *  `MANAGED_GIT_GITHUB_TOKEN`. 'none' = unconfigured. */
   source: 'db' | 'env' | 'pat' | 'none';

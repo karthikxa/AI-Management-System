@@ -4,15 +4,15 @@
 set lock_timeout = '2s';
 set statement_timeout = '30s';
 
-CREATE OR REPLACE FUNCTION kortix.audit_tunnel_operation()
+CREATE OR REPLACE FUNCTION zed.audit_tunnel_operation()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public
+SET search_path = zed, public
 AS $$
 BEGIN
   IF TG_OP = 'UPDATE' AND NEW.phase IS NOT DISTINCT FROM OLD.phase THEN RETURN NEW; END IF;
-  INSERT INTO kortix.audit_events(
+  INSERT INTO zed.audit_events(
     account_id, project_id, session_id, actor_user_id, actor_type,
     authoritative_source, outcome, action, phase,
     resource_type, resource_id, execution_id, source_ledger, source_record_id,

@@ -9,10 +9,10 @@ set statement_timeout = '30s';
 
 -- mixed-version-safe: Old code supplies egress_policy for every broker row.
 -- The replacement preserves that path and adds server-only consumers.
-alter table "kortix"."project_secrets"
+alter table "zed"."project_secrets"
   drop constraint "project_secrets_egress_policy_required";
 
-alter table "kortix"."project_secrets"
+alter table "zed"."project_secrets"
   add constraint "project_secrets_egress_policy_required"
   check (
     "strategy" in ('runtime', 'denied')

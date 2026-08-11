@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { getCurrentInstanceIdFromWindow, toInstanceAwarePath } from '@kortix/sdk/instance-routes';
+import { getCurrentInstanceIdFromWindow, toInstanceAwarePath } from '@zed/sdk/instance-routes';
 import { safeLocalStorage } from '@/lib/storage/managed-storage';
 
 // ============================================================================
@@ -430,7 +430,7 @@ export const useTabStore = create<TabState>()(
       },
     }),
     {
-      name: 'kortix-tabs',
+      name: 'zed-tabs',
       // Never let a full quota crash the app — the storage wrapper evicts the
       // disposable per-server cache and retries instead of throwing.
       storage: createJSONStorage(() => safeTabStorage),

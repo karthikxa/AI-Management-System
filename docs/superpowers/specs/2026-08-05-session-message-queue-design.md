@@ -294,7 +294,7 @@ that had attachments renders with an explicit "attachments were not restored"
 note rather than silently sending a message the user believes carries files.
 Stating the gap beats a silent truncation.
 
-Storage key: `kortix_message_queue_v3`. `v1` (mobile) and `v2` (deleted web
+Storage key: `zed_message_queue_v3`. `v1` (mobile) and `v2` (deleted web
 store) are left alone; a `v2` payload is ignored, not migrated — those queues
 have been dead since `67749c1f76` and their contents are months stale.
 
@@ -334,7 +334,7 @@ consume-once bucket, no cross-session leak, no ordering guess.
 
 ## 7. Where the code lives
 
-Per the repo rule that runtime logic belongs to `@kortix/sdk` and hosts are thin:
+Per the repo rule that runtime logic belongs to `@zed/sdk` and hosts are thin:
 
 | Layer | Location | Framework |
 |---|---|---|

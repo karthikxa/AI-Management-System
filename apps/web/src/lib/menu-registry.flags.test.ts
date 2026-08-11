@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { FEATURE_FLAG_KEYS } from '@kortix/sdk';
+import { FEATURE_FLAG_KEYS } from '@zed/sdk';
 import { menuRegistry } from './menu-registry';
 
 /**
@@ -23,7 +23,7 @@ const sidebarSource = readFileSync(join(root, 'components/sidebar/sidebar-right.
 describe('menu registry feature-flag gating', () => {
   test('the field is named requiresFlag and typed FeatureFlagKey', () => {
     expect(registrySource).toContain('requiresFlag?: FeatureFlagKey;');
-    expect(registrySource).toContain("import type { FeatureFlagKey } from '@kortix/sdk';");
+    expect(registrySource).toContain("import type { FeatureFlagKey } from '@zed/sdk';");
     expect(registrySource).not.toContain('requiresExperimental');
     expect(registrySource).not.toContain('ExperimentalFeatureKey');
   });
@@ -80,7 +80,7 @@ describe('useProjectFeatureFlags', () => {
   });
 
   test('is composed from the ONE primitive, not a second hand-rolled read', () => {
-    expect(flagMapSource).toContain("import { useFeatureFlag } from '@kortix/sdk/react';");
+    expect(flagMapSource).toContain("import { useFeatureFlag } from '@zed/sdk/react';");
     expect(flagMapSource).not.toContain('useQuery');
     expect(flagMapSource).not.toContain('experimental');
   });

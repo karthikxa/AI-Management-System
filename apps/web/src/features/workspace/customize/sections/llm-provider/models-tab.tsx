@@ -11,7 +11,7 @@ import {
   useModelEnablement,
   useProjectModels,
   wireToModelKey,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 import { StarIcon as Star } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';

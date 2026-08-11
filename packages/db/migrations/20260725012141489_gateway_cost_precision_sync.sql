@@ -1,14 +1,14 @@
 SET lock_timeout = '5s';
 SET statement_timeout = '30min';
 
-UPDATE kortix.gateway_request_logs
+UPDATE zed.gateway_request_logs
 SET upstream_cost_precise = upstream_cost,
     final_cost_precise = final_cost;
 
-UPDATE kortix.usage_events
+UPDATE zed.usage_events
 SET cost_usd_precise = cost_usd;
 
-CREATE FUNCTION kortix.sync_gateway_request_log_cost_precision()
+CREATE FUNCTION zed.sync_gateway_request_log_cost_precision()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path TO ''
@@ -47,11 +47,11 @@ END;
 $function$;
 
 CREATE TRIGGER sync_gateway_request_log_cost_precision
-BEFORE INSERT OR UPDATE ON kortix.gateway_request_logs
+BEFORE INSERT OR UPDATE ON zed.gateway_request_logs
 FOR EACH ROW
-EXECUTE FUNCTION kortix.sync_gateway_request_log_cost_precision();
+EXECUTE FUNCTION zed.sync_gateway_request_log_cost_precision();
 
-CREATE FUNCTION kortix.sync_usage_event_cost_precision()
+CREATE FUNCTION zed.sync_usage_event_cost_precision()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path TO ''
@@ -78,6 +78,6 @@ END;
 $function$;
 
 CREATE TRIGGER sync_usage_event_cost_precision
-BEFORE INSERT OR UPDATE ON kortix.usage_events
+BEFORE INSERT OR UPDATE ON zed.usage_events
 FOR EACH ROW
-EXECUTE FUNCTION kortix.sync_usage_event_cost_precision();
+EXECUTE FUNCTION zed.sync_usage_event_cost_precision();

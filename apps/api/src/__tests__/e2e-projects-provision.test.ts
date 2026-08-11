@@ -1,6 +1,6 @@
 /**
  * E2E for `POST /v1/projects/provision` — the managed-git path behind
- * `kortix ship` when a repo has no `origin` remote. The managed backend is
+ * `zed ship` when a repo has no `origin` remote. The managed backend is
  * provider-agnostic (GitHub is the default + only active one), so this test
  * drives the endpoint against a stub `GitHostBackend` and asserts the
  * provider-neutral behaviour: create repo → mint push token → register project.
@@ -9,19 +9,19 @@ import { beforeEach, describe, expect, mock, test } from 'bun:test';
 import { mockIamEngineAllowAll, mockIamMembershipSyncNoop } from './helpers/iam-mocks';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import { accountMembers, projectGitConnections, projectMembers, projects } from '@kortix/db';
+import { accountMembers, projectGitConnections, projectMembers, projects } from '@zed/db';
 
-process.env.KORTIX_DEFAULT_MARKETPLACES = '';
+process.env.ZED_DEFAULT_MARKETPLACES = '';
 process.env.MANAGED_GIT_PROVIDER = 'github';
 
 const USER_ID = '00000000-0000-4000-a000-000000000001';
 const ACCOUNT_ID = '00000000-0000-4000-a000-000000000101';
 const PROJECT_ID = '00000000-0000-4000-a000-000000000201';
-const REPO_OWNER = 'kortix-managed';
+const REPO_OWNER = 'zed-managed';
 const EXTERNAL_REPO_ID = 'gh-repo-1';
 const INSTALL_ID = 'install-1';
 const PUSH_TOKEN = 'scoped-push-token-789';
-const TEST_AUTH_KEY = '__KORTIX_E2E_AUTH__';
+const TEST_AUTH_KEY = '__ZED_E2E_AUTH__';
 
 let insertedProject: any | null;
 let grantedProjectRole: any | null;
@@ -169,9 +169,9 @@ mock.module('../projects/git', () => ({
 }));
 
 mock.module("../snapshots/builder", () => ({
-  ensureSandboxImage: async () => ({ snapshotName: "kortix-default-test", slug: "default", contentHash: "a".repeat(64), built: false, isDefault: true }),
-  ensureMetaSandboxImage: async () => ({ snapshotName: "kortix-meta-test", slug: "meta", contentHash: "b".repeat(64), built: false, isDefault: false }),
-  deleteSandboxImage: async () => ({ deleted: false, snapshotName: "kortix-default-test", slug: "default" }),
+  ensureSandboxImage: async () => ({ snapshotName: "zed-default-test", slug: "default", contentHash: "a".repeat(64), built: false, isDefault: true }),
+  ensureMetaSandboxImage: async () => ({ snapshotName: "zed-meta-test", slug: "meta", contentHash: "b".repeat(64), built: false, isDefault: false }),
+  deleteSandboxImage: async () => ({ deleted: false, snapshotName: "zed-default-test", slug: "default" }),
   listSnapshotBuilds: async () => [],
   listSandboxTemplates: async () => [],
   resolveTemplate: async () => ({ slug: "default", spec: {}, isDefault: true }),
@@ -182,10 +182,10 @@ mock.module("../snapshots/builder", () => ({
   kickStartupPreBuild: () => {},
   reconcileProjectTemplates: async () => ({ checked: 0, updated: 0 }),
   reconcileStaleBuilds: async () => ({ checked: 0, updated: 0 }),
-  ensurePlatformDefaultImage: async () => ({ snapshotName: "kortix-default-test", slug: "default", contentHash: "a".repeat(64), built: false, isDefault: true }),
+  ensurePlatformDefaultImage: async () => ({ snapshotName: "zed-default-test", slug: "default", contentHash: "a".repeat(64), built: false, isDefault: true }),
   resolveCommitSha: async () => "a".repeat(40),
   ensurePerProjectWarmImage: async () => ({
-    snapshotName: "kortix-ppwarm-test",
+    snapshotName: "zed-ppwarm-test",
     tip: "a".repeat(40),
     built: false,
     provider: "daytona",
@@ -237,7 +237,7 @@ function existingProjectRow() {
     name: 'Existing Managed Project',
     repoUrl: `https://github.com/${REPO_OWNER}/existing-managed.git`,
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     status: 'active',
     metadata: {
       git: {
@@ -414,7 +414,7 @@ describe('POST /v1/projects/provision (managed git)', () => {
       name: 'My Agent',
       repoUrl: expectedRepoUrl,
       defaultBranch: 'main',
-      manifestPath: 'kortix.yaml',
+      manifestPath: 'zed.yaml',
       status: 'active',
       metadata: {
         git: {
@@ -438,7 +438,7 @@ describe('POST /v1/projects/provision (managed git)', () => {
     // Provisioned the repo through the backend seam (no seeding without flag).
     expect(backendCalls).toEqual(['createRepo']);
 
-    // An unseeded managed repo is a legitimate `kortix ship` state, but it must
+    // An unseeded managed repo is a legitimate `zed ship` state, but it must
     // be RECORDED, not silently indistinguishable from a seeded one.
     expect(insertedProject.metadata.git.seed).toMatchObject({
       seeded: false,
@@ -564,9 +564,9 @@ describe('POST /v1/projects/provision (managed git)', () => {
         seed_starter: true,
         starter_template: 'minimal',
         marketplace_items: [
-          'kortix-starter:agent-browser',
-          'kortix-starter:deep-research',
-          'kortix-starter:pdf',
+          'zed-starter:agent-browser',
+          'zed-starter:deep-research',
+          'zed-starter:pdf',
         ],
       }),
     });
@@ -577,24 +577,24 @@ describe('POST /v1/projects/provision (managed git)', () => {
     // No lock is ever produced — the engine that wrote it is deleted.
     expect(seedFilePaths).not.toContain('registry-lock.json');
     // The requested marketplace skills are NOT deterministically installed —
-    // only the committed kortix-cli skill (part of the base minimal
+    // only the committed zed-cli skill (part of the base minimal
     // scaffold) is present.
-    expect(seedFilePaths).not.toContain('.kortix/opencode/skills/agent-browser/SKILL.md');
-    expect(seedFilePaths).not.toContain('.kortix/opencode/skills/deep-research/SKILL.md');
-    expect(seedFilePaths).not.toContain('.kortix/opencode/skills/pdf/SKILL.md');
-    expect(seedFilePaths).toContain('.kortix/opencode/skills/kortix-cli/SKILL.md');
-    expect(seedFilePaths).toContain('kortix.yaml');
+    expect(seedFilePaths).not.toContain('.zed/opencode/skills/agent-browser/SKILL.md');
+    expect(seedFilePaths).not.toContain('.zed/opencode/skills/deep-research/SKILL.md');
+    expect(seedFilePaths).not.toContain('.zed/opencode/skills/pdf/SKILL.md');
+    expect(seedFilePaths).toContain('.zed/opencode/skills/zed-cli/SKILL.md');
+    expect(seedFilePaths).toContain('zed.yaml');
 
-    expect(seedBaseFilePaths).toContain('.kortix/opencode/tools/show.ts');
-    expect(seedBaseFilePaths).toContain('.kortix/opencode/plugins/pty.ts');
-    expect(seedBaseFilePaths).toContain('.kortix/opencode/tools/web_search.ts');
-    expect(seedBaseFilePaths).toContain('.kortix/opencode/tools/lib/get-env.ts');
+    expect(seedBaseFilePaths).toContain('.zed/opencode/tools/show.ts');
+    expect(seedBaseFilePaths).toContain('.zed/opencode/plugins/pty.ts');
+    expect(seedBaseFilePaths).toContain('.zed/opencode/tools/web_search.ts');
+    expect(seedBaseFilePaths).toContain('.zed/opencode/tools/lib/get-env.ts');
     expect(seedBaseFilePaths).not.toContain('registry-lock.json');
 
-    // The bug this route fix closes: the base template's kortix.yaml declares
-    // `default_agent: kortix`, but project.metadata.default_agent was never
+    // The bug this route fix closes: the base template's zed.yaml declares
+    // `default_agent: zed`, but project.metadata.default_agent was never
     // mirrored from it — so every session silently stored the non-binding
-    // 'default' sentinel and any agent-scope model pin set on 'kortix' was
+    // 'default' sentinel and any agent-scope model pin set on 'zed' was
     // never applied (see llm-gateway/resolution/default-model.ts). Provision
     // must now stamp the mirror at creation time.
     expect(updatedProjectSets).toHaveLength(1);

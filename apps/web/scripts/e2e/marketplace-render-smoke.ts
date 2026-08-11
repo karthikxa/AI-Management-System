@@ -9,21 +9,21 @@ function assert(condition: unknown, message: string): asserts condition {
 
 function marketplaceItem(name: string, title: string) {
   return {
-    id: `kortix-starter:${name}`,
-    registry: 'kortix-starter',
+    id: `zed-starter:${name}`,
+    registry: 'zed-starter',
     name,
     type: 'registry:skill',
     title,
     description: `${title} marketplace item`,
-    categories: ['kortix'],
+    categories: ['zed'],
     capabilities: { secrets: [], connectors: [], tools: [name], network: [] },
     dependencies: [],
     fileCount: 1,
     external: false,
-    marketplaceId: 'kortix',
-    marketplaceLabel: 'Kortix',
-    owner: 'kortix-ai',
-    sourceUrl: 'https://github.com/kortix-ai/marketplace',
+    marketplaceId: 'zed',
+    marketplaceLabel: 'Zed',
+    owner: 'zed-ai',
+    sourceUrl: 'https://github.com/zed-ai/marketplace',
   };
 }
 
@@ -51,13 +51,13 @@ async function installRoutes(page: Page) {
         sources: [],
         marketplaces: [
           {
-            id: 'kortix',
-            label: 'Kortix',
-            owner: 'kortix-ai',
+            id: 'zed',
+            label: 'Zed',
+            owner: 'zed-ai',
             count: items.length,
             types: { 'registry:skill': items.length },
             external: false,
-            sourceUrl: 'https://github.com/kortix-ai/marketplace',
+            sourceUrl: 'https://github.com/zed-ai/marketplace',
           },
         ],
       }),
@@ -132,7 +132,7 @@ async function installRoutes(page: Page) {
           {
             name: 'pdf',
             type: 'registry:skill',
-            source: 'kortix',
+            source: 'zed',
             installed_at: '2026-01-01T00:00:00.000Z',
             file_count: 1,
           },

@@ -3,7 +3,7 @@ import type {
   ProjectSnapshotBuild,
   SandboxRuntimeStatus,
   SandboxStaleFailureReason,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 /**
  * Every sandbox alert in the product reads the server-derived `status` and

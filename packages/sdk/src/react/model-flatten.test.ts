@@ -3,8 +3,8 @@ import { describe, expect, test } from 'bun:test';
 import { flattenModels, isOfferedModel, type FlatModel } from './model-flatten';
 import type { ProviderListResponse } from './use-opencode-sessions';
 
-// Regression coverage for the "every provider shows as Kortix" picker bug:
-// the gateway exposes its ENTIRE catalog under one synthetic `kortix`
+// Regression coverage for the "every provider shows as Zed" picker bug:
+// the gateway exposes its ENTIRE catalog under one synthetic `zed`
 // opencode provider. `flattenModels` must carry the model's REAL upstream
 // `provider` field (and `reasoningOptions`) through onto `FlatModel` so
 // downstream grouping/gating never has to recover them by string-splitting
@@ -13,13 +13,13 @@ function gatewayProviderList(
   models: Record<string, Record<string, unknown>>,
 ): ProviderListResponse {
   return {
-    connected: ['kortix'],
-    all: [{ id: 'kortix', name: 'Kortix', source: 'custom', models }],
+    connected: ['zed'],
+    all: [{ id: 'zed', name: 'Zed', source: 'custom', models }],
   } as unknown as ProviderListResponse;
 }
 
 describe('flattenModels — gateway `provider` + `reasoning_options` pass-through', () => {
-  test('carries the explicit `provider` field for a BYOK model registered under the kortix provider', () => {
+  test('carries the explicit `provider` field for a BYOK model registered under the zed provider', () => {
     const [flat] = flattenModels(
       gatewayProviderList({
         'anthropic/claude-opus-4-8': {
@@ -30,18 +30,18 @@ describe('flattenModels — gateway `provider` + `reasoning_options` pass-throug
         },
       }),
     );
-    expect(flat?.providerID).toBe('kortix');
+    expect(flat?.providerID).toBe('zed');
     expect(flat?.provider).toBe('anthropic');
     expect(flat?.reasoningOptions).toEqual([{ type: 'effort', values: ['low', 'medium', 'high'] }]);
   });
 
-  test('carries `provider: "kortix"` for a managed model, distinct from its providerID', () => {
+  test('carries `provider: "zed"` for a managed model, distinct from its providerID', () => {
     const [flat] = flattenModels(
       gatewayProviderList({
-        'claude-opus-4.8': { name: 'Claude Opus 4.8', provider: 'kortix', reasoning: true },
+        'claude-opus-4.8': { name: 'Claude Opus 4.8', provider: 'zed', reasoning: true },
       }),
     );
-    expect(flat?.provider).toBe('kortix');
+    expect(flat?.provider).toBe('zed');
   });
 
   test('carries `provider: "codex"` for a ChatGPT-subscription model, distinct from raw `openai`', () => {
@@ -118,30 +118,30 @@ describe('flattenModels — gateway `provider` + `reasoning_options` pass-throug
 // made the picker and "Manage models" disagree (#5932 half-revert).
 describe('isOfferedModel', () => {
   const models = [
-    { providerID: 'kortix', modelID: 'anthropic/claude-fable-5', enabled: true },
-    { providerID: 'kortix', modelID: 'anthropic/claude-opus-4-1', enabled: false },
-    { providerID: 'kortix', modelID: 'glm-5.2' },
+    { providerID: 'zed', modelID: 'anthropic/claude-fable-5', enabled: true },
+    { providerID: 'zed', modelID: 'anthropic/claude-opus-4-1', enabled: false },
+    { providerID: 'zed', modelID: 'glm-5.2' },
   ] as FlatModel[];
 
   test('offers a model the server enabled', () => {
-    expect(isOfferedModel(models, { providerID: 'kortix', modelID: 'anthropic/claude-fable-5' })).toBe(
+    expect(isOfferedModel(models, { providerID: 'zed', modelID: 'anthropic/claude-fable-5' })).toBe(
       true,
     );
   });
 
   test('refuses a model the server disabled', () => {
     expect(
-      isOfferedModel(models, { providerID: 'kortix', modelID: 'anthropic/claude-opus-4-1' }),
+      isOfferedModel(models, { providerID: 'zed', modelID: 'anthropic/claude-opus-4-1' }),
     ).toBe(false);
   });
 
   test('offers a model from a catalog that carries no enablement at all', () => {
     // Native/legacy catalogs never stamp `enabled`; absence means "not
     // applicable", never "hidden".
-    expect(isOfferedModel(models, { providerID: 'kortix', modelID: 'glm-5.2' })).toBe(true);
+    expect(isOfferedModel(models, { providerID: 'zed', modelID: 'glm-5.2' })).toBe(true);
   });
 
   test('refuses a key that is not in the catalog', () => {
-    expect(isOfferedModel(models, { providerID: 'kortix', modelID: 'gone/model' })).toBe(false);
+    expect(isOfferedModel(models, { providerID: 'zed', modelID: 'gone/model' })).toBe(false);
   });
 });

@@ -1,4 +1,4 @@
-import type { GitHubRepositoryBranchesResponse } from '@kortix/sdk';
+import type { GitHubRepositoryBranchesResponse } from '@zed/sdk';
 
 export function resolveGitHubBranchSelection(
   response: GitHubRepositoryBranchesResponse,

@@ -1,5 +1,5 @@
 import { test, expect, beforeEach, afterEach } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { setCurrentRuntime } from '../current-runtime';
 
 // This file must be hermetic against `mock.module(...)` registrations OTHER
@@ -38,14 +38,14 @@ afterEach(() => {
 });
 
 test('getActiveOpenCodeUrl prefers the current-runtime url when a session is active', () => {
-  configureKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok', billingEnabled: false });
+  configureZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok', billingEnabled: false });
   setCurrentRuntime('http://backend.local/v1/p/sb-1/8000', 'sb-1');
 
   expect(getActiveOpenCodeUrl()).toBe('http://backend.local/v1/p/sb-1/8000');
 });
 
 test('getActiveOpenCodeUrl falls back to the default sandbox url in self-hosted local dev (no billing, no active session)', () => {
-  configureKortix({
+  configureZed({
     backendUrl: 'http://backend.local/v1',
     getToken: async () => 'tok',
     billingEnabled: false,
@@ -56,7 +56,7 @@ test('getActiveOpenCodeUrl falls back to the default sandbox url in self-hosted 
 });
 
 test('getActiveOpenCodeUrl stays empty before a session binds when no default sandbox is configured', () => {
-  configureKortix({
+  configureZed({
     backendUrl: 'http://backend.local/v1',
     getToken: async () => 'tok',
     billingEnabled: false,
@@ -67,7 +67,7 @@ test('getActiveOpenCodeUrl stays empty before a session binds when no default sa
 });
 
 test('getActiveOpenCodeUrl returns empty string in a billing-enabled deployment with no active session', () => {
-  configureKortix({
+  configureZed({
     backendUrl: 'http://backend.local/v1',
     getToken: async () => 'tok',
     billingEnabled: true,
@@ -78,26 +78,26 @@ test('getActiveOpenCodeUrl returns empty string in a billing-enabled deployment 
 });
 
 test('getActiveOpenCodeUrl treats an unset billingEnabled as false (defaults to the self-hosted fallback)', () => {
-  configureKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok', sandboxId: 'sbx-1' });
+  configureZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok', sandboxId: 'sbx-1' });
 
   expect(getActiveOpenCodeUrl()).toBe('http://backend.local/v1/p/sbx-1/8000');
 });
 
 test('getActiveSandboxId prefers the current-runtime sandbox id over the configured default', () => {
-  configureKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok', sandboxId: 'configured-default' });
+  configureZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok', sandboxId: 'configured-default' });
   setCurrentRuntime('http://backend.local/v1/p/sb-active/8000', 'sb-active');
 
   expect(getActiveSandboxId()).toBe('sb-active');
 });
 
 test('getActiveSandboxId falls back to the configured default sandbox id with no active session', () => {
-  configureKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok', sandboxId: 'configured-default' });
+  configureZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok', sandboxId: 'configured-default' });
 
   expect(getActiveSandboxId()).toBe('configured-default');
 });
 
 test('getActiveSandboxId returns undefined with neither an active session nor a configured default', () => {
-  configureKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok' });
 
   expect(getActiveSandboxId()).toBeUndefined();
 });
@@ -113,31 +113,31 @@ test('getActiveDbSandboxId returns undefined with no active session runtime', ()
 });
 
 test('getBackendPort extracts the numeric port from the configured backend url', () => {
-  configureKortix({ backendUrl: 'http://localhost:8008/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://localhost:8008/v1', getToken: async () => 'tok' });
 
   expect(getBackendPort()).toBe(8008);
 });
 
 test('getBackendPort defaults to 443 for an https url with no explicit port', () => {
-  configureKortix({ backendUrl: 'https://api.kortix.example/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'https://api.zed.example/v1', getToken: async () => 'tok' });
 
   expect(getBackendPort()).toBe(443);
 });
 
 test('getBackendPort defaults to 80 for an http url with no explicit port', () => {
-  configureKortix({ backendUrl: 'http://api.kortix.example/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://api.zed.example/v1', getToken: async () => 'tok' });
 
   expect(getBackendPort()).toBe(80);
 });
 
 test('getBackendPort falls back to 8008 when the configured backend url fails to parse', () => {
-  configureKortix({ backendUrl: 'not a url', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'not a url', getToken: async () => 'tok' });
 
   expect(getBackendPort()).toBe(8008);
 });
 
 test('deriveSubdomainOpts always returns a fully-populated options object', () => {
-  configureKortix({ backendUrl: 'http://localhost:8008/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://localhost:8008/v1', getToken: async () => 'tok' });
   setCurrentRuntime('http://localhost:8008/v1/p/sb-1/8000', 'sb-1');
 
   expect(deriveSubdomainOpts()).toEqual({
@@ -148,7 +148,7 @@ test('deriveSubdomainOpts always returns a fully-populated options object', () =
 });
 
 test('deriveSubdomainOpts uses an empty-string sandboxId (never undefined) when none is resolvable', () => {
-  configureKortix({ backendUrl: 'http://localhost:8008/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://localhost:8008/v1', getToken: async () => 'tok' });
 
   expect(deriveSubdomainOpts().sandboxId).toBe('');
 });
@@ -157,44 +157,44 @@ test('deriveSubdomainOpts uses an empty-string sandboxId (never undefined) when 
 //
 // Staging, cloud backend. A finished session's transcript renders BEFORE its
 // runtime binds, so the "Open the website" link was built with no sandbox id.
-// It shipped `https://staging-api.kortix.com/v1/p//3000/`, which returns
+// It shipped `https://staging-api.zed.com/v1/p//3000/`, which returns
 // `{"error":true,"message":"Not found","status":404}`. Typing the same
 // `localhost:3000` into the preview panel's address bar worked, because that
 // surface was mounted after the runtime bound — the tell that this was a
 // timing bug, not a URL-building one.
 test('a preview URL built before the runtime binds is not a dead link, and binding fixes it', async () => {
   const { rewriteLocalhostUrl, hasPreviewTarget } = await import('../url');
-  configureKortix({
-    backendUrl: 'https://staging-api.kortix.com/v1',
+  configureZed({
+    backendUrl: 'https://staging-api.zed.com/v1',
     getToken: async () => 'tok',
   });
 
   // Transcript paints first — no runtime yet.
   expect(hasPreviewTarget(deriveSubdomainOpts())).toBe(false);
   const early = rewriteLocalhostUrl(3000, '/', deriveSubdomainOpts());
-  expect(early).not.toBe('https://staging-api.kortix.com/v1/p//3000/');
+  expect(early).not.toBe('https://staging-api.zed.com/v1/p//3000/');
   expect(early).toBe('http://localhost:3000/');
 
   // The session's sandbox binds a moment later. Re-deriving — which is what
   // the reactive hook now does, and what the click handler does per click —
   // yields the real preview URL.
-  setCurrentRuntime('https://staging-api.kortix.com/v1/p/sb-live/8000', 'sb-live');
+  setCurrentRuntime('https://staging-api.zed.com/v1/p/sb-live/8000', 'sb-live');
   expect(hasPreviewTarget(deriveSubdomainOpts())).toBe(true);
   expect(rewriteLocalhostUrl(3000, '/', deriveSubdomainOpts())).toBe(
-    'https://staging-api.kortix.com/v1/p/sb-live/3000/',
+    'https://staging-api.zed.com/v1/p/sb-live/3000/',
   );
 });
 
 test('switching sessions re-points the preview URL instead of keeping the old sandbox', async () => {
   const { rewriteLocalhostUrl } = await import('../url');
-  configureKortix({
-    backendUrl: 'https://staging-api.kortix.com/v1',
+  configureZed({
+    backendUrl: 'https://staging-api.zed.com/v1',
     getToken: async () => 'tok',
   });
 
-  setCurrentRuntime('https://staging-api.kortix.com/v1/p/sb-a/8000', 'sb-a');
+  setCurrentRuntime('https://staging-api.zed.com/v1/p/sb-a/8000', 'sb-a');
   expect(rewriteLocalhostUrl(3000, '/', deriveSubdomainOpts())).toContain('/p/sb-a/3000/');
 
-  setCurrentRuntime('https://staging-api.kortix.com/v1/p/sb-b/8000', 'sb-b');
+  setCurrentRuntime('https://staging-api.zed.com/v1/p/sb-b/8000', 'sb-b');
   expect(rewriteLocalhostUrl(3000, '/', deriveSubdomainOpts())).toContain('/p/sb-b/3000/');
 });

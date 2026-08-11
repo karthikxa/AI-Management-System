@@ -16,7 +16,7 @@
  *      the Dockerfile is invalidated when the file changes, for free.
  *   3. Runtime fingerprint — opaque string we control. The snapshot builder
  *      normally derives this from SANDBOX_VERSION plus the runtime artifact
- *      bytes copied into the image (kortix-agent, entrypoint, CLI files).
+ *      bytes copied into the image (zed-agent, entrypoint, CLI files).
  *   4. Hardware spec — the `[sandbox]` cpu/memory/disk/gpu, baked into the
  *      snapshot at build time. Only mixed in when at least one field is set,
  *      so projects that don't declare a spec keep their existing hashes (no
@@ -44,7 +44,7 @@ export interface SnapshotHashInputs {
   spec?: SandboxSpec;
   /**
    * Override of the runtime fingerprint. Defaults to SANDBOX_VERSION
-   * — the platform-wide constant that bumps on every Kortix release.
+   * — the platform-wide constant that bumps on every Zed release.
    * Tests pin this for determinism.
    */
   runtimeFingerprint?: string;
@@ -65,7 +65,7 @@ export interface SnapshotHashResult {
  * artifact fingerprint; tests use this default for deterministic hashing.
  */
 function currentRuntimeFingerprint(): string {
-  return `kortix-runtime:${SANDBOX_VERSION}`;
+  return `zed-runtime:${SANDBOX_VERSION}`;
 }
 
 export function computeSnapshotHash(inputs: SnapshotHashInputs): SnapshotHashResult {

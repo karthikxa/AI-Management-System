@@ -1,15 +1,15 @@
-// Real kortix-flow spawn measurement against prod Platinum.
+// Real zed-flow spawn measurement against prod Platinum.
 // create session (provider=platinum) → poll sessionSandboxes.externalId →
 // in-guest health poll via platinum exec → report ms. Cleans up each sandbox.
 import { db } from '../src/shared/db';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { readFileSync } from 'fs';
 
 const PROJECT = process.env.PROJECT ?? 'b90a22c6-8e7c-4e02-adb9-2877227093f0';
 const BASE = 'http://localhost:8008';
 const PTKEY = readFileSync('/tmp/ptkey','utf8').trim();
-const TOK = readFileSync('/tmp/kortix-tok.txt','utf8').trim();
+const TOK = readFileSync('/tmp/zed-tok.txt','utf8').trim();
 const N = Number(process.env.N ?? 4);
 const H: Record<string,string> = { Authorization:`Bearer ${TOK}`, 'Content-Type':'application/json' };
 const now = () => Date.now();
@@ -18,7 +18,7 @@ async function guestReady(ext: string): Promise<{ready:boolean, body:string}> {
   try {
     const r = await fetch(`https://api.platinum.dev/v1/sandboxes/${ext}/exec`, {
       method:'POST', headers:{ Authorization:`Bearer ${PTKEY}`,'Content-Type':'application/json' },
-      body: JSON.stringify({ cmd:['sh','-lc','curl -s -m3 http://127.0.0.1:8000/kortix/health'] }),
+      body: JSON.stringify({ cmd:['sh','-lc','curl -s -m3 http://127.0.0.1:8000/zed/health'] }),
       signal: AbortSignal.timeout(20000),
     });
     const j:any = await r.json().catch(()=>({}));

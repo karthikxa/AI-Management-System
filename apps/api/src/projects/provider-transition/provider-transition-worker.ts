@@ -18,16 +18,16 @@ import { LEASE_TTL_MS } from './provider-transition-runner';
 import { setProviderTransitionsInFlight } from './provider-transition-metrics';
 
 type Timer = ReturnType<typeof setInterval>;
-const g = globalThis as unknown as { __kortixProviderTransitionTimer?: Timer | null };
+const g = globalThis as unknown as { __zedProviderTransitionTimer?: Timer | null };
 let timer: Timer | null = null;
 let running = false;
 
 function intervalMs(): number {
-  const raw = Number(process.env.KORTIX_PROVIDER_TRANSITION_WORKER_INTERVAL_MS);
+  const raw = Number(process.env.ZED_PROVIDER_TRANSITION_WORKER_INTERVAL_MS);
   return Number.isFinite(raw) && raw > 0 ? raw : 30_000;
 }
 function batchSize(): number {
-  const raw = Number(process.env.KORTIX_PROVIDER_TRANSITION_WORKER_BATCH);
+  const raw = Number(process.env.ZED_PROVIDER_TRANSITION_WORKER_BATCH);
   return Number.isFinite(raw) && raw > 0 ? raw : 5;
 }
 
@@ -56,8 +56,8 @@ export async function runProviderTransitionTick(): Promise<{ resumed: number }> 
 }
 
 export function startProviderTransitionWorker(): void {
-  if (process.env.KORTIX_PROVIDER_TRANSITION_WORKER_ENABLED === 'false') return;
-  if (g.__kortixProviderTransitionTimer) clearInterval(g.__kortixProviderTransitionTimer);
+  if (process.env.ZED_PROVIDER_TRANSITION_WORKER_ENABLED === 'false') return;
+  if (g.__zedProviderTransitionTimer) clearInterval(g.__zedProviderTransitionTimer);
   timer = setInterval(() => {
     if (running) return;
     running = true;
@@ -71,7 +71,7 @@ export function startProviderTransitionWorker(): void {
         running = false;
       });
   }, intervalMs());
-  g.__kortixProviderTransitionTimer = timer;
+  g.__zedProviderTransitionTimer = timer;
 }
 
 export function stopProviderTransitionWorker(): void {
@@ -79,8 +79,8 @@ export function stopProviderTransitionWorker(): void {
     clearInterval(timer);
     timer = null;
   }
-  if (g.__kortixProviderTransitionTimer) {
-    clearInterval(g.__kortixProviderTransitionTimer);
-    g.__kortixProviderTransitionTimer = null;
+  if (g.__zedProviderTransitionTimer) {
+    clearInterval(g.__zedProviderTransitionTimer);
+    g.__zedProviderTransitionTimer = null;
   }
 }

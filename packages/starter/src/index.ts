@@ -1,14 +1,14 @@
 /**
- * Kortix project starter — folder-based template.
+ * Zed project starter — folder-based template.
  *
  * The starter is a shared base directory plus optional template layers.
  * `getStarterFiles()` walks the selected directories, applies `{{var}}`
  * substitutions, and returns `[{ path, content }]` so callers (the
- * API's create-repo flow, the `kortix init` CLI) can do whatever they
+ * API's create-repo flow, the `zed init` CLI) can do whatever they
  * want with the result — commit to GitHub, write to disk, render a
  * preview.
  *
- * Editing the starter is plain file editing — shared Kortix runtime
+ * Editing the starter is plain file editing — shared Zed runtime
  * files live under `templates/base/`, richer starter layers live under
  * `templates/<template>/`, optional first-party marketplace items live
  * under `templates/marketplace/`, and both the API and CLI pick them up.
@@ -42,7 +42,7 @@ export interface StarterFile {
 // before a `registry:project`'s own skills/agents are layered on top, so a
 // specialized project template isn't
 // polluted with every general-knowledge skill. It is not surfaced in the
-// create-project UI, mobile, or the `kortix init` prompt.
+// create-project UI, mobile, or the `zed init` prompt.
 //
 export const STARTER_TEMPLATE_IDS = [
   'minimal',
@@ -51,26 +51,26 @@ export const STARTER_TEMPLATE_IDS = [
 export type StarterTemplateId = (typeof STARTER_TEMPLATE_IDS)[number];
 export const DEFAULT_STARTER_TEMPLATE_ID: StarterTemplateId = 'general-knowledge-worker';
 
-export const KORTIX_MANAGED_SKILL_NAMES = [
-  'kortix-cli',
-  'kortix-apps',
-  'kortix-computer',
-  'kortix-connectors',
-  'kortix-harness-refinement',
-  'kortix-marketplace',
-  'kortix-voice',
-  'kortix-memory',
-  'kortix-onboarding',
-  'kortix-slack',
-  'kortix-system',
-  'kortix-teams',
+export const ZED_MANAGED_SKILL_NAMES = [
+  'zed-cli',
+  'zed-apps',
+  'zed-computer',
+  'zed-connectors',
+  'zed-harness-refinement',
+  'zed-marketplace',
+  'zed-voice',
+  'zed-memory',
+  'zed-onboarding',
+  'zed-slack',
+  'zed-system',
+  'zed-teams',
 ] as const;
-export type KortixManagedSkillName = (typeof KORTIX_MANAGED_SKILL_NAMES)[number];
+export type ZedManagedSkillName = (typeof ZED_MANAGED_SKILL_NAMES)[number];
 
-const KORTIX_MANAGED_SKILL_NAME_SET = new Set<string>(KORTIX_MANAGED_SKILL_NAMES);
+const ZED_MANAGED_SKILL_NAME_SET = new Set<string>(ZED_MANAGED_SKILL_NAMES);
 
-export function isKortixManagedSkillName(name: string): name is KortixManagedSkillName {
-  return KORTIX_MANAGED_SKILL_NAME_SET.has(name);
+export function isZedManagedSkillName(name: string): name is ZedManagedSkillName {
+  return ZED_MANAGED_SKILL_NAME_SET.has(name);
 }
 
 export interface StarterVars {
@@ -129,10 +129,10 @@ export function normalizeStarterTemplateId(value: unknown): StarterTemplateId {
   return DEFAULT_STARTER_TEMPLATE_ID;
 }
 
-const GENERAL_KNOWLEDGE_WORKER_SKILLS_PREFIX = '.kortix/opencode/skills/';
+const GENERAL_KNOWLEDGE_WORKER_SKILLS_PREFIX = '.zed/opencode/skills/';
 
 export function listGeneralKnowledgeWorkerSkills(): string[] {
-  const skillsDir = join(GENERAL_KNOWLEDGE_WORKER_TEMPLATE_DIR, '.kortix', 'opencode', 'skills');
+  const skillsDir = join(GENERAL_KNOWLEDGE_WORKER_TEMPLATE_DIR, '.zed', 'opencode', 'skills');
   try {
     return readdirSync(skillsDir)
       .filter((entry) => statSync(join(skillsDir, entry)).isDirectory())
@@ -185,18 +185,18 @@ export function getStarterFiles(vars: StarterVars): StarterFile[] {
 }
 
 /**
- * The managed `kortix-*` family — everything the platform guarantees to every
+ * The managed `zed-*` family — everything the platform guarantees to every
  * session regardless of what a project repo contains.
  *
  * These are deliberately NOT part of `getStarterFiles()`: the sandbox image
- * bakes them to `/opt/kortix/managed-skills` (via
+ * bakes them to `/opt/zed/managed-skills` (via
  * `scripts/write-managed-skills.ts`) and the agent server force-overlays them
  * into every session at boot (`ensureInjectedManagedSkills`), so committing a
  * second copy into each project repo bought nothing — the injected body always
  * won — while padding every new project with ~10 files the user never asked
  * for and can't meaningfully edit.
  *
- * `kortix-cli` is the deliberate exception: it stays in `templates/base/` as
+ * `zed-cli` is the deliberate exception: it stays in `templates/base/` as
  * the visible front door to this family, so a fresh repo still shows the one
  * skill that explains how to reach all the others.
  */
@@ -207,7 +207,7 @@ export function getManagedSkillFiles(): StarterFile[] {
 }
 
 /**
- * Optional first-party items that are listed in the Kortix marketplace but are
+ * Optional first-party items that are listed in the Zed marketplace but are
  * not part of the starter floor.
  */
 export function getMarketplaceFiles(): StarterFile[] {
@@ -217,7 +217,7 @@ export function getMarketplaceFiles(): StarterFile[] {
 }
 
 /**
- * Full, clonable example Kortix projects listed in the marketplace under
+ * Full, clonable example Zed projects listed in the marketplace under
  * `registry:project`. Each is a subdirectory keyed by slug (e.g.
  * `marketplace-projects/support-agent-kit/...`); paths returned here are
  * still slug-prefixed — callers that turn this into registry items strip the
@@ -257,7 +257,7 @@ export function getStarterCatalogSourceMap(): Map<string, string> {
 
 /**
  * Raw (uninterpolated) files for one template root. Walks the directory on
- * disk; if that is unavailable — the compiled `kortix` binary, where the
+ * disk; if that is unavailable — the compiled `zed` binary, where the
  * template tree was never embedded into `$bunfs` — falls back to the static
  * snapshot inlined at build time.
  */

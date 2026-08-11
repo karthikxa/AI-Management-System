@@ -21,7 +21,7 @@ import { createSafeJSONStorage } from '@/lib/storage/managed-storage';
  * such remount.
  */
 
-const STORAGE_KEY = 'kortix.project-session-view';
+const STORAGE_KEY = 'zed.project-session-view';
 
 /**
  * The fallback every list-valued selector must use — never a bare `[]`.

@@ -2,19 +2,19 @@ import { describe, expect, test } from 'bun:test';
 import { join } from 'node:path';
 
 // Runtime env keys this module reads. Stripped from the child process to
-// reproduce the production BUILD environment, where `KORTIX_PUBLIC_*` /
+// reproduce the production BUILD environment, where `ZED_PUBLIC_*` /
 // `NEXT_PUBLIC_*` values are injected at RUNTIME and are legitimately absent
 // while Next.js collects page data.
 const RUNTIME_ENV_KEYS = [
   'SUPABASE_URL',
   'SUPABASE_PUBLIC_URL',
-  'KORTIX_PUBLIC_SUPABASE_URL',
+  'ZED_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_URL',
   'SUPABASE_ANON_KEY',
-  'KORTIX_PUBLIC_SUPABASE_ANON_KEY',
+  'ZED_PUBLIC_SUPABASE_ANON_KEY',
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   'BACKEND_URL',
-  'KORTIX_PUBLIC_BACKEND_URL',
+  'ZED_PUBLIC_BACKEND_URL',
   'NEXT_PUBLIC_BACKEND_URL',
 ];
 

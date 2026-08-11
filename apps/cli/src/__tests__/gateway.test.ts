@@ -7,11 +7,11 @@ const CLI_ROOT = resolve(import.meta.dir, '..', '..');
 const CLI_ENTRY = join(CLI_ROOT, 'src', 'index.ts');
 const ORIGINAL_ENV = { ...process.env };
 const SANDBOX_ENV_OVERRIDES = [
-  'KORTIX_API_URL',
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_FRONTEND_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_TOKEN',
+  'ZED_API_URL',
+  'ZED_CLI_TOKEN',
+  'ZED_FRONTEND_URL',
+  'ZED_PROJECT_ID',
+  'ZED_TOKEN',
   'BASH_ENV',
 ] as const;
 
@@ -109,8 +109,8 @@ function startServer(): string {
         return Response.json({
           key_id: 'key_1',
           name: (entry.body as { name: string }).name,
-          key_prefix: 'kortix_gw_ab',
-          secret_key: 'kortix_gw_secretshownonce',
+          key_prefix: 'zed_gw_ab',
+          secret_key: 'zed_gw_secretshownonce',
         });
       }
       if (url.pathname === `${base}/overview`) {
@@ -177,11 +177,11 @@ function startServer(): string {
 async function runCli(args: string[], configFile: string) {
   const env: Record<string, string | undefined> = {
     ...process.env,
-    KORTIX_NO_UPDATE_CHECK: '1',
+    ZED_NO_UPDATE_CHECK: '1',
     NO_COLOR: '1',
     FORCE_COLOR: '0',
-    KORTIX_DISABLE_SANDBOX_ENV_FILE: '1',
-    KORTIX_CONFIG_FILE: configFile,
+    ZED_DISABLE_SANDBOX_ENV_FILE: '1',
+    ZED_CONFIG_FILE: configFile,
   };
   for (const key of SANDBOX_ENV_OVERRIDES) delete env[key];
   const proc = Bun.spawn({
@@ -200,9 +200,9 @@ async function runCli(args: string[], configFile: string) {
   return { code, stdout, stderr };
 }
 
-describe('kortix gateway command', () => {
+describe('zed gateway command', () => {
   beforeEach(() => {
-    tmp = mkdtempSync(join(tmpdir(), 'kortix-gw-'));
+    tmp = mkdtempSync(join(tmpdir(), 'zed-gw-'));
     requests = [];
     routingProject = { defaultModel: null, visionModel: null, defaultFallback: null, rules: [] };
     process.env = { ...ORIGINAL_ENV };
@@ -262,7 +262,7 @@ describe('kortix gateway command', () => {
     const cfg = writeConfig(startServer());
     const r = await runCli(['gateway', 'keys', 'new', 'ci-key', '--project', PROJECT], cfg);
     expect(r.code).toBe(0);
-    expect(r.stdout).toContain('kortix_gw_secretshownonce');
+    expect(r.stdout).toContain('zed_gw_secretshownonce');
     expect(requests.find((q) => q.method === 'POST')?.body).toMatchObject({ name: 'ci-key' });
   }, 15_000);
 
@@ -351,6 +351,6 @@ describe('kortix gateway command', () => {
     const cfg = writeConfig(startServer());
     const r = await runCli(['gateway'], cfg);
     expect(r.code).toBe(2);
-    expect(r.stdout).toContain('kortix gateway <subcommand>');
+    expect(r.stdout).toContain('zed gateway <subcommand>');
   }, 15_000);
 });

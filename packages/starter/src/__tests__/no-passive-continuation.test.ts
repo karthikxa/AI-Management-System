@@ -7,12 +7,12 @@ describe('starter passive continuation policy', () => {
     const files = getStarterFiles({ projectName: 'Test Project', template: 'minimal' });
     const paths = files.map((file) => file.path);
     const opencodeConfig = files.find(
-      (file) => file.path === '.kortix/opencode/opencode.jsonc',
+      (file) => file.path === '.zed/opencode/opencode.jsonc',
     );
 
-    expect(paths.some((path) => path.startsWith('.kortix/opencode/continuation/'))).toBe(false);
+    expect(paths.some((path) => path.startsWith('.zed/opencode/continuation/'))).toBe(false);
     expect(opencodeConfig).toBeDefined();
     expect(opencodeConfig?.content).not.toContain('"plugin"');
-    expect(opencodeConfig?.content).not.toContain('kortix-continuation');
+    expect(opencodeConfig?.content).not.toContain('zed-continuation');
   });
 });

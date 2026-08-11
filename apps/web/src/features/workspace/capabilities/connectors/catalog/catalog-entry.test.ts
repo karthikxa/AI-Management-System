@@ -1,4 +1,4 @@
-import type { AdminConnector, DiscoverConnector, PipedreamApp } from '@kortix/sdk';
+import type { AdminConnector, DiscoverConnector, PipedreamApp } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 
 import {

@@ -1,7 +1,7 @@
 {
-  "name": "@kortix/api-contract",
+  "name": "@zed/api-contract",
   "version": "1.0.0",
-  "description": "Shared wire-type contract for the Kortix platform API. Zod schemas + inferred TS types describing exactly what apps/api serializes onto the wire — the single source of truth for clients (SDK, web, mobile) and the OpenAPI docs.",
+  "description": "Shared wire-type contract for the Zed platform API. Zod schemas + inferred TS types describing exactly what apps/api serializes onto the wire — the single source of truth for clients (SDK, web, mobile) and the OpenAPI docs.",
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",

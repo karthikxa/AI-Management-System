@@ -32,8 +32,8 @@ tests
 **/tests
 !core/tests
 !core/tests/**
-!core/kortix-master/tests
-!core/kortix-master/tests/**
+!core/zed-master/tests
+!core/zed-master/tests/**
 *.test.ts
 *.test.tsx
 *.spec.ts
@@ -49,7 +49,7 @@ dist
 docs
 **/docs
 *.md
-!core/kortix-master/opencode/**/*.md
+!core/zed-master/opencode/**/*.md
 
 # ── Node modules (exclude all EXCEPT standalone output) ──
 # The standalone output is self-contained and MUST keep its node_modules.

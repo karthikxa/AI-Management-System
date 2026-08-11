@@ -39,24 +39,24 @@ mock.module('e2b', () => ({
 mock.module('../../config', () => ({
   config: {
     E2B_API_KEY: 'e2b-test-key',
-    E2B_DOMAIN: 'e2b.essentia.kortix.com',
+    E2B_DOMAIN: 'e2b.essentia.zed.com',
   },
 }));
 mock.module('../build-context', () => ({
   DEFAULT_CPU: 2,
   DEFAULT_MEMORY_GB: 4,
-  KORTIX_ENTRYPOINT: '/usr/local/bin/kortix-entrypoint',
+  ZED_ENTRYPOINT: '/usr/local/bin/zed-entrypoint',
   stageAppBuildContext: async () => ({
-    contextDir: '/tmp/kortix-e2b-app-adapter-test',
+    contextDir: '/tmp/zed-e2b-app-adapter-test',
     dockerfileName: 'Dockerfile',
   }),
   stageBuildContext: async () => ({
-    contextDir: '/tmp/kortix-e2b-adapter-test',
-    composedPath: '/tmp/kortix-e2b-adapter-test/Dockerfile',
+    contextDir: '/tmp/zed-e2b-adapter-test',
+    composedPath: '/tmp/zed-e2b-adapter-test/Dockerfile',
   }),
   stageMetaBuildContext: async () => ({
-    contextDir: '/tmp/kortix-e2b-adapter-test',
-    composedPath: '/tmp/kortix-e2b-adapter-test/Dockerfile',
+    contextDir: '/tmp/zed-e2b-adapter-test',
+    composedPath: '/tmp/zed-e2b-adapter-test/Dockerfile',
   }),
 }));
 
@@ -79,18 +79,18 @@ describe('E2B template adapter', () => {
 
     await e2bProvider.buildSnapshot(
       {
-        snapshotName: 'kortix-e2b-template',
+        snapshotName: 'zed-e2b-template',
         slug: 'default',
         image: 'ubuntu:24.04',
-        entrypoint: ['/usr/local/bin/kortix-entrypoint'],
+        entrypoint: ['/usr/local/bin/zed-entrypoint'],
         spec: { cpu: 4, memoryGb: 8, diskGb: 20 },
       },
       { onLine: (line) => logs.push(line) },
     );
 
     expect(builderCalls).toEqual([
-      { method: 'Template', args: [{ fileContextPath: '/tmp/kortix-e2b-adapter-test' }] },
-      { method: 'fromDockerfile', args: ['/tmp/kortix-e2b-adapter-test/Dockerfile'] },
+      { method: 'Template', args: [{ fileContextPath: '/tmp/zed-e2b-adapter-test' }] },
+      { method: 'fromDockerfile', args: ['/tmp/zed-e2b-adapter-test/Dockerfile'] },
       {
         method: 'setStartCmd',
         args: ['sleep infinity', 'wait-for-process:sleep'],
@@ -98,7 +98,7 @@ describe('E2B template adapter', () => {
     ]);
     expect(buildCalls).toHaveLength(1);
     expect(buildCalls[0]).toMatchObject({
-      name: 'kortix-e2b-template',
+      name: 'zed-e2b-template',
       opts: { apiKey: 'e2b-test-key', cpuCount: 4, memoryMB: 8192, skipCache: true },
     });
     expect(logs).toEqual(['template ready']);
@@ -109,12 +109,12 @@ describe('E2B template adapter', () => {
     globalThis.fetch = mock(async () => Response.json([
       {
         templateID: 'tpl-ready',
-        names: ['team/kortix-e2b-template:default'],
-        aliases: ['kortix-e2b-template'],
+        names: ['team/zed-e2b-template:default'],
+        aliases: ['zed-e2b-template'],
         buildStatus: 'ready',
       },
     ])) as unknown as typeof fetch;
-    expect(await e2bProvider.getSnapshotState('kortix-e2b-template')).toBe('active');
+    expect(await e2bProvider.getSnapshotState('zed-e2b-template')).toBe('active');
   });
 
   test('does not report an E2B template as active until its default tag is ready', async () => {
@@ -126,20 +126,20 @@ describe('E2B template adapter', () => {
     globalThis.fetch = mock(async () => Response.json([
       {
         templateID: 'tpl-building',
-        names: ['team/kortix-e2b-template'],
-        aliases: ['kortix-e2b-template'],
+        names: ['team/zed-e2b-template'],
+        aliases: ['zed-e2b-template'],
         buildStatus: 'building',
       },
     ])) as unknown as typeof fetch;
 
-    expect(await e2bProvider.getSnapshotState('kortix-e2b-template')).toBe('building');
+    expect(await e2bProvider.getSnapshotState('zed-e2b-template')).toBe('building');
   });
 
   test('keeps an E2B control-plane failure unknown instead of claiming the template is absent', async () => {
     globalThis.fetch = mock(
       async () => new Response('upstream unavailable', { status: 503 }),
     ) as unknown as typeof fetch;
-    expect(await e2bProvider.getSnapshotState('kortix-e2b-template')).toBe('unknown');
+    expect(await e2bProvider.getSnapshotState('zed-e2b-template')).toBe('unknown');
   });
 
   test('lists and deletes only the matching E2B template identity', async () => {
@@ -156,7 +156,7 @@ describe('E2B template adapter', () => {
       return Response.json([
         {
           templateID: 'tpl-target',
-          names: ['team/kortix-e2b-template:default'],
+          names: ['team/zed-e2b-template:default'],
           aliases: [],
           buildStatus: 'ready',
         },
@@ -170,16 +170,16 @@ describe('E2B template adapter', () => {
     }) as unknown as typeof fetch;
 
     expect(await e2bProvider.listSnapshots()).toEqual([
-      { name: 'kortix-e2b-template' },
+      { name: 'zed-e2b-template' },
       { name: 'unrelated' },
     ]);
-    await e2bProvider.deleteSnapshot('kortix-e2b-template');
+    await e2bProvider.deleteSnapshot('zed-e2b-template');
 
     expect(requests.at(-1)).toEqual({
-      url: 'https://api.e2b.essentia.kortix.com/templates/tpl-target',
+      url: 'https://api.e2b.essentia.zed.com/templates/tpl-target',
       method: 'DELETE',
       apiKey: 'e2b-test-key',
     });
-    expect(requests[0]?.url).toBe('https://api.e2b.essentia.kortix.com/templates');
+    expect(requests[0]?.url).toBe('https://api.e2b.essentia.zed.com/templates');
   });
 });

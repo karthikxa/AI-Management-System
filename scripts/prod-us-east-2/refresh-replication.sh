@@ -3,8 +3,8 @@ set -Eeuo pipefail
 
 SOURCE_DATABASE_URL="${SOURCE_DATABASE_URL:?SOURCE_DATABASE_URL is required}"
 TARGET_DATABASE_URL="${TARGET_DATABASE_URL:?TARGET_DATABASE_URL is required}"
-PUBLICATION="${PUBLICATION:-kortix_us_east_2_20260725}"
-SUBSCRIPTION="${SUBSCRIPTION:-kortix_us_east_2_20260725}"
+PUBLICATION="${PUBLICATION:-zed_us_east_2_20260725}"
+SUBSCRIPTION="${SUBSCRIPTION:-zed_us_east_2_20260725}"
 
 if [[ "${ALLOW_REPLICATION_REFRESH:-}" != "1" ]]; then
   echo "Set ALLOW_REPLICATION_REFRESH=1 to refresh the US shadow publication." >&2
@@ -18,7 +18,7 @@ for command_name in comm cut mktemp psql sort; do
   }
 done
 
-temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/kortix-use2-publication.XXXXXX")"
+temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/zed-use2-publication.XXXXXX")"
 source_manifest="$temporary_directory/source.tsv"
 target_manifest="$temporary_directory/target.tsv"
 
@@ -37,7 +37,7 @@ write_manifest() {
 WITH selected_tables AS (
   SELECT table_schema, table_name
   FROM information_schema.tables
-  WHERE table_schema = 'kortix'
+  WHERE table_schema = 'zed'
     AND table_type = 'BASE TABLE'
     AND table_name NOT IN (
       'channel_configs',
@@ -66,7 +66,7 @@ JOIN information_schema.columns AS columns
   USING (table_schema, table_name)
 WHERE columns.is_generated = 'NEVER'
   AND NOT (
-    selected_tables.table_schema = 'kortix'
+    selected_tables.table_schema = 'zed'
     AND selected_tables.table_name = 'accounts'
     AND columns.column_name = 'personal_account'
   )
@@ -103,7 +103,7 @@ unsafe_relations="$(
 WITH selected_tables AS (
   SELECT table_schema, table_name
   FROM information_schema.tables
-  WHERE table_schema = 'kortix'
+  WHERE table_schema = 'zed'
     AND table_type = 'BASE TABLE'
     AND table_name NOT IN (
       'channel_configs',
@@ -175,12 +175,12 @@ fi
 
 psql "$SOURCE_DATABASE_URL" -X -q -v ON_ERROR_STOP=1 \
   -v publication="$PUBLICATION" <<'SQL'
-SELECT set_config('kortix.migration_publication', :'publication', false)
+SELECT set_config('zed.migration_publication', :'publication', false)
 \gset
 
 DO $do$
 DECLARE
-  publication_name text := current_setting('kortix.migration_publication');
+  publication_name text := current_setting('zed.migration_publication');
   relation_list text;
 BEGIN
   IF NOT EXISTS (
@@ -194,7 +194,7 @@ BEGIN
   WITH selected_tables AS (
     SELECT table_schema, table_name
     FROM information_schema.tables
-    WHERE table_schema = 'kortix'
+    WHERE table_schema = 'zed'
       AND table_type = 'BASE TABLE'
       AND table_name NOT IN (
         'channel_configs',
@@ -225,7 +225,7 @@ BEGIN
       ) FILTER (
         WHERE columns.is_generated = 'NEVER'
           AND NOT (
-            selected_tables.table_schema = 'kortix'
+            selected_tables.table_schema = 'zed'
             AND selected_tables.table_name = 'accounts'
             AND columns.column_name = 'personal_account'
           )
@@ -253,7 +253,7 @@ SQL
 
 psql "$TARGET_DATABASE_URL" -X -q -v ON_ERROR_STOP=1 \
   -v subscription="$SUBSCRIPTION" <<'SQL'
-SELECT set_config('kortix.migration_subscription', :'subscription', false)
+SELECT set_config('zed.migration_subscription', :'subscription', false)
 \gset
 
 SELECT format(
@@ -270,7 +270,7 @@ WHERE EXISTS (
 
 DO $do$
 DECLARE
-  subscription_name text := current_setting('kortix.migration_subscription');
+  subscription_name text := current_setting('zed.migration_subscription');
 BEGIN
   IF NOT EXISTS (
     SELECT 1

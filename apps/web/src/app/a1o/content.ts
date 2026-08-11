@@ -1,5 +1,5 @@
 /**
- * Copy for /a1o — "all in one". Six layers of the Kortix stack, one per face of
+ * Copy for /a1o — "all in one". Six layers of the Zed stack, one per face of
  * a die you roll around the table. Whichever face lands up is the layer shown.
  *
  * `slot` is the die face this layer is printed on. Slots are laid out so that
@@ -14,7 +14,7 @@
  * - SOC 2 Type II is IN PROGRESS. Never "compliant" / "certified" until the
  *   report lands.
  * - Do NOT advertise multi-harness / harness-agnostic / ACP. OpenCode REST +
- *   kortix_version 2 is the only shipped path (see CLAUDE.md).
+ *   zed_version 2 is the only shipped path (see CLAUDE.md).
  */
 
 export type Layer = {
@@ -38,7 +38,7 @@ export const LAYERS = [
     ordinal: '02',
     title: 'Agent loop',
     teaser: 'What turns a model into a coworker',
-    body: 'A model answers; an agent finishes the job. Kortix runs the loop around it — reading the repo, planning, calling tools, checking its own work, returning a branch you can review.',
+    body: 'A model answers; an agent finishes the job. Zed runs the loop around it — reading the repo, planning, calling tools, checking its own work, returning a branch you can review.',
   },
   {
     slot: 3,
@@ -71,7 +71,7 @@ export const LAYERS = [
 ] as const satisfies readonly Layer[];
 
 export const COPY = {
-  wordmark: 'Kortix',
+  wordmark: 'Zed',
   title: 'All in one',
   lede: 'Six layers of the agent stack. One platform. Roll the die to read a face.',
   hint: 'Drag to roll',

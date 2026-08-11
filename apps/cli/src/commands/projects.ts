@@ -13,7 +13,7 @@ import { ApiError, clientFromAuth } from '../api/client.ts';
 import { confirm } from '../prompts.ts';
 import {
   clearLink,
-  isKortixProject,
+  isZedProject,
   loadLink,
   resolveProjectId,
   saveLink,
@@ -35,7 +35,7 @@ export {
   currentGitCredentialHelperCommand,
 } from '../project-git.ts';
 
-const HELP = help`Usage: kortix projects <subcommand>
+const HELP = help`Usage: zed projects <subcommand>
 
 Subcommands:
   ls [--all]           List projects in the active account (--all spans every
@@ -44,10 +44,10 @@ Subcommands:
   use [<id>]           Set the global DEFAULT project (interactive if omitted).
                        Switches the active account to the project's account.
   unset                Clear the global default project.
-  link [<id>]          Bind cwd to a remote project (writes .kortix/link.json)
-  unlink               Remove .kortix/link.json from cwd
+  link [<id>]          Bind cwd to a remote project (writes .zed/link.json)
+  unlink               Remove .zed/link.json from cwd
   open [<id>]          Open the dashboard URL for one project
-  clone [<id>] [dir]   Clone through the authenticated Kortix git proxy. Falls
+  clone [<id>] [dir]   Clone through the authenticated Zed git proxy. Falls
                        back to your local Git credentials for direct BYO repos.
   rm [<id>]            Archive a project (defaults to the linked one).
                        --purge also deletes its managed git repo (irreversible).
@@ -55,10 +55,10 @@ Subcommands:
 
 An explicit <id> on info/open/rm resolves on its own: tries the active host
 first, then — unless you pass --host — scans every other logged-in host for
-it. A directory link (.kortix/link.json) always wins over the default; the
+it. A directory link (.zed/link.json) always wins over the default; the
 default is what commands use anywhere else on your machine.
 
-Run \`kortix projects <subcommand> --help\` for options.
+Run \`zed projects <subcommand> --help\` for options.
 `;
 
 export async function runProjects(argv: string[]): Promise<number> {
@@ -166,22 +166,22 @@ export function saveClonedProjectLink(
 
   appendGitExcludeEntries(
     repoRoot,
-    ['/.kortix/link.json'],
-    'Kortix local project binding',
+    ['/.zed/link.json'],
+    'Zed local project binding',
   );
 }
 
 /** Resolve clone auth without ever placing a credential in the remote URL.
  *  Thin adapter over the shared resolver in ../project-git.ts — the same
- *  decision `kortix ship` and the git credential helper make. */
+ *  decision `zed ship` and the git credential helper make. */
 export function resolveProjectCloneTarget(
   project: ProjectSummary,
-  kortixToken: string,
+  zedToken: string,
 ): ProjectCloneTarget {
   const target = resolveProjectGitTarget(project);
   return {
     repoUrl: target.repoUrl,
-    token: target.credentialMode === "kortix-token" ? kortixToken : null,
+    token: target.credentialMode === "zed-token" ? zedToken : null,
     username: "x-access-token",
     needsManagedToken: target.credentialMode === "managed-git-token",
   };
@@ -195,7 +195,7 @@ async function projectsClone(
   const id = arg ?? resolveProjectId();
   if (!id) {
     process.stderr.write(
-      `${status.err("No project selected. Run `kortix projects use`, link a directory, or pass an id.")}\n`,
+      `${status.err("No project selected. Run `zed projects use`, link a directory, or pass an id.")}\n`,
     );
     return 1;
   }
@@ -203,7 +203,7 @@ async function projectsClone(
   const located = await locateProjectAnywhere(
     id,
     { hostArg },
-    (host) => `kortix projects clone ${id} --host ${host}`,
+    (host) => `zed projects clone ${id} --host ${host}`,
   );
   if (!located) return 1;
 
@@ -251,7 +251,7 @@ async function projectsClone(
       .pop()
       ?.replace(/\.git$/i, "") || project.name;
   const repoRoot = resolve(process.cwd(), destination || defaultDirectory);
-  if (isKortixProject(repoRoot)) {
+  if (isZedProject(repoRoot)) {
     saveClonedProjectLink(
       repoRoot,
       project,
@@ -268,7 +268,7 @@ async function projectsClone(
 function requireAuth() {
   const auth = loadAuth();
   if (!auth?.token) {
-    process.stderr.write(`${status.err('Not logged in. Run `kortix login`.')}\n`);
+    process.stderr.write(`${status.err('Not logged in. Run `zed login`.')}\n`);
     return null;
   }
   return auth;
@@ -322,7 +322,7 @@ async function projectsLs(json = false, all = false): Promise<number> {
   process.stdout.write(
     `\n  ${C.dim}${projects.length} project${projects.length === 1 ? '' : 's'}` +
       `${acct ? ` in ${acct.name || acct.slug}` : ''} · spans all accounts: ${C.reset}` +
-      `${C.cyan}kortix projects ls --all${C.reset}\n\n`,
+      `${C.cyan}zed projects ls --all${C.reset}\n\n`,
   );
   return 0;
 }
@@ -425,14 +425,14 @@ async function projectsInfo(arg?: string, json = false, hostArg?: string): Promi
   const id = arg ?? resolveProjectId();
   if (!id) {
     process.stderr.write(
-      `${status.err('No project linked. Run `kortix projects link` or pass an id.')}\n`,
+      `${status.err('No project linked. Run `zed projects link` or pass an id.')}\n`,
     );
     return 1;
   }
   const located = await locateProjectAnywhere(
     id,
     { hostArg },
-    (host) => `kortix projects info ${id} --host ${host}`,
+    (host) => `zed projects info ${id} --host ${host}`,
   );
   if (!located) return 1;
   const p = located.located.project;
@@ -476,7 +476,7 @@ async function projectsUse(arg?: string): Promise<number> {
     }
     if (list.length === 0) {
       process.stderr.write(
-        `${status.err('No projects in the active account.')} Switch with \`kortix accounts use\`.\n`,
+        `${status.err('No projects in the active account.')} Switch with \`zed accounts use\`.\n`,
       );
       return 1;
     }
@@ -549,15 +549,15 @@ async function projectsLink(arg?: string): Promise<number> {
   const auth = requireAuth();
   if (!auth) return 1;
 
-  // Refuse to scatter `.kortix/link.json` into random directories. A
-  // project is only "Kortix-linkable" if it already has a `.kortix/`
-  // dir (from `kortix init`) or a `kortix.yaml` at the root.
-  if (!isKortixProject()) {
+  // Refuse to scatter `.zed/link.json` into random directories. A
+  // project is only "Zed-linkable" if it already has a `.zed/`
+  // dir (from `zed init`) or a `zed.yaml` at the root.
+  if (!isZedProject()) {
     process.stderr.write(
-      `${status.err(`Not a Kortix project — no .kortix/ or kortix.yaml in ${process.cwd()}.`)}\n`,
+      `${status.err(`Not a Zed project — no .zed/ or zed.yaml in ${process.cwd()}.`)}\n`,
     );
     process.stderr.write(
-      `  ${C.dim}Run ${C.reset}${C.cyan}kortix init${C.reset}${C.dim} here first to scaffold one.${C.reset}\n`,
+      `  ${C.dim}Run ${C.reset}${C.cyan}zed init${C.reset}${C.dim} here first to scaffold one.${C.reset}\n`,
     );
     return 1;
   }
@@ -611,7 +611,7 @@ async function projectsLink(arg?: string): Promise<number> {
     linked_at: new Date().toISOString(),
   });
   process.stdout.write(
-    `${status.ok(`Linked ${C.bold}${target.name}${C.reset}${C.dim} → .kortix/link.json${C.reset}`)}\n`,
+    `${status.ok(`Linked ${C.bold}${target.name}${C.reset}${C.dim} → .zed/link.json${C.reset}`)}\n`,
   );
   process.stdout.write(
     `  ${C.dim}host:       ${C.reset}${hostName} ${C.faded}(${auth.api_base})${C.reset}\n`,
@@ -640,7 +640,7 @@ async function projectsOpen(arg?: string, hostArg?: string): Promise<number> {
   const located = await locateProjectAnywhere(
     id,
     { hostArg },
-    (host) => `kortix projects open ${id} --host ${host}`,
+    (host) => `zed projects open ${id} --host ${host}`,
   );
   if (!located) return 1;
   const url = projectWebUrl(located.located.auth.api_base, id);
@@ -677,7 +677,7 @@ async function projectsRm(args: string[]): Promise<number> {
   const located = await locateProjectAnywhere(
     id,
     { hostArg },
-    (host) => `kortix projects rm ${id} --host ${host}`,
+    (host) => `zed projects rm ${id} --host ${host}`,
   );
   if (!located) return 1;
   const { client, project } = located.located;
@@ -720,7 +720,7 @@ function surface(err: unknown): number {
   if (err instanceof ApiError) {
     if (err.status === 401) {
       process.stderr.write(
-        `${status.err('Token rejected. Run `kortix login` to re-authenticate.')}\n`,
+        `${status.err('Token rejected. Run `zed login` to re-authenticate.')}\n`,
       );
     } else {
       process.stderr.write(`${status.err(`HTTP ${err.status}: ${err.message}`)}\n`);

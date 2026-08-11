@@ -12,7 +12,7 @@
 // index creation goes through CONCURRENTLY without exception. The fourth is on
 // project_secrets, which is populated, where it genuinely matters.
 //
-// None of these four is declared in packages/db/src/schema/kortix.ts, following
+// None of these four is declared in packages/db/src/schema/zed.ts, following
 // the pattern documented at 20260727113441903_project_sessions_account_active_index
 // .concurrent.ts: a declared index makes `db:generate` emit a conflicting plain
 // CREATE INDEX against the one already built here. Both tables carry a NOTE
@@ -53,15 +53,15 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create unique index concurrently if not exists idx_secret_handles_lookup
-      on kortix.project_session_secret_handles (lookup_id)
+      on zed.project_session_secret_handles (lookup_id)
   `);
   pgm.sql(`
     create index concurrently if not exists idx_secret_handles_session
-      on kortix.project_session_secret_handles (session_id)
+      on zed.project_session_secret_handles (session_id)
   `);
   pgm.sql(`
     create unique index concurrently if not exists idx_secret_handles_session_secret_rev
-      on kortix.project_session_secret_handles (session_id, secret_id, revision)
+      on zed.project_session_secret_handles (session_id, secret_id, revision)
   `);
   // The index above is uniqueness per REVISION, which is not the invariant the
   // resolver actually depends on: (sess, secret, rev 1, active) and
@@ -74,17 +74,17 @@ export const up = (pgm) => {
   // (concurrent reads and writes continue) and, since every existing row is
   // 'runtime', finds nothing to reject.
   pgm.sql(`
-    alter table kortix.project_secrets
+    alter table zed.project_secrets
       validate constraint project_secrets_egress_policy_required
   `);
   pgm.sql(`
     create unique index concurrently if not exists idx_secret_handles_one_active
-      on kortix.project_session_secret_handles (session_id, secret_id)
+      on zed.project_session_secret_handles (session_id, secret_id)
       where status = 'active'
   `);
   pgm.sql(`
     create index concurrently if not exists idx_project_secrets_project_strategy
-      on kortix.project_secrets (project_id, strategy)
+      on zed.project_secrets (project_id, strategy)
       where strategy <> 'runtime'
   `);
 };

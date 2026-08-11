@@ -5,12 +5,12 @@
 #
 # Scope note: updater.sh's actual logic (start-first sequencing,
 # migrate-before-swap ordering, the failed-health-keeps-old-version path, the
-# KORTIX_ALLOW_DOWNTIME escape hatch, and the laptop-mode host-port recreate
+# ZED_ALLOW_DOWNTIME escape hatch, and the laptop-mode host-port recreate
 # fallback) is already unit-tested against the rendered script text in
 # apps/cli/src/self-host/__tests__/compose-assets.test.ts — this script does
 # NOT duplicate that; it exists to observe the RUNTIME behavior those unit
 # tests can only assert about statically. A true zero-downtime multi-replica
-# rollout needs the `caddy` service, which only renders when KORTIX_DOMAIN is
+# rollout needs the `caddy` service, which only renders when ZED_DOMAIN is
 # set, which makes Caddy attempt a real ACME HTTP-01 certificate order — that
 # needs a publicly-resolvable domain + DNS pointed at this box, which isn't
 # something a portable opt-in CI test can stand up safely. So this script
@@ -27,7 +27,7 @@
 # is safe to run next to any other self-host instance on the same machine.
 #
 # Requires: Docker + Docker Compose, `bun`, and the API image to exist
-# locally (default kortix/kortix-api:selfhost-local — override via API_IMAGE).
+# locally (default zed/zed-api:selfhost-local — override via API_IMAGE).
 
 set -Eeuo pipefail
 
@@ -41,10 +41,10 @@ REPO_ROOT=$(cd "$SCRIPT_DIR/../../.." && pwd)
 CLI="bun run $REPO_ROOT/apps/cli/src/index.ts"
 
 INSTANCE=${INSTANCE:-selfhost-e2e-update-$(date +%s)-$RANDOM}
-API_IMAGE=${API_IMAGE:-kortix/kortix-api:selfhost-local}
-EMAIL=${EMAIL:-owner-$INSTANCE@kortix.local}
-PASSWORD=${PASSWORD:-kortix-e2e-password}
-CONFIG_DIR="$HOME/.config/kortix/self-host/$INSTANCE"
+API_IMAGE=${API_IMAGE:-zed/zed-api:selfhost-local}
+EMAIL=${EMAIL:-owner-$INSTANCE@zed.local}
+PASSWORD=${PASSWORD:-zed-e2e-password}
+CONFIG_DIR="$HOME/.config/zed/self-host/$INSTANCE"
 CLI_CONFIG_FILE="$SCRIPT_DIR/.work-$INSTANCE-cli-config.json"
 POLL_LOG="$SCRIPT_DIR/.work-$INSTANCE-poll.log"
 KEEP_ON_FAIL=${KEEP_ON_FAIL:-false}
@@ -56,9 +56,9 @@ warn() { printf "  ${YELLOW}!${RESET} %s\n" "$1"; }
 note() { printf "  ${DIM}%s${RESET}\n" "$1"; }
 die() { printf "  ${RED}✗${RESET} %s\n" "$1" >&2; exit 1; }
 
-export KORTIX_CONFIG_FILE="$CLI_CONFIG_FILE"
+export ZED_CONFIG_FILE="$CLI_CONFIG_FILE"
 
-compose() { docker compose --project-name "kortix-$INSTANCE" --env-file "$CONFIG_DIR/.env" -f "$CONFIG_DIR/docker-compose.yml" "$@"; }
+compose() { docker compose --project-name "zed-$INSTANCE" --env-file "$CONFIG_DIR/.env" -f "$CONFIG_DIR/docker-compose.yml" "$@"; }
 container_id() { compose ps -aq "$1"; }
 
 wait_healthy() {
@@ -109,7 +109,7 @@ cleanup() {
   [ -n "$POLL_PID" ] && kill "$POLL_PID" >/dev/null 2>&1
   if [ "$rc" -ne 0 ] && [ "$KEEP_ON_FAIL" = "true" ]; then
     note "Keeping failed stack for inspection: $INSTANCE"
-    note "Inspect with: kortix self-host logs --instance $INSTANCE"
+    note "Inspect with: zed self-host logs --instance $INSTANCE"
     return "$rc"
   fi
   compose down --remove-orphans --volumes >/dev/null 2>&1
@@ -142,7 +142,7 @@ $CLI self-host env set --instance "$INSTANCE" \
   "DAYTONA_SERVER_URL=https://daytona.invalid" \
   "DAYTONA_TARGET=update-check" \
   "OPENROUTER_API_KEY=update-check-dummy" \
-  "KORTIX_LOCAL_IMAGES=true" \
+  "ZED_LOCAL_IMAGES=true" \
   "API_IMAGE=$API_IMAGE" >/dev/null
 ok "config initialized (laptop mode, single replica, --local-images)"
 
@@ -152,17 +152,17 @@ wait_healthy supabase-db 120
 compose up -d --no-deps supabase-auth supabase-rest
 wait_healthy supabase-auth 120
 wait_healthy supabase-rest 120
-compose up -d --no-deps kortix-migrate
-wait_completed kortix-migrate 180
+compose up -d --no-deps zed-migrate
+wait_completed zed-migrate 180
 compose up -d --no-deps supabase-kong
 wait_healthy supabase-kong 120
-compose up -d --no-deps kortix-api
+compose up -d --no-deps zed-api
 ok "compose up"
 
 API="http://localhost:$API_PORT"
 START=$(date +%s)
 until curl -fsS "$API/v1/health" >/dev/null 2>&1; do
-  [ $(( $(date +%s) - START )) -ge 120 ] && { compose logs kortix-api 2>&1 | tail -30 >&2; die "API never became healthy"; }
+  [ $(( $(date +%s) - START )) -ge 120 ] && { compose logs zed-api 2>&1 | tail -30 >&2; die "API never became healthy"; }
   sleep 2
 done
 ok "API healthy (pre-update)"
@@ -173,7 +173,7 @@ BO=$(curl -fsS -X POST "$API/v1/setup/bootstrap-owner" -H 'content-type: applica
 printf '%s' "$BO" | python3 -c 'import json,sys; sys.exit(0 if json.load(sys.stdin).get("success") else 1)' || die "bootstrap-owner failed: $BO"
 ok "owner bootstrapped: $EMAIL"
 
-section "Update: poll /v1/health continuously across kortix self-host update"
+section "Update: poll /v1/health continuously across zed self-host update"
 : > "$POLL_LOG"
 (
   while true; do
@@ -194,9 +194,9 @@ wait "$POLL_PID" 2>/dev/null || true
 POLL_PID=""
 
 section "Post-update: schema, health, and data-persistence checks"
-MIGRATE_EXIT=$(docker inspect -f '{{.State.ExitCode}}' "kortix-$INSTANCE-kortix-migrate-1" 2>/dev/null || echo missing)
-[ "$MIGRATE_EXIT" = "0" ] || die "post-update kortix-migrate did not succeed (exit=$MIGRATE_EXIT)"
-ok "kortix-migrate re-ran and succeeded (idempotent)"
+MIGRATE_EXIT=$(docker inspect -f '{{.State.ExitCode}}' "zed-$INSTANCE-zed-migrate-1" 2>/dev/null || echo missing)
+[ "$MIGRATE_EXIT" = "0" ] || die "post-update zed-migrate did not succeed (exit=$MIGRATE_EXIT)"
+ok "zed-migrate re-ran and succeeded (idempotent)"
 
 START2=$(date +%s)
 until curl -fsS "$API/v1/health" >/dev/null 2>&1; do

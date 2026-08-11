@@ -2,7 +2,7 @@
 
 /**
  * Mobile dev tools — Terminal / Browser / Files / Audit in their OWN
- * top-level bottom sheet, driven by `mobileToolView` in the kortix-computer
+ * top-level bottom sheet, driven by `mobileToolView` in the zed-computer
  * store (set by `openSessionQuickView` on mobile viewports).
  *
  * Deliberately NOT the Easy panel's detail flow: routing a tool through the
@@ -24,7 +24,7 @@ import { CloseButton } from '@/features/session/action-panel/easy/detail-view';
 import { SessionAuditPanel } from '@/features/session/session-audit-panel';
 import { SessionFilesExplorer } from '@/features/session/session-files-explorer';
 import { SessionTerminalPanel } from '@/features/session/session-terminal-panel';
-import { useKortixComputerStore, type QuickView } from '@/stores/kortix-computer-store';
+import { useZedComputerStore, type QuickView } from '@/stores/zed-computer-store';
 import { sessionPreviewTabId } from '@/stores/session-browser-store';
 import {
   FolderOpenIcon,
@@ -50,8 +50,8 @@ export function MobileToolDrawer({
   projectId?: string;
   projectSessionId?: string;
 }) {
-  const view = useKortixComputerStore((s) => s.mobileToolView);
-  const closeMobileTool = useKortixComputerStore((s) => s.closeMobileTool);
+  const view = useZedComputerStore((s) => s.mobileToolView);
+  const closeMobileTool = useZedComputerStore((s) => s.closeMobileTool);
   const meta = view ? TOOL_META[view] : null;
 
   return (

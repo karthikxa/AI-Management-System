@@ -6,7 +6,7 @@ const billingCustomers = { __table: 'billingCustomers', accountId: 'accountId', 
 const creditAccounts = { __table: 'creditAccounts', accountId: 'accountId', tier: 'tier', stripeSubscriptionId: 'stripeSubscriptionId' };
 // Transitively imported by accounts/core/{app,members}.ts (pulled in via the app
 // graph). resolve-account never queries these — the symbols just have to exist
-// so the static `@kortix/db` imports resolve.
+// so the static `@zed/db` imports resolve.
 const accountInvitations = { __table: 'accountInvitations', accountId: 'accountId', email: 'email', inviteId: 'inviteId', acceptedAt: 'acceptedAt', expiresAt: 'expiresAt' };
 const accountGroups = { __table: 'accountGroups', accountId: 'accountId', groupId: 'groupId' };
 const accountGroupMembers = { __table: 'accountGroupMembers', groupId: 'groupId', userId: 'userId' };
@@ -76,7 +76,7 @@ mock.module('drizzle-orm', () => ({
   sql: (...args: unknown[]) => ({ op: 'sql', args }),
 }));
 
-mock.module('@kortix/db', () => ({
+mock.module('@zed/db', () => ({
   accounts,
   accountMembers,
   billingCustomers,

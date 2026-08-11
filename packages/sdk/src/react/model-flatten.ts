@@ -3,7 +3,7 @@ import { GATEWAY_PROVIDER_IDS, type ProviderListResponse } from './use-opencode-
 
 /**
  * Some provider payloads aren't the full opencode `Model` shape — notably the
- * synthetic "kortix" provider built from the project llm-catalog endpoint
+ * synthetic "zed" provider built from the project llm-catalog endpoint
  * (see `projectLlmCatalogToProviderList`), whose models carry a flatter,
  * models.dev-ish shape instead of `Model.capabilities`/`Model.cost`/etc. This
  * union covers both without lying about the shape via `any`; every field
@@ -68,9 +68,9 @@ export interface FlatModel {
   providerSource?: string;
   /**
    * The REAL upstream provider this model resolves against ('anthropic',
-   * 'openai', 'codex', 'kortix', ...) — carried explicitly off the gateway's
+   * 'openai', 'codex', 'zed', ...) — carried explicitly off the gateway's
    * served model so the picker never has to recover it by string-splitting
-   * `modelID`. Every gateway model is registered under `providerID: 'kortix'`;
+   * `modelID`. Every gateway model is registered under `providerID: 'zed'`;
    * this is the field that identifies who ACTUALLY serves it. Undefined for
    * providers/models predating this field.
    */
@@ -139,7 +139,7 @@ export function flattenModels(providers: ProviderListResponse | undefined): Flat
     for (const [modelID, model] of Object.entries(p.models) as Array<[string, LooseModel]>) {
       // Old sandboxes can carry a baked catalog from before the synthetic model
       // was removed. Never expose or send those stale entries.
-      if (modelID === 'auto' || modelID === 'kortix/auto') continue;
+      if (modelID === 'auto' || modelID === 'zed/auto') continue;
       // Narrow `model` itself (not a copy) so the loose-shape-only fields
       // (`reasoning`, `tool_call`, `modalities`) are safe to read below.
       let capabilities: FlatModel['capabilities'];

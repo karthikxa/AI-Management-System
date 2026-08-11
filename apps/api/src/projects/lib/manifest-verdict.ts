@@ -1,8 +1,8 @@
 // Server-side manifest-version verdict for GET /projects/:id/detail.
 //
-// The manifest declares its own schema version: `kortix_version` is REQUIRED by
-// every published schema (`kortix.v1.schema.json` and
-// `kortix.v2.schema.json` each pin it to a
+// The manifest declares its own schema version: `zed_version` is REQUIRED by
+// every published schema (`zed.v1.schema.json` and
+// `zed.v2.schema.json` each pin it to a
 // `const`). So the version is read, never inferred — there is no sniffing of
 // which keys happen to be present.
 //
@@ -18,7 +18,7 @@
 // Advertising a jump the product cannot perform is the same class of bug as
 // advertising one that is not needed.
 
-import { type ManifestFormat, parseManifestText } from '@kortix/manifest-schema';
+import { type ManifestFormat, parseManifestText } from '@zed/manifest-schema';
 
 /** Highest manifest schema version this platform ships and reads. Mirrored by
  *  `MAX_SCHEMA_VERSION` in `../triggers` (kept separate to avoid an import
@@ -27,7 +27,7 @@ export const LATEST_MANIFEST_VERSION = 2;
 
 /**
  * Implemented upgrade paths, `from` → `to`. Only v1 → v2 exists today (the
- * `kortix.toml` → `kortix.yaml` governance conversion). Version 2 is the
+ * `zed.toml` → `zed.yaml` governance conversion). Version 2 is the
  * current schema, so a v2 project is reported as current and offered nothing.
  */
 const MIGRATIONS: Readonly<Record<number, number>> = { 1: 2 };
@@ -37,13 +37,13 @@ export type ManifestUnknownReason =
   | 'unreadable'
   /** Manifest text exists but its own parser rejected it. */
   | 'unparsable'
-  /** Parses, but declares no usable integer `kortix_version`. */
+  /** Parses, but declares no usable integer `zed_version`. */
   | 'undeclared'
   /** Hidden from this caller — no `project.customize.read`. */
   | 'restricted';
 
 export interface ProjectManifestVerdict {
-  /** Declared `kortix_version`. `null` whenever `unknown_reason` is set. */
+  /** Declared `zed_version`. `null` whenever `unknown_reason` is set. */
   version: number | null;
   /** Highest version this platform understands. */
   latest_version: number;
@@ -74,7 +74,7 @@ export function restrictedManifestVerdict(): ProjectManifestVerdict {
 }
 
 function declaredVersion(parsed: Record<string, unknown>): number | null {
-  const raw = parsed.kortix_version;
+  const raw = parsed.zed_version;
   const n =
     typeof raw === 'number' ? raw : typeof raw === 'string' ? Number(raw.trim()) : Number.NaN;
   if (!Number.isFinite(n)) return null;

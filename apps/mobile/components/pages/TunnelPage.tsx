@@ -247,7 +247,7 @@ function TunnelContent() {
               Connect your machine
             </RNText>
             <RNText style={{ fontSize: 13, fontFamily: 'Roobert', color: muted, textAlign: 'center', lineHeight: 20, paddingHorizontal: 20, marginBottom: 20 }}>
-              Run this command on any machine to connect it to Kortix. You'll approve the connection in your browser.
+              Run this command on any machine to connect it to Zed. You'll approve the connection in your browser.
             </RNText>
             <Pressable
               onPress={() => { haptics.medium(); createSheetRef.current?.present(); }}

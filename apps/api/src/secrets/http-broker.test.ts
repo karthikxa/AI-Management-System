@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { SecretBrokerRequest } from '@kortix/api-contract';
-import type { SecretEgressPolicy } from '@kortix/db';
+import type { SecretBrokerRequest } from '@zed/api-contract';
+import type { SecretEgressPolicy } from '@zed/db';
 import {
   createPinnedRequestOptions,
   executeSecretBrokerRequest,
@@ -16,7 +16,7 @@ function policy(
   overrides: Partial<SecretEgressPolicy> = {},
 ): SecretEgressPolicy {
   return {
-    backend: 'kortix_fetch',
+    backend: 'zed_fetch',
     rules: [{ host: 'api.example.com', methods: ['POST'], path: '/v1/*' }],
     inject: { kind: 'header', name: 'authorization', template: 'Bearer {{secret}}' },
     ...overrides,

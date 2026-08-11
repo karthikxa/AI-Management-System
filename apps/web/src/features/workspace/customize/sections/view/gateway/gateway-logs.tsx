@@ -39,10 +39,10 @@ function StatusBadge({ ok, status }: { ok: boolean; status: number }) {
     <span
       className={cn(
         'inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums',
-        ok ? 'bg-kortix-green/12 text-kortix-green' : 'bg-destructive/12 text-destructive',
+        ok ? 'bg-zed-green/12 text-zed-green' : 'bg-destructive/12 text-destructive',
       )}
     >
-      <span className={cn('size-1.5 rounded-full', ok ? 'bg-kortix-green' : 'bg-destructive')} />
+      <span className={cn('size-1.5 rounded-full', ok ? 'bg-zed-green' : 'bg-destructive')} />
       {status || (ok ? 200 : 'err')}
     </span>
   );
@@ -263,7 +263,7 @@ function GatewayLogDetail({
               icon={DollarSign}
               label="Billed"
               value={`$${data.final_cost.toFixed(4)}`}
-              accent="var(--kortix-blue)"
+              accent="var(--zed-blue)"
             />
           </div>
 
@@ -413,7 +413,7 @@ export function GatewayLogs({ projectId }: { projectId: string }) {
           ))}
         </FilterBar>
         <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <span className="bg-kortix-green size-1.5 animate-pulse rounded-full" />
+          <span className="bg-zed-green size-1.5 animate-pulse rounded-full" />
           Live · {logs.length}
         </span>
       </div>

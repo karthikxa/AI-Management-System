@@ -21,7 +21,7 @@ describe('sandbox agent compiler runtime', () => {
     const dockerfile = await readFile(resolve(import.meta.dir, '../../Dockerfile'), 'utf8');
     const agentPackage = JSON.parse(
       await readFile(
-        resolve(import.meta.dir, '../../../kortix-sandbox-agent-server/package.json'),
+        resolve(import.meta.dir, '../../../zed-sandbox-agent-server/package.json'),
         'utf8',
       ),
     ) as { engines?: { bun?: string } };

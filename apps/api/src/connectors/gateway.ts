@@ -53,7 +53,7 @@ export interface GatewayConnector {
   /** server / base_url / endpoint / url, per provider (null for some). */
   baseUrl: string | null;
   auth: ConnectorAuth;
-  /** Static request headers declared on the connector (kortix.yaml `headers:`),
+  /** Static request headers declared on the connector (zed.yaml `headers:`),
    *  sent on every call. Never secrets, and never able to override the auth
    *  header — executeCall merges them BEFORE the credential is attached.
    *  Optional (absent = none) so fixtures/callers needn't set it. */
@@ -206,7 +206,7 @@ export interface GatewayDeps {
     args: Record<string, unknown>;
   }): Promise<ComputerCallOutcome>;
   /**
-   * Voice (LiveKit) channel execution — required for the `kortix_voice`
+   * Voice (LiveKit) channel execution — required for the `zed_voice`
    * channel connector's `{ kind: 'voice' }`-bound actions. `op` is the
    * action's connector-relative path (`spawn_room` / `join_gmeet` /
    * `join_zoom`); only `spawn_room` is implemented, the rest resolve to a
@@ -504,7 +504,7 @@ export async function handleCall(deps: GatewayDeps, input: CallInput): Promise<C
         ...(url
           ? {
               approvalInstructions: input.sessionId
-                ? 'Share approval_url with a human, then stop this turn. Kortix resumes the session after approve or deny.'
+                ? 'Share approval_url with a human, then stop this turn. Zed resumes the session after approve or deny.'
                 : 'Share approval_url with a human. Retry this exact call once they approve it.',
             }
           : {}),
@@ -712,7 +712,7 @@ export async function handleCall(deps: GatewayDeps, input: CallInput): Promise<C
       const b = action.binding;
       if (!usable.secret) {
         throw new Error(
-          'pipedream connector has no connected account (run `kortix connectors connect`)',
+          'pipedream connector has no connected account (run `zed connectors connect`)',
         );
       }
       // A session-selected connection gets its own stable Pipedream external-user

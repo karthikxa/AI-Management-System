@@ -74,7 +74,7 @@ export async function getCachedAccountTier(
 }
 
 /**
- * Whether the account may use Kortix-managed model credentials (vs BYOK only).
+ * Whether the account may use Zed-managed model credentials (vs BYOK only).
  * THE single request-time answer for the whole control plane — the gateway auth
  * hot path, resolveCandidates' managed gate, the sandbox-provision gateway
  * mount, and every model-picker/catalog narrowing consult this instead of
@@ -88,7 +88,7 @@ export async function accountMayUseManagedModels(
 ): Promise<boolean> {
   // Billing off (local / self-hosted): the tier system is a no-op and every
   // account sees the full lineup — same convention as the limit resolvers.
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return true;
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return true;
   return (await getCachedTierSnapshot(accountId, now)).managedModels;
 }
 
@@ -108,7 +108,7 @@ export async function getAccountEntitlements(
   accountId: string,
   prefetchedAccount?: Awaited<ReturnType<typeof getCreditAccount>>,
 ): Promise<TierEntitlements> {
-  // Self-host enterprise license: an operator holding a Kortix Enterprise
+  // Self-host enterprise license: an operator holding a Zed Enterprise
   // license unlocks every enterprise entitlement platform-wide, regardless of
   // billing tier — self-host has no Stripe-backed tier to assign 'enterprise'
   // to. Checked before the per-account overrides so a licensed operator never

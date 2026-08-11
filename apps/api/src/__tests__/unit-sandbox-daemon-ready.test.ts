@@ -4,7 +4,7 @@ import { waitForDaemonOpencodeReady } from '../projects/lib/sandbox-daemon-ready
 
 type HealthBody = { opencode?: string; status?: string };
 
-// A fake fetch that walks a fixed sequence of /kortix/health responses. 'fail'
+// A fake fetch that walks a fixed sequence of /zed/health responses. 'fail'
 // models an unreachable probe (non-2xx); the last entry repeats once exhausted.
 function fakeHealthFetch(sequence: Array<HealthBody | 'fail'>): typeof fetch {
   let i = 0;

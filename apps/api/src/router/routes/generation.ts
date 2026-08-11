@@ -1,5 +1,5 @@
 import { createRoute, z } from '@hono/zod-openapi';
-import { gatewayRequestLogs } from '@kortix/db';
+import { gatewayRequestLogs } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { HTTPException } from 'hono/http-exception';
 import { combinedAuth } from '../../middleware/auth';
@@ -13,7 +13,7 @@ import { mapGatewayLogToGeneration } from './generation-mapper';
 const generationApp = makeOpenApiApp<AppEnv>();
 
 generationApp.use('*', combinedAuth);
-// Sandbox agent tokens (kortix_ keys with a sandboxId) must not read gateway
+// Sandbox agent tokens (zed_ keys with a sandboxId) must not read gateway
 // call forensics across the whole account — prompts/cost/latency for any
 // requestId. See reject-sandbox-tokens.ts.
 generationApp.use('*', rejectSandboxTokens);

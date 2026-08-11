@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { startCallbackServer } from '../api/browser-auth.ts';
 
-// The `kortix login` browser-callback flow: the dashboard's `/cli/authorize`
+// The `zed login` browser-callback flow: the dashboard's `/cli/authorize`
 // page does a cross-origin `fetch()` (its own origin → this loopback
 // listener) with a JSON body, which is a CORS-preflighted request. These
 // tests exercise the real HTTP server (not the CLI-side plumbing) to lock in
@@ -70,11 +70,11 @@ describe('startCallbackServer — CORS contract', () => {
     const resp = await fetch(`http://127.0.0.1:${session.port}/callback`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ state: session.state, token: 'kortix_pat_abc123' }),
+      body: JSON.stringify({ state: session.state, token: 'zed_pat_abc123' }),
     });
     expect(resp.status).toBe(200);
     const result = await session.awaitToken;
-    expect(result.token).toBe('kortix_pat_abc123');
+    expect(result.token).toBe('zed_pat_abc123');
   });
 
   test('state mismatch is rejected with 403 and does not resolve the token', async () => {
@@ -83,7 +83,7 @@ describe('startCallbackServer — CORS contract', () => {
       const resp = await fetch(`http://127.0.0.1:${session.port}/callback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ state: 'wrong-state', token: 'kortix_pat_abc123' }),
+        body: JSON.stringify({ state: 'wrong-state', token: 'zed_pat_abc123' }),
       });
       expect(resp.status).toBe(403);
     } finally {

@@ -10,7 +10,7 @@
 # Deliberately NOT adopted:
 #   - DrataAutopilotRole: created and rotated by Drata's own integration.
 #     Managing it here would fight the vendor.
-#   - kortix-enterprise-publisher-terraform: the role the enterprise publisher
+#   - zed-enterprise-publisher-terraform: the role the enterprise publisher
 #     Terraform assumes. A root cannot own the credential it runs as.
 # ════════════════════════════════════════════════════════════════════════════
 
@@ -26,7 +26,7 @@ import {
 
 import {
   to = aws_iam_role.qa_publisher
-  id = "kortix-qa-publisher"
+  id = "zed-qa-publisher"
 }
 
 import {

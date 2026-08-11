@@ -14,11 +14,11 @@ This one records what shipped, what was wrong with it, and how it was measured.
 demonstrably ran the previous prompt.
 
 Measured on dev (`65bb25155f`, real sandbox), by appending a unique marker to an
-agent prompt via `PUT /projects/{id}/agents/kortix/config` (which commits to
+agent prompt via `PUT /projects/{id}/agents/zed/config` (which commits to
 `main`) and then reloading:
 
 ```
-$ grep -c RELOAD-E2E-MARKER-A1B2C3 ~/.config/kortix-opencode.json
+$ grep -c RELOAD-E2E-MARKER-A1B2C3 ~/.config/zed-opencode.json
 1                                    # the pushed compiled config HAS it
 
 $ curl -s localhost:4096/config | grep -c RELOAD-E2E-MARKER-A1B2C3
@@ -30,7 +30,7 @@ $ curl -s localhost:4096/agent  | grep -c RELOAD-E2E-MARKER-A1B2C3
 The probe is valid — both endpoints contain other prompt text:
 
 ```
-$ curl -s localhost:4096/config | grep -c "Kortix general knowledge worker"
+$ curl -s localhost:4096/config | grep -c "Zed general knowledge worker"
 1
 ```
 
@@ -39,8 +39,8 @@ Still 0 after a full re-provision, so it was not the dispose fast path.
 ### Root cause
 
 ```
-OPENCODE_CONFIG=/home/kortix/.config/kortix-opencode.json
-OPENCODE_CONFIG_DIR=/workspace/.kortix/opencode
+OPENCODE_CONFIG=/home/zed/.config/zed-opencode.json
+OPENCODE_CONFIG_DIR=/workspace/.zed/opencode
 ```
 
 `OPENCODE_CONFIG_DIR` points **into the session's working tree**, and the agent
@@ -63,7 +63,7 @@ git checkout -B <cfg.branchName> <baseSha>
 ```
 
 `cfg.branchName` is the **session id** (`session-runtime-env.ts`,
-`KORTIX_BRANCH_NAME: input.sessionId`). On a session carrying commits of its own
+`ZED_BRANCH_NAME: input.sessionId`). On a session carrying commits of its own
 — the normal state before a change request — that force-moves the working branch
 onto the base tip, orphaning them. Reproduced on a live sandbox:
 
@@ -90,8 +90,8 @@ check would answer "no local work" for exactly the session with the most to lose
 
 ## What shipped instead
 
-`?config_dir=1` on `POST /kortix/refresh` →
-`syncOpencodeConfigDirToBase` (`apps/kortix-sandbox-agent-server/src/git.ts`):
+`?config_dir=1` on `POST /zed/refresh` →
+`syncOpencodeConfigDirToBase` (`apps/zed-sandbox-agent-server/src/git.ts`):
 
 ```
 git checkout <baseSha> -- <opencode config dir>
@@ -151,7 +151,7 @@ which is a different and wrong statement.
 2. A session with committed work keeps it, and keeps its files.
 3. A session that edited its own agent config keeps that, and is **told** so.
 4. After a real merge, the marker appears in `localhost:<reload.port>/config` —
-   not only in `~/.config/kortix-opencode.json`. The refresh response reports
+   not only in `~/.config/zed-opencode.json`. The refresh response reports
    the active port. The runtime port alternates after verified process swaps.
 
 Point 4 is the one that was never checked, and it is why this shipped broken.

@@ -21,7 +21,7 @@
 --     member's own ChatGPT/Codex OAuth credential), not a manual "only me"
 --     secret — those personal rows are preserved so connected accounts survive.
 
-ALTER TABLE "kortix"."project_secrets"
+ALTER TABLE "zed"."project_secrets"
   ADD COLUMN IF NOT EXISTS "agent_scope" text[];
 
 -- Promote a personal override to the shared row where NO shared row of that name
@@ -33,17 +33,17 @@ WITH ranked AS (
       PARTITION BY p."project_id", p."name"
       ORDER BY p."updated_at" DESC, p."secret_id"
     ) AS rn
-  FROM "kortix"."project_secrets" p
+  FROM "zed"."project_secrets" p
   WHERE p."owner_user_id" IS NOT NULL
     AND p."name" <> 'CODEX_AUTH_JSON'
     AND NOT EXISTS (
-      SELECT 1 FROM "kortix"."project_secrets" s
+      SELECT 1 FROM "zed"."project_secrets" s
       WHERE s."project_id" = p."project_id"
         AND s."name" = p."name"
         AND s."owner_user_id" IS NULL
     )
 )
-UPDATE "kortix"."project_secrets" t
+UPDATE "zed"."project_secrets" t
 SET "owner_user_id" = NULL, "share_scope" = 'project', "active" = true
 FROM ranked r
 WHERE t."secret_id" = r."secret_id" AND r."rn" = 1;
@@ -51,11 +51,11 @@ WHERE t."secret_id" = r."secret_id" AND r."rn" = 1;
 -- Drop every remaining personal override (promotion losers + overrides that only
 -- shadowed an existing shared row). "Only me" no longer exists — EXCEPT the
 -- per-user CODEX_AUTH_JSON provider login, which is preserved.
-DELETE FROM "kortix"."project_secrets"
+DELETE FROM "zed"."project_secrets"
 WHERE "owner_user_id" IS NOT NULL AND "name" <> 'CODEX_AUTH_JSON';
 
 -- Down Migration
 --
 -- Only the schema change is reversible — the dropped personal override rows are
 -- gone for good (a down can't reconstruct deleted plaintext-encrypted values).
-ALTER TABLE "kortix"."project_secrets" DROP COLUMN IF EXISTS "agent_scope";
+ALTER TABLE "zed"."project_secrets" DROP COLUMN IF EXISTS "agent_scope";

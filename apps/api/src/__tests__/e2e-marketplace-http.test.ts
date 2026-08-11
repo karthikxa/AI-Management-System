@@ -19,8 +19,8 @@ let baseUrl: string;
 
 describe('marketplace HTTP contract', () => {
   beforeAll(async () => {
-    process.env.KORTIX_DEFAULT_MARKETPLACES = '';
-    process.env.KORTIX_MARKETPLACE_REGISTRIES = '';
+    process.env.ZED_DEFAULT_MARKETPLACES = '';
+    process.env.ZED_MARKETPLACE_REGISTRIES = '';
     const { marketplaceApp } = await import('../marketplace');
     const app = new Hono();
     app.route('/v1/marketplace', marketplaceApp);
@@ -32,42 +32,42 @@ describe('marketplace HTTP contract', () => {
     server?.stop(true);
   });
 
-  test('GET /marketplace/items surfaces the starter project + its skills; managed kortix-* skills stay internal', async () => {
-    const res = await fetch(`${baseUrl}/marketplace/items?source=kortix`, {
+  test('GET /marketplace/items surfaces the starter project + its skills; managed zed-* skills stay internal', async () => {
+    const res = await fetch(`${baseUrl}/marketplace/items?source=zed`, {
       headers: { Authorization: 'Bearer test-token' },
     });
     expect(res.status).toBe(200);
     const body = await res.json() as { items: Array<{ id: string; name: string; type: string; managedBy?: string; partOfProject?: { id: string; title: string } }> };
 
-    // Kortix-managed system skills (kortix-computer/connectors/memory/slack/system/
+    // Zed-managed system skills (zed-computer/connectors/memory/slack/system/
     // marketplace/meet/onboarding) are server-injected platform floor now — they
     // never show up as browse-and-install cards.
-    expect(body.items.some((item) => item.managedBy === 'kortix')).toBe(false);
-    for (const name of ['kortix-computer', 'kortix-connectors', 'kortix-memory', 'kortix-slack', 'kortix-system']) {
+    expect(body.items.some((item) => item.managedBy === 'zed')).toBe(false);
+    for (const name of ['zed-computer', 'zed-connectors', 'zed-memory', 'zed-slack', 'zed-system']) {
       expect(body.items.find((item) => item.name === name)).toBeUndefined();
     }
 
-    // Browse leads with the "Kortix Starter" project AND lists the individual
-    // kortix-starter skills (agent-browser, pdf, …) as their own top-level
+    // Browse leads with the "Zed Starter" project AND lists the individual
+    // zed-starter skills (agent-browser, pdf, …) as their own top-level
     // tiles again — each one carries a `partOfProject` badge back to the project.
-    expect(body.items.find((item) => item.id === 'kortix-projects:starter')).toBeTruthy();
+    expect(body.items.find((item) => item.id === 'zed-projects:starter')).toBeTruthy();
     const agentBrowser = body.items.find((item) => item.name === 'agent-browser');
     expect(agentBrowser).toBeTruthy();
-    expect(agentBrowser?.partOfProject).toEqual({ id: 'kortix-projects:starter', title: 'Kortix Starter' });
+    expect(agentBrowser?.partOfProject).toEqual({ id: 'zed-projects:starter', title: 'Zed Starter' });
     expect(body.items.find((item) => item.name === 'pdf')).toBeTruthy();
     expect(body.items.find((item) => item.name === 'pty')).toBeUndefined();
     expect(body.items.find((item) => item.name === 'web_search')).toBeUndefined();
-    expect(body.items.find((item) => item.name === 'kortix')).toBeUndefined();
+    expect(body.items.find((item) => item.name === 'zed')).toBeUndefined();
     expect(body.items.find((item) => item.name === 'harness-reflector')).toBeUndefined();
   });
 
   test('GET /marketplace/items is public read-only', async () => {
     authCalls = 0;
-    const res = await fetch(`${baseUrl}/marketplace/items?query=agent-browser&source=kortix`);
+    const res = await fetch(`${baseUrl}/marketplace/items?query=agent-browser&source=zed`);
     expect(res.status).toBe(200);
     const body = await res.json() as { items: Array<{ id: string; name: string; type: string }> };
     expect(body.items).toContainEqual(
-      expect.objectContaining({ id: 'kortix-starter:agent-browser', type: 'registry:skill' }),
+      expect.objectContaining({ id: 'zed-starter:agent-browser', type: 'registry:skill' }),
     );
     expect(authCalls).toBe(0);
   });
@@ -82,7 +82,7 @@ describe('marketplace HTTP contract', () => {
   });
 
   test('GET /marketplace/items/:id exposes the starter project detail and its skills; managed system skills stay unreachable', async () => {
-    const detail = await fetch(`${baseUrl}/marketplace/items/${encodeURIComponent('kortix-projects:starter')}`, {
+    const detail = await fetch(`${baseUrl}/marketplace/items/${encodeURIComponent('zed-projects:starter')}`, {
       headers: { Authorization: 'Bearer test-token' },
     });
     expect(detail.status).toBe(200);
@@ -96,12 +96,12 @@ describe('marketplace HTTP contract', () => {
 
     expect(body.name).toBe('starter');
     expect(body.type).toBe('registry:project');
-    // The "what's inside" list resolves the kortix-starter skills, typed.
+    // The "what's inside" list resolves the zed-starter skills, typed.
     expect(body.dependencyItems.some((d) => d.name === 'pdf')).toBe(true);
 
     // A starter skill is also reachable as its own browse-and-install card, at
     // its own id, badged back to the project it also ships inside of.
-    const skillDetail = await fetch(`${baseUrl}/marketplace/items/${encodeURIComponent('kortix-starter:agent-browser')}`, {
+    const skillDetail = await fetch(`${baseUrl}/marketplace/items/${encodeURIComponent('zed-starter:agent-browser')}`, {
       headers: { Authorization: 'Bearer test-token' },
     });
     expect(skillDetail.status).toBe(200);
@@ -112,23 +112,23 @@ describe('marketplace HTTP contract', () => {
     };
     expect(skillBody.name).toBe('agent-browser');
     expect(skillBody.type).toBe('registry:skill');
-    expect(skillBody.partOfProject).toEqual({ id: 'kortix-projects:starter', title: 'Kortix Starter' });
+    expect(skillBody.partOfProject).toEqual({ id: 'zed-projects:starter', title: 'Zed Starter' });
 
-    // Kortix-managed system skills are server-injected platform truth — never a
+    // Zed-managed system skills are server-injected platform truth — never a
     // browse-and-detail card, even by a hand-built id.
-    const managed = await fetch(`${baseUrl}/marketplace/items/${encodeURIComponent('kortix-starter:kortix-system')}`, {
+    const managed = await fetch(`${baseUrl}/marketplace/items/${encodeURIComponent('zed-starter:zed-system')}`, {
       headers: { Authorization: 'Bearer test-token' },
     });
     expect(managed.status).toBe(404);
   });
 
   test('GET /marketplace/items honors a limit of 120 (below the 200 clamp ceiling)', async () => {
-    const res = await fetch(`${baseUrl}/marketplace/items?source=kortix&limit=120&offset=0`, {
+    const res = await fetch(`${baseUrl}/marketplace/items?source=zed&limit=120&offset=0`, {
       headers: { Authorization: 'Bearer test-token' },
     });
     expect(res.status).toBe(200);
     const body = await res.json() as { items: unknown[]; total: number };
-    // Fewer kortix items exist than 120, so this pins that the full available
+    // Fewer zed items exist than 120, so this pins that the full available
     // set came back — i.e. the request wasn't clamped down below its total.
     expect(body.items.length).toBe(body.total);
     expect(body.items.length).toBeGreaterThan(0);

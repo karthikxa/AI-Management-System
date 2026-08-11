@@ -22,7 +22,7 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useConnectorGateStore } from '@/stores/connector-gate-store';
-import type { KortixSendError, KortixSendErrorConnector } from '@kortix/sdk/react';
+import type { ZedSendError, ZedSendErrorConnector } from '@zed/sdk/react';
 import { PlugIcon as Plug } from '@phosphor-icons/react';
 
 export interface ConnectorNoticeCopy {
@@ -35,12 +35,12 @@ export interface ConnectorNoticeCopy {
    * RUNS AS. Nobody else can supply it, so offering a button would be offering a
    * 409 — the card says who can unblock it instead.
    */
-  connectable: KortixSendErrorConnector[];
+  connectable: ZedSendErrorConnector[];
 }
 
 /** Pure so the copy and the button decision are testable without a DOM. */
 export function connectorNoticeCopy(
-  connectors: readonly KortixSendErrorConnector[],
+  connectors: readonly ZedSendErrorConnector[],
 ): ConnectorNoticeCopy {
   const names = connectors.map((connector) => connector.name);
   return {
@@ -60,7 +60,7 @@ export function ConnectorRequiredNotice({
   resend,
   className,
 }: {
-  error: KortixSendError | null | undefined;
+  error: ZedSendError | null | undefined;
   projectId: string | undefined;
   /** Re-send the refused prompt once every connector is connected. */
   resend: (() => void) | undefined;
@@ -77,8 +77,8 @@ export function ConnectorRequiredNotice({
   return (
     <div className={cn('bg-popover rounded-md border px-4 py-3.5', className)}>
       <div className="flex items-start gap-3">
-        <div className="bg-kortix-orange/10 grid size-9 shrink-0 place-items-center rounded-sm">
-          <Plug className="text-kortix-orange size-4" weight="bold" />
+        <div className="bg-zed-orange/10 grid size-9 shrink-0 place-items-center rounded-sm">
+          <Plug className="text-zed-orange size-4" weight="bold" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-foreground text-sm font-medium">

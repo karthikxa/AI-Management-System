@@ -294,7 +294,7 @@ describe('copy quality', () => {
   });
 
   test('no internal navigation paths or product jargon reach the user', () => {
-    // "Customize → Members" and "Kortix workspace" both shipped in the previous
+    // "Customize → Members" and "Zed workspace" both shipped in the previous
     // copy. Neither means anything to someone who cannot open the project.
     const banned = [
       /customize/i,
@@ -366,7 +366,7 @@ describe('house dialect', () => {
       'backdrop-blur',
       'rounded-2xl',
       'fixed inset-0',
-      'KortixHyperLogo',
+      'ZedHyperLogo',
       'InfoBanner',
     ]) {
       expect({ banned, present: componentSource.includes(banned) }).toEqual({
@@ -377,7 +377,7 @@ describe('house dialect', () => {
   });
 
   test('uses no raw Tailwind palette colours', () => {
-    // kortix-* tokens and semantic tokens only.
+    // zed-* tokens and semantic tokens only.
     const palette =
       /(?:bg|text|border|ring)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d/;
     expect(componentSource.match(palette)?.[0] ?? null).toBeNull();

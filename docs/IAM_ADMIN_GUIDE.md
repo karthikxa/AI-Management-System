@@ -1,8 +1,8 @@
-# Kortix IAM — The Complete Administrator's Guide
+# Zed IAM — The Complete Administrator's Guide
 
 **Identity, SSO (SAML), SCIM provisioning, roles, groups, custom roles, agent access, and audit.**
 
-This is the operator's manual for everything access-related in Kortix: how authorization
+This is the operator's manual for everything access-related in Zed: how authorization
 actually decides, what the built-in roles grant, how to wire up your identity provider
 (Okta, Microsoft Entra ID, or any SAML IdP), how directory sync works, how to build
 custom roles that do exactly what you want, how agents and automation are contained,
@@ -18,7 +18,7 @@ Everything below reflects the shipped code (paths cited inline where useful).
 
 ## 1. The mental model
 
-Kortix authorization answers one question: **may this principal perform this action on
+Zed authorization answers one question: **may this principal perform this action on
 this target?** Five concepts cover the whole system:
 
 | Concept | What it is | Examples |
@@ -66,7 +66,7 @@ this target?** Five concepts cover the whole system:
 6. **Per-resource grants** — if the target is a *scoped* agent/skill, the caller must be
    one of its assignees (owners/admins bypass).
 7. **Agent-grant fold** — if the caller is an agent session, the verdict is intersected
-   with the agent's `kortix_cli` grant (section 8).
+   with the agent's `zed_cli` grant (section 8).
 
 ### Caching and revocation
 
@@ -128,7 +128,7 @@ Custom roles (section 5) exist for everything the built-ins don't express.
 
 Two deliberate design points:
 
-- **`member` is the floor *usable* role**: it can genuinely *use* Kortix (chat, run and
+- **`member` is the floor *usable* role**: it can genuinely *use* Zed (chat, run and
   stop sessions, operate automations via `trigger.fire`) but cannot browse the file
   tree, view secret values, or customize anything. "Give them the agent, not the
   internals" is expressible with zero custom-role work.
@@ -220,7 +220,7 @@ Custom roles are for everything the three built-in project roles can't say: *"re
 run, but also manage secrets"*, *"everything except connectors"*, *"audit-only"*.
 
 **UI:** `/accounts/{accountId}?tab=roles` — a roles table plus an **Assignments** card.
-**CLI:** `kortix roles …` (full parity, including IAM-as-code export/import).
+**CLI:** `zed roles …` (full parity, including IAM-as-code export/import).
 
 ### Creating a role
 
@@ -309,12 +309,12 @@ itself.
 
 **CLI equivalents:**
 ```bash
-kortix roles create secrets_manager --name "Secrets Manager" --scope project \
+zed roles create secrets_manager --name "Secrets Manager" --scope project \
   --actions project.read,project.session.start,project.session.stop,project.secret.read,project.secret.write
-kortix roles assign secrets_manager --to member:<user-id> --project <project-id>
-kortix roles assignments --project <project-id>
-kortix roles export > iam-roles.toml     # IAM-as-code snapshot
-kortix roles import iam-roles.toml       # re-create roles + bindings elsewhere
+zed roles assign secrets_manager --to member:<user-id> --project <project-id>
+zed roles assignments --project <project-id>
+zed roles export > iam-roles.toml     # IAM-as-code snapshot
+zed roles import iam-roles.toml       # re-create roles + bindings elsewhere
 ```
 
 ### Verifying what someone can do
@@ -336,7 +336,7 @@ kortix roles import iam-roles.toml       # re-create roles + bindings elsewhere
  Your IdP ───────┤
                  └── SCIM (provisioning) ─►  who exists / who is in which group (pushed)
 
- IdP group ──(mapping: claim value → group)──► Kortix IAM group
+ IdP group ──(mapping: claim value → group)──► Zed IAM group
  IAM group ──(project grant: group → role)───► role on a project
  role ───────(authorization engine)──────────► what the user may do
 ```
@@ -347,8 +347,8 @@ group moves don't wait for a login. Both meet in **IAM groups**, and groups conf
 access only through the grants **you** create — a synced group grants nothing by itself.
 
 **Prerequisites:** the `sso` entitlement (Enterprise tier, or the self-serve
-*Enterprise demo* toggle — section 10), account owner/admin on the Kortix side, admin on
-the IdP side. Kortix delegates SAML validation to its Supabase Auth layer, but you never
+*Enterprise demo* toggle — section 10), account owner/admin on the Zed side, admin on
+the IdP side. Zed delegates SAML validation to its Supabase Auth layer, but you never
 need to touch that layer directly — the SP **Entity ID** and **ACS URL** your IdP asks
 for are shown, with copy buttons, on the SAML SSO card's **Service provider details**
 before you configure anything. *(Self-hosted operators can alternatively read them
@@ -364,7 +364,7 @@ later.
    Application → Single sign-on → SAML*) using the SP Entity ID + ACS URL copied from
    the SAML SSO card's **Service provider details**. Download the **IdP metadata XML**
    (or copy its URL).
-2. **In Kortix:** `/accounts/{accountId}?tab=settings` → **Identity & directory** →
+2. **In Zed:** `/accounts/{accountId}?tab=settings` → **Identity & directory** →
    **SAML SSO** → **Configure** (the card appears once the `sso` entitlement is live).
 3. In the default **Import IdP metadata** mode, paste the metadata XML or URL and set:
 
@@ -376,7 +376,7 @@ later.
    | **Auto-create members** | Any successful SSO login from the domain self-provisions a baseline account `member` | default **on**; turn **off** for strict, invite/SCIM-only membership |
    | **Auto-provision groups** | Unmapped group claims automatically create an IAM group (+ mapping) on login | default **off** — see below |
 
-4. **Import & configure.** Kortix registers the IdP with its auth layer server-side and
+4. **Import & configure.** Zed registers the IdP with its auth layer server-side and
    stores the provider. Errors are explicit: *409* = a provider already exists (one IdP
    per account — remove it first) or the domain is claimed elsewhere; *501* = SAML isn't
    enabled on the auth project (operator action).
@@ -418,7 +418,7 @@ configured IdP, the browser is redirected to it (SP-initiated; works from both t
 sign-in and register tabs, so first-time SSO users are provisioned on the spot).
 IdP-initiated login is not supported.
 
-On the first authenticated request after login, Kortix:
+On the first authenticated request after login, Zed:
 
 1. Resolves the SSO provider → owning account.
 2. Ensures account membership (role `member`) — only if `auto_create_members` is on;
@@ -447,7 +447,7 @@ Every SSO configuration change is audited (`iam.sso.provider.*`, `iam.sso.mappin
 
 ## 7. SCIM provisioning
 
-SCIM 2.0 lets your directory push users and groups to Kortix proactively — offboarding
+SCIM 2.0 lets your directory push users and groups to Zed proactively — offboarding
 and group moves apply without waiting for a login. Enterprise-only; the entitlement is
 re-checked on **every** SCIM request, so a token minted while entitled stops working on
 downgrade.
@@ -456,7 +456,7 @@ downgrade.
 
 1. **Mint a token:** `/accounts/{accountId}?tab=settings` → **Identity & directory** →
    **SCIM Provisioning** → *New SCIM token* → name it (e.g. "Okta production").
-   The `kortix_scim_…` secret is shown **once** — copy it now. The card also shows your
+   The `zed_scim_…` secret is shown **once** — copy it now. The card also shows your
    **SCIM base URL**:
    ```
    https://<your-api-origin>/scim/v2/accounts/{accountId}
@@ -470,9 +470,9 @@ downgrade.
    | Setting | Value |
    | --- | --- |
    | SCIM connector base URL | the base URL above |
-   | Unique identifier field for users | `userName` *(Kortix treats it as the email)* |
+   | Unique identifier field for users | `userName` *(Zed treats it as the email)* |
    | Supported provisioning actions | Push New Users, Push Profile Updates, Push Groups |
-   | Authentication Mode | **HTTP Header** — bearer = the `kortix_scim_…` secret |
+   | Authentication Mode | **HTTP Header** — bearer = the `zed_scim_…` secret |
 
    *Test Connector Configuration* runs a filtered `/Users` query and should pass
    immediately. Then enable *Provisioning to App* (Create/Update/Deactivate) and assign
@@ -480,14 +480,14 @@ downgrade.
 
 3. **Microsoft Entra ID** — Enterprise app → *Provisioning* → Automatic:
    **Tenant URL** = the base URL, **Secret Token** = the SCIM token. *Test Connection*
-   works because Kortix serves the discovery endpoints Entra probes
+   works because Zed serves the discovery endpoints Entra probes
    (`/ServiceProviderConfig`, `/ResourceTypes`, `/Schemas`).
 
 ### Semantics you should know
 
-| Event | What Kortix does |
+| Event | What Zed does |
 | --- | --- |
-| **Push user (existing Kortix user)** | Idempotent membership upsert, account role `member`; `externalId` recorded |
+| **Push user (existing Zed user)** | Idempotent membership upsert, account role `member`; `externalId` recorded |
 | **Push user (unknown email)** | Creates a 14-day **invitation** (no email sent); reported back as an `active:true` user; converts to a real member on their first SSO sign-in |
 | **Profile update** | Okta uses PUT, Azure uses PATCH — both supported; unknown attributes are accepted as no-ops so pushes never error |
 | **Deactivate / unassign / DELETE** | **Removes account membership, revokes all their PATs and live session tokens**, busts caches, audits. Response mirrors the resource so IdPs don't loop |
@@ -507,7 +507,7 @@ the actor.
 
 ## 8. Agents, automation & tokens
 
-Humans are half the picture. Kortix agents act with **contained**, auditable authority.
+Humans are half the picture. Zed agents act with **contained**, auditable authority.
 
 ### The containment model
 
@@ -515,21 +515,21 @@ An agent session's effective power is an **intersection** — never wider than a
 
 ```
 effective = (launching user's role  |  agent's standing role)
-          ∩ the agent's kortix_cli grant
+          ∩ the agent's zed_cli grant
           ∩ the session token's project scope
 ```
 
-- The **`kortix_cli` grant** is declared per agent in the project manifest
-  (`kortix.yaml`):
+- The **`zed_cli` grant** is declared per agent in the project manifest
+  (`zed.yaml`):
 
   ```yaml
   agents:
-    kortix:
+    zed:
       connectors: all          # which integrations it may call
       secrets: all             # which project secrets it may read ($ENV)
-      kortix_cli: all          # which Kortix platform actions it may perform
+      zed_cli: all          # which Zed platform actions it may perform
     release-bot:
-      kortix_cli: [project.cr.open, project.trigger.create]   # exactly two powers
+      zed_cli: [project.cr.open, project.trigger.create]   # exactly two powers
       connectors: [github]
       secrets: [DEPLOY_KEY]
   ```
@@ -539,12 +539,12 @@ effective = (launching user's role  |  agent's standing role)
   at all. Grants are read from the **default branch** — an agent can propose widening
   its own powers in a change request, but the change only takes effect once a human
   merges it.
-- Grantable `kortix_cli` actions are the project action catalog (§12); `'all'` and
+- Grantable `zed_cli` actions are the project action catalog (§12); `'all'` and
   `'*'` mean unrestricted. `project.cr.open`/`project.cr.merge` and
   `project.gitops.push`/`project.gitops.merge` are alias pairs — either spelling works.
 - **Secrets and connectors** can be scoped from the dashboard without touching YAML:
   **Customize → Agents → Access scope** (needs `project.agent.write`; saves as a
-  manifest commit). `kortix_cli` is deliberately **not** editable in the UI — platform
+  manifest commit). `zed_cli` is deliberately **not** editable in the UI — platform
   powers are a sharper escalation and stay a reviewed manifest change.
 
 ### Standing agent identities (agents as teammates)
@@ -574,9 +574,9 @@ hard-lock an agent regardless of who runs it.
 | Credential | Prefix | Purpose | Powers |
 | --- | --- | --- | --- |
 | Browser session | (JWT) | Humans in the dashboard | The user's roles; subject to the account MFA gate |
-| Personal access token | `kortix_pat_` | CLI / scripts as *you* | Your roles; optionally **project-scoped** (hard-fenced to that project); exempt from the MFA gate |
-| Service account | `kortix_sa_` | Headless automation with its **own** identity | *Only* its bound policies — no roles means every call is denied (fail-closed) |
-| SCIM token | `kortix_scim_` | Your IdP's provisioning credential | The SCIM API only, one account |
+| Personal access token | `zed_pat_` | CLI / scripts as *you* | Your roles; optionally **project-scoped** (hard-fenced to that project); exempt from the MFA gate |
+| Service account | `zed_sa_` | Headless automation with its **own** identity | *Only* its bound policies — no roles means every call is denied (fail-closed) |
+| SCIM token | `zed_scim_` | Your IdP's provisioning credential | The SCIM API only, one account |
 | Session connector token | (internal) | Minted per sandbox for the agent | launching-user/standing role ∩ agent grant ∩ project |
 
 - **PATs:** user menu → Settings → **API keys** (name, optional project scope, optional
@@ -617,14 +617,14 @@ digests, and a per-session integrity chain.
   `GET /v1/accounts/{id}/audit/export?format=csv|jsonl`. Project and session
   views use `GET /v1/projects/{projectId}/audit` and
   `GET /v1/projects/{projectId}/sessions/{sessionId}/audit`.
-- **CLI:** `kortix audit ls`, `kortix audit project <project-id>`,
-  `kortix audit session <session-id> --project <project-id>`, and
-  `kortix audit export --format csv|jsonl --out <file>`.
+- **CLI:** `zed audit ls`, `zed audit project <project-id>`,
+  `zed audit session <session-id> --project <project-id>`, and
+  `zed audit export --format csv|jsonl --out <file>`.
 
 **Streaming to a SIEM:** `/accounts/{id}?tab=settings` → **Observability** → *Add
 webhook* (name, HTTPS URL, optional action prefix such as `iam.`). You get a `whsec_…`
 secret once, plus an immediate test delivery. Every delivery is signed —
-verify `X-Kortix-Signature: sha256=HMAC-SHA256(secret, raw_body)`; idempotency and
+verify `X-Zed-Signature: sha256=HMAC-SHA256(secret, raw_body)`; idempotency and
 webhook-id headers included. Deliveries use a durable retry ledger, terminal
 dead-letter state, and manual replay. On
 downgrade, delivery stops per-event, but you can always list and delete leftover hooks.
@@ -678,7 +678,7 @@ audit log records both the grant and the expiry event.
 ```yaml
 agents:
   release-bot:
-    kortix_cli: [project.cr.open, project.trigger.create]
+    zed_cli: [project.cr.open, project.trigger.create]
     connectors: [github]
     secrets: [DEPLOY_KEY]
 ```
@@ -783,7 +783,7 @@ GET /v1/accounts/{id}/audit (+ /export)                     GET|POST …/audit/w
 | User keeps access ~seconds after revoke | The 15 s cache TTL across replicas — by design; writes bust the local replica immediately |
 | Okta "Test Connector" fails | Wrong base URL (must be `https://<api-origin>/scim/v2/accounts/{accountId}`) or missing bearer token |
 | Member can't see the Files page | Floor `member` lacks `project.file.read` — raise to editor or grant a custom role with the leaf |
-| Agent gets 403 on a platform action | Its `kortix_cli` grant lacks the action (or its standing role does) → widen the manifest grant via CR |
+| Agent gets 403 on a platform action | Its `zed_cli` grant lacks the action (or its standing role does) → widen the manifest grant via CR |
 
 ---
 

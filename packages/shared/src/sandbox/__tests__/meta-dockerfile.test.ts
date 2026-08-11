@@ -5,9 +5,9 @@ import { buildMetaSandboxDockerfile } from '../meta-dockerfile';
 describe('buildMetaSandboxDockerfile', () => {
   test('contains only the platform coordination runtime', () => {
     const dockerfile = buildMetaSandboxDockerfile({
-      agentBinaryPath: 'artifacts/kortix-agent.gz',
-      cliBinaryPath: 'artifacts/kortix.gz',
-      entrypointScriptPath: 'artifacts/kortix-entrypoint.sh',
+      agentBinaryPath: 'artifacts/zed-agent.gz',
+      cliBinaryPath: 'artifacts/zed.gz',
+      entrypointScriptPath: 'artifacts/zed-entrypoint.sh',
       catalogPath: 'artifacts/llm-catalog.json',
       managedSkillsPath: 'artifacts/managed-skills',
     });
@@ -17,18 +17,18 @@ describe('buildMetaSandboxDockerfile', () => {
     expect(dockerfile).toContain('PNPM_VERSION=11.15.1');
     expect(dockerfile).toContain('pnpm runtime set node 22.23.1 --global');
     expect(dockerfile).toContain('opencode-ai@1.17.11');
-    expect(dockerfile).toContain('PNPM_HOME=/home/kortix/.local/share/pnpm');
-    expect(dockerfile).toContain('PATH="/home/kortix/.local/share/pnpm/bin:${PATH}"');
-    expect(dockerfile).toContain('/usr/local/bin/kortix-agent');
-    expect(dockerfile).toContain('/usr/local/bin/kortix');
+    expect(dockerfile).toContain('PNPM_HOME=/home/zed/.local/share/pnpm');
+    expect(dockerfile).toContain('PATH="/home/zed/.local/share/pnpm/bin:${PATH}"');
+    expect(dockerfile).toContain('/usr/local/bin/zed-agent');
+    expect(dockerfile).toContain('/usr/local/bin/zed');
     expect(dockerfile).toContain('/workspace/AGENTS.md');
-    expect(dockerfile).toContain('# Kortix Meta Agent');
+    expect(dockerfile).toContain('# Zed Meta Agent');
     expect(dockerfile).toContain('You coordinate work. You do not perform project work in this sandbox.');
     expect(dockerfile).toContain(
-      'Move files between sessions with `kortix sessions cp <session-id>:<path> <session-id>:<path>`.',
+      'Move files between sessions with `zed sessions cp <session-id>:<path> <session-id>:<path>`.',
     );
     expect(dockerfile).toContain(
-      'To spawn a session with input files, use `kortix sessions new --with-file <local path> --prompt "<task>"`.',
+      'To spawn a session with input files, use `zed sessions new --with-file <local path> --prompt "<task>"`.',
     );
     expect(dockerfile).toContain('Each file lands in /workspace/incoming/ before the prompt is delivered');
     expect(dockerfile).toContain(
@@ -37,9 +37,9 @@ describe('buildMetaSandboxDockerfile', () => {
     expect(dockerfile).toContain(
       'Specialized sessions run full sandboxes with Python (via `uv` — tell them to use `uv run`/`uvx`/`uv pip`,',
     );
-    expect(dockerfile).toContain('Read the `kortix-cli` skill before coordinating');
+    expect(dockerfile).toContain('Read the `zed-cli` skill before coordinating');
     expect(dockerfile).toContain(
-      'Wait for a session with `kortix sessions wait-for <session-id> --timeout 120`',
+      'Wait for a session with `zed sessions wait-for <session-id> --timeout 120`',
     );
     expect(dockerfile).toContain(
       'It grants every project action allowed to the user who started this session.',
@@ -48,13 +48,13 @@ describe('buildMetaSandboxDockerfile', () => {
       'It cannot access another project, account administration, project secrets, or connectors.',
     );
     expect(dockerfile).not.toContain('artifacts/AGENTS.md');
-    expect(dockerfile).toContain('/ephemeral/kortix-master/opencode');
-    expect(dockerfile).toContain('/opt/kortix/llm-catalog.json');
+    expect(dockerfile).toContain('/ephemeral/zed-master/opencode');
+    expect(dockerfile).toContain('/opt/zed/llm-catalog.json');
     expect(dockerfile).toContain(
-      'COPY --chown=kortix:kortix artifacts/managed-skills /opt/kortix/managed-skills',
+      'COPY --chown=zed:zed artifacts/managed-skills /opt/zed/managed-skills',
     );
-    expect(dockerfile).toContain('KORTIX_PROJECT_AUTO_CLONE=0');
-    expect(dockerfile).toContain('KORTIX_OPENCODE_PROCESS_TRANSPORT=rest');
+    expect(dockerfile).toContain('ZED_PROJECT_AUTO_CLONE=0');
+    expect(dockerfile).toContain('ZED_OPENCODE_PROCESS_TRANSPORT=rest');
 
     expect(dockerfile).not.toContain('playwright');
     expect(dockerfile).not.toContain('chromium');

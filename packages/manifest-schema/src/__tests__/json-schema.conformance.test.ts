@@ -8,13 +8,13 @@
  *
  * Fixtures are drawn from (and kept in sync with) the same manifests
  * exercised in `validator.v2.test.ts` / `validator.test.ts`, run through the
- * COMBINED schema (`KORTIX_JSON_SCHEMA`) via ajv — the one public URL meant
+ * COMBINED schema (`ZED_JSON_SCHEMA`) via ajv — the one public URL meant
  * to validate a manifest of either version.
  *
  * A separate, explicitly-labeled block at the bottom documents the KNOWN,
  * INTENTIONAL divergences: cross-field / dynamic-set rules (`default_agent`
  * must name a declared agent, a trigger's `agent` must too, `sandbox.default`
- * must name a declared template, `kortix_version: 2` in a `.toml` file) that
+ * must name a declared template, `zed_version: 2` in a `.toml` file) that
  * only the imperative validator can express (see `../json-schema.ts` module
  * doc). Those assertions pin down the EXPECTED asymmetry so a future change
  * that closes or widens the gap is a deliberate, reviewed diff — not a
@@ -24,7 +24,7 @@ import { describe, expect, test } from 'bun:test';
 import Ajv2020 from 'ajv/dist/2020';
 import { parse as parseToml } from 'smol-toml';
 import { parse as parseYaml } from 'yaml';
-import { KORTIX_JSON_SCHEMA, KORTIX_V1_JSON_SCHEMA, KORTIX_V2_JSON_SCHEMA } from '../json-schema';
+import { ZED_JSON_SCHEMA, ZED_V1_JSON_SCHEMA, ZED_V2_JSON_SCHEMA } from '../json-schema';
 import { validateManifest } from '../index';
 
 // `strict: false` — see json-schema.ts's mutual-exclusion `oneOf` branches
@@ -35,7 +35,7 @@ import { validateManifest } from '../index';
 // way strict mode can see). This is a well-known, benign ajv strict-mode
 // false positive for this pattern, not a schema bug.
 const ajv = new Ajv2020({ strict: false, allErrors: true });
-const validateCombined = ajv.compile(KORTIX_JSON_SCHEMA as Record<string, unknown>);
+const validateCombined = ajv.compile(ZED_JSON_SCHEMA as Record<string, unknown>);
 
 function parse(input: string, format: 'toml' | 'yaml'): unknown {
   return format === 'yaml' ? parseYaml(input) : parseToml(input);
@@ -56,7 +56,7 @@ const FIXTURES: Fixture[] = [
     format: 'toml',
     valid: true,
     input: `
-kortix_version = 1
+zed_version = 1
 
 [project]
 name = "acme-support"
@@ -67,7 +67,7 @@ required = ["ANTHROPIC_API_KEY"]
 optional = ["STRIPE_KEY"]
 
 [opencode]
-config_dir = ".kortix/opencode"
+config_dir = ".zed/opencode"
 
 [[sandbox.templates]]
 slug = "py"
@@ -92,20 +92,20 @@ provider = "pipedream"
 app = "github"
 
 [[connectors]]
-slug = "kortix_slack"
+slug = "zed_slack"
 provider = "channel"
 platform = "slack"
 
 [[agents]]
 name = "support"
 connectors = ["github"]
-kortix_cli = ["project.read", "project.session.start"]
+zed_cli = ["project.read", "project.session.start"]
 env = ["STRIPE_KEY"]
 
 [[agents]]
 name = "pr-bot"
 connectors = "all"
-kortix_cli = ["*"]
+zed_cli = ["*"]
 
 [[channels]]
 platform = "slack"
@@ -119,7 +119,7 @@ events = ["message"]
     format: 'yaml',
     valid: true,
     input: `
-kortix_version: 1
+zed_version: 1
 project:
   name: acme-support
   description: Customer support automation
@@ -127,7 +127,7 @@ env:
   required: [ANTHROPIC_API_KEY]
   optional: [STRIPE_KEY]
 opencode:
-  config_dir: .kortix/opencode
+  config_dir: .zed/opencode
 sandbox:
   default: py
   templates:
@@ -146,17 +146,17 @@ connectors:
   - slug: github
     provider: pipedream
     app: github
-  - slug: kortix_slack
+  - slug: zed_slack
     provider: channel
     platform: slack
 agents:
   - name: support
     connectors: [github]
-    kortix_cli: [project.read, project.session.start]
+    zed_cli: [project.read, project.session.start]
     env: [STRIPE_KEY]
   - name: pr-bot
     connectors: all
-    kortix_cli: ["*"]
+    zed_cli: ["*"]
 channels:
   - platform: slack
     enabled: true
@@ -168,87 +168,87 @@ channels:
     format: 'toml',
     valid: true,
     input:
-      'kortix_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"\ncredential = "per_user"',
+      'zed_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"\ncredential = "per_user"',
   },
   {
     name: 'v1: legacy connector agent_scope is tolerated (warning only, still valid)',
     format: 'toml',
     valid: true,
     input:
-      'kortix_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"\nagent_scope = ["support"]',
+      'zed_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"\nagent_scope = ["support"]',
   },
   {
     name: 'v1: [[sandboxes]] renamed shape is a hard error',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[sandboxes]]\nslug = "py"\nimage = "python:3.12-slim"\n',
+    input: 'zed_version = 1\n[[sandboxes]]\nslug = "py"\nimage = "python:3.12-slim"\n',
   },
   {
     name: 'v1: connector missing required slug',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[connectors]]\nprovider = "pipedream"\napp = "github"\n',
+    input: 'zed_version = 1\n[[connectors]]\nprovider = "pipedream"\napp = "github"\n',
   },
   {
     name: 'v1: connector unknown provider',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[connectors]]\nslug = "x"\nprovider = "made-up"\n',
+    input: 'zed_version = 1\n[[connectors]]\nslug = "x"\nprovider = "made-up"\n',
   },
   {
     name: 'v1: pipedream connector missing app',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[connectors]]\nslug = "gh"\nprovider = "pipedream"\n',
+    input: 'zed_version = 1\n[[connectors]]\nslug = "gh"\nprovider = "pipedream"\n',
   },
   {
     name: 'v1: sandbox template missing both image and dockerfile',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[sandbox.templates]]\nslug = "py"\n',
+    input: 'zed_version = 1\n[[sandbox.templates]]\nslug = "py"\n',
   },
   {
     name: 'v1: sandbox template with both image and dockerfile',
     format: 'toml',
     valid: false,
     input:
-      'kortix_version = 1\n[[sandbox.templates]]\nslug = "py"\nimage = "python:3.12-slim"\ndockerfile = ".kortix/Dockerfile"\n',
+      'zed_version = 1\n[[sandbox.templates]]\nslug = "py"\nimage = "python:3.12-slim"\ndockerfile = ".zed/Dockerfile"\n',
   },
   {
     name: 'v1: sandbox template slug reserved ("default")',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[sandbox.templates]]\nslug = "default"\nimage = "python:3.12-slim"\n',
+    input: 'zed_version = 1\n[[sandbox.templates]]\nslug = "default"\nimage = "python:3.12-slim"\n',
   },
   {
     name: 'v1: cron trigger missing cron/run_at',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\nprompt = "go"\n',
+    input: 'zed_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\nprompt = "go"\n',
   },
   {
     name: 'v1: webhook trigger missing secret_env',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[triggers]]\nslug = "t"\ntype = "webhook"\nprompt = "go"\n',
+    input: 'zed_version = 1\n[[triggers]]\nslug = "t"\ntype = "webhook"\nprompt = "go"\n',
   },
   {
     name: 'v1: trigger missing prompt',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\n',
+    input: 'zed_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\n',
   },
   {
     name: 'v1: retired apps section is rejected',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[apps]]\nslug = "site"\n',
+    input: 'zed_version = 1\n[[apps]]\nslug = "site"\n',
   },
   {
-    name: 'v1: agent block kortix_cli non-grantable action',
+    name: 'v1: agent block zed_cli non-grantable action',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[agents]]\nname = "w"\nkortix_cli = ["billing.read"]\n',
+    input: 'zed_version = 1\n[[agents]]\nname = "w"\nzed_cli = ["billing.read"]\n',
   },
 
   // ─── shared sections: path traversal ───────────────────────────────────
@@ -256,20 +256,20 @@ channels:
     name: '[opencode].config_dir rejects a ".." traversal segment',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[opencode]\nconfig_dir = "../etc"\n',
+    input: 'zed_version = 1\n[opencode]\nconfig_dir = "../etc"\n',
   },
   {
     name: '[opencode].config_dir rejects an empty string',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[opencode]\nconfig_dir = ""\n',
+    input: 'zed_version = 1\n[opencode]\nconfig_dir = ""\n',
   },
   {
     name: 'sandbox.templates[].dockerfile rejects a ".." traversal segment',
     format: 'toml',
     valid: false,
     input:
-      'kortix_version = 1\n[[sandbox.templates]]\nslug = "py"\ndockerfile = "../Dockerfile"\n',
+      'zed_version = 1\n[[sandbox.templates]]\nslug = "py"\ndockerfile = "../Dockerfile"\n',
   },
 
   // ─── shared sections: connectors.auth ──────────────────────────────────
@@ -278,28 +278,28 @@ channels:
     format: 'toml',
     valid: false,
     input:
-      'kortix_version = 1\n[[connectors]]\nslug = "x"\nprovider = "openapi"\nspec = "https://x/y.json"\n[connectors.auth]\ntype = "bearer"\nsecret = "TOK"\n',
+      'zed_version = 1\n[[connectors]]\nslug = "x"\nprovider = "openapi"\nspec = "https://x/y.json"\n[connectors.auth]\ntype = "bearer"\nsecret = "TOK"\n',
   },
   {
     name: 'connectors.auth.type must be one of the known enum values',
     format: 'toml',
     valid: false,
     input:
-      'kortix_version = 1\n[[connectors]]\nslug = "x"\nprovider = "openapi"\nspec = "https://x/y.json"\n[connectors.auth]\ntype = "oauth2"\n',
+      'zed_version = 1\n[[connectors]]\nslug = "x"\nprovider = "openapi"\nspec = "https://x/y.json"\n[connectors.auth]\ntype = "oauth2"\n',
   },
   {
     name: 'connectors.auth.type oauth1 is a known enum value (openapi connector)',
     format: 'toml',
     valid: true,
     input:
-      'kortix_version = 1\n[[connectors]]\nslug = "x"\nprovider = "openapi"\nspec = "https://x/y.json"\n[connectors.auth]\ntype = "oauth1"\n',
+      'zed_version = 1\n[[connectors]]\nslug = "x"\nprovider = "openapi"\nspec = "https://x/y.json"\n[connectors.auth]\ntype = "oauth1"\n',
   },
   {
     name: 'connectors.auth supports API key cookie, HMAC, SigV4, and mTLS modes',
     format: 'toml',
     valid: true,
     input:
-      'kortix_version = 1\n' +
+      'zed_version = 1\n' +
       '[[connectors]]\nslug = "api-key"\nprovider = "http"\nbase_url = "https://x"\n' +
       '[connectors.auth]\ntype = "api_key"\nin = "cookie"\nname = "session_key"\n' +
       '[[connectors]]\nslug = "signed"\nprovider = "http"\nbase_url = "https://x"\n' +
@@ -314,7 +314,7 @@ channels:
     format: 'toml',
     valid: false,
     input:
-      'kortix_version = 1\n[[connectors]]\nslug = "kortix_slack"\nprovider = "channel"\nplatform = "slack"\n[connectors.auth]\ntype = "bearer"\n',
+      'zed_version = 1\n[[connectors]]\nslug = "zed_slack"\nprovider = "channel"\nplatform = "slack"\n[connectors.auth]\ntype = "bearer"\n',
   },
 
   // ─── shared sections: connectors.policies ──────────────────────────────
@@ -323,34 +323,34 @@ channels:
     format: 'toml',
     valid: false,
     input:
-      'kortix_version = 1\n[[connectors]]\nslug = "x"\nprovider = "openapi"\nspec = "https://x/y.json"\n[[connectors.policies]]\naction = "block"\n',
+      'zed_version = 1\n[[connectors]]\nslug = "x"\nprovider = "openapi"\nspec = "https://x/y.json"\n[[connectors.policies]]\naction = "block"\n',
   },
   {
     name: 'connectors.policies entry with an invalid `action`',
     format: 'toml',
     valid: false,
     input:
-      'kortix_version = 1\n[[connectors]]\nslug = "x"\nprovider = "openapi"\nspec = "https://x/y.json"\n[[connectors.policies]]\nmatch = "*"\naction = "yolo"\n',
+      'zed_version = 1\n[[connectors]]\nslug = "x"\nprovider = "openapi"\nspec = "https://x/y.json"\n[[connectors.policies]]\nmatch = "*"\naction = "yolo"\n',
   },
 
   // ─── shared sections: reserved connector slugs ─────────────────────────
   {
-    name: 'reserved slug "kortix_voice" rejects a mismatched provider',
+    name: 'reserved slug "zed_voice" rejects a mismatched provider',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[connectors]]\nslug = "kortix_voice"\nprovider = "pipedream"\napp = "x"\n',
+    input: 'zed_version = 1\n[[connectors]]\nslug = "zed_voice"\nprovider = "pipedream"\napp = "x"\n',
   },
   {
     name: 'reserved slug "computer" rejects a mismatched (otherwise-valid) provider — regression guard for the computer-slug accept bug',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[connectors]]\nslug = "computer"\nprovider = "pipedream"\napp = "x"\n',
+    input: 'zed_version = 1\n[[connectors]]\nslug = "computer"\nprovider = "pipedream"\napp = "x"\n',
   },
   {
     name: 'provider="computer" is always rejected (synth-only, never hand-authored)',
     format: 'toml',
     valid: false,
-    input: 'kortix_version = 1\n[[connectors]]\nslug = "computer"\nprovider = "computer"\n',
+    input: 'zed_version = 1\n[[connectors]]\nslug = "computer"\nprovider = "computer"\n',
   },
 
   // ─── shared sections: triggers.enabled / timezone / session_mode ──────
@@ -359,28 +359,28 @@ channels:
     format: 'toml',
     valid: true,
     input:
-      'kortix_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\nprompt = "go"\nenabled = "yes"\n',
+      'zed_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\nprompt = "go"\nenabled = "yes"\n',
   },
   {
     name: 'trigger enabled rejects a non-sentinel garbage string',
     format: 'toml',
     valid: false,
     input:
-      'kortix_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\nprompt = "go"\nenabled = "maybe"\n',
+      'zed_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\nprompt = "go"\nenabled = "maybe"\n',
   },
   {
     name: 'trigger session_mode accepts "reuse" (and its sessionMode alias)',
     format: 'toml',
     valid: true,
     input:
-      'kortix_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\nprompt = "go"\nsession_mode = "reuse"\n',
+      'zed_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\nprompt = "go"\nsession_mode = "reuse"\n',
   },
   {
     name: 'trigger session_mode rejects an unknown value',
     format: 'toml',
     valid: false,
     input:
-      'kortix_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\nprompt = "go"\nsession_mode = "sometimes"\n',
+      'zed_version = 1\n[[triggers]]\nslug = "t"\ntype = "cron"\ncron = "0 9 * * *"\nprompt = "go"\nsession_mode = "sometimes"\n',
   },
 
   // ─── shared sections: sandbox.default reserved sentinel ────────────────
@@ -388,7 +388,7 @@ channels:
     name: 'sandbox.default = "default" (the reserved platform sentinel) is valid with no matching template',
     format: 'toml',
     valid: true,
-    input: 'kortix_version = 1\n[sandbox]\ndefault = "default"\n',
+    input: 'zed_version = 1\n[sandbox]\ndefault = "default"\n',
   },
 
   // ─── v2 ──────────────────────────────────────────────────────────────
@@ -397,7 +397,7 @@ channels:
     format: 'yaml',
     valid: true,
     input: `
-kortix_version: 2
+zed_version: 2
 default_agent: support
 runtime: opencode
 
@@ -409,11 +409,11 @@ agents:
   support:
     connectors: [github, slack]
     secrets: [STRIPE_KEY, GH_TOKEN]
-    kortix_cli: [project.session.start, project.cr.open]
+    zed_cli: [project.session.start, project.cr.open]
     workspace: runtime
   pr-bot:
     connectors: [github]
-    kortix_cli: [project.cr.open, project.cr.merge, project.review.submit]
+    zed_cli: [project.cr.open, project.cr.merge, project.review.submit]
 
 triggers:
   - slug: nightly-digest
@@ -435,254 +435,254 @@ connectors:
     name: 'v2: flat `mode` on agent block rejected (moved to .md)',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    mode: primary\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    mode: primary\n',
   },
   {
     name: 'v2: flat `model` on agent block rejected',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    model: anthropic/claude-sonnet-5\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    model: anthropic/claude-sonnet-5\n',
   },
   {
     name: 'v2: flat `description` on agent block rejected',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    description: "Handles support"\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    description: "Handles support"\n',
   },
   {
     name: 'v2: nested `opencode:` sub-object rejected outright',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    opencode:\n      mode: primary\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    opencode:\n      mode: primary\n',
   },
   {
     name: 'v2: flat `disable` rejected',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    disable: true\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    disable: true\n',
   },
   {
     name: 'v2: `permission` flat on agent block rejected',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    permission: x\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    permission: x\n',
   },
   {
     name: 'v2: `env` on agent block rejected (renamed to `secrets`)',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    env: [STRIPE_KEY]\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    env: [STRIPE_KEY]\n',
   },
   {
     name: 'v2: `secrets` on agent block accepted',
     format: 'yaml',
     valid: true,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    secrets: [STRIPE_KEY]\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    secrets: [STRIPE_KEY]\n',
   },
   {
     name: 'v2: canonical required connector subset accepted',
     format: 'yaml',
     valid: true,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    connectors: [gmail]\n    connectors_required: [gmail]\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    connectors: [gmail]\n    connectors_required: [gmail]\n',
   },
   {
     name: 'v2: deprecated required connector input alias accepted',
     format: 'yaml',
     valid: true,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    connectors: [gmail]\n    connectors_personal: [gmail]\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    connectors: [gmail]\n    connectors_personal: [gmail]\n',
   },
   {
     name: 'v2: top-level [env] section unaffected',
     format: 'yaml',
     valid: true,
     input:
-      'kortix_version: 2\ndefault_agent: w\nenv:\n  required: [ANTHROPIC_API_KEY]\nagents:\n  w: {}\n',
+      'zed_version: 2\ndefault_agent: w\nenv:\n  required: [ANTHROPIC_API_KEY]\nagents:\n  w: {}\n',
   },
   {
     name: 'v2: connector credential per_user rejected outright',
     format: 'yaml',
     valid: false,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail\n    provider: pipedream\n    app: gmail\n    credential: per_user\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail\n    provider: pipedream\n    app: gmail\n    credential: per_user\n',
   },
   {
     name: 'v2: connector credential shared accepted',
     format: 'yaml',
     valid: true,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail\n    provider: pipedream\n    app: gmail\n    credential: shared\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail\n    provider: pipedream\n    app: gmail\n    credential: shared\n',
   },
   {
     name: 'v2: connector project authorization strategy accepted',
     format: 'yaml',
     valid: true,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail-shared\n    name: Shared Gmail\n    provider: pipedream\n    app: gmail\n    authorization_strategy: project\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail-shared\n    name: Shared Gmail\n    provider: pipedream\n    app: gmail\n    authorization_strategy: project\n',
   },
   {
     name: 'v2: connector user authorization strategy accepted',
     format: 'yaml',
     valid: true,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail-personal\n    name: Personal Gmail\n    provider: pipedream\n    app: gmail\n    authorization_strategy: user\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail-personal\n    name: Personal Gmail\n    provider: pipedream\n    app: gmail\n    authorization_strategy: user\n',
   },
   {
     name: 'v2: connector both authorization strategy rejected',
     format: 'yaml',
     valid: false,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail\n    provider: pipedream\n    app: gmail\n    authorization_strategy: both\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail\n    provider: pipedream\n    app: gmail\n    authorization_strategy: both\n',
   },
   {
     name: 'v2: connector blank name rejected',
     format: 'yaml',
     valid: false,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail\n    name: ""\n    provider: pipedream\n    app: gmail\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail\n    name: ""\n    provider: pipedream\n    app: gmail\n',
   },
   {
     name: 'v2: connector agent_scope rejected outright',
     format: 'yaml',
     valid: false,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail\n    provider: pipedream\n    app: gmail\n    agent_scope: [support]\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: gmail\n    provider: pipedream\n    app: gmail\n    agent_scope: [support]\n',
   },
   {
     name: 'v2: [[channels]] rejected outright',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\nchannels:\n  - platform: slack\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\nchannels:\n  - platform: slack\n',
   },
   {
     name: 'v2: missing agents map',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\n',
+    input: 'zed_version: 2\ndefault_agent: w\n',
   },
   {
     name: 'v2: empty agents map',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents: {}\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents: {}\n',
   },
   {
     name: 'v2: agents as a v1-style array is rejected',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  - name: w\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  - name: w\n',
   },
   {
     name: 'v2: invalid agent name key',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  "Not Valid":\n    workspace: runtime\n  w: {}\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  "Not Valid":\n    workspace: runtime\n  w: {}\n',
   },
   {
-    name: 'v2: kortix_cli rejects a non-grantable action',
+    name: 'v2: zed_cli rejects a non-grantable action',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    kortix_cli: [billing.read]\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    zed_cli: [billing.read]\n',
   },
   {
-    name: 'v2: kortix_cli accepts the wildcard',
+    name: 'v2: zed_cli accepts the wildcard',
     format: 'yaml',
     valid: true,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    kortix_cli: ["*"]\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    zed_cli: ["*"]\n',
   },
   {
-    name: 'v2: kortix_cli rejects a legacy-tolerated action outright (clean break, unlike v1\'s warn-only tolerance)',
+    name: 'v2: zed_cli rejects a legacy-tolerated action outright (clean break, unlike v1\'s warn-only tolerance)',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    kortix_cli: [project.schedule.read]\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    zed_cli: [project.schedule.read]\n',
   },
   {
-    name: 'v1: kortix_cli accepts a legacy-tolerated action (warn-only, still valid)',
+    name: 'v1: zed_cli accepts a legacy-tolerated action (warn-only, still valid)',
     format: 'toml',
     valid: true,
-    input: 'kortix_version = 1\n[[agents]]\nname = "w"\nkortix_cli = ["project.schedule.read"]\n',
+    input: 'zed_version = 1\n[[agents]]\nname = "w"\nzed_cli = ["project.schedule.read"]\n',
   },
   {
     name: 'v2: workspace accepts the declared enum',
     format: 'yaml',
     valid: true,
-    input: 'kortix_version: 2\ndefault_agent: a\nagents:\n  a:\n    workspace: branch\n',
+    input: 'zed_version: 2\ndefault_agent: a\nagents:\n  a:\n    workspace: branch\n',
   },
   {
     name: 'v2: unknown workspace value rejected',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    workspace: everywhere\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    workspace: everywhere\n',
   },
   {
     name: 'v2: skills explicit list accepted',
     format: 'yaml',
     valid: true,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    skills: [pdf-export, web-research]\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    skills: [pdf-export, web-research]\n',
   },
   {
     name: 'v2: skills "all" sentinel accepted',
     format: 'yaml',
     valid: true,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    skills: all\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    skills: all\n',
   },
   {
     name: 'v2: skills non-string entry rejected',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    skills: [42]\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    skills: [42]\n',
   },
   {
     name: 'v2: skills invalid sentinel string rejected',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    skills: everything\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    skills: everything\n',
   },
   {
     name: 'v2: unknown runtime rejected',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nruntime: codex\nagents:\n  w: {}\n',
+    input: 'zed_version: 2\ndefault_agent: w\nruntime: codex\nagents:\n  w: {}\n',
   },
   {
     name: 'v2: runtime opencode accepted',
     format: 'yaml',
     valid: true,
-    input: 'kortix_version: 2\ndefault_agent: w\nruntime: opencode\nagents:\n  w: {}\n',
+    input: 'zed_version: 2\ndefault_agent: w\nruntime: opencode\nagents:\n  w: {}\n',
   },
   {
     name: 'v2: non-boolean enabled rejected',
     format: 'yaml',
     valid: false,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w:\n    enabled: "yes"\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w:\n    enabled: "yes"\n',
   },
   {
     name: 'v2: bare governance-only block is valid',
     format: 'yaml',
     valid: true,
-    input: 'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\n',
+    input: 'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\n',
   },
   {
     name: 'v2: sandbox.templates carries over unchanged',
     format: 'yaml',
     valid: true,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\nsandbox:\n  templates:\n    - slug: py\n      image: python:3.12-slim\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\nsandbox:\n  templates:\n    - slug: py\n      image: python:3.12-slim\n',
   },
   {
     name: 'v2: connectors unknown provider still rejected',
     format: 'yaml',
     valid: false,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: wat\n    provider: made-up\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\nconnectors:\n  - slug: wat\n    provider: made-up\n',
   },
   {
-    name: 'v2: Kortix Apps map is accepted',
+    name: 'v2: Zed Apps map is accepted',
     format: 'yaml',
     valid: true,
     input:
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\napps:\n  site:\n    path: .\n    type: static\n    readiness_path: /\n',
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\napps:\n  site:\n    path: .\n    type: static\n    readiness_path: /\n',
   },
 ];
 
@@ -700,33 +700,33 @@ describe('JSON Schema vs. imperative validator — accept/reject conformance', (
 });
 
 describe('JSON Schema documents are themselves valid JSON Schema (ajv compiles them)', () => {
-  test('kortix.v1.schema.json compiles', () => {
-    expect(() => new Ajv2020({ strict: false }).compile(KORTIX_V1_JSON_SCHEMA as Record<string, unknown>)).not.toThrow();
+  test('zed.v1.schema.json compiles', () => {
+    expect(() => new Ajv2020({ strict: false }).compile(ZED_V1_JSON_SCHEMA as Record<string, unknown>)).not.toThrow();
   });
 
-  test('kortix.v2.schema.json compiles', () => {
-    expect(() => new Ajv2020({ strict: false }).compile(KORTIX_V2_JSON_SCHEMA as Record<string, unknown>)).not.toThrow();
+  test('zed.v2.schema.json compiles', () => {
+    expect(() => new Ajv2020({ strict: false }).compile(ZED_V2_JSON_SCHEMA as Record<string, unknown>)).not.toThrow();
   });
 
-  test('kortix.schema.json (combined) compiles', () => {
-    expect(() => new Ajv2020({ strict: false }).compile(KORTIX_JSON_SCHEMA as Record<string, unknown>)).not.toThrow();
+  test('zed.schema.json (combined) compiles', () => {
+    expect(() => new Ajv2020({ strict: false }).compile(ZED_JSON_SCHEMA as Record<string, unknown>)).not.toThrow();
   });
 
   test('each document declares the expected stable $id', () => {
-    expect(KORTIX_V1_JSON_SCHEMA.$id).toBe('https://kortix.com/schema/kortix.v1.schema.json');
-    expect(KORTIX_V2_JSON_SCHEMA.$id).toBe('https://kortix.com/schema/kortix.v2.schema.json');
-    expect(KORTIX_JSON_SCHEMA.$id).toBe('https://kortix.com/schema/kortix.schema.json');
+    expect(ZED_V1_JSON_SCHEMA.$id).toBe('https://zed.com/schema/zed.v1.schema.json');
+    expect(ZED_V2_JSON_SCHEMA.$id).toBe('https://zed.com/schema/zed.v2.schema.json');
+    expect(ZED_JSON_SCHEMA.$id).toBe('https://zed.com/schema/zed.schema.json');
   });
 
   test('every document declares the 2020-12 draft', () => {
-    for (const doc of [KORTIX_V1_JSON_SCHEMA, KORTIX_V2_JSON_SCHEMA, KORTIX_JSON_SCHEMA]) {
+    for (const doc of [ZED_V1_JSON_SCHEMA, ZED_V2_JSON_SCHEMA, ZED_JSON_SCHEMA]) {
       expect(doc.$schema).toBe('https://json-schema.org/draft/2020-12/schema');
     }
   });
 
   test('connector fields are discoverable in the versioned schema', () => {
     const connectorProperties = (
-      KORTIX_V2_JSON_SCHEMA as {
+      ZED_V2_JSON_SCHEMA as {
         properties: {
           connectors: { items: { properties: Record<string, unknown> } };
         };
@@ -742,7 +742,7 @@ describe('JSON Schema documents are themselves valid JSON Schema (ajv compiles t
 
   test('required connector fields publish canonical and deprecated annotations', () => {
     const agentProperties = (
-      KORTIX_V2_JSON_SCHEMA as {
+      ZED_V2_JSON_SCHEMA as {
         properties: {
           agents: {
             additionalProperties: { properties: Record<string, Record<string, unknown>> };
@@ -767,34 +767,34 @@ describe('JSON Schema documents are themselves valid JSON Schema (ajv compiles t
 // narrows OR widens this gap is a deliberate diff here — not a silent one.
 describe('Known divergence: cross-field rules only the imperative validator enforces', () => {
   test('default_agent naming an undeclared agent: imperative rejects, schema (structurally) accepts', () => {
-    const yaml = 'kortix_version: 2\ndefault_agent: ghost\nagents:\n  w: {}\n';
+    const yaml = 'zed_version: 2\ndefault_agent: ghost\nagents:\n  w: {}\n';
     expect(validateManifest(yaml, 'yaml').valid).toBe(false);
     expect(validateCombined(parseYaml(yaml))).toBe(true);
   });
 
   test("a trigger's agent naming an undeclared agent: imperative rejects, schema accepts", () => {
     const yaml =
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\ntriggers:\n  - slug: t\n    type: cron\n    cron: "0 9 * * *"\n    prompt: go\n    agent: ghost\n';
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\ntriggers:\n  - slug: t\n    type: cron\n    cron: "0 9 * * *"\n    prompt: go\n    agent: ghost\n';
     expect(validateManifest(yaml, 'yaml').valid).toBe(false);
     expect(validateCombined(parseYaml(yaml))).toBe(true);
   });
 
   test('sandbox.default naming an undeclared template: imperative rejects, schema accepts', () => {
     const yaml =
-      'kortix_version: 2\ndefault_agent: w\nagents:\n  w: {}\nsandbox:\n  default: ghost\n  templates:\n    - slug: py\n      image: python:3.12-slim\n';
+      'zed_version: 2\ndefault_agent: w\nagents:\n  w: {}\nsandbox:\n  default: ghost\n  templates:\n    - slug: py\n      image: python:3.12-slim\n';
     expect(validateManifest(yaml, 'yaml').valid).toBe(false);
     expect(validateCombined(parseYaml(yaml))).toBe(true);
   });
 
-  test('kortix_version 2 in a .toml file: imperative rejects (format-aware), schema accepts (format-blind)', () => {
-    const toml = 'kortix_version = 2\ndefault_agent = "w"\n[agents.w]\n';
+  test('zed_version 2 in a .toml file: imperative rejects (format-aware), schema accepts (format-blind)', () => {
+    const toml = 'zed_version = 2\ndefault_agent = "w"\n[agents.w]\n';
     expect(validateManifest(toml, 'toml').valid).toBe(false);
     expect(validateCombined(parseToml(toml))).toBe(true);
   });
 
   test('auth.type oauth1 on a non-openapi/http connector: imperative rejects, schema accepts', () => {
     const toml =
-      'kortix_version = 1\n[[connectors]]\nslug = "g"\nprovider = "graphql"\nendpoint = "https://x/graphql"\n[connectors.auth]\ntype = "oauth1"\n';
+      'zed_version = 1\n[[connectors]]\nslug = "g"\nprovider = "graphql"\nendpoint = "https://x/graphql"\n[connectors.auth]\ntype = "oauth1"\n';
     expect(validateManifest(toml, 'toml').valid).toBe(false);
     expect(validateCombined(parseToml(toml))).toBe(true);
   });

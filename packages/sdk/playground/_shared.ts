@@ -6,48 +6,48 @@
  * Credentials come from env — put them in `packages/sdk/.env.local`
  * (gitignored; bun auto-loads it when you run from `packages/sdk/`):
  *
- *   KORTIX_API_URL=http://localhost:8008/v1
- *   KORTIX_API_KEY=kortix_pat_...
+ *   ZED_API_URL=http://localhost:8008/v1
+ *   ZED_API_KEY=zed_pat_...
  *
  * Optional:
- *   KORTIX_PROJECT_ID / KORTIX_SESSION_ID  — pin a project/session
- *   KORTIX_MODEL=claude-sonnet-4.6         — per-send model override (the local
+ *   ZED_PROJECT_ID / ZED_SESSION_ID  — pin a project/session
+ *   ZED_MODEL=claude-sonnet-4.6         — per-send model override (the local
  *     stack's default model currently 400s on `max_tokens`, so set this)
  */
 import {
   ApiError,
   classifyTurn,
-  createKortix,
+  createZed,
   narrowChatEvent,
 } from "../src/index";
 import type { MessageWithParts } from "../src/index";
 
-export type KortixClient = ReturnType<typeof createKortix>;
-export type SessionHandle = ReturnType<KortixClient["session"]>;
+export type ZedClient = ReturnType<typeof createZed>;
+export type SessionHandle = ReturnType<ZedClient["session"]>;
 
 const READY_DEADLINE_MS = 300_000;
 const IDLE_TIMEOUT_MS = 300_000;
 
-export function makeKortix(): KortixClient {
-  const backendUrl = process.env.KORTIX_API_URL ?? "http://localhost:8008/v1";
-  const apiKey = process.env.KORTIX_API_KEY;
+export function makeZed(): ZedClient {
+  const backendUrl = process.env.ZED_API_URL ?? "http://localhost:8008/v1";
+  const apiKey = process.env.ZED_API_KEY;
   if (!apiKey) {
     console.error(
-      "Set KORTIX_API_KEY — put it in packages/sdk/.env.local (mint one: user settings → API keys).",
+      "Set ZED_API_KEY — put it in packages/sdk/.env.local (mint one: user settings → API keys).",
     );
     process.exit(1);
   }
-  return createKortix({ backendUrl, getToken: async () => apiKey });
+  return createZed({ backendUrl, getToken: async () => apiKey });
 }
 
-/** argv value → KORTIX_PROJECT_ID → first project on the account. */
+/** argv value → ZED_PROJECT_ID → first project on the account. */
 export async function pickProjectId(
-  kortix: KortixClient,
+  zed: ZedClient,
   argvValue?: string,
 ): Promise<string> {
-  const given = argvValue ?? process.env.KORTIX_PROJECT_ID;
+  const given = argvValue ?? process.env.ZED_PROJECT_ID;
   if (given) return given;
-  const projects = await kortix.projects.list();
+  const projects = await zed.projects.list();
   if (projects.length === 0) {
     console.error(
       "no projects on this account — create one in the web UI first",
@@ -58,27 +58,27 @@ export async function pickProjectId(
   return projects[0]!.project_id;
 }
 
-/** KORTIX_SESSION_ID if set, otherwise create a fresh session in the project. */
+/** ZED_SESSION_ID if set, otherwise create a fresh session in the project. */
 export async function pickOrCreateSessionId(
-  kortix: KortixClient,
+  zed: ZedClient,
   projectId: string,
   name = "sdk playground",
 ): Promise<string> {
-  const given = process.env.KORTIX_SESSION_ID;
+  const given = process.env.ZED_SESSION_ID;
   if (given) return given;
-  const created = await kortix.projects.createSession(projectId, { name });
+  const created = await zed.projects.createSession(projectId, { name });
   console.log(`created session ${created.session_id}`);
   return created.session_id;
 }
 
-/** Per-send model override from KORTIX_MODEL / KORTIX_MODEL_PROVIDER. */
+/** Per-send model override from ZED_MODEL / ZED_MODEL_PROVIDER. */
 export function modelOverride():
   | { providerID: string; modelID: string }
   | undefined {
-  const modelId = process.env.KORTIX_MODEL;
+  const modelId = process.env.ZED_MODEL;
   if (!modelId) return undefined;
   return {
-    providerID: process.env.KORTIX_MODEL_PROVIDER ?? "kortix",
+    providerID: process.env.ZED_MODEL_PROVIDER ?? "zed",
     modelID: modelId,
   };
 }

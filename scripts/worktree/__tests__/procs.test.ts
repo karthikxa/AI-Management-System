@@ -18,13 +18,13 @@ import {
  * dev server, which forks its worker pool. Only the LEAF binds the port — which is
  * why "kill whatever holds the port" reclaimed 3 of ~19 processes and leaked the rest.
  */
-const WT = '/Users/dev/Projects/kortix/suna-featurex';
+const WT = '/Users/dev/Projects/zed/suna-featurex';
 const STACK: ProcRow[] = [
   { pid: 100, ppid: 1, command: 'bun scripts/worktree/cli.ts start featurex' },
-  { pid: 200, ppid: 100, command: 'pnpm --filter kortix-api dev' },
+  { pid: 200, ppid: 100, command: 'pnpm --filter zed-api dev' },
   { pid: 201, ppid: 200, command: 'node dotenvx.js run -- bun run --hot src/index.ts' },
   { pid: 202, ppid: 201, command: 'bun run --hot src/index.ts' },
-  { pid: 300, ppid: 100, command: 'pnpm --filter Kortix-Computer-Frontend dev' },
+  { pid: 300, ppid: 100, command: 'pnpm --filter Zed-Computer-Frontend dev' },
   { pid: 301, ppid: 300, command: 'node next dev' },
   { pid: 302, ppid: 301, command: 'node next-server' },
   { pid: 303, ppid: 302, command: 'node .next/webpack-loaders.js 1' },
@@ -192,7 +192,7 @@ describe('sidecarPids', () => {
 describe('isDevStackProcess', () => {
   test('recognises the toolchain a stack is actually made of', () => {
     for (const cmd of [
-      'pnpm --filter kortix-api dev',
+      'pnpm --filter zed-api dev',
       'bun run --hot src/index.ts',
       `node ${WT}/apps/web/.next/webpack-loaders.js 42`,
       'esbuild --service',
@@ -232,7 +232,7 @@ describe('stackPids', () => {
   const cwds = [
     { pid: 200, cwd: `${WT}/apps/api` },
     { pid: 302, cwd: `${WT}/apps/web` },
-    { pid: 999, cwd: '/Users/dev/Projects/kortix/suna' },
+    { pid: 999, cwd: '/Users/dev/Projects/zed/suna' },
   ];
 
   test('reports the full footprint — cwd owners, their descendants, and the sidecars', () => {

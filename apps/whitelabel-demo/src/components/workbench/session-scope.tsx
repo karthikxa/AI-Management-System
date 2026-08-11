@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ModelSwitcher } from '@/components/workbench/model-switcher';
 import type { CallSnippetId } from '@/lib/call-snippets';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { qk } from '@/lib/query-keys';
 import {
   isFixedAtStart,
@@ -55,12 +55,12 @@ export function SessionScope({
   const session = useQuery({
     queryKey: qk.session(projectId, sessionId),
     queryFn: () =>
-      kortix.session(projectId, sessionId).get({ showErrors: false }),
+      zed.session(projectId, sessionId).get({ showErrors: false }),
     retry: false,
   });
   const scope = useQuery({
     queryKey: qk.sessionScope(projectId, sessionId),
-    queryFn: () => kortix.session(projectId, sessionId).scope(),
+    queryFn: () => zed.session(projectId, sessionId).scope(),
     retry: false,
   });
   const connectors = useConnectorBindingChoices(projectId);

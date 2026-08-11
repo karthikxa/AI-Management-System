@@ -112,12 +112,12 @@ structure. Nothing else here rises above a nit.
   still 200 + install still commits. No new file > 1000 lines.
 
 ### B1 — Cloud install lifecycle (started)
-- `kortix marketplace install --project` (done), in-project overlay (done). Add **uninstall in
+- `zed marketplace install --project` (done), in-project overlay (done). Add **uninstall in
   the repo**: a `DELETE /projects/:id/registry/:name` that *removes* files from
   the tree — needs `update-index --remove` plumbing (a sibling of
   `commitMultipleFilesToBranch`, sharing the same throwaway-index core extracted
   in A1). Then wire the web "Installed → Remove" affordance.
-- `kortix registry outdated` / `update`: re-resolve a locked item's source, diff
+- `zed registry outdated` / `update`: re-resolve a locked item's source, diff
   the content hash, show + apply. Reuses the lock + the resolver.
 
 ### B2 — Ecosystem compatibility (scan done; adapters next)
@@ -128,7 +128,7 @@ structure. Nothing else here rises above a nit.
   git-subdir | npm → map onto our `RegistryRef`) into `registry:bundle`s; read
   each plugin's `.claude-plugin`/`.codex-plugin` `plugin.json` to pull
   `commands/` → `registry:command`, `agents/` → `registry:agent`, `.mcp.json` →
-  `registry:connector`. Drop `hooks`/`lspServers` (no Kortix equivalent) with an
+  `registry:connector`. Drop `hooks`/`lspServers` (no Zed equivalent) with an
   explicit "unsupported" note, don't silently swallow.
 - Tighten our `SKILL.md` `name` regex to the agentskills.io spec
   (`[a-z0-9-]`, = dirname) on the **build/validate** path (ingest stays lenient).
@@ -137,7 +137,7 @@ structure. Nothing else here rises above a nit.
 
 ### B3 — "Add marketplace" (the UI you sketched)
 - The resolver behind Source / Git ref / Sparse paths already exists (address +
-  scan + subdir). It needs **persistence** beyond the `KORTIX_MARKETPLACE_REGISTRIES`
+  scan + subdir). It needs **persistence** beyond the `ZED_MARKETPLACE_REGISTRIES`
   env: a small `marketplace_sources` table (account/project-scoped:
   `{address, ref, sparse_paths[], scope}`), `POST/GET/DELETE
   /v1/marketplace/sources`, and the catalog reads sources from DB ∪ env. Then the

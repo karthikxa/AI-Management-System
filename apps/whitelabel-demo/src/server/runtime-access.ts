@@ -1,7 +1,7 @@
 /**
  * Wrapper-mode runtime ownership.
  *
- * The store maps one opaque runtime external id to its Kortix project id.
+ * The store maps one opaque runtime external id to its Zed project id.
  * The BFF records the mapping from an authenticated session `/start`
  * response. Runtime proxy requests then reuse the existing project ownership
  * check. Unknown runtime ids fail closed.

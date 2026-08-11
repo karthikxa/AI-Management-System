@@ -1,5 +1,5 @@
 /**
- * Kortix Apps — project-owned serverless App CRUD, artifact registration, and
+ * Zed Apps — project-owned serverless App CRUD, artifact registration, and
  * deployment lifecycle boundaries. Maps to spec section 28 (APP-1..2).
  */
 import { flow } from "../core/flow";

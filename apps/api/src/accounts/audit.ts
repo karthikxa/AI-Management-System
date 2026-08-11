@@ -1,4 +1,4 @@
-// Audit log read surface — backed by the existing kortix.audit_events table
+// Audit log read surface — backed by the existing zed.audit_events table
 // the global middleware + IAM mutation helpers write to.
 //
 // Reads (gated on audit.read):
@@ -12,7 +12,7 @@
 //   - DELETE /:accountId/audit/webhooks/:id
 
 import { createRoute, z } from '@hono/zod-openapi';
-import { auditEvents, auditWebhookDeliveries, auditWebhooks } from '@kortix/db';
+import { auditEvents, auditWebhookDeliveries, auditWebhooks } from '@zed/db';
 import { and, asc, desc, eq } from 'drizzle-orm';
 import type { Context } from 'hono';
 import { ACCOUNT_ACTIONS, assertAuthorized } from '../iam';

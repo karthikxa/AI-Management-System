@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { DEFAULT_MANAGED_MODEL_IDS } from '@kortix/llm-catalog';
+import { DEFAULT_MANAGED_MODEL_IDS } from '@zed/llm-catalog';
 import { chooseDefaultModel } from '../llm-gateway/resolution/choose-default-model';
 
 const MANAGED = DEFAULT_MANAGED_MODEL_IDS[0]!; // a real bare managed id
@@ -57,10 +57,10 @@ describe('chooseDefaultModel — free tier', () => {
     ).toBeUndefined();
   });
 
-  test('drops a kortix/-prefixed managed default → undefined', () => {
+  test('drops a zed/-prefixed managed default → undefined', () => {
     expect(
       chooseDefaultModel({
-        accountDefault: `kortix/${MANAGED}`,
+        accountDefault: `zed/${MANAGED}`,
         agentDefaults: {},
         freeModelsOnly: true,
       }),

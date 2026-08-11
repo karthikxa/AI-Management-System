@@ -21,8 +21,8 @@ describe('managed catalog', () => {
   });
 
   test('the haiku/sonnet branded ids are gone from the served catalog', () => {
-    expect(DEFAULT_MANAGED_MODEL_IDS).not.toContain('kortix-power');
-    expect(DEFAULT_MANAGED_MODEL_IDS).not.toContain('kortix-basic');
+    expect(DEFAULT_MANAGED_MODEL_IDS).not.toContain('zed-power');
+    expect(DEFAULT_MANAGED_MODEL_IDS).not.toContain('zed-basic');
   });
 
   test('Opus is the single flagship', () => {
@@ -111,7 +111,7 @@ describe('managed catalog', () => {
     }
   });
 
-  test('OpenRouter free slugs are not managed Kortix defaults', () => {
+  test('OpenRouter free slugs are not managed Zed defaults', () => {
     for (const id of ['north-mini-code-free', 'nemotron-3-ultra-free']) {
       expect(getManagedModel(id), `${id} should not resolve`).toBeUndefined();
       expect(isManagedModelId(id), `${id} should not be managed`).toBe(false);
@@ -153,8 +153,8 @@ describe('managed resolution + back-compat aliases', () => {
 
   test('retired / superseded model ids no longer resolve (aliases removed)', () => {
     for (const old of [
-      'kortix-power',
-      'kortix-basic',
+      'zed-power',
+      'zed-basic',
       'glm-4.6',
       'glm-5.1',
       'fusion',

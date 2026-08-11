@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { projectSessions } from '@kortix/db';
+import type { projectSessions } from '@zed/db';
 
 import {
   mergeSessionOwnerIdentities,
@@ -136,7 +136,7 @@ describe('mergeSessionOwnerIdentities', () => {
     const identities = mergeSessionOwnerIdentities({
       ownerIds: [humanId, agentId, staleId],
       users: new Map([
-        [humanId, { exists: true, email: 'ari@kortix.ai', displayName: 'Ari' }],
+        [humanId, { exists: true, email: 'ari@zed.ai', displayName: 'Ari' }],
         [agentId, { exists: false, email: null, displayName: null }],
         [staleId, { exists: false, email: null, displayName: null }],
       ]),
@@ -152,7 +152,7 @@ describe('mergeSessionOwnerIdentities', () => {
     expect(identities.get(humanId)).toEqual({
       type: 'user',
       name: 'Ari',
-      email: 'ari@kortix.ai',
+      email: 'ari@zed.ai',
     });
     expect(identities.get(agentId)).toEqual({
       type: 'service_account',
@@ -218,7 +218,7 @@ describe('backend credential session isolation', () => {
 
   test('an INTERACTIVE session is unaffected by the caller binding', () => {
     // created_by really is one person there, so narrowing would break
-    // `kortix sessions ls` from inside a normal sandbox.
+    // `zed sessions ls` from inside a normal sandbox.
     const mine = row('cccc3333-3333-4333-8333-333333333333', { createdBy: VIEWER_ID });
     const sibling = row('dddd4444-4444-4444-8444-444444444444', { createdBy: VIEWER_ID });
     const selected = selectSessionRowsForViewer({

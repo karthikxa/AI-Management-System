@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import {
   type AppInstance,
-  createTestKortix,
+  createTestZed,
   loginUser,
   resetUsersStore,
   startApp,
@@ -42,9 +42,9 @@ describe('starting a session with overrides', () => {
   beforeAll(async () => {
     resetUsersStore();
     mock = createMockUpstream(WRAPPER_KEY);
-    app = await startApp(wrapperEnv({ KORTIX_UPSTREAM: `${mock.url}/v1` }));
+    app = await startApp(wrapperEnv({ ZED_UPSTREAM: `${mock.url}/v1` }));
     token = await loginUser(app, uniqueEmail('overrides'), DEMO_PASSWORD);
-    const project = await createTestKortix(app, token).projects.provision({
+    const project = await createTestZed(app, token).projects.provision({
       name: 'Overrides',
     });
     projectId = project.project_id;
@@ -92,8 +92,8 @@ describe('starting a session with overrides', () => {
 
   test('a narrowed allowlist reaches the API as `secrets`', async () => {
     mock.reset();
-    const kortix = createTestKortix(app, token);
-    await kortix
+    const zed = createTestZed(app, token);
+    await zed
       .project(projectId)
       .sessions.create(
         buildSessionCreateInput(
@@ -109,8 +109,8 @@ describe('starting a session with overrides', () => {
 
   test('a binding reaches the API keyed by the alias that was chosen', async () => {
     mock.reset();
-    const kortix = createTestKortix(app, token);
-    await kortix
+    const zed = createTestZed(app, token);
+    await zed
       .project(projectId)
       .sessions.create(
         buildSessionCreateInput(
@@ -128,8 +128,8 @@ describe('starting a session with overrides', () => {
 
   test('an untouched dialog adds nothing to the create the wrapper already sent', async () => {
     mock.reset();
-    const kortix = createTestKortix(app, token);
-    await kortix.project(projectId).sessions.create(
+    const zed = createTestZed(app, token);
+    await zed.project(projectId).sessions.create(
       buildSessionCreateInput(NO_OVERRIDES, {
         sessionId: '00000000-0000-4000-8000-00000000a003',
       }),
@@ -141,7 +141,7 @@ describe('starting a session with overrides', () => {
   });
 
   test('the mock returns the session collection shape used by the project page', async () => {
-    const sessions = await createTestKortix(app, token)
+    const sessions = await createTestZed(app, token)
       .project(projectId)
       .sessions.list();
 

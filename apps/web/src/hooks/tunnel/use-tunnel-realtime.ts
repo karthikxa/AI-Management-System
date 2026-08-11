@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { getEnv } from '@/lib/env-config';
 import { useTunnelStore } from '@/stores/tunnel-store';
-import { createTunnelEventStream, type SSEStream } from '@kortix/sdk';
+import { createTunnelEventStream, type SSEStream } from '@zed/sdk';
 import { tunnelKeys } from './use-tunnel';
 import type { TunnelPermissionRequest } from './use-tunnel';
 

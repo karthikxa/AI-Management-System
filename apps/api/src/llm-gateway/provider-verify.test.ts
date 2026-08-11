@@ -13,8 +13,8 @@ import {
   UpstreamHttpError,
   NetworkError,
   TimeoutError,
-} from '@kortix/llm-gateway';
-import type { AuthedPrincipal, UpstreamDescriptor } from '@kortix/llm-gateway';
+} from '@zed/llm-gateway';
+import type { AuthedPrincipal, UpstreamDescriptor } from '@zed/llm-gateway';
 import { verifyProviderConnection, type ProviderVerifyDeps } from './provider-verify';
 
 function principal(overrides: Partial<AuthedPrincipal> = {}): AuthedPrincipal {

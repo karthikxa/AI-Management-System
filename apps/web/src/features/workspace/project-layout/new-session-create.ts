@@ -1,6 +1,6 @@
 import type { ComposerOptions } from '@/features/session/composer-chat-input';
-import type { SessionConnectorBindingsInput } from '@kortix/sdk';
-import { isMetaAgentName, META_SANDBOX_SLUG } from '@kortix/shared';
+import type { SessionConnectorBindingsInput } from '@zed/sdk';
+import { isMetaAgentName, META_SANDBOX_SLUG } from '@zed/shared';
 
 export interface NewSessionCreateInput {
   sandbox_slug?: string;

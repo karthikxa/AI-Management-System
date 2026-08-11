@@ -1,4 +1,4 @@
-# Kortix
+# Zed
 
 A company is going to be a git repository.
 
@@ -20,28 +20,28 @@ So people built tools to give it a past. And those tools are demos. One tenant, 
 
 The other option is to crawl back to the model labs, who will happily host the polished version — and keep your data, your configuration, and your model on their side of the wall, where it stays theirs and you rent access to your own operation forever.
 
-A toy or a cage. That's the actual choice on the table today, and it's a stupid one. Kortix is what you build when you refuse both.
+A toy or a cage. That's the actual choice on the table today, and it's a stupid one. Zed is what you build when you refuse both.
 
 ---
 
 ## One company, one repo
 
-A Kortix **project** is a git repo, and that repo *is* the company. Configuration and accumulated state in the same place, all of it text, all of it under version control, all of it readable by a person and editable by an agent.
+A Zed **project** is a git repo, and that repo *is* the company. Configuration and accumulated state in the same place, all of it text, all of it under version control, all of it readable by a person and editable by an agent.
 
 The whole thing is defined by two files:
 
-- **`kortix.yaml`** — the Kortix layer. The sandbox image, triggers, connectors, secret grants, logical agents, and OpenCode config directory.
+- **`zed.yaml`** — the Zed layer. The sandbox image, triggers, connectors, secret grants, logical agents, and OpenCode config directory.
 - **OpenCode config** — the runtime behavior. OpenCode owns prompts, skills, tools, permissions, models, and providers.
 
 Everything past that is files in the repo. You can `grep` your entire company. You can read any agent's instructions in plain markdown. You can open a memory file and see exactly what it believes about you. Nothing is hidden because there is nowhere to hide it.
 
-Drop into any directory, run `kortix init`, and it's a Kortix. Run `kortix ship` and it's live — it checks that the thing compiles, asks you for whatever secrets it's missing, pushes it up, and from then on it runs. The repo behaves the same on your laptop as it does in the cloud, because it's the same repo doing the same thing. Local development and the live system stopped being different categories.
+Drop into any directory, run `zed init`, and it's a Zed. Run `zed ship` and it's live — it checks that the thing compiles, asks you for whatever secrets it's missing, pushes it up, and from then on it runs. The repo behaves the same on your laptop as it does in the cloud, because it's the same repo doing the same thing. Local development and the live system stopped being different categories.
 
 ---
 
 ## How a session actually works
 
-Start a session and a sandbox boots from one generic snapshot already running our daemon — **kortix-sandbox-agent-server**. The daemon clones the repo, pulls latest, cuts a fresh branch, and reads `kortix.yaml`. It then starts OpenCode and exposes its REST API through the Kortix compatibility proxy. The agent does its work completely walled off from everything else. When it wants to keep something, it commits and opens a change request back toward `main`, and a human decides whether that lands.
+Start a session and a sandbox boots from one generic snapshot already running our daemon — **zed-sandbox-agent-server**. The daemon clones the repo, pulls latest, cuts a fresh branch, and reads `zed.yaml`. It then starts OpenCode and exposes its REST API through the Zed compatibility proxy. The agent does its work completely walled off from everything else. When it wants to keep something, it commits and opens a change request back toward `main`, and a human decides whether that lands.
 
 The daemon is one executable that supervises runtime processes and exposes one session surface. A client gets prompting, streaming, files, and a terminal through that surface.
 
@@ -86,7 +86,7 @@ And it's yours all the way down. Any model. Your own keys, or the ChatGPT, Claud
 
 ## It has to feel easy
 
-Anyone in the company should be able to open it and use it the first day, from the web, their phone, or a Slack thread, the same way they'd use any chat app. That's not a nice-to-have, it's the point. Most people will never see a `kortix.yaml` and shouldn't have to.
+Anyone in the company should be able to open it and use it the first day, from the web, their phone, or a Slack thread, the same way they'd use any chat app. That's not a nice-to-have, it's the point. Most people will never see a `zed.yaml` and shouldn't have to.
 
 Under that surface is as much depth as you can stand. The interface and the code are the same system from two angles, mapping cleanly both ways, so you can change something by clicking or by editing a file and it's the identical change either way. Simple enough that it disappears. Open enough that there's no floor.
 
@@ -94,7 +94,7 @@ Under that surface is as much depth as you can stand. The interface and the code
 
 ## Who it's for
 
-**Developers** get a managed cloud for OpenCode agents. One `kortix.yaml` configures the version 2 OpenCode REST runtime. One repo stores the state that persists. Every change request gets a preview you can open. Bring supported direct credentials or use managed model access. `kortix init` and `kortix ship` are the local loop.
+**Developers** get a managed cloud for OpenCode agents. One `zed.yaml` configures the version 2 OpenCode REST runtime. One repo stores the state that persists. Every change request gets a preview you can open. Bring supported direct credentials or use managed model access. `zed init` and `zed ship` are the local loop.
 
 **Companies** get a workforce they can actually manage. People talk to it through the web, Slack, or Teams. It picks up the business as it goes — its skills, its context, the specific way the work gets done — and it does so on infrastructure where the data, the config, and the model belong to the company instead of a vendor.
 
@@ -104,7 +104,7 @@ Under that surface is as much depth as you can stand. The interface and the code
 
 ## How this becomes a business
 
-By being the best version of it, and by running on it in public. We build our own companies on Kortix and let people watch: agents reviewing pull requests, preview environments per change, a Slack message turning into a shipped PR, outreach that runs itself, SEO that just happens. The platform is the proof of the platform.
+By being the best version of it, and by running on it in public. We build our own companies on Zed and let people watch: agents reviewing pull requests, preview environments per change, a Slack message turning into a shipped PR, outreach that runs itself, SEO that just happens. The platform is the proof of the platform.
 
 The money is clean. Open source and self-hostable underneath. A cloud where we charge for seats and compute. Single-tenant deployments for the customers who have to run it themselves, anywhere they want to put it. A marketplace of agents, skills, and whole importable projects. And **Platinum.dev** — the compute floor under all of it: CPU and GPU sandboxes, inference, training, built first because we needed millions of cheap, fast, microVM-isolated machines for ourselves, and then opened up to everyone else who needs the same thing on-prem or in a private cloud, for a fraction of what they're paying now.
 

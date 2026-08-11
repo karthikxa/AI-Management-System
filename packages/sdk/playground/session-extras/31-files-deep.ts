@@ -7,7 +7,7 @@
  * Run (from packages/sdk):  bun run playground/session-extras/31-files-deep.ts
  */
 import {
-  makeKortix,
+  makeZed,
   pickOrCreateSessionId,
   pickProjectId,
   retryUntilReady,
@@ -17,14 +17,14 @@ import {
 const DIR = "/workspace/.sdk-playground-tmp";
 
 run("files-deep", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed);
   const sessionId = await pickOrCreateSessionId(
-    kortix,
+    zed,
     projectId,
     "sdk files test",
   );
-  const session = kortix.session(projectId, sessionId);
+  const session = zed.session(projectId, sessionId);
 
   console.log("readying session…");
   await retryUntilReady(() => session.ensureReady());

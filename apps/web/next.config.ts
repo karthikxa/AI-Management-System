@@ -92,14 +92,14 @@ if (missingEmojibaseOutputs.length > 0) {
 }
 
 // Unified platform version. Prefer the explicit build env (CI passes
-// NEXT_PUBLIC_KORTIX_VERSION = X.Y.Z-dev.<sha> on dev, clean X.Y.Z on prod);
+// NEXT_PUBLIC_ZED_VERSION = X.Y.Z-dev.<sha> on dev, clean X.Y.Z on prod);
 // otherwise read the root VERSION file so Vercel builds (which don't pass the
 // build-arg) still report the version. On Vercel, the `prod` branch is the only
 // clean release — any other branch (dev) is a pre-release, so suffix
-// `-dev.<sha8>` so dev.kortix.com tracks the in-progress version instead of
+// `-dev.<sha8>` so dev.zed.com tracks the in-progress version instead of
 // showing a bare release number. Falls back to 'dev' locally.
-function resolveKortixVersion(): string {
-  if (process.env.NEXT_PUBLIC_KORTIX_VERSION) return process.env.NEXT_PUBLIC_KORTIX_VERSION;
+function resolveZedVersion(): string {
+  if (process.env.NEXT_PUBLIC_ZED_VERSION) return process.env.NEXT_PUBLIC_ZED_VERSION;
   let base = 'dev';
   try {
     base = fs.readFileSync(path.join(__dirname, '../../VERSION'), 'utf8').trim();
@@ -113,7 +113,7 @@ function resolveKortixVersion(): string {
   }
   return base;
 }
-const KORTIX_VERSION = resolveKortixVersion();
+const ZED_VERSION = resolveZedVersion();
 
 // --- Turbopack dev memory eviction ----------------------------------------
 // `experimental.turbopackMemoryEviction` takes exactly `false | 'auto' | 'full'`
@@ -123,25 +123,25 @@ const KORTIX_VERSION = resolveKortixVersion();
 // mean "use the default". Casting a raw env string would forward `''` or
 // `'ful'` straight into the config as a value Next never defined.
 function resolveTurbopackMemoryEviction(): false | 'auto' | 'full' {
-  const raw = process.env.KORTIX_TURBOPACK_EVICTION;
+  const raw = process.env.ZED_TURBOPACK_EVICTION;
   if (raw === undefined || raw === '') return 'auto';
   if (raw === 'false') return false;
   if (raw === 'auto' || raw === 'full') return raw;
   console.warn(
-    `[next.config.ts] Ignoring KORTIX_TURBOPACK_EVICTION=${JSON.stringify(raw)} — ` +
+    `[next.config.ts] Ignoring ZED_TURBOPACK_EVICTION=${JSON.stringify(raw)} — ` +
       `expected one of 'auto', 'full', 'false'. Falling back to 'auto'.`,
   );
   return 'auto';
 }
 
-// Local `pnpm preview` (scripts/dev-local.sh --build) sets KORTIX_PREVIEW_BUILD=1
+// Local `pnpm preview` (scripts/dev-local.sh --build) sets ZED_PREVIEW_BUILD=1
 // to trade prod-build fidelity for speed: skip the `standalone` file-tracing pass
 // (next start never reads .next/standalone) and skip ESLint.
-const IS_PREVIEW_BUILD = process.env.KORTIX_PREVIEW_BUILD === '1';
+const IS_PREVIEW_BUILD = process.env.ZED_PREVIEW_BUILD === '1';
 
 // --- Cross-origin dev / preview access -----------------------------------
 // The app is frequently reached through a proxy whose hostname differs from the
-// origin the browser sends: the Kortix platform proxy (p<port>-<id>.localhost:<port>),
+// origin the browser sends: the Zed platform proxy (p<port>-<id>.localhost:<port>),
 // a Daytona sandbox (<port>-<id>.daytonaproxy01.net), or a Cloudflare quick
 // tunnel (<id>.trycloudflare.com). Next's Server Action CSRF guard
 // (app-render/action-handler.ts) rejects requests where the browser `Origin`
@@ -155,8 +155,8 @@ const IS_PREVIEW_BUILD = process.env.KORTIX_PREVIEW_BUILD === '1';
 //   - allowedDevOrigins matches `parsedOrigin.hostname` (STRIPS port)
 // Hence both port-qualified (`*.localhost:8008`) and bare (`*.localhost`)
 // patterns are present. Never loosen in production, where this is a real CSRF
-// surface — there, only an explicit KORTIX_ALLOWED_DEV_ORIGINS opt-in applies.
-const EXTRA_ALLOWED_ORIGINS = (process.env.KORTIX_ALLOWED_DEV_ORIGINS ?? '')
+// surface — there, only an explicit ZED_ALLOWED_DEV_ORIGINS opt-in applies.
+const EXTRA_ALLOWED_ORIGINS = (process.env.ZED_ALLOWED_DEV_ORIGINS ?? '')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
@@ -164,31 +164,31 @@ const ALLOWED_PROXY_ORIGINS =
   process.env.NODE_ENV === 'production'
     ? EXTRA_ALLOWED_ORIGINS
     : [
-        // Direct localhost + Kortix platform proxy (web:3000 exposed on api:8008)
+        // Direct localhost + Zed platform proxy (web:3000 exposed on api:8008)
         '*.localhost',
         '*.localhost:3000',
         '*.localhost:8008',
         // Daytona cloud sandbox proxy
         '*.daytonaproxy01.net',
-        // Cloudflare quick tunnel (KORTIX_URL in scripts/dev-local.sh)
+        // Cloudflare quick tunnel (ZED_URL in scripts/dev-local.sh)
         '*.trycloudflare.com',
         ...EXTRA_ALLOWED_ORIGINS,
       ];
 
 const nextConfig = (): NextConfig => ({
-  // The frontend data layer lives in the @kortix/sdk workspace package (TS
+  // The frontend data layer lives in the @zed/sdk workspace package (TS
   // source), so Next must transpile it.
-  transpilePackages: ['@kortix/sdk'],
+  transpilePackages: ['@zed/sdk'],
   // Standalone bundles the app for Docker via a slow monorepo-wide file-tracing
   // pass. Vercel injects a Next adapter. Next 16.3 does not emit the whole-app
   // NFT for adapter builds, but its standalone finalizer still requires that
   // file. Disable standalone on Vercel, where the platform does not use it.
   // See https://github.com/vercel/next.js/issues/96646.
   output: IS_PREVIEW_BUILD || process.env.VERCEL ? undefined : 'standalone',
-  // Inline the resolved version so NEXT_PUBLIC_KORTIX_VERSION is available in
+  // Inline the resolved version so NEXT_PUBLIC_ZED_VERSION is available in
   // both the server (runtime-config) and client bundles, even on Vercel.
   env: {
-    NEXT_PUBLIC_KORTIX_VERSION: KORTIX_VERSION,
+    NEXT_PUBLIC_ZED_VERSION: ZED_VERSION,
   },
   // Hide Next.js's persistent dev badge in the corner. It only ever
   // really matters when there's a build error / route compile issue —
@@ -320,7 +320,7 @@ const nextConfig = (): NextConfig => ({
     // RSS. On a machine this size the reading tracks OS memory pressure more
     // than the flag, so treat the deltas as indicative, not exact. The safe
     // claim: no 16.3 config measured below 16.2, and 90% never appeared.
-    // Default stays 'auto' (upstream's). Set KORTIX_TURBOPACK_EVICTION=full
+    // Default stays 'auto' (upstream's). Set ZED_TURBOPACK_EVICTION=full
     // when the laptop is thrashing. Disk cost is real either way:
     // .next/dev/cache grew 3.8GB -> 14-15GB.
     turbopackMemoryEviction: resolveTurbopackMemoryEviction(),
@@ -407,7 +407,7 @@ const nextConfig = (): NextConfig => ({
       // to ITS api port; unset (primary `pnpm dev`) keeps the default :8008.
       {
         source: '/v1/:path*',
-        destination: `${process.env.KORTIX_API_PROXY_TARGET ?? 'http://localhost:8008'}/v1/:path*`,
+        destination: `${process.env.ZED_API_PROXY_TARGET ?? 'http://localhost:8008'}/v1/:path*`,
       },
       // SCIM mounts at the API ROOT (no /v1 prefix) and identity providers call
       // it server-to-server at whatever origin the admin was shown. In
@@ -416,21 +416,21 @@ const nextConfig = (): NextConfig => ({
       // self-hosted admin pastes into Entra/Okta would 404.
       {
         source: '/scim/:path*',
-        destination: `${process.env.KORTIX_API_PROXY_TARGET ?? 'http://localhost:8008'}/scim/:path*`,
+        destination: `${process.env.ZED_API_PROXY_TARGET ?? 'http://localhost:8008'}/scim/:path*`,
       },
       // Same-origin Supabase proxy for the sandbox preview. ENV-GATED: only
-      // active when KORTIX_SUPABASE_PROXY_TARGET is set (scripts/dev-local.sh
+      // active when ZED_SUPABASE_PROXY_TARGET is set (scripts/dev-local.sh
       // run_sandbox_dev), so prod/normal deployments are untouched. The browser
       // is served SUPABASE_URL=/supabase (same origin it loaded from, reachable
       // through whatever preview proxy), and this rewrite forwards it to the
       // in-sandbox Supabase (e.g. http://127.0.0.1:54321) which the browser
       // cannot reach directly. Covers auth (/supabase/auth/v1/*) and rest
       // (/supabase/rest/v1/*) and storage paths. Mirrors the /v1 API proxy.
-      ...(process.env.KORTIX_SUPABASE_PROXY_TARGET
+      ...(process.env.ZED_SUPABASE_PROXY_TARGET
         ? [
             {
               source: '/supabase/:path*',
-              destination: `${process.env.KORTIX_SUPABASE_PROXY_TARGET}/:path*`,
+              destination: `${process.env.ZED_SUPABASE_PROXY_TARGET}/:path*`,
             },
           ]
         : []),

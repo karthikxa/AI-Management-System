@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { DriveExplorer, FileExplorerSourceProvider } from '@/features/project-files';
-import { useRuntimeStore } from '@kortix/sdk/react';
+import { useRuntimeStore } from '@zed/sdk/react';
 import {
   ArrowClockwiseIcon as RefreshCw,
   CloudSlashIcon as ServerOff,

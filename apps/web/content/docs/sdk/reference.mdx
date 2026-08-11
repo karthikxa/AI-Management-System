@@ -1,40 +1,40 @@
 ---
 title: SDK reference
-description: The full @kortix/sdk API surface — client methods, modules, turns, and distribution.
+description: The full @zed/sdk API surface — client methods, modules, turns, and distribution.
 ---
 
-This page is the full `@kortix/sdk` API surface: every client method, the
+This page is the full `@zed/sdk` API surface: every client method, the
 framework-free modules, the turns helpers, and how the package ships. Use
 [SDK](/docs/sdk) to get started and [Sessions](/docs/sdk/sessions) for the
 session lifecycle in depth.
 
 ## The client
 
-`createKortix(config)` returns one client. Every method is a typed call to
+`createZed(config)` returns one client. Every method is a typed call to
 the platform API. The `project(id)` and `session(pid, sid)` handles bind ids
 so you never repeat them.
 
 ```ts
-const kortix = createKortix({ backendUrl, getToken });
+const zed = createZed({ backendUrl, getToken });
 
-kortix.accounts; // account / team operations
-kortix.accountInvites; // invite accept/decline by token alone
-kortix.projects; // top-level project operations
-kortix.connectors; // Connector calls scoped by an agent-minted token
-kortix.project(id); // id-bound project handle
-kortix.session(pid, sid); // id-bound session handle → see Sessions
-kortix.github; // GitHub App install + repo linking
-kortix.billing; // credits, subscription, tier, transactions
-kortix.sandboxShares; // public share links for a sandbox port
-kortix.transcribe; // speech-to-text
-kortix.connectStatus; // easy-connect (Pipedream) status
-kortix.marketplace; // public marketplace catalog
-kortix.validateToken; // pasted-API-key check
-kortix.config; // platform config in effect
-kortix.runtime(); // OpenCode REST compatibility client
+zed.accounts; // account / team operations
+zed.accountInvites; // invite accept/decline by token alone
+zed.projects; // top-level project operations
+zed.connectors; // Connector calls scoped by an agent-minted token
+zed.project(id); // id-bound project handle
+zed.session(pid, sid); // id-bound session handle → see Sessions
+zed.github; // GitHub App install + repo linking
+zed.billing; // credits, subscription, tier, transactions
+zed.sandboxShares; // public share links for a sandbox port
+zed.transcribe; // speech-to-text
+zed.connectStatus; // easy-connect (Pipedream) status
+zed.marketplace; // public marketplace catalog
+zed.validateToken; // pasted-API-key check
+zed.config; // platform config in effect
+zed.runtime(); // OpenCode REST compatibility client
 ```
 
-### Accounts — `kortix.accounts`
+### Accounts — `zed.accounts`
 
 | method | what |
 | --- | --- |
@@ -46,7 +46,7 @@ kortix.runtime(); // OpenCode REST compatibility client
 | `cancelInvite(accountId, inviteId)` · `resendInvite(accountId, inviteId)` | cancel · resend a pending invite |
 | `leave(accountId)` | leave the account |
 
-`accounts.tokens` mints account-scoped API keys (`kortix_pat_...`). See
+`accounts.tokens` mints account-scoped API keys (`zed_pat_...`). See
 [SDK auth](/docs/sdk/auth) for the full token model.
 
 | method | what |
@@ -70,7 +70,7 @@ The API does not store request bodies, prompts, secrets, credentials, or raw
 connector arguments in the centralized event. Connector events can include a
 bounded argument preview that redacts credential-shaped fields and opaque data.
 
-### Account invites — `kortix.accountInvites`
+### Account invites — `zed.accountInvites`
 
 Reached by invite token alone — the invitee may not be a member yet.
 
@@ -78,14 +78,14 @@ Reached by invite token alone — the invitee may not be a member yet.
 | --- | --- |
 | `describe(inviteId)` · `accept(inviteId)` · `decline(inviteId)` | preview · accept · decline an invite |
 
-### Projects — `kortix.projects`
+### Projects — `zed.projects`
 
 | method | what |
 | --- | --- |
 | `list()` · `listForAccount(accountId)` | your projects · projects in an account |
 | `get(id)` · `detail(id)` | summary · full detail |
 | `create(input)` · `createRepo(input)` | from an existing `repo_url` · new empty GitHub repo |
-| `provision(input)` | new project on a new Kortix-managed repo, seeded with a starter template — `{ name, account_id?, seed_starter?, starter_template?, marketplace_items?, source_item_id?, idempotency_key? }` |
+| `provision(input)` | new project on a new Zed-managed repo, seeded with a starter template — `{ name, account_id?, seed_starter?, starter_template?, marketplace_items?, source_item_id?, idempotency_key? }` |
 | `update(id, input)` · `archive(id)` | update settings · archive |
 | `llmCatalog(id)` · `modelPicker(id)` | full · compact model catalog for a selector |
 | `sandboxTemplates(id)` · `sandboxHealth(id)` | sandbox build templates · build health |
@@ -111,7 +111,7 @@ back. Retry with the same key.
 private, unavailable, and soft-deleted sessions, with ownership and
 runtime-state metadata.
 
-### GitHub — `kortix.github`
+### GitHub — `zed.github`
 
 Account-scoped GitHub App install and repo linking, not project-scoped.
 
@@ -122,7 +122,7 @@ Account-scoped GitHub App install and repo linking, not project-scoped.
 | `listRepositories(accountId, installationId?)` · `listRepositoryBranches(...)` | repos the install can see · branches and the GitHub default |
 | `linkRepository(input)` | import a repo as a project |
 
-### Billing — `kortix.billing`
+### Billing — `zed.billing`
 
 Reads for credits, subscription, tier, and transaction history. Checkout,
 the customer portal, and credit purchases are Stripe flows, app-owned.
@@ -144,7 +144,7 @@ Each row combines finalized LLM cost and billed sandbox compute cost.
 `sessionCosts.get()` adds model usage and the discriminated LLM/compute ledger.
 The list includes a reconciliation total for cost without a session.
 
-### Sandbox shares — `kortix.sandboxShares`
+### Sandbox shares — `zed.sandboxShares`
 
 Public share links for one exposed sandbox port. Sandbox-scoped, not
 project-scoped.
@@ -155,7 +155,7 @@ project-scoped.
 | `create(input)` | create one — `{ sandboxId, port, ttl?, label? }` |
 | `revoke(sandboxId, token)` | revoke one |
 
-### Marketplace catalog — `kortix.marketplace`
+### Marketplace catalog — `zed.marketplace`
 
 Public catalog browsing, read-only — distinct from `project(id).marketplace`,
 which installs an item onto a project.
@@ -166,12 +166,12 @@ which installs an item onto a project.
 | `marketplaces()` · `featured()` | all · featured marketplaces |
 | `sources.list()` · `sources.add(input)` · `sources.remove(id)` | list · add · remove a source |
 
-### The project handle — `kortix.project(id)`
+### The project handle — `zed.project(id)`
 
 Binds the project id; every sub-resource hangs off it.
 
 ```ts
-const p = kortix.project(projectId);
+const p = zed.project(projectId);
 await p.detail();
 await p.update({ name });
 await p.llmCatalog();
@@ -182,13 +182,13 @@ await p.llmCatalog();
 | `get` · `detail` · `update` · `archive` | read · full detail · update · archive |
 | `llmCatalog` · `modelPicker` · `sandboxHealth` | model and sandbox-build reads |
 | `onboardingComplete` | mark project onboarding done |
-| `validateManifest(raw)` | validate a `kortix.yaml` (or legacy `kortix.toml`) manifest server-side |
+| `validateManifest(raw)` | validate a `zed.yaml` (or legacy `zed.toml`) manifest server-side |
 | `gitToken()` | mint a fresh scoped git push token (`409` for a bring-your-own repo) |
 | `setAgentScope(agentName, scope)` | bind an agent's allowed secrets and connectors |
 
 #### `p.tokens` — project-scoped API keys
 
-Auto-minted at session create as `KORTIX_CLI_TOKEN`; can also be minted by hand.
+Auto-minted at session create as `ZED_CLI_TOKEN`; can also be minted by hand.
 
 | method | what |
 | --- | --- |
@@ -356,7 +356,7 @@ A change request (CR) is how a session's work merges into the default branch.
 | --- | --- |
 | `list()` | the project's sessions |
 | `create(input?)` | create a session |
-| `session(sid)` | the session handle (same as `kortix.session(id, sid)`) |
+| `session(sid)` | the session handle (same as `zed.session(id, sid)`) |
 
 The session handle is the heart of the runtime — see
 [Sessions](/docs/sdk/sessions).
@@ -420,7 +420,7 @@ Account, agent, and project-scoped model defaults, resolved by the gateway.
 #### `p.setDefaultAgent` — project default agent
 
 `p.setDefaultAgent(agentName)` checks that the agent is declared and enabled,
-then sets it as `default_agent` in the project's `kortix.yaml`. New sessions
+then sets it as `default_agent` in the project's `zed.yaml`. New sessions
 prefer this agent unless a user picks another one.
 
 #### `p.updateFeatureFlag` — feature flags
@@ -429,7 +429,7 @@ prefer this agent unless a user picks another one.
 project. Pass `enabled: null` to clear the override and fall back to the
 platform default. It calls the canonical `PATCH /v1/projects/:id/features`.
 
-`feature` is one of `FEATURE_FLAG_KEYS` (exported from `@kortix/sdk`, typed as
+`feature` is one of `FEATURE_FLAG_KEYS` (exported from `@zed/sdk`, typed as
 `FeatureFlagKey`). The caller needs the project's `project.customize.write`
 permission; the route answers `403` otherwise.
 
@@ -457,12 +457,12 @@ handle: Dockerfile/image/warm-pool templates and their snapshot builds.
 
 ### Escape hatch
 
-`kortix.runtime()` returns the typed OpenCode REST client for the active
+`zed.runtime()` returns the typed OpenCode REST client for the active
 sandbox.
-On a client created by `createScopedKortix` (`@kortix/sdk/server`), it **throws**
+On a client created by `createScopedZed` (`@zed/sdk/server`), it **throws**
 — the process-global "active" runtime is another request's sandbox in a
 multi-tenant server, a cross-tenant leak. Use the session-scoped
-`kortix.session(pid, sid).runtime` (call `ensureReady()` first) instead, which
+`zed.session(pid, sid).runtime` (call `ensureReady()` first) instead, which
 resolves that session's own sandbox.
 
 ## Modules
@@ -474,16 +474,16 @@ stability tier so you know what to build on.
 
 | Tier | Meaning |
 | --- | --- |
-| Canonical | Import from the root `@kortix/sdk`. Use this for all new code. |
-| Supported | A dedicated subpath (`@kortix/sdk/react`, `@kortix/sdk/server`). First-class, not deprecated. |
+| Canonical | Import from the root `@zed/sdk`. Use this for all new code. |
+| Supported | A dedicated subpath (`@zed/sdk/react`, `@zed/sdk/server`). First-class, not deprecated. |
 | Deprecated alias | An old subpath that still works. It re-exports code the root already exports. Import from root instead. |
 | Internal | Outside semver. Do not import this in host code. |
 
 The root entry is canonical. Every framework-free name below is importable
-straight from `@kortix/sdk`:
+straight from `@zed/sdk`:
 
 ```ts
-import { files, getSessionHealth, getClient, authenticatedFetch, backendApi } from '@kortix/sdk';
+import { files, getSessionHealth, getClient, authenticatedFetch, backendApi } from '@zed/sdk';
 ```
 
 ### Canonical modules
@@ -502,7 +502,7 @@ import { files, getSessionHealth, getClient, authenticatedFetch, backendApi } fr
 #### Files
 
 ```ts
-import { files } from '@kortix/sdk';
+import { files } from '@zed/sdk';
 
 const tree = await files.list('/workspace/src');
 const { content } = await files.read('/workspace/README.md');
@@ -517,7 +517,7 @@ targets that session's own sandbox. See [Sessions](/docs/sdk/sessions).
 #### Session runtime helpers
 
 ```ts
-import { getSessionHealth, isRuntimeReady } from '@kortix/sdk';
+import { getSessionHealth, isRuntimeReady } from '@zed/sdk';
 
 const result = await getSessionHealth();
 if (result.ok && isRuntimeReady(result.health)) {
@@ -534,34 +534,34 @@ into a reachable proxy URL: `detectLocalhostUrls`, `rewriteLocalhostUrl`,
 #### OpenCode client
 
 ```ts
-import { getClient } from '@kortix/sdk';
+import { getClient } from '@zed/sdk';
 
 const client = getClient();
 const { data } = await client.session.list({ limit: 100 });
 ```
 
 `getClient()` returns the typed OpenCode v2 compatibility client for the active sandbox,
-with auth already injected. Prefer `kortix.session(pid, sid).runtime`, the
+with auth already injected. Prefer `zed.session(pid, sid).runtime`, the
 same client scoped to one session, over the global `getClient()` when your
 host runs more than one session.
 
 #### Auth helpers
 
 ```ts
-import { authenticatedFetch, getAuthToken } from '@kortix/sdk';
+import { authenticatedFetch, getAuthToken } from '@zed/sdk';
 
-const res = await authenticatedFetch(`${runtimeUrl}/kortix/health`);
+const res = await authenticatedFetch(`${runtimeUrl}/zed/health`);
 const token = await getAuthToken();
 ```
 
-The token comes from the `getToken` function you passed to `createKortix`.
+The token comes from the `getToken` function you passed to `createZed`.
 Most app code does not need this module — the file, session, and facade
 layers already authenticate for you.
 
 #### API client
 
 ```ts
-import { backendApi } from '@kortix/sdk';
+import { backendApi } from '@zed/sdk';
 
 const data = await backendApi.get('/some/endpoint');
 await backendApi.post('/some/endpoint', { name: 'x' });
@@ -574,46 +574,46 @@ only for an endpoint that has no typed wrapper yet.
 
 | Subpath | What it does |
 | --- | --- |
-| `@kortix/sdk/react` | React hooks — see [React hooks](/docs/sdk/react) |
-| `@kortix/sdk/server` | Request-scoped config for multi-tenant backends |
+| `@zed/sdk/react` | React hooks — see [React hooks](/docs/sdk/react) |
+| `@zed/sdk/server` | Request-scoped config for multi-tenant backends |
 
 #### Server-side isolation
 
-`createKortix` stores its config, including the token function, in one
+`createZed` stores its config, including the token function, in one
 process-wide variable. That is fine for a browser tab, a CLI, or a
 single-tenant server. It is unsafe for a Node server that handles concurrent
-requests for different users, because the last `createKortix` call wins for
-every in-flight request. `@kortix/sdk/server` fixes this with per-request
+requests for different users, because the last `createZed` call wins for
+every in-flight request. `@zed/sdk/server` fixes this with per-request
 isolation:
 
 ```ts
-import { createScopedKortix } from '@kortix/sdk/server';
+import { createScopedZed } from '@zed/sdk/server';
 
 export async function handler(req: Request) {
-  const kortix = createScopedKortix({ backendUrl, getToken: () => tokenFor(req) });
-  return kortix.projects.list();
+  const zed = createScopedZed({ backendUrl, getToken: () => tokenFor(req) });
+  return zed.projects.list();
 }
 ```
 
-`createScopedKortix` and `runWithKortix` isolate config per request with
-Node's `AsyncLocalStorage`. Never import `@kortix/sdk/server` from a browser
+`createScopedZed` and `runWithZed` isolate config per request with
+Node's `AsyncLocalStorage`. Never import `@zed/sdk/server` from a browser
 bundle — it statically pulls in `node:async_hooks`.
 
 A scoped client's top-level `runtime()` throws (it would resolve another
 tenant's sandbox). Reach a specific session's runtime via
-`kortix.session(pid, sid).runtime` after `await s.ensureReady()`.
+`zed.session(pid, sid).runtime` after `await s.ensureReady()`.
 
 ### Deprecated aliases
 
 About twenty old subpaths still work: `/files`, `/turns`, `/session`, `/auth`,
 `/projects-client`, `/api-client`, `/config`, `/event-stream`,
 `/opencode-client`, `/platform-client`, and more. Each one re-exports code the
-root `@kortix/sdk` entry already exports. They stay working so no existing
+root `@zed/sdk` entry already exports. They stay working so no existing
 import breaks, but new code should import from the root.
 
 ### Internal modules
 
-`@kortix/sdk/internal/*` holds the zustand stores apps/web's own runtime uses
+`@zed/sdk/internal/*` holds the zustand stores apps/web's own runtime uses
 internally — session sync state, active-runtime tracking, and reconnect
 bookkeeping. This subpath is explicitly outside semver. Do not import it in
 host code; the [React hooks](/docs/sdk/react) already expose the state you
@@ -627,11 +627,11 @@ reference one in `apps/web`. No React, no DOM — every export is a plain
 function or type, safe to call from any host.
 
 ```ts
-import { classifyPart, classifyTurn, toolInfo, toolViewModel } from '@kortix/sdk';
+import { classifyPart, classifyTurn, toolInfo, toolViewModel } from '@zed/sdk';
 ```
 
-Import every function from the root `@kortix/sdk` entry. The
-`@kortix/sdk/turns` subpath still works, but it is a deprecated alias. New
+Import every function from the root `@zed/sdk` entry. The
+`@zed/sdk/turns` subpath still works, but it is a deprecated alias. New
 code must use the root entry — see [Distribution](#distribution).
 
 ### Classify a part
@@ -641,7 +641,7 @@ code must use the root entry — see [Distribution](#distribution).
 fields a renderer needs: tool status, parsed JSON output, image detection.
 
 ```ts
-import { classifyPart, type ClassifiedPart } from '@kortix/sdk';
+import { classifyPart, type ClassifiedPart } from '@zed/sdk';
 
 for (const part of message.parts) {
   const classified: ClassifiedPart = classifyPart(part);
@@ -718,7 +718,7 @@ getToolInfo('write', { filePath: '/workspace/main.go' });
 // { icon: 'file-pen', title: 'Write', subtitle: 'main.go /workspace' }
 ```
 
-Both functions match tool-name prefixes, so Kortix's plugin tool families
+Both functions match tool-name prefixes, so Zed's plugin tool families
 (`agent_*`, `session_*`, `task_*`, `trigger_*`, `project_*`, `pty_*`) resolve
 without a registry update. An unknown tool name never throws — it falls back
 to `humanizeToolName(name)` with category `'other'`.
@@ -759,7 +759,7 @@ A turn pairs one user message with the assistant messages that answered it.
 It is the unit a chat UI renders as one exchange.
 
 ```ts
-import { groupMessagesIntoTurns, collectTurnParts, type TurnLike } from '@kortix/sdk';
+import { groupMessagesIntoTurns, collectTurnParts, type TurnLike } from '@zed/sdk';
 
 const turns: TurnLike[] = groupMessagesIntoTurns(messages);
 for (const turn of turns) {
@@ -783,7 +783,7 @@ Related helpers:
 Narrow a part by `type`:
 
 ```ts
-import { isTextPart, isToolPart, getPartText } from '@kortix/sdk';
+import { isTextPart, isToolPart, getPartText } from '@zed/sdk';
 
 if (isTextPart(part)) {
   // part.type narrowed to 'text'
@@ -797,7 +797,7 @@ Also available: `isReasoningPart`, `isFilePart`, `isAgentPart`,
 ### Status and errors
 
 ```ts
-import { getWorkingState, getTurnStatus, formatDuration } from '@kortix/sdk';
+import { getWorkingState, getTurnStatus, formatDuration } from '@zed/sdk';
 
 const status = getTurnStatus(parts, childMessages); // "Running commands..."
 formatDuration(4300); // "4s" — durations under 1s return ''
@@ -808,7 +808,7 @@ part is a running `task` delegation, pass `childMessages` so the status shows
 the sub-agent's real activity instead of a generic "Delegating..." line.
 
 ```ts
-import { getTurnError, getChildSessionError, unwrapError } from '@kortix/sdk';
+import { getTurnError, getChildSessionError, unwrapError } from '@zed/sdk';
 
 getTurnError(turn);                    // the first assistant error, unwrapped
 getChildSessionError(childMessages);   // newest error in a sub-agent's messages
@@ -818,7 +818,7 @@ unwrapError(rawError);                 // normalizes double-JSON and mixed error
 ### Cost and token totals
 
 ```ts
-import { getTurnCost, getSessionCost, formatCost, formatTokens, COST_MARKUP } from '@kortix/sdk';
+import { getTurnCost, getSessionCost, formatCost, formatTokens, COST_MARKUP } from '@zed/sdk';
 
 const info = getTurnCost(partsWithMessage, modelPricingLookup);
 const sessionCost = getSessionCost(messages, modelPricingLookup);
@@ -830,7 +830,7 @@ formatTokens(12345); // "12k"
 Both functions read cost and token totals from `step-finish` parts. When a
 part reports zero, they estimate cost from token counts using a
 `ModelPricingLookup`. Every total is multiplied by `COST_MARKUP` (`1.2`) to
-match what Kortix bills.
+match what Zed bills.
 
 ### Child sessions and pending requests
 
@@ -838,7 +838,7 @@ A `task` tool call delegates to a child session. These helpers connect a
 parent turn to that child's own messages.
 
 ```ts
-import { getChildSessionId, getChildSessionToolParts } from '@kortix/sdk';
+import { getChildSessionId, getChildSessionToolParts } from '@zed/sdk';
 
 const childId = getChildSessionId(taskToolPart);
 const steps = getChildSessionToolParts(childMessages);
@@ -848,7 +848,7 @@ Match a pending permission or question request to its tool call, and find
 which tool parts to hide while one is active:
 
 ```ts
-import { getPermissionForTool, getHiddenToolParts, isToolPartHidden } from '@kortix/sdk';
+import { getPermissionForTool, getHiddenToolParts, isToolPartHidden } from '@zed/sdk';
 
 const permission = getPermissionForTool(permissions, callID);
 const hidden = getHiddenToolParts(activePermission, activeQuestion);
@@ -857,7 +857,7 @@ const hidden = getHiddenToolParts(activePermission, activeQuestion);
 ### Formatting and lists
 
 ```ts
-import { getFilename, getDirectory, relativizePath, stripAnsi } from '@kortix/sdk';
+import { getFilename, getDirectory, relativizePath, stripAnsi } from '@zed/sdk';
 
 getFilename('/workspace/src/main.go');               // "main.go"
 getDirectory('/workspace/src/main.go');               // "/workspace/src"
@@ -867,7 +867,7 @@ relativizePath('/workspace/src/main.go', '/workspace'); // "src/main.go"
 Session-list helpers operate on the same session data:
 
 ```ts
-import { sortSessions, childMapByParent, allDescendantIds } from '@kortix/sdk';
+import { sortSessions, childMapByParent, allDescendantIds } from '@zed/sdk';
 
 sessions.sort(sortSessions(Date.now())); // pins sessions updated in the last 60s
 const childMap = childMapByParent(sessions);
@@ -891,51 +891,51 @@ exhaustiveness check catches a new wire part type at build time.
 ## Distribution
 
 ```sh
-npm install @kortix/sdk
+npm install @zed/sdk
 ```
 
 The package ships as compiled ESM with full TypeScript type declarations.
 `react` and `@tanstack/react-query` are optional peer dependencies. If you
-use `@kortix/sdk/react`, install both.
+use `@zed/sdk/react`, install both.
 
 ```ts
-import { createKortix } from '@kortix/sdk'; // framework-free core
-import { useSession } from '@kortix/sdk/react'; // optional React layer
-import { createScopedKortix } from '@kortix/sdk/server'; // Node and Bun servers
+import { createZed } from '@zed/sdk'; // framework-free core
+import { useSession } from '@zed/sdk/react'; // optional React layer
+import { createScopedZed } from '@zed/sdk/server'; // Node and Bun servers
 ```
 
 ### Entry points and stability
 
-The root entry, `@kortix/sdk`, is canonical. It exports the full
+The root entry, `@zed/sdk`, is canonical. It exports the full
 framework-free surface and runs in browsers, Node 18+, Bun, and edge
 runtimes.
 
 | Entry | Tier | Contract |
 | --- | --- | --- |
-| `@kortix/sdk` | Canonical | Framework-free. Never imports React or `node:*`. |
-| `@kortix/sdk/react` | Supported | React hooks. The only entry that imports React. |
-| `@kortix/sdk/server` | Supported | Per-request config isolation for Node and Bun servers, via `node:async_hooks`. Never bundle it into a browser. |
+| `@zed/sdk` | Canonical | Framework-free. Never imports React or `node:*`. |
+| `@zed/sdk/react` | Supported | React hooks. The only entry that imports React. |
+| `@zed/sdk/server` | Supported | Per-request config isolation for Node and Bun servers, via `node:async_hooks`. Never bundle it into a browser. |
 | Legacy subpaths (`/projects-client`, `/turns`, `/files`, and more) | Deprecated | Still work. Each re-exports from the root. Import from the root instead. |
-| `@kortix/sdk/internal/*` | Internal | Used by the Kortix web app only. Not a supported API. |
+| `@zed/sdk/internal/*` | Internal | Used by the Zed web app only. Not a supported API. |
 
 ### CDN bundles
 
 The package also ships two browser bundles, built by `tsup`: an ESM bundle
-(`dist/kortix.esm.min.js`) and an IIFE global (`dist/kortix.global.js`) that
-defines `window.Kortix`.
+(`dist/zed.esm.min.js`) and an IIFE global (`dist/zed.global.js`) that
+defines `window.Zed`.
 
 ```html
-<script src="https://unpkg.com/@kortix/sdk/dist/kortix.global.js"></script>
+<script src="https://unpkg.com/@zed/sdk/dist/zed.global.js"></script>
 <script>
-  const kortix = Kortix.createKortix({
-    backendUrl: 'https://api.kortix.com/v1',
+  const zed = Zed.createZed({
+    backendUrl: 'https://api.zed.com/v1',
     getToken: async () => KEY,
   });
 </script>
 ```
 
-`window.Kortix` exposes the same root entry as the npm import:
-`Kortix.createKortix`, `Kortix.classifyTurn`, `Kortix.ApiError`.
+`window.Zed` exposes the same root entry as the npm import:
+`Zed.createZed`, `Zed.classifyTurn`, `Zed.ApiError`.
 
 ## See also
 

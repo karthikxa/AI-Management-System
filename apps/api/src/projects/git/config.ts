@@ -1,5 +1,5 @@
-// Project config introspection: parses the project manifest (kortix.yaml,
-// falling back to legacy kortix.toml) + the OpenCode config dir
+// Project config introspection: parses the project manifest (zed.yaml,
+// falling back to legacy zed.toml) + the OpenCode config dir
 // (agents/skills/commands) out of the repo into a ProjectConfigSummary.
 
 import {
@@ -7,7 +7,7 @@ import {
   manifestCandidatePaths,
   manifestFormatForPath,
   parseManifestText,
-} from '@kortix/manifest-schema';
+} from '@zed/manifest-schema';
 import { type LoadedAgents, extractAgents } from '../agents';
 import { resolveManifestVerdict } from '../lib/manifest-verdict';
 import { listRepoFiles, readManifestFromRepo, readRepoFile } from './files';
@@ -140,11 +140,11 @@ function hasAgentsDeclaration(raw: string | null): boolean {
   return Boolean(raw && (/^\s*\[\[?agents\]?\]/m.test(raw) || /^\s*agents\s*:/m.test(raw)));
 }
 
-/** Tolerant `kortix_version` read for a raw parsed manifest object — mirrors
+/** Tolerant `zed_version` read for a raw parsed manifest object — mirrors
  *  `parseManifestString` in `../triggers.ts` (defaults to 1 when absent, the
  *  same back-compat rule every other manifest reader in this package uses). */
 function manifestSchemaVersionFor(parsed: Record<string, unknown>): number {
-  const raw = parsed.kortix_version;
+  const raw = parsed.zed_version;
   if (typeof raw === 'number' && Number.isFinite(raw)) return Math.floor(raw);
   if (typeof raw === 'string') {
     const n = Number(raw);
@@ -184,7 +184,7 @@ export function resolveConfigAgents(
           path: spec.file ?? native?.path ?? spec.path,
           description: native?.description ?? null,
           mode: native?.mode ?? null,
-          source: 'kortix.yaml' as const,
+          source: 'zed.yaml' as const,
           enabled: spec.enabled,
           sandbox: spec.sandbox ?? null,
           // Surface the per-agent allowlists so the UI can show (read-only) what
@@ -192,7 +192,7 @@ export function resolveConfigAgents(
           scope: {
             env: spec.env,
             connectors: spec.connectors,
-            kortix_cli: spec.kortixCli,
+            zed_cli: spec.zedCli,
           },
         };
       }),
@@ -204,7 +204,7 @@ export async function loadProjectConfig(
   files?: ProjectFileEntry[],
 ): Promise<ProjectConfigSummary> {
   const repoFiles = files ?? (await listRepoFiles(project, project.defaultBranch));
-  // Dual-format: resolve kortix.yaml (preferred) or kortix.toml, then parse in
+  // Dual-format: resolve zed.yaml (preferred) or zed.toml, then parse in
   // the matched format. Without this, a yaml-only project reads no manifest here
   // → its [[agents]] scoping silently vanishes from the config introspection.
   const resolved = await readManifestFromRepo(
@@ -221,7 +221,7 @@ export async function loadProjectConfig(
     ? extractAgents({
         // `extractAgents` dispatches its `[[agents]]` (v1 array) vs `agents:`
         // (v2 map) reader on THIS field — it must reflect the manifest's own
-        // declared `kortix_version`, not a hardcoded v1, or a v2 project's
+        // declared `zed_version`, not a hardcoded v1, or a v2 project's
         // config summary would misreport its map-shaped `agents` as an
         // invalid v1 array.
         schemaVersion: manifestSchemaVersionFor(parsedManifest),
@@ -243,7 +243,7 @@ export async function loadProjectConfig(
       : { specs: [], errors: [] };
   const opencodeDir = resolveOpencodeDir(manifest);
   // Where opencode.jsonc lives. Path comes from the manifest's
-  // [opencode] config_dir, defaulting to `.kortix/opencode`.
+  // [opencode] config_dir, defaulting to `.zed/opencode`.
   const openCodeRaw = await optionalFile(project, `${opencodeDir}/opencode.jsonc`);
 
   // Build matchers off the configured opencode dir. The trailing
@@ -323,7 +323,7 @@ export async function loadProjectConfig(
   };
 
   return {
-    is_kortix_repo: Object.values(signals).some(Boolean),
+    is_zed_repo: Object.values(signals).some(Boolean),
     signals,
     manifest_raw: manifestRaw,
     manifest,
@@ -367,7 +367,7 @@ function resolveOpencodeDir(manifest: Record<string, unknown>): string {
       }
     }
   }
-  return '.kortix/opencode';
+  return '.zed/opencode';
 }
 
 function escapeRegExp(input: string): string {

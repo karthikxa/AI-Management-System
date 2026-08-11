@@ -11,7 +11,7 @@ import {
   TriggerSchema as ContractTriggerSchema,
   WarmProjectSessionResultSchema as ContractWarmProjectSessionResultSchema,
   ClaimWarmProjectSessionInputSchema as ContractClaimWarmProjectSessionInputSchema,
-} from '@kortix/api-contract';
+} from '@zed/api-contract';
 import { z } from '@hono/zod-openapi';
 import { Hono } from 'hono';
 
@@ -20,7 +20,7 @@ export const projectsApp = makeOpenApiApp<AppEnv>();
 export const projectWebhooksApp = new Hono<AppEnv>();
 
 // ─── Reusable OpenAPI schemas (these power the docs, not runtime response
-// validation). Core project-domain surfaces come from @kortix/api-contract —
+// validation). Core project-domain surfaces come from @zed/api-contract —
 // the shared wire contract — while large/dynamic shapes are still modeled
 // loosely with a permissive fallback. ───
 

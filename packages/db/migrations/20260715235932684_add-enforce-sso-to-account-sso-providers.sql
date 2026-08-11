@@ -4,10 +4,10 @@
 -- this provider's primary domain: /access/check-email answers mode='sso' and
 -- the web auth actions turn the request away, so the IdP is the only door.
 -- Off by default — orgs opt in once their SAML connection is proven.
-ALTER TABLE kortix.account_sso_providers
+ALTER TABLE zed.account_sso_providers
   ADD COLUMN IF NOT EXISTS enforce_sso boolean NOT NULL DEFAULT false;
 
 -- Down Migration
 
-ALTER TABLE kortix.account_sso_providers
+ALTER TABLE zed.account_sso_providers
   DROP COLUMN IF EXISTS enforce_sso;

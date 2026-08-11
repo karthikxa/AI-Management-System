@@ -10,7 +10,7 @@ import { useCallback, useState } from 'react';
  * this section live inside a clickable `<label>` (the visibility toggle) —
  * `stopPropagation`/`preventDefault` keep a copy click from also flipping
  * that switch. Icon-swap follows the buttery blur+scale+opacity pattern
- * (`kortix-design-system` skill) — see `CopyButton` in
+ * (`zed-design-system` skill) — see `CopyButton` in
  * `components/markdown/copy-button.tsx` for the same shape.
  */
 export function ModelIdCopyButton({ value, className }: { value: string; className?: string }) {
@@ -52,7 +52,7 @@ export function ModelIdCopyButton({ value, className }: { value: string; classNa
             transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
             className="absolute inset-0 inline-flex items-center justify-center"
           >
-            {copied ? <Check className="text-kortix-green size-3" /> : <Copy className="size-3" />}
+            {copied ? <Check className="text-zed-green size-3" /> : <Copy className="size-3" />}
           </m.span>
         </AnimatePresence>
       </span>

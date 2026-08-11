@@ -12,9 +12,9 @@ setTestEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-service-role');
 setTestEnv('API_KEY_SECRET', 'test-api-key-secret');
 setTestEnv('TUNNEL_SIGNING_SECRET', 'test-tunnel-signing-secret');
 setTestEnv('ALLOWED_SANDBOX_PROVIDERS', 'platinum,daytona');
-setTestEnv('KORTIX_URL', 'https://api.example.test');
+setTestEnv('ZED_URL', 'https://api.example.test');
 setTestEnv('FRONTEND_URL', 'http://localhost:3000');
-setTestEnv('INTERNAL_KORTIX_ENV', 'dev');
+setTestEnv('INTERNAL_ZED_ENV', 'dev');
 setTestEnv('PLATINUM_API_URL', 'https://platinum.test');
 setTestEnv('PLATINUM_API_KEY', 'pt_live_testkey');
 setTestEnv('DAYTONA_API_KEY', 'dt_test');
@@ -98,23 +98,23 @@ describe('FIX-A decideSessionBoot — pinned-id boot gating', () => {
   });
 });
 
-describe('FIX-A kill-switch — KORTIX_SESSION_BOOT_BY_TEMPLATE_ID', () => {
-  const saved = process.env.KORTIX_SESSION_BOOT_BY_TEMPLATE_ID;
+describe('FIX-A kill-switch — ZED_SESSION_BOOT_BY_TEMPLATE_ID', () => {
+  const saved = process.env.ZED_SESSION_BOOT_BY_TEMPLATE_ID;
   afterEach(() => {
-    if (saved === undefined) delete process.env.KORTIX_SESSION_BOOT_BY_TEMPLATE_ID;
-    else process.env.KORTIX_SESSION_BOOT_BY_TEMPLATE_ID = saved;
+    if (saved === undefined) delete process.env.ZED_SESSION_BOOT_BY_TEMPLATE_ID;
+    else process.env.ZED_SESSION_BOOT_BY_TEMPLATE_ID = saved;
   });
 
   test('default (unset) is ON', () => {
-    delete process.env.KORTIX_SESSION_BOOT_BY_TEMPLATE_ID;
+    delete process.env.ZED_SESSION_BOOT_BY_TEMPLATE_ID;
     expect(sessionBootByTemplateIdEnabled()).toBe(true);
   });
   test.each(['0', 'off', 'false', 'no', 'OFF'])('%p disables id-boot', (v) => {
-    process.env.KORTIX_SESSION_BOOT_BY_TEMPLATE_ID = v;
+    process.env.ZED_SESSION_BOOT_BY_TEMPLATE_ID = v;
     expect(sessionBootByTemplateIdEnabled()).toBe(false);
   });
   test.each(['1', 'on', 'true'])('%p keeps id-boot ON', (v) => {
-    process.env.KORTIX_SESSION_BOOT_BY_TEMPLATE_ID = v;
+    process.env.ZED_SESSION_BOOT_BY_TEMPLATE_ID = v;
     expect(sessionBootByTemplateIdEnabled()).toBe(true);
   });
 });

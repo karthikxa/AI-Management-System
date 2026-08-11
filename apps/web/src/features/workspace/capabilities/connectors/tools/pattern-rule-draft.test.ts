@@ -1,4 +1,4 @@
-import type { ConnectorPolicyAction, ConnectorPolicyRule } from '@kortix/sdk';
+import type { ConnectorPolicyAction, ConnectorPolicyRule } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 
 import {

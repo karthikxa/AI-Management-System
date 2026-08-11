@@ -12,7 +12,7 @@ import {
   getPublicMarketplaceItemFile as sdkGetPublicMarketplaceItemFile,
   listPublicMarketplaceItems as sdkListPublicMarketplaceItems,
   listPublicMarketplaces as sdkListPublicMarketplaces,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import type {
   ItemsPage,
   MarketplaceItem,

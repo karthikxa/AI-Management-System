@@ -12,18 +12,18 @@ import {
   projectTriggerRuntime,
   projects,
   sessionLifecycleCommands,
-} from '@kortix/db';
+} from '@zed/db';
 
 const USER_ID = '00000000-0000-4000-a000-000000000001';
 const ACCOUNT_ID = '00000000-0000-4000-a000-000000000101';
 const PROJECT_ID = '00000000-0000-4000-a000-000000000201';
-const MANIFEST_PATH = 'kortix.yaml';
-const TEST_AUTH_KEY = '__KORTIX_E2E_AUTH__';
+const MANIFEST_PATH = 'zed.yaml';
+const TEST_AUTH_KEY = '__ZED_E2E_AUTH__';
 
 process.env.DAYTONA_API_KEY = 'test-daytona-key';
 process.env.DAYTONA_SERVER_URL = 'https://daytona.example.test';
 process.env.DAYTONA_TARGET = 'test-target';
-process.env.KORTIX_URL = 'https://api.example.test';
+process.env.ZED_URL = 'https://api.example.test';
 process.env.LLM_GATEWAY_ENABLED = 'true';
 
 // ─── In-memory git mock ─────────────────────────────────────────────────────
@@ -67,9 +67,9 @@ const projectRow: typeof projects.$inferSelect = {
   name: 'Trigger Project',
   sandboxProviderGeneration: 0,
   secretDefaultStrategy: 'runtime' as const,
-  repoUrl: 'https://github.com/kortix-ai/trigger-project.git',
+  repoUrl: 'https://github.com/zed-ai/trigger-project.git',
   defaultBranch: 'main',
-  manifestPath: 'kortix.yaml',
+  manifestPath: 'zed.yaml',
   idempotencyKey: null,
   status: 'active',
   metadata: {},
@@ -195,9 +195,9 @@ mock.module('../projects/git', () => ({
 }));
 
 mock.module("../snapshots/builder", () => ({
-  ensureSandboxImage: async () => ({ snapshotName: "kortix-default-test", slug: "default", contentHash: "a".repeat(64), built: false, isDefault: true }),
-  ensureMetaSandboxImage: async () => ({ snapshotName: "kortix-meta-test", slug: "meta", contentHash: "b".repeat(64), built: false, isDefault: false }),
-  deleteSandboxImage: async () => ({ deleted: false, snapshotName: "kortix-default-test", slug: "default" }),
+  ensureSandboxImage: async () => ({ snapshotName: "zed-default-test", slug: "default", contentHash: "a".repeat(64), built: false, isDefault: true }),
+  ensureMetaSandboxImage: async () => ({ snapshotName: "zed-meta-test", slug: "meta", contentHash: "b".repeat(64), built: false, isDefault: false }),
+  deleteSandboxImage: async () => ({ deleted: false, snapshotName: "zed-default-test", slug: "default" }),
   listSnapshotBuilds: async () => [],
   listSandboxTemplates: async () => [],
   resolveTemplate: async () => ({ slug: "default", spec: {}, isDefault: true }),
@@ -211,7 +211,7 @@ mock.module("../snapshots/builder", () => ({
   ensurePlatformDefaultImage: async () => undefined,
   resolveCommitSha: async () => "a".repeat(40),
   ensurePerProjectWarmImage: async () => ({
-    snapshotName: "kortix-ppwarm-test",
+    snapshotName: "zed-ppwarm-test",
     tip: "a".repeat(40),
     built: false,
     provider: "daytona",
@@ -221,10 +221,10 @@ mock.module("../snapshots/builder", () => ({
 
 mock.module('../projects/github', () => ({
   parseGitHubRepoUrl: (repoUrl: string) => ({
-    owner: 'kortix-org',
+    owner: 'zed-org',
     repo: repoUrl.split('/').pop()?.replace(/\.git$/, '') ?? 'trigger-project',
   }),
-  buildGitHubAppInstallUrl: () => 'https://github.com/apps/kortix-test/installations/new',
+  buildGitHubAppInstallUrl: () => 'https://github.com/apps/zed-test/installations/new',
   verifyGitHubAppInstallState: (state: string) => state,
   verifyGitHubAppInstallStatePayload: (state: string) => ({
     accountId: state,
@@ -232,7 +232,7 @@ mock.module('../projects/github', () => ({
     issuedAt: Math.floor(Date.now() / 1000),
   }),
   createGitHubAppJwt: () => 'jwt-test',
-  getGitHubPatAuthContext: () => ({ token: 'pat-token', source: 'pat', owner: 'kortix-org' }),
+  getGitHubPatAuthContext: () => ({ token: 'pat-token', source: 'pat', owner: 'zed-org' }),
   commitFile: async (opts: { path: string; content: string; message: string }) => {
     repoFiles.set(opts.path, opts.content);
     commitCalls.push({ path: opts.path, message: opts.message });
@@ -249,18 +249,18 @@ mock.module('../projects/github', () => ({
     return repoFiles.has(opts.path) ? `sha-${opts.path}` : null;
   },
   getGitHubAppInstallation: async () => ({
-    account: { login: 'kortix-org', type: 'Organization' },
+    account: { login: 'zed-org', type: 'Organization' },
     repository_selection: 'all',
     permissions: {},
   }),
   getRepo: async () => ({
     id: 1,
     name: 'contract-project',
-    full_name: 'kortix-org/contract-project',
+    full_name: 'zed-org/contract-project',
     private: true,
-    html_url: 'https://github.com/kortix-org/contract-project',
-    clone_url: 'https://github.com/kortix-org/contract-project.git',
-    ssh_url: 'git@github.com:kortix-org/contract-project.git',
+    html_url: 'https://github.com/zed-org/contract-project',
+    clone_url: 'https://github.com/zed-org/contract-project.git',
+    ssh_url: 'git@github.com:zed-org/contract-project.git',
     default_branch: 'main',
     description: null,
   }),
@@ -739,13 +739,13 @@ function createApp() {
 }
 
 // ─── Manifest seeding helpers ──────────────────────────────────────────────
-// All trigger config lives in `kortix.yaml` now. Tests seed manifest content
+// All trigger config lives in `zed.yaml` now. Tests seed manifest content
 // directly into the in-memory repo — same shape the CRUD handlers read/write.
 // Fixtures are hand-written v2 YAML; every string value goes through
 // `JSON.stringify` so cron expressions (leading `*`), mustache prompts
 // (`{{ ... }}`) etc. round-trip as valid YAML scalars without special-casing.
 
-const MANIFEST_PREAMBLE = `kortix_version: 1\nproject:\n  name: Trigger Project\n`;
+const MANIFEST_PREAMBLE = `zed_version: 1\nproject:\n  name: Trigger Project\n`;
 
 function seedManifest(...triggerBlocks: string[]) {
   const body = triggerBlocks.length === 0
@@ -805,7 +805,7 @@ function seedRuntimeCron(opts: {
     scheduleRevision: 'a'.repeat(64),
     scheduleSpec: {
       slug: opts.slug,
-      path: `kortix.yaml#triggers.${opts.slug}`,
+      path: `zed.yaml#triggers.${opts.slug}`,
       name: opts.slug,
       type: 'cron',
       agent: 'default',
@@ -849,7 +849,7 @@ function webhookEntry(opts: {
 describe('git-backed triggers — CRUD', () => {
   beforeEach(() => resetState());
 
-  test('POST /triggers commits a new cron trigger into kortix.yaml and returns the listing', async () => {
+  test('POST /triggers commits a new cron trigger into zed.yaml and returns the listing', async () => {
     const app = createApp();
     const res = await app.request(`/v1/projects/${PROJECT_ID}/triggers`, {
       method: 'POST',
@@ -870,7 +870,7 @@ describe('git-backed triggers — CRUD', () => {
 
     // Manifest content reflects the new trigger as a `triggers:` entry.
     const written = repoFiles.get(MANIFEST_PATH)!;
-    expect(written).toContain('kortix_version: 2');
+    expect(written).toContain('zed_version: 2');
     expect(written).toContain('triggers:');
     expect(written).toContain('slug: daily-digest');
     expect(written).toContain('name: Daily Digest');
@@ -1023,7 +1023,7 @@ describe('git-backed triggers — CRUD', () => {
   });
 
   test('GET /triggers preserves runtime rows when the manifest is not parseable', async () => {
-    repoFiles.set(MANIFEST_PATH, 'kortix_version: [invalid');
+    repoFiles.set(MANIFEST_PATH, 'zed_version: [invalid');
     runtimeRows.push({
       projectId: PROJECT_ID,
       slug: 'existing',
@@ -1238,7 +1238,7 @@ describe('git-backed triggers — runtime fire paths', () => {
 
     await new Promise((r) => setTimeout(r, 0));
     expect(sandboxProvisionCalls).toBe(1);
-    expect(lastProvisionEnv?.KORTIX_INITIAL_PROMPT).toMatch(/Run at \d{4}-\d{2}-\d{2}T/);
+    expect(lastProvisionEnv?.ZED_INITIAL_PROMPT).toMatch(/Run at \d{4}-\d{2}-\d{2}T/);
     // Runtime row was upserted with last_fired_at.
     expect(runtimeRows).toHaveLength(1);
     expect(runtimeRows[0]!.slug).toBe('daily');
@@ -1265,7 +1265,7 @@ describe('git-backed triggers — runtime fire paths', () => {
 
     await new Promise((r) => setTimeout(r, 0));
     expect(sandboxProvisionCalls).toBe(1);
-    expect(lastProvisionEnv?.KORTIX_OPENCODE_MODEL).toBe('kortix/glm-5.2');
+    expect(lastProvisionEnv?.ZED_OPENCODE_MODEL).toBe('zed/glm-5.2');
   });
 
   test('manual fire without overrides resolves the project model and selected agent before provisioning', async () => {
@@ -1293,7 +1293,7 @@ describe('git-backed triggers — runtime fire paths', () => {
     expect(sandboxProvisionCalls).toBe(1);
     expect(sessionRows.at(-1)?.agentName).toBe('asana-refresher');
     expect(sessionRows.at(-1)?.metadata).toMatchObject({
-      opencode_model: 'kortix/glm-5.2',
+      opencode_model: 'zed/glm-5.2',
       opencode_model_source: 'project',
     });
   });
@@ -1344,7 +1344,7 @@ describe('git-backed triggers — runtime fire paths', () => {
     });
     await new Promise((r) => setTimeout(r, 0));
     expect(sandboxProvisionCalls).toBe(1);
-    expect(lastProvisionEnv?.KORTIX_INITIAL_PROMPT).toBe('Sweep run');
+    expect(lastProvisionEnv?.ZED_INITIAL_PROMPT).toBe('Sweep run');
   });
 
   test('cron sweep under backpressure queues and records accepted fire', async () => {
@@ -1414,7 +1414,7 @@ describe('git-backed triggers — runtime fire paths', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Kortix-Signature': sign(rawBody, 'wrong-secret'),
+        'X-Zed-Signature': sign(rawBody, 'wrong-secret'),
       },
       body: rawBody,
     });
@@ -1426,7 +1426,7 @@ describe('git-backed triggers — runtime fire paths', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Kortix-Signature': sign(rawBody, 'another-wrong-secret'),
+        'X-Zed-Signature': sign(rawBody, 'another-wrong-secret'),
       },
       body: rawBody,
     });
@@ -1450,8 +1450,8 @@ describe('git-backed triggers — runtime fire paths', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Kortix-Signature': sign(rawBody, 'shhh'),
-        'X-Kortix-Delivery-Id': 'delivery-1',
+        'X-Zed-Signature': sign(rawBody, 'shhh'),
+        'X-Zed-Delivery-Id': 'delivery-1',
       },
       body: rawBody,
     });
@@ -1466,14 +1466,14 @@ describe('git-backed triggers — runtime fire paths', () => {
     });
     await new Promise((r) => setTimeout(r, 0));
     expect(sandboxProvisionCalls).toBe(1);
-    expect(lastProvisionEnv?.KORTIX_INITIAL_PROMPT).toBe('New opened');
+    expect(lastProvisionEnv?.ZED_INITIAL_PROMPT).toBe('New opened');
 
     const duplicate = await app.request(`/v1/webhooks/projects/${PROJECT_ID}/hook`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Kortix-Signature': sign(rawBody, 'shhh'),
-        'X-Kortix-Delivery-Id': 'delivery-1',
+        'X-Zed-Signature': sign(rawBody, 'shhh'),
+        'X-Zed-Delivery-Id': 'delivery-1',
       },
       body: rawBody,
     });
@@ -1500,8 +1500,8 @@ describe('git-backed triggers — runtime fire paths', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Kortix-Signature': sign(rawBody, 'shhh'),
-        'X-Kortix-Delivery-Id': 'queued-delivery-1',
+        'X-Zed-Signature': sign(rawBody, 'shhh'),
+        'X-Zed-Delivery-Id': 'queued-delivery-1',
       },
       body: rawBody,
     });
@@ -1518,7 +1518,7 @@ describe('git-backed triggers — runtime fire paths', () => {
     expect(drained).toEqual({ claimed: 1, succeeded: 1, failed: 0, queued: 0 });
     await new Promise((r) => setTimeout(r, 0));
     expect(sandboxProvisionCalls).toBe(1);
-    expect(lastProvisionEnv?.KORTIX_INITIAL_PROMPT).toBe('New opened');
+    expect(lastProvisionEnv?.ZED_INITIAL_PROMPT).toBe('New opened');
     expect(lifecycleCommandRows[0]!.status).toBe('succeeded');
     expect(lifecycleCommandRows[0]!.sessionId).toBeTruthy();
   });
@@ -1539,7 +1539,7 @@ describe('git-backed triggers — runtime fire paths', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Kortix-Signature': sign(rawBody, 'shhh'),
+        'X-Zed-Signature': sign(rawBody, 'shhh'),
       },
       body: rawBody,
     });
@@ -1569,16 +1569,16 @@ describe('git-backed triggers — runtime fire paths', () => {
     // Wrong token → 401, no provision.
     const wrong = await app.request(`/v1/webhooks/projects/${PROJECT_ID}/hook`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Kortix-Token': 'nope' },
+      headers: { 'Content-Type': 'application/json', 'X-Zed-Token': 'nope' },
       body: rawBody,
     });
     expect(wrong.status).toBe(401);
     expect(sandboxProvisionCalls).toBe(0);
 
-    // Correct X-Kortix-Token (no signature header) → fires.
+    // Correct X-Zed-Token (no signature header) → fires.
     const viaHeader = await app.request(`/v1/webhooks/projects/${PROJECT_ID}/hook`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Kortix-Token': 'shhh' },
+      headers: { 'Content-Type': 'application/json', 'X-Zed-Token': 'shhh' },
       body: rawBody,
     });
     expect(viaHeader.status).toBe(202);

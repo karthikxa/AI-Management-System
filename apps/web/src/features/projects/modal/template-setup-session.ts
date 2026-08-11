@@ -5,8 +5,8 @@ import {
 } from '@/features/marketplace/marketplace-setup-prompt';
 import {
   createProjectSession,
-  type KortixProject,
-} from '@kortix/sdk';
+  type ZedProject,
+} from '@zed/sdk';
 
 /**
  * Cloned from a marketplace item → don't drop the user on an empty project.
@@ -18,7 +18,7 @@ import {
  * fall back to the plain project home in that case).
  */
 export async function startTemplateSetupSession(
-  project: KortixProject,
+  project: ZedProject,
   { itemId, title }: { itemId: string; title: string },
 ): Promise<string | null> {
   try {
@@ -42,7 +42,7 @@ export async function startTemplateSetupSession(
  * failure (the caller falls back to the plain project home).
  */
 export async function startProjectOnboardingSession(
-  project: KortixProject,
+  project: ZedProject,
 ): Promise<string | null> {
   try {
     const session = await createProjectSession(project.project_id, {

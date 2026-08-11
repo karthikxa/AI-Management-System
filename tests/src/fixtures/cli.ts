@@ -1,26 +1,26 @@
 /**
- * Hermetic `kortix` CLI subprocess fixture for ke2e.
+ * Hermetic `zed` CLI subprocess fixture for ke2e.
  *
  * The CLI (apps/cli) is a Bun program. We invoke its SOURCE entry
  * (`apps/cli/src/index.ts`) via `bun run …` rather than the pre-built binary,
- * so a stale `dist/kortix` can never make the suite lie. Every invocation runs
+ * so a stale `dist/zed` can never make the suite lie. Every invocation runs
  * in a throwaway temp cwd (so `init` / `create` / `ship` scaffold in isolation)
  * with a throwaway HOME + CLI config file, so login NEVER touches the real
- * `~/.config/kortix/config.json`.
+ * `~/.config/zed/config.json`.
  *
  * Discovered CLI env contract (apps/cli/src/api/config.ts + login.ts):
- *   - KORTIX_CONFIG_FILE  → the multi-host config path the CLI reads/writes.
- *     (KORTIX_AUTH_FILE is an accepted alias; we use KORTIX_CONFIG_FILE.) When
+ *   - ZED_CONFIG_FILE  → the multi-host config path the CLI reads/writes.
+ *     (ZED_AUTH_FILE is an accepted alias; we use ZED_CONFIG_FILE.) When
  *     this points anywhere other than the real default path, the CLI refuses to
  *     import the user's single-host auth.json — perfect test isolation.
- *   - KORTIX_DEFAULT_API_BASE → overrides the built-in `cloud` host URL, so a
+ *   - ZED_DEFAULT_API_BASE → overrides the built-in `cloud` host URL, so a
  *     fresh config's active host points at the ke2e target. This is the API base
  *     EVERY command (login/whoami/ship) uses by default — no per-command --api
  *     needed. We feed it the ke2e origin WITHOUT the `/v1` suffix (the CLI's
  *     joinUrl re-adds exactly one `/v1`).
- *   - KORTIX_API_URL is read only as a *fallback* when the active host has no
+ *   - ZED_API_URL is read only as a *fallback* when the active host has no
  *     URL; since the seeded `cloud` host always carries a URL, it's shadowed —
- *     hence we drive the base via KORTIX_DEFAULT_API_BASE instead.
+ *     hence we drive the base via ZED_DEFAULT_API_BASE instead.
  *
  * The fixture is pure helpers (no ke2e flow plumbing) so flows stay declarative;
  * it returns the captured { exitCode, stdout, stderr } for the flow to assert on.
@@ -67,7 +67,7 @@ export interface CliRunOptions {
 export class CliSandbox {
   /** The isolated working directory (where scaffolds land). */
   cwd: string;
-  /** Private CLI config file path (KORTIX_CONFIG_FILE). */
+  /** Private CLI config file path (ZED_CONFIG_FILE). */
   readonly configFile: string;
   /** Private HOME so nothing leaks to the real user dir. */
   readonly home: string;
@@ -79,7 +79,7 @@ export class CliSandbox {
     this.cwd = join(root, 'work');
     mkdirSync(this.home, { recursive: true });
     mkdirSync(this.cwd, { recursive: true });
-    this.configFile = join(this.home, '.config', 'kortix', 'config.json');
+    this.configFile = join(this.home, '.config', 'zed', 'config.json');
   }
 
   /** Move subsequent commands and path helpers into a scaffolded child dir. */
@@ -96,14 +96,14 @@ export class CliSandbox {
       PATH: process.env.PATH ?? '',
       HOME: this.home,
       // Make the CLI deterministic + non-interactive-friendly.
-      KORTIX_CONFIG_FILE: this.configFile,
-      KORTIX_DEFAULT_API_BASE: targetApiBase(),
+      ZED_CONFIG_FILE: this.configFile,
+      ZED_DEFAULT_API_BASE: targetApiBase(),
       // A stable git identity so `create`/`ship` commits don't fail on a
       // machine without a configured user.
       GIT_AUTHOR_NAME: 'ke2e',
-      GIT_AUTHOR_EMAIL: 'ke2e@kortix.test',
+      GIT_AUTHOR_EMAIL: 'ke2e@zed.test',
       GIT_COMMITTER_NAME: 'ke2e',
-      GIT_COMMITTER_EMAIL: 'ke2e@kortix.test',
+      GIT_COMMITTER_EMAIL: 'ke2e@zed.test',
       // Force non-TTY so prompt-driven branches take their headless path.
       CI: '1',
     };
@@ -173,13 +173,13 @@ export class CliSandbox {
   }
 
   /**
-   * Seed a logged-in config by running the real `kortix login --token <pat>`
+   * Seed a logged-in config by running the real `zed login --token <pat>`
    * against the ke2e target. The PAT is validated by the API (`GET /accounts/me`)
    * and the resulting host record (token mode 0600) is what whoami/logout/ship
    * read. Returns the login result so callers can assert on it (LOGIN-1).
    *
    * Mint `pat` as OWNER via `ctx.fixtures.pat()` (POST /v1/accounts/tokens) and
-   * pass the returned `kortix_pat_…` secret here.
+   * pass the returned `zed_pat_…` secret here.
    */
   async login(pat: string, opts: { noProject?: boolean } = {}): Promise<CliResult> {
     return this.run(['login', '--token', pat, ...(opts.noProject ? ['--no-project'] : [])]);
@@ -210,7 +210,7 @@ export async function runCliOnce(args: string[], opts?: CliRunOptions): Promise<
 /**
  * Drive the CLI's browser-callback login flow (LOGIN-2) WITHOUT a browser.
  *
- * `kortix login` (no --token) stands up a one-shot loopback callback server and
+ * `zed login` (no --token) stands up a one-shot loopback callback server and
  * prints its URL — `…/cli/authorize?callback=http://127.0.0.1:<port>/callback&state=<hex>`
  * — to stdout, then tries to open a browser (harmless here). The dashboard's
  * only job is to POST `{state, token}` to that callback; we simulate the

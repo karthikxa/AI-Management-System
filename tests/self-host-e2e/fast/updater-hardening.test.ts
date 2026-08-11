@@ -70,24 +70,24 @@ describe('self-host updater/compose hardening (fast, no Docker)', () => {
     expect(Number(composeServiceField(vector, 'oom_score_adj'))).toBeGreaterThan(0);
   });
 
-  test('kortix-updater (holds the Docker socket) is pinned by digest, never :latest or a bare floating :cli tag', async () => {
+  test('zed-updater (holds the Docker socket) is pinned by digest, never :latest or a bare floating :cli tag', async () => {
     const { code } = await sandbox.run(['init', '--yes']);
     expect(code).toBe(0);
     const composeText = sandbox.readComposeText();
-    const updater = composeServiceBlock(composeText, 'kortix-updater');
+    const updater = composeServiceBlock(composeText, 'zed-updater');
     const image = composeServiceField(updater, 'image') ?? '';
     expect(image).toMatch(/^docker:\d+\.\d+\.\d+-cli@sha256:[a-f0-9]{64}$/);
   });
 
-  test('supabase-kong no longer depends_on supabase-studio (Studio/Logflare must never gate kortix-api cold boot)', async () => {
+  test('supabase-kong no longer depends_on supabase-studio (Studio/Logflare must never gate zed-api cold boot)', async () => {
     const { code } = await sandbox.run(['init', '--yes']);
     expect(code).toBe(0);
     const composeText = sandbox.readComposeText();
     const kong = composeServiceBlock(composeText, 'supabase-kong');
     expect(kong).not.toContain('supabase-studio');
 
-    // kortix-api still (correctly) depends on Kong itself.
-    const api = composeServiceBlock(composeText, 'kortix-api');
+    // zed-api still (correctly) depends on Kong itself.
+    const api = composeServiceBlock(composeText, 'zed-api');
     expect(api).toContain('supabase-kong');
   });
 
@@ -102,7 +102,7 @@ describe('self-host updater/compose hardening (fast, no Docker)', () => {
   });
 
   test('same compose-level protections hold in domain (prod, 2-replica) mode too', async () => {
-    const { code } = await sandbox.run(['init', '--yes', '--domain', 'kortix.example.com']);
+    const { code } = await sandbox.run(['init', '--yes', '--domain', 'zed.example.com']);
     expect(code).toBe(0);
     const composeText = sandbox.readComposeText();
     const names = composeServiceNames(composeText);
@@ -116,7 +116,7 @@ describe('self-host updater/compose hardening (fast, no Docker)', () => {
     expect(kong).not.toContain('supabase-studio');
   });
 
-  // `kortix self-host status` (findings #3/#4: run outcomes + drift must be
+  // `zed self-host status` (findings #3/#4: run outcomes + drift must be
   // human-visible) is new. Its Docker-touching path (reading the updater's
   // report) can't run in this no-Docker tier, but its guard clause — refusing
   // cleanly on an uninitialized instance, same convention as every other

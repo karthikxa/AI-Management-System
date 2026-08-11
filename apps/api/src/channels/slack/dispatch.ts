@@ -6,7 +6,7 @@ import {
   chatThreads,
   projectSessions,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { db } from '../../shared/db';
 import {
   loadSlackBotUserIdForProject,
@@ -302,12 +302,12 @@ async function postProjectPicker(opts: {
 }
 
 // The AI-Assistant DM pane fires `assistant_thread_started` when a user opens
-// (or starts a new) Kortix DM — the natural "which project is this connected
+// (or starts a new) Zed DM — the natural "which project is this connected
 // to?" moment, exactly like inviting the bot to a channel. We run the IDENTICAL
 // resolution the channel path uses (resolveOauthProject): one project →
 // auto-bind silently, two+ unbound → the same project picker right in the
 // assistant thread, already bound → nothing. So a DM user gets the exact same
-// "choose your Kortix project" experience as a channel, without needing a slash
+// "choose your Zed project" experience as a channel, without needing a slash
 // command (which the Assistant pane can't run).
 export async function handleAssistantThreadStarted(
   teamId: string,
@@ -335,12 +335,12 @@ export async function handleAssistantThreadStarted(
 
 // ── DM slash-command fallback ────────────────────────────────────────────────
 // Slack does NOT run slash commands inside the AI-Assistant DM pane (or any
-// message thread) — typing `/kortix switch` there is delivered to us as a plain
-// `message.im` instead of a slash payload. So when a DM message IS a `/kortix …`
+// message thread) — typing `/zed switch` there is delivered to us as a plain
+// `message.im` instead of a slash payload. So when a DM message IS a `/zed …`
 // command, run it through the EXACT same handler the real slash endpoint uses
 // and post the reply right back into the DM. This makes the commands work in
 // DMs even though Slack's native slash mechanism can't reach the assistant pane.
-const DM_COMMAND_RE = /^\/(kortix(?:-dev)?)\b[ \t]*([\s\S]*)$/i;
+const DM_COMMAND_RE = /^\/(zed(?:-dev)?)\b[ \t]*([\s\S]*)$/i;
 
 async function postSlashResponseToChannel(
   token: string,
@@ -349,7 +349,7 @@ async function postSlashResponseToChannel(
   resp: SlashResponse,
 ): Promise<void> {
   if (resp.blocks && resp.blocks.length > 0) {
-    await postBlocks(token, channelId, resp.text ?? 'Kortix', resp.blocks, threadTs);
+    await postBlocks(token, channelId, resp.text ?? 'Zed', resp.blocks, threadTs);
   } else if (resp.text) {
     await postMessage(token, channelId, resp.text, threadTs);
   }
@@ -479,7 +479,7 @@ async function threadIsOwned(teamId: string, threadTs: string): Promise<boolean>
   return !!row;
 }
 
-const CHANNEL_INTRO_FALLBACK = "Kortix is now connected to this channel. Mention @Kortix with a task to get started.";
+const CHANNEL_INTRO_FALLBACK = "Zed is now connected to this channel. Mention @Zed with a task to get started.";
 
 async function postChannelIntro(projectId: string, channelId: string): Promise<void> {
   const token = await loadSlackTokenForProject(projectId);
@@ -491,25 +491,25 @@ async function postChannelIntro(projectId: string, channelId: string): Promise<v
     .limit(1);
   const projectLine = project?.name
     ? `This channel is connected to *${escapeMrkdwn(project.name)}*.`
-    : 'This channel is connected to a Kortix project.';
+    : 'This channel is connected to a Zed project.';
   const blocks: Array<Record<string, unknown>> = [
     {
       type: 'header',
-      text: { type: 'plain_text', text: 'Kortix is connected to this channel', emoji: false },
+      text: { type: 'plain_text', text: 'Zed is connected to this channel', emoji: false },
     },
     {
       type: 'section',
       text: {
         type: 'mrkdwn',
         text: [
-          '`@`-mention Kortix with a task and an agent gets on it — working across your connected tools and replying right here in the thread. Follow-ups stay in the same conversation, with full context.',
+          '`@`-mention Zed with a task and an agent gets on it — working across your connected tools and replying right here in the thread. Follow-ups stay in the same conversation, with full context.',
           projectLine,
           'Agent, model, and session policy settings are shared by this Slack channel.',
           '',
           'Try something like:',
-          '• `@Kortix summarize this thread and draft a reply to the customer`',
-          '• `@Kortix pull last week’s signups, group them by source, and drop a CSV here`',
-          '• `@Kortix put together a one-pager on our Q2 numbers`',
+          '• `@Zed summarize this thread and draft a reply to the customer`',
+          '• `@Zed pull last week’s signups, group them by source, and drop a CSV here`',
+          '• `@Zed put together a one-pager on our Q2 numbers`',
           '',
           'Use the app slash command with `help` to see channel settings.',
         ].join('\n'),
@@ -599,7 +599,7 @@ export async function dispatchSlackEvent(projectId: string, envelope: SlackEnvel
       await postMessage(
         token,
         event.channel,
-        "Mention @Kortix with a task and I'll get on it.",
+        "Mention @Zed with a task and I'll get on it.",
         event.thread_ts ?? event.ts,
       );
     }
@@ -619,7 +619,7 @@ export async function spawnAgentTurn(
 
   // Resolve who the agent runs AS. Gated by SLACK_REQUIRE_USER_IDENTITY:
   //  • ON  — every sender (first message OR follow-up, channel OR button click)
-  //    must be linked to a Kortix account that is a member of this project's
+  //    must be linked to a Zed account that is a member of this project's
   //    account. No live mapping → block and nudge to `/login`; never fall back
   //    to the owner (the impersonation this fixes).
   //  • OFF — legacy behavior: run as the account owner stand-in.
@@ -713,7 +713,7 @@ export async function spawnAgentTurn(
         await saveTurn(handle);
       }
       // Per-Slack-user identity: once a thread participant is authorized, deliver
-      // their follow-up as that validated Kortix user. The thread/session gate
+      // their follow-up as that validated Zed user. The thread/session gate
       // above decides whether they are allowed to join this conversation at all.
       const outcome = await deliverSlackFollowUpToSession({
         sessionId: existing.sessionId,
@@ -761,14 +761,14 @@ export async function spawnAgentTurn(
         // the thread lands right back here (`session.status === 'failed'` is sticky)
         // and, unguarded, re-posts the identical line — the thread jammed on repeat.
         // The first failure claims a durable per-thread notice and posts it with a
-        // direct link to open the session in Kortix; every later one just clears its
+        // direct link to open the session in Zed; every later one just clears its
         // ⏳ ack and stays silent, so the thread isn't spammed forever.
         if (handle) {
           await deleteTurn(existing.sessionId);
           if (await claimThreadErrorNotice(teamId, threadId)) {
             const url = sessionWebUrl(config.FRONTEND_URL, projectId, existing.sessionId);
             await finalizeTurn(handle, {
-              error: `This thread's session hit an error and couldn't start. <${url}|Open it in Kortix> to see what happened.`,
+              error: `This thread's session hit an error and couldn't start. <${url}|Open it in Zed> to see what happened.`,
             });
           } else {
             await finalizeTurn(handle, {});

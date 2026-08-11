@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { kortixFromAuth, withKortixScope } from '../api/sdk.ts';
+import { zedFromAuth, withZedScope } from '../api/sdk.ts';
 import { runSessions } from '../commands/sessions';
 
 const PROJECT_ID = '00000000-0000-4000-a000-000000000111';
@@ -12,12 +12,12 @@ const SESSION_ID = '00000000-0000-4000-a000-000000000333';
 const PROXY_ID = 'external-approvals';
 
 const ENV_KEYS = [
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CONFIG_FILE',
+  'ZED_CLI_TOKEN',
+  'ZED_TOKEN',
+  'ZED_API_URL',
+  'ZED_PROJECT_ID',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
 ] as const;
 
 let dir = '';
@@ -56,8 +56,8 @@ describe('sessions pending/approve/answer', () => {
   beforeEach(() => {
     for (const k of ENV_KEYS) savedEnv[k] = process.env[k];
     for (const k of ENV_KEYS) delete process.env[k];
-    process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
-    dir = mkdtempSync(join(tmpdir(), 'kortix-approvals-'));
+    process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
+    dir = mkdtempSync(join(tmpdir(), 'zed-approvals-'));
     permissionReplies = [];
     questionReplies = [];
     pendingPermissions = [];
@@ -116,7 +116,7 @@ describe('sessions pending/approve/answer', () => {
     });
 
     const configPath = join(dir, 'config.json');
-    process.env.KORTIX_CONFIG_FILE = configPath;
+    process.env.ZED_CONFIG_FILE = configPath;
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -124,7 +124,7 @@ describe('sessions pending/approve/answer', () => {
         hosts: {
           default: {
             url: `http://127.0.0.1:${server.port}`,
-            token: 'kortix_pat_test',
+            token: 'zed_pat_test',
             user_id: 'user-1',
             user_email: 'user@example.test',
             account_id: ACCOUNT_ID,
@@ -150,14 +150,14 @@ describe('sessions pending/approve/answer', () => {
     if (server) {
       const auth = {
         api_base: `http://127.0.0.1:${server.port}`,
-        token: 'kortix_pat_test',
+        token: 'zed_pat_test',
         user_id: 'user-1',
         user_email: 'user@example.test',
         account_id: ACCOUNT_ID,
         logged_in_at: '2026-01-01T00:00:00.000Z',
       };
-      await withKortixScope(auth, () =>
-        kortixFromAuth(auth).session(PROJECT_ID, SESSION_ID).stop(),
+      await withZedScope(auth, () =>
+        zedFromAuth(auth).session(PROJECT_ID, SESSION_ID).stop(),
       ).catch(() => {});
     }
     server?.stop(true);
@@ -220,7 +220,7 @@ describe('sessions pending/approve/answer', () => {
     const out = stdoutChunks.join('');
     expect(out).toContain('perm_1');
     expect(out).toContain('bash');
-    expect(out).toContain(`kortix sessions approve ${SESSION_ID} perm_1`);
+    expect(out).toContain(`zed sessions approve ${SESSION_ID} perm_1`);
   });
 
   test('approve with an explicit request id replies once', async () => {

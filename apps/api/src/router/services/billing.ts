@@ -20,7 +20,7 @@ export async function checkCredits(
 ): Promise<BillingCheckResult> {
   // When billing is disabled (self-host/dev), all checks pass — no Stripe, no
   // real subscriptions, and gating on a $0 balance just stalls everything.
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED || creditGateExemptEnv()) {
+  if (!config.ZED_BILLING_INTERNAL_ENABLED || creditGateExemptEnv()) {
     return { hasCredits: true, balance: 0, message: 'Credits check skipped (billing disabled)' };
   }
 
@@ -34,7 +34,7 @@ export async function checkCredits(
 }
 
 /**
- * Deduct credits for a Kortix tool call.
+ * Deduct credits for a Zed tool call.
  *
  * Uses direct DB atomic deduction via Drizzle. Requires DATABASE_URL to be configured.
  */
@@ -54,18 +54,18 @@ export async function deductToolCredits(
   // Skip deduction when billing is disabled (self-host/dev) — no Stripe, no
   // real subscriptions, billing on a $0 balance would just stall everything
   // with InsufficientCreditsError.
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED || creditGateExemptEnv()) {
+  if (!config.ZED_BILLING_INTERNAL_ENABLED || creditGateExemptEnv()) {
     return { success: true, cost: 0, newBalance: 0 };
   }
 
   const baseDescription =
     description ||
-    `Kortix ${toolName.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`;
+    `Zed ${toolName.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`;
   const deductDescription = sessionId ? `${baseDescription} [session:${sessionId}]` : baseDescription;
 
   console.info(`[BILLING] Deducting $${cost.toFixed(4)} for ${toolName} (direct DB)`);
 
-  // 'usage' — deliberately NOT compute_debit or llm_debit. Kortix tool calls
+  // 'usage' — deliberately NOT compute_debit or llm_debit. Zed tool calls
   // (web/image search, tool proxy) are neither, and usage-breakdown.ts has no
   // third bucket to put them in. This keeps their classification byte-identical
   // to what the pre-20260730012238065 overload produced; inventing a category
@@ -104,7 +104,7 @@ export async function deductLLMCredits(
   }
 
   // Skip deduction when billing is disabled (see deductToolCredits for rationale).
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED || creditGateExemptEnv()) {
+  if (!config.ZED_BILLING_INTERNAL_ENABLED || creditGateExemptEnv()) {
     return { success: true, cost: 0, newBalance: 0 };
   }
 

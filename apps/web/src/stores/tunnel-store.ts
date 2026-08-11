@@ -10,7 +10,7 @@
  */
 
 import { create } from 'zustand';
-import { createTunnelEventStream, type SSEStream } from '@kortix/sdk';
+import { createTunnelEventStream, type SSEStream } from '@zed/sdk';
 import type { TunnelPermissionRequest } from '@/hooks/tunnel/use-tunnel';
 
 // ─── Types ───────────────────────────────────────────────────────────────────

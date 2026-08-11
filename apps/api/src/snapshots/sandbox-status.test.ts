@@ -6,8 +6,8 @@ import {
   resolveSandboxRuntimeStatus,
 } from './sandbox-status';
 
-const CURRENT = 'kortix-default-3e3906a27df1';
-const PREVIOUS = 'kortix-default-11e780692c1d';
+const CURRENT = 'zed-default-3e3906a27df1';
+const PREVIOUS = 'zed-default-11e780692c1d';
 
 function coverage(
   provider: string,

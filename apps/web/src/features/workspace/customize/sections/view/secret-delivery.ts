@@ -4,7 +4,7 @@ import type {
   SecretDeliveryStatus,
   SecretDeliveryStrategy,
   SecretEgressPolicy,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 export type ConnectorBindingOption = {
   slug: string;
@@ -77,8 +77,8 @@ const PRESENTATIONS: Record<SecretDeliveryStrategy, SecretDeliveryPresentation> 
     tone: 'warning',
   },
   broker: {
-    label: 'Kortix service',
-    description: 'Used by an approved Kortix service without entering the sandbox.',
+    label: 'Zed service',
+    description: 'Used by an approved Zed service without entering the sandbox.',
     tone: 'secondary',
   },
   egress: {
@@ -88,7 +88,7 @@ const PRESENTATIONS: Record<SecretDeliveryStrategy, SecretDeliveryPresentation> 
   },
   denied: {
     label: 'Disabled',
-    description: 'Stored securely, but unavailable to sessions and Kortix services.',
+    description: 'Stored securely, but unavailable to sessions and Zed services.',
     tone: 'outline',
   },
 };
@@ -186,7 +186,7 @@ export function buildBrokerPolicy(form: BrokerPolicyForm): SecretEgressPolicy | 
         ? { kind: 'query' as const, name: target }
         : { kind: 'json_body_field' as const, path: target };
   return {
-    backend: 'kortix_fetch',
+    backend: 'zed_fetch',
     rules: hosts.map((host) => ({
       host,
       ...(methods.length > 0 ? { methods } : {}),

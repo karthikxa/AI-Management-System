@@ -88,7 +88,7 @@ import {
   getRetryInfo,
   getRetryMessage,
   splitUserParts,
-} from '@kortix/sdk/turns';
+} from '@zed/sdk/turns';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {

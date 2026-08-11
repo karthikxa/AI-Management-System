@@ -1,6 +1,6 @@
 import { createAccountToken } from '../src/repositories/account-tokens';
 import { db } from '../src/shared/db';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 
 const ACC='fbea71d0-9655-4ab4-aca5-1b68e1ae7f71'; const BASE='http://localhost:8008';
@@ -20,7 +20,7 @@ console.log(`spawn→ready=${s(now()-t0)}s  ${ext}`);
 
 // patient verify opencode is up + has a model + responds
 async function patient(p:string, init?:RequestInit, tries=8){ for(let i=0;i<tries;i++){ try{ const r=await px(b,p,init); if(r.ok) return r; }catch{} await new Promise(z=>setTimeout(z,1500)); } return null; }
-const h=await patient('/kortix/health'); console.log('health:', h? (await h.json()).runtimeReady : 'UNREACHABLE');
+const h=await patient('/zed/health'); console.log('health:', h? (await h.json()).runtimeReady : 'UNREACHABLE');
 const prov2=await patient('/provider');
 if(prov2){ const pj:any=await prov2.json().catch(()=>({})); const def=pj?.default ?? Object.keys(pj?.providers??pj??{})[0]; console.log('opencode /provider OK — default model area:', JSON.stringify(def).slice(0,120)); }
 else console.log('opencode /provider UNREACHABLE');

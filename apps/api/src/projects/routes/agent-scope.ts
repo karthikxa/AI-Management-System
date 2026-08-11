@@ -6,14 +6,14 @@
 // to it (Members → Resource access) inherit.
 //
 // NOTE: `applyAgentScope` (agents.ts) operates on the `[[agents]]` array shape
-// — a legacy v1 kortix.toml manifest. A v2 kortix.yaml's `agents:` map isn't
+// — a legacy v1 zed.toml manifest. A v2 zed.yaml's `agents:` map isn't
 // an array, so `manifest.raw.agents` here reads as `[]` and this route 404s
 // with "agent not found" for v2 projects (see below).
 //
 // Manager-gated: an agent's scope decides what flows to everyone who inherits
 // it, so it's a governance control, not an editor convenience.
 //
-// `kortix_cli` is intentionally NOT editable here — granting Kortix-CLI powers
+// `zed_cli` is intentionally NOT editable here — granting Zed-CLI powers
 // is a sharper escalation; it stays a manifest change.
 
 import { createRoute, z } from '@hono/zod-openapi';
@@ -100,7 +100,7 @@ projectsApp.openapi(
 
     // The agent must already be declared — this route SCOPES an existing agent,
     // it doesn't create the roster entry (that's the fuller /config editor). v1
-    // stores agents as a `[[agents]]` array; v2 (kortix.yaml) as an `agents:`
+    // stores agents as a `[[agents]]` array; v2 (zed.yaml) as an `agents:`
     // map. The v1-only path treated a v2 map as an empty array, so EVERY scope
     // edit on a YAML project 404'd "agent not found" — branch on the schema.
     if (manifest.schemaVersion >= 2) {
@@ -122,7 +122,7 @@ projectsApp.openapi(
       if (connectorsRequired !== undefined) {
         return c.json(
           {
-            error: 'connectors_required requires a v2 (kortix.yaml) manifest',
+            error: 'connectors_required requires a v2 (zed.yaml) manifest',
             code: 'unsupported_in_v1',
           },
           400,

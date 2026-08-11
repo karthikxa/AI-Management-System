@@ -1,6 +1,6 @@
 import { createAccountToken } from '../src/repositories/account-tokens';
 import { db } from '../src/shared/db';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { readFileSync } from 'fs';
 
@@ -16,7 +16,7 @@ const now = () => Date.now();
 async function guestReady(ext: string): Promise<{ready:boolean, body:string}> {
   const r = await fetch(`https://api.platinum.dev/v1/sandboxes/${ext}/exec`, {
     method:'POST', headers:{ Authorization:`Bearer ${PTKEY}`,'Content-Type':'application/json' },
-    body: JSON.stringify({ cmd:['sh','-lc','curl -s -m3 http://127.0.0.1:8000/kortix/health'] }),
+    body: JSON.stringify({ cmd:['sh','-lc','curl -s -m3 http://127.0.0.1:8000/zed/health'] }),
     signal: AbortSignal.timeout(20000),
   });
   const j:any = await r.json().catch(()=>({}));

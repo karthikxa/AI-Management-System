@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { DiffView } from '@/components/diff/diff-view';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DiffStat, STATUS_TEXT, StatusBadge } from '@/components/ui/status';
-import { useRuntimeMessages, useRuntimeSessionDiff } from '@kortix/sdk/react';
+import { useRuntimeMessages, useRuntimeSessionDiff } from '@zed/sdk/react';
 import { cn } from '@/lib/utils';
 import type { ApplyPatchFile, FileDiff } from '@/ui/types';
 import {

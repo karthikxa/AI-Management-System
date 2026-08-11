@@ -1,8 +1,8 @@
-# `@kortix/sdk` v2 — Structure & Distribution Implementation Plan
+# `@zed/sdk` v2 — Structure & Distribution Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Restructure `@kortix/sdk` so its directories encode runtime tiers, collapse its 25-subpath public surface to a single canonical root entry (additively, breaking nobody), and make it consumable with no bundler — all guarded by tests that land *before* the code they protect.
+**Goal:** Restructure `@zed/sdk` so its directories encode runtime tiers, collapse its 25-subpath public surface to a single canonical root entry (additively, breaking nobody), and make it consumable with no bundler — all guarded by tests that land *before* the code they protect.
 
 **Architecture:** Two independent axes. **Axis 1** (internal file layout) is invisible to consumers because `package.json#exports` maps public names to internal files — so files move freely at zero compatibility cost. **Axis 2** (the public surface) makes the root barrel canonical and demotes the 21 non-tier subpaths to `@deprecated` aliases in `src/deprecated/`, so all 340 existing import sites keep compiling. Safety nets (install smoke test, export snapshot) are built first, because they are what make a 29.5k-LOC move survivable.
 
@@ -35,10 +35,10 @@ Every task's requirements implicitly include this section.
   A removal or rename means you broke a consumer — add an alias, do not accept the diff.
 - **Never report a subset as the whole.** Pointing `bun test` at a directory with
   no `*.test.ts` files exits **0** and runs nothing (verified, bun 1.3.14). Always
-  finish on the full `pnpm --filter @kortix/sdk test` and check the count against
+  finish on the full `pnpm --filter @zed/sdk test` and check the count against
   the **1046** baseline. `Ran 0 tests` is not a green run.
 - **Never end a task without running the gates and pasting the real output:**
-  `pnpm --filter @kortix/sdk typecheck && pnpm --filter @kortix/sdk test` (plus
+  `pnpm --filter @zed/sdk typecheck && pnpm --filter @zed/sdk test` (plus
   `run smoke:install` from Task 2 onward). Then state explicitly whether the work
   is **shippable to production: YES / NO / NOT YET**, listing what was verified,
   what was not, and the concrete risk. `typecheck` is not verification.
@@ -51,7 +51,7 @@ Every task's requirements implicitly include this section.
 - **`@opencode-ai/sdk` is pinned exactly to `1.17.11`** (no caret). Never resolve its root, `/server`, or `/v2/server` into a browser bundle — they pull `node:child_process`. Only `@opencode-ai/sdk/v2/client`.
 - **`react` and `@tanstack/react-query` are optional `peerDependencies`.** Never promote to `dependencies`.
 - **Do not add new `workspace:*` dependencies** to this package. They get pinned at publish and force the sibling to publish too.
-- **Every task ends green:** `pnpm --filter @kortix/sdk typecheck` && `pnpm --filter @kortix/sdk test`. Baseline is 1046 passing tests across 65 files.
+- **Every task ends green:** `pnpm --filter @zed/sdk typecheck` && `pnpm --filter @zed/sdk test`. Baseline is 1046 passing tests across 65 files.
 - **Do not claim React Native streaming support** anywhere. The transport seam is deferred.
 - **Hosts (`apps/web`, `apps/mobile`, `apps/whitelabel-demo`) must keep compiling with zero import-line changes** through Tasks 1–4 and 6–9. Only Task 5 touches a host, and only `whitelabel-demo`.
 
@@ -72,15 +72,15 @@ Every task's requirements implicitly include this section.
 | `packages/sdk/src/core/turns/{parts,grouping,shell,state}.ts` | The split of the 1434-loc `turns/index.ts` | 4 |
 | `packages/sdk/src/deprecated/*.ts` | `@deprecated` re-export shims for the 21 subpaths | 5 |
 | `packages/sdk/src/internal/*.ts` | The 5 zustand stores, explicitly unsupported | 5 |
-| `packages/sdk/tsup.config.ts` | CDN ESM + IIFE `window.Kortix` bundles | 7 |
+| `packages/sdk/tsup.config.ts` | CDN ESM + IIFE `window.Zed` bundles | 7 |
 | `packages/sdk/examples/07-vanilla.ts` | Full S1 flow, plain TS, zero framework | 9 |
-| `packages/sdk/examples/08-cdn.html` | No build step; streams + renders via `Kortix.classifyTurn` | 9 |
+| `packages/sdk/examples/08-cdn.html` | No build step; streams + renders via `Zed.classifyTurn` | 9 |
 
 ---
 
 ## Task 1: Assert the two export maps agree
 
-The single cheapest, highest-value guard in this plan. `scripts/stage-npm-publish.mjs:60-80` already fails CI if a `publishConfig.exports` **path** is missing from `dist/`. Nothing asserts the two maps have the same **keys**. Add `./foo` to `exports`, forget `publishConfig.exports`, and CI stays green while `npm install @kortix/sdk` gets no `./foo`.
+The single cheapest, highest-value guard in this plan. `scripts/stage-npm-publish.mjs:60-80` already fails CI if a `publishConfig.exports` **path** is missing from `dist/`. Nothing asserts the two maps have the same **keys**. Add `./foo` to `exports`, forget `publishConfig.exports`, and CI stays green while `npm install @zed/sdk` gets no `./foo`.
 
 **Files:**
 - Create: `packages/sdk/src/package-exports.test.ts`
@@ -111,7 +111,7 @@ test('exports and publishConfig.exports declare the same subpaths', () => {
   const { exports: src, publishConfig } = pkg();
   // A subpath present in one map and absent from the other is invisible in the
   // workspace (which resolves `exports` → src/) and only explodes for someone
-  // who ran `npm install @kortix/sdk` (which resolves publishConfig → dist/).
+  // who ran `npm install @zed/sdk` (which resolves publishConfig → dist/).
   expect(Object.keys(publishConfig.exports).sort()).toEqual(Object.keys(src).sort());
 });
 
@@ -133,7 +133,7 @@ test('every publishConfig entry declares both types and import', () => {
 - [ ] **Step 2: Run it — it should PASS today**
 
 ```bash
-pnpm --filter @kortix/sdk test src/package-exports.test.ts
+pnpm --filter @zed/sdk test src/package-exports.test.ts
 ```
 
 Expected: **2 pass**. The maps agree right now (25 keys each). This test is a *regression guard*, not a bug fix — it must pass on the unmodified tree, or the tree is already broken.
@@ -153,7 +153,7 @@ Temporarily add a bogus key to `exports` only, in `packages/sdk/package.json`:
 - [ ] **Step 4: Run the test to verify it fails**
 
 ```bash
-pnpm --filter @kortix/sdk test src/package-exports.test.ts
+pnpm --filter @zed/sdk test src/package-exports.test.ts
 ```
 
 Expected: **FAIL** on `exports and publishConfig.exports declare the same subpaths` — the arrays differ by `./__probe`.
@@ -164,7 +164,7 @@ A test you have never seen fail is not a test. Do not skip this step.
 
 ```bash
 git checkout -- packages/sdk/package.json
-pnpm --filter @kortix/sdk test src/package-exports.test.ts
+pnpm --filter @zed/sdk test src/package-exports.test.ts
 ```
 
 Expected: **2 pass**.
@@ -188,8 +188,8 @@ Nothing in this repo installs the published tarball and imports it. `npm pack --
 - Modify: `packages/sdk/package.json` (add a `smoke:install` script)
 
 **Interfaces:**
-- Consumes: `scripts/stage-npm-publish.mjs` (existing), `pnpm --filter @kortix/sdk run build`.
-- Produces: `pnpm --filter @kortix/sdk run smoke:install`, exit 0 on success.
+- Consumes: `scripts/stage-npm-publish.mjs` (existing), `pnpm --filter @zed/sdk run build`.
+- Produces: `pnpm --filter @zed/sdk run smoke:install`, exit 0 on success.
 
 - [ ] **Step 1: Write the smoke script**
 
@@ -198,7 +198,7 @@ Create `packages/sdk/scripts/smoke-install.mjs`:
 ```js
 #!/usr/bin/env node
 /**
- * Packs @kortix/sdk exactly as `npm publish` would, installs the tarball into a
+ * Packs @zed/sdk exactly as `npm publish` would, installs the tarball into a
  * throwaway project, and imports it in Node ESM.
  *
  * This is the ONLY check that exercises the published artifact's module
@@ -218,8 +218,8 @@ const PKG_DIR = process.cwd();
 const run = (cmd, args, cwd, env) =>
   execFileSync(cmd, args, { cwd, env: env ?? process.env, stdio: 'pipe', encoding: 'utf8' });
 
-const backup = join(tmpdir(), `kortix-sdk-pkg-${process.pid}.json`);
-const workdir = mkdtempSync(join(tmpdir(), 'kortix-sdk-smoke-'));
+const backup = join(tmpdir(), `zed-sdk-pkg-${process.pid}.json`);
+const workdir = mkdtempSync(join(tmpdir(), 'zed-sdk-smoke-'));
 let staged = false;
 
 try {
@@ -249,15 +249,15 @@ try {
   writeFileSync(
     join(workdir, 'smoke.mjs'),
     [
-      "import { createKortix, ApiError, classifyTurn } from '@kortix/sdk';",
-      "import { createScopedKortix } from '@kortix/sdk/server';",
-      "if (typeof createKortix !== 'function') throw new Error('createKortix is not a function');",
+      "import { createZed, ApiError, classifyTurn } from '@zed/sdk';",
+      "import { createScopedZed } from '@zed/sdk/server';",
+      "if (typeof createZed !== 'function') throw new Error('createZed is not a function');",
       "if (typeof classifyTurn !== 'function') throw new Error('classifyTurn is not a function');",
-      "if (typeof createScopedKortix !== 'function') throw new Error('createScopedKortix missing');",
+      "if (typeof createScopedZed !== 'function') throw new Error('createScopedZed missing');",
       "if (!(new ApiError('x') instanceof Error)) throw new Error('ApiError is not an Error');",
-      "const k = createKortix({ backendUrl: 'http://smoke.test/v1', getToken: async () => null });",
+      "const k = createZed({ backendUrl: 'http://smoke.test/v1', getToken: async () => null });",
       "if (typeof k.projects.list !== 'function') throw new Error('facade is not wired');",
-      "console.log('OK: @kortix/sdk imports and constructs from a packed tarball');",
+      "console.log('OK: @zed/sdk imports and constructs from a packed tarball');",
     ].join('\n'),
   );
   process.stdout.write(run('node', ['smoke.mjs'], workdir));
@@ -280,7 +280,7 @@ cd packages/sdk && node scripts/smoke-install.mjs
 Expected, on the last two lines:
 
 ```
-OK: @kortix/sdk imports and constructs from a packed tarball
+OK: @zed/sdk imports and constructs from a packed tarball
 ✔ install smoke test passed
 ```
 
@@ -313,19 +313,19 @@ In `packages/sdk/package.json` → `scripts`, add:
 In `.github/workflows/package-tests.yml`, inside the `Build + dry-pack publishable npm packages (release gate)` step, **after** the existing `for dir in …` loop, append:
 
 ```yaml
-      - name: Install smoke test — pack, install, import (@kortix/sdk)
+      - name: Install smoke test — pack, install, import (@zed/sdk)
         run: |
           set -euo pipefail
           # `npm pack --dry-run` above lists tarball CONTENTS. stage-npm-publish
           # asserts publishConfig paths exist in dist/. Neither proves the
           # published package actually RESOLVES and IMPORTS. This does.
-          pnpm --filter @kortix/sdk run smoke:install
+          pnpm --filter @zed/sdk run smoke:install
 ```
 
 - [ ] **Step 6: Verify the whole gate still passes locally**
 
 ```bash
-pnpm --filter @kortix/sdk typecheck && pnpm --filter @kortix/sdk test && pnpm --filter @kortix/sdk run smoke:install
+pnpm --filter @zed/sdk typecheck && pnpm --filter @zed/sdk test && pnpm --filter @zed/sdk run smoke:install
 ```
 
 Expected: typecheck exit 0; **1048 pass, 0 fail** (1046 baseline + 2 from Task 1); smoke test `✔`.
@@ -409,7 +409,7 @@ test('public export surface matches the committed snapshot', async () => {
 - [ ] **Step 2: Run it — it must fail (no snapshot yet)**
 
 ```bash
-pnpm --filter @kortix/sdk test src/public-surface.test.ts
+pnpm --filter @zed/sdk test src/public-surface.test.ts
 ```
 
 Expected: **FAIL** on `expect(existsSync(SNAPSHOT)).toBe(true)`.
@@ -428,12 +428,12 @@ Expected: `public-surface.snapshot.json regenerated — REVIEW THE DIFF.` and th
 cat packages/sdk/src/public-surface.snapshot.json | head -40
 ```
 
-Sanity-check: 25 subpath keys; `"."` contains `createKortix`, `ApiError`, `SessionNotReadyError`, `configureKortix`. If a name surprises you, that is the snapshot doing its job on day one.
+Sanity-check: 25 subpath keys; `"."` contains `createZed`, `ApiError`, `SessionNotReadyError`, `configureZed`. If a name surprises you, that is the snapshot doing its job on day one.
 
 - [ ] **Step 5: Run again to verify it passes**
 
 ```bash
-pnpm --filter @kortix/sdk test src/public-surface.test.ts
+pnpm --filter @zed/sdk test src/public-surface.test.ts
 ```
 
 Expected: **1 pass**.
@@ -452,7 +452,7 @@ git commit -m "test(sdk): snapshot the public export surface"
 Directories encode the runtime tier. `exports` is updated to point at the new paths, so **no consumer changes and the Task 3 snapshot must not move**. That invariance is the proof the move was invisible.
 
 **Files:**
-- Move: `src/kortix.ts` → `src/core/client/kortix.ts`
+- Move: `src/zed.ts` → `src/core/client/zed.ts`
 - Move: `src/platform/{api-client,auth,config,feature-flags,fresh-sessions,instance-routes,opencode-errors}.ts` → `src/core/http/`
 - Move: `src/platform/{projects-client,platform-client,api,storage}/**` → `src/core/rest/`
 - Move: `src/opencode/**` → `src/core/runtime/`
@@ -519,7 +519,7 @@ test('core/ never imports from browser/, node/, or react/', () => {
 - [ ] **Step 2: Run the suite — the new test must PASS trivially (no `core/` yet)**
 
 ```bash
-pnpm --filter @kortix/sdk test src/index.isomorphic.test.ts
+pnpm --filter @zed/sdk test src/index.isomorphic.test.ts
 ```
 
 Expected: all pass; the new test early-returns. It arms itself the moment `core/` exists.
@@ -547,7 +547,7 @@ git mv state/idb-sync-cache.ts browser/cache/idb-sync-cache.ts
 Then fix every broken relative import (`tsc` will list them):
 
 ```bash
-pnpm --filter @kortix/sdk typecheck 2>&1 | head -40
+pnpm --filter @zed/sdk typecheck 2>&1 | head -40
 ```
 
 Repair each reported path. Update `exports` **and** `publishConfig.exports` for the five moved public subpaths (`./server`, `./sync-store`, `./server-store`, `./sandbox-connection-store`, `./opencode-pending-store`, `./idb-sync-cache`), and their entries in `SUBPATH_TIERS`.
@@ -555,7 +555,7 @@ Repair each reported path. Update `exports` **and** `publishConfig.exports` for 
 - [ ] **Step 5: Verify nothing public moved**
 
 ```bash
-pnpm --filter @kortix/sdk typecheck && pnpm --filter @kortix/sdk test
+pnpm --filter @zed/sdk typecheck && pnpm --filter @zed/sdk test
 ```
 
 Expected: typecheck exit 0. **All tests pass, including `public export surface matches the committed snapshot`.** If the snapshot test fails, you renamed something. Revert and try again.
@@ -572,8 +572,8 @@ git commit -m "refactor(sdk): move node/ and browser/ tiers into their own direc
 ```bash
 cd packages/sdk/src
 mkdir -p core/{client,http,rest,runtime,session,files,turns,stream}
-git mv kortix.ts core/client/kortix.ts
-git mv kortix.test.ts core/client/kortix.test.ts
+git mv zed.ts core/client/zed.ts
+git mv zed.test.ts core/client/zed.test.ts
 git mv opencode core/runtime
 git mv session core/session
 git mv files core/files
@@ -592,7 +592,7 @@ git mv platform/platform-client core/rest/platform-client
 Then repeat the repair loop:
 
 ```bash
-pnpm --filter @kortix/sdk typecheck 2>&1 | head -60
+pnpm --filter @zed/sdk typecheck 2>&1 | head -60
 ```
 
 Update all remaining `exports`, `publishConfig.exports`, and `SUBPATH_TIERS` paths.
@@ -600,12 +600,12 @@ Update all remaining `exports`, `publishConfig.exports`, and `SUBPATH_TIERS` pat
 - [ ] **Step 8: Verify — this is the moment the tier rule arms itself**
 
 ```bash
-pnpm --filter @kortix/sdk typecheck && pnpm --filter @kortix/sdk test
+pnpm --filter @zed/sdk typecheck && pnpm --filter @zed/sdk test
 ```
 
 Expected: typecheck exit 0; **all pass**, including `core/ never imports from browser/, node/, or react/` and the snapshot test.
 
-If `core/ never imports…` fails, a core file reaches into `browser/` — most likely `core/client/kortix.ts` importing `state/server-store/url-helpers` or `state/current-runtime`. Those two are *pure*; move them to `core/stream/` or `core/session/` rather than widening the rule.
+If `core/ never imports…` fails, a core file reaches into `browser/` — most likely `core/client/zed.ts` importing `state/server-store/url-helpers` or `state/current-runtime`. Those two are *pure*; move them to `core/stream/` or `core/session/` rather than widening the rule.
 
 - [ ] **Step 9: Commit**
 
@@ -642,7 +642,7 @@ Move any remaining declarations into whichever of the four files they belong to.
 - [ ] **Step 11: Verify the split changed nothing public**
 
 ```bash
-pnpm --filter @kortix/sdk typecheck && pnpm --filter @kortix/sdk test
+pnpm --filter @zed/sdk typecheck && pnpm --filter @zed/sdk test
 ```
 
 Expected: all pass. The snapshot test proves `./turns` still exports the exact same names.
@@ -670,25 +670,25 @@ Additive only. All 340 existing import sites keep compiling. The Task 3 snapshot
 - Create: `packages/sdk/src/deprecated/<21 files>.ts`
 - Create: `packages/sdk/src/internal/{sync-store,server-store,sandbox-connection-store,opencode-pending-store,idb-sync-cache}.ts`
 - Modify: `packages/sdk/src/index.ts` (the canonical barrel)
-- Modify: `packages/sdk/src/core/runtime/kortix-master.ts` (`KortixProject` → `KortixMasterProject`)
+- Modify: `packages/sdk/src/core/runtime/zed-master.ts` (`ZedProject` → `ZedMasterProject`)
 - Modify: `packages/sdk/package.json` (`exports`, `publishConfig.exports`)
 - Modify: `packages/sdk/src/index.isomorphic.test.ts` (`SUBPATH_TIERS` + wildcard handling)
 
 **Interfaces:**
 - Consumes: everything from Task 4.
-- Produces: `KortixMasterProject` (new name), `KortixProject` (unchanged, platform), `PatchKortixMasterProjectInput`.
+- Produces: `ZedMasterProject` (new name), `ZedProject` (unchanged, platform), `PatchZedMasterProjectInput`.
 
-- [ ] **Step 1: Write the failing test for the `KortixProject` disambiguation**
+- [ ] **Step 1: Write the failing test for the `ZedProject` disambiguation**
 
-Create `packages/sdk/src/core/runtime/kortix-master.names.test.ts`:
+Create `packages/sdk/src/core/runtime/zed-master.names.test.ts`:
 
 ```ts
 import { expect, test } from 'bun:test';
-import * as master from './kortix-master';
-import type { KortixProject as PlatformProject } from '../rest/projects-client/projects';
+import * as master from './zed-master';
+import type { ZedProject as PlatformProject } from '../rest/projects-client/projects';
 
-test('the daemon project is exported as KortixMasterProject', () => {
-  const project: master.KortixMasterProject = {
+test('the daemon project is exported as ZedMasterProject', () => {
+  const project: master.ZedMasterProject = {
     id: 'p1',
     name: 'demo',
     path: '/work/demo',
@@ -699,9 +699,9 @@ test('the daemon project is exported as KortixMasterProject', () => {
   expect(project.id).toBe('p1');
 });
 
-test('the deprecated KortixProject alias still resolves to the daemon shape', () => {
-  // Back-compat: `@kortix/sdk/opencode-client` consumers keep compiling.
-  const legacy: master.KortixProject = {
+test('the deprecated ZedProject alias still resolves to the daemon shape', () => {
+  // Back-compat: `@zed/sdk/opencode-client` consumers keep compiling.
+  const legacy: master.ZedProject = {
     id: 'p1',
     name: 'demo',
     path: '/work/demo',
@@ -719,7 +719,7 @@ test('the platform project is a DIFFERENT shape and keeps its name', () => {
     name: 'demo',
     repo_url: 'https://example.test/r.git',
     default_branch: 'main',
-    manifest_path: 'kortix.yaml',
+    manifest_path: 'zed.yaml',
     status: 'active',
     metadata: {},
     last_opened_at: null,
@@ -733,22 +733,22 @@ test('the platform project is a DIFFERENT shape and keeps its name', () => {
 - [ ] **Step 2: Run it to verify it fails**
 
 ```bash
-pnpm --filter @kortix/sdk test src/core/runtime/kortix-master.names.test.ts
+pnpm --filter @zed/sdk test src/core/runtime/zed-master.names.test.ts
 ```
 
-Expected: **FAIL** — `KortixMasterProject` does not exist on the module.
+Expected: **FAIL** — `ZedMasterProject` does not exist on the module.
 
 - [ ] **Step 3: Rename the daemon type, keep an alias**
 
-In `packages/sdk/src/core/runtime/kortix-master.ts`, change `export interface KortixProject {` to:
+In `packages/sdk/src/core/runtime/zed-master.ts`, change `export interface ZedProject {` to:
 
 ```ts
 /**
- * A project inside the sandbox's kortix-master daemon — the `/kortix/projects`
- * board surface (tasks, tickets, milestones), NOT the Kortix platform project.
- * The platform's project is `KortixProject` in `core/rest/projects-client`.
+ * A project inside the sandbox's zed-master daemon — the `/zed/projects`
+ * board surface (tasks, tickets, milestones), NOT the Zed platform project.
+ * The platform's project is `ZedProject` in `core/rest/projects-client`.
  */
-export interface KortixMasterProject {
+export interface ZedMasterProject {
   id: string;
   name: string;
   path: string;
@@ -767,36 +767,36 @@ export interface KortixMasterProject {
 }
 
 /**
- * @deprecated Renamed to `KortixMasterProject` — it models the kortix-master
- * daemon's board project, not the Kortix platform project (which keeps the name
- * `KortixProject`, exported from the root barrel). Removed in the next major.
+ * @deprecated Renamed to `ZedMasterProject` — it models the zed-master
+ * daemon's board project, not the Zed platform project (which keeps the name
+ * `ZedProject`, exported from the root barrel). Removed in the next major.
  */
-export type KortixProject = KortixMasterProject;
+export type ZedProject = ZedMasterProject;
 ```
 
-Rename `PatchKortixProjectInput` → `PatchKortixMasterProjectInput` and add:
+Rename `PatchZedProjectInput` → `PatchZedMasterProjectInput` and add:
 
 ```ts
-/** @deprecated Renamed to `PatchKortixMasterProjectInput`. Removed in the next major. */
-export type PatchKortixProjectInput = PatchKortixMasterProjectInput;
+/** @deprecated Renamed to `PatchZedMasterProjectInput`. Removed in the next major. */
+export type PatchZedProjectInput = PatchZedMasterProjectInput;
 ```
 
-Update the file's internal uses (`listKortixProjects`, `getKortixProject`, `patchKortixProject` return types) to `KortixMasterProject`. **Do not rename those functions** — they do not collide.
+Update the file's internal uses (`listZedProjects`, `getZedProject`, `patchZedProject` return types) to `ZedMasterProject`. **Do not rename those functions** — they do not collide.
 
 - [ ] **Step 4: Run the test to verify it passes**
 
 ```bash
-pnpm --filter @kortix/sdk test src/core/runtime/kortix-master.names.test.ts
-pnpm --filter @kortix/sdk typecheck
+pnpm --filter @zed/sdk test src/core/runtime/zed-master.names.test.ts
+pnpm --filter @zed/sdk typecheck
 ```
 
-Expected: **3 pass**; typecheck exit 0 (the alias keeps `react/use-kortix-master.ts` compiling).
+Expected: **3 pass**; typecheck exit 0 (the alias keeps `react/use-zed-master.ts` compiling).
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add -A packages/sdk
-git commit -m "refactor(sdk)!: rename the kortix-master daemon project to KortixMasterProject (aliased)"
+git commit -m "refactor(sdk)!: rename the zed-master daemon project to ZedMasterProject (aliased)"
 ```
 
 - [ ] **Step 6: Build the canonical root barrel**
@@ -816,7 +816,7 @@ export {
   type PermissionRule,
 } from './core/rest/projects-client/agent-config';
 
-export * from './core/client/kortix';
+export * from './core/client/zed';
 export * from './core/http/api-client';
 export * from './core/http/auth';
 export * from './core/http/config';
@@ -837,10 +837,10 @@ export * from './transcript';
 - [ ] **Step 7: Run typecheck — expect TS2308 if any ambiguity was missed**
 
 ```bash
-pnpm --filter @kortix/sdk typecheck 2>&1 | grep TS2308 || echo "no ambiguities"
+pnpm --filter @zed/sdk typecheck 2>&1 | grep TS2308 || echo "no ambiguities"
 ```
 
-Expected: `no ambiguities`. Any `TS2308` names a symbol declared twice — add an explicit re-export, or, if it is genuinely two different concepts, rename one with an alias (as with `KortixMasterProject`).
+Expected: `no ambiguities`. Any `TS2308` names a symbol declared twice — add an explicit re-export, or, if it is genuinely two different concepts, rename one with an alias (as with `ZedMasterProject`).
 
 - [ ] **Step 8: Create `internal/` and `deprecated/` shims**
 
@@ -860,7 +860,7 @@ For each of the 21 collapsed subpaths, create `packages/sdk/src/deprecated/<name
 
 ```ts
 /**
- * @deprecated Import from `@kortix/sdk` instead — the root entry is canonical.
+ * @deprecated Import from `@zed/sdk` instead — the root entry is canonical.
  * This subpath still works and will keep working until the next major.
  */
 export * from '../core/rest/projects-client';
@@ -915,7 +915,7 @@ In `src/index.isomorphic.test.ts`, add the five `./internal/*` entries (tier `br
 - [ ] **Step 11: Run everything**
 
 ```bash
-pnpm --filter @kortix/sdk typecheck && pnpm --filter @kortix/sdk test && pnpm --filter @kortix/sdk run smoke:install
+pnpm --filter @zed/sdk typecheck && pnpm --filter @zed/sdk test && pnpm --filter @zed/sdk run smoke:install
 ```
 
 Expected: typecheck exit 0; all tests pass **except** `public export surface matches the committed snapshot`, which now fails because the surface **grew**.
@@ -934,12 +934,12 @@ Expected removals: **zero**. Expected additions: 5 `./internal/*` keys, and a mu
 - [ ] **Step 13: Verify the hosts still compile untouched**
 
 ```bash
-# apps/web's package name is `Kortix-Computer-Frontend`, not @kortix/web.
-pnpm --filter Kortix-Computer-Frontend typecheck 2>&1 | grep "@kortix/sdk" || echo "no SDK resolution errors"
-pnpm --filter @kortix/whitelabel-demo typecheck
+# apps/web's package name is `Zed-Computer-Frontend`, not @zed/web.
+pnpm --filter Zed-Computer-Frontend typecheck 2>&1 | grep "@zed/sdk" || echo "no SDK resolution errors"
+pnpm --filter @zed/whitelabel-demo typecheck
 ```
 
-`apps/web` emits ~1500 bogus `TS2786` React-19-vs-18 errors (see root `AGENTS.md`) — grep for `@kortix/sdk` in the output instead of trusting the exit code. Expected: `no SDK resolution errors`. `whitelabel-demo` must exit 0.
+`apps/web` emits ~1500 bogus `TS2786` React-19-vs-18 errors (see root `AGENTS.md`) — grep for `@zed/sdk` in the output instead of trusting the exit code. Expected: `no SDK resolution errors`. `whitelabel-demo` must exit 0.
 
 - [ ] **Step 14: Commit**
 
@@ -960,7 +960,7 @@ Lumen is the **first app shipping to production** on this SDK. If the public sur
 - Modify: `apps/whitelabel-demo/src/app/api/usage/route.ts:67`
 
 **Interfaces:**
-- Consumes: the root barrel from Task 5; `@kortix/sdk/server`.
+- Consumes: the root barrel from Task 5; `@zed/sdk/server`.
 - Produces: nothing importable.
 
 - [ ] **Step 1: Migrate the demo's imports to the root entry**
@@ -969,42 +969,42 @@ Lumen is the **first app shipping to production** on this SDK. If the public sur
 
 ```bash
 cd apps/whitelabel-demo
-grep -rl "@kortix/sdk/\(projects-client\|turns\|session\|opencode-client\)" src/ \
-  | xargs sed -i '' -E "s#'@kortix/sdk/(projects-client|turns|session|opencode-client)'#'@kortix/sdk'#g"
+grep -rl "@zed/sdk/\(projects-client\|turns\|session\|opencode-client\)" src/ \
+  | xargs sed -i '' -E "s#'@zed/sdk/(projects-client|turns|session|opencode-client)'#'@zed/sdk'#g"
 ```
 
-`@kortix/sdk/react` stays a subpath — React is a peer dependency (the one-sentence rule).
+`@zed/sdk/react` stays a subpath — React is a peer dependency (the one-sentence rule).
 
 - [ ] **Step 2: Merge now-duplicate import statements and typecheck**
 
 ```bash
-pnpm --filter @kortix/whitelabel-demo typecheck
+pnpm --filter @zed/whitelabel-demo typecheck
 ```
 
-Expected: exit 0. Fix any "duplicate identifier" from two `from '@kortix/sdk'` lines in one file by merging them.
+Expected: exit 0. Fix any "duplicate identifier" from two `from '@zed/sdk'` lines in one file by merging them.
 
 - [ ] **Step 3: Write the failing test for the preview-token route**
 
 Both endpoints already exist in the SDK. Replace the raw `fetch` at `src/app/api/preview-token/route.ts:57` with the SDK server client:
 
 ```ts
-import { createScopedKortix } from '@kortix/sdk/server';
+import { createScopedZed } from '@zed/sdk/server';
 
-const kortix = createScopedKortix({ backendUrl: upstreamBase(), getToken: async () => apiKey });
-const token = await kortix.project(projectId).tokens.createCliToken({
+const zed = createScopedZed({ backendUrl: upstreamBase(), getToken: async () => apiKey });
+const token = await zed.project(projectId).tokens.createCliToken({
   name: `lumen-preview-${Date.now()}`,
 });
 ```
 
 > **Before writing this**, confirm the exact facade path with:
-> `grep -n "cliToken\|createCliToken" packages/sdk/src/core/rest/projects-client/tokens.ts packages/sdk/src/core/client/kortix.ts`
+> `grep -n "cliToken\|createCliToken" packages/sdk/src/core/rest/projects-client/tokens.ts packages/sdk/src/core/client/zed.ts`
 > and use whatever name is actually exported. `tokens.ts:127` issues `POST /projects/:id/cli-token`.
 
 - [ ] **Step 4: Do the same for the usage route**
 
-`src/app/api/usage/route.ts:67` → `kortix.project(projectId).gateway.sessions()`. Confirm the facade name against `core/rest/projects-client/gateway.ts:210` (`GET /projects/:id/gateway/sessions`).
+`src/app/api/usage/route.ts:67` → `zed.project(projectId).gateway.sessions()`. Confirm the facade name against `core/rest/projects-client/gateway.ts:210` (`GET /projects/:id/gateway/sessions`).
 
-- [ ] **Step 5: Verify no raw Kortix `fetch` remains**
+- [ ] **Step 5: Verify no raw Zed `fetch` remains**
 
 ```bash
 cd apps/whitelabel-demo
@@ -1016,7 +1016,7 @@ Expected: `clean`. The remaining `fetch(` hits are the demo calling its own Next
 - [ ] **Step 6: Run the demo's e2e suite**
 
 ```bash
-pnpm --filter @kortix/whitelabel-demo typecheck && pnpm --filter @kortix/whitelabel-demo test
+pnpm --filter @zed/whitelabel-demo typecheck && pnpm --filter @zed/whitelabel-demo test
 ```
 
 Expected: typecheck exit 0; `bun test tests/e2e` passes.
@@ -1025,7 +1025,7 @@ Expected: typecheck exit 0; `bun test tests/e2e` passes.
 
 ```bash
 git add -A apps/whitelabel-demo
-git commit -m "refactor(whitelabel-demo): import @kortix/sdk from the root entry; drop raw transport"
+git commit -m "refactor(whitelabel-demo): import @zed/sdk from the root entry; drop raw transport"
 ```
 
 ---
@@ -1072,7 +1072,7 @@ test('core/ never touches a bare process/window/document/localStorage global', (
 - [ ] **Step 2: Run it to verify it fails**
 
 ```bash
-pnpm --filter @kortix/sdk test src/index.isomorphic.test.ts
+pnpm --filter @zed/sdk test src/index.isomorphic.test.ts
 ```
 
 Expected: **FAIL** naming `core/rest/platform-client/shared.ts:29 bare global \`process.\``.
@@ -1123,7 +1123,7 @@ export function getPlatformUrl(): string {
 - [ ] **Step 5: Run the suite to verify it passes**
 
 ```bash
-pnpm --filter @kortix/sdk typecheck && pnpm --filter @kortix/sdk test
+pnpm --filter @zed/sdk typecheck && pnpm --filter @zed/sdk test
 ```
 
 Expected: all pass, including the new bare-global test.
@@ -1137,11 +1137,11 @@ git commit -m "fix(sdk): guard the bare process.env read in platform-client; ban
 
 ---
 
-## Task 8: `tsup` bundles — CDN ESM + `window.Kortix`
+## Task 8: `tsup` bundles — CDN ESM + `window.Zed`
 
 Additive. The `tsc` ESM `dist/` stays exactly as-is; these are two extra artifacts.
 
-Because Task 5 folded `turns`, `files`, and `session` into root, `window.Kortix` **is** the root barrel — one flat global, `classifyTurn` already in it. No namespace curation list to maintain.
+Because Task 5 folded `turns`, `files`, and `session` into root, `window.Zed` **is** the root barrel — one flat global, `classifyTurn` already in it. No namespace curation list to maintain.
 
 **Files:**
 - Create: `packages/sdk/tsup.config.ts`
@@ -1150,12 +1150,12 @@ Because Task 5 folded `turns`, `files`, and `session` into root, `window.Kortix`
 
 **Interfaces:**
 - Consumes: `src/index.ts` from Task 5.
-- Produces: `dist/kortix.esm.min.js`, `dist/kortix.global.js` (exposing `window.Kortix`).
+- Produces: `dist/zed.esm.min.js`, `dist/zed.global.js` (exposing `window.Zed`).
 
 - [ ] **Step 1: Add `tsup` and the config**
 
 ```bash
-pnpm --filter @kortix/sdk add -D tsup
+pnpm --filter @zed/sdk add -D tsup
 ```
 
 Create `packages/sdk/tsup.config.ts`:
@@ -1173,25 +1173,25 @@ import { defineConfig } from 'tsup';
  */
 export default defineConfig([
   {
-    entry: { 'kortix.esm.min': 'src/index.ts' },
+    entry: { 'zed.esm.min': 'src/index.ts' },
     format: ['esm'],
     minify: true,
     platform: 'browser',
     outDir: 'dist',
     dts: false,
     clean: false,
-    noExternal: [/^@kortix\//, /^@opencode-ai\//],
+    noExternal: [/^@zed\//, /^@opencode-ai\//],
   },
   {
-    entry: { 'kortix.global': 'src/index.ts' },
+    entry: { 'zed.global': 'src/index.ts' },
     format: ['iife'],
-    globalName: 'Kortix',
+    globalName: 'Zed',
     minify: true,
     platform: 'browser',
     outDir: 'dist',
     dts: false,
     clean: false,
-    noExternal: [/^@kortix\//, /^@opencode-ai\//],
+    noExternal: [/^@zed\//, /^@opencode-ai\//],
   },
 ]);
 ```
@@ -1206,10 +1206,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIST = join(import.meta.dir, '..', 'dist');
-const ESM = join(DIST, 'kortix.esm.min.js');
-const IIFE = join(DIST, 'kortix.global.js');
+const ESM = join(DIST, 'zed.esm.min.js');
+const IIFE = join(DIST, 'zed.global.js');
 
-// These tests require `pnpm --filter @kortix/sdk run build:bundles` to have run.
+// These tests require `pnpm --filter @zed/sdk run build:bundles` to have run.
 const built = existsSync(ESM) && existsSync(IIFE);
 
 test.skipIf(!built)('no browser bundle contains node:child_process', () => {
@@ -1222,18 +1222,18 @@ test.skipIf(!built)('no browser bundle contains node:child_process', () => {
   }
 });
 
-test.skipIf(!built)('the IIFE bundle assigns a Kortix global with the core API', () => {
+test.skipIf(!built)('the IIFE bundle assigns a Zed global with the core API', () => {
   const source = readFileSync(IIFE, 'utf8');
   expect(source.length).toBeGreaterThan(1000);
-  // `globalName: 'Kortix'` makes tsup emit `var Kortix=(()=>{…})()`.
-  expect(/\bKortix\b/.test(source)).toBe(true);
+  // `globalName: 'Zed'` makes tsup emit `var Zed=(()=>{…})()`.
+  expect(/\bZed\b/.test(source)).toBe(true);
 });
 ```
 
 - [ ] **Step 3: Run it — it should skip (no bundles yet)**
 
 ```bash
-pnpm --filter @kortix/sdk test src/bundle.test.ts
+pnpm --filter @zed/sdk test src/bundle.test.ts
 ```
 
 Expected: **2 skipped**.
@@ -1253,16 +1253,16 @@ In `packages/sdk/package.json`:
 And, inside `publishConfig` (so they only apply to the published tarball):
 
 ```jsonc
-"browser": "./dist/kortix.esm.min.js",
-"unpkg": "./dist/kortix.global.js",
-"jsdelivr": "./dist/kortix.global.js"
+"browser": "./dist/zed.esm.min.js",
+"unpkg": "./dist/zed.global.js",
+"jsdelivr": "./dist/zed.global.js"
 ```
 
 - [ ] **Step 5: Build the bundles and run the test**
 
 ```bash
-pnpm --filter @kortix/sdk run build:bundles
-pnpm --filter @kortix/sdk test src/bundle.test.ts
+pnpm --filter @zed/sdk run build:bundles
+pnpm --filter @zed/sdk test src/bundle.test.ts
 ```
 
 Expected: **2 pass**. If `no browser bundle contains node:child_process` fails, some import reached `@opencode-ai/sdk` root or `/server` — find it with `grep -rn "@opencode-ai/sdk'" packages/sdk/src` and repoint it at `@opencode-ai/sdk/v2/client`.
@@ -1275,13 +1275,13 @@ cd packages/sdk && cp package.json /tmp/pkg-bak.json \
   && mv /tmp/pkg-bak.json package.json
 ```
 
-Expected: `staged @kortix/sdk@0.0.0-ci for publish`, all entrypoints present. `browser`/`unpkg`/`jsdelivr` are not in its promoted-field list, so they pass through untouched.
+Expected: `staged @zed/sdk@0.0.0-ci for publish`, all entrypoints present. `browser`/`unpkg`/`jsdelivr` are not in its promoted-field list, so they pass through untouched.
 
 - [ ] **Step 7: Commit**
 
 ```bash
 git add -A packages/sdk
-git commit -m "feat(sdk): ship CDN ESM and window.Kortix IIFE bundles via tsup"
+git commit -m "feat(sdk): ship CDN ESM and window.Zed IIFE bundles via tsup"
 ```
 
 ---
@@ -1294,7 +1294,7 @@ git commit -m "feat(sdk): ship CDN ESM and window.Kortix IIFE bundles via tsup"
 - Modify: `packages/sdk/src/index.isomorphic.test.ts`
 
 **Interfaces:**
-- Consumes: the root barrel; `dist/kortix.global.js`.
+- Consumes: the root barrel; `dist/zed.global.js`.
 - Produces: nothing importable.
 
 - [ ] **Step 1: Write `examples/07-vanilla.ts` — the full S1 flow**
@@ -1303,38 +1303,38 @@ git commit -m "feat(sdk): ship CDN ESM and window.Kortix IIFE bundles via tsup"
 /**
  * 07 — The whole flow, framework-free, in one file.
  *
- * createKortix → projects.list() → session(pid, sid).send() → session.stream()
+ * createZed → projects.list() → session(pid, sid).send() → session.stream()
  * → classifyTurn. Zero React, zero DOM, zero Node-specific API beyond
  * `process.env` and `console`.
  *
  * Run:
- *   KORTIX_API_URL=http://localhost:8008/v1 KORTIX_API_KEY=kortix_pat_... \
- *   KORTIX_PROJECT_ID=... KORTIX_SESSION_ID=... \
+ *   ZED_API_URL=http://localhost:8008/v1 ZED_API_KEY=zed_pat_... \
+ *   ZED_PROJECT_ID=... ZED_SESSION_ID=... \
  *     bun run examples/07-vanilla.ts "list the files here"
  *
  * As an npm consumer, one import line changes:
- *   import { createKortix, classifyTurn, narrowChatEvent } from '@kortix/sdk';
+ *   import { createZed, classifyTurn, narrowChatEvent } from '@zed/sdk';
  */
-import { classifyTurn, createKortix, narrowChatEvent } from '../src/index';
+import { classifyTurn, createZed, narrowChatEvent } from '../src/index';
 
 async function main() {
-  const backendUrl = process.env.KORTIX_API_URL ?? 'http://localhost:8008/v1';
-  const apiKey = process.env.KORTIX_API_KEY;
-  const projectId = process.env.KORTIX_PROJECT_ID;
-  const sessionId = process.env.KORTIX_SESSION_ID;
+  const backendUrl = process.env.ZED_API_URL ?? 'http://localhost:8008/v1';
+  const apiKey = process.env.ZED_API_KEY;
+  const projectId = process.env.ZED_PROJECT_ID;
+  const sessionId = process.env.ZED_SESSION_ID;
   const prompt = process.argv[2] ?? 'Say hello in one sentence.';
 
   if (!apiKey || !projectId || !sessionId) {
-    console.error('Set KORTIX_API_KEY, KORTIX_PROJECT_ID and KORTIX_SESSION_ID.');
+    console.error('Set ZED_API_KEY, ZED_PROJECT_ID and ZED_SESSION_ID.');
     process.exit(1);
   }
 
-  const kortix = createKortix({ backendUrl, getToken: async () => apiKey });
+  const zed = createZed({ backendUrl, getToken: async () => apiKey });
 
-  const projects = await kortix.projects.list();
+  const projects = await zed.projects.list();
   console.log(`${projects.length} project(s); using ${projectId}`);
 
-  const session = kortix.session(projectId, sessionId);
+  const session = zed.session(projectId, sessionId);
 
   // Connect BEFORE sending so no early events are missed.
   await session.ensureReady();
@@ -1366,12 +1366,12 @@ main().catch((error) => {
 });
 ```
 
-> **Before running:** confirm `session.transcript()` and `classifyTurn(...)` shapes against `core/turns/classify.ts` and `core/client/kortix.ts`; adjust the last loop to the real API rather than guessing. `examples/04-render-transcript.ts` is the working reference.
+> **Before running:** confirm `session.transcript()` and `classifyTurn(...)` shapes against `core/turns/classify.ts` and `core/client/zed.ts`; adjust the last loop to the real API rather than guessing. `examples/04-render-transcript.ts` is the working reference.
 
 - [ ] **Step 2: Typecheck the examples**
 
 ```bash
-pnpm --filter @kortix/sdk typecheck
+pnpm --filter @zed/sdk typecheck
 ```
 
 Expected: exit 0 (this runs `tsc --noEmit -p examples/tsconfig.json`).
@@ -1400,7 +1400,7 @@ test('examples/ pull no react, no DOM, no framework', () => {
 - [ ] **Step 4: Run it**
 
 ```bash
-pnpm --filter @kortix/sdk test src/index.isomorphic.test.ts
+pnpm --filter @zed/sdk test src/index.isomorphic.test.ts
 ```
 
 Expected: pass. To prove it works, temporarily add `import 'react';` to `examples/07-vanilla.ts`, re-run (expect FAIL), then remove it.
@@ -1410,12 +1410,12 @@ Expected: pass. To prove it works, temporarily add `import 'react';` to `example
 ```html
 <!doctype html>
 <meta charset="utf-8" />
-<title>Kortix SDK — no build step</title>
+<title>Zed SDK — no build step</title>
 <pre id="out">connecting…</pre>
 
-<!-- The IIFE bundle. `window.Kortix` IS the root barrel: createKortix,
+<!-- The IIFE bundle. `window.Zed` IS the root barrel: createZed,
      classifyTurn, ApiError, narrowChatEvent — no namespaces, no build step. -->
-<script src="../dist/kortix.global.js"></script>
+<script src="../dist/zed.global.js"></script>
 <script>
   const out = document.getElementById('out');
   const log = (line) => { out.textContent += `\n${line}`; };
@@ -1427,19 +1427,19 @@ Expected: pass. To prove it works, temporarily add `import 'react';` to `example
   const sessionId = params.get('session');
 
   if (!apiKey || !projectId || !sessionId) {
-    out.textContent = 'Add ?key=kortix_pat_…&project=…&session=… to the URL.';
+    out.textContent = 'Add ?key=zed_pat_…&project=…&session=… to the URL.';
     throw new Error('missing params');
   }
 
-  const kortix = Kortix.createKortix({ backendUrl, getToken: async () => apiKey });
+  const zed = Zed.createZed({ backendUrl, getToken: async () => apiKey });
 
   (async () => {
     try {
-      const session = kortix.session(projectId, sessionId);
+      const session = zed.session(projectId, sessionId);
       await session.ensureReady();
       await session.stream({
         onEvent: (event) => {
-          const narrowed = Kortix.narrowChatEvent(event);
+          const narrowed = Zed.narrowChatEvent(event);
           if (narrowed) log(`· ${narrowed.type}`);
         },
       });
@@ -1449,7 +1449,7 @@ Expected: pass. To prove it works, temporarily add `import 'react';` to `example
       // D3: `instanceof ApiError` must work under the browser bundle. If the page
       // ever loads BOTH this global and the ESM build, there are two ApiError
       // classes and this check silently fails — that is the dual-package hazard.
-      if (error instanceof Kortix.ApiError) log(`ApiError ${error.status}: ${error.message}`);
+      if (error instanceof Zed.ApiError) log(`ApiError ${error.status}: ${error.message}`);
       else log(`error: ${error}`);
     }
   })();
@@ -1459,7 +1459,7 @@ Expected: pass. To prove it works, temporarily add `import 'react';` to `example
 - [ ] **Step 6: Verify the page loads and streams**
 
 ```bash
-pnpm --filter @kortix/sdk run build:bundles
+pnpm --filter @zed/sdk run build:bundles
 cd packages/sdk && python3 -m http.server 8099 &
 ```
 
@@ -1495,37 +1495,37 @@ Add, near the top:
 ## Install
 
 ```bash
-npm install @kortix/sdk
+npm install @zed/sdk
 ```
 
 ```ts
-import { createKortix } from '@kortix/sdk';
+import { createZed } from '@zed/sdk';
 
-const kortix = createKortix({ backendUrl: 'https://api.kortix.com/v1', getToken });
-await kortix.projects.list();
+const zed = createZed({ backendUrl: 'https://api.zed.com/v1', getToken });
+await zed.projects.list();
 ```
 
 ## No bundler, no framework
 
 ```html
-<script src="https://unpkg.com/@kortix/sdk"></script>
+<script src="https://unpkg.com/@zed/sdk"></script>
 <script>
-  const kortix = Kortix.createKortix({ backendUrl, getToken });
+  const zed = Zed.createZed({ backendUrl, getToken });
 </script>
 ```
 
 ## Entry points
 
-`@kortix/sdk` is the canonical entry — everything framework-free lives there.
+`@zed/sdk` is the canonical entry — everything framework-free lives there.
 Three others exist, each for a reason that fits in one sentence:
 
 | Entry | Why it can't live at root |
 |---|---|
-| `@kortix/sdk/react` | React is a peer dependency |
-| `@kortix/sdk/server` | imports `node:async_hooks` |
-| `@kortix/sdk/internal/*` | unsupported, outside semver |
+| `@zed/sdk/react` | React is a peer dependency |
+| `@zed/sdk/server` | imports `node:async_hooks` |
+| `@zed/sdk/internal/*` | unsupported, outside semver |
 
-Older subpaths (`@kortix/sdk/projects-client`, `/turns`, …) still work and are
+Older subpaths (`@zed/sdk/projects-client`, `/turns`, …) still work and are
 `@deprecated`. Import from the root instead.
 
 > **React Native / Expo:** REST works. **Streaming does not** — RN's `fetch` has
@@ -1550,18 +1550,18 @@ Older subpaths (`@kortix/sdk/projects-client`, `/turns`, …) still work and are
 ## Unreleased
 
 ### Added
-- The root entry `@kortix/sdk` is now canonical: it exports the whole
+- The root entry `@zed/sdk` is now canonical: it exports the whole
   framework-free surface (client, session, turns, files, event stream, errors).
-- CDN builds: a minified ESM bundle and an IIFE exposing `window.Kortix`.
+- CDN builds: a minified ESM bundle and an IIFE exposing `window.Zed`.
   Usable from a `<script>` tag with no bundler.
-- `KortixMasterProject` — the kortix-master daemon's board project.
-- `@kortix/sdk/internal/*` for the zustand stores. Not covered by semver.
+- `ZedMasterProject` — the zed-master daemon's board project.
+- `@zed/sdk/internal/*` for the zustand stores. Not covered by semver.
 
 ### Deprecated
 - The 21 legacy subpaths (`/projects-client`, `/turns`, `/files`, `/session`,
   `/event-stream`, the stores, …). They still work. Import from the root.
-- `KortixProject` **as exported from `@kortix/sdk/opencode-client`** — renamed to
-  `KortixMasterProject`. The platform's `KortixProject` (from the root) is
+- `ZedProject` **as exported from `@zed/sdk/opencode-client`** — renamed to
+  `ZedMasterProject`. The platform's `ZedProject` (from the root) is
   unchanged and keeps its name.
 
 ### Fixed
@@ -1579,10 +1579,10 @@ Older subpaths (`@kortix/sdk/projects-client`, `/turns`, …) still work and are
 - [ ] **Step 4: Verify the README's claims are true**
 
 ```bash
-pnpm --filter @kortix/sdk run build:bundles && pnpm --filter @kortix/sdk run smoke:install
+pnpm --filter @zed/sdk run build:bundles && pnpm --filter @zed/sdk run smoke:install
 ```
 
-Do not document a `<script src="https://unpkg.com/@kortix/sdk">` path unless `publishConfig.unpkg` points at a file that exists in `dist/`.
+Do not document a `<script src="https://unpkg.com/@zed/sdk">` path unless `publishConfig.unpkg` points at a file that exists in `dist/`.
 
 - [ ] **Step 5: Commit**
 
@@ -1603,7 +1603,7 @@ git commit -m "docs(sdk): document the single canonical entry, CDN usage, and th
 
 ## Self-Review
 
-**Spec coverage.** D1 → Task 9 Step 1. D2/D2a → Task 9 Step 6. D2b → Task 8 Step 2. D2c → Task 7. D2d → Task 5 Step 13. D3 → Task 9 Step 5 (`instanceof Kortix.ApiError`). D4 → Tasks 4, 7, 9. D5 → Task 2. D6 → Tasks 3, 5 Step 12. D7 → Task 5 (react consumes the public contract). D8 → Task 6. D9 → every task's final verify. Axis 1 → Task 4. Axis 2 → Task 5. `KortixProject` → Task 5 Steps 1–5. The 7 ambiguities → Task 5 Step 6.
+**Spec coverage.** D1 → Task 9 Step 1. D2/D2a → Task 9 Step 6. D2b → Task 8 Step 2. D2c → Task 7. D2d → Task 5 Step 13. D3 → Task 9 Step 5 (`instanceof Zed.ApiError`). D4 → Tasks 4, 7, 9. D5 → Task 2. D6 → Tasks 3, 5 Step 12. D7 → Task 5 (react consumes the public contract). D8 → Task 6. D9 → every task's final verify. Axis 1 → Task 4. Axis 2 → Task 5. `ZedProject` → Task 5 Steps 1–5. The 7 ambiguities → Task 5 Step 6.
 
 **Known plan risks, stated rather than hidden:**
 

@@ -44,7 +44,7 @@ const INITIAL: ConnectorsState = { connected: ['GitHub', 'Slack'], rule: null };
  */
 const SCRIPT: Stage<ConnectorsState>[] = [
   {
-    run: 'kortix connectors connect linear',
+    run: 'zed connectors connect linear',
     out: [
       {
         line: ok(t('Linear connected · '), t('12 tools', 'faded')),
@@ -54,7 +54,7 @@ const SCRIPT: Stage<ConnectorsState>[] = [
     ],
   },
   {
-    run: 'kortix connectors policy linear set create_issue ask',
+    run: 'zed connectors policy linear set create_issue ask',
     out: [{ line: ok(t('create_issue → '), t('ask', 'fg')), state: { rule: 'create_issue · ask' } }],
   },
 ];
@@ -66,7 +66,7 @@ function ConnectorsView({ state }: { state: ConnectorsState }): ReactNode {
         title="Connectors"
         sub="Connect once, for the whole company."
         action={
-          <Badge variant="kortix" size="sm" className="shrink-0 rounded">
+          <Badge variant="zed" size="sm" className="shrink-0 rounded">
             3,000+ apps
           </Badge>
         }
@@ -84,7 +84,7 @@ function ConnectorsView({ state }: { state: ConnectorsState }): ReactNode {
               layout
               className={cn(
                 'border-border/60 bg-card flex items-center gap-2.5 rounded-md border p-2.5',
-                rule && 'border-kortix-green/40',
+                rule && 'border-zed-green/40',
               )}
             >
               <BrandLogo domain={domain} alt={name} size={18} />

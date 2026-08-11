@@ -11,8 +11,8 @@ export function TaskDoneTool({ part, forceOpen }: ToolProps) {
   return (
     <BasicTool
       icon={
-        <span className="bg-kortix-green/15 flex size-5 shrink-0 items-center justify-center rounded-sm">
-          <Check className="text-kortix-green size-3 shrink-0" />
+        <span className="bg-zed-green/15 flex size-5 shrink-0 items-center justify-center rounded-sm">
+          <Check className="text-zed-green size-3 shrink-0" />
         </span>
       }
       trigger={{ title: 'Task done' }}

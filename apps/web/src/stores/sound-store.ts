@@ -23,9 +23,9 @@ export type SoundEvent = 'completion' | 'error' | 'notification' | 'send';
  *
  * - `off`      – all sounds disabled
  * - `opencode` – default sound pack (OpenCode style)
- * - `kortix`   – Kortix branded sound pack
+ * - `zed`   – Zed branded sound pack
  */
-export type SoundPack = 'off' | 'opencode' | 'kortix';
+export type SoundPack = 'off' | 'opencode' | 'zed';
 
 export interface SoundPreferences {
   /** Active sound pack — 'off' disables all sounds */
@@ -95,7 +95,7 @@ export const useSoundStore = create<SoundState>()(
       },
     }),
     {
-      name: 'kortix-sound-preferences',
+      name: 'zed-sound-preferences',
       storage: createSafeJSONStorage(),
       partialize: (state) => ({
         preferences: state.preferences,

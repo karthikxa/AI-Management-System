@@ -31,12 +31,12 @@
  *
  *  - GH-4  POST /v1/projects/github/installations/linkable and
  *    POST /v1/projects/github/installations/link — the authenticated account
- *    linking flow. Both routes require Kortix authentication. The list route
+ *    linking flow. Both routes require Zed authentication. The list route
  *    requires a GitHub user token. The link route validates installation_id
  *    before it calls GitHub.
  *
  * NOT AUTHORED (reported as drift — no black-box HTTP surface):
- *  - HOSTS-1..6 (`kortix hosts ls|use|add|rm|info|current`): pure CLI-LOCAL
+ *  - HOSTS-1..6 (`zed hosts ls|use|add|rm|info|current`): pure CLI-LOCAL
  *    config operations (apps/cli/src/commands/hosts.ts → api/config.ts). They
  *    read/write the local CLI config file and make NO HTTP calls — there are no
  *    API routes to test in a black-box suite.

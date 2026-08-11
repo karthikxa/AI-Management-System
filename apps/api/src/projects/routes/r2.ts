@@ -132,10 +132,10 @@ projectsApp.openapi(
   const quota = await enforceProjectQuota(c, scope.accountId);
   if (quota) return quota;
 
-  const manifestPath = normalizeString(body.manifest_path ?? body.manifestPath) ?? 'kortix.yaml';
+  const manifestPath = normalizeString(body.manifest_path ?? body.manifestPath) ?? 'zed.yaml';
 
   // PAT path: link an existing repo with a token, no GitHub App install
-  // needed — either a caller-supplied token (the seamless `kortix ship` flow
+  // needed — either a caller-supplied token (the seamless `zed ship` flow
   // for a repo you already own, and the App-free fallback in environments
   // where the App can't be installed), or the account-level managed-git PAT
   // ("Use a token" self-host setup) when the Import-repo UI picked its
@@ -245,7 +245,7 @@ projectsApp.openapi(
 
 // POST /v1/projects/create-repo
 // Creates a new GitHub repository using the account's GitHub App installation,
-// then registers it as a Kortix project.
+// then registers it as a Zed project.
 
 projectsApp.openapi(
   createRoute({
@@ -305,7 +305,7 @@ projectsApp.openapi(
   }
   if (!githubAuth.installation || !githubAuth.auth) {
     return c.json({
-      error: 'Install the Kortix GitHub App before creating GitHub-backed projects',
+      error: 'Install the Zed GitHub App before creating GitHub-backed projects',
       install_url: await createGitHubInstallationInstallUrl(scope.accountId, scope.userId),
     }, 409);
   }
@@ -349,7 +349,7 @@ projectsApp.openapi(
   const projectName = normalizeString(body.project_name ?? body.projectName) ?? deriveProjectName(repo.full_name);
   const defaultBranch = repo.default_branch || 'main';
 
-  // Commit the Kortix starter into the fresh repo so users land with a
+  // Commit the Zed starter into the fresh repo so users land with a
   // working project shape on first session boot. GitHub's Contents API
   // updates the branch tip on every write, so these must be sequential.
   // A partial starter is not a usable project.
@@ -400,9 +400,9 @@ projectsApp.openapi(
     name: projectName,
     defaultBranch,
     managed: true,
-    // The starter just committed above (buildStarterFiles) ships kortix.yaml
-    // (kortix_version 2) — record that path so it's never stale from birth.
-    manifestPath: 'kortix.yaml',
+    // The starter just committed above (buildStarterFiles) ships zed.yaml
+    // (zed_version 2) — record that path so it's never stale from birth.
+    manifestPath: 'zed.yaml',
     ...(iconGlyph
       ? { projectMetadata: { icon_glyph: iconGlyph } }
       : icon
@@ -427,13 +427,13 @@ projectsApp.openapi(
 );
 
 // ─── Manifest validation ──────────────────────────────────────────────────
-// One schema, exercised in three places: the CLI (`kortix ship` pre-flight +
-// `kortix validate`), this server-side endpoint (lets dashboards / tooling
+// One schema, exercised in three places: the CLI (`zed ship` pre-flight +
+// `zed validate`), this server-side endpoint (lets dashboards / tooling
 // ask the server "is this valid?"), and the CR-merge gate.
 //
 // Body: { raw: string, format?: 'toml' | 'yaml' }. Always returns 200 — the
 // verdict is in the body so the caller can show issues without having to
-// handle HTTP error codes. CLI use: `kortix validate` runs locally, this is
+// handle HTTP error codes. CLI use: `zed validate` runs locally, this is
 // for surfaces that don't have the file on disk.
 //
 // DUAL-FORMAT: `raw` may be TOML or YAML text — see
@@ -471,7 +471,7 @@ projectsApp.openapi(
   }
 
   const format = resolveManifestValidateFormat(loaded.row.manifestPath, body.format);
-  const { validateManifest } = await import('@kortix/manifest-schema');
+  const { validateManifest } = await import('@zed/manifest-schema');
   const verdict = validateManifest(raw, format);
   return c.json({
     valid: verdict.valid,
@@ -482,7 +482,7 @@ projectsApp.openapi(
 
 // ─── Sandbox templates ─────────────────────────────────────────────────────
 // One platform-default image, optionally extended by `sandbox: templates:` entries
-// in kortix.yaml. Session boot is stateless: it computes the expected snapshot
+// in zed.yaml. Session boot is stateless: it computes the expected snapshot
 // name from the resolved template, asks the selected provider if it is launch
 // ready, and builds it there if not.
 // The append-only `project_snapshot_builds` log feeds the UI but is never
@@ -919,7 +919,7 @@ projectsApp.openapi(
     errorText.slice(0, 4000),
     '```',
     ``,
-    `The sandbox image is built from the template definition (see sandbox.templates in kortix.yaml).`,
+    `The sandbox image is built from the template definition (see sandbox.templates in zed.yaml).`,
     ``,
     `Steps:`,
     `1. Inspect the relevant Dockerfile and the build error above.`,
@@ -961,7 +961,7 @@ projectsApp.openapi(
 );
 
 // ─── Template CRUD ─────────────────────────────────────────────────────────
-// Full CRUD over `kortix.sandbox_templates`. Shared/platform rows are read-
+// Full CRUD over `zed.sandbox_templates`. Shared/platform rows are read-
 // only. Project-scoped rows can be created/edited/deleted from the dashboard.
 
 // GET /v1/projects/:projectId/sandbox-templates — same as /sandboxes; thinner

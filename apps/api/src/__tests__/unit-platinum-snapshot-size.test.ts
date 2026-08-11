@@ -6,12 +6,12 @@ import { tmpdir } from 'node:os';
 import {
   buildCliConnectorSourceDigest,
   buildFileSha256,
-} from '@kortix/shared/sandbox-runtime-artifact';
+} from '@zed/shared/sandbox-runtime-artifact';
 
-const fixtureRoot = mkdtempSync(join(tmpdir(), 'kortix-platinum-size-test-'));
-const agentPath = join(fixtureRoot, 'kortix-agent');
-const cliPath = join(fixtureRoot, 'kortix');
-const cliAttestationPath = join(fixtureRoot, 'kortix-connectors-runtime.attestation.json');
+const fixtureRoot = mkdtempSync(join(tmpdir(), 'zed-platinum-size-test-'));
+const agentPath = join(fixtureRoot, 'zed-agent');
+const cliPath = join(fixtureRoot, 'zed');
+const cliAttestationPath = join(fixtureRoot, 'zed-connectors-runtime.attestation.json');
 const entrypointPath = join(fixtureRoot, 'entrypoint.sh');
 const slackCliPath = join(fixtureRoot, 'slack-cli');
 const opencodeConfigPath = join(fixtureRoot, 'opencode-config');
@@ -86,12 +86,12 @@ beforeEach(() => {
   globalThis.fetch = stubFetch;
   // Per-test (not module load): build-context reads these lazily, so setting here
   // keeps this suite's fixtures from leaking into sibling suites in combined runs.
-  process.env.KORTIX_SNAPSHOT_AGENT_BIN_PATH = agentPath;
-  process.env.KORTIX_SNAPSHOT_CLI_BIN_PATH = cliPath;
-  process.env.KORTIX_SNAPSHOT_CLI_ATTESTATION_PATH = cliAttestationPath;
-  process.env.KORTIX_SNAPSHOT_ENTRYPOINT_PATH = entrypointPath;
-  process.env.KORTIX_SNAPSHOT_SLACK_CLI_PATH = slackCliPath;
-  process.env.KORTIX_SNAPSHOT_OPENCODE_CONFIG_PATH = opencodeConfigPath;
+  process.env.ZED_SNAPSHOT_AGENT_BIN_PATH = agentPath;
+  process.env.ZED_SNAPSHOT_CLI_BIN_PATH = cliPath;
+  process.env.ZED_SNAPSHOT_CLI_ATTESTATION_PATH = cliAttestationPath;
+  process.env.ZED_SNAPSHOT_ENTRYPOINT_PATH = entrypointPath;
+  process.env.ZED_SNAPSHOT_SLACK_CLI_PATH = slackCliPath;
+  process.env.ZED_SNAPSHOT_OPENCODE_CONFIG_PATH = opencodeConfigPath;
 });
 
 afterEach(() => {
@@ -106,7 +106,7 @@ afterAll(() => {
 describe('Platinum snapshot build sizing', () => {
   test('a disk under the cap is sent verbatim as the build ceiling', async () => {
     await platinumProvider.buildSnapshot({
-      snapshotName: 'kortix-small-template',
+      snapshotName: 'zed-small-template',
       image: 'ubuntu:24.04',
       spec: { diskGb: 10 },
       slug: 'small',
@@ -119,7 +119,7 @@ describe('Platinum snapshot build sizing', () => {
 
   test('clamps the build ext4 ceiling to Platinum\'s from-build cap, keeping the full runtime disk', async () => {
     await platinumProvider.buildSnapshot({
-      snapshotName: 'kortix-large-template',
+      snapshotName: 'zed-large-template',
       image: 'ubuntu:24.04',
       spec: { diskGb: 40 },
       slug: 'large',
@@ -134,7 +134,7 @@ describe('Platinum snapshot build sizing', () => {
 
   test('clamps even an extreme disk to the build cap', async () => {
     await platinumProvider.buildSnapshot({
-      snapshotName: 'kortix-max-template',
+      snapshotName: 'zed-max-template',
       image: 'ubuntu:24.04',
       spec: { diskGb: 500 },
       slug: 'max',

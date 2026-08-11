@@ -828,7 +828,7 @@ function AuthCardForm({
   return (
     <>
       <m.div {...rise(0)}>
-        <StepHeader title="Welcome to Kortix" tagline="Your AI Command Center" />
+        <StepHeader title="Welcome to Zed" tagline="Your AI Command Center" />
       </m.div>
 
       <m.div {...rise(0.06)}>
@@ -1005,7 +1005,7 @@ function AuthContent() {
   if (trustedUser) {
     return (
       <AuthFrame footerVariant="default">
-        <StepHeader title="Welcome to Kortix" tagline="Your AI Command Center" />
+        <StepHeader title="Welcome to Zed" tagline="Your AI Command Center" />
       </AuthFrame>
     );
   }

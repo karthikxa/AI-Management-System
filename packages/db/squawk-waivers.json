@@ -26,7 +26,7 @@
     {
       "file": "20260805030712000_enterprise_entitled_flag.sql",
       "mergedIn": "#6120",
-      "reason": "Merged with the squawk check red. Three findings: no lock_timeout and no statement_timeout before ALTER TABLE kortix.credit_accounts ADD COLUMN (require-timeout-settings x2), and a DROP COLUMN in its 'Down Migration' section (ban-drop-column).",
+      "reason": "Merged with the squawk check red. Three findings: no lock_timeout and no statement_timeout before ALTER TABLE zed.credit_accounts ADD COLUMN (require-timeout-settings x2), and a DROP COLUMN in its 'Down Migration' section (ban-drop-column).",
       "unfixableBecause": "The file is merged and immutable, and squawk lints file text -- no follow-up migration can clear a finding in it.",
       "rootCauseFixed": "scripts/generate.ts now prepends the safety header that scripts/create-migration.ts always had, so drizzle-generated migrations no longer start life missing the timeouts. The repo does not write 'Down Migration' sections (see create-migration.ts); this file's was hand-added.",
       "realRisk": "ADD COLUMN with a constant DEFAULT does not rewrite the table on PG11+, but it still takes a brief ACCESS EXCLUSIVE lock. With no lock_timeout that ALTER waits behind any long transaction on credit_accounts and every query queues behind it. This has run on dev; it has NOT run on prod yet."

@@ -53,7 +53,7 @@ describe('audit event middleware', () => {
       '/v1/projects/00000000-0000-4000-a000-000000000201/sessions/session-1/messages',
       {
         method: 'POST',
-        headers: { 'User-Agent': 'kortix-cli/dev', 'X-Kortix-Client': 'cli' },
+        headers: { 'User-Agent': 'zed-cli/dev', 'X-Zed-Client': 'cli' },
         body: '{}',
       },
     );
@@ -72,7 +72,7 @@ describe('audit event middleware', () => {
       action: 'POST /v1/projects/:projectId/sessions/:sessionId/messages',
       resourceType: 'project_session',
       resourceId: 'session-1',
-      userAgent: 'kortix-cli/dev',
+      userAgent: 'zed-cli/dev',
     });
     expect(auditRows[0]?.durationMs).toBeNumber();
   });
@@ -89,7 +89,7 @@ describe('audit event middleware', () => {
 
     const res = await app.request(
       '/v1/projects/00000000-0000-4000-a000-000000000201/secrets/demo/strategy',
-      { method: 'PATCH', headers: { 'X-Kortix-Client': 'cli' }, body: '{}' },
+      { method: 'PATCH', headers: { 'X-Zed-Client': 'cli' }, body: '{}' },
     );
 
     expect(res.status).toBe(200);
@@ -114,7 +114,7 @@ describe('audit event middleware', () => {
     });
 
     const res = await app.request('/v1/projects/00000000-0000-4000-a000-000000000201/detail', {
-      headers: { 'X-Kortix-Client': 'forged-source' },
+      headers: { 'X-Zed-Client': 'forged-source' },
     });
 
     expect(res.status).toBe(200);
@@ -136,7 +136,7 @@ describe('audit event middleware', () => {
     });
 
     const res = await app.request('/v1/projects/00000000-0000-4000-a000-000000000201/detail', {
-      headers: { 'X-Kortix-Client': 'kortix_pat_private-credential' },
+      headers: { 'X-Zed-Client': 'zed_pat_private-credential' },
     });
 
     expect(res.status).toBe(200);
@@ -330,7 +330,7 @@ describe('audit event middleware', () => {
     const res = await app.request('/v1/projects/provision', {
       method: 'POST',
       headers: {
-        'X-Kortix-Client': 'cli',
+        'X-Zed-Client': 'cli',
         'X-Correlation-Id': 'project-create-1',
       },
       body: '{}',

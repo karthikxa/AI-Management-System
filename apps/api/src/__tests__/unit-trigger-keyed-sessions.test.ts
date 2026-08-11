@@ -18,7 +18,7 @@ import type { GitTriggerSpec } from '../projects/triggers';
 function spec(overrides: Partial<GitTriggerSpec> = {}): GitTriggerSpec {
   return {
     slug: 'whatsapp',
-    path: 'kortix.yaml#triggers.whatsapp',
+    path: 'zed.yaml#triggers.whatsapp',
     name: 'WhatsApp',
     type: 'webhook',
     agent: 'default',

@@ -1,5 +1,5 @@
 import { eq, sql } from 'drizzle-orm';
-import { stripeWebhookEventsProcessed } from '@kortix/db';
+import { stripeWebhookEventsProcessed } from '@zed/db';
 import { db } from '../../shared/db';
 
 export async function recordWebhookEvent(eventId: string, eventType: string): Promise<boolean> {

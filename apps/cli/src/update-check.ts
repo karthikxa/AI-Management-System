@@ -6,7 +6,7 @@ import { C, stripAnsi } from './style.ts';
 // ─────────────────────────────────────────────────────────────────────────────
 // Update notifier.
 //
-// On `kortix` (bare) we resolve the latest published release from GitHub and,
+// On `zed` (bare) we resolve the latest published release from GitHub and,
 // if it's newer than the running binary, surface a prominent box AND — when
 // we're on a real terminal — offer to install it right there (see
 // `offerInteractiveUpdate` in index.ts). Subcommands get a passive one-line
@@ -17,7 +17,7 @@ import { C, stripAnsi } from './style.ts';
 // showing either way, so a skip never hides that the CLI is behind.
 //
 // To keep this off the hot path we cache the last-known latest version in
-// ~/.config/kortix/update-check.json and only hit the network at most once per
+// ~/.config/zed/update-check.json and only hit the network at most once per
 // CHECK_TTL_MS. Subcommands never fetch — they render purely from cache, so the
 // notice costs nothing once the cache is warm.
 //
@@ -25,7 +25,7 @@ import { C, stripAnsi } from './style.ts';
 // Release is the unified vX.Y.Z build.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const REPO = process.env.KORTIX_REPO ?? 'kortix-ai/suna';
+const REPO = process.env.ZED_REPO ?? 'zed-ai/suna';
 const CHECK_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 const FETCH_TIMEOUT_MS = 1500;
 
@@ -42,7 +42,7 @@ function cachePath(): string {
 
 /** Update checks are pointless or unwanted in these cases. */
 function isDisabled(current: string): boolean {
-  if (process.env.KORTIX_NO_UPDATE_CHECK || process.env.KORTIX_SKIP_UPDATE_CHECK) return true;
+  if (process.env.ZED_NO_UPDATE_CHECK || process.env.ZED_SKIP_UPDATE_CHECK) return true;
   // CI/scripts: don't nag, and don't add latency to piped output.
   if (process.stdout.isTTY !== true) return true;
   if (process.env.CI) return true;
@@ -101,7 +101,7 @@ export function isUpdateSnoozed(latestTag: string): boolean {
 }
 
 /**
- * Remember that the user declined THIS release, so bare `kortix` stops asking
+ * Remember that the user declined THIS release, so bare `zed` stops asking
  * until a newer one lands. Deliberately keyed to the tag rather than a
  * timestamp: a snooze that expires would re-ask for a version they already
  * turned down, and one that never expires would hide a release they've never
@@ -121,13 +121,13 @@ async function fetchLatestTag(): Promise<string | null> {
   const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
   try {
     // The literal host stays AT the call site on purpose: this is the one
-    // non-Kortix fetch the CLI makes, and `scripts/sdk-boundary.mjs` can only
+    // non-Zed fetch the CLI makes, and `scripts/sdk-boundary.mjs` can only
     // verify that statically. Behind a `LATEST_RELEASE_URL` constant the target
-    // is opaque to the lint, which is exactly the shape a Kortix call could
+    // is opaque to the lint, which is exactly the shape a Zed call could
     // hide in.
     const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
       signal: ctrl.signal,
-      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'kortix-cli' },
+      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'zed-cli' },
     });
     if (!res.ok) return null;
     const data = (await res.json()) as { tag_name?: unknown };
@@ -173,7 +173,7 @@ function boxLine(content: string): string {
 }
 
 /** `hint` is the call-to-action line. The interactive path replaces the
- *  "run kortix update" advice, since it's about to ask instead. */
+ *  "run zed update" advice, since it's about to ask instead. */
 function renderBox(current: string, latestDisplay: string, hint: string): string {
   const title = ' update available ';
   const fill = Math.max(0, BOX_INNER + 2 - 2 - title.length);
@@ -182,7 +182,7 @@ function renderBox(current: string, latestDisplay: string, hint: string): string
   return [
     '',
     top,
-    boxLine(`${C.bold}Kortix CLI${C.reset} ${C.dim}v${current}${C.reset}  ${C.yellow}→${C.reset}  ${C.green}${C.bold}${latestDisplay}${C.reset}`),
+    boxLine(`${C.bold}Zed CLI${C.reset} ${C.dim}v${current}${C.reset}  ${C.yellow}→${C.reset}  ${C.green}${C.bold}${latestDisplay}${C.reset}`),
     boxLine(hint),
     bottom,
   ].join('\n');
@@ -191,7 +191,7 @@ function renderBox(current: string, latestDisplay: string, hint: string): string
 function renderLine(current: string, latestDisplay: string): string {
   return (
     `  ${C.yellow}!${C.reset}  ${C.yellow}Update available: v${current} → ${latestDisplay} — run${C.reset} ` +
-    `${C.cyan}kortix update${C.reset}`
+    `${C.cyan}zed update${C.reset}`
   );
 }
 
@@ -242,12 +242,12 @@ export function renderUpdateBox(status: UpdateStatus, interactive = false): stri
     status.latestDisplay,
     interactive
       ? `${C.dim}Installing takes a few seconds.${C.reset}`
-      : `Run  ${C.cyan}kortix update${C.reset}  to upgrade.`,
+      : `Run  ${C.cyan}zed update${C.reset}  to upgrade.`,
   );
 }
 
 export interface UpdateNoticeOptions {
-  /** Hit the network when the cache is stale. Bare `kortix` does; subcommands don't. */
+  /** Hit the network when the cache is stale. Bare `zed` does; subcommands don't. */
   allowFetch: boolean;
   /** Box for the bare landing screen, single line for subcommands. */
   style: 'box' | 'line';

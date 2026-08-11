@@ -15,10 +15,10 @@ import { runWithContext } from '../lib/request-context';
 
 const originalFetch = globalThis.fetch;
 const envKeys = [
-  'KORTIX_GITHUB_APP_ID',
-  'KORTIX_GITHUB_APP_PRIVATE_KEY',
-  'KORTIX_GITHUB_APP_SLUG',
-  'KORTIX_GITHUB_TOKEN',
+  'ZED_GITHUB_APP_ID',
+  'ZED_GITHUB_APP_PRIVATE_KEY',
+  'ZED_GITHUB_APP_SLUG',
+  'ZED_GITHUB_TOKEN',
   'GITHUB_TOKEN',
 ] as const;
 const originalEnv = Object.fromEntries(envKeys.map((key) => [key, process.env[key]]));
@@ -34,10 +34,10 @@ function json(body: unknown, status = 200) {
 
 function resetEnv() {
   const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
-  process.env.KORTIX_GITHUB_APP_ID = '12345';
-  process.env.KORTIX_GITHUB_APP_PRIVATE_KEY = privateKey.export({ type: 'pkcs8', format: 'pem' }).toString();
-  process.env.KORTIX_GITHUB_APP_SLUG = 'kortix-test-app';
-  delete process.env.KORTIX_GITHUB_TOKEN;
+  process.env.ZED_GITHUB_APP_ID = '12345';
+  process.env.ZED_GITHUB_APP_PRIVATE_KEY = privateKey.export({ type: 'pkcs8', format: 'pem' }).toString();
+  process.env.ZED_GITHUB_APP_SLUG = 'zed-test-app';
+  delete process.env.ZED_GITHUB_TOKEN;
   delete process.env.GITHUB_TOKEN;
 }
 
@@ -60,11 +60,11 @@ describe('GitHub App project repository auth', () => {
       if (href.endsWith('/app/installations/42')) {
         return json({
           id: 42,
-          account: { login: 'kortix-org', type: 'Organization' },
+          account: { login: 'zed-org', type: 'Organization' },
           target_type: 'Organization',
           repository_selection: 'all',
           permissions: { contents: 'write', metadata: 'read' },
-          html_url: 'https://github.com/organizations/kortix-org/settings/installations/42',
+          html_url: 'https://github.com/organizations/zed-org/settings/installations/42',
         });
       }
 
@@ -77,21 +77,21 @@ describe('GitHub App project repository auth', () => {
         });
       }
 
-      if (href.endsWith('/orgs/kortix-org/repos')) {
+      if (href.endsWith('/orgs/zed-org/repos')) {
         return json({
           id: 7,
           name: 'company-os',
-          full_name: 'kortix-org/company-os',
+          full_name: 'zed-org/company-os',
           private: true,
-          html_url: 'https://github.com/kortix-org/company-os',
-          clone_url: 'https://github.com/kortix-org/company-os.git',
-          ssh_url: 'git@github.com:kortix-org/company-os.git',
+          html_url: 'https://github.com/zed-org/company-os',
+          clone_url: 'https://github.com/zed-org/company-os.git',
+          ssh_url: 'git@github.com:zed-org/company-os.git',
           default_branch: 'main',
           description: null,
         });
       }
 
-      if (href.includes('/repos/kortix-org/company-os/contents/README.md')) {
+      if (href.includes('/repos/zed-org/company-os/contents/README.md')) {
         if (init?.method === 'PUT') return json({ content: { path: 'README.md' } });
         return json({ sha: 'existing-readme-sha' });
       }
@@ -117,7 +117,7 @@ describe('GitHub App project repository auth', () => {
     // account id, not a bare account id — verify structure + decoded account.
     const installUrl = buildGitHubAppInstallUrl('account-1');
     expect(installUrl).toBeTruthy();
-    expect(installUrl!.startsWith('https://github.com/apps/kortix-test-app/installations/new?state=')).toBe(true);
+    expect(installUrl!.startsWith('https://github.com/apps/zed-test-app/installations/new?state=')).toBe(true);
     const state = new URL(installUrl!).searchParams.get('state')!;
     expect(state.startsWith('v1.')).toBe(true);
     const statePayload = JSON.parse(Buffer.from(state.split('.')[1]!, 'base64url').toString('utf8'));
@@ -126,7 +126,7 @@ describe('GitHub App project repository auth', () => {
 
   test('verifies installation metadata with the app JWT', async () => {
     const installation = await getGitHubAppInstallation('42');
-    expect(installation.account?.login).toBe('kortix-org');
+    expect(installation.account?.login).toBe('zed-org');
     expect(requests[0]?.url).toBe('https://api.github.com/app/installations/42');
     expect((requests[0]?.init?.headers as Record<string, string>).Authorization).toMatch(/^Bearer /);
   });
@@ -158,7 +158,7 @@ describe('GitHub App project repository auth', () => {
     const auth = {
       token: 'installation-token',
       source: 'app_installation' as const,
-      owner: 'kortix-org',
+      owner: 'zed-org',
       ownerType: 'Organization',
       installationId: '42',
     };
@@ -169,10 +169,10 @@ describe('GitHub App project repository auth', () => {
       autoInit: true,
       auth,
     });
-    expect(repo.full_name).toBe('kortix-org/company-os');
+    expect(repo.full_name).toBe('zed-org/company-os');
 
     const sha = await getFileSha({
-      owner: 'kortix-org',
+      owner: 'zed-org',
       repo: 'company-os',
       path: 'README.md',
       branch: 'main',
@@ -181,7 +181,7 @@ describe('GitHub App project repository auth', () => {
     expect(sha).toBe('existing-readme-sha');
 
     await commitFile({
-      owner: 'kortix-org',
+      owner: 'zed-org',
       repo: 'company-os',
       path: 'README.md',
       content: '# Company OS',
@@ -191,7 +191,7 @@ describe('GitHub App project repository auth', () => {
       auth,
     });
 
-    const repoCreate = requests.find((request) => request.url.endsWith('/orgs/kortix-org/repos'));
+    const repoCreate = requests.find((request) => request.url.endsWith('/orgs/zed-org/repos'));
     const readFile = requests.find((request) => request.init?.method !== 'PUT' && request.url.includes('/contents/README.md'));
     const writeFile = requests.find((request) => request.init?.method === 'PUT' && request.url.includes('/contents/README.md'));
 
@@ -199,12 +199,12 @@ describe('GitHub App project repository auth', () => {
     expect((readFile?.init?.headers as Record<string, string>).Authorization).toBe('Bearer installation-token');
     expect((writeFile?.init?.headers as Record<string, string>).Authorization).toBe('Bearer installation-token');
 
-    // Contents-API commits MUST pin the Kortix identity explicitly. Otherwise
+    // Contents-API commits MUST pin the Zed identity explicitly. Otherwise
     // GitHub attributes the commit to whoever owns the token (a personal PAT
-    // surfaces "<user> committed" instead of Kortix).
+    // surfaces "<user> committed" instead of Zed).
     const writeBody = JSON.parse(String(writeFile?.init?.body));
-    expect(writeBody.author).toEqual({ name: 'Kortix', email: 'noreply@kortix.ai' });
-    expect(writeBody.committer).toEqual({ name: 'Kortix', email: 'noreply@kortix.ai' });
+    expect(writeBody.author).toEqual({ name: 'Zed', email: 'noreply@zed.ai' });
+    expect(writeBody.committer).toEqual({ name: 'Zed', email: 'noreply@zed.ai' });
   });
 
   test('accepts the personal installation owner', async () => {
@@ -226,7 +226,7 @@ describe('GitHub App project repository auth', () => {
     globalThis.fetch = mock(async (url: string | URL | Request) => {
       const href = typeof url === 'string' || url instanceof URL ? String(url) : url.url;
       if (href.endsWith('/user')) return json({ login: 'markokraemer' });
-      if (href.endsWith('/orgs/kortix-ai/memberships/markokraemer')) {
+      if (href.endsWith('/orgs/zed-ai/memberships/markokraemer')) {
         return json({ state: 'active', role: 'admin' });
       }
       return json({ message: 'not found' }, 404);
@@ -235,7 +235,7 @@ describe('GitHub App project repository auth', () => {
     await expect(
       verifyGitHubInstallationAdmin('user-token', {
         id: 42,
-        account: { login: 'kortix-ai', type: 'Organization' },
+        account: { login: 'zed-ai', type: 'Organization' },
       }),
     ).resolves.toEqual({ login: 'markokraemer' });
   });
@@ -254,7 +254,7 @@ describe('GitHub App project repository auth', () => {
           },
           {
             id: 42,
-            account: { login: 'kortix-ai', type: 'Organization' },
+            account: { login: 'zed-ai', type: 'Organization' },
             repository_selection: 'all',
           },
           {
@@ -269,7 +269,7 @@ describe('GitHub App project repository auth', () => {
           {
             state: 'active',
             role: 'admin',
-            organization: { login: 'kortix-ai' },
+            organization: { login: 'zed-ai' },
           },
           {
             state: 'active',
@@ -299,7 +299,7 @@ describe('GitHub App project repository auth', () => {
     globalThis.fetch = mock(async (url: string | URL | Request) => {
       const href = typeof url === 'string' || url instanceof URL ? String(url) : url.url;
       if (href.endsWith('/user')) return json({ login: 'member' });
-      if (href.endsWith('/orgs/kortix-ai/memberships/member')) {
+      if (href.endsWith('/orgs/zed-ai/memberships/member')) {
         return json({ state: 'active', role: 'member' });
       }
       return json({ message: 'not found' }, 404);
@@ -308,7 +308,7 @@ describe('GitHub App project repository auth', () => {
     await expect(
       verifyGitHubInstallationAdmin('user-token', {
         id: 42,
-        account: { login: 'kortix-ai', type: 'Organization' },
+        account: { login: 'zed-ai', type: 'Organization' },
       }),
     ).rejects.toThrow('GitHub organization admin access is required');
   });

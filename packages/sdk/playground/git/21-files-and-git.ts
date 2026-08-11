@@ -5,12 +5,12 @@
  *
  * Run (from packages/sdk):  bun run playground/git/21-files-and-git.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("files-and-git", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
-  const project = kortix.project(projectId);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
+  const project = zed.project(projectId);
 
   const files = await project.files.list();
   console.log(`✓ files.list(): ${JSON.stringify(files).slice(0, 250)}…`);

@@ -1,4 +1,4 @@
-import { stripNullBytes, stripNullBytesDeep } from '@kortix/shared';
+import { stripNullBytes, stripNullBytesDeep } from '@zed/shared';
 
 export interface GatewayTraceInput {
   requestId: string;

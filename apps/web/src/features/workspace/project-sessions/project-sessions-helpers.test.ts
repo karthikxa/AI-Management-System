@@ -1,4 +1,4 @@
-import type { ProjectSession } from '@kortix/sdk';
+import type { ProjectSession } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 
 import {
@@ -28,7 +28,7 @@ function makeSession(overrides: Partial<ProjectSession> = {}): ProjectSession {
     opencode_session_id: null,
     name: 'Investigate checkout',
     custom_name: null,
-    agent_name: 'kortix',
+    agent_name: 'zed',
     status: 'running',
     error: null,
     metadata: {},
@@ -123,7 +123,7 @@ describe('session inventory identity and access labels', () => {
   test('labels human and agent owners without pretending an unknown owner is the viewer', () => {
     expect(
       sessionOwnerLabel(
-        makeSession({ owner_type: 'user', owner_name: 'Ari', owner_email: 'ari@kortix.ai' }),
+        makeSession({ owner_type: 'user', owner_name: 'Ari', owner_email: 'ari@zed.ai' }),
       ),
     ).toBe('Ari');
     expect(

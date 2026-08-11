@@ -23,14 +23,14 @@ afterEach(() => {
   (process.stdout as any).write = ORIGINAL_STDOUT_WRITE;
 });
 
-describe('kortix connectors — built-in channel slugs', () => {
-  test('add slack is rejected client-side and points at `kortix channels connect`', async () => {
+describe('zed connectors — built-in channel slugs', () => {
+  test('add slack is rejected client-side and points at `zed channels connect`', async () => {
     const code = await runConnector(['add', 'slack', '--provider', 'pipedream', '--app', 'slack']);
     expect(code).toBe(1);
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(false);
     expect(parsed.code).toBe('BUILTIN_CHANNEL');
-    expect(parsed.error).toContain('kortix channels connect');
+    expect(parsed.error).toContain('zed channels connect');
     expect(fetchCalls).toBe(0);
   });
 
@@ -39,12 +39,12 @@ describe('kortix connectors — built-in channel slugs', () => {
     expect(code).toBe(1);
     const parsed = JSON.parse(stdout);
     expect(parsed.code).toBe('BUILTIN_CHANNEL');
-    expect(parsed.error).toContain('kortix channels connect');
+    expect(parsed.error).toContain('zed channels connect');
     expect(fetchCalls).toBe(0);
   });
 
-  test('add kortix_slack is rejected too', async () => {
-    const code = await runConnector(['add', 'kortix_slack', '--provider', 'pipedream', '--app', 'slack']);
+  test('add zed_slack is rejected too', async () => {
+    const code = await runConnector(['add', 'zed_slack', '--provider', 'pipedream', '--app', 'slack']);
     expect(code).toBe(1);
     expect(JSON.parse(stdout).code).toBe('BUILTIN_CHANNEL');
   });

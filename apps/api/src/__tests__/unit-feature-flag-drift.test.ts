@@ -2,8 +2,8 @@
  * Cross-package drift gate for the per-project feature-flag list.
  *
  * The same list is declared THREE times, on purpose:
- *   1. `@kortix/api-contract` — `FEATURE_FLAG_KEYS` (zod, the wire contract).
- *   2. `@kortix/sdk` — `FEATURE_FLAG_KEYS` (hand-written; the SDK is
+ *   1. `@zed/api-contract` — `FEATURE_FLAG_KEYS` (zod, the wire contract).
+ *   2. `@zed/sdk` — `FEATURE_FLAG_KEYS` (hand-written; the SDK is
  *      framework-free and dependency-light, so it must not pull zod into every
  *      consumer's bundle to re-derive the contract's list).
  *   3. `apps/api/src/feature-flags/registry.ts` — the registry that owns each
@@ -14,7 +14,7 @@
  * — add a flag to one list and not the others and it fails here.
  *
  * It lives in apps/api because apps/api is the only package that already
- * depends on BOTH `@kortix/api-contract` (runtime dep) and `@kortix/sdk`
+ * depends on BOTH `@zed/api-contract` (runtime dep) and `@zed/sdk`
  * (devDependency, test-only — see e2e-connector-faces.test.ts) AND owns the
  * registry. Putting it in packages/sdk is not an option: `packages/sdk/AGENTS.md`
  * keeps the core framework-free and import-graph-checked, and it has no
@@ -24,8 +24,8 @@ import { describe, expect, test } from 'bun:test';
 import {
   FEATURE_FLAG_KEYS as CONTRACT_FEATURE_FLAG_KEYS,
   FeatureFlagStabilitySchema,
-} from '@kortix/api-contract';
-import { FEATURE_FLAG_KEYS as SDK_FEATURE_FLAG_KEYS } from '@kortix/sdk';
+} from '@zed/api-contract';
+import { FEATURE_FLAG_KEYS as SDK_FEATURE_FLAG_KEYS } from '@zed/sdk';
 
 import { REGISTERED_FEATURE_FLAGS, buildFeatureFlagCatalog } from '../feature-flags/registry';
 

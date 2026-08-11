@@ -181,7 +181,7 @@ export const TOOL_DISPLAY_NAMES: ReadonlyMap<string, string> = new Map([
   ['create-agent-scheduled-trigger', 'Creating Scheduled Trigger'],
   ['list-agent-scheduled-triggers', 'Listing Scheduled Triggers'],
 
-  // Kortix session tools
+  // Zed session tools
   ['session_spawn', 'Spawning Session'],
   ['session-spawn', 'Spawning Session'],
   ['session_start_background', 'Starting Background Session'],
@@ -207,7 +207,7 @@ export const TOOL_DISPLAY_NAMES: ReadonlyMap<string, string> = new Map([
   ['session_context', 'Loading Session Context'],
   ['session-context', 'Loading Session Context'],
 
-  // Kortix trigger management (unified `triggers` tool)
+  // Zed trigger management (unified `triggers` tool)
   ['triggers', 'Managing Triggers'],
   ['trigger_create', 'Creating Trigger'],
   ['trigger-create', 'Creating Trigger'],

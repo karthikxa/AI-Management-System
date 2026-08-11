@@ -5,7 +5,7 @@
 // transaction node-pg-migrate wraps around `pnpm migrate`. `pgm.noTransaction()`
 // is the supported opt-out. See MIGRATIONS.md "Roll-forward safety".
 //
-// Why this index: the per-END-USER concurrency cap for Kortix-as-a-Backend. One
+// Why this index: the per-END-USER concurrency cap for Zed-as-a-Backend. One
 // wrapper account fronts many end-users, so the existing account-wide cap lets a
 // single end-user consume every slot the whole wrapper has. The new cap COUNTs
 // one origin_ref's live sessions, and that COUNT runs on the session-create hot
@@ -32,7 +32,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create index concurrently if not exists idx_project_sessions_account_origin_active
-      on kortix.project_sessions (account_id, origin_ref)
+      on zed.project_sessions (account_id, origin_ref)
       where origin_ref is not null
         and status in ('queued', 'branching', 'provisioning', 'running')
   `);

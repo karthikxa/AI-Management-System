@@ -7,18 +7,18 @@ describe('resolveModelDefault', () => {
     const data = {
       accountDefault: 'openai/gpt-account',
       projectDefault: 'anthropic/claude-project',
-      platformDefault: 'kortix/platform',
+      platformDefault: 'zed/platform',
       agentDefaults: { coder: 'google/gemini-agent' },
       resolvedForCaller: 'anthropic/claude-project',
       freeTier: false,
     };
 
     expect(resolveModelDefault(data, 'coder')).toEqual({
-      providerID: 'kortix',
+      providerID: 'zed',
       modelID: 'google/gemini-agent',
     });
     expect(resolveModelDefault(data, 'reviewer')).toEqual({
-      providerID: 'kortix',
+      providerID: 'zed',
       modelID: 'anthropic/claude-project',
     });
   });
@@ -29,7 +29,7 @@ describe('resolveModelDefault', () => {
         {
           accountDefault: null,
           projectDefault: null,
-          platformDefault: 'kortix/platform',
+          platformDefault: 'zed/platform',
           agentDefaults: {},
           resolvedForCaller: null,
           freeTier: true,

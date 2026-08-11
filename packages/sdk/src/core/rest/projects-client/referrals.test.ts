@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import {
   getReferralCode,
   getReferralStats,
@@ -26,7 +26,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 
 test('referral methods own every referral REST path', async () => {
   await getReferralCode();

@@ -28,7 +28,7 @@
  *     sanctioned phrasing is "its own isolated machine".
  *   - Channels are a closed enum: slack | teams | email | voice. Telegram,
  *     WhatsApp, SMS and Discord are not channels. And `channels:` is REJECTED
- *     by the v2 manifest validator (`rejectChannelsV2`), so `kortix.yaml` never
+ *     by the v2 manifest validator (`rejectChannelsV2`), so `zed.yaml` never
  *     "declares channels" — channel routing is live project state, not repo
  *     config. The manifest declares the machine image, connectors and triggers.
  *   - "Open source", never a licence name. SOC 2 Type II is in progress, never
@@ -48,18 +48,18 @@
  */
 
 export const SECTION = {
-  eyebrow: 'The Kortix stack',
+  eyebrow: 'The Zed stack',
   title: 'Every layer an AI workforce needs — in one platform you own.',
   // Short on purpose: the section pins to the viewport, so every line here is
   // height taken away from the card that has to fit under it — and the stack
   // itself now names every layer, which is what the long enumeration did.
   description:
-    'Most tools hand you one layer and rent you the rest. Kortix is all six — they read in order, and the sixth commits the work back into the first.',
+    'Most tools hand you one layer and rent you the rest. Zed is all six — they read in order, and the sixth commits the work back into the first.',
 } as const;
 
 export type Layer = {
   /** Stable id, also the DOM test hook and the key `LayerShowcase` switches on. */
-  id: 'source' | 'context' | 'models' | 'harness' | 'computer' | 'control-plane' | 'kortix';
+  id: 'source' | 'context' | 'models' | 'harness' | 'computer' | 'control-plane' | 'zed';
   /** Two-digit ordinal shown in the left gutter. */
   ordinal: string;
   /** The layer's name. Same noun as the card's own product panel header. */
@@ -88,7 +88,7 @@ export const LAYERS: Layer[] = [
     description:
       'Agents, skills, memory, connector config and triggers are all text in one repo. Not settings in someone else’s database — files you own.',
     bullets: [
-      'kortix.yaml declares the machine image, the connectors and the triggers',
+      'zed.yaml declares the machine image, the connectors and the triggers',
       'Agents and skills are markdown; memory is files that accumulate',
       'grep the whole company, diff any change, roll any part of it back',
     ],
@@ -112,7 +112,7 @@ export const LAYERS: Layer[] = [
     label: 'Large language models',
     title: 'Run any model. Keep your keys.',
     description:
-      'Kortix is model-agnostic. Pick the model per agent, per session or per message, and switch the day a better one lands.',
+      'Zed is model-agnostic. Pick the model per agent, per session or per message, and switch the day a better one lands.',
     bullets: [
       'Bring your own API key from any major provider, or use ours',
       'Or sign in with the ChatGPT subscription you already pay for',
@@ -166,10 +166,10 @@ export const LAYERS: Layer[] = [
     // so it sat open at the bottom of the section forever and the stack never
     // resolved. This is the full stop: the six above add up to one thing.
     // It carries no product panel on purpose — a mark and a line is the point.
-    id: 'kortix',
+    id: 'zed',
     ordinal: '07',
-    label: 'Kortix',
-    title: 'This is Kortix.',
+    label: 'Zed',
+    title: 'This is Zed.',
     description:
       'Six layers, one platform, one repo you own. Open source, and it runs wherever you put it.',
     bullets: [],

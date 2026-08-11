@@ -15,7 +15,7 @@ locals {
 }
 
 resource "aws_iam_role" "guardduty_event_forwarder" {
-  name = "kortix-guardduty-event-forwarder"
+  name = "zed-guardduty-event-forwarder"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -41,7 +41,7 @@ resource "aws_iam_role_policy" "guardduty_event_forwarder" {
 }
 
 resource "aws_cloudwatch_event_rule" "guardduty_usw2" {
-  name          = "kortix-guardduty-failures"
+  name          = "zed-guardduty-failures"
   description   = "Route all GuardDuty findings to the operations alert topic"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -55,7 +55,7 @@ resource "aws_cloudwatch_event_target" "guardduty_usw2" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_use1" {
   provider      = aws.use1
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -71,7 +71,7 @@ resource "aws_cloudwatch_event_target" "guardduty_use1" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_aps1" {
   provider      = aws.aps1
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -87,7 +87,7 @@ resource "aws_cloudwatch_event_target" "guardduty_aps1" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_eun1" {
   provider      = aws.eun1
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -103,7 +103,7 @@ resource "aws_cloudwatch_event_target" "guardduty_eun1" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_euw3" {
   provider      = aws.euw3
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -119,7 +119,7 @@ resource "aws_cloudwatch_event_target" "guardduty_euw3" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_euw2" {
   provider      = aws.euw2
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -135,7 +135,7 @@ resource "aws_cloudwatch_event_target" "guardduty_euw2" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_euw1" {
   provider      = aws.euw1
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -151,7 +151,7 @@ resource "aws_cloudwatch_event_target" "guardduty_euw1" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_apne3" {
   provider      = aws.apne3
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -167,7 +167,7 @@ resource "aws_cloudwatch_event_target" "guardduty_apne3" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_apne2" {
   provider      = aws.apne2
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -183,7 +183,7 @@ resource "aws_cloudwatch_event_target" "guardduty_apne2" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_apne1" {
   provider      = aws.apne1
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -199,7 +199,7 @@ resource "aws_cloudwatch_event_target" "guardduty_apne1" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_cac1" {
   provider      = aws.cac1
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -215,7 +215,7 @@ resource "aws_cloudwatch_event_target" "guardduty_cac1" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_sae1" {
   provider      = aws.sae1
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -231,7 +231,7 @@ resource "aws_cloudwatch_event_target" "guardduty_sae1" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_apse1" {
   provider      = aws.apse1
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -247,7 +247,7 @@ resource "aws_cloudwatch_event_target" "guardduty_apse1" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_apse2" {
   provider      = aws.apse2
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -263,7 +263,7 @@ resource "aws_cloudwatch_event_target" "guardduty_apse2" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_euc1" {
   provider      = aws.euc1
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -279,7 +279,7 @@ resource "aws_cloudwatch_event_target" "guardduty_euc1" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_use2" {
   provider      = aws.use2
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"
@@ -295,7 +295,7 @@ resource "aws_cloudwatch_event_target" "guardduty_use2" {
 
 resource "aws_cloudwatch_event_rule" "guardduty_usw1" {
   provider      = aws.usw1
-  name          = "kortix-guardduty-findings"
+  name          = "zed-guardduty-findings"
   description   = "Forward GuardDuty findings to the central operations alert bus"
   event_pattern = local.guardduty_finding_event_pattern
   state         = "ENABLED"

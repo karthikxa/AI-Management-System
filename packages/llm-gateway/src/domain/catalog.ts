@@ -1,7 +1,7 @@
 // One entry of models.dev's `reasoning_options` (mirrors
-// `@kortix/llm-catalog`'s `CatalogReasoningOption` — kept as a local shape for
+// `@zed/llm-catalog`'s `CatalogReasoningOption` — kept as a local shape for
 // this domain's descriptor capability flags; keep it identical). This package
-// DOES depend on `@kortix/llm-catalog` now (the ai-sdk transport reuses its
+// DOES depend on `@zed/llm-catalog` now (the ai-sdk transport reuses its
 // canonical `clampGenerationConfig`/`catalogModelForWireModel` to gate
 // per-request generation params — see transports/ai-sdk/request.ts), so this
 // duplication is no longer a dependency-avoidance measure; it just avoids
@@ -42,17 +42,17 @@ export interface ModelModalities {
 export interface ModelInfo {
   name: string;
   // The REAL upstream provider this model resolves against — 'anthropic',
-  // 'openai', 'codex' (ChatGPT subscription), 'kortix' (managed/auto), etc.
+  // 'openai', 'codex' (ChatGPT subscription), 'zed' (managed/auto), etc.
   // Every wire model served by the gateway is registered under the single
-  // synthetic `kortix` opencode provider (see the sandbox agent server's
-  // `buildKortixProvider`), so this is the one field a client can group/brand
+  // synthetic `zed` opencode provider (see the sandbox agent server's
+  // `buildZedProvider`), so this is the one field a client can group/brand
   // by WITHOUT parsing the wire model id — never drop it; a client that has
   // to fall back to string-splitting `<provider>/<model>` is exactly the
   // fragile path this field exists to replace.
   provider?: string;
   reasoning?: boolean;
   // Present iff the model exposes a tunable reasoning-effort knob — see
-  // `@kortix/llm-catalog`'s `CatalogReasoningOption` (identical shape).
+  // `@zed/llm-catalog`'s `CatalogReasoningOption` (identical shape).
   reasoning_options?: ModelReasoningOption[];
   tool_call?: boolean;
   attachment?: boolean;

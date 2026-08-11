@@ -40,8 +40,8 @@ import {
   deleteSandboxTemplate,
   getProject,
   listProjectSnapshots,
-} from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import {
   CheckCircleIcon as CheckCircleSolid,
   CaretDownIcon as ChevronDown,
@@ -86,7 +86,7 @@ const XCircleFilled = ({ className }: { className?: string }) => (
 const CATEGORY_LABEL: Record<SnapshotErrorCategory, string> = {
   quota: 'Snapshot quota reached',
   dockerfile: 'Dockerfile build failed',
-  layer: 'Kortix runtime layer failed',
+  layer: 'Zed runtime layer failed',
   git: 'Repository access failed',
   tunnel: 'Sandbox callback unreachable',
   provider: 'Sandbox provider error',
@@ -117,22 +117,22 @@ const BUILD_STATUS_TILE: Record<
   ready: {
     label: 'ready',
     badgeVariant: 'success',
-    tileBg: 'bg-kortix-green/15',
-    iconColor: 'text-kortix-green',
+    tileBg: 'bg-zed-green/15',
+    iconColor: 'text-zed-green',
     Icon: CheckCircleFilled,
   },
   building: {
     label: 'building',
     badgeVariant: 'warning',
-    tileBg: 'bg-kortix-yellow/15',
-    iconColor: 'text-kortix-yellow',
+    tileBg: 'bg-zed-yellow/15',
+    iconColor: 'text-zed-yellow',
     Icon: Loading,
   },
   failed: {
     label: 'failed',
     badgeVariant: 'destructive',
-    tileBg: 'bg-kortix-red/15',
-    iconColor: 'text-kortix-red',
+    tileBg: 'bg-zed-red/15',
+    iconColor: 'text-zed-red',
     Icon: XCircleFilled,
   },
 };
@@ -151,9 +151,9 @@ const TEMPLATE_STATE_LABEL: Record<
 };
 
 const TEMPLATE_TONE_ICON_TILE: Record<'ok' | 'busy' | 'fail' | 'idle', string> = {
-  ok: 'bg-kortix-green/10 text-kortix-green',
-  busy: 'bg-kortix-yellow/10 text-kortix-yellow',
-  fail: 'bg-kortix-red/10 text-kortix-red',
+  ok: 'bg-zed-green/10 text-zed-green',
+  busy: 'bg-zed-yellow/10 text-zed-yellow',
+  fail: 'bg-zed-red/10 text-zed-red',
   idle: 'text-muted-foreground border-border',
 };
 
@@ -183,7 +183,7 @@ function formatBuildDuration(startedAt: string, finishedAt: string | null): stri
 }
 
 export function isProjectAcceleratorBuild(build: ProjectSnapshotBuild): boolean {
-  return build.snapshot_name.startsWith('kortix-ppwarm-');
+  return build.snapshot_name.startsWith('zed-ppwarm-');
 }
 
 /**
@@ -361,7 +361,7 @@ function SandboxStatusBanner({
         <span
           className={cn(
             'border-border inline-flex size-10 shrink-0 items-center justify-center self-start rounded-sm border',
-            blocked ? 'bg-kortix-red/10 text-kortix-red' : 'bg-kortix-orange/10 text-kortix-orange',
+            blocked ? 'bg-zed-red/10 text-zed-red' : 'bg-zed-orange/10 text-zed-orange',
           )}
         >
           {blocked ? (
@@ -501,8 +501,8 @@ function TemplateRow({
       : template.source === 'ui'
         ? 'UI'
         : manifestVersion === 2
-          ? 'kortix.yaml'
-          : 'kortix.toml';
+          ? 'zed.yaml'
+          : 'zed.toml';
   const stateInfo = describeState(template.provider_state || template.daytona_state);
 
   return (
@@ -724,12 +724,12 @@ export function SandboxView({ projectId }: { projectId: string }) {
               {manifestVersion === 2 ? (
                 <>
                   <code className="font-mono">sandbox.templates</code> in{' '}
-                  <code className="font-mono">kortix.yaml</code>
+                  <code className="font-mono">zed.yaml</code>
                 </>
               ) : (
                 <>
                   <code className="font-mono">[[sandbox.templates]]</code> in{' '}
-                  <code className="font-mono">kortix.toml</code>
+                  <code className="font-mono">zed.toml</code>
                 </>
               )}
               .
@@ -830,7 +830,7 @@ export function SandboxView({ projectId }: { projectId: string }) {
                       title="Optional repository acceleration"
                     >
                       A project accelerator preloads this repository for a later session. A missing
-                      or failed accelerator never blocks a session. Kortix uses the shared session
+                      or failed accelerator never blocks a session. Zed uses the shared session
                       runtime and clones the repository into{' '}
                       <code className="font-mono">/workspace</code>.
                     </InfoBanner>

@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 
-import type { CostModelRow } from '@kortix/sdk';
+import type { CostModelRow } from '@zed/sdk';
 
 import { Button } from '@/components/ui/button';
 import { Disclosure, DisclosureContent, DisclosureTrigger } from '@/components/ui/disclosure';
-import { IconChevronDown } from '@/components/ui/kortix-icons';
+import { IconChevronDown } from '@/components/ui/zed-icons';
 import { cn } from '@/lib/utils';
 
 import { formatSessionCostUsd } from '../session-cost-format';

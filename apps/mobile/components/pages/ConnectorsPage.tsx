@@ -101,9 +101,9 @@ const MONO = 'Menlo';
 // App deep links so the Pipedream connect browser auto-dismisses back to the
 // app (openAuthSessionAsync returns when it sees this scheme), instead of
 // stranding the user on Pipedream's web success page.
-const CONNECT_RETURN_URL = 'kortix://connectors';
-const CONNECT_SUCCESS_URI = 'kortix://connectors/success';
-const CONNECT_ERROR_URI = 'kortix://connectors/error';
+const CONNECT_RETURN_URL = 'zed://connectors';
+const CONNECT_SUCCESS_URI = 'zed://connectors/success';
+const CONNECT_ERROR_URI = 'zed://connectors/error';
 
 function providerIcon(provider: ConnectorProvider): LucideIcon {
   if (provider === 'pipedream') return Zap;
@@ -841,7 +841,7 @@ function CustomConnectorForm({
               <BottomSheetTextInput value={endpoint} onChangeText={setEndpoint} placeholder="https://api/graphql" placeholderTextColor={muted} autoCapitalize="none" autoCorrect={false} style={inputStyle} />
             </FormField>
             <FormField label="SDL spec" optional isDark={isDark}>
-              <BottomSheetTextInput value={spec} onChangeText={setSpec} placeholder=".kortix/connectors/schema.graphql" placeholderTextColor={muted} autoCapitalize="none" autoCorrect={false} style={inputStyle} />
+              <BottomSheetTextInput value={spec} onChangeText={setSpec} placeholder=".zed/connectors/schema.graphql" placeholderTextColor={muted} autoCapitalize="none" autoCorrect={false} style={inputStyle} />
             </FormField>
           </>
         )}
@@ -861,7 +861,7 @@ function CustomConnectorForm({
               <BottomSheetTextInput value={baseUrl} onChangeText={setBaseUrl} placeholder="https://api.internal" placeholderTextColor={muted} autoCapitalize="none" autoCorrect={false} style={inputStyle} />
             </FormField>
             <FormField label="Routes spec" optional isDark={isDark}>
-              <BottomSheetTextInput value={spec} onChangeText={setSpec} placeholder=".kortix/connectors/routes.toml" placeholderTextColor={muted} autoCapitalize="none" autoCorrect={false} style={inputStyle} />
+              <BottomSheetTextInput value={spec} onChangeText={setSpec} placeholder=".zed/connectors/routes.toml" placeholderTextColor={muted} autoCapitalize="none" autoCorrect={false} style={inputStyle} />
             </FormField>
           </>
         )}

@@ -9,7 +9,7 @@
  * docs/REVIEW_CENTER_DESIGN.md.
  */
 
-import type { changeRequests, connectorCalls } from '@kortix/db';
+import type { changeRequests, connectorCalls } from '@zed/db';
 import type { serializeReviewItem } from './review-items';
 
 type ReviewItemDTO = ReturnType<typeof serializeReviewItem>;

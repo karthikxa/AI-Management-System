@@ -8,10 +8,10 @@ import { runDoctor } from '../commands/doctor.ts';
 const JSON_HEADERS = { 'content-type': 'application/json' };
 const PROJECT_ID = '00000000-0000-4000-a000-0000000000aa';
 const ENV_KEYS = [
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_PROJECT_ID',
+  'ZED_CONFIG_FILE',
+  'ZED_CLI_TOKEN',
+  'ZED_API_URL',
+  'ZED_PROJECT_ID',
 ];
 
 const ORIGINAL_FETCH = globalThis.fetch;
@@ -29,9 +29,9 @@ beforeEach(() => {
     saved[key] = process.env[key];
     delete process.env[key];
   }
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
   originalCwd = process.cwd();
-  tmp = mkdtempSync(join(tmpdir(), 'kortix-doctor-'));
+  tmp = mkdtempSync(join(tmpdir(), 'zed-doctor-'));
   process.chdir(tmp);
   const configFile = join(tmp, 'config.json');
   writeFileSync(
@@ -41,7 +41,7 @@ beforeEach(() => {
       hosts: {
         cloud: {
           url: 'https://api.test',
-          token: 'kortix_pat_test',
+          token: 'zed_pat_test',
           user_id: 'user_1',
           user_email: 'user@example.test',
           account_id: 'acct_1',
@@ -51,8 +51,8 @@ beforeEach(() => {
       },
     }),
   );
-  process.env.KORTIX_CONFIG_FILE = configFile;
-  process.env.KORTIX_PROJECT_ID = PROJECT_ID;
+  process.env.ZED_CONFIG_FILE = configFile;
+  process.env.ZED_PROJECT_ID = PROJECT_ID;
 
   createBodies = [];
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -100,10 +100,10 @@ afterEach(() => {
     if (saved[key] === undefined) delete process.env[key];
     else process.env[key] = saved[key];
   }
-  delete process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE;
+  delete process.env.ZED_DISABLE_SANDBOX_ENV_FILE;
 });
 
-describe('kortix doctor session create payload', () => {
+describe('zed doctor session create payload', () => {
   test('never sends a null initial_prompt, which the API schema rejects with 400', async () => {
     await runDoctor([]);
     expect(createBodies).toHaveLength(1);

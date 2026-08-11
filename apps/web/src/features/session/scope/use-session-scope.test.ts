@@ -1,4 +1,4 @@
-import type { AdminConnector, Connection, ProjectSecret } from '@kortix/sdk';
+import type { AdminConnector, Connection, ProjectSecret } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 
 import {

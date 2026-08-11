@@ -14,7 +14,7 @@ import {
   type SessionPublicShare,
   listSessionPublicShares,
   revokeSessionPublicShare,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { errorToast, successToast } from '@/components/ui/toast';

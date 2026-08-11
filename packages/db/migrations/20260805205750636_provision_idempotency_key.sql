@@ -37,8 +37,8 @@ set statement_timeout = '30s';
 -- other rows that also carry one. Nothing narrows, nothing drops, and a
 -- rollback to the previous API is safe with the column left in place.
 
-ALTER TABLE "kortix"."projects"
+ALTER TABLE "zed"."projects"
   ADD COLUMN "idempotency_key" text;
 
-COMMENT ON COLUMN "kortix"."projects"."idempotency_key" IS
+COMMENT ON COLUMN "zed"."projects"."idempotency_key" IS
   'Caller-supplied dedupe token for POST /v1/projects/provision. NULL for projects created by any other route. Unique per account among non-NULL values (idx_projects_account_idempotency_key).';

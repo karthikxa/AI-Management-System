@@ -1,5 +1,5 @@
 {
-  "name": "@kortix/llm-gateway",
+  "name": "@zed/llm-gateway",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -17,8 +17,8 @@
     "@ai-sdk/anthropic": "4.0.16",
     "@ai-sdk/openai": "4.0.16",
     "@ai-sdk/openai-compatible": "3.0.12",
-    "@kortix/llm-catalog": "workspace:*",
-    "@kortix/shared": "workspace:*",
+    "@zed/llm-catalog": "workspace:*",
+    "@zed/shared": "workspace:*",
     "ai": "7.0.31"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import { appRuntimes } from '@kortix/db';
+import { appRuntimes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { type SandboxProviderName } from '../config';
 import { markComputeSessionAlive } from '../billing/services/compute-metering';

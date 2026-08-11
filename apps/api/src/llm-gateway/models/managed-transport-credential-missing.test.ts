@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test';
 
-// KORTIX_MANAGED_PROVIDER_ENABLED is ON, but the `aster` transport has no
+// ZED_MANAGED_PROVIDER_ENABLED is ON, but the `aster` transport has no
 // credential — the exact shape of every deployment that loads ASTER_API_KEY
 // from a secret store the process cannot reach. The managed lineup must then
 // offer only what it can actually serve, and the platform default must degrade
@@ -13,8 +13,8 @@ mock.module('../../config', () => ({
     {
       get: (target: Record<PropertyKey, unknown>, key) => {
         if (Object.hasOwn(target, key)) return target[key];
-        if (key === 'KORTIX_MANAGED_PROVIDER_ENABLED') return true;
-        if (key === 'KORTIX_BILLING_INTERNAL_ENABLED') return false;
+        if (key === 'ZED_MANAGED_PROVIDER_ENABLED') return true;
+        if (key === 'ZED_BILLING_INTERNAL_ENABLED') return false;
         if (key === 'LLM_GATEWAY_ENABLED') return true;
         if (key === 'LLM_GATEWAY_DEFAULT_ENABLED') return true;
         if (key === 'LLM_GATEWAY_MANAGED_MODELS') return undefined;
@@ -94,7 +94,7 @@ describe('a managed model whose transport credential is missing is never OFFERED
   });
 
   test('the compact picker does not offer it', () => {
-    expect(managedPickerModels().map((m) => m.id)).not.toContain('kortix/glm-5.2');
+    expect(managedPickerModels().map((m) => m.id)).not.toContain('zed/glm-5.2');
   });
 });
 

@@ -58,7 +58,7 @@ export function TodoWriteTool({ part, defaultOpen, forceOpen, locked }: ToolProp
           <Progress
             value={pct}
             className="bg-primary/[0.08] mb-3 h-1"
-            indicatorClassName="bg-kortix-green"
+            indicatorClassName="bg-zed-green"
           />
           <Stepper orientation="vertical" count={total} className="flex w-full flex-col">
             {todos.map((todo, i) => (
@@ -73,7 +73,7 @@ export function TodoWriteTool({ part, defaultOpen, forceOpen, locked }: ToolProp
                       <TodoStatusIcon status={todo.status} />
                     </span>
                   </StepperTrigger>
-                  <StepperSeparator className="bg-border group-data-[state=completed]/step:bg-kortix-green/40 m-0 my-0.5 group-data-[orientation=vertical]/stepper:min-h-1" />
+                  <StepperSeparator className="bg-border group-data-[state=completed]/step:bg-zed-green/40 m-0 my-0.5 group-data-[orientation=vertical]/stepper:min-h-1" />
                 </StepperItem>
                 <p
                   className={cn(

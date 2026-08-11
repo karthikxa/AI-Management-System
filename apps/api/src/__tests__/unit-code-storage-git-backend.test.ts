@@ -102,11 +102,11 @@ describe('mintCodeStorageJwt', () => {
       repo: 'team/project-alpha',
       scopes: ['git:write', 'git:read'],
       ttlSeconds: 120,
-      subject: 'kortix-session-42',
+      subject: 'zed-session-42',
     });
     const payload = decodeJwtPayload(jwt);
     expect(payload.iss).toBe('acme');
-    expect(payload.sub).toBe('kortix-session-42');
+    expect(payload.sub).toBe('zed-session-42');
     expect(payload.repo).toBe('team/project-alpha');
     expect(payload.scopes).toEqual(['git:write', 'git:read']);
     expect(payload.iat as number).toBeGreaterThanOrEqual(before);
@@ -119,9 +119,9 @@ describe('mintCodeStorageJwt', () => {
     expect('repo' in payload).toBe(false);
   });
 
-  test('defaults sub to "kortix-api" when no subject given', () => {
+  test('defaults sub to "zed-api" when no subject given', () => {
     const jwt = mintCodeStorageJwt({ scopes: ['org:read'] });
-    expect(decodeJwtPayload(jwt).sub).toBe('kortix-api');
+    expect(decodeJwtPayload(jwt).sub).toBe('zed-api');
   });
 
   test('throws when org or private key is not configured', () => {
@@ -425,7 +425,7 @@ describe('seedFiles (mocked HTTP, commit-pack ndjson)', () => {
       ref(),
       'git-write-token',
       [{ path: 'README.md', content: '# hello' }],
-      { branch: 'main', message: 'chore: scaffold Kortix project' },
+      { branch: 'main', message: 'chore: scaffold Zed project' },
     );
 
     expect(urls).toHaveLength(1);
@@ -434,7 +434,7 @@ describe('seedFiles (mocked HTTP, commit-pack ndjson)', () => {
     );
     const lines = parseNdjson(bodies[0]!);
     expect(lines[0].metadata.target_branch).toBe('main');
-    expect(lines[0].metadata.commit_message).toBe('chore: scaffold Kortix project');
+    expect(lines[0].metadata.commit_message).toBe('chore: scaffold Zed project');
     expect(lines[0].metadata.files).toEqual([
       { path: 'README.md', operation: 'upsert', content_id: 'blob-0', mode: '100644' },
     ]);
@@ -448,22 +448,22 @@ describe('seedFiles (mocked HTTP, commit-pack ndjson)', () => {
     await codeStorageBackend.seedFiles!(
       ref(),
       'git-write-token',
-      [{ path: 'kortix.yaml', content: 'name: my-project' }],
+      [{ path: 'zed.yaml', content: 'name: my-project' }],
       {
         branch: 'main',
         message: 'ignored when baseFiles present',
-        baseFiles: [{ path: '.kortix/agent.md', content: 'base scaffold' }],
+        baseFiles: [{ path: '.zed/agent.md', content: 'base scaffold' }],
       },
     );
 
     expect(urls).toHaveLength(2);
     const first = parseNdjson(bodies[0]!);
-    expect(first[0].metadata.commit_message).toBe('chore: scaffold Kortix project');
-    expect(first[0].metadata.files[0].path).toBe('.kortix/agent.md');
+    expect(first[0].metadata.commit_message).toBe('chore: scaffold Zed project');
+    expect(first[0].metadata.files[0].path).toBe('.zed/agent.md');
 
     const second = parseNdjson(bodies[1]!);
     expect(second[0].metadata.commit_message).toBe('chore: project setup');
-    expect(second[0].metadata.files[0].path).toBe('kortix.yaml');
+    expect(second[0].metadata.files[0].path).toBe('zed.yaml');
   });
 
   test('uses the caller-supplied token as the bearer credential (never self-mints)', async () => {

@@ -5,7 +5,7 @@
 > **measured production numbers**, from a live benchmark plus 14 days of
 > telemetry, and names the fixes with the win attached to each.
 >
-> Measured 2026-07-25 against production (`api.kortix.com`).
+> Measured 2026-07-25 against production (`api.zed.com`).
 > Harness: `apps/api/scripts/bench-boot-attribution.ts` (added for this).
 
 ## What the phases actually mean
@@ -15,16 +15,16 @@ phase N finishes.
 
 | Phase | Runs on | From → to |
 |---|---|---|
-| **API create** | api.kortix.com | `POST /sessions` → HTTP response. DB row, session tokens, git branch push. |
-| **Host → VM running** | api.kortix.com → provider | `provider.create()` → provider hands back a **booted VM**. Daytona container / Platinum microVM. Ends when `session_sandboxes.external_id` lands. |
-| **In-guest boot** | *inside* the sandbox | The `kortix-sandbox-agent-server` daemon's own boot: clone the repo, install config deps, spawn opencode, wait for opencode, create the first conversation. Ends at `runtimeReady`. |
+| **API create** | api.zed.com | `POST /sessions` → HTTP response. DB row, session tokens, git branch push. |
+| **Host → VM running** | api.zed.com → provider | `provider.create()` → provider hands back a **booted VM**. Daytona container / Platinum microVM. Ends when `session_sandboxes.external_id` lands. |
+| **In-guest boot** | *inside* the sandbox | The `zed-sandbox-agent-server` daemon's own boot: clone the repo, install config deps, spawn opencode, wait for opencode, create the first conversation. Ends at `runtimeReady`. |
 
 "In-guest" is everything after we have a running VM — the work *our daemon does
 inside it*. That is where ~75% of the wall clock is.
 
 ## Live benchmark — 4 boots per provider, production
 
-`math-god` (Daytona, 15.8 MB repo) and `Kortix Company` (Platinum, 6.5 MB repo),
+`math-god` (Daytona, 15.8 MB repo) and `Zed Company` (Platinum, 6.5 MB repo),
 run concurrently so both saw comparable control-plane load.
 
 ### Cumulative — t0 = `POST /sessions`
@@ -34,7 +34,7 @@ run concurrently so both saw comparable control-plane load.
 | API create returns | 715 ms | 244 ms |
 | **VM running** (`external_id` set) | 2 467 ms | 4 701 ms |
 | row → `active` | 2 467 ms | 4 701 ms |
-| daemon first answers `/kortix/health` | 13 631 ms | 12 995 ms |
+| daemon first answers `/zed/health` | 13 631 ms | 12 995 ms |
 | **RUNTIME READY** | **18 902 ms** | **24 476 ms** |
 | worst of 4 | 21 535 ms | 35 977 ms |
 
@@ -61,7 +61,7 @@ run concurrently so both saw comparable control-plane load.
 
 Two stages are ~95% of the total. Everything else is under 130 ms.
 
-Backed by 14 days of `kortix.provider_events` (4 273 Daytona / 285 Platinum
+Backed by 14 days of `zed.provider_events` (4 273 Daytona / 285 Platinum
 provisions), whose host-side p50s — 1 151 ms / 3 526 ms `provider-create` — match
 the live run closely.
 
@@ -74,14 +74,14 @@ the live run closely.
 > this section is from a clone that was verified to have produced a working tree
 > and the expected commit count.
 
-Same repo (`kortix-ai/company`), verified clones:
+Same repo (`zed-ai/company`), verified clones:
 
 | Path | Strategy | Time | Result |
 |---|---|---:|---|
 | direct → GitHub | full | 5 462 ms | 27 MB, 758 commits |
 | direct → GitHub | `--depth 1` | **3 516 ms** | 25 MB, 1 commit |
-| **via Kortix git proxy** | full | 7 209 ms | 27 MB, 758 commits |
-| **via Kortix git proxy** | `--depth 1` | **6 690 ms** | 25 MB, 1 commit |
+| **via Zed git proxy** | full | 7 209 ms | 27 MB, 758 commits |
+| **via Zed git proxy** | `--depth 1` | **6 690 ms** | 25 MB, 1 commit |
 
 Two things fall out, and both contradict the obvious story:
 
@@ -94,8 +94,8 @@ proxied), not an order of magnitude. No depth setting can remove the 25 MB tree.
 per-request overhead: `GET /info/refs` through the proxy is ~0.45 s, the same as
 GitHub direct. The cost is in streaming the pack itself.
 
-The likely reason is geography. Prod runs `KORTIX_URL=https://api.kortix.com`
-(ECS, **eu-west-2**) with `DAYTONA_TARGET=us` and `KORTIX_GIT_PROXY=true`, so a
+The likely reason is geography. Prod runs `ZED_URL=https://api.zed.com`
+(ECS, **eu-west-2**) with `DAYTONA_TARGET=us` and `ZED_GIT_PROXY=true`, so a
 US sandbox cloning a US-hosted GitHub repo pulls **every byte across the Atlantic
 twice** — sandbox(US) → API(EU) → GitHub(US) and back. That triangle, not git, is
 what makes a 25 MB clone take ~7 s in-guest.
@@ -119,7 +119,7 @@ it in the first place.
 
 A boot clone is throwaway (a failure re-clones), so `core.fsync=none` +
 `gc.auto=0` should in principle help — no durability requirement, and an
-opportunistic gc mid-boot is pure waste. Measured on `kortix-ai/company`,
+opportunistic gc mid-boot is pure waste. Measured on `zed-ai/company`,
 `--depth 1`, 3 runs each, every clone verified `rc=0` with `commits=1`:
 
 | | avg | range |
@@ -138,11 +138,11 @@ comparable across boots.
 ### Also checked and refuted — HOME mismatch between bake and runtime
 
 If the daemon ran opencode under a different HOME than the bake warmed
-(`/home/kortix`), the baked state would be invisible and every boot would pay a
+(`/home/zed`), the baked state would be invisible and every boot would pay a
 partial cold start — which would neatly explain the residual. It does not:
-`apps/sandbox/entrypoint.sh` re-execs as `kortix` with `HOME=/home/kortix`
+`apps/sandbox/entrypoint.sh` re-execs as `zed` with `HOME=/home/zed`
 whenever it starts as root (via `setpriv`, falling back to `sudo -u`), and
-backfills `HOME=/home/kortix` when HOME is `/`. `OPENCODE_HOME = homedir()` then
+backfills `HOME=/home/zed` when HOME is `/`. `OPENCODE_HOME = homedir()` then
 resolves to the same path the warmup baked under.
 
 ## Finding 2 — the daemon serves nothing until the clone is done
@@ -156,7 +156,7 @@ resolves to the same path the warmup baked under.
 143  await repoMaterializePromise      ← the 7 s clone
 155  ensureOpencodeConfigDeps
 175  await opencode.start()
-186  startProxy(...)                   ← /kortix/health binds HERE
+186  startProxy(...)                   ← /zed/health binds HERE
 ```
 
 The HTTP server — including health — binds **after** the clone and after the
@@ -185,7 +185,7 @@ checkout fast too. It is one-time, HOME-scoped state. Creating the session is
 ~370 ms; it is not the cost.
 
 This is already handled: `apps/sandbox/opencode-warmup.sh` runs a real opencode
-instance at bake time under `HOME=/home/kortix`, which matches the runtime HOME.
+instance at bake time under `HOME=/home/zed`, which matches the runtime HOME.
 `templates.ts`'s own layer history records the win — *v10: "6–60s → ~2–4s cold
 start"*. That is why production sees 4.7–12.0 s and not 21 s.
 
@@ -208,7 +208,7 @@ persisted guest timeline (see below). Do not optimize it blind.
 
 ### Why the vCPU default was NOT raised
 
-Bumping `KORTIX_DEFAULT_SANDBOX_CPU` 2 → 4 is the obvious lever on a CPU-bound
+Bumping `ZED_DEFAULT_SANDBOX_CPU` 2 → 4 is the obvious lever on a CPU-bound
 boot, and it was implemented and then **reverted**. Per-core-second billing makes
 it cost-neutral *for the boot seconds only*; across a whole session it is a real
 increase, because most session wall-clock is spent waiting on LLM tokens, not
@@ -229,7 +229,7 @@ var, but it is a pricing decision, not a perf tweak.
 `opencode-session-created` is 4 730 ms (Daytona) / **12 066 ms (Platinum)**.
 
 That mark is *not* the cost of creating a session. Measured against already-warm
-production boxes, through the full public path (laptop → api.kortix.com →
+production boxes, through the full public path (laptop → api.zed.com →
 provider edge → sandbox): **`GET /session` p50 = 575 ms (Daytona) / 523 ms
 (Platinum)**, and in-guest it is a localhost call. So the HTTP work is
 sub-second; the 4.7–12 s is **opencode's own cold start** — Bun runtime boot,
@@ -238,7 +238,7 @@ index, LSP, sqlite).
 
 And it cannot overlap the clone. `main.ts:115-125` spawns opencode only after
 the clone because `OPENCODE_CONFIG_DIR` is fixed at spawn time and the config dir
-lives *inside the repo* at `<workspace>/.kortix/opencode`. So we pay
+lives *inside the repo* at `<workspace>/.zed/opencode`. So we pay
 `clone (7 s) → opencode cold start (5–12 s)` end to end, when the two are almost
 entirely independent.
 
@@ -265,7 +265,7 @@ is a host/guest-spec question for the Platinum team, not an application fix.
 
 ## Finding 5 — warm images are enabled, and never hit for these projects
 
-They are not disabled. `KORTIX_WARM_SNAPSHOT_ENABLED` is on in prod (14 days:
+They are not disabled. `ZED_WARM_SNAPSHOT_ENABLED` is on in prod (14 days:
 2 781 Daytona ppwarm hits). But **all 8 live benchmark boots missed** — Daytona
 got `default-cold` ×4, Platinum `per-project-tpl` ×4.
 
@@ -274,7 +274,7 @@ Two independent reasons:
 1. **Platinum can never hit.** `ensureSandboxImage`
    (`snapshots/builder.ts:130-139`) gates the warm image on `template.isShared` —
    the shared default slug only. Platinum sessions boot from per-project
-   `kortix-tpl-*` templates, so the branch is skipped **100% of the time**.
+   `zed-tpl-*` templates, so the branch is skipped **100% of the time**.
    14 days: **0 ppwarm hits out of 274 Platinum sessions**, vs 2 781/4 228 (66%)
    on Daytona.
 2. **The key is the branch tip.** The warm image is keyed to the current
@@ -299,15 +299,15 @@ sample) but it is an unguarded cliff gated on gateway health, on both providers.
 `dcc12c252` (*cold-only sandboxes — remove stateful/warm-fork machinery*) and
 `d48a5c204` (*Remove sandbox warm pools*) removed the callers. The daemon still
 carries the whole implementation — `runWarmSeedMode`, `armSeedAdoption`,
-`materializeScaffoldSeed`, `KORTIX_WARM_SEED` (`main.ts:91, 445, 503`) — and
-`apps/api` never sets `KORTIX_WARM_SEED`. Unreachable in production.
+`materializeScaffoldSeed`, `ZED_WARM_SEED` (`main.ts:91, 445, 503`) — and
+`apps/api` never sets `ZED_WARM_SEED`. Unreachable in production.
 `session-sandbox.ts:273-276` states it plainly: *"Cold-only … Platinum and
 Daytona take the identical cold path."*
 
 ## Instrumentation gap
 
 Host marks are persisted (`provider_events.marks`). The daemon's `BootMark[]` is
-**not** — it lives in guest memory, readable only by calling `/kortix/health` on
+**not** — it lives in guest memory, readable only by calling `/zed/health` on
 a still-running box (which, per Finding 2, doesn't answer until the expensive
 part is nearly over). That is why the 11–15 s was unattributable.
 
@@ -323,13 +323,13 @@ Platinum **24.5 s**.
 
 | # | Change | Expected win | Status | Risk |
 |---|---|---:|---|---|
-| 1 | **`--depth 1` clone** (`KORTIX_CLONE_DEPTH`, default 1) + background `fetch --unshallow` | **−0.5 to −2 s** | **shipped** | Low. Verified shallow works through the proxy. |
+| 1 | **`--depth 1` clone** (`ZED_CLONE_DEPTH`, default 1) + background `fetch --unshallow` | **−0.5 to −2 s** | **shipped** | Low. Verified shallow works through the proxy. |
 | 2 | **Bind the proxy before the clone** — `startProxy` moved above `await repoMaterializePromise`; supervisor created with the baked config dir and `reconfigure`d before first spawn | 0 s direct; removes the ~9 s blind window | **shipped** | Very low; proxy already 503s correctly |
 | 3 | **Bound `fetchGatewayModels`** with a 4 s total wall-clock budget (was per-request only) | 0 s p50; removes a ~25 s cliff | **shipped** | Very low |
 | 4 | **Split `opencode-session-created`** into `opencode-answering` / `-root-ready` / `event-loop-connected` | 0 s; makes the largest remaining cost attributable | **shipped** | Very low |
 | 4a | **SSE event loop: flat 100 ms retry until first subscribe**, exponential only after. It backed off from attempt one while `maybeCreateInitialOpencodeSession` blocked on `connected`, so an opencode ready at t=5 s went unnoticed until t=7.75 s | **up to −2.7 s** | **shipped** | Low; tests fail under the old regime |
 | 4b | **`waitForInitialSessionCreate`: 1 s → 10 s per attempt, and stop resending on timeout.** The call is ~370 ms warm but ~1.1 s on a 3×-slower Platinum guest, so it aborted work about to succeed AND could create a duplicate root (a client abort does not cancel opencode's server-side work) | −1 s + a correctness bug | **shipped** | Low; tests fail under the old regime |
-| 4c | **`readRepoInfo`: 3 sequential git subprocesses → concurrent.** Called on EVERY `/kortix/health` request, i.e. on every readiness poll, during the window where the guest is CPU-saturated by index-pack | small but on a hot loop | **shipped** | Very low; read-only plumbing, no index lock |
+| 4c | **`readRepoInfo`: 3 sequential git subprocesses → concurrent.** Called on EVERY `/zed/health` request, i.e. on every readiness poll, during the window where the guest is CPU-saturated by index-pack | small but on a hot loop | **shipped** | Very low; read-only plumbing, no index lock |
 | 4d | **Daytona: eager preview-link warm at create**, matching Platinum's eager expose. Closes a provider asymmetry where Daytona paid `getPreviewLink` (~179 ms) plus edge cold-routing on its first proxied request | part of Daytona's 0–3.8 s `vm_created`→`daemon_reachable` spread | **shipped** | Very low; best-effort, not awaited |
 | 5 | **Kill the transatlantic git triangle** — region-local git termination, or a scoped direct-to-GitHub credential | **−3.2 s** (verified) | **owner: API→US move, tracked separately** | Security trade (see Finding 1) |
 | 6 | **Drop the `isShared` gate** on per-project warm images | **−7 s on Platinum** (Daytona already hits 65%) | **shipped** | See below |
@@ -358,7 +358,7 @@ per-template bakes all match the default's warm slug and fight over one slot).
 Safety is in code, not in discipline: the new gate `perProjectWarmEligible`
 returns `true` **unconditionally** for a shared template — byte-identical to the
 gate it replaces, so Daytona's working 65% path is provably untouched — and
-otherwise consults `KORTIX_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS`, default
+otherwise consults `ZED_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS`, default
 **`platinum` only**. Daytona custom-template warming stays off until quota-gc's
 cache-floor math is re-measured against real Daytona custom-template counts,
 because that org has a hard 100-snapshot cap and a storm on record.
@@ -384,26 +384,26 @@ Platinum.
 > Platinum has been baking warm images all along; what it has never done is *serve*
 > one.
 
-Measured against Platinum's own API and its source (`kortix/platinum`, read-only —
+Measured against Platinum's own API and its source (`zed/platinum`, read-only —
 no changes made):
 
 | Fact | Value | Source |
 |---|---|---|
-| Kortix's Platinum role | **`role: "org"`, `orgRole: "owner"` — NOT admin** | `GET /v1/auth/me` |
+| Zed's Platinum role | **`role: "org"`, `orgRole: "owner"` — NOT admin** | `GET /v1/auth/me` |
 | Template quota | **used 96 / cap 500** (enterprise tier) | `GET /v1/auth/orgs/quota` |
 | Inflight cap | **used 0 / cap 50** | same |
 | Sandboxes | 81 / uncapped | same |
-| Projects running Platinum sessions (14d) | **2** (277 sessions) | Kortix DB |
-| Projects running Daytona sessions (14d) | **537** | Kortix DB |
+| Projects running Platinum sessions (14d) | **2** (277 sessions) | Zed DB |
+| Projects running Daytona sessions (14d) | **537** | Zed DB |
 | ppwarm templates already on Platinum | **63 ready, across 58 distinct projects** | `GET /v1/templates` |
 | Platinum ppwarm bake attempts (14d) | **373** (238 ok, 135 failed) | `project_snapshot_builds` |
 
-The quota **does** apply — Kortix is not an admin org, so `pickBuildHost`'s
+The quota **does** apply — Zed is not an admin org, so `pickBuildHost`'s
 `org_template_quota_exceeded` (HTTP 429) gate is live
 (`platinum/apps/api/src/api/templates.ts`), reached from `/from-build`, which is the
-route Kortix's adapter uses. `/derive` would have been quota-exempt — Platinum's own
+route Zed's adapter uses. `/derive` would have been quota-exempt — Platinum's own
 comment anticipates "a project with many warm seeds would otherwise block real image
-builds" — but Kortix does not use it.
+builds" — but Zed does not use it.
 
 At 96/500 there are **404 slots of headroom**, and only **2** projects actually boot
 on Platinum, so this change adds roughly 2 templates. Bake concurrency is bounded by
@@ -457,14 +457,14 @@ warm-bake pacing and watch it.
 **Why #6 is blocked, not merely unstarted.** Removing the `isShared` gate is the
 single highest-value change left (it takes the clone to zero and is the only
 thing that helps Platinum at all) — but it is unsafe today.
-`ppwarmReapTargets` (`ppwarm-names.ts`) reaps every `kortix-ppwarm-<proj8>-*`
+`ppwarmReapTargets` (`ppwarm-names.ts`) reaps every `zed-ppwarm-<proj8>-*`
 name that is not the one currently being baked. That is correct only while a
 project has **exactly one** warm image. Let per-project templates have warm
 images too and a project with two templates enters mutual deletion: baking A
 reaps B, baking B reaps A, forever — the same failure mode
 `PPWARM_REAP_PROTECT_MS` was added to paper over. The prerequisite is to make the
 warm name and the reap scope **template-scoped**
-(`kortix-ppwarm-<proj8>-<tpl8>-<hash>`), which invalidates every existing warm
+(`zed-ppwarm-<proj8>-<tpl8>-<hash>`), which invalidates every existing warm
 image and therefore has to be sequenced against bake pacing and the Daytona
 snapshot quota.
 
@@ -529,7 +529,7 @@ not an engineering unknown.
 A parallel audit of the Platinum repo (read-only) turned up things the live API
 numbers alone did not show:
 
-1. **Kortix retried a 429 that can never clear.** Platinum answers 429 for two
+1. **Zed retried a 429 that can never clear.** Platinum answers 429 for two
    opposite conditions: `rate_limited` (the per-org mutation-rate bucket,
    `PT_ORG_MUT_RATE` = 20 req/s — genuinely transient) and
    `org_template_quota_exceeded` (the per-org template COUNT cap — permanent until
@@ -538,7 +538,7 @@ numbers alone did not show:
    in front of a wall and burying the one error an operator needs to see. **Fixed**,
    with a test that fails without the fix.
 
-2. **Kortix has no org-wide GC for Platinum templates.** `snapshots/quota-gc.ts`
+2. **Zed has no org-wide GC for Platinum templates.** `snapshots/quota-gc.ts`
    imports `listDaytonaSnapshots`/`deleteDaytonaSnapshotById` exclusively — it is
    Daytona-only. The single cleanup is `reapOldPerProjectWarm`, which deletes a
    project's *prior* tip only after a *new* tip for that same project finishes
@@ -547,10 +547,10 @@ numbers alone did not show:
    while only 2 projects boot on Platinum. Not urgent at 96/500, but the trend is
    monotonic.
 
-3. **Platinum's soft-delete contract is exactly what Kortix assumes.** DELETE
+3. **Platinum's soft-delete contract is exactly what Zed assumes.** DELETE
    renames to `<name>__deleted_<id>` (keeping the ppwarm prefix) and sets
    `state='deprecated'`; the row is never removed. `GET /v1/templates` does **not**
-   filter tombstones, so Kortix's `n.includes('__deleted')` exclusion is both
+   filter tombstones, so Zed's `n.includes('__deleted')` exclusion is both
    necessary and correct — and because the quota gate counts only
    `state IN ('ready','building')`, deleting an old tip genuinely frees quota.
    Verified on both sides; no change needed.

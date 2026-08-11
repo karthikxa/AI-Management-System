@@ -42,8 +42,8 @@ config.resolver = {
   extraNodeModules: {
     react: path.resolve(mobileNodeModules, 'react'),
     'react-native': path.resolve(mobileNodeModules, 'react-native'),
-    '@kortix/shared': path.resolve(monorepoRoot, 'packages/shared'),
-    '@kortix/sdk': path.resolve(monorepoRoot, 'packages/sdk'),
+    '@zed/shared': path.resolve(monorepoRoot, 'packages/shared'),
+    '@zed/sdk': path.resolve(monorepoRoot, 'packages/sdk'),
   },
   // Custom resolver to force React resolution from mobile's node_modules
   // This is critical for monorepo setups where shared packages use React hooks
@@ -65,7 +65,7 @@ config.resolver = {
     // Deterministic mapping for the SDK turns subpath — does not depend on
     // Metro's package-exports support. The module is framework-free TS with
     // zero runtime imports, so this single file is the whole subgraph.
-    if (moduleName === '@kortix/sdk/turns') {
+    if (moduleName === '@zed/sdk/turns') {
       return {
         filePath: path.resolve(monorepoRoot, 'packages/sdk/src/turns/index.ts'),
         type: 'sourceFile',

@@ -2,10 +2,10 @@
 #
 # memory-tool-opencode-e2e.sh
 #
-# Full end-to-end test of the `memory` tool (.kortix/opencode/tools/memory.ts)
+# Full end-to-end test of the `memory` tool (.zed/opencode/tools/memory.ts)
 # running inside ACTUAL opencode — loaded the real way via a project-local
 # `.opencode/` config, driven by a real model, asserting on the tool-call log
-# AND the real files the tool wrote under `.kortix/memory/`.
+# AND the real files the tool wrote under `.zed/memory/`.
 #
 # Usage:   tests/e2e/scripts/memory-tool-opencode-e2e.sh [model]
 #   model: provider/model (default: $MEMORY_E2E_MODEL or anthropic/claude-haiku-4-5)
@@ -22,7 +22,7 @@ set -uo pipefail
 MODEL="${1:-${MEMORY_E2E_MODEL:-anthropic/claude-haiku-4-5}}"
 TIMEOUT="${MEMORY_E2E_TIMEOUT:-120}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-TOOL_SRC="$REPO_ROOT/.kortix/opencode/tools/memory.ts"
+TOOL_SRC="$REPO_ROOT/.zed/opencode/tools/memory.ts"
 
 command -v opencode >/dev/null || { echo "FAIL: opencode not on PATH"; exit 1; }
 [ -f "$TOOL_SRC" ] || { echo "FAIL: tool not found at $TOOL_SRC"; exit 1; }
@@ -36,21 +36,21 @@ echo "▸ test project: $PROJ"
 echo "▸ model:        $MODEL   (timeout ${TIMEOUT}s)"
 
 # ── Lay out a project that loads the memory tool via .opencode/ ──────────────
-mkdir -p "$PROJ/.opencode/tools" "$PROJ/.kortix/memory"
+mkdir -p "$PROJ/.opencode/tools" "$PROJ/.zed/memory"
 cp "$TOOL_SRC" "$PROJ/.opencode/tools/memory.ts"
 printf '{ "$schema": "https://opencode.ai/config.json", "permission": "allow" }\n' \
   > "$PROJ/.opencode/opencode.json"
-printf '# Project Memory\n- (e2e seed)\n' > "$PROJ/.kortix/memory/MEMORY.md"
+printf '# Project Memory\n- (e2e seed)\n' > "$PROJ/.zed/memory/MEMORY.md"
 
-E2E_FILE="$PROJ/.kortix/memory/e2e.md"
+E2E_FILE="$PROJ/.zed/memory/e2e.md"
 
 # ── Drive real opencode headlessly with an explicit, forcing prompt ──────────
 read -r -d '' PROMPT <<'PROMPT' || true
 Use ONLY the `memory` tool (never write/edit/read/bash). Call it exactly three
 times, in this order, then stop:
-1) command="create", path=".kortix/memory/e2e.md", file_text="alpha\nbeta\ngamma\n"
-2) command="str_replace", path=".kortix/memory/e2e.md", old_str="beta", new_str="BETA"
-3) command="view", path=".kortix/memory/e2e.md"
+1) command="create", path=".zed/memory/e2e.md", file_text="alpha\nbeta\ngamma\n"
+2) command="str_replace", path=".zed/memory/e2e.md", old_str="beta", new_str="BETA"
+3) command="view", path=".zed/memory/e2e.md"
 Then reply with exactly: DONE
 PROMPT
 
@@ -93,7 +93,7 @@ echo "$CMDS" | grep -q create;      check "  · create called" "$?"
 echo "$CMDS" | grep -q str_replace; check "  · str_replace called" "$?"
 
 # 3) create executed: real file on disk.
-[ -f "$E2E_FILE" ]; check "create → .kortix/memory/e2e.md exists on disk" "$?"
+[ -f "$E2E_FILE" ]; check "create → .zed/memory/e2e.md exists on disk" "$?"
 
 # 4) str_replace executed: replacement applied, siblings intact, old line gone.
 if [ -f "$E2E_FILE" ]; then
@@ -102,8 +102,8 @@ if [ -f "$E2E_FILE" ]; then
   ( ! grep -qx "beta" "$E2E_FILE" );                            check "str_replace → old 'beta' line gone" "$?"
 fi
 
-# 5) File-based & CR-ready: a real working-tree file under .kortix/memory.
-[ -f "$E2E_FILE" ]; check "write is a real file under .kortix/memory (CR-ready)" "$?"
+# 5) File-based & CR-ready: a real working-tree file under .zed/memory.
+[ -f "$E2E_FILE" ]; check "write is a real file under .zed/memory (CR-ready)" "$?"
 
 # 6) Assistant completed the turn.
 grep -q "DONE" "$SCRUB"; check "assistant finished (said DONE)" "$?"

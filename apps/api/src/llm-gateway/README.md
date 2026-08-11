@@ -1,8 +1,8 @@
 # llm-gateway (API-side control plane)
 
-This directory is the **control plane** for Kortix's LLM gateway. The actual
+This directory is the **control plane** for Zed's LLM gateway. The actual
 request pipeline — multi-transport routing, failover, circuit breakers, usage
-extraction, streaming relay — lives in the `@kortix/llm-gateway` package and is
+extraction, streaming relay — lives in the `@zed/llm-gateway` package and is
 shared by two deployments:
 
 - **In-API** (`wire.ts` → `/v1/llm`): the package pipeline runs **in-process**,
@@ -42,7 +42,7 @@ opaque values and executes the finite route returned by the control plane.
 OpenCode runtime
   → POST /v1/llm/chat/completions  (in-API)   or  → standalone gateway pod
        │                                                │  /internal/gateway/* RPC
-       └──────────── @kortix/llm-gateway pipeline ──────┘
+       └──────────── @zed/llm-gateway pipeline ──────┘
                        authenticate → billing → budget → resolve-route
                        → resolve upstream descriptors
                        → failover over candidates (retry + circuit breaker)
@@ -55,7 +55,7 @@ Direct project credentials take precedence where OpenCode supports them. A
 generic provider-key check does not prove one model. The OpenCode REST smoke
 sends a real prompt through each selected provider and model pair.
 
-The standalone pod does not import `@kortix/llm-catalog`. It obtains both the
+The standalone pod does not import `@zed/llm-catalog`. It obtains both the
 served model catalog and each request's route plan from this API over the
 internal authenticated RPC.
 

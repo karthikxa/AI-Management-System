@@ -25,7 +25,7 @@
 
 import { eq, desc, and, sql } from 'drizzle-orm';
 import Stripe from 'stripe';
-import { sandboxes } from '@kortix/db';
+import { sandboxes } from '@zed/db';
 import { db } from '../../shared/db';
 import { getStripe } from '../../shared/stripe';
 import { getCreditAccount, updateCreditAccount } from '../repositories/credit-accounts';

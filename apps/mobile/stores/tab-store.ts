@@ -416,7 +416,7 @@ export const useTabStore = create<TabState>()(
       },
     }),
     {
-      name: 'kortix-tab-state',
+      name: 'zed-tab-state',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         activeSessionId: state.activeSessionId,

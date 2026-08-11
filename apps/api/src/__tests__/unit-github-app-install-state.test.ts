@@ -5,7 +5,7 @@
  * These are the state tokens GitHub round-trips through the browser on the
  * App install flow (buildGitHubAppInstallUrl → GitHub → GET /install-callback
  * → verifyGitHubAppInstallStatePayload). They correlate an installation back
- * to the initiating Kortix account and carry a 30-minute TTL.
+ * to the initiating Zed account and carry a 30-minute TTL.
  *
  * Regression coverage for a real bug the ke2e suite surfaced (GHA-2): a bare
  * GET /install-callback with NO `state` query param used to 500 because
@@ -28,16 +28,16 @@ import {
 // buildGitHubAppInstallUrl, which feeds the token into a GitHub URL).
 
 const ORIG_SECRET = process.env.SUPABASE_JWT_SECRET;
-const ORIG_STATE_SECRET = process.env.KORTIX_GITHUB_APP_STATE_SECRET;
+const ORIG_STATE_SECRET = process.env.ZED_GITHUB_APP_STATE_SECRET;
 beforeEach(() => {
   process.env.SUPABASE_JWT_SECRET = 'test-supabase-jwt-secret';
-  process.env.KORTIX_GITHUB_APP_STATE_SECRET = 'test-github-state-secret';
+  process.env.ZED_GITHUB_APP_STATE_SECRET = 'test-github-state-secret';
 });
 afterEach(() => {
   if (ORIG_SECRET === undefined) delete process.env.SUPABASE_JWT_SECRET;
   else process.env.SUPABASE_JWT_SECRET = ORIG_SECRET;
-  if (ORIG_STATE_SECRET === undefined) delete process.env.KORTIX_GITHUB_APP_STATE_SECRET;
-  else process.env.KORTIX_GITHUB_APP_STATE_SECRET = ORIG_STATE_SECRET;
+  if (ORIG_STATE_SECRET === undefined) delete process.env.ZED_GITHUB_APP_STATE_SECRET;
+  else process.env.ZED_GITHUB_APP_STATE_SECRET = ORIG_STATE_SECRET;
 });
 
 describe('verifyGitHubAppInstallStatePayload — defensive input handling', () => {

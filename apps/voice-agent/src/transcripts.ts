@@ -1,5 +1,5 @@
 /**
- * Posts each finalized turn of the conversation back to Kortix, mirroring
+ * Posts each finalized turn of the conversation back to Zed, mirroring
  * what the old in-process `appendTurn()` wrote to `voice_call_turns`.
  *
  * The user side and the agent side use TWO DIFFERENT mechanisms on purpose —
@@ -23,10 +23,10 @@
  * It is NO LONGER the only record of the agent side, though, and must not be
  * treated as one. It is an event in THIS process, and it was observed not
  * firing for a programmatic `generateReply` with nobody else in the room —
- * which meant everything Kortix said into a call could be missing from
+ * which meant everything Zed said into a call could be missing from
  * voice_call_turns entirely. apps/api now writes its own line the moment it
  * hands an utterance to the room (channels/voice/runtime.ts's
- * `recordKortixUtterance`), so a silent event here costs fidelity, not the
+ * `recordZedUtterance`), so a silent event here costs fidelity, not the
  * record. Keep this wiring anyway: it is the only thing that captures what the
  * voice ACTUALLY said, including the greeting and every reply to a human.
  *
@@ -52,7 +52,7 @@
 import { voice } from '@livekit/agents';
 import type { ChatContext, ChatMessage } from '@livekit/agents';
 import type { CallContext } from './call-context';
-import { postTranscriptTurn } from './kortix-client';
+import { postTranscriptTurn } from './zed-client';
 
 function extractText(content: readonly unknown[]): string {
   return content
@@ -102,13 +102,13 @@ export function wireTranscripts(session: voice.AgentSession<CallContext>, ctx: C
     if (!text) return;
 
     // Fire-and-forget: a transcript write must never delay or interrupt the
-    // live conversation (see kortix-client.ts's postTranscriptTurn doc).
+    // live conversation (see zed-client.ts's postTranscriptTurn doc).
     //
     // Named with the bot's own display name, not left anonymous. apps/api now
-    // ALSO writes role:'agent' lines for everything Kortix hands into the call
-    // (channels/voice/utterance.ts's KORTIX_SPEAKER), because this event is a
+    // ALSO writes role:'agent' lines for everything Zed hands into the call
+    // (channels/voice/utterance.ts's ZED_SPEAKER), because this event is a
     // client-side signal that has been seen not to fire. Both are the agent
-    // side, but they are different events — what Kortix asked the room to hear
+    // side, but they are different events — what Zed asked the room to hear
     // versus what this voice actually said — and a reader has to be able to
     // tell them apart.
     void postTranscriptTurn(ctx, 'agent', text, ctx.botName);

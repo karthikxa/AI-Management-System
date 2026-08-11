@@ -22,7 +22,7 @@ setTestEnv('DAYTONA_API_KEY', 'test-daytona-key');
 setTestEnv('DAYTONA_SERVER_URL', 'https://daytona.example.test');
 setTestEnv('DAYTONA_TARGET', 'test-target');
 setTestEnv('FRONTEND_URL', 'http://localhost:3000');
-setTestEnv('INTERNAL_KORTIX_ENV', 'dev');
+setTestEnv('INTERNAL_ZED_ENV', 'dev');
 
 // Dynamic imports — resolved after setTestEnv has primed process.env, so the
 // `config` module (transitively pulled in by platinum.ts) sees the test values.
@@ -45,7 +45,7 @@ beforeAll(async () => {
 });
 
 // Regression for Better Stack pattern `ec26b248…`
-// `DaytonaRateLimitError: ThrottlerException: Too Many Requests` (Kortix API
+// `DaytonaRateLimitError: ThrottlerException: Too Many Requests` (Zed API
 // prod, application_id 2346961). Prior PRs (#3567, #4605) guarded specific
 // Daytona call sites one-by-one, but new call sites kept reintroducing the same
 // fingerprint because a 429 still propagated to `app.onError` →

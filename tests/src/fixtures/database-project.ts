@@ -45,7 +45,7 @@ export async function createDatabaseProject(
   try {
     await client.query(
       `WITH inserted_project AS (
-         INSERT INTO kortix.projects (
+         INSERT INTO zed.projects (
            project_id,
            account_id,
            name,
@@ -61,13 +61,13 @@ export async function createDatabaseProject(
            $4,
            'https://ke2e.invalid/' || $1::text || '.git',
            'main',
-           'kortix.yaml',
-           'active'::kortix.project_status,
+           'zed.yaml',
+           'active'::zed.project_status,
            '{"ke2e":{"database_only":true}}'::jsonb
          )
          RETURNING project_id
        )
-       INSERT INTO kortix.project_members (
+       INSERT INTO zed.project_members (
          account_id,
          project_id,
          user_id,
@@ -78,7 +78,7 @@ export async function createDatabaseProject(
          $2::uuid,
          project_id,
          $3::uuid,
-         'manager'::kortix.project_role,
+         'manager'::zed.project_role,
          $3::uuid
        FROM inserted_project`,
       [projectId, input.accountId, input.userId, input.name],
@@ -103,7 +103,7 @@ export async function createDatabaseSession(
   const client = await open(databaseUrl);
   try {
     await client.query(
-      `INSERT INTO kortix.project_sessions (
+      `INSERT INTO zed.project_sessions (
          session_id,
          account_id,
          project_id,
@@ -134,7 +134,7 @@ export async function deleteDatabaseProject(
   const client = await open(databaseUrl);
   try {
     await client.query(
-      `DELETE FROM kortix.projects
+      `DELETE FROM zed.projects
        WHERE project_id = $1::uuid`,
       [projectId],
     );

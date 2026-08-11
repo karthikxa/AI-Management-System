@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { gatewayBudgets, gatewayRequestLogs } from '@kortix/db';
-import type { AuthedPrincipal } from '@kortix/llm-gateway';
+import { gatewayBudgets, gatewayRequestLogs } from '@zed/db';
+import type { AuthedPrincipal } from '@zed/llm-gateway';
 
 /**
  * BILLING-CORRECTNESS: checkBudget (the function gating every gateway

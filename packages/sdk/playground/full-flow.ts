@@ -2,7 +2,7 @@
  * 09 — Everything from just a PAT: list → pick/provision project → create
  * session → ready → stream → send → wait for idle → render the reply.
  *
- * Unlike 07 (which needs KORTIX_PROJECT_ID and KORTIX_SESSION_ID exported),
+ * Unlike 07 (which needs ZED_PROJECT_ID and ZED_SESSION_ID exported),
  * this one bootstraps whatever is missing: it uses your first project (or
  * provisions one if the account has none) and always creates a fresh session.
  * It then waits for the runtime's `session.idle` event instead of sleeping a
@@ -12,20 +12,20 @@
  * on the first run — expect the ready step to take a while.
  *
  * Run (stack up, per GETTING-STARTED.md):
- *   KORTIX_API_URL=http://localhost:8008/v1 KORTIX_API_KEY=kortix_pat_... \
+ *   ZED_API_URL=http://localhost:8008/v1 ZED_API_KEY=zed_pat_... \
  *     bun run examples/09-full-flow.ts "What files are in this repo?"
  *
  * Reuse the project/session it prints to skip provisioning next time:
- *   KORTIX_PROJECT_ID=... KORTIX_SESSION_ID=... bun run examples/09-full-flow.ts "..."
+ *   ZED_PROJECT_ID=... ZED_SESSION_ID=... bun run examples/09-full-flow.ts "..."
  *
  * As an npm consumer, one import line changes:
- *   import { classifyTurn, createKortix, narrowChatEvent } from '@kortix/sdk';
- *   import type { MessageWithParts } from '@kortix/sdk';
+ *   import { classifyTurn, createZed, narrowChatEvent } from '@zed/sdk';
+ *   import type { MessageWithParts } from '@zed/sdk';
  */
 import {
   ApiError,
   classifyTurn,
-  createKortix,
+  createZed,
   narrowChatEvent,
 } from "../src/index";
 import type { MessageWithParts } from "../src/index";
@@ -55,33 +55,33 @@ async function retryUntilReady<T>(ensure: () => Promise<T>): Promise<T> {
 }
 
 async function main() {
-  const backendUrl = process.env.KORTIX_API_URL ?? "http://localhost:8008/v1";
-  const apiKey = process.env.KORTIX_API_KEY;
+  const backendUrl = process.env.ZED_API_URL ?? "http://localhost:8008/v1";
+  const apiKey = process.env.ZED_API_KEY;
   const prompt = process.argv[2] ?? "Say hello in one sentence.";
 
   if (!apiKey) {
     console.error(
-      "Set KORTIX_API_KEY (mint one: user settings → API keys → Create API key).",
+      "Set ZED_API_KEY (mint one: user settings → API keys → Create API key).",
     );
     process.exit(1);
   }
 
-  const kortix = createKortix({ backendUrl, getToken: async () => apiKey });
+  const zed = createZed({ backendUrl, getToken: async () => apiKey });
 
   // 1. Projects — list them, then reuse the env override, the first one, or
   //    provision a new one when the account is empty.
-  const projects = await kortix.projects.list();
+  const projects = await zed.projects.list();
   console.log(`${projects.length} project(s):`);
   for (const p of projects) console.log(`  - ${p.name} (${p.project_id})`);
 
-  let projectId = process.env.KORTIX_PROJECT_ID;
+  let projectId = process.env.ZED_PROJECT_ID;
   if (!projectId) {
     if (projects.length > 0) {
       projectId = projects[0]!.project_id;
       console.log(`\nusing first project: ${projects[0]!.name}`);
     } else {
       console.log('\nno projects — provisioning "sdk-playground"…');
-      const project = await kortix.projects.provision({
+      const project = await zed.projects.provision({
         name: "sdk-playground",
       });
       projectId = project.project_id;
@@ -90,16 +90,16 @@ async function main() {
   }
 
   // 2. Session — reuse the env override or create a fresh one.
-  let sessionId = process.env.KORTIX_SESSION_ID;
+  let sessionId = process.env.ZED_SESSION_ID;
   if (!sessionId) {
-    const created = await kortix.projects.createSession(projectId, {
+    const created = await zed.projects.createSession(projectId, {
       name: "sdk full-flow",
     });
     sessionId = created.session_id;
     console.log(`created session ${sessionId}`);
   }
 
-  const session = kortix.session(projectId, sessionId);
+  const session = zed.session(projectId, sessionId);
 
   // 3. Ready the session (boots/resumes the sandbox — slow on first run),
   //    then connect the stream BEFORE sending so no early events are missed.
@@ -160,8 +160,8 @@ async function main() {
   }
 
   console.log("\nreuse this pair to skip provisioning next time:");
-  console.log(`  export KORTIX_PROJECT_ID=${projectId}`);
-  console.log(`  export KORTIX_SESSION_ID=${sessionId}`);
+  console.log(`  export ZED_PROJECT_ID=${projectId}`);
+  console.log(`  export ZED_SESSION_ID=${sessionId}`);
   process.exit(0);
 }
 

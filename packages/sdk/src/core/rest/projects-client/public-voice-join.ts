@@ -8,7 +8,7 @@
 // reason `public-session-shares.ts` isn't: that client's authenticated fetch
 // path synthesizes a failure for a visitor with no token WITHOUT ever making
 // the network call. This route is genuinely public — no Authorization header,
-// no `configureKortix()` call required — mirroring `getPublicShareUrlForToken`'s
+// no `configureZed()` call required — mirroring `getPublicShareUrlForToken`'s
 // and `getPublicSessionShare`'s stance.
 
 import { getBackendUrl } from '../../session/server-store/url-helpers';
@@ -64,17 +64,17 @@ export async function getPublicVoiceJoin(token: string): Promise<PublicVoiceJoin
 }
 
 /**
- * One line of a call's durable record (`kortix.voice_call_turns`).
+ * One line of a call's durable record (`zed.voice_call_turns`).
  *
  * `role` + `speaker` together say who — and they must be read together,
  * because `agent` covers two different things:
  *   - `user`  — a human in the room. `speaker` is a display name if one is known.
- *   - `agent` + `speaker === 'kortix'` — what the KORTIX agent put into the
+ *   - `agent` + `speaker === 'zed'` — what the ZED agent put into the
  *     call (`send_prompt`, a finished turn's result, an error).
  *   - `agent` + anything else — what the voice itself actually said, labelled
  *     with the bot's display name.
  *   - `tool`  — an MCP call the voice made; `speaker` is the tool name
- *     (`ask_kortix`, `run_command`) and `text` is the call and its outcome.
+ *     (`ask_zed`, `run_command`) and `text` is the call and its outcome.
  *     Nobody spoke this line.
  */
 export interface PublicVoiceTranscriptTurn {
@@ -96,7 +96,7 @@ export interface PublicVoiceTranscriptPage {
 
 /**
  * Reads the durable transcript of the ONE call a join-link token was minted
- * for — every spoken turn on both sides, everything the Kortix agent said into
+ * for — every spoken turn on both sides, everything the Zed agent said into
  * the call, and every tool call the voice made.
  *
  * This is not the same stream as LiveKit's client-side transcription, which

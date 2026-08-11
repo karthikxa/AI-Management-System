@@ -25,7 +25,7 @@ const ANTHROPIC_NPM = '@ai-sdk/anthropic';
 const AMAZON_BEDROCK_NPM = '@ai-sdk/amazon-bedrock';
 
 // Providers with a genuinely DIFFERENT wire protocol from OpenAI's — Google's
-// Gemini API (direct or via Vertex) is not OpenAI-compatible, and Kortix has
+// Gemini API (direct or via Vertex) is not OpenAI-compatible, and Zed has
 // no `google` transport yet (would also need Vertex's service-account OAuth,
 // a different auth shape than the simple bearer-key BYOK model everything
 // else here uses — a separate, unstarted piece of work). Explicitly
@@ -64,7 +64,7 @@ const NO_TRANSPORT_YET_NPM = new Set([
 //    AWS_BEARER_TOKEN_BEDROCK) against the regional runtime endpoint. This
 //    makes Bedrock a STANDALONE BYOK provider — like OpenRouter/OpenAI —
 //    that a project connects its OWN key to, fully independent of the
-//    CLOUD-ONLY Kortix-managed-credits path (KORTIX_MANAGED_PROVIDER_ENABLED).
+//    CLOUD-ONLY Zed-managed-credits path (ZED_MANAGED_PROVIDER_ENABLED).
 //    See resolveCatalogUpstream (apps/api/.../provider-registry.ts) for the
 //    region/bearer-token wiring, and memory: managed-provider-vs-standalone-byok.
 //    (The bedrock transport builds an Anthropic Messages payload, so the

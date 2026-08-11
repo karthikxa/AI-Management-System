@@ -9,7 +9,7 @@ import { stack } from './content';
  *
  * Built from divs rather than an image so the service names stay copy-pasteable
  * and legible at any width — someone reading this page is about to type them
- * into `kortix self-host logs`.
+ * into `zed self-host logs`.
  */
 export function StackDiagram(): ReactNode {
   return (

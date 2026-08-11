@@ -17,7 +17,7 @@ import {
   projectSessions,
   projects,
   sessionLifecycleCommands,
-} from '@kortix/db';
+} from '@zed/db';
 import { eq, sql } from 'drizzle-orm';
 import { getCreditAccount, setDemoEnterprise } from '../billing/repositories/credit-accounts';
 import { config } from '../config';
@@ -43,19 +43,19 @@ let priorReviewCenterOverride: unknown = null;
 
 beforeAll(async () => {
   await db.execute(
-    sql`alter table kortix.account_tokens add column if not exists agent_grant jsonb`,
+    sql`alter table zed.account_tokens add column if not exists agent_grant jsonb`,
   );
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists session_id text`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists session_id text`);
   await db.execute(
-    sql`alter table kortix.account_tokens add column if not exists service_account_id uuid`,
+    sql`alter table zed.account_tokens add column if not exists service_account_id uuid`,
   );
   await db.execute(
-    sql`alter table kortix.credit_accounts add column if not exists demo_enterprise boolean not null default false`,
+    sql`alter table zed.credit_accounts add column if not exists demo_enterprise boolean not null default false`,
   );
   const rows = (await db.execute(sql`
     select p.project_id, p.account_id, m.user_id
-    from kortix.projects p
-    join kortix.account_members m on m.account_id = p.account_id and m.account_role = 'owner'
+    from zed.projects p
+    join zed.account_members m on m.account_id = p.account_id and m.account_role = 'owner'
     where p.status = 'active'
     limit 1`)) as unknown as Array<{ project_id: string; account_id: string; user_id: string }>;
   const r = rows[0];
@@ -189,7 +189,7 @@ afterAll(async () => {
     await db.delete(connectorCalls).where(eq(connectorCalls.executionId, id));
   await db.delete(sessionLifecycleCommands).where(eq(sessionLifecycleCommands.sessionId, SESSION));
   await db.transaction(async (tx) => {
-    await tx.execute(sql`set local kortix.audit_maintenance = 'on'`);
+    await tx.execute(sql`set local zed.audit_maintenance = 'on'`);
     await tx
       .delete(auditEvents)
       .where(sql`${auditEvents.sessionId} in (${SESSION}, ${CHAIN_SESSION})`);
@@ -198,7 +198,7 @@ afterAll(async () => {
   await db.delete(projectSessions).where(eq(projectSessions.sessionId, CHAIN_SESSION));
   await db.delete(projects).where(eq(projects.projectId, CHAIN_PROJECT));
   for (const id of minted)
-    await db.execute(sql`delete from kortix.account_tokens where token_id = ${id}`);
+    await db.execute(sql`delete from zed.account_tokens where token_id = ${id}`);
   if (ctx && humanUserId) {
     await db
       .delete(accountMembers)
@@ -249,7 +249,7 @@ async function seedPending(argsPreviewComplete = true): Promise<string> {
       risk: null,
       resolvedAt: null, // genuinely awaiting a decision
       resultSummary: {
-        args_preview: { repo: 'kortix-ai/suna' },
+        args_preview: { repo: 'zed-ai/suna' },
         args_preview_complete: argsPreviewComplete,
       },
     })
@@ -506,7 +506,7 @@ describe('approvals inbox + resolution', () => {
       execution_id: execId,
       pending: true,
       review_complete: true,
-      args_preview: { repo: 'kortix-ai/suna' },
+      args_preview: { repo: 'zed-ai/suna' },
     });
   });
 
@@ -524,7 +524,7 @@ describe('approvals inbox + resolution', () => {
       (item) => item.review_item_id === `call:${execId}`,
     );
     expect(ownerItem?.detail).toMatchObject({
-      args_preview: { repo: 'kortix-ai/suna' },
+      args_preview: { repo: 'zed-ai/suna' },
       args_preview_complete: true,
       args_preview_authorized: true,
     });
@@ -594,7 +594,7 @@ describe('approvals inbox + resolution', () => {
         sessionId: missingSessionId,
         status: 'pending_approval',
         resultSummary: {
-          args_preview: { repo: 'kortix-ai/suna' },
+          args_preview: { repo: 'zed-ai/suna' },
           args_preview_complete: true,
         },
       })

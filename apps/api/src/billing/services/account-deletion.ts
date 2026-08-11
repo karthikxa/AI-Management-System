@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { getStripe } from '../../shared/stripe';
 import { db } from '../../shared/db';
 import { BillingError } from '../../errors';

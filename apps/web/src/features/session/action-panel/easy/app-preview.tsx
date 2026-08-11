@@ -33,9 +33,9 @@ import { cn } from '@/lib/utils';
 import { focusWithoutScroll } from '@/lib/utils/focus-without-scroll';
 import { parseLocalhostUrl, toInternalUrl } from '@/lib/utils/sandbox-url';
 import { recentDisplayLabel, useBrowserRecentsStore } from '@/stores/browser-recents-store';
-import { useIsExpanded, useToggleExpanded } from '@/stores/kortix-computer-store';
-import { type CreateSessionPublicShareInput, probePreviewPort } from '@kortix/sdk';
-import { useRuntimeConnectionStore } from '@kortix/sdk/react';
+import { useIsExpanded, useToggleExpanded } from '@/stores/zed-computer-store';
+import { type CreateSessionPublicShareInput, probePreviewPort } from '@zed/sdk';
+import { useRuntimeConnectionStore } from '@zed/sdk/react';
 import {
   WarningIcon as AlertTriangle,
   ArrowLeftIcon as ArrowLeft,
@@ -383,7 +383,7 @@ export function AppPreview({
             className={cn(
               'group/address hover:bg-input focus-within:bg-input focus-within:border-border relative flex h-7 w-full items-center rounded-sm border border-transparent bg-transparent px-3 text-xs tracking-tight transition-colors',
               addressError &&
-                'border-kortix-red/60 focus-within:border-kortix-red/60 animate-shake',
+                'border-zed-red/60 focus-within:border-zed-red/60 animate-shake',
             )}
           >
             <Input
@@ -427,7 +427,7 @@ export function AppPreview({
               </span>
             )}
             {addressError && (
-              <span className="text-kortix-red ml-2 shrink-0 text-xs">Sandbox ports only</span>
+              <span className="text-zed-red ml-2 shrink-0 text-xs">Sandbox ports only</span>
             )}
           </div>
         </form>
@@ -474,7 +474,7 @@ export function AppPreview({
             }}
             className="active:scale-[0.96]"
           >
-            {/* Morph, not a hard swap — same box, cross-faded (kortix-design-system
+            {/* Morph, not a hard swap — same box, cross-faded (zed-design-system
                 → "Button icon-swap"). */}
             <span className="relative inline-flex size-4 items-center justify-center">
               <AnimatePresence initial={false} mode="popLayout">
@@ -487,7 +487,7 @@ export function AppPreview({
                   className="absolute inset-0 inline-flex items-center justify-center"
                 >
                   {copied ? (
-                    <Check className="text-kortix-green size-4" />
+                    <Check className="text-zed-green size-4" />
                   ) : (
                     <LinkSimpleIcon className="size-4" />
                   )}
@@ -528,8 +528,8 @@ export function AppPreview({
         {hasError && !noApp && (
           <div className="bg-background absolute inset-0 z-10 flex items-center justify-center">
             <div className="flex max-w-sm flex-col items-center gap-4 px-4 text-center">
-              <span className="bg-kortix-yellow/15 flex size-9 items-center justify-center rounded-md">
-                <WarningIcon className="text-kortix-yellow size-5" />
+              <span className="bg-zed-yellow/15 flex size-9 items-center justify-center rounded-md">
+                <WarningIcon className="text-zed-yellow size-5" />
               </span>
               <div>
                 <p className="text-sm font-medium">Couldn&apos;t load {name}</p>

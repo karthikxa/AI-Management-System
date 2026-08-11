@@ -125,12 +125,12 @@ describe('rescopeSessionBindings — SET semantics', () => {
         requested: {
           email: '11111111-1111-4111-a111-111111111111',
         },
-        grantedConnectors: ['kortix_email'],
+        grantedConnectors: ['zed_email'],
       }),
     ).toEqual({
       ok: true,
       bindings: {
-        kortix_email: '11111111-1111-4111-a111-111111111111',
+        zed_email: '11111111-1111-4111-a111-111111111111',
       },
       dropped: [],
       changed: [],
@@ -160,7 +160,7 @@ describe('rescopeSessionBindings — SET semantics', () => {
 describe('the docs match the contract', () => {
   const REPO = join(import.meta.dir, '..', '..', '..', '..', '..');
   const DOCS = [
-    join(REPO, 'docs', 'KORTIX_AS_A_BACKEND_GUIDE.md'),
+    join(REPO, 'docs', 'ZED_AS_A_BACKEND_GUIDE.md'),
     join(REPO, 'apps', 'web', 'content', 'docs', 'backend.mdx'),
     join(REPO, 'docs', 'KAAB_TESTING_GUIDE.md'),
   ];

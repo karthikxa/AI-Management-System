@@ -3,7 +3,7 @@
  *
  * When Supabase 302's a desktop user's BROWSER to the web `/auth/callback`,
  * we don't exchange the code on the web side — we hand it back to the native
- * app via the `kortix://auth/callback` deep link and leave the browser on a
+ * app via the `zed://auth/callback` deep link and leave the browser on a
  * friendly "you can close this tab" page.
  *
  * SECURITY: the deep link is built from request query params, so it is
@@ -43,7 +43,7 @@ export function serializeForInlineScript(value: unknown): string {
 }
 
 /**
- * Build the `kortix://auth/callback` deep link from an inbound web callback.
+ * Build the `zed://auth/callback` deep link from an inbound web callback.
  * A supplied transport marker is omitted; every value is re-encoded via
  * URLSearchParams before it reaches either native client.
  */
@@ -53,7 +53,7 @@ export function buildNativeDeepLink(searchParams: URLSearchParams, transportFlag
     if (!transportFlag || k !== transportFlag) forwardParams.set(k, v);
   }
   const qs = forwardParams.toString();
-  return `kortix://auth/callback${qs ? `?${qs}` : ''}`;
+  return `zed://auth/callback${qs ? `?${qs}` : ''}`;
 }
 
 /** Build the desktop callback deep link, dropping the desktop marker. */
@@ -73,16 +73,16 @@ function buildNativeBounceHtml(deepLink: string, autoOpen: boolean): string {
   const hrefSafe = escapeHtmlAttribute(deepLink);
   const scriptSafe = serializeForInlineScript(deepLink);
   const message = autoOpen
-    ? `Opening Kortix… you can close this tab.<br/>
+    ? `Opening Zed… you can close this tab.<br/>
     If nothing happens, <a href="${hrefSafe}">click here</a> to open the app.`
     : `Your sign-in is ready.<br/>
-    <a href="${hrefSafe}">Open Kortix</a> to continue.`;
+    <a href="${hrefSafe}">Open Zed</a> to continue.`;
   const automaticRedirect = autoOpen
     ? `<script>window.location.replace(${scriptSafe});</script>`
     : '';
 
   return `<!doctype html><html><head><meta charset="utf-8"/>
-<title>Opening Kortix…</title>
+<title>Opening Zed…</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
   html,body{margin:0;height:100%;background:#0a0a0a;color:#f4f4f5;

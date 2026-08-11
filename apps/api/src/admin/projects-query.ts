@@ -12,7 +12,7 @@
  * dropping it would silently widen "one account" to "every account".
  */
 
-/** Members of the `kortix.project_status` enum (packages/db/src/schema/kortix.ts). */
+/** Members of the `zed.project_status` enum (packages/db/src/schema/zed.ts). */
 export const PROJECT_STATUS_VALUES = ['active', 'archived'] as const;
 export type AdminProjectStatus = (typeof PROJECT_STATUS_VALUES)[number];
 

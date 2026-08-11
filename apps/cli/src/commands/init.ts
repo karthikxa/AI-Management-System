@@ -5,7 +5,7 @@ import {
   DEFAULT_STARTER_TEMPLATE_ID,
   STARTER_TEMPLATE_IDS,
   type StarterTemplateId,
-} from '@kortix/starter';
+} from '@zed/starter';
 
 import { applyScaffold } from '../scaffold.ts';
 import { prompt, confirm } from '../prompts.ts';
@@ -23,11 +23,11 @@ import { appendGitExcludeEntries } from '../git-exclude.ts';
 function agentSublabel(agent: CodingAgent): string {
   switch (agent) {
     case 'opencode':
-      return 'symlink .opencode → .kortix/opencode';
+      return 'symlink .opencode → .zed/opencode';
     case 'claude':
       return 'link .claude skills, agents, and commands';
     case 'codex':
-      return 'symlink .agents → .kortix/opencode + AGENTS.md';
+      return 'symlink .agents → .zed/opencode + AGENTS.md';
     case 'pi':
       return 'link .pi/skills + AGENTS.md';
     case 'cursor':
@@ -37,14 +37,14 @@ function agentSublabel(agent: CodingAgent): string {
   }
 }
 
-const HELP = help`Usage: kortix init [project-name] [options]
+const HELP = help`Usage: zed init [project-name] [options]
 
-Start a new Kortix project.
+Start a new Zed project.
 
 A fresh, self-contained workspace your agents can run from day one — the
-Kortix project floor, project memory, and a kortix.yaml to make it yours.
+Zed project floor, project memory, and a zed.yaml to make it yours.
 By default this works like create-next-app and creates a new directory. In an
-already-cloned Kortix repository, pass --force to wire local coding agents in
+already-cloned Zed repository, pass --force to wire local coding agents in
 place without replacing repository files.
 
 Arguments:
@@ -63,8 +63,8 @@ Options:
   --primary <agent>    Primary coding agent to wire up (${SUPPORTED_AGENTS.join('|')}).
   --agents <list>      Comma-separated extras to wire up alongside --primary.
                        Example: --agents claude,cursor
-  --force              Configure the current cloned Kortix repository in place.
-                       Requires kortix.yaml (or kortix.toml) and .kortix/opencode.
+  --force              Configure the current cloned Zed repository in place.
+                       Requires zed.yaml (or zed.toml) and .zed/opencode.
   --no-git             Don't run \`git init\` in the new project directory.
   -y, --yes            Skip prompts (requires a project-name).
   -h, --help           Show this help.
@@ -116,7 +116,7 @@ function parseFlags(argv: string[]): InitFlags {
       case '--name': {
         const next = argv[i + 1];
         if (!next || next.startsWith('-')) {
-          throw new Error(`kortix: --name requires a value`);
+          throw new Error(`zed: --name requires a value`);
         }
         f.name = next;
         i += 1;
@@ -125,10 +125,10 @@ function parseFlags(argv: string[]): InitFlags {
       case '--primary': {
         const next = argv[i + 1];
         if (!next || next.startsWith('-')) {
-          throw new Error(`kortix: --primary requires a value`);
+          throw new Error(`zed: --primary requires a value`);
         }
         if (!(SUPPORTED_AGENTS as readonly string[]).includes(next)) {
-          throw new Error(`kortix: --primary must be one of ${SUPPORTED_AGENTS.join(', ')}`);
+          throw new Error(`zed: --primary must be one of ${SUPPORTED_AGENTS.join(', ')}`);
         }
         f.primary = next as CodingAgent;
         i += 1;
@@ -137,14 +137,14 @@ function parseFlags(argv: string[]): InitFlags {
       case '--agents': {
         const next = argv[i + 1];
         if (!next || next.startsWith('-')) {
-          throw new Error(`kortix: --agents requires a value`);
+          throw new Error(`zed: --agents requires a value`);
         }
         const list: CodingAgent[] = [];
         for (const part of next.split(',')) {
           const norm = part.trim().toLowerCase();
           if (!norm) continue;
           if (!(SUPPORTED_AGENTS as readonly string[]).includes(norm)) {
-            throw new Error(`kortix: unknown coding agent "${norm}"`);
+            throw new Error(`zed: unknown coding agent "${norm}"`);
           }
           list.push(norm as CodingAgent);
         }
@@ -155,19 +155,19 @@ function parseFlags(argv: string[]): InitFlags {
       case '--template': {
         const next = argv[i + 1];
         if (!next || next.startsWith('-')) {
-          throw new Error(`kortix: --template requires a value`);
+          throw new Error(`zed: --template requires a value`);
         }
         if (!(STARTER_TEMPLATE_IDS as readonly string[]).includes(next)) {
-          throw new Error(`kortix: --template must be one of ${STARTER_TEMPLATE_IDS.join(', ')}`);
+          throw new Error(`zed: --template must be one of ${STARTER_TEMPLATE_IDS.join(', ')}`);
         }
         f.template = next as StarterTemplateId;
         i += 1;
         break;
       }
       default:
-        if (arg.startsWith('-')) throw new Error(`kortix: unknown option "${arg}"`);
+        if (arg.startsWith('-')) throw new Error(`zed: unknown option "${arg}"`);
         // Positional project name (the directory to create), like create-next-app.
-        if (f.name !== undefined) throw new Error(`kortix: unexpected extra argument "${arg}"`);
+        if (f.name !== undefined) throw new Error(`zed: unexpected extra argument "${arg}"`);
         f.name = arg;
         break;
     }
@@ -177,8 +177,8 @@ function parseFlags(argv: string[]): InitFlags {
 
 function normalizeProjectName(raw: string): string {
   const trimmed = raw.trim();
-  if (!trimmed) return 'kortix-project';
-  return trimmed.replace(/[^A-Za-z0-9._ -]+/g, '-').replace(/^[-\s]+|[-\s]+$/g, '') || 'kortix-project';
+  if (!trimmed) return 'zed-project';
+  return trimmed.replace(/[^A-Za-z0-9._ -]+/g, '-').replace(/^[-\s]+|[-\s]+$/g, '') || 'zed-project';
 }
 
 function dirIsGitRepo(path: string): boolean {
@@ -198,7 +198,7 @@ function excludeLocalAgentWiring(repoRoot: string): void {
   appendGitExcludeEntries(
     repoRoot,
     ['/.agents', '/.claude', '/.opencode', '/.pi', '/AGENTS.md'],
-    'Kortix local coding-agent wiring',
+    'Zed local coding-agent wiring',
   );
 }
 
@@ -212,9 +212,9 @@ function printAgentPreamble(): void {
   const opts = SUPPORTED_AGENTS.map((a) => `${bold}${a}${reset}`).join(`  ${dim}·${reset}  `);
   const lines = [
     '',
-    `  Pick the local coding tools to wire into this Kortix project.`,
+    `  Pick the local coding tools to wire into this Zed project.`,
     '',
-    `  ${dim}Each tool receives the starter's canonical Kortix system skills.${reset}`,
+    `  ${dim}Each tool receives the starter's canonical Zed system skills.${reset}`,
     `  ${dim}Ask it to configure triggers, agents, or OpenCode settings.${reset}`,
     '',
     `  ${opts}`,
@@ -223,12 +223,12 @@ function printAgentPreamble(): void {
   process.stdout.write(`${lines.join('\n')}\n`);
 }
 
-/** "I want a code reviewer agent. Read the kortix skill, then..." */
+/** "I want a code reviewer agent. Read the zed skill, then..." */
 function sampleStarterPrompt(): string {
   return (
-    'I want to configure my Kortix project. Read the kortix skill, ' +
+    'I want to configure my Zed project. Read the zed skill, ' +
     'then propose an initial agent for my use case (e.g. a PR reviewer ' +
-    'or a daily digest worker), wire up the trigger in kortix.yaml, ' +
+    'or a daily digest worker), wire up the trigger in zed.yaml, ' +
     'and tell me what secrets I still need to set.'
   );
 }
@@ -259,15 +259,15 @@ export async function runInit(argv: string[]): Promise<number> {
   } else if (flags.name) {
     projectName = normalizeProjectName(flags.name);
   } else if (flags.yes) {
-    process.stderr.write(`kortix init: a project name is required — e.g. \`kortix init my-app\`.\n`);
+    process.stderr.write(`zed init: a project name is required — e.g. \`zed init my-app\`.\n`);
     return 2;
   } else {
-    const answer = await prompt(`Project name`, 'my-kortix-project');
+    const answer = await prompt(`Project name`, 'my-zed-project');
     projectName = normalizeProjectName(answer);
   }
 
   // Create the project in a fresh directory next to the shell's cwd. Refuse to
-  // scaffold into an existing non-empty folder — a Kortix project is standalone.
+  // scaffold into an existing non-empty folder — a Zed project is standalone.
   const cwd = configureExisting
     ? resolve(process.cwd())
     : resolve(process.cwd(), projectName);
@@ -278,7 +278,7 @@ export async function runInit(argv: string[]): Promise<number> {
     readdirSync(cwd).length > 0
   ) {
     process.stderr.write(
-      `kortix init: "${projectName}" already exists and isn't empty.\n` +
+      `zed init: "${projectName}" already exists and isn't empty.\n` +
         `Pick a different name, or remove the directory first.\n`,
     );
     return 1;
@@ -287,13 +287,13 @@ export async function runInit(argv: string[]): Promise<number> {
 
   if (configureExisting) {
     const hasManifest =
-      existsSync(resolve(cwd, "kortix.yaml")) ||
-      existsSync(resolve(cwd, "kortix.toml"));
-    const hasRuntime = existsSync(resolve(cwd, ".kortix", "opencode"));
+      existsSync(resolve(cwd, "zed.yaml")) ||
+      existsSync(resolve(cwd, "zed.toml"));
+    const hasRuntime = existsSync(resolve(cwd, ".zed", "opencode"));
     if (!hasManifest || !hasRuntime) {
       process.stderr.write(
-        "kortix init --force: this directory is not a cloned Kortix project.\n" +
-          "Expected kortix.yaml (or kortix.toml) and .kortix/opencode.\n",
+        "zed init --force: this directory is not a cloned Zed project.\n" +
+          "Expected zed.yaml (or zed.toml) and .zed/opencode.\n",
       );
       return 1;
     }
@@ -323,7 +323,7 @@ export async function runInit(argv: string[]): Promise<number> {
     printAgentPreamble();
     const initialIdx = SUPPORTED_AGENTS.indexOf(DEFAULT_PRIMARY);
     const picked = await selectMultiFromList<CodingAgent>({
-      title: 'Pick the coding agent(s) to wire into this Kortix project',
+      title: 'Pick the coding agent(s) to wire into this Zed project',
       searchHint: `${C.dim}↑/↓ navigate · Space toggle · Enter confirm${C.reset}`,
       items: SUPPORTED_AGENTS.map((a) => ({
         value: a,
@@ -340,15 +340,15 @@ export async function runInit(argv: string[]): Promise<number> {
     chosenAgents = picked;
   }
 
-  // ── Detect existing .kortix/ ─────────────────────────────────────────
-  const kortixExists = existsSync(resolve(cwd, '.kortix'));
-  if (kortixExists && !configureExisting && !flags.overwrite && !flags.yes) {
+  // ── Detect existing .zed/ ─────────────────────────────────────────
+  const zedExists = existsSync(resolve(cwd, '.zed'));
+  if (zedExists && !configureExisting && !flags.overwrite && !flags.yes) {
     const reuse = await confirm(
-      `Detected an existing .kortix/ folder. Keep your files and only add what's missing?`,
+      `Detected an existing .zed/ folder. Keep your files and only add what's missing?`,
       true,
     );
     if (!reuse) {
-      const ok = await confirm(`Overwrite existing Kortix files?`, false);
+      const ok = await confirm(`Overwrite existing Zed files?`, false);
       if (ok) flags.overwrite = true;
     }
   }
@@ -387,8 +387,8 @@ export async function runInit(argv: string[]): Promise<number> {
   const lines: string[] = [];
   lines.push(
     configureExisting
-      ? `Configured this Kortix project in ${cwd}`
-      : `Initialized Kortix project "${projectName}" in ${cwd}`,
+      ? `Configured this Zed project in ${cwd}`
+      : `Initialized Zed project "${projectName}" in ${cwd}`,
   );
   const totalWritten = result.written.length + agentInstall.written.length;
   lines.push(`Wrote ${totalWritten} file${totalWritten === 1 ? '' : 's'}:`);

@@ -2,7 +2,7 @@
  * Setup-link tokens — the opaque, short-lived handle behind every agent-minted
  * "fill this in" link (a project secret, or a Pipedream Quick Connect).
  *
- * Design (see references/kortix/credentials-and-setup-links.md):
+ * Design (see references/zed/credentials-and-setup-links.md):
  *   • STATELESS. There is no `setup_requests` table. The token IS the request:
  *     an AEAD envelope encrypted with the PROJECT's key (the same per-project
  *     HKDF key used for project secrets), so a token from one project can't be
@@ -57,7 +57,7 @@ export type SetupLinkPayload =
    * A human-in-the-loop APPROVAL for one gated connector call.
    *
    * Unlike the other two kinds, this token is NOT a bearer capability: the
-   * endpoints behind it require a signed-in Kortix account that is authorised to
+   * endpoints behind it require a signed-in Zed account that is authorised to
    * approve in the project (manager, or the session's launcher). The token only
    * says WHICH decision is being asked for; it never confers the right to make
    * it. That distinction matters because a leaked approval link would otherwise

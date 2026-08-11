@@ -115,9 +115,9 @@ import {
 }
 import {
   to = aws_iam_policy.cloudwatch_logs
-  id = "arn:aws:iam::935064898258:policy/kortix-cloudwatch-logs-policy"
+  id = "arn:aws:iam::935064898258:policy/zed-cloudwatch-logs-policy"
 }
 import {
   to = aws_iam_policy.bedrock_count_tokens
-  id = "arn:aws:iam::935064898258:policy/kortix-bedrock-count-tokens"
+  id = "arn:aws:iam::935064898258:policy/zed-bedrock-count-tokens"
 }

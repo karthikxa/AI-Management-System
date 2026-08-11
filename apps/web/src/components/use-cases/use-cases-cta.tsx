@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { Reveal } from '@/components/home/reveal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/marketing/button';
-import KortixGrid from '@/components/ui/marketing/gridder';
+import ZedGrid from '@/components/ui/marketing/gridder';
 
 /**
  * Closing CTA for the use-cases surface. Mirrors the landing page `#cta`
- * treatment (KortixGrid field + card) so the section reads as one platform.
+ * treatment (ZedGrid field + card) so the section reads as one platform.
  */
 export function UseCasesCta() {
   return (
@@ -17,7 +17,7 @@ export function UseCasesCta() {
         <div className="border-border bg-card relative overflow-hidden rounded-sm border">
           <div className="flex grid-cols-12 flex-col-reverse gap-2 md:grid">
             <div className="col-span-5 flex flex-col items-start justify-center space-y-4 p-8 sm:p-10">
-              <Badge variant="kortix" className="rounded">
+              <Badge variant="zed" className="rounded">
                 Loop Engineering
               </Badge>
               <h2 className="text-foreground text-2xl leading-tight font-medium tracking-tight sm:text-3xl">
@@ -45,7 +45,7 @@ export function UseCasesCta() {
             </div>
             <div className="col-span-1 hidden md:block" />
             <div className="col-span-6 mask-y-from-90% mask-x-from-90%">
-              <KortixGrid count={58} seed={4228} />
+              <ZedGrid count={58} seed={4228} />
             </div>
           </div>
         </div>

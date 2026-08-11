@@ -66,7 +66,7 @@ mock.module('drizzle-orm', () => ({
   count: (column?: unknown) => ({ op: 'count', column }),
 }));
 
-mock.module('@kortix/db', () => ({ accounts, accountMembers, accountInvitations }));
+mock.module('@zed/db', () => ({ accounts, accountMembers, accountInvitations }));
 mock.module('../shared/db', () => ({ db: fakeDb }));
 mock.module('../shared/supabase', () => ({
   getSupabase: () => ({

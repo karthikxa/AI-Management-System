@@ -1,8 +1,8 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { KortixAsterisk } from '@/components/ui/kortix-asterisk';
-import { KortixLogo } from '@/components/ui/kortix-logo';
+import { ZedAsterisk } from '@/components/ui/zed-asterisk';
+import { ZedLogo } from '@/components/ui/zed-logo';
 import { useMediaQuery } from '@/hooks/utils/use-media-query';
 import { cn } from '@/lib/utils';
 import {
@@ -62,7 +62,7 @@ function LayerShowcase({ layer }: { layer: Layer }): ReactNode {
     case 'control-plane':
       return <StepControlPlane />;
     // The closing card draws its own body — a mark and a line, no panel.
-    case 'kortix':
+    case 'zed':
       return null;
   }
 }
@@ -120,7 +120,7 @@ function LayerCard({
   const filter = useMotionTemplate`blur(${blurPx}px)`;
 
   const isLast = index === LAST;
-  const isClosing = layer.id === 'kortix';
+  const isClosing = layer.id === 'zed';
   const live = pinned && frame > 0;
 
   return (
@@ -175,7 +175,7 @@ function LayerCard({
               live ? 'h-full' : 'py-16',
             )}
           >
-            <KortixLogo size={64} variant="icon" className="text-foreground" />
+            <ZedLogo size={64} variant="icon" className="text-foreground" />
             <p className="text-foreground max-w-md text-balance">{layer.description}</p>
             <p className="text-muted-foreground/60 font-mono text-[10px] tracking-widest tabular-nums">
               {LAYERS.slice(0, LAST)
@@ -192,7 +192,7 @@ function LayerCard({
               <ul className="text-muted-foreground space-y-1.5 text-[12.5px] leading-relaxed">
                 {layer.bullets.map((bullet) => (
                   <li key={bullet} className="flex gap-2">
-                    <KortixAsterisk index={index} parentClass="mt-0 size-4" />
+                    <ZedAsterisk index={index} parentClass="mt-0 size-4" />
                     <span>{bullet}</span>
                   </li>
                 ))}
@@ -290,7 +290,7 @@ export function HowItWorks(): ReactNode {
             wider than the heading it belongs to. */}
         <div className="mx-auto w-full max-w-7xl shrink-0 px-6 pt-[4.75rem] [@media(max-height:860px)]:pt-[4.5rem]">
           <Badge
-            variant="kortix"
+            variant="zed"
             className="rounded font-mono text-[10px] tracking-widest uppercase"
           >
             {SECTION.eyebrow}

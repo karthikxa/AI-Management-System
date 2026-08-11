@@ -6,7 +6,7 @@
 
 **Architecture:** `features/session/action-panel/` splits into `shared/` (pure functions over `ToolPart[]`), `advanced/` (today's stepper, moved verbatim), and `easy/` (the new cards). Easy mode is a *lens* over the same `ToolPart[]` stream the stepper reads — no new data fetching, no changes to the 104 registered tool views. Tapping any Progress row reveals the real tool view via the existing `ToolPartRenderer`.
 
-**Tech Stack:** Next.js (App Router), React 19, TypeScript, zustand + `persist`, Tailwind v4 + Kortix tokens, `bun test` for co-located unit tests, `motion/react` for animation.
+**Tech Stack:** Next.js (App Router), React 19, TypeScript, zustand + `persist`, Tailwind v4 + Zed tokens, `bun test` for co-located unit tests, `motion/react` for animation.
 
 ## Global Constraints
 
@@ -375,8 +375,8 @@ assign('sessions', [
 assign('memory', ['memory', 'memory_search', 'mem_search', 'ltm_search', 'get_mem']);
 assign('apps', [
   'connector_get', 'connector_list', 'connector_setup',
-  'kortix_connector_call', 'kortix_connectors',
-  'kortix_connector_describe', 'kortix_connector_discover',
+  'zed_connector_call', 'zed_connectors',
+  'zed_connector_describe', 'zed_connector_discover',
 ]);
 assign('automations', [
   'triggers', 'trigger_create', 'trigger_delete', 'trigger_get', 'trigger_list',
@@ -1590,7 +1590,7 @@ Create `easy/easy-panel.tsx`. It owns the home/drill-in switch and the auto-expa
 ```tsx
 'use client';
 
-import { useClearFocusedToolCall, useFocusedToolCallId } from '@/stores/kortix-computer-store';
+import { useClearFocusedToolCall, useFocusedToolCallId } from '@/stores/zed-computer-store';
 import type { MessageWithParts } from '@/ui';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { collectToolParts } from '../shared/collect-tool-parts';

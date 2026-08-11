@@ -1,6 +1,6 @@
 -- Up Migration
 --
--- Agent-swap eligibility key for the kortix-agent CAS swap (kill the mass-rebuild).
+-- Agent-swap eligibility key for the zed-agent CAS swap (kill the mass-rebuild).
 -- Per template, stores the identity of everything the swap does NOT touch — the
 -- user image + spec + NON-agent runtime layer (opencode/entrypoint/CLI/slack-cli/
 -- executor-sdk/manifest-schema + layer/browser/sandbox version constants).
@@ -14,7 +14,7 @@
 -- pre-snapshot agent-swap branch (this replaces a hand-written migration that
 -- bypassed drizzle's snapshot — see drizzle/meta/20260624113021_snapshot.json).
 
-ALTER TABLE "kortix"."sandbox_templates" ADD COLUMN IF NOT EXISTS "swap_key" text;
+ALTER TABLE "zed"."sandbox_templates" ADD COLUMN IF NOT EXISTS "swap_key" text;
 
 -- Down Migration
-ALTER TABLE "kortix"."sandbox_templates" DROP COLUMN IF EXISTS "swap_key";
+ALTER TABLE "zed"."sandbox_templates" DROP COLUMN IF EXISTS "swap_key";

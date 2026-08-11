@@ -11,9 +11,9 @@ same thread.
 
 ## Live channels
 
-Kortix supports four channel platforms today:
+Zed supports four channel platforms today:
 
-- **Slack** — connect with one click through the Kortix-managed app, or bring
+- **Slack** — connect with one click through the Zed-managed app, or bring
   your own bot token.
 - **Microsoft Teams** — connect through org admin-consent OAuth, or bring your
   own Azure Bot (experimental; enable it under Customize → Feature flags).
@@ -36,8 +36,8 @@ project shows a project picker on the first mention.
 
 ## Identity linking
 
-Kortix links each chat sender to a Kortix account before the agent runs for
-them. Run `/kortix login` in Slack and follow the link to sign in. Teams uses
+Zed links each chat sender to a Zed account before the agent runs for
+them. Run `/zed login` in Slack and follow the link to sign in. Teams uses
 the same requirement. An unlinked sender gets a prompt to link instead of a
 session run.
 
@@ -45,7 +45,7 @@ session run.
 
 A connected channel's bot token is a connector-scoped
 [secret](/docs/project/secrets). It does not appear on the project's Secrets
-page. Kortix never injects it into a sandbox. Kortix resolves the token
+page. Zed never injects it into a sandbox. Zed resolves the token
 server-side when the agent sends a chat message.
 
 ## Connect Slack
@@ -58,10 +58,10 @@ server-side when the agent sends a chat message.
 From the CLI, run:
 
 ```
-kortix channels connect
+zed channels connect
 ```
 
-On a host with the shared Slack app configured (Kortix Cloud, for example),
+On a host with the shared Slack app configured (Zed Cloud, for example),
 this prints a one-click install link. Open the link and pick the workspace.
 Click **Allow**. Add `--wait` to make the command poll until the install
 lands.
@@ -73,14 +73,14 @@ instead. It uses the same install flow.
 <Step>
 ### Use your own Slack app
 
-On a self-hosted deployment with no shared Slack app configured, `kortix
-channels connect` falls back to manual mode automatically. Run `kortix
+On a self-hosted deployment with no shared Slack app configured, `zed
+channels connect` falls back to manual mode automatically. Run `zed
 channels manifest` to print an app manifest. Create the app at
 `api.slack.com/apps` from that manifest. Install the app to your workspace.
 Then run:
 
 ```
-kortix channels connect --manual --bot-token xoxb-... --signing-secret ...
+zed channels connect --manual --bot-token xoxb-... --signing-secret ...
 ```
 </Step>
 
@@ -88,17 +88,17 @@ kortix channels connect --manual --bot-token xoxb-... --signing-secret ...
 ### Check the connection
 
 ```
-kortix channels status
+zed channels status
 ```
 
-Run `kortix channels disconnect` to remove the connection. See the
+Run `zed channels disconnect` to remove the connection. See the
 [CLI reference](/docs/cli) for every flag.
 </Step>
 
 </Steps>
 
 Connecting Slack adds a `channel` [connector](/docs/connect/connectors) entry
-to `kortix.yaml` for you. You never write this entry by hand.
+to `zed.yaml` for you. You never write this entry by hand.
 
 ## Use Slack
 
@@ -108,8 +108,8 @@ no task gets a reminder to add one instead of starting a session.
 
 ## Control a session with slash commands
 
-Type these as `/kortix <command>` in Slack, or as plain text in a DM. Slash
-commands do not run inside the Assistant DM pane, so Kortix parses the same
+Type these as `/zed <command>` in Slack, or as plain text in a DM. Slash
+commands do not run inside the Assistant DM pane, so Zed parses the same
 words from plain text there.
 
 | Command | What it does |
@@ -129,7 +129,7 @@ the bot gets a session), `owner_approval`, or `owner_only`.
 ## What does not work
 
 - Slash commands do not fire inside the Assistant DM pane. Type
-  `/kortix <command>` as plain text there instead.
+  `/zed <command>` as plain text there instead.
 - Other chat platforms, including Telegram, are not supported channels today.
   Only Slack and Microsoft Teams connect through the CLI and dashboard; email
   and voice connect through the dashboard or SDK.

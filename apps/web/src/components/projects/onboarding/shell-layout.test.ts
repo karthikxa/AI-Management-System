@@ -77,7 +77,7 @@ describe('onboarding shell', () => {
   // The top bar is a back control and progress. Nothing competes with the
   // question — no mark, no title, no product name.
   test('carries no branding in the chrome', () => {
-    expect(shell).not.toContain('KortixAsterisk');
+    expect(shell).not.toContain('ZedAsterisk');
     expect(shell).not.toContain('Set up your project');
   });
 

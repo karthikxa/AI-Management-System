@@ -10,7 +10,7 @@ import { NewSessionDialog } from '@/components/new-session-dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { qk } from '@/lib/query-keys';
 import { cn, relativeTime } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
@@ -42,14 +42,14 @@ export function ProjectShell({ children }: { children: React.ReactNode }) {
 
   const project = useQuery({
     queryKey: qk.project(projectId),
-    queryFn: () => kortix.project(projectId).get(),
+    queryFn: () => zed.project(projectId).get(),
     // 403/404 never recovers on retry — fail fast instead of spamming.
     retry: (count, err) => !isAccessError(err) && count < 2,
   });
   const denied = project.isError && isAccessError(project.error);
   const sessions = useQuery({
     queryKey: qk.sessions(projectId),
-    queryFn: () => kortix.project(projectId).sessions.list(),
+    queryFn: () => zed.project(projectId).sessions.list(),
     refetchInterval: denied ? false : 5_000,
     enabled: !denied,
     retry: (count, err) => !isAccessError(err) && count < 2,

@@ -1,6 +1,6 @@
 'use client';
 
-import { formatRelative } from '@kortix/shared';
+import { formatRelative } from '@zed/shared';
 import {
   PlugsConnectedIcon as Cable,
   CheckIcon as Check,
@@ -260,8 +260,8 @@ export function TunnelOverview({ canWrite = false }: { canWrite?: boolean }) {
                           className={cn(
                             'inline-flex size-8 shrink-0 items-center justify-center rounded-sm border',
                             isOnline
-                              ? 'bg-kortix-green/10 text-kortix-green'
-                              : 'bg-kortix-red/10 text-kortix-red',
+                              ? 'bg-zed-green/10 text-zed-green'
+                              : 'bg-zed-red/10 text-zed-red',
                           )}
                         >
                           <Monitor className="size-5 shrink-0" />

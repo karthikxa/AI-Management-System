@@ -2,7 +2,7 @@
  * Admin console API (revived for the current backend).
  *
  * Mounted at /v1/admin, gated by supabaseAuth + requireAdmin (platform role
- * 'admin' | 'super_admin' in kortix.platform_user_roles). Backs the web admin
+ * 'admin' | 'super_admin' in zed.platform_user_roles). Backs the web admin
  * pages under apps/web/src/app/admin/.
  *
  * Scope (v1): the safe accounts console — list accounts (filterable by tier,
@@ -63,7 +63,7 @@ adminApp.openapi(
   async (c: any) => {
   try {
     const { db } = await import('../shared/db');
-    const { accounts, creditAccounts } = await import('@kortix/db');
+    const { accounts, creditAccounts } = await import('@zed/db');
     const { and, asc, desc, eq, ilike, gte, lte, inArray, notInArray, isNotNull, isNull, or, sql } =
       await import('drizzle-orm');
     const { parseAdminAccountsListQuery, UNPAID_TIERS } = await import('./accounts-query');
@@ -86,19 +86,19 @@ adminApp.openapi(
 
     const ownerEmail = sql<string | null>`(
       SELECT au.email FROM auth.users au
-      INNER JOIN kortix.account_members am ON am.user_id = au.id
+      INNER JOIN zed.account_members am ON am.user_id = au.id
       WHERE am.account_id = ${accounts.accountId}
       ORDER BY CASE am.account_role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, au.email ASC
       LIMIT 1)`;
     const memberCount = sql<number>`(
-      SELECT count(*)::int FROM kortix.account_members am WHERE am.account_id = ${accounts.accountId})`;
+      SELECT count(*)::int FROM zed.account_members am WHERE am.account_id = ${accounts.accountId})`;
 
     const conds: any[] = [];
     if (search) {
       conds.push(
         or(
           ilike(accounts.name, `%${search}%`),
-          sql`EXISTS (SELECT 1 FROM auth.users au INNER JOIN kortix.account_members am ON am.user_id = au.id
+          sql`EXISTS (SELECT 1 FROM auth.users au INNER JOIN zed.account_members am ON am.user_id = au.id
                       WHERE am.account_id = ${accounts.accountId} AND au.email ILIKE ${'%' + search + '%'})`,
         ),
       );
@@ -237,7 +237,7 @@ adminApp.openapi(
              au.banned_until AS banned_until,
              au.raw_app_meta_data->>'provider' AS provider,
              au.raw_app_meta_data->'providers' AS providers
-      FROM kortix.account_members am
+      FROM zed.account_members am
       INNER JOIN auth.users au ON au.id = am.user_id
       WHERE am.account_id = ${accountId}
       ORDER BY CASE am.account_role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, au.email ASC`);
@@ -273,7 +273,7 @@ adminApp.openapi(
   try {
     const accountId = c.req.param('id');
     const { db } = await import('../shared/db');
-    const { projects, projectSessions } = await import('@kortix/db');
+    const { projects, projectSessions } = await import('@zed/db');
     const { eq, desc, sql } = await import('drizzle-orm');
 
     const sessionCount = sql<number>`(
@@ -350,7 +350,7 @@ adminApp.openapi(
   async (c: any) => {
   try {
     const { db } = await import('../shared/db');
-    const { accounts, projects, projectSessions } = await import('@kortix/db');
+    const { accounts, projects, projectSessions } = await import('@zed/db');
     const { and, eq, ilike, inArray, or, sql } = await import('drizzle-orm');
     const { parseAdminProjectsListQuery } = await import('./projects-query');
     const { ACTIVE_SESSION_STATUSES } = await import('../projects/lib/session-status');
@@ -366,7 +366,7 @@ adminApp.openapi(
 
     const ownerEmail = sql<string | null>`(
       SELECT au.email FROM auth.users au
-      INNER JOIN kortix.account_members am ON am.user_id = au.id
+      INNER JOIN zed.account_members am ON am.user_id = au.id
       WHERE am.account_id = ${accounts.accountId}
       ORDER BY CASE am.account_role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, au.email ASC
       LIMIT 1)`;
@@ -391,7 +391,7 @@ adminApp.openapi(
         or(
           ilike(projects.name, `%${search}%`),
           ilike(accounts.name, `%${search}%`),
-          sql`EXISTS (SELECT 1 FROM auth.users au INNER JOIN kortix.account_members am ON am.user_id = au.id
+          sql`EXISTS (SELECT 1 FROM auth.users au INNER JOIN zed.account_members am ON am.user_id = au.id
                       WHERE am.account_id = ${projects.accountId} AND au.email ILIKE ${'%' + search + '%'})`,
         ),
       );
@@ -476,7 +476,7 @@ adminApp.openapi(
     const accountId = c.req.param('id');
     const limit = Math.min(200, Math.max(1, parseInt(c.req.query('limit') || '50', 10)));
     const { db } = await import('../shared/db');
-    const { creditLedger } = await import('@kortix/db');
+    const { creditLedger } = await import('@zed/db');
     const { eq, desc } = await import('drizzle-orm');
     const entries = await db
       .select()
@@ -961,7 +961,7 @@ adminApp.openapi(
 
 // ── Set the account managed-models override ──────────────────────────────────
 // `override: null` restores "the effective tier decides". true grants managed
-// (Kortix-credential) models regardless of tier; false forces BYOK-only.
+// (Zed-credential) models regardless of tier; false forces BYOK-only.
 adminApp.openapi(
   createRoute({
     method: 'post',
@@ -1109,7 +1109,7 @@ adminApp.openapi(
   async (c: any) => {
     const { config } = await import('../config');
     const { db } = await import('../shared/db');
-    const { platformSettings } = await import('@kortix/db');
+    const { platformSettings } = await import('@zed/db');
     const { eq } = await import('drizzle-orm');
     const { PROVIDER_DISTRIBUTION_KEY } = await import('../platform/services/provider-balancer');
     const [row] = await db.select({ value: platformSettings.value }).from(platformSettings)
@@ -1135,7 +1135,7 @@ adminApp.openapi(
       const w = Number(src?.[p]); if (Number.isFinite(w) && w >= 0) weights[p] = w;
     }
     const { db } = await import('../shared/db');
-    const { platformSettings } = await import('@kortix/db');
+    const { platformSettings } = await import('@zed/db');
     const { PROVIDER_DISTRIBUTION_KEY, invalidateProviderDistributionCache } = await import('../platform/services/provider-balancer');
     await db.insert(platformSettings).values({ key: PROVIDER_DISTRIBUTION_KEY, value: weights, updatedAt: new Date() })
       .onConflictDoUpdate({ target: platformSettings.key, set: { value: weights, updatedAt: new Date() } });
@@ -1171,7 +1171,7 @@ adminApp.openapi(
     const body = await c.req.json().catch(() => ({}));
     const value = { enabled: body?.enabled === true };
     const { db } = await import('../shared/db');
-    const { platformSettings } = await import('@kortix/db');
+    const { platformSettings } = await import('@zed/db');
     const { PROVIDER_FALLBACK_KEY, invalidateRuntimeSettings, refreshRuntimeSettings } = await import('../platform/services/runtime-settings');
     await db.insert(platformSettings).values({ key: PROVIDER_FALLBACK_KEY, value, updatedAt: new Date() })
       .onConflictDoUpdate({ target: platformSettings.key, set: { value, updatedAt: new Date() } });
@@ -1191,7 +1191,7 @@ adminApp.openapi(
   }),
   async (c: any) => {
     const { db } = await import('../shared/db');
-    const { sessionSandboxes } = await import('@kortix/db');
+    const { sessionSandboxes } = await import('@zed/db');
     const { desc, eq, and, sql } = await import('drizzle-orm');
     const limit = Math.min(Number(c.req.query('limit') || 200), 1000);
     const conds: any[] = [];
@@ -1205,7 +1205,7 @@ adminApp.openapi(
       status: sessionSandboxes.status, lastUsedAt: sessionSandboxes.lastUsedAt,
     }).from(sessionSandboxes).where(conds.length ? and(...conds) : undefined)
       .orderBy(desc(sessionSandboxes.updatedAt)).limit(limit);
-    const byProvider = await db.execute(sql`SELECT provider AS provider, count(*)::int AS count FROM kortix.session_sandboxes WHERE status <> 'archived' GROUP BY provider`);
+    const byProvider = await db.execute(sql`SELECT provider AS provider, count(*)::int AS count FROM zed.session_sandboxes WHERE status <> 'archived' GROUP BY provider`);
     return c.json({ sandboxes: rows, byProvider: (byProvider as any).rows ?? byProvider });
   },
 );
@@ -1227,7 +1227,7 @@ adminApp.openapi(
     const { config } = await import('../config');
     if (!(config.ALLOWED_SANDBOX_PROVIDERS as readonly string[]).includes(target)) return c.json({ error: 'invalid targetProvider' }, 400);
     const { db } = await import('../shared/db');
-    const { sessionSandboxes, projectSessions, projects } = await import('@kortix/db');
+    const { sessionSandboxes, projectSessions, projects } = await import('@zed/db');
     const { eq } = await import('drizzle-orm');
     const [sb] = await db.select().from(sessionSandboxes).where(eq(sessionSandboxes.sessionId, sessionId)).limit(1);
     if (!sb) return c.json({ error: 'sandbox not found' }, 404);
@@ -1278,7 +1278,7 @@ adminApp.openapi(
   }),
   async (c: any) => {
     const { db } = await import('../shared/db');
-    const { providerEvents } = await import('@kortix/db');
+    const { providerEvents } = await import('@zed/db');
     const { gte, desc } = await import('drizzle-orm');
     const days = Math.min(Math.max(Number(c.req.query('days') || 7), 1), 90);
     const cutoff = new Date(Date.now() - days * 86_400_000);

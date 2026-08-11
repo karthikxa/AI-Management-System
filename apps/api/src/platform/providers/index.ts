@@ -11,7 +11,7 @@ import { LocalProvider } from './local';
  * interface, not the concrete class, so they stay untouched.
  *
  *   - daytona — Daytona Cloud
- *   - platinum — Kortix Platinum
+ *   - platinum — Zed Platinum
  *   - e2b — E2B Cloud
  *   - local — Local execution (for development without cloud providers)
  */
@@ -92,7 +92,7 @@ export function assertWorkloadCredential(
   envVars: Record<string, string>,
 ): void {
   const workloadType = sandboxWorkloadType(opts);
-  const required = workloadType === 'app' ? 'KORTIX_APPD_TOKEN' : 'KORTIX_SANDBOX_TOKEN';
+  const required = workloadType === 'app' ? 'ZED_APPD_TOKEN' : 'ZED_SANDBOX_TOKEN';
   if (!envVars[required]) {
     throw new Error(
       `[${provider}] create() called without ${required} for ${workloadType} workload`,
@@ -116,7 +116,7 @@ export interface ResolvedEndpoint {
 }
 
 export interface SandboxIngressRequest {
-  /** Port named by the caller-facing Kortix proxy URL. */
+  /** Port named by the caller-facing Zed proxy URL. */
   port: number;
   path?: string;
   transport?: 'http' | 'websocket';
@@ -164,9 +164,9 @@ export interface SandboxProvider {
   readonly provisioning: ProvisioningTraits;
   create(opts: CreateSandboxOpts): Promise<ProvisionResult>;
   /**
-   * Ensure the Kortix App supervisor is running after create or resume.
+   * Ensure the Zed App supervisor is running after create or resume.
    * Providers that honor the image ENTRYPOINT implement this as a no-op.
-   * Providers that replace ENTRYPOINT must start `/kortix/bin/kortix-appd`
+   * Providers that replace ENTRYPOINT must start `/zed/bin/zed-appd`
    * through their native process API. The operation must be idempotent.
    */
   ensureAppRuntimeStarted(externalId: string): Promise<void>;
@@ -254,7 +254,7 @@ export interface SandboxProvider {
  * FLOOR 60. Never below the value this function returned before the split, so a
  * mis-set env var cannot resurrect the mid-work-kill class. Callers needing a
  * deliberately short timer pass an explicit override instead (the trigger path
- * does: KORTIX_SANDBOX_TRIGGER_AUTOSTOP_MINUTES). The floor is also what makes
+ * does: ZED_SANDBOX_TRIGGER_AUTOSTOP_MINUTES). The floor is also what makes
  * the required ordering `billingLivenessGraceMinutes() <= this` structural
  * rather than coincidental — the billing grace floors at the same 60 and only
  * leaves that floor above a 30-minute idle window, which no environment sets.
@@ -262,7 +262,7 @@ export interface SandboxProvider {
  * billing grace fails CI there.
  */
 export function providerAutoStopBackstopMinutes(): number {
-  return Math.max(60, config.KORTIX_SANDBOX_PROVIDER_AUTOSTOP_MINUTES || 720);
+  return Math.max(60, config.ZED_SANDBOX_PROVIDER_AUTOSTOP_MINUTES || 720);
 }
 
 const providers = new Map<ProviderName, SandboxProvider>();

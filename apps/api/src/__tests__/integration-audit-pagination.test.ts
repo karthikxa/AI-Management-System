@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { auditEvents } from '@kortix/db';
+import { auditEvents } from '@zed/db';
 import { and, asc, desc, eq } from 'drizzle-orm';
 import pg from 'pg';
 import { db } from '../shared/db';
@@ -16,11 +16,11 @@ describe.skipIf(!databaseUrl)('audit cursor pagination — migrated PostgreSQL',
   beforeAll(async () => {
     client = new pg.Client({ connectionString: databaseUrl });
     await client.connect();
-    await client.query(`SET kortix.audit_maintenance = 'on'`);
-    await client.query(`DELETE FROM kortix.audit_events WHERE account_id = $1`, [ACCOUNT]);
-    await client.query(`SET kortix.audit_maintenance = 'off'`);
+    await client.query(`SET zed.audit_maintenance = 'on'`);
+    await client.query(`DELETE FROM zed.audit_events WHERE account_id = $1`, [ACCOUNT]);
+    await client.query(`SET zed.audit_maintenance = 'off'`);
     await client.query(
-      `INSERT INTO kortix.audit_events
+      `INSERT INTO zed.audit_events
          (event_id, account_id, action, resource_type, occurred_at)
        VALUES
          ($1, $3, 'test.cursor.older', 'test', '2026-08-07T12:00:00.000123Z'),
@@ -31,8 +31,8 @@ describe.skipIf(!databaseUrl)('audit cursor pagination — migrated PostgreSQL',
 
   afterAll(async () => {
     if (!client) return;
-    await client.query(`SET kortix.audit_maintenance = 'on'`);
-    await client.query(`DELETE FROM kortix.audit_events WHERE account_id = $1`, [ACCOUNT]);
+    await client.query(`SET zed.audit_maintenance = 'on'`);
+    await client.query(`DELETE FROM zed.audit_events WHERE account_id = $1`, [ACCOUNT]);
     await client.end();
   });
 

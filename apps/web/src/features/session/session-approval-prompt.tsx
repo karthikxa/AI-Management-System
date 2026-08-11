@@ -37,7 +37,7 @@ import {
   riskTone,
   useSessionAudit,
 } from '@/features/session/session-audit-shared';
-import type { SessionAuditAction } from '@kortix/sdk';
+import type { SessionAuditAction } from '@zed/sdk';
 import {
   ArrowSquareOutIcon as ExternalLink,
   ShieldWarningIcon as ShieldAlert,
@@ -91,9 +91,9 @@ export function SessionApprovalPrompt() {
   if (pending.length === 0) return null;
 
   return (
-    <div className="bg-popover border-kortix-orange/25 mb-2 overflow-hidden rounded-md border">
-      <div className="border-kortix-orange/20 flex items-center gap-2 border-b px-3 py-2">
-        <ShieldAlert className="text-kortix-orange size-4" />
+    <div className="bg-popover border-zed-orange/25 mb-2 overflow-hidden rounded-md border">
+      <div className="border-zed-orange/20 flex items-center gap-2 border-b px-3 py-2">
+        <ShieldAlert className="text-zed-orange size-4" />
         <span className="text-foreground text-xs font-medium">
           {pending.length === 1
             ? 'The agent needs your approval'

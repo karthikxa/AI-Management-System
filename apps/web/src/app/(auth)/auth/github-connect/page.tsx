@@ -4,13 +4,13 @@ import { useTranslations } from 'next-intl';
 
 import { useEffect, useState } from 'react';
 
-import { KortixLogo } from '@/components/ui/kortix-logo';
+import { ZedLogo } from '@/components/ui/zed-logo';
 import Loading from '@/components/ui/loading';
 import { ErrorStrip } from '@/features/auth/auth-primitives';
 import { createEphemeralOAuthClient } from '@/lib/supabase/client';
 
 // sessionStorage-based singleton guard — prevents multiple OAuth flows across re-mounts AND HMR
-const GITHUB_CONNECT_GUARD_KEY = 'kortix-github-connect-in-flight';
+const GITHUB_CONNECT_GUARD_KEY = 'zed-github-connect-in-flight';
 
 function isGithubConnectInFlight(): boolean {
   try {
@@ -152,7 +152,7 @@ export default function GitHubConnectPopup() {
   return (
     <main className="bg-background flex min-h-svh flex-col items-center justify-center px-6">
       <div className="w-full max-w-[320px]">
-        <KortixLogo variant="icon" size={22} className="text-foreground" />
+        <ZedLogo variant="icon" size={22} className="text-foreground" />
         <h1 className="text-foreground mt-6 text-2xl font-medium tracking-tight">
           {tHardcodedUi.raw('appAuthGithubConnectPage.line116JsxTextConnectGithub')}
         </h1>

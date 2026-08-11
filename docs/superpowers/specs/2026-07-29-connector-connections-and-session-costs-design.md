@@ -60,7 +60,7 @@ Each connector has independent policies and connections.
 
 ## Manifest contract
 
-`kortix.yaml` stores the connector definition.
+`zed.yaml` stores the connector definition.
 
 ```toml
 [[connectors]]

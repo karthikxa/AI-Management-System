@@ -1,6 +1,6 @@
 import { HTTPException } from 'hono/http-exception';
 import { eq, or } from 'drizzle-orm';
-import { tunnelConnections } from '@kortix/db';
+import { tunnelConnections } from '@zed/db';
 import { resolveAccountId } from '../../shared/resolve-account';
 
 /**
@@ -8,7 +8,7 @@ import { resolveAccountId } from '../../shared/resolve-account';
  *
  *   • READ / EXECUTE (getTunnelReadContext) — listing connections and relaying
  *     RPCs. Allowed for ANY credential scoped to the owning account, including
- *     the sandbox's `apiKey` (KORTIX_TOKEN). The cloud agent runs as an apiKey
+ *     the sandbox's `apiKey` (ZED_TOKEN). The cloud agent runs as an apiKey
  *     and must be able to resolve its account's tunnel and drive it. RPC is
  *     itself permission-gated, so this stays safe.
  *

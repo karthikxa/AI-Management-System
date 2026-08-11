@@ -81,7 +81,7 @@ describe('PoliciesPanel source guard — no unguarded query.data.policies.map', 
 
 // The panel is rendered inside the Global rules sheet and the customize
 // Connectors section, so it has to speak the design-system dialect: hand-composed
-// `bg-popover rounded-md border` panels, `kortix-*` accents, named toast helpers.
+// `bg-popover rounded-md border` panels, `zed-*` accents, named toast helpers.
 // Each assertion below pins a primitive that the panel was previously built from
 // and that a copy-paste from an older screen would quietly reintroduce.
 describe('PoliciesPanel source guard — design-system primitives', () => {
@@ -103,9 +103,9 @@ describe('PoliciesPanel source guard — design-system primitives', () => {
     expect(panelSource).toContain('errorToast(');
   });
 
-  test('semantic colour is kortix-*, never a raw Tailwind palette or a dark: hack', () => {
-    expect(panelSource).toContain('text-kortix-orange');
-    expect(panelSource).toContain('text-kortix-red');
+  test('semantic colour is zed-*, never a raw Tailwind palette or a dark: hack', () => {
+    expect(panelSource).toContain('text-zed-orange');
+    expect(panelSource).toContain('text-zed-red');
     expect(panelSource).not.toContain('amber-');
     expect(panelSource).not.toContain('dark:text-');
   });

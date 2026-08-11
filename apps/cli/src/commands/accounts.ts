@@ -11,13 +11,13 @@ import { emitJson, takeFlagBool } from '../command-helpers.ts';
 import { C, help, pad, status } from '../style.ts';
 import type { AccountMembership, MeResponse } from '../api/types.ts';
 
-const HELP = help`Usage: kortix accounts <subcommand> [options]
+const HELP = help`Usage: zed accounts <subcommand> [options]
 
-Switch the active account within the current host. One Kortix login can
+Switch the active account within the current host. One Zed login can
 belong to many accounts (your personal account, a company account, …);
 exactly one is "active" — every account-scoped command (\`projects ls\`,
 \`ship\`, …) operates on it unless overridden. To switch instance instead,
-use \`kortix hosts use\`; to sign in, \`kortix hosts login\`.
+use \`zed hosts use\`; to sign in, \`zed hosts login\`.
 
 Subcommands:
   ls                   List the accounts you belong to (--json)
@@ -30,9 +30,9 @@ Global options:
   -h, --help     Show this help.
 
 Examples:
-  kortix accounts ls
-  kortix accounts use kortix
-  kortix projects ls          # lists the active account's projects
+  zed accounts ls
+  zed accounts use zed
+  zed projects ls          # lists the active account's projects
 `;
 
 export async function runAccounts(argv: string[]): Promise<number> {
@@ -69,7 +69,7 @@ export async function runAccounts(argv: string[]): Promise<number> {
 function requireAuth() {
   const auth = loadAuth();
   if (!auth?.token) {
-    process.stderr.write(`${status.err('Not logged in. Run `kortix login`.')}\n`);
+    process.stderr.write(`${status.err('Not logged in. Run `zed login`.')}\n`);
     return null;
   }
   return auth;
@@ -135,7 +135,7 @@ async function accountsLs(json = false): Promise<number> {
     process.stdout.write(`${C.dim}: ${C.reset}${C.bold}${active.name}${C.reset}`);
   }
   process.stdout.write(
-    `\n  ${C.dim}Switch with ${C.reset}${C.cyan}kortix accounts use <slug>${C.reset}\n\n`,
+    `\n  ${C.dim}Switch with ${C.reset}${C.cyan}zed accounts use <slug>${C.reset}\n\n`,
   );
   return 0;
 }
@@ -189,7 +189,7 @@ async function accountsUse(arg?: string): Promise<number> {
   if (prevDefault && prevDefault.account_id !== target.account_id) {
     process.stdout.write(
       `  ${C.dim}Cleared default project ${prevDefault.name ?? prevDefault.project_id} (it lived in another account).${C.reset}\n` +
-        `  ${C.dim}Set a new one with ${C.reset}${C.cyan}kortix projects use <id>${C.reset}\n`,
+        `  ${C.dim}Set a new one with ${C.reset}${C.cyan}zed projects use <id>${C.reset}\n`,
     );
   }
   return 0;
@@ -207,7 +207,7 @@ function accountsCurrent(json = false): number {
       return 0;
     }
     process.stderr.write(
-      `${status.err('No active account.')} Run ${C.cyan}kortix accounts use <slug>${C.reset}.\n`,
+      `${status.err('No active account.')} Run ${C.cyan}zed accounts use <slug>${C.reset}.\n`,
     );
     return 1;
   }
@@ -253,7 +253,7 @@ function surface(err: unknown): number {
   if (err instanceof ApiError) {
     if (err.status === 401) {
       process.stderr.write(
-        `${status.err('Token rejected. Run `kortix login` to re-authenticate.')}\n`,
+        `${status.err('Token rejected. Run `zed login` to re-authenticate.')}\n`,
       );
     } else {
       process.stderr.write(`${status.err(`HTTP ${err.status}: ${err.message}`)}\n`);

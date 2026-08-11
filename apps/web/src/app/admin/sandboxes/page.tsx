@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { IconInbox } from '@/components/ui/kortix-icons';
+import { IconInbox } from '@/components/ui/zed-icons';
 import { PageSearchBar } from '@/components/ui/page-search-bar';
 import {
   Select,
@@ -67,7 +67,7 @@ import {
   migrateAdminSandboxProvider,
   setAdminProviderDistribution,
   setAdminProviderFallback,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 

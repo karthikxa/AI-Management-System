@@ -7,10 +7,10 @@
 
 import { createHash, randomInt } from 'node:crypto';
 import { and, desc, eq, isNull } from 'drizzle-orm';
-import { scimTokens } from '@kortix/db';
+import { scimTokens } from '@zed/db';
 import { db } from '../shared/db';
 
-const SCIM_TOKEN_PREFIX = 'kortix_scim_';
+const SCIM_TOKEN_PREFIX = 'zed_scim_';
 const SCIM_TOKEN_BODY_LEN = 40; // base32-ish alphanumeric, ~200 bits of entropy
 
 // ─── Token mint + validate ─────────────────────────────────────────────────
@@ -63,7 +63,7 @@ export async function createScimToken(
 ): Promise<CreateScimTokenResult> {
   const secret = generateScimSecret();
   // Display-only fingerprint so admins can recognise tokens after creation
-  // without revealing the full secret. e.g. "kortix_scim_AbCd..."
+  // without revealing the full secret. e.g. "zed_scim_AbCd..."
   const publicPrefix = secret.slice(0, SCIM_TOKEN_PREFIX.length + 4) + '…';
   const [row] = await db
     .insert(scimTokens)

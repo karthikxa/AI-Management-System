@@ -1,5 +1,5 @@
 import { db } from '../src/shared/db';
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { createAccountToken } from '../src/repositories/account-tokens';
 const live = await db.select().from(projects).where(eq((projects as any).status, 'active'));

@@ -300,7 +300,7 @@ export function SsoCard({ accountId, canManage }: SsoCardProps) {
                   <span
                     className={
                       provider.auto_create_members
-                        ? 'text-kortix-green inline-flex items-center gap-1 font-medium'
+                        ? 'text-zed-green inline-flex items-center gap-1 font-medium'
                         : 'text-muted-foreground inline-flex items-center gap-1'
                     }
                   >
@@ -310,7 +310,7 @@ export function SsoCard({ accountId, canManage }: SsoCardProps) {
                   <span
                     className={
                       provider.auto_provision_groups
-                        ? 'text-kortix-green inline-flex items-center gap-1 font-medium'
+                        ? 'text-zed-green inline-flex items-center gap-1 font-medium'
                         : 'text-muted-foreground inline-flex items-center gap-1'
                     }
                   >
@@ -709,7 +709,7 @@ function EditProviderDialog({
               unaffected.
             </p>
             {adminEmailDomain && domain.trim().toLowerCase() === adminEmailDomain && (
-              <p className="text-kortix-yellow text-xs">
+              <p className="text-zed-yellow text-xs">
                 This is your own email domain — saving this will route YOUR next sign-in to the IdP
                 too. Make sure your account exists there before you continue.
               </p>
@@ -731,7 +731,7 @@ function EditProviderDialog({
               <span className="font-mono">memberOf</span> (Azure AD).
             </p>
             <p className="text-muted-foreground text-xs leading-relaxed">
-              <span className="text-kortix-yellow">Entra tip:</span> set your SAML{' '}
+              <span className="text-zed-yellow">Entra tip:</span> set your SAML{' '}
               <span className="font-mono">emailaddress</span> claim source to{' '}
               <span className="font-mono">userPrincipalName</span> — onmicrosoft.com users have no{' '}
               <span className="font-mono">mail</span>, and an empty email breaks sign-in. Entra also

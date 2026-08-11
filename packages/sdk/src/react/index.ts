@@ -1,6 +1,6 @@
 'use client';
 
-// @kortix/sdk/react — the complete OpenCode React hook surface, relocated
+// @zed/sdk/react — the complete OpenCode React hook surface, relocated
 // verbatim from apps/web (every useOpenCode* hook, query-key factory, provider,
 // and type). This is the single source of truth the web UI binds to.
 export * from './opencode';
@@ -12,9 +12,9 @@ export {
   answerPermission,
   rejectQuestion,
   classifySendError,
-  type KortixSendError,
-  type KortixSendErrorConnector,
-  type KortixSendErrorKind,
+  type ZedSendError,
+  type ZedSendErrorConnector,
+  type ZedSendErrorKind,
   type SendState,
 } from './use-session';
 
@@ -32,9 +32,9 @@ export {
 
 // The framework-free SSE event-stream primitive that `useOpenCodeEventStream`
 // (exported above via `./opencode`) wraps. Re-exported here too so a host
-// already importing from `@kortix/sdk/react` can build its own binding
+// already importing from `@zed/sdk/react` can build its own binding
 // (e.g. a non-QueryClient consumer) without a second import from
-// `@kortix/sdk/event-stream`.
+// `@zed/sdk/event-stream`.
 export {
   openEventStream,
   type EventStreamClient,
@@ -44,12 +44,12 @@ export {
   type OpenEventStreamOptions,
 } from '../core/stream/event-stream';
 
-// The kortix-master React Query layer (tasks/tickets/projects/milestones/
+// The zed-master React Query layer (tasks/tickets/projects/milestones/
 // credentials/sandbox-services) relocated from apps/web's six
-// `apps/web/src/hooks/{kortix/*,use-sandbox-services}.ts` files — see
-// `use-kortix-master.ts` for the full contract, including the injectable
-// `KortixMasterIdentity` seam that replaces web's direct `useAuth()` calls.
-export * from './use-kortix-master';
+// `apps/web/src/hooks/{zed/*,use-sandbox-services}.ts` files — see
+// `use-zed-master.ts` for the full contract, including the injectable
+// `ZedMasterIdentity` seam that replaces web's direct `useAuth()` calls.
+export * from './use-zed-master';
 
 // The send / stash-replay / error-recovery core extracted from apps/web's
 // `session-chat.tsx` — see `use-session-send.ts` for the full contract. Not
@@ -80,9 +80,9 @@ export {
 
 // The headless chat kit — `useChatTurns` (memoized `classifyTurn` over a
 // message list) + `renderParts` (compile-time-exhaustive part -> T
-// dispatcher). Framework-free classification lives in `@kortix/sdk/turns`;
+// dispatcher). Framework-free classification lives in `@zed/sdk/turns`;
 // this is the thin React binding over it. Kept inside the `react` barrel
-// rather than a new `@kortix/sdk/react/chat` subpath — no package.json
+// rather than a new `@zed/sdk/react/chat` subpath — no package.json
 // exports-map change needed to reach it.
 export { useChatTurns, type TurnView, renderParts, type PartRenderers } from './chat';
 
@@ -124,10 +124,10 @@ export * from './run-pty-command';
 export * from './runtime-actions';
 
 // The client-cache-unification `qk` key factory (rooted at `'kx'`, disjoint
-// from `kortixKeys`'s `'kortix'` root above) + its four freshness tiers, the
+// from `zedKeys`'s `'zed'` root above) + its four freshness tiers, the
 // single `useProjectName` accessor, and the invalidation/optimistic-write
 // helpers that keep the projects-list and project-detail caches in sync. See
-// `query-keys.ts` for why the root segment is `'kx'` and not `'kortix'`.
+// `query-keys.ts` for why the root segment is `'kx'` and not `'zed'`.
 export * from './query-keys';
 export * from './query-contracts';
 export * from './use-project-name';

@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { errorToast, successToast } from '@/components/ui/toast';
-import type { ProjectBranch, ProjectSession } from '@kortix/sdk';
+import type { ProjectBranch, ProjectSession } from '@zed/sdk';
 import { StackIcon as Layers } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -82,7 +82,7 @@ function BranchRow({ branch }: { branch: ProjectBranch }) {
             {displayBranchName(branch.name)}
           </span>
           {branch.is_default && (
-            <Badge variant="kortix" size="xs" className="shrink-0 text-[11px]">
+            <Badge variant="zed" size="xs" className="shrink-0 text-[11px]">
               default
             </Badge>
           )}

@@ -7,12 +7,12 @@
 
 # Inline policies converted to customer-managed so they can hang off a group.
 resource "aws_iam_policy" "cloudwatch_logs" {
-  name   = "kortix-cloudwatch-logs-policy"
+  name   = "zed-cloudwatch-logs-policy"
   policy = jsonencode({ Version = "2012-10-17", Statement = [{ Effect = "Allow", Action = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents", "logs:DescribeLogGroups", "logs:DescribeLogStreams"], Resource = ["arn:aws:logs:*:${local.account_id}:log-group:*", "arn:aws:logs:*:${local.account_id}:log-group:*:log-stream:*"] }] })
   tags   = local.tags
 }
 resource "aws_iam_policy" "bedrock_count_tokens" {
-  name   = "kortix-bedrock-count-tokens"
+  name   = "zed-bedrock-count-tokens"
   policy = jsonencode({ Version = "2012-10-17", Statement = [{ Sid = "Statement1", Effect = "Allow", Action = ["bedrock:CountTokens"], Resource = ["arn:aws:bedrock:*::foundation-model/*", "arn:aws:bedrock:*:${local.account_id}:inference-profile/*"] }] })
   tags   = local.tags
 }
@@ -26,7 +26,7 @@ resource "aws_iam_policy" "bedrock_count_tokens" {
 # convention above), so there is no aws_iam_user resource to reference; the
 # policy variable is what makes the same group policy safe for any member.
 resource "aws_iam_policy" "mfa_self_manage" {
-  name = "kortix-mfa-self-manage"
+  name = "zed-mfa-self-manage"
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -92,7 +92,7 @@ resource "aws_iam_policy" "mfa_required" {
   # enrollment statement; Resource must be "*" because the policy denies
   # across every resource. See docs/compliance/IAC-SCANNER-EXCEPTIONS.md.
   # checkov:skip=CKV_AWS_290: Deny-only policy; it grants no writes.
-  name = "kortix-mfa-required"
+  name = "zed-mfa-required"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -127,12 +127,12 @@ resource "aws_iam_policy" "mfa_required" {
 }
 
 # SES send-only — replaces the inline `ses-send-only` policy that used to hang
-# directly off the `kortix-ses-sender` user (Drata DCF-776 flags inline user
-# policies). Grants send on every SES identity in this account (the Kortix
+# directly off the `zed-ses-sender` user (Drata DCF-776 flags inline user
+# policies). Grants send on every SES identity in this account (the Zed
 # verified sending identity is managed out-of-band, so it is referenced by
 # account-scoped ARN rather than a hard-coded identity name).
 resource "aws_iam_policy" "ses_send_only" {
-  name = "kortix-ses-send-only"
+  name = "zed-ses-send-only"
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -188,7 +188,7 @@ locals {
     }
     cloudwatch-logs-writers = {
       policies = [aws_iam_policy.cloudwatch_logs.arn]
-      members  = ["kortix-cloudwatch-logs"]
+      members  = ["zed-cloudwatch-logs"]
     }
     # Self-service MFA group (replaces the inline `EnforceMFA` policy that used
     # to hang directly off one user — DCF-776 requires group-based permissions
@@ -211,12 +211,12 @@ locals {
       ]
       members = []
     }
-    # SES send-only for the `kortix-ses-sender` user (was an inline `ses-send-only`
+    # SES send-only for the `zed-ses-sender` user (was an inline `ses-send-only`
     # policy — DCF-776 requires group-based permissions only). See aws_iam_policy
     # .ses_send_only above.
     ses-senders = {
       policies = [aws_iam_policy.ses_send_only.arn]
-      members  = ["kortix-ses-sender"]
+      members  = ["zed-ses-sender"]
     }
   }
   # Use the policy index in the instance key. Customer-managed policy ARNs are

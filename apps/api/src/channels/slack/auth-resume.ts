@@ -1,5 +1,5 @@
 import { and, eq, gt, lt } from 'drizzle-orm';
-import { chatPendingAuthMessages } from '@kortix/db';
+import { chatPendingAuthMessages } from '@zed/db';
 import { db } from '../../shared/db';
 import { respondViaUrl } from './util';
 import type { SlackEnvelope, SlackEvent } from './types';
@@ -105,13 +105,13 @@ export async function replaceSlackAuthPromptConnected(
 ): Promise<void> {
   const hasAccess = opts?.hasAccess !== false;
   const text = hasAccess
-    ? '*Slack connected.*\nKortix is picking up your message now.'
-    : '*Slack connected.*\nYour Kortix account still needs access to this project. Head back to Slack and request access to continue.';
+    ? '*Slack connected.*\nZed is picking up your message now.'
+    : '*Slack connected.*\nYour Zed account still needs access to this project. Head back to Slack and request access to continue.';
   await respondViaUrl(responseUrl ?? undefined, {
     response_type: 'ephemeral',
     replace_original: true,
     text: hasAccess
-      ? 'Slack connected. Kortix is picking up your message now.'
+      ? 'Slack connected. Zed is picking up your message now.'
       : 'Slack connected. Request project access in Slack to continue.',
     blocks: [
       {

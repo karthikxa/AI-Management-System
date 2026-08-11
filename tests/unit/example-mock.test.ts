@@ -5,7 +5,7 @@ vi.mock('../_support/fixtures', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../_support/fixtures')>();
   return {
     ...actual,
-    sampleEnv: { ...actual.sampleEnv, KORTIX_WEB_URL: 'https://web.test' },
+    sampleEnv: { ...actual.sampleEnv, ZED_WEB_URL: 'https://web.test' },
   };
 });
 

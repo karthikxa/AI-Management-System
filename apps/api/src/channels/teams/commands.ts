@@ -46,7 +46,7 @@ function conversationRef(activity: TeamsActivity, projectId?: string): TeamsConv
 }
 
 function dashboardBase(): string {
-  return (config.FRONTEND_URL || 'https://kortix.com').replace(/\/+$/, '');
+  return (config.FRONTEND_URL || 'https://zed.com').replace(/\/+$/, '');
 }
 
 export async function handleTeamsCommand(input: {
@@ -130,7 +130,7 @@ async function ensureBinding(tenantId: string, conversationId: string, projectId
 
 function helpCard() {
   return buildHelpCard([
-    { cmd: '/login', desc: 'connect your Kortix account' },
+    { cmd: '/login', desc: 'connect your Zed account' },
     { cmd: '/logout', desc: 'disconnect your account' },
     { cmd: '/whoami', desc: 'show who you are linked as' },
     { cmd: '/status', desc: 'show the effective project, agent and model' },
@@ -220,7 +220,7 @@ async function buildModelsCard(ctx: ReturnType<typeof teamsChannelCtx>) {
     subtitle: current ? `Currently ${labelForModelRef(current)}` : 'Currently the project default',
     verb: 'teams_set_model',
     options,
-    footer: 'Or set any provider/model-id you have connected in Kortix: `/model anthropic/claude-sonnet-4.6`.',
+    footer: 'Or set any provider/model-id you have connected in Zed: `/model anthropic/claude-sonnet-4.6`.',
   });
 }
 
@@ -241,7 +241,7 @@ async function setModel(ctx: ReturnType<typeof teamsChannelCtx>, arg: string) {
     model: id,
   });
   if (!servable) {
-    return buildNoticeCard(`\`${id}\` isn't available here. Pick one with /models or connect that provider in Kortix.`);
+    return buildNoticeCard(`\`${id}\` isn't available here. Pick one with /models or connect that provider in Zed.`);
   }
   const stored = toOpencodeModelRef(id);
   await setChannelModel(ctx, stored);
@@ -256,7 +256,7 @@ async function buildAgentsCard(ctx: ReturnType<typeof teamsChannelCtx>, projectI
   const current = selection?.agentName ?? null;
   if (governance.agents.length === 0) {
     return buildNoticeCard(
-      'This project has no declared agents, so it runs the default agent. Declare agents in `kortix.yaml` to switch here.',
+      'This project has no declared agents, so it runs the default agent. Declare agents in `zed.yaml` to switch here.',
       '🤖',
     );
   }
@@ -296,7 +296,7 @@ async function setAgent(ctx: ReturnType<typeof teamsChannelCtx>, arg: string) {
 async function buildProjectsCard(tenantId: string, currentProjectId: string) {
   const projects = await listTenantProjects(tenantId);
   if (projects.length === 0) {
-    return buildNoticeCard('No Kortix projects are connected to this Teams tenant yet.', '📁');
+    return buildNoticeCard('No Zed projects are connected to this Teams tenant yet.', '📁');
   }
   const options: SelectOption[] = projects.slice(0, 8).map((p) => ({
     label: p.name,

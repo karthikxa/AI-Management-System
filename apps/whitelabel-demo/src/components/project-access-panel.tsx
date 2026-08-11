@@ -3,7 +3,7 @@
 import { CallSnippet } from '@/components/dev/call-snippet';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/loading';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { qk } from '@/lib/query-keys';
 import { useQuery } from '@tanstack/react-query';
 import { ShieldCheck, UserCheck } from 'lucide-react';
@@ -42,7 +42,7 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
   const user = useApplicationUser();
   const sessions = useQuery({
     queryKey: qk.sessions(projectId),
-    queryFn: () => kortix.project(projectId).sessions.list(),
+    queryFn: () => zed.project(projectId).sessions.list(),
     retry: false,
   });
 
@@ -61,7 +61,7 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
         <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
           The wrapper records this local identity in its project ownership
           store. It does not send the identity as session or cost metadata to
-          Kortix.
+          Zed.
         </p>
       </div>
 

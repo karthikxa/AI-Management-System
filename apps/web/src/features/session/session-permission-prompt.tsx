@@ -20,15 +20,15 @@
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/loading';
 import { errorToast, successToast } from '@/components/ui/toast';
-import { useRuntimeConfig, useUpdateRuntimeConfig } from '@kortix/sdk/react';
+import { useRuntimeConfig, useUpdateRuntimeConfig } from '@zed/sdk/react';
 import {
   allowAllPermissionsForSession,
   resetSessionPermissions,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 import { PROJECT_ACTIONS } from '@/lib/project-actions';
 import { useProjectCan } from '@/lib/use-project-can';
 import { cn } from '@/lib/utils';
-import { useRuntimePendingStore } from '@kortix/sdk/react';
+import { useRuntimePendingStore } from '@zed/sdk/react';
 import { PERMISSION_LABELS, type PermissionRequest } from '@/ui/types';
 import { ShieldCheckIcon as ShieldCheck } from '@phosphor-icons/react';
 import { useParams } from 'next/navigation';

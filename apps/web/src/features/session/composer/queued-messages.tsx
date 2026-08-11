@@ -210,7 +210,7 @@ function QueuedRow({
           label={`${message.lostAttachments} attachment${message.lostAttachments === 1 ? '' : 's'} could not be restored after reload and will not be sent`}
           side="top"
         >
-          <span className="text-kortix-orange flex shrink-0 items-center gap-1 text-xs">
+          <span className="text-zed-orange flex shrink-0 items-center gap-1 text-xs">
             <PaperclipIcon className="size-3" />
             {message.lostAttachments}
           </span>
@@ -374,15 +374,15 @@ export function QueuedMessages({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 2 }}
                 transition={ROW_TRANSITION}
-                className="border-kortix-red/25 bg-kortix-red/[0.06] flex items-center gap-2 rounded-md border px-2.5 py-1.5"
+                className="border-zed-red/25 bg-zed-red/[0.06] flex items-center gap-2 rounded-md border px-2.5 py-1.5"
               >
-                <WarningIcon className="text-kortix-red size-3 shrink-0" weight="fill" />
+                <WarningIcon className="text-zed-red size-3 shrink-0" weight="fill" />
                 <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
                   {message.text}
                 </span>
                 {message.lastError && (
                   <Hint label={message.lastError} side="top">
-                    <span className="text-kortix-red shrink-0 text-xs">Failed</span>
+                    <span className="text-zed-red shrink-0 text-xs">Failed</span>
                   </Hint>
                 )}
                 {onRetry && (

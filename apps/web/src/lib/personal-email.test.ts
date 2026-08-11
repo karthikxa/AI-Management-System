@@ -64,7 +64,7 @@ describe('isPersonalEmail', () => {
 
 describe('isWorkEmail', () => {
   test('routes a work-email domain (the domain SSO discovery probes)', () => {
-    expect(isWorkEmail('manager@kortixssotest.com')).toBe(true);
+    expect(isWorkEmail('manager@zedssotest.com')).toBe(true);
     expect(isWorkEmail('ino@acme-inc.com')).toBe(true);
   });
 
@@ -75,7 +75,7 @@ describe('isWorkEmail', () => {
   });
 
   test('normalizes case and whitespace before deciding', () => {
-    expect(isWorkEmail('  Manager@KortixSSOTest.com ')).toBe(true);
+    expect(isWorkEmail('  Manager@ZedSSOTest.com ')).toBe(true);
     expect(isWorkEmail('  X@GMAIL.COM ')).toBe(false);
   });
 
@@ -91,7 +91,7 @@ describe('isWorkEmail', () => {
   });
 
   test('is the exact complement of isPersonalEmail for a parseable address', () => {
-    for (const email of ['a@gmail.com', 'b@corp.com', 'c@kortixssotest.com', 'd@outlook.com']) {
+    for (const email of ['a@gmail.com', 'b@corp.com', 'c@zedssotest.com', 'd@outlook.com']) {
       expect(isWorkEmail(email)).toBe(!isPersonalEmail(email));
     }
   });

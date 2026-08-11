@@ -5,7 +5,7 @@ const P = (project_id: string, name: string) => ({ project_id, name });
 
 describe('selectImportableProjects', () => {
   test('marks what this user already owns instead of hiding it', () => {
-    // Hiding owned rows would make the list disagree with the Kortix dashboard,
+    // Hiding owned rows would make the list disagree with the Zed dashboard,
     // and the operator would wonder which projects were missing and why.
     const rows = selectImportableProjects([P('a', 'Alpha'), P('b', 'Beta')], ['a']);
     expect(rows.find((r) => r.project_id === 'a')?.imported).toBe(true);

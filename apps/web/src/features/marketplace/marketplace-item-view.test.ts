@@ -82,7 +82,7 @@ describe('resolveBundleMembers', () => {
 
   test('joins each dependency name against its resolved metadata', () => {
     const dependencyItems: DependencyItem[] = [
-      { id: 'kortix:review', name: 'review', type: 'registry:skill', title: 'Review', description: null },
+      { id: 'zed:review', name: 'review', type: 'registry:skill', title: 'Review', description: null },
     ];
 
     const members = resolveBundleMembers({
@@ -93,19 +93,19 @@ describe('resolveBundleMembers', () => {
 
     expect(members).toEqual([
       {
-        key: 'kortix:review',
+        key: 'zed:review',
         title: 'Review',
         type: 'registry:skill',
         description: null,
-        href: '/marketplace/kortix:review',
+        href: '/marketplace/zed:review',
       },
     ]);
   });
 
   test('preserves dependency order even when resolved metadata arrives in a different order', () => {
     const dependencyItems: DependencyItem[] = [
-      { id: 'kortix:b', name: 'b', type: 'registry:skill', title: 'B', description: null },
-      { id: 'kortix:a', name: 'a', type: 'registry:skill', title: 'A', description: null },
+      { id: 'zed:b', name: 'b', type: 'registry:skill', title: 'B', description: null },
+      { id: 'zed:a', name: 'a', type: 'registry:skill', title: 'A', description: null },
     ];
 
     const members = resolveBundleMembers({
@@ -114,7 +114,7 @@ describe('resolveBundleMembers', () => {
       hrefForId,
     });
 
-    expect(members.map((m) => m.key)).toEqual(['kortix:a', 'kortix:b']);
+    expect(members.map((m) => m.key)).toEqual(['zed:a', 'zed:b']);
   });
 
   test('falls back to the bare name when a dependency has no resolved metadata', () => {

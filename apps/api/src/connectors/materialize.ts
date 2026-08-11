@@ -1,6 +1,6 @@
 /**
  * Materialization — map `connectors:` + `policies:` + `policy:` specs
- * (from kortix.yaml) onto the rows the platform stores (connectors,
+ * (from zed.yaml) onto the rows the platform stores (connectors,
  * connector_policies, connector_project_policies, connector_project_settings)
  * and onto the gateway's runtime view. Pure mapping + diff here (unit-tested);
  * the DB upsert + network catalog sync (fetch spec/introspection/listTools →

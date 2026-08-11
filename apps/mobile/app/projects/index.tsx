@@ -16,7 +16,7 @@ import { Search, X, FolderPlus, ChevronDown, Plus, AlertCircle, ChevronRight } f
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Avatar } from '@/components/ui/Avatar';
-import { KortixLogo } from '@/components/ui/KortixLogo';
+import { ZedLogo } from '@/components/ui/ZedLogo';
 import { useToast } from '@/components/ui/toast-provider';
 import { AccountSwitcherSheet } from '@/components/projects/AccountSwitcherSheet';
 import { NewProjectSheet } from '@/components/projects/NewProjectSheet';
@@ -26,8 +26,8 @@ import { useAccounts, useArchiveProject, useProjects } from '@/lib/projects/hook
 import { useCurrentAccountStore } from '@/stores/current-account-store';
 import { useThemeColors } from '@/lib/theme-colors';
 import { haptics } from '@/lib/haptics';
-import { chalkColors } from '@kortix/shared';
-import type { KortixProject } from '@/lib/projects/projects-client';
+import { chalkColors } from '@zed/shared';
+import type { ZedProject } from '@/lib/projects/projects-client';
 
 function relativeTime(input?: string) {
   if (!input) return '';
@@ -78,7 +78,7 @@ export default function ProjectsScreen() {
 
   const projectsQuery = useProjects(activeAccountId);
 
-  const filtered: KortixProject[] = React.useMemo(() => {
+  const filtered: ZedProject[] = React.useMemo(() => {
     const items = projectsQuery.data ?? [];
     const q = query.trim().toLowerCase();
     if (!q) return items;
@@ -102,7 +102,7 @@ export default function ProjectsScreen() {
   const skeletonBg = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.055)';
 
   const openProject = React.useCallback(
-    (p: KortixProject) => router.push(`/projects/${p.project_id}`),
+    (p: ZedProject) => router.push(`/projects/${p.project_id}`),
     [router],
   );
 
@@ -114,7 +114,7 @@ export default function ProjectsScreen() {
   const headerHeight = headerTopInset + headerBodyHeight;
 
   const confirmArchive = React.useCallback(
-    (p: KortixProject) => {
+    (p: ZedProject) => {
       Alert.alert('Archive project', `Archive "${p.name}"?`, [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -138,7 +138,7 @@ export default function ProjectsScreen() {
   );
 
   const onCardLongPress = React.useCallback(
-    (p: KortixProject) => {
+    (p: ZedProject) => {
       const canManage = p.effective_project_role === 'editor' || !p.effective_project_role;
       const buttons: any[] = [{ text: 'Open', onPress: () => openProject(p) }];
       if (canManage) buttons.push({ text: 'Archive', style: 'destructive', onPress: () => confirmArchive(p) });
@@ -150,7 +150,7 @@ export default function ProjectsScreen() {
   );
 
   const handleCreated = React.useCallback(
-    (project: KortixProject) => {
+    (project: ZedProject) => {
       setNewProjectOpen(false);
       router.push(`/projects/${project.project_id}`);
     },
@@ -170,7 +170,7 @@ export default function ProjectsScreen() {
   }, [accountsQuery, projectsQuery, activeAccountId]);
 
   const handleSignOut = React.useCallback(() => {
-    Alert.alert('Sign out', 'Sign out of Kortix?', [
+    Alert.alert('Sign out', 'Sign out of Zed?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Sign out',
@@ -368,7 +368,7 @@ export default function ProjectsScreen() {
         }}
       >
         <View className="min-w-0 flex-1 flex-row items-center" style={{ gap: 12 }}>
-          <KortixLogo variant="symbol" size={28} color={isDark ? 'dark' : 'light'} />
+          <ZedLogo variant="symbol" size={28} color={isDark ? 'dark' : 'light'} />
           {!!activeAccount && (
             <TouchableOpacity
               onPress={() => {

@@ -1,10 +1,10 @@
 /**
- * 09 — "Kortix as a Backend", the whole flow in one file.
+ * 09 — "Zed as a Backend", the whole flow in one file.
  *
- * Wrap ONE shared Kortix agent + repo as the backend for MANY of your own
- * end-users. Your service holds a single Kortix API key; every session it
+ * Wrap ONE shared Zed agent + repo as the backend for MANY of your own
+ * end-users. Your service holds a single Zed API key; every session it
  * starts brings *that* user's connector, model, secrets, and identity BY
- * REFERENCE. Your end-users never log in to Kortix.
+ * REFERENCE. Your end-users never log in to Zed.
  *
  * This example does the entire path with no browser:
  *   1. mint a CONNECTOR definition           (headless: mcp/http/openapi/graphql)
@@ -16,36 +16,36 @@
  *
  * Two run modes in this one file:
  *   One-shot CLI  → streams a single turn to stdout:
- *     KORTIX_API_URL=http://localhost:8008/v1 KORTIX_API_KEY=kortix_pat_... \
- *     KORTIX_PROJECT_ID=... \
+ *     ZED_API_URL=http://localhost:8008/v1 ZED_API_KEY=zed_pat_... \
+ *     ZED_PROJECT_ID=... \
  *       bun run examples/09-kaab-backend-wrapper.ts "Summarize my new signups"
  *
  *   Multi-tenant service → POST /run {endUserId, prompt}, re-emitted as SSE:
- *     MODE=serve KORTIX_API_URL=... KORTIX_API_KEY=kortix_pat_... KORTIX_PROJECT_ID=... \
+ *     MODE=serve ZED_API_URL=... ZED_API_KEY=zed_pat_... ZED_PROJECT_ID=... \
  *       bun run examples/09-kaab-backend-wrapper.ts
  *     curl -N localhost:8791/run -H 'content-type: application/json' \
  *       -d '{"endUserId":"alice","prompt":"Summarize my new signups"}'
  *
  * Notes:
  *   - `secrets` is a backend-only field that requires the
- *     Kortix-as-a-Backend release. Set KAAB_OVERRIDES=off to drop it so the
+ *     Zed-as-a-Backend release. Set KAAB_OVERRIDES=off to drop it so the
  *     connector + binding + session + streaming path still runs against a
  *     deployment that does not support it yet (origin still auto-derives to
  *     'backend' from the API key).
- *   - Bun only — the `@kortix/sdk/server` subpath statically imports
+ *   - Bun only — the `@zed/sdk/server` subpath statically imports
  *     node:async_hooks (standard on Node 18+/22).
  *
  * As an npm consumer:
- *   import { createScopedKortix } from '@kortix/sdk/server';
- *   import { narrowChatEvent } from '@kortix/sdk';
+ *   import { createScopedZed } from '@zed/sdk/server';
+ *   import { narrowChatEvent } from '@zed/sdk';
  */
 import { narrowChatEvent } from '../src/index';
-import { createScopedKortix } from '../src/node/server';
+import { createScopedZed } from '../src/node/server';
 
 // ─── config (env) ────────────────────────────────────────────────────────────
-const backendUrl = process.env.KORTIX_API_URL ?? 'http://localhost:8008/v1';
-const upstreamApiKey = process.env.KORTIX_API_KEY; // the wrapper's own kortix_pat_ → origin 'backend'
-const projectId = process.env.KORTIX_PROJECT_ID;
+const backendUrl = process.env.ZED_API_URL ?? 'http://localhost:8008/v1';
+const upstreamApiKey = process.env.ZED_API_KEY; // the wrapper's own zed_pat_ → origin 'backend'
+const projectId = process.env.ZED_PROJECT_ID;
 const includeOverrides = process.env.KAAB_OVERRIDES !== 'off';
 
 // Which connector/agent/model/secret this wrapper drives — all overridable.
@@ -56,17 +56,17 @@ const MODEL = process.env.KAAB_MODEL; // undefined → project/agent default mod
 const SECRET_ID = process.env.KAAB_SECRET; // one project-secret identifier to narrow to
 
 if (!upstreamApiKey || !projectId) {
-  console.error('Set KORTIX_API_KEY (a kortix_pat_ from Settings → Tokens) and KORTIX_PROJECT_ID.');
+  console.error('Set ZED_API_KEY (a zed_pat_ from Settings → Tokens) and ZED_PROJECT_ID.');
   process.exit(1);
 }
 
 /**
- * Resolve the upstream Kortix credential for one of YOUR end-users. A real
+ * Resolve the upstream Zed credential for one of YOUR end-users. A real
  * wrapper mints/stores one PAT per tenant (or scopes a shared one) in its own
  * auth store, keyed off the incoming request — never a hardcoded env var. Here
  * every user shares the wrapper's own key; origin still derives to 'backend',
  * and per-user isolation comes from wrapper-owned metadata and the end-user's
- * connection, not from distinct Kortix logins.
+ * connection, not from distinct Zed logins.
  */
 function upstreamTokenFor(_endUserId: string): string {
   return upstreamApiKey!;
@@ -74,12 +74,12 @@ function upstreamTokenFor(_endUserId: string): string {
 
 /** Build a request-scoped SDK client bound to one end-user's upstream token. */
 function clientFor(endUserId: string) {
-  return createScopedKortix({ backendUrl, getToken: async () => upstreamTokenFor(endUserId) });
+  return createScopedZed({ backendUrl, getToken: async () => upstreamTokenFor(endUserId) });
 }
 
 // ─── step 1: mint the connector definition (once per connector) ──────────────
-async function ensureConnector(kortix: ReturnType<typeof clientFor>): Promise<void> {
-  const project = kortix.project(projectId!);
+async function ensureConnector(zed: ReturnType<typeof clientFor>): Promise<void> {
+  const project = zed.project(projectId!);
   const existing = await project.connectors.list().catch(() => ({ connectors: [] as { slug: string }[] }));
   if (existing.connectors?.some((c) => c.slug === CONNECTOR_SLUG)) return;
 
@@ -87,7 +87,7 @@ async function ensureConnector(kortix: ReturnType<typeof clientFor>): Promise<vo
   // bearer credential. `provider` mcp/http/openapi/graphql all take a static
   // credential and need no OAuth (pipedream is the browser-only exception).
   // NB: an `mcp` connector uses `url` (openapi/postman use `spec`, http uses
-  // `baseUrl`). The connector must be declared in the project's kortix.yaml for
+  // `baseUrl`). The connector must be declared in the project's zed.yaml for
   // per-user CONNECTIONS to reconcile against it.
   await project.connectors.create({
     slug: CONNECTOR_SLUG,
@@ -101,15 +101,15 @@ async function ensureConnector(kortix: ReturnType<typeof clientFor>): Promise<vo
 
 // ─── step 2: mint + credential + activate this user's connection ─────────────
 /** Returns the `connection_id` you bind by reference, or null if the project has
- *  no connector declared (a bare project without kortix.yaml). Idempotent per
+ *  no connector declared (a bare project without zed.yaml). Idempotent per
  *  (connector, owner). `owner_type: 'external'` = your app's user, independent
- *  of any Kortix member/agent. */
+ *  of any Zed member/agent. */
 async function ensureUserConnection(
-  kortix: ReturnType<typeof clientFor>,
+  zed: ReturnType<typeof clientFor>,
   endUserId: string,
   usersOwnCredential: string,
 ): Promise<string | null> {
-  const project = kortix.project(projectId!);
+  const project = zed.project(projectId!);
   try {
     const connection = await project.connectors.connections.reconcile({
       connector_alias: CONNECTOR_SLUG,
@@ -126,7 +126,7 @@ async function ensureUserConnection(
     await project.connectors.connections.activate(connection.connection_id);
     return connection.connection_id;
   } catch (err) {
-    // ONLY the "connector not declared in the project's kortix.yaml" case (404)
+    // ONLY the "connector not declared in the project's zed.yaml" case (404)
     // is a benign skip — run the rest of the flow without a binding. Every other
     // failure (403 auth, invalid credential, network) MUST surface: swallowing
     // it would run the agent FOR this user WITHOUT their credential — a silent
@@ -135,7 +135,7 @@ async function ensureUserConnection(
     if (status === 404) {
       console.error(
         `[connector] "${CONNECTOR_SLUG}" is not declared in the project manifest — ` +
-          `running without a per-user binding. Add it to kortix.yaml to enable.`,
+          `running without a per-user binding. Add it to zed.yaml to enable.`,
       );
       return null;
     }
@@ -145,7 +145,7 @@ async function ensureUserConnection(
 
 // ─── step 3: start a backend-origin session bound to this user ───────────────
 async function startSession(
-  kortix: ReturnType<typeof clientFor>,
+  zed: ReturnType<typeof clientFor>,
   connectionId: string | null,
 ): Promise<string> {
   const body: Record<string, unknown> = {
@@ -157,7 +157,7 @@ async function startSession(
     // Backend-only secret narrowing. KAAB_OVERRIDES=off omits it.
     ...(includeOverrides && SECRET_ID ? { secrets: [SECRET_ID] } : {}),
   };
-  const session = await kortix.project(projectId!).sessions.create(body);
+  const session = await zed.project(projectId!).sessions.create(body);
   console.error(
     `[session ${session.session_id}] origin=${session.origin ?? '(n/a)'}` +
       ` secrets=${JSON.stringify(session.secrets_allowlist ?? null)}`,
@@ -169,23 +169,23 @@ async function startSession(
 /** Drive one turn and stream its text deltas to `onText`; resolves when the
  *  session goes idle (turn complete). */
 async function runTurn(
-  kortix: ReturnType<typeof clientFor>,
+  zed: ReturnType<typeof clientFor>,
   sessionId: string,
   prompt: string,
   onText: (delta: string) => void,
 ): Promise<void> {
-  const session = kortix.session(projectId!, sessionId);
+  const session = zed.session(projectId!, sessionId);
   // ensureReady() blocks — polling the sandbox cold start (up to ~3 min by
   // default; pass { readyTimeoutMs } to wait longer) — until the runtime is up,
   // THEN we stream, so the stream is connected before the prompt goes out and no
   // early events are missed (see example 02).
   //
-  // Streaming precondition: the sandbox must be able to reach YOUR Kortix API
-  // (its KORTIX_URL) to finish booting OpenCode. A hosted deployment satisfies
+  // Streaming precondition: the sandbox must be able to reach YOUR Zed API
+  // (its ZED_URL) to finish booting OpenCode. A hosted deployment satisfies
   // this out of the box; against a LOCAL API a cloud sandbox cannot reach
   // localhost, so front the API with a public tunnel (e.g.
   // `cloudflared tunnel --url http://localhost:8010`) and start it with
-  // KORTIX_URL set to that tunnel URL.
+  // ZED_URL set to that tunnel URL.
   await session.ensureReady();
 
   await new Promise<void>((resolve, reject) => {
@@ -220,17 +220,17 @@ async function runTurn(
 
 /** Full flow for one end-user + prompt, streaming text to `onText`. */
 async function serveOneUser(endUserId: string, prompt: string, onText: (t: string) => void) {
-  const kortix = clientFor(endUserId);
-  // The connector layer is optional: on a bare project (no kortix.yaml / no
+  const zed = clientFor(endUserId);
+  // The connector layer is optional: on a bare project (no zed.yaml / no
   // connector) it degrades to "no binding" and the session + streaming path
   // still runs. Set KAAB_NO_CONNECTOR=1 to skip it entirely.
   let connectionId: string | null = null;
   if (process.env.KAAB_NO_CONNECTOR !== '1') {
     try {
-      await ensureConnector(kortix);
+      await ensureConnector(zed);
       // In a real wrapper this credential is the user's own connected account.
       connectionId = await ensureUserConnection(
-        kortix,
+        zed,
         endUserId,
         process.env.KAAB_USER_CREDENTIAL ?? 'placeholder-token',
       );
@@ -238,8 +238,8 @@ async function serveOneUser(endUserId: string, prompt: string, onText: (t: strin
       console.error(`[connector] unavailable, continuing without a binding: ${String(err)}`);
     }
   }
-  const sessionId = await startSession(kortix, connectionId);
-  await runTurn(kortix, sessionId, prompt, onText);
+  const sessionId = await startSession(zed, connectionId);
+  await runTurn(zed, sessionId, prompt, onText);
 }
 
 // ─── run modes ───────────────────────────────────────────────────────────────

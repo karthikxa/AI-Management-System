@@ -28,13 +28,13 @@ export const MACHINE_CREDIT_BONUS = 5;
 /**
  * Margin multiplier applied to the live models.dev cost on every LLM gateway
  * call. 1.2 = 20% profit (default). Override per-environment with
- * KORTIX_LLM_MARKUP — useful for staging (1.0 = at-cost) or promotional
+ * ZED_LLM_MARKUP — useful for staging (1.0 = at-cost) or promotional
  * periods. Clamped to >= 1 so we never undercut the provider.
  */
 export const DEFAULT_LLM_PRICE_MARKUP = 1.2;
 
 export function llmPriceMarkup(): number {
-  const raw = Number.parseFloat(process.env.KORTIX_LLM_MARKUP ?? '');
+  const raw = Number.parseFloat(process.env.ZED_LLM_MARKUP ?? '');
   if (!Number.isFinite(raw) || raw < 1) return DEFAULT_LLM_PRICE_MARKUP;
   return raw;
 }
@@ -68,7 +68,7 @@ export const TYPICAL_COMPUTE_BUDGET_PER_SEAT_USD = 15;
 /** Display-only split of INCLUDED_CREDITS_PER_SEAT_USD for pricing-page copy. */
 export const TYPICAL_LLM_BUDGET_PER_SEAT_USD = 10;
 
-// Per-second customer pricing for the reserved sandbox spec in kortix.yaml.
+// Per-second customer pricing for the reserved sandbox spec in zed.yaml.
 // These rates apply to every hosted provider. Each rate is 1.2× Daytona's
 // published list rate.
 // Daytona list (https://www.daytona.io/pricing, as of 2026-06):
@@ -146,12 +146,12 @@ export function getComputeDisplayPriceCents(serverType: string): number | null {
 
 /**
  * Human-readable line for Stripe checkout / invoice descriptions.
- * Example: "Kortix Computer · Pro — 8 vCPU, 16 GB RAM, 320 GB SSD"
+ * Example: "Zed Computer · Pro — 8 vCPU, 16 GB RAM, 320 GB SSD"
  */
 export function getComputeDescription(serverType: string): string {
   const t = COMPUTE_TIERS[serverType];
-  if (!t) return 'Kortix Computer';
-  return `Kortix Computer · ${t.label} — ${t.cores} vCPU, ${t.memoryGb} GB RAM, ${t.diskGb} GB SSD`;
+  if (!t) return 'Zed Computer';
+  return `Zed Computer · ${t.label} — ${t.cores} vCPU, ${t.memoryGb} GB RAM, ${t.diskGb} GB SSD`;
 }
 
 // ─── Tiers ──────────────────────────────────────────────────────────────────
@@ -238,17 +238,17 @@ const TIERS: Record<string, TierConfig> = {
   // The plan carries the credit pool and the concurrency limit; headcount does
   // not enter the price. Seats priced humans, but the cost driver is agents,
   // and agents run unattended — a team of two could run fifty of them, and a
-  // Kortix-as-a-Backend customer serves end users who are not seats at all.
+  // Zed-as-a-Backend customer serves end users who are not seats at all.
   //
   // `models: []` — NO included managed LLM. `tierGrantsAllModels` is false, so
   // the wallet funds sandbox compute only, exactly as the free tier already
   // works. BYOK, OpenCode and ChatGPT-subscription paths are untouched; a
   // managed key is billed against the wallet only for tiers that grant models.
-  // This takes Kortix out of a short position on model prices: an upstream
+  // This takes Zed out of a short position on model prices: an upstream
   // increase can no longer eat a fixed plan's margin.
   //
   // Price : credits holds at 1.6 : 1, which is ~48% gross margin when a plan
-  // burns its whole pool (COGS = pool ÷ KORTIX_MARKUP). Keep that ratio if you
+  // burns its whole pool (COGS = pool ÷ ZED_MARKUP). Keep that ratio if you
   // add a tier — it is the number that makes the ladder coherent.
   starter: {
     name: 'starter',
@@ -446,7 +446,7 @@ const STRIPE_PRICES_PROD: StripePriceConfig = {
   subscriptions: {
     free: { monthly: 'price_1RIGvuG6l1KZGqIrw14abxeL' },
     pro: { monthly: 'price_1RILb4G6l1KZGqIrhomjgDnO' }, // TODO: create prod Pro price and replace
-    per_seat: { monthly: 'price_1TdyruG6l1KZGqIrMzPVmQSO' }, // live "Kortix seat" $40/mo
+    per_seat: { monthly: 'price_1TdyruG6l1KZGqIrMzPVmQSO' }, // live "Zed seat" $40/mo
     // Legacy price → tier mappings (for webhook resolution of existing subs)
     tier_2_20: {
       monthly: 'price_1RILb4G6l1KZGqIrhomjgDnO',
@@ -492,7 +492,7 @@ const STRIPE_PRICES_PROD: StripePriceConfig = {
   computeProductId: 'prod_SCl7AQ2C8kK1CD', // TODO: create prod compute product
 };
 
-// Staging shares the MAIN Kortix Stripe account TEST mode (acct_1R5BVvG6l1KZGqIr)
+// Staging shares the MAIN Zed Stripe account TEST mode (acct_1R5BVvG6l1KZGqIr)
 // — the same test sandbox as STRIPE_PRICES_DEV, which is the account staging's
 // deployed STRIPE_SECRET_KEY (sk_test_…) actually points at. The subscription
 // price + product ids therefore mirror the dev test catalog. The older
@@ -503,7 +503,7 @@ const STRIPE_PRICES_STAGING: StripePriceConfig = {
   subscriptions: {
     free: { monthly: 'price_1RIGvuG6l1KZGqIrw14abxeL' },
     pro: { monthly: 'price_1TeyA7G6l1KZGqIr7ZhEpoVm' },
-    per_seat: { monthly: 'price_1TeyA7G6l1KZGqIrTb2DKGS0' }, // test "Kortix seat" $40/mo
+    per_seat: { monthly: 'price_1TeyA7G6l1KZGqIrTb2DKGS0' }, // test "Zed seat" $40/mo
   },
   credits: {
     10: 'price_1RxXOvG6l1KZGqIrMqsiYQvk',
@@ -518,7 +518,7 @@ const STRIPE_PRICES_STAGING: StripePriceConfig = {
 };
 
 // Local-dev Stripe TEST-mode sandbox. Every id here lives in the test mode of
-// the main Kortix Stripe account (acct_1R5BVvG6l1KZGqIr) — the account your
+// the main Zed Stripe account (acct_1R5BVvG6l1KZGqIr) — the account your
 // local `STRIPE_SECRET_KEY` (sk_test_…) points at. The prod/staging configs
 // above are LIVE-mode ids in other accounts and 404 with a test key ("No such
 // price"), which is why local per-seat checkout was failing. Created via the
@@ -528,7 +528,7 @@ const STRIPE_PRICES_DEV: StripePriceConfig = {
   subscriptions: {
     free: { monthly: 'price_1RIGvuG6l1KZGqIrw14abxeL' },
     pro: { monthly: 'price_1TeyA7G6l1KZGqIr7ZhEpoVm' },
-    per_seat: { monthly: 'price_1TeyA7G6l1KZGqIrTb2DKGS0' }, // test "Kortix seat" $40/mo
+    per_seat: { monthly: 'price_1TeyA7G6l1KZGqIrTb2DKGS0' }, // test "Zed seat" $40/mo
   },
   credits: {
     10: 'price_1TeyA8G6l1KZGqIrWYDbPN0O',
@@ -543,7 +543,7 @@ const STRIPE_PRICES_DEV: StripePriceConfig = {
 };
 
 function getStripePrices(): StripePriceConfig {
-  switch (config.INTERNAL_KORTIX_ENV) {
+  switch (config.INTERNAL_ZED_ENV) {
     case 'prod':
       return STRIPE_PRICES_PROD;
     case 'staging':
@@ -680,14 +680,14 @@ export function tierGrantsAllModels(tierName: string): boolean {
 }
 
 /**
- * Whether a resolved billing tier is blocked from Kortix-managed models.
+ * Whether a resolved billing tier is blocked from Zed-managed models.
  *
  * The environment argument remains for source compatibility. It has no effect.
  * `free`, `none`, and unknown tiers are blocked in every environment.
  */
 export function accountIsFreeTierForModels(
   tierName: string,
-  _env: string = config.INTERNAL_KORTIX_ENV,
+  _env: string = config.INTERNAL_ZED_ENV,
 ): boolean {
   return !tierGrantsAllModels(tierName);
 }
@@ -793,16 +793,16 @@ export function isDowngrade(fromTier: string, toTier: string): boolean {
 // ─── RevenueCat (mobile billing — untouched) ─────────────────────────────────
 
 const REVENUECAT_PRODUCT_MAPPING: Record<string, string> = {
-  kortix_plus_monthly: 'tier_2_20',
-  kortix_plus_yearly: 'tier_2_20',
+  zed_plus_monthly: 'tier_2_20',
+  zed_plus_yearly: 'tier_2_20',
   'plus:plus-monthly': 'tier_2_20',
 
-  kortix_pro_monthly: 'pro',
-  kortix_pro_yearly: 'pro',
+  zed_pro_monthly: 'pro',
+  zed_pro_yearly: 'pro',
   'pro:pro-monthly': 'pro',
 
-  kortix_ultra_monthly: 'tier_25_200',
-  kortix_ultra_yearly: 'tier_25_200',
+  zed_ultra_monthly: 'tier_25_200',
+  zed_ultra_yearly: 'tier_25_200',
   'ultra:ultra-monthly': 'tier_25_200',
 };
 

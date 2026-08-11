@@ -1,25 +1,25 @@
-import type { PermissionRequest, QuestionRequest } from '@kortix/sdk';
-import { unwrapRuntime, withKortixScope } from '../api/sdk.ts';
+import type { PermissionRequest, QuestionRequest } from '@zed/sdk';
+import { unwrapRuntime, withZedScope } from '../api/sdk.ts';
 import { emitJson, surfaceApiError, takeFlagBool, takeFlagValue } from '../command-helpers.ts';
 import { C, help, status } from '../style.ts';
 import { type ResolvedSession, loadSessionForChat } from './sessions-chat.ts';
 
 type CtxOpts = { projectArg?: string; hostArg?: string };
 
-const PENDING_HELP = help`Usage: kortix sessions pending <session-id> [options]
+const PENDING_HELP = help`Usage: zed sessions pending <session-id> [options]
 
 List the session's open interactive prompts — tool-permission asks and
 questions the agent is blocked on. Answer them with
-\`kortix sessions approve\` / \`kortix sessions answer\`.
+\`zed sessions approve\` / \`zed sessions answer\`.
 
 Options:
   --project <id>   Operate on this project id (default: linked/default).
-  --host <name>    Operate against a non-default Kortix host.
+  --host <name>    Operate against a non-default Zed host.
   --json           Machine-readable output ({ permissions, questions }).
   -h, --help       Show this help.
 `;
 
-const APPROVE_HELP = help`Usage: kortix sessions approve <session-id> [<request-id>] [options]
+const APPROVE_HELP = help`Usage: zed sessions approve <session-id> [<request-id>] [options]
 
 Answer a pending tool-permission ask. With no <request-id>, acts on the
 session's single pending permission (errors if there are several).
@@ -29,11 +29,11 @@ Options:
   --reject           Deny the request.
   --message "<why>"  Note passed back to the agent with the reply.
   --project <id>     Operate on this project id (default: linked/default).
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   -h, --help         Show this help.
 `;
 
-const ANSWER_HELP = help`Usage: kortix sessions answer <session-id> [<request-id>] [options]
+const ANSWER_HELP = help`Usage: zed sessions answer <session-id> [<request-id>] [options]
 
 Answer a pending question the agent asked. With no <request-id>, acts on
 the session's single pending question (errors if there are several).
@@ -47,7 +47,7 @@ Options:
   --answers <json>   Raw answers payload (string[][]) for requests carrying
                      several questions — overrides --option/--text.
   --project <id>     Operate on this project id (default: linked/default).
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   -h, --help         Show this help.
 `;
 
@@ -88,10 +88,10 @@ async function pendingFor(resolved: ResolvedSession): Promise<{
 } | null> {
   try {
     const [permissions, questions] = await Promise.all([
-      withKortixScope(resolved.auth, async () =>
+      withZedScope(resolved.auth, async () =>
         unwrapRuntime(await resolved.runtime.permission.list()),
       ),
-      withKortixScope(resolved.auth, async () =>
+      withZedScope(resolved.auth, async () =>
         unwrapRuntime(await resolved.runtime.question.list()),
       ),
     ]);
@@ -133,7 +133,7 @@ export async function runSessionsPending(argv: string[]): Promise<number> {
       process.stdout.write(
         `  ${C.cyan}${p.id}${C.reset}  ${C.bold}${p.permission}${C.reset}` +
           `${p.patterns.length ? ` ${C.dim}${p.patterns.join(', ')}${C.reset}` : ''}\n` +
-          `    ${C.dim}approve: kortix sessions approve ${resolved.session.session_id} ${p.id}${C.reset}\n`,
+          `    ${C.dim}approve: zed sessions approve ${resolved.session.session_id} ${p.id}${C.reset}\n`,
       );
     }
   }
@@ -149,7 +149,7 @@ export async function runSessionsPending(argv: string[]): Promise<number> {
         }
       }
       process.stdout.write(
-        `    ${C.dim}answer: kortix sessions answer ${resolved.session.session_id} ${q.id} --option "<label>"${C.reset}\n`,
+        `    ${C.dim}answer: zed sessions answer ${resolved.session.session_id} ${q.id} --option "<label>"${C.reset}\n`,
       );
     }
   }
@@ -202,7 +202,7 @@ export async function runSessionsApprove(argv: string[]): Promise<number> {
 
   const reply = reject ? 'reject' : always ? 'always' : 'once';
   try {
-    await withKortixScope(resolved.auth, async () =>
+    await withZedScope(resolved.auth, async () =>
       unwrapRuntime(
         await resolved.runtime.permission.reply({
           requestID: requestId,
@@ -290,7 +290,7 @@ export async function runSessionsAnswer(argv: string[]): Promise<number> {
 
   try {
     if (reject) {
-      await withKortixScope(resolved.auth, async () =>
+      await withZedScope(resolved.auth, async () =>
         unwrapRuntime(await resolved.runtime.question.reject({ requestID: requestId })),
       );
       process.stdout.write(`${status.ok(`Dismissed ${C.bold}${requestId}${C.reset}`)}\n`);
@@ -314,7 +314,7 @@ export async function runSessionsAnswer(argv: string[]): Promise<number> {
       });
       answers = [[...mapped, ...(text !== undefined ? [text] : [])]];
     }
-    await withKortixScope(resolved.auth, async () =>
+    await withZedScope(resolved.auth, async () =>
       unwrapRuntime(
         await resolved.runtime.question.reply({
           requestID: requestId,

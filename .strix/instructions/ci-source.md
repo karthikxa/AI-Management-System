@@ -1,6 +1,6 @@
-# Kortix pull-request security review
+# Zed pull-request security review
 
-Perform an authorized, source-aware security review of the checked-out Kortix
+Perform an authorized, source-aware security review of the checked-out Zed
 repository. In pull requests, prioritize the diff from `origin/main` and follow
 reachable data flow into surrounding code. Do not contact production services
 or any target outside the mounted repository.

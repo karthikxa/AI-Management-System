@@ -9,7 +9,7 @@ import {
   projectSessions,
   projects,
   sessionSandboxes,
-} from '@kortix/db';
+} from '@zed/db';
 import type { SQL } from 'drizzle-orm';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import { Hono } from 'hono';
@@ -21,20 +21,20 @@ const USER_ID = '00000000-0000-4000-a000-000000000001';
 const ACCOUNT_ID = '00000000-0000-4000-a000-000000000101';
 const PROJECT_ID = '00000000-0000-4000-a000-000000000201';
 const SESSION_ID = '00000000-0000-4000-a000-000000000301';
-const TEST_GITHUB_OWNER = 'kortix-org';
-const PROJECT_RUNTIME_PAT = 'kortix_pat_project_runtime';
-const SESSION_AGENT_PAT = 'kortix_pat_session_agent';
-const PROJECT_SANDBOX_TOKEN = 'kortix_sb_project_runtime';
-const PROJECT_SA_TOKEN = 'kortix_sa_backend_wrapper';
-const SESSION_BOUND_PAT = 'kortix_pat_session_connector';
-const ORIGINAL_KORTIX_GITHUB_OWNER = process.env.KORTIX_GITHUB_OWNER;
+const TEST_GITHUB_OWNER = 'zed-org';
+const PROJECT_RUNTIME_PAT = 'zed_pat_project_runtime';
+const SESSION_AGENT_PAT = 'zed_pat_session_agent';
+const PROJECT_SANDBOX_TOKEN = 'zed_sb_project_runtime';
+const PROJECT_SA_TOKEN = 'zed_sa_backend_wrapper';
+const SESSION_BOUND_PAT = 'zed_pat_session_connector';
+const ORIGINAL_ZED_GITHUB_OWNER = process.env.ZED_GITHUB_OWNER;
 const ORIGINAL_API_KEY_SECRET = process.env.API_KEY_SECRET;
-const ORIGINAL_KORTIX_URL = process.env.KORTIX_URL;
+const ORIGINAL_ZED_URL = process.env.ZED_URL;
 const ORIGINAL_ALLOWED_SANDBOX_PROVIDERS = process.env.ALLOWED_SANDBOX_PROVIDERS;
 
-process.env.KORTIX_GITHUB_OWNER = TEST_GITHUB_OWNER;
+process.env.ZED_GITHUB_OWNER = TEST_GITHUB_OWNER;
 process.env.API_KEY_SECRET = 'test-project-secret-key-material-32-bytes';
-process.env.KORTIX_URL = 'https://api.test.kortix.local';
+process.env.ZED_URL = 'https://api.test.zed.local';
 process.env.ALLOWED_SANDBOX_PROVIDERS = 'daytona,platinum,e2b';
 
 const { config } = await import('../config');
@@ -94,7 +94,7 @@ const projectRow: typeof projects.$inferSelect = {
   name: 'Contract Project',
   repoUrl: `https://github.com/${TEST_GITHUB_OWNER}/contract-project.git`,
   defaultBranch: 'main',
-  manifestPath: 'kortix.yaml',
+  manifestPath: 'zed.yaml',
   idempotencyKey: null,
   status: 'active',
   metadata: {
@@ -209,7 +209,7 @@ mock.module('../middleware/auth', () => ({
       c.set('agentGrant', {
         agent: 'contract-agent',
         connectors: 'all',
-        kortixCli: 'all',
+        zedCli: 'all',
         env: 'all',
       });
       await next();
@@ -242,7 +242,7 @@ mock.module('../middleware/auth', () => ({
     // The real middleware sets `sessionId` to the SUPABASE AUTH session for
     // browser JWTs (IAM idle/lifetime gate) — it is NOT a project session.
     // Mirrored here so a caller-session consumer that forgets to filter by
-    // authType (callerKortixSessionId) fails a test instead of stamping
+    // authType (callerZedSessionId) fails a test instead of stamping
     // login-session ids into project data.
     c.set('sessionId', '00000000-0000-4000-a000-00000000auth');
     await next();
@@ -291,14 +291,14 @@ mock.module('../projects/git', () => ({
 
 mock.module('../snapshots/builder', () => ({
   ensureSandboxImage: async () => ({
-    snapshotName: 'kortix-default-test',
+    snapshotName: 'zed-default-test',
     slug: 'default',
     contentHash: 'a'.repeat(64),
     built: false,
     isDefault: true,
   }),
   ensureMetaSandboxImage: async () => ({
-    snapshotName: 'kortix-meta-test',
+    snapshotName: 'zed-meta-test',
     slug: 'meta',
     contentHash: 'b'.repeat(64),
     built: false,
@@ -306,7 +306,7 @@ mock.module('../snapshots/builder', () => ({
   }),
   deleteSandboxImage: async () => ({
     deleted: false,
-    snapshotName: 'kortix-default-test',
+    snapshotName: 'zed-default-test',
     slug: 'default',
   }),
   listSnapshotBuilds: async () => [],
@@ -322,7 +322,7 @@ mock.module('../snapshots/builder', () => ({
   ensurePlatformDefaultImage: async () => undefined,
   resolveCommitSha: async () => 'a'.repeat(40),
   ensurePerProjectWarmImage: async () => ({
-    snapshotName: 'kortix-ppwarm-test',
+    snapshotName: 'zed-ppwarm-test',
     tip: 'a'.repeat(40),
     built: false,
     provider: 'daytona',
@@ -339,7 +339,7 @@ mock.module('../projects/github', () => ({
         .pop()
         ?.replace(/\.git$/, '') ?? 'contract-project',
   }),
-  buildGitHubAppInstallUrl: () => 'https://github.com/apps/kortix-test/installations/new',
+  buildGitHubAppInstallUrl: () => 'https://github.com/apps/zed-test/installations/new',
   verifyGitHubAppInstallState: (state: string) => state,
   verifyGitHubAppInstallStatePayload: (state: string) => ({
     accountId: state,
@@ -350,7 +350,7 @@ mock.module('../projects/github', () => ({
   getGitHubPatAuthContext: () => ({
     token: 'pat-token',
     source: 'pat',
-    owner: 'kortix-org',
+    owner: 'zed-org',
   }),
   deleteFile: async () => undefined,
   commitFile: async () => undefined,
@@ -362,18 +362,18 @@ mock.module('../projects/github', () => ({
   },
   getFileSha: async () => null,
   getGitHubAppInstallation: async () => ({
-    account: { login: 'kortix-org', type: 'Organization' },
+    account: { login: 'zed-org', type: 'Organization' },
     repository_selection: 'all',
     permissions: {},
   }),
   getRepo: async () => ({
     id: 7,
     name: 'contract-project',
-    full_name: 'kortix-org/contract-project',
+    full_name: 'zed-org/contract-project',
     private: true,
-    html_url: 'https://github.com/kortix-org/contract-project',
-    clone_url: 'https://github.com/kortix-org/contract-project.git',
-    ssh_url: 'git@github.com:kortix-org/contract-project.git',
+    html_url: 'https://github.com/zed-org/contract-project',
+    clone_url: 'https://github.com/zed-org/contract-project.git',
+    ssh_url: 'git@github.com:zed-org/contract-project.git',
     default_branch: 'main',
     description: null,
   }),
@@ -487,7 +487,7 @@ mock.module('../billing/services/compute-metering', () => ({
 }));
 
 // Session create runs the billing gate. Return a billing-active account so the
-// contract holds regardless of whether KORTIX_BILLING_INTERNAL_ENABLED is set
+// contract holds regardless of whether ZED_BILLING_INTERNAL_ENABLED is set
 // in the run environment (the gate is a no-op when billing is disabled).
 mock.module('../billing/repositories/credit-accounts', () => ({
   getSubscriptionInfo: async () => ({ tier: 'pro' }),
@@ -530,7 +530,7 @@ mock.module('../repositories/account-tokens', () => ({
 
 // Pin the concurrent-session cap to 1 regardless of env mode so this test
 // always exercises the rate-limit branch — the real implementation bypasses
-// the cap when KORTIX_BILLING_INTERNAL_ENABLED is false.
+// the cap when ZED_BILLING_INTERNAL_ENABLED is false.
 mock.module('../shared/account-limits', () => ({
   resolveAccountTier: async () => 'free',
   maxConcurrentSessionsForTier: () => 1,
@@ -620,7 +620,7 @@ mock.module('../shared/db', () => ({
             if (fields && Object.keys(fields).includes('activeCount'))
               return [{ activeCount: activeSessionCount }];
             if (table === projectSecrets) {
-              return secretRows.filter((row) => row.name === 'KORTIX_GIT_AUTH_TOKEN').slice(0, 1);
+              return secretRows.filter((row) => row.name === 'ZED_GIT_AUTH_TOKEN').slice(0, 1);
             }
             if (table === projectSessionRuntimeContexts) return runtimeContextRows.slice(0, 1);
             if (table === projectGitConnections) return gitConnectionRows.slice(0, 1);
@@ -1001,20 +1001,20 @@ async function flushUntil(predicate: () => boolean, timeoutMs = 2000): Promise<v
 describe('project session API contract', () => {
   afterAll(() => {
     mock.restore();
-    if (ORIGINAL_KORTIX_GITHUB_OWNER === undefined) {
-      delete process.env.KORTIX_GITHUB_OWNER;
+    if (ORIGINAL_ZED_GITHUB_OWNER === undefined) {
+      delete process.env.ZED_GITHUB_OWNER;
     } else {
-      process.env.KORTIX_GITHUB_OWNER = ORIGINAL_KORTIX_GITHUB_OWNER;
+      process.env.ZED_GITHUB_OWNER = ORIGINAL_ZED_GITHUB_OWNER;
     }
     if (ORIGINAL_API_KEY_SECRET === undefined) {
       delete process.env.API_KEY_SECRET;
     } else {
       process.env.API_KEY_SECRET = ORIGINAL_API_KEY_SECRET;
     }
-    if (ORIGINAL_KORTIX_URL === undefined) {
-      delete process.env.KORTIX_URL;
+    if (ORIGINAL_ZED_URL === undefined) {
+      delete process.env.ZED_URL;
     } else {
-      process.env.KORTIX_URL = ORIGINAL_KORTIX_URL;
+      process.env.ZED_URL = ORIGINAL_ZED_URL;
     }
     if (ORIGINAL_ALLOWED_SANDBOX_PROVIDERS === undefined) {
       delete process.env.ALLOWED_SANDBOX_PROVIDERS;
@@ -1060,9 +1060,9 @@ describe('project session API contract', () => {
       agentName: 'meta',
       sandboxSlug: 'meta',
       extraEnvVars: {
-        KORTIX_AGENT_NAME: 'meta',
-        KORTIX_META_AGENT: '1',
-        KORTIX_PROJECT_AUTO_CLONE: '0',
+        ZED_AGENT_NAME: 'meta',
+        ZED_META_AGENT: '1',
+        ZED_PROJECT_AUTO_CLONE: '0',
       },
     });
   });
@@ -1081,9 +1081,9 @@ describe('project session API contract', () => {
 
     expect(response.status).toBe(201);
     const created = await response.json();
-    // The fixture project declares `default_agent: 'kortix'` — a meta-session
+    // The fixture project declares `default_agent: 'zed'` — a meta-session
     // spawn resolves to it, never to another platform meta coordinator.
-    expect(created.agent_name).toBe('kortix');
+    expect(created.agent_name).toBe('zed');
     expect(created.metadata?.sandbox_slug).not.toBe('meta');
     expect(created.metadata?.spawned_by_session).toBe(SESSION_ID);
   });
@@ -1453,7 +1453,7 @@ describe('project session API contract', () => {
     expect(listRes.status).toBe(200);
     const listed = await listRes.json();
     const openAiSecret = listed.items.find((item: any) => item.name === 'OPENAI_API_KEY');
-    const gitAuthSecret = listed.items.find((item: any) => item.name === 'KORTIX_GIT_AUTH_TOKEN');
+    const gitAuthSecret = listed.items.find((item: any) => item.name === 'ZED_GIT_AUTH_TOKEN');
     expect(openAiSecret).toBeTruthy();
     expect(openAiSecret.value).toBeUndefined();
     expect(openAiSecret.value_enc).toBeUndefined();
@@ -1513,7 +1513,7 @@ describe('project session API contract', () => {
     expect(before.status).toBe(200);
     const beforeBody = await before.json();
     expect(
-      beforeBody.items.find((item: any) => item.name === 'KORTIX_GIT_AUTH_TOKEN'),
+      beforeBody.items.find((item: any) => item.name === 'ZED_GIT_AUTH_TOKEN'),
     ).toBeUndefined();
 
     const writeRes = await app.request(`/v1/projects/${PROJECT_ID}/git-credential`, {
@@ -1540,7 +1540,7 @@ describe('project session API contract', () => {
     expect(gitConnectionRows).toHaveLength(1);
 
     const deleteRes = await app.request(
-      `/v1/projects/${PROJECT_ID}/secrets/KORTIX_GIT_AUTH_TOKEN`,
+      `/v1/projects/${PROJECT_ID}/secrets/ZED_GIT_AUTH_TOKEN`,
       {
         method: 'DELETE',
       },
@@ -1557,10 +1557,10 @@ describe('project session API contract', () => {
 
     await flushUntil(() => lastProvisionInput !== null);
     const env = lastProvisionInput!.extraEnvVars ?? {};
-    expect(env.KORTIX_GIT_AUTH_TOKEN).toBeUndefined();
-    expect(env.KORTIX_GITHUB_TOKEN).toBeUndefined();
-    expect(env.KORTIX_CLI_TOKEN).toBeUndefined();
-    expect(env.KORTIX_TOKEN).toBeUndefined();
+    expect(env.ZED_GIT_AUTH_TOKEN).toBeUndefined();
+    expect(env.ZED_GITHUB_TOKEN).toBeUndefined();
+    expect(env.ZED_CLI_TOKEN).toBeUndefined();
+    expect(env.ZED_TOKEN).toBeUndefined();
 
     sessionSandboxRows = [
       {
@@ -1895,9 +1895,9 @@ describe('project session API contract', () => {
 
     await flushUntil(() => sandboxProvisionCalls === 1);
     const env = lastProvisionInput!.extraEnvVars ?? {};
-    expect(env).not.toHaveProperty('KORTIX_END_USER_REF');
-    expect(env).not.toHaveProperty('KORTIX_ORIGIN_REF');
-    expect(env.KORTIX_OPENCODE_MODEL).toBe('anthropic/claude-opus-4-8');
+    expect(env).not.toHaveProperty('ZED_END_USER_REF');
+    expect(env).not.toHaveProperty('ZED_ORIGIN_REF');
+    expect(env.ZED_OPENCODE_MODEL).toBe('anthropic/claude-opus-4-8');
     expect(env.GMAIL_TOKEN).toBe('g-secret');
     expect(env.STRIPE_SECRET).toBeUndefined();
 
@@ -1916,7 +1916,7 @@ describe('project session API contract', () => {
     expect(res2.status).toBe(201);
     expect((await res2.json()).agent_name).toBe('reviewer');
     await flushUntil(() => sandboxProvisionCalls === 2);
-    expect(lastProvisionInput!.extraEnvVars?.KORTIX_AGENT_NAME).toBe('reviewer');
+    expect(lastProvisionInput!.extraEnvVars?.ZED_AGENT_NAME).toBe('reviewer');
   });
 
   test('legacy attribution query parameters do not filter session inventory', async () => {
@@ -1947,8 +1947,8 @@ describe('project session API contract', () => {
       {
         secretId: '00000000-0000-4000-a000-000000000402',
         projectId: PROJECT_ID,
-        identifier: 'KORTIX_GIT_AUTH_TOKEN',
-        name: 'KORTIX_GIT_AUTH_TOKEN',
+        identifier: 'ZED_GIT_AUTH_TOKEN',
+        name: 'ZED_GIT_AUTH_TOKEN',
         valueEnc: encryptProjectSecret(PROJECT_ID, 'legacy-git-token'),
         scope: 'runtime',
         ownerUserId: null,
@@ -1976,7 +1976,7 @@ describe('project session API contract', () => {
 
     await flushUntil(() => lastProvisionInput !== null);
     const env = lastProvisionInput!.extraEnvVars ?? {};
-    expect(env.KORTIX_GIT_AUTH_TOKEN).toBeUndefined();
+    expect(env.ZED_GIT_AUTH_TOKEN).toBeUndefined();
 
     sessionSandboxRows = [
       {
@@ -2017,7 +2017,7 @@ describe('project session API contract', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: 'KORTIX_TOKEN',
+        name: 'ZED_TOKEN',
         value: 'should-not-shadow-platform-auth',
       }),
     });
@@ -3056,8 +3056,8 @@ describe('project session API contract', () => {
     expect(lastProvisionInput).toMatchObject({
       agentName: 'meta',
       extraEnvVars: {
-        KORTIX_META_AGENT: '1',
-        KORTIX_PROJECT_AUTO_CLONE: '0',
+        ZED_META_AGENT: '1',
+        ZED_PROJECT_AUTO_CLONE: '0',
       },
     });
   });
@@ -3270,9 +3270,9 @@ describe('project session API contract', () => {
     expect(branchCreateCalls).toBe(0);
     expect(lastProvisionInput?.sandboxId).toBe(SESSION_ID);
     const env = lastProvisionInput?.extraEnvVars ?? {};
-    expect(env.KORTIX_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
-    expect(env.KORTIX_INITIAL_PROMPT).toBeUndefined();
-    expect(env.KORTIX_OPENCODE_MODEL).toBe('anthropic/claude-sonnet-4-6');
+    expect(env.ZED_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
+    expect(env.ZED_INITIAL_PROMPT).toBeUndefined();
+    expect(env.ZED_OPENCODE_MODEL).toBe('anthropic/claude-sonnet-4-6');
   });
 
   test('session create persists a pending prompt without injecting it into the sandbox', async () => {
@@ -3280,7 +3280,7 @@ describe('project session API contract', () => {
     const pendingPrompt = {
       text: 'Map this parcel.',
       agent: 'default',
-      model: { providerID: 'kortix', modelID: 'claude-sonnet-4-5' },
+      model: { providerID: 'zed', modelID: 'claude-sonnet-4-5' },
       variant: 'high',
       attachment_names: ['parcel.geojson'],
     };
@@ -3299,7 +3299,7 @@ describe('project session API contract', () => {
       metadata: { pending_prompt: pendingPrompt },
     });
     await flushUntil(() => sandboxProvisionCalls === 1);
-    expect(lastProvisionInput!.extraEnvVars?.KORTIX_INITIAL_PROMPT).toBeUndefined();
+    expect(lastProvisionInput!.extraEnvVars?.ZED_INITIAL_PROMPT).toBeUndefined();
   });
 
   test('allows only user-owned PATCH fields', async () => {
@@ -3382,34 +3382,34 @@ describe('project session API contract', () => {
     expect(env.OPENAI_API_KEY).toBeUndefined();
     expect(env.LOCAL_BUILD_SECRET).toBe('local-build-value');
 
-    expect(env.KORTIX_PROJECT_ID).toBe(PROJECT_ID);
-    expect(env.KORTIX_SESSION_ID).toBeTruthy();
+    expect(env.ZED_PROJECT_ID).toBe(PROJECT_ID);
+    expect(env.ZED_SESSION_ID).toBeTruthy();
     const expectedRepoUrl =
-      process.env.KORTIX_GIT_PROXY === 'true'
+      process.env.ZED_GIT_PROXY === 'true'
         ? new URL(
             `/v1/git/${PROJECT_ID}.git`,
-            process.env.KORTIX_URL ?? 'https://test.kortix.local',
+            process.env.ZED_URL ?? 'https://test.zed.local',
           ).toString()
         : projectRow.repoUrl;
-    expect(env.KORTIX_REPO_URL).toBe(expectedRepoUrl);
-    expect(env.KORTIX_BASE_REF).toBe('main');
+    expect(env.ZED_REPO_URL).toBe(expectedRepoUrl);
+    expect(env.ZED_BASE_REF).toBe('main');
     // LLM/tool-router URLs are no longer injected — the sandbox derives any
-    // router endpoint it needs from KORTIX_API_URL.
-    expect(env.KORTIX_LLM_TOKEN).toBeUndefined();
-    expect(env.KORTIX_LLM_BASE_URL).toBeUndefined();
+    // router endpoint it needs from ZED_API_URL.
+    expect(env.ZED_LLM_TOKEN).toBeUndefined();
+    expect(env.ZED_LLM_BASE_URL).toBeUndefined();
     expect(env.TAVILY_API_URL).toBeUndefined();
-    expect(env.KORTIX_CLI_TOKEN).toBeUndefined();
-    expect(env.KORTIX_TOKEN).toBeUndefined();
-    expect(env.KORTIX_API_URL).toBeTruthy();
-    expect(env.KORTIX_GIT_AUTH_TOKEN).toBeUndefined();
-    expect(env.KORTIX_GITHUB_TOKEN).toBeUndefined();
-    expect(env.KORTIX_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
-    expect(env.KORTIX_INITIAL_PROMPT).toBeUndefined();
+    expect(env.ZED_CLI_TOKEN).toBeUndefined();
+    expect(env.ZED_TOKEN).toBeUndefined();
+    expect(env.ZED_API_URL).toBeTruthy();
+    expect(env.ZED_GIT_AUTH_TOKEN).toBeUndefined();
+    expect(env.ZED_GITHUB_TOKEN).toBeUndefined();
+    expect(env.ZED_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
+    expect(env.ZED_INITIAL_PROMPT).toBeUndefined();
 
     const shadowRes = await app.request(`/v1/projects/${PROJECT_ID}/secrets`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'KORTIX_TOKEN', value: 'phishy' }),
+      body: JSON.stringify({ name: 'ZED_TOKEN', value: 'phishy' }),
     });
     expect(shadowRes.status).toBe(400);
   });
@@ -3447,9 +3447,9 @@ describe('project session API contract', () => {
 
     await flushUntil(() => sandboxProvisionCalls === 1);
     expect(sandboxProvisionCalls).toBe(1);
-    expect(lastProvisionInput!.extraEnvVars?.KORTIX_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
-    expect(lastProvisionInput!.extraEnvVars?.KORTIX_BASE_REF).toBe('dev');
-    expect(lastProvisionInput!.extraEnvVars?.KORTIX_INITIAL_PROMPT).toBe('Review the repo');
+    expect(lastProvisionInput!.extraEnvVars?.ZED_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
+    expect(lastProvisionInput!.extraEnvVars?.ZED_BASE_REF).toBe('dev');
+    expect(lastProvisionInput!.extraEnvVars?.ZED_INITIAL_PROMPT).toBe('Review the repo');
   });
 
   test('persists runtime_context separately and injects one server-owned JSON envelope', async () => {
@@ -3476,7 +3476,7 @@ describe('project session API contract', () => {
     );
     expect(sessionRow?.metadata).not.toHaveProperty('runtime_context');
     const env = lastProvisionInput?.extraEnvVars ?? {};
-    expect(JSON.parse(env.KORTIX_SESSION_CONTEXT!)).toEqual(runtimeContext);
+    expect(JSON.parse(env.ZED_SESSION_CONTEXT!)).toEqual(runtimeContext);
     expect(env).not.toHaveProperty('workspace_id');
     expect(env).not.toHaveProperty('VEYRIS_WORKSPACE_ID');
   });
@@ -3484,7 +3484,7 @@ describe('project session API contract', () => {
   test('rejects invalid runtime_context before persisting or provisioning a session', async () => {
     const app = createApp();
     for (const runtimeContext of [
-      { KORTIX_TOKEN: 'shadow' },
+      { ZED_TOKEN: 'shadow' },
       { workspace_id: { nested: true } },
       { payload: 'é'.repeat(9_000) },
     ]) {
@@ -3543,7 +3543,7 @@ describe('project session API contract', () => {
     });
     expect(res.status).toBe(200);
     await flushUntil(() => sandboxProvisionCalls === 1);
-    expect(JSON.parse(lastProvisionInput!.extraEnvVars!.KORTIX_SESSION_CONTEXT!)).toEqual(context);
+    expect(JSON.parse(lastProvisionInput!.extraEnvVars!.ZED_SESSION_CONTEXT!)).toEqual(context);
   });
 
   test('replacement restart restores durable runtime_context', async () => {
@@ -3570,7 +3570,7 @@ describe('project session API contract', () => {
     });
     expect(res.status).toBe(202);
     await flushUntil(() => sandboxProvisionCalls === 1);
-    expect(JSON.parse(lastProvisionInput!.extraEnvVars!.KORTIX_SESSION_CONTEXT!)).toEqual(context);
+    expect(JSON.parse(lastProvisionInput!.extraEnvVars!.ZED_SESSION_CONTEXT!)).toEqual(context);
   });
 
   test('explicit restart replaces an unmaterialized capacity failure without auto-sending its prompt', async () => {
@@ -3624,7 +3624,7 @@ describe('project session API contract', () => {
       status: 'provisioning',
     });
     await flushUntil(() => sandboxProvisionCalls === 1);
-    expect(lastProvisionInput!.extraEnvVars?.KORTIX_INITIAL_PROMPT).toBeUndefined();
+    expect(lastProvisionInput!.extraEnvVars?.ZED_INITIAL_PROMPT).toBeUndefined();
   });
 
   test('accepts a client-created session branch without recreating it server-side', async () => {

@@ -37,10 +37,10 @@ beforeEach(() => {
 const { processRevenueCatWebhook } = await import('../billing/services/webhooks');
 
 describe('processRevenueCatWebhook canonical account writes', () => {
-  test('writes initial purchase into canonical kortix account', async () => {
+  test('writes initial purchase into canonical zed account', async () => {
     const result = await processRevenueCatWebhook(createMockRevenueCatEvent('INITIAL_PURCHASE', {
       app_user_id: 'legacy_user_123',
-      product_id: 'kortix_plus_monthly',
+      product_id: 'zed_plus_monthly',
       subscriber_id: 'rc_customer_123',
       original_transaction_id: 'rc_txn_123',
     }));

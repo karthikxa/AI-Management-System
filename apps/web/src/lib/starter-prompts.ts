@@ -2,15 +2,15 @@
  * Starter prompts surfaced in the onboarding wizard's "Try your first
  * request" step and on the project home composer suggestions.
  *
- * Each entry maps to a real starter skill that ships with every new Kortix
- * project (`packages/starter/templates/general-knowledge-worker/.kortix/
+ * Each entry maps to a real starter skill that ships with every new Zed
+ * project (`packages/starter/templates/general-knowledge-worker/.zed/
  * opencode/skills/`). Keep these worded as actual user requests, not
  * feature descriptions — they're meant to be clickable and immediately
  * useful for a non-technical founder.
  *
  * The first item is the meta-onboarding prompt: it kicks off a back-and-forth
  * where the agent asks about the user's company and writes the answers into
- * `.kortix/memory/` (eventually as a change request for review).
+ * `.zed/memory/` (eventually as a change request for review).
  */
 
 import {

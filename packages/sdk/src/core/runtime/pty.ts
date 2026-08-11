@@ -1,6 +1,6 @@
 /**
- * Kortix-native PTY client — the daemon `/kortix/pty` endpoints
- * (routes/pty.ts in kortix-sandbox-agent-server), owned by the SDK.
+ * Zed-native PTY client — the daemon `/zed/pty` endpoints
+ * (routes/pty.ts in zed-sandbox-agent-server), owned by the SDK.
  * Independent of whatever agent runtime (OpenCode today) is running in the
  * sandbox — a raw terminal shouldn't go down with the agent.
  *
@@ -15,7 +15,7 @@
 import { authenticatedFetch, getAuthToken } from '../http/auth';
 import { stripTrailingSlashes } from '../../platform/strings';
 
-export interface KortixPty {
+export interface ZedPty {
   id: string;
   title: string;
   command: string;
@@ -33,26 +33,26 @@ async function ptyErrorMessage(res: Response, fallback: string): Promise<string>
 
 function requireBaseUrl(baseUrl: string): string {
   if (!baseUrl) {
-    throw new Error('[kortix-pty] Server URL not ready — sandbox is still loading');
+    throw new Error('[zed-pty] Server URL not ready — sandbox is still loading');
   }
   return stripTrailingSlashes(baseUrl);
 }
 
-/** List running/exited terminals. Daemon `GET /kortix/pty`. */
-export async function listKortixPty(baseUrl: string): Promise<KortixPty[]> {
+/** List running/exited terminals. Daemon `GET /zed/pty`. */
+export async function listZedPty(baseUrl: string): Promise<ZedPty[]> {
   const url = requireBaseUrl(baseUrl);
-  const res = await authenticatedFetch(`${url}/kortix/pty`);
+  const res = await authenticatedFetch(`${url}/zed/pty`);
   if (!res.ok) throw new Error(await ptyErrorMessage(res, 'Failed to list terminals'));
   return res.json();
 }
 
-/** Spawn a new terminal. Daemon `POST /kortix/pty`. */
-export async function createKortixPty(
+/** Spawn a new terminal. Daemon `POST /zed/pty`. */
+export async function createZedPty(
   baseUrl: string,
   body?: { command?: string; args?: string[]; cwd?: string; title?: string; env?: Record<string, string> },
-): Promise<KortixPty> {
+): Promise<ZedPty> {
   const url = requireBaseUrl(baseUrl);
-  const res = await authenticatedFetch(`${url}/kortix/pty`, {
+  const res = await authenticatedFetch(`${url}/zed/pty`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body ?? {}),
@@ -61,14 +61,14 @@ export async function createKortixPty(
   return res.json();
 }
 
-/** Rename/resize a terminal. Daemon `PATCH /kortix/pty/:id`. */
-export async function updateKortixPty(
+/** Rename/resize a terminal. Daemon `PATCH /zed/pty/:id`. */
+export async function updateZedPty(
   baseUrl: string,
   ptyId: string,
   body: { title?: string; size?: { rows: number; cols: number } },
-): Promise<KortixPty> {
+): Promise<ZedPty> {
   const url = requireBaseUrl(baseUrl);
-  const res = await authenticatedFetch(`${url}/kortix/pty/${encodeURIComponent(ptyId)}`, {
+  const res = await authenticatedFetch(`${url}/zed/pty/${encodeURIComponent(ptyId)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -77,10 +77,10 @@ export async function updateKortixPty(
   return res.json();
 }
 
-/** Kill + remove a terminal. Daemon `DELETE /kortix/pty/:id`. */
-export async function removeKortixPty(baseUrl: string, ptyId: string): Promise<void> {
+/** Kill + remove a terminal. Daemon `DELETE /zed/pty/:id`. */
+export async function removeZedPty(baseUrl: string, ptyId: string): Promise<void> {
   const url = requireBaseUrl(baseUrl);
-  const res = await authenticatedFetch(`${url}/kortix/pty/${encodeURIComponent(ptyId)}`, { method: 'DELETE' });
+  const res = await authenticatedFetch(`${url}/zed/pty/${encodeURIComponent(ptyId)}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(await ptyErrorMessage(res, 'Failed to remove terminal'));
 }
 
@@ -88,9 +88,9 @@ export async function removeKortixPty(baseUrl: string, ptyId: string): Promise<v
  * WebSocket URL for a terminal's live stream — same http→ws conversion,
  * mixed-content upgrade, and `?token=` query auth (WebSocket can't set
  * custom headers) the OpenCode-backed terminal used, just pointed at
- * `/kortix/pty` instead of OpenCode's `/pty`.
+ * `/zed/pty` instead of OpenCode's `/pty`.
  */
-export async function getKortixPtyWebSocketUrl(ptyId: string, baseUrl: string): Promise<string> {
+export async function getZedPtyWebSocketUrl(ptyId: string, baseUrl: string): Promise<string> {
   const base = requireBaseUrl(baseUrl);
   const wsBase = (() => {
     try {
@@ -107,7 +107,7 @@ export async function getKortixPtyWebSocketUrl(ptyId: string, baseUrl: string): 
       return base.replace('https://', 'wss://').replace('http://', 'ws://');
     }
   })();
-  const url = `${wsBase}/kortix/pty/${encodeURIComponent(ptyId)}/connect`;
+  const url = `${wsBase}/zed/pty/${encodeURIComponent(ptyId)}/connect`;
   // Browser WebSocket API doesn't support custom headers, so inject the auth
   // token as a query param for the daemon (via the backend proxy) to check.
   const token = await getAuthToken();
@@ -117,10 +117,10 @@ export async function getKortixPtyWebSocketUrl(ptyId: string, baseUrl: string): 
 }
 
 /** Grouped namespace for ergonomic use (also available as named exports). */
-export const kortixPty = {
-  list: listKortixPty,
-  create: createKortixPty,
-  update: updateKortixPty,
-  remove: removeKortixPty,
-  webSocketUrl: getKortixPtyWebSocketUrl,
+export const zedPty = {
+  list: listZedPty,
+  create: createZedPty,
+  update: updateZedPty,
+  remove: removeZedPty,
+  webSocketUrl: getZedPtyWebSocketUrl,
 };

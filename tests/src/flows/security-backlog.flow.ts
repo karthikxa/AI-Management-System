@@ -41,11 +41,11 @@ const FORGED_JWT =
 //
 // SEC-4 asserts buildSessionSandboxEnvVars decrypts ALL project secrets into
 // the session env (project-global, no per-member scoping) + mints
-// KORTIX_TOKEN/KORTIX_LLM_*/KORTIX_GIT_AUTH_TOKEN, etc. We cannot read in-box
+// ZED_TOKEN/ZED_LLM_*/ZED_GIT_AUTH_TOKEN, etc. We cannot read in-box
 // env without booting a sandbox (avoided: no funding/sandbox locally), so the
 // host-side property we PROVE black-box is the secrets contract that feeds it:
 // /projects/:id/secrets is WRITE-ONLY — POST upserts (encrypt) but no values
-// are ever returned, names are upper-cased, and KORTIX_* names are reserved
+// are ever returned, names are upper-cased, and ZED_* names are reserved
 // (400) so a caller can't smuggle a forged minted-token name into the env.
 flow(
   'SEC-4',
@@ -76,13 +76,13 @@ flow(
       }
     });
     await ctx.step(
-      "KORTIX_* names are reserved → 400 (can't forge a minted-token env var)",
+      "ZED_* names are reserved → 400 (can't forge a minted-token env var)",
       async () => {
         const r = await ctx.client
           .as(ctx.P.OWNER)
           .post(
             '/v1/projects/:projectId/secrets',
-            { name: 'KORTIX_TOKEN', value: 'attacker-controlled' },
+            { name: 'ZED_TOKEN', value: 'attacker-controlled' },
             { params: { projectId: p.id } },
           );
         r.status(400);
@@ -151,9 +151,9 @@ flow(
         .get('/v1/accounts/me');
       r.status(401);
     });
-    await ctx.step('forged kortix PAT prefix, bad secret → 401', async () => {
+    await ctx.step('forged zed PAT prefix, bad secret → 401', async () => {
       const r = await ctx.client
-        .withBearer('kortix_pat_deadbeefdeadbeefdeadbeef', 'FORGED_PAT')
+        .withBearer('zed_pat_deadbeefdeadbeefdeadbeef', 'FORGED_PAT')
         .get('/v1/accounts/me');
       r.status(401);
     });
@@ -473,7 +473,7 @@ flow(
     });
     await ctx.step('garbage bearer on preview proxy → 401', async () => {
       const r = await ctx.client
-        .withBearer('kortix_garbage_preview_token', 'GARBAGE')
+        .withBearer('zed_garbage_preview_token', 'GARBAGE')
         .get('/v1/p/share', { query: { sandbox_id: bogusSandbox } });
       r.status(401);
     });

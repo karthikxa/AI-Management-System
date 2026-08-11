@@ -27,7 +27,7 @@ const base = `${BASE}/v1/p/${sbx.external_id}/8000`;
 let ready = false, lastHealth: any = null;
 while (now() - t0 < CAP) {
   try {
-    lastHealth = await (await fetch(`${base}/kortix/health`, { headers: H, signal: AbortSignal.timeout(3000) })).json();
+    lastHealth = await (await fetch(`${base}/zed/health`, { headers: H, signal: AbortSignal.timeout(3000) })).json();
     if (lastHealth?.runtimeReady) { ready = true; break; }
   } catch (e: any) { lastHealth = { err: String(e?.name || e).slice(0, 40) }; }
   await Bun.sleep(250);

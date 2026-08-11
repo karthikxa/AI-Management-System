@@ -1,5 +1,5 @@
-import { interpolateVars, type StarterTemplateId } from '@kortix/starter';
-import { parseManifestText } from '@kortix/manifest-schema';
+import { interpolateVars, type StarterTemplateId } from '@zed/starter';
+import { parseManifestText } from '@zed/manifest-schema';
 import { findCatalogEntryByName, getCatalogEntry } from '../marketplace/catalog';
 import { buildStarterFiles } from './starter';
 
@@ -40,7 +40,7 @@ function mergeSeedFiles(
 
 /**
  * Seed a brand-new project's deterministic scaffold: just the starter's own
- * runtime files (kortix.yaml, opencode config, base skills) for `template`.
+ * runtime files (zed.yaml, opencode config, base skills) for `template`.
  * No lock, no dependency engine — marketplace items are never deterministically
  * installed at provision time; adding one to a project is an agent import.
  */
@@ -49,8 +49,8 @@ export async function buildProjectSeedFiles(input: ProjectSeedFilesInput): Promi
   baseFiles: Array<{ path: string; content: string }>;
 }> {
   const baseFiles = buildStarterFiles({
-    projectName: 'kortix-project',
-    repoFullName: 'kortix/kortix-project',
+    projectName: 'zed-project',
+    repoFullName: 'zed/zed-project',
     template: input.template,
   });
   const files = buildStarterFiles({
@@ -63,7 +63,7 @@ export async function buildProjectSeedFiles(input: ProjectSeedFilesInput): Promi
 }
 
 export interface ProjectSeedFilesFromItemInput {
-  /** Catalog id of a `registry:project` item, e.g. `kortix-projects:support-agent-kit`. */
+  /** Catalog id of a `registry:project` item, e.g. `zed-projects:support-agent-kit`. */
   id: string;
   projectName: string;
   repoFullName: string;
@@ -77,7 +77,7 @@ export interface ProjectSeedFilesFromItemInput {
  * Seed a brand-new project by cloning a `registry:project` marketplace item.
  * The internal minimal layer gives the new repo its four runtime profiles,
  * canonical skills, and OpenCode compatibility files;
- * the project item's own files (its kortix.yaml, agent personas, …) are
+ * the project item's own files (its zed.yaml, agent personas, …) are
  * already inline on the catalog entry (`entry.item.files`, see
  * `buildProjectTemplateRegistry` in apps/api/src/marketplace/catalog.ts) — no
  * install engine, no lock, just a plain file union with the destination
@@ -88,8 +88,8 @@ export async function buildProjectSeedFilesFromItem(input: ProjectSeedFilesFromI
   baseFiles: Array<{ path: string; content: string }>;
 }> {
   const baseFiles = buildStarterFiles({
-    projectName: 'kortix-project',
-    repoFullName: 'kortix/kortix-project',
+    projectName: 'zed-project',
+    repoFullName: 'zed/zed-project',
     template: 'minimal',
   });
   const starterFiles = buildStarterFiles({
@@ -104,7 +104,7 @@ export async function buildProjectSeedFilesFromItem(input: ProjectSeedFilesFromI
   // Project-item catalog content ships with `{{var}}` placeholders unresolved
   // (see `buildProjectTemplateRegistry` in apps/api/src/marketplace/catalog.ts)
   // so they can be resolved here against the real destination project's name
-  // instead of a generic catalog-display placeholder. Reuses @kortix/starter's
+  // instead of a generic catalog-display placeholder. Reuses @zed/starter's
   // own `{{var}}` convention rather than a local reimplementation.
   const vars = { projectName: input.projectName, repoFullName: input.repoFullName };
   const ownFiles = (entry.item.files ?? [])
@@ -117,14 +117,14 @@ export async function buildProjectSeedFilesFromItem(input: ProjectSeedFilesFromI
 }
 
 /**
- * Best-effort extraction of a seeded `kortix.yaml`'s top-level `default_agent`
+ * Best-effort extraction of a seeded `zed.yaml`'s top-level `default_agent`
  * from a file list POST /projects/provision is about to push. Used to stamp
  * `project.metadata.default_agent` (the read-optimized mirror session creation
  * and the LLM gateway's model-default resolution consult — see
  * projects/lib/sessions.ts and llm-gateway/resolution/default-model.ts) at
  * project-creation time, the same value `PUT /:projectId/default-agent`
  * writes later. Without this, a brand-new project's manifest declares a
- * default agent (the starter template ships `default_agent: kortix`) that the
+ * default agent (the starter template ships `default_agent: zed`) that the
  * DB mirror never learns about — every session then stores the non-binding
  * `'default'` sentinel instead, and any agent-scope model pin set on the real
  * agent name is silently never applied (the bug this closes).
@@ -138,7 +138,7 @@ export function defaultAgentFromSeedFiles(
   files: Array<{ path: string; content: string }>,
   manifestPath: string,
 ): string | null {
-  const manifestFile = files.find((f) => f.path === manifestPath) ?? files.find((f) => f.path === 'kortix.yaml');
+  const manifestFile = files.find((f) => f.path === manifestPath) ?? files.find((f) => f.path === 'zed.yaml');
   if (!manifestFile) return null;
   try {
     const raw = parseManifestText(manifestFile.content, 'yaml');

@@ -2,20 +2,20 @@
 
 Status: working document
 Date: 2026-07-08
-Owner: Kortix product/infra
-Related: `docs/specs/2026-07-08-one-kortix-token-and-cli-centric-platform.md`
+Owner: Zed product/infra
+Related: `docs/specs/2026-07-08-one-zed-token-and-cli-centric-platform.md`
 (identity + parity program — this document is its endgame),
 `docs/specs/2026-06-28-project-authorization-runtime-governance.md`
 
 ## Purpose
 
-Kortix is an AGI you address like an API. One resource catalog — Agents,
+Zed is an AGI you address like an API. One resource catalog — Agents,
 Skills, Memories, Schedules, Webhooks, Sessions, Connectors, Secrets,
 Channels, Files, Change Requests, … — exposed through **one** point of
 contact with three projections: REST, CLI, MCP. Whatever authorization your
 token carries, you can read, create, update, delete, and invoke everything
 it allows, from anywhere — a terminal, a script, any MCP-compatible client,
-another agent. The system is self-describing: the full `kortix-*` operating
+another agent. The system is self-describing: the full `zed-*` operating
 knowledge loads into any context on demand.
 
 The unification is generative, not vigilant: the CLI commands and MCP tools
@@ -29,12 +29,12 @@ companion spec) and becomes a property of the architecture.
 ```text
 AGI as API
 1 single API/CLI/MCP that allows u to CRUD Agents/Skills/Memories/Schedules/Webhooks/Sessions/Connectors/…etc… & all the other things
-Like we should primarily think in that realm how do we have 1 SINGLE point of contact. 1 API u can just access anyhow & it gives u access to ur full Kortix meaning u can use & configure it from anywhere thats mcp compatible in some sense
- / What about an idea like this? Like, let's go, let's go deep there. Like, should we design this? Like, make everything API, CLI, MCP specific so that even the whole like files, etc. Like, depending on the authorization which you have as a user, can be updated from any interface anywhere. So, the whole git file system, like memory, gets exposed, you know, like the whole file system, all the skills, you can call agents, sub-agents, Kortix agents, you can create new triggers and all the different things you can do. We basically make the interaction always 100% CLI native, and that is the beauty of everything. You understand what I kind of want to say? We also make it possible, like all the Kortix system understanding, yada, yada, yada. Like, you can just get the info from the CLI, like load the system, like the skill info, etc., into your context. Yada yada.
+Like we should primarily think in that realm how do we have 1 SINGLE point of contact. 1 API u can just access anyhow & it gives u access to ur full Zed meaning u can use & configure it from anywhere thats mcp compatible in some sense
+ / What about an idea like this? Like, let's go, let's go deep there. Like, should we design this? Like, make everything API, CLI, MCP specific so that even the whole like files, etc. Like, depending on the authorization which you have as a user, can be updated from any interface anywhere. So, the whole git file system, like memory, gets exposed, you know, like the whole file system, all the skills, you can call agents, sub-agents, Zed agents, you can create new triggers and all the different things you can do. We basically make the interaction always 100% CLI native, and that is the beauty of everything. You understand what I kind of want to say? We also make it possible, like all the Zed system understanding, yada, yada, yada. Like, you can just get the info from the CLI, like load the system, like the skill info, etc., into your context. Yada yada.
 
 ---
 
-all the kortix-*
+all the zed-*
 ```
 
 ## Current State (what this builds on)
@@ -44,11 +44,11 @@ all the kortix-*
   audit found whole zero-CLI clusters (billing, enterprise IAM, gateway,
   review center, tunnel, session sharing).
 - **The CLI already speaks MCP** — but only for connectors:
-  `kortix connectors mcp` is a stdio compatibility face over the Connector
+  `zed connectors mcp` is a stdio compatibility face over the Connector
   gateway (`apps/cli/src/connectors/mcp.ts`). There is no MCP projection of
   the platform itself (no create-trigger, no read-memory, no start-session
   tool).
-- **@kortix/sdk is the single entry** for everything that talks to the
+- **@zed/sdk is the single entry** for everything that talks to the
   backend (SDK single-entry migration, PR #4124) — the natural home for a
   typed resource catalog.
 - **Files are read-only over the API**; writes are git-native only. Memory,
@@ -58,18 +58,18 @@ all the kortix-*
   every caller the same principal shape with claims
   (user|SA, project?, session?, agent grant). The IAM action-string catalog
   (`apps/api/src/iam/actions.ts`) already names most resource·verb pairs.
-- **The `kortix-*` knowledge bundle** — `kortix-system` (+ its references:
-  `kortix-cli.md`, `kortix-toml.md`, `change-requests.md`,
-  `marketplace.md`, `credentials-and-setup-links.md`), `kortix-connectors`,
-  `kortix-memory`, `kortix-slack` — lives in `packages/starter` templates
+- **The `zed-*` knowledge bundle** — `zed-system` (+ its references:
+  `zed-cli.md`, `zed-toml.md`, `change-requests.md`,
+  `marketplace.md`, `credentials-and-setup-links.md`), `zed-connectors`,
+  `zed-memory`, `zed-slack` — lives in `packages/starter` templates
   and is only present *inside sandboxes*. Nothing serves it to an external
-  client that wants to understand how to operate Kortix.
+  client that wants to understand how to operate Zed.
 
 ## The Design
 
 ### 1. The resource catalog is the product
 
-A single typed registry (lives in `@kortix/sdk`, consumed by API, CLI, MCP,
+A single typed registry (lives in `@zed/sdk`, consumed by API, CLI, MCP,
 and eventually the web UI) declares every resource kind once:
 
 ```ts
@@ -85,7 +85,7 @@ and eventually the web UI) declares every resource kind once:
     delete: { action: 'project.trigger.delete' },
     fire:   { action: 'project.trigger.fire' },   // kind-specific verb
   },
-  address: 'kortix://{project}/triggers/{name}',
+  address: 'zed://{project}/triggers/{name}',
 }
 ```
 
@@ -97,7 +97,7 @@ Rules:
 - **Kind-specific verbs are declared, not ad-hoc** (`fire`, `start`,
   `stop`, `merge`, `install`, `invoke`, `answer`) — a bounded set with
   uniform semantics (idempotency, error shape, `--json` output).
-- **Uniform addressing** — `kortix://{project}/{kind}/{name}` names any
+- **Uniform addressing** — `zed://{project}/{kind}/{name}` names any
   resource from any interface, in links, audit rows, and MCP resource URIs.
 
 ### 2. Three projections, generated from the catalog
@@ -105,15 +105,15 @@ Rules:
 | Projection | Shape | Today → Endgame |
 | --- | --- | --- |
 | REST | `GET/POST/PATCH/DELETE /v1/projects/:id/{plural}[/:name]` + `POST …/:name/{verb}` | existing routes get *mapped* into the catalog first (no big-bang rewrite), new kinds are generated |
-| CLI | `kortix {plural} {verb} [name] [--flags from schema]` | hand-written commands retire kind-by-kind as the generated grammar covers them; bespoke UX (chat REPL, `ship`, `init`) stays hand-crafted on top |
-| MCP | one hosted server: tools `kortix_{kind}_{verb}` + resources `kortix://…` | replaces "connector-only" MCP; connector tools mount under the same server |
+| CLI | `zed {plural} {verb} [name] [--flags from schema]` | hand-written commands retire kind-by-kind as the generated grammar covers them; bespoke UX (chat REPL, `ship`, `init`) stays hand-crafted on top |
+| MCP | one hosted server: tools `zed_{kind}_{verb}` + resources `zed://…` | replaces "connector-only" MCP; connector tools mount under the same server |
 
-The MCP projection is what makes "use & configure your full Kortix from
+The MCP projection is what makes "use & configure your full Zed from
 anywhere that's MCP compatible" literal: point Claude/Cursor/any client at
-`https://api.kortix.com/v1/mcp` with a Kortix token and the toolset you see
+`https://api.zed.com/v1/mcp` with a Zed token and the toolset you see
 IS your authorization — nothing more, nothing less.
 
-The CLI stays the human/agent-native face (`kortix triggers create …`), and
+The CLI stays the human/agent-native face (`zed triggers create …`), and
 because both CLI and MCP are projections of the same catalog, the B2
 "coverage gate" from the companion spec becomes transitional: the endgame
 gate is *catalog completeness* (a route that isn't in the catalog fails CI),
@@ -131,17 +131,17 @@ git-honest semantics:
   default branch; `git = cr` → auto-managed session branch + change
   request; less → 403. Same rule on every interface.
 - `memory`, `skill`, `command`, `agent` are *typed views over files*: they
-  address by name (`kortix://{project}/skills/{name}`), validate their
+  address by name (`zed://{project}/skills/{name}`), validate their
   schema (SKILL.md frontmatter, agent config fields), and land through the
   same policy-resolved commit path. Editing a skill from an MCP client and
-  from `kortix skills edit` is the same operation.
+  from `zed skills edit` is the same operation.
 
 This kills the biggest parity cliff in the audit (skills/commands/file
 writes) with one mechanism instead of three bespoke ones.
 
 ### 4. Agents are callable — invocation is a verb
 
-"You can call agents, sub-agents, Kortix agents" becomes a catalog verb:
+"You can call agents, sub-agents, Zed agents" becomes a catalog verb:
 
 - `agents.invoke` — start an **ephemeral session** with that agent, seeded
   with the prompt; return the session address immediately or block for the
@@ -155,30 +155,30 @@ writes) with one mechanism instead of three bespoke ones.
   the `pending/approve/answer` verbs shipped in PR #4299 slot in as
   kind-specific verbs on `session`).
 
-So from any MCP client: `kortix_agents_invoke(agent: "veyris", prompt:
+So from any MCP client: `zed_agents_invoke(agent: "veyris", prompt:
 "…")` → your AGI does the work in an isolated sandbox and the result comes
 back through the same surface. That is "AGI as API" in one sentence.
 
-### 5. Self-describing: all the `kortix-*` knowledge, loadable anywhere
+### 5. Self-describing: all the `zed-*` knowledge, loadable anywhere
 
 The system explains itself through the same surface it exposes:
 
-- The full `kortix-*` bundle — `kortix-system` + its references,
-  `kortix-connectors`, `kortix-memory`, `kortix-slack` — is **served,
+- The full `zed-*` bundle — `zed-system` + its references,
+  `zed-connectors`, `zed-memory`, `zed-slack` — is **served,
   versioned with the platform**, not only baked into sandbox images:
-  - MCP **resources**: `kortix://system/{doc}` (clients pull exactly the
+  - MCP **resources**: `zed://system/{doc}` (clients pull exactly the
     operating knowledge they need into context).
-  - CLI: `kortix system [topic]` prints the same docs (`kortix system`,
-    `kortix system change-requests`, `--json` for agents).
+  - CLI: `zed system [topic]` prints the same docs (`zed system`,
+    `zed system change-requests`, `--json` for agents).
   - REST: `GET /v1/system/docs[/:topic]`.
 - The **catalog itself is introspectable**: `GET /v1/catalog` (and a
-  `kortix_catalog` MCP tool) returns every kind, verb, schema, and required
+  `zed_catalog` MCP tool) returns every kind, verb, schema, and required
   action — filtered to what the presenting token may do. A client can
   discover "what can I do here?" without documentation.
-- `kortix token` / `token_context` already answer "who am I?"; catalog
+- `zed token` / `token_context` already answer "who am I?"; catalog
   introspection answers "what can I touch?"; system docs answer "how does
   this all work?". Together: an agent lands with zero prior knowledge and
-  bootstraps full Kortix competence from the surface itself.
+  bootstraps full Zed competence from the surface itself.
 
 ### 6. Authorization is the filter, identically everywhere
 
@@ -201,7 +201,7 @@ The system explains itself through the same surface it exposes:
   but each gap should be closed *by adding the kind to the catalog*, not by
   hand-writing another command. The route-manifest CLI gate is the interim
   ratchet; catalog completeness is the end state.
-- **`kortix connectors mcp`**: becomes the connector-tools subtree of the one
+- **`zed connectors mcp`**: becomes the connector-tools subtree of the one
   hosted MCP server (kept as a stdio alias for compatibility).
 - **Session approvals** (PR #4299), **guided agent config**, **gateway
   keys**, **billing reads**: all become catalog kinds/verbs rather than
@@ -211,14 +211,14 @@ The system explains itself through the same surface it exposes:
 
 ### Phase 0 — catalog spine + pilot kinds
 
-- [ ] Define the catalog schema in `@kortix/sdk` (kind, zod schema, verbs,
+- [ ] Define the catalog schema in `@zed/sdk` (kind, zod schema, verbs,
       IAM actions, addressing).
 - [ ] Register three pilot kinds by *mapping existing routes* (no handler
       rewrite): `trigger`, `secret`, `session`.
 - [ ] Generate the CLI grammar for pilots behind a flag; diff output/exit
       codes against the hand-written commands, then swap.
 - [ ] Hosted MCP endpoint `POST /v1/mcp` (streamable HTTP): `tools/list`
-      from the catalog filtered by token; `kortix_catalog` tool;
+      from the catalog filtered by token; `zed_catalog` tool;
       `resources/list` for system docs.
 - [ ] `GET /v1/catalog` introspection (token-filtered).
 
@@ -246,8 +246,8 @@ The system explains itself through the same surface it exposes:
 
 ### Phase 4 — self-description
 
-- [ ] Serve the versioned `kortix-*` bundle (`/v1/system/docs`, MCP
-      resources, `kortix system`).
+- [ ] Serve the versioned `zed-*` bundle (`/v1/system/docs`, MCP
+      resources, `zed system`).
 - [ ] Sandbox images consume the same served bundle at bake time (one
       source, no drift between what agents in sandboxes know and what
       external clients can load).
@@ -272,7 +272,7 @@ The system explains itself through the same surface it exposes:
 ## Open Questions
 
 1. MCP transport priority: hosted streamable-HTTP first (works with
-   claude.ai/Cursor remotes) with `kortix mcp` as a local stdio bridge — or
+   claude.ai/Cursor remotes) with `zed mcp` as a local stdio bridge — or
    stdio first for zero-infra? (Leaning hosted-first; the CLI bridge is
    ~free once the catalog exists.)
 2. Does the web UI eventually render from the catalog (schema-driven forms)
@@ -284,16 +284,16 @@ The system explains itself through the same surface it exposes:
    MCP clients (an invoke costs real sandbox+LLM money).
 5. How much of enterprise IAM belongs in the externally-visible catalog vs
    an admin-only catalog partition?
-6. Naming: `kortix system` vs `kortix docs` for the knowledge loader (no
+6. Naming: `zed system` vs `zed docs` for the knowledge loader (no
    coding terminology; "system" matches the skill name).
 
 ## Verification Gates
 
-1. An MCP client with only a Kortix PAT can: discover the catalog, read
+1. An MCP client with only a Zed PAT can: discover the catalog, read
    system docs, create a trigger, edit a memory file (lands as a commit),
    invoke an agent, and answer its pending question — without touching the
    web UI or the git remote directly.
-2. The same operations succeed via `kortix …` commands and raw REST with
+2. The same operations succeed via `zed …` commands and raw REST with
    byte-identical effects and identical 403 boundaries.
 3. A narrowed token (project-scoped, agent grant) sees a correspondingly
    narrowed `tools/list` and catalog — verified by diffing against the
@@ -301,5 +301,5 @@ The system explains itself through the same surface it exposes:
 4. Deleting a kind's hand-written CLI command after catalog migration
    changes no test outcomes (generated projection is behavior-identical).
 5. A fresh agent given only the MCP endpoint + token bootstraps: reads
-   `kortix://system/*`, then completes a multi-step task (create schedule →
+   `zed://system/*`, then completes a multi-step task (create schedule →
    invoke agent → review CR) with no out-of-band knowledge.

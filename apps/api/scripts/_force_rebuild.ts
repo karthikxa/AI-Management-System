@@ -1,5 +1,5 @@
 import { db } from '../src/shared/db';
-import { sandboxTemplates, projects } from '@kortix/db';
+import { sandboxTemplates, projects } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { refreshTemplateState } from '../src/snapshots/templates';
 import { ensureSandboxImage } from '../src/snapshots/builder';
@@ -10,7 +10,7 @@ const PT = 'https://api.platinum.dev';
 const PTH = { Authorization: `Bearer ${PTKEY}` };
 
 // 1. delete stale platinum templates (parent + seed captured with stale binary)
-for (const name of ['kortix-default-66e4b0a77f9a', 'proj-seed-a216e2e6-4ab4-4eff-9a7a-12fa131a4265-ea47e5f50413-66e4b0a77f9a']) {
+for (const name of ['zed-default-66e4b0a77f9a', 'proj-seed-a216e2e6-4ab4-4eff-9a7a-12fa131a4265-ea47e5f50413-66e4b0a77f9a']) {
   const rows: any[] = await (await fetch(`${PT}/v1/templates?name=${name}`, { headers: PTH })).json();
   if (!rows[0]) { console.log(`${name}: gone`); continue; }
   const r = await fetch(`${PT}/v1/templates/${rows[0].id}`, { method: 'DELETE', headers: PTH });

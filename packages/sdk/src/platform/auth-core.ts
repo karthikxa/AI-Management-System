@@ -75,7 +75,7 @@ export function isStreamingRequest(input: RequestInfo | URL): boolean {
 
 /**
  * Compose the request's own abort signal with a default 30s timeout, so a
- * hung non-streaming call can't wedge a "Kortix as a Backend" server-side
+ * hung non-streaming call can't wedge a "Zed as a Backend" server-side
  * handler forever. The SSE event stream is exempted (see
  * `isStreamingRequest`): its caller signal — if any — passes through
  * untouched. Falls back to the caller's bare signal on a runtime without
@@ -118,8 +118,8 @@ export function buildAuthHeaders(
 		headers.set('Authorization', `Bearer ${token}`);
 	}
 	const normalizedClientSource = normalizeClientSource(clientSource);
-	if (normalizedClientSource && !headers.has('X-Kortix-Client')) {
-		headers.set('X-Kortix-Client', normalizedClientSource);
+	if (normalizedClientSource && !headers.has('X-Zed-Client')) {
+		headers.set('X-Zed-Client', normalizedClientSource);
 	}
 	return headers;
 }

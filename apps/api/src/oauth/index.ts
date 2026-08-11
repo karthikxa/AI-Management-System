@@ -14,7 +14,7 @@ import {
   oauthAccessTokens,
   oauthRefreshTokens,
   accountMembers,
-} from '@kortix/db';
+} from '@zed/db';
 import { makeOpenApiApp, json, errors, auth } from '../openapi';
 
 // Token hashing lives in ./token-hash (hashOauthToken for minting,
@@ -184,11 +184,11 @@ setInterval(() => {
 // ─── Token Generation ───────────────────────────────────────────────────────
 
 function generateAccessToken(): string {
-  return `kortix_oat_${randomAlphanumeric(48)}`;
+  return `zed_oat_${randomAlphanumeric(48)}`;
 }
 
 function generateRefreshToken(): string {
-  return `kortix_ort_${randomAlphanumeric(48)}`;
+  return `zed_ort_${randomAlphanumeric(48)}`;
 }
 
 function generateAuthCode(): string {
@@ -332,7 +332,7 @@ oauthApp.openapi(
     codeChallengeMethod,
   });
 
-  const frontendUrl = config.FRONTEND_URL || 'https://kortix.com';
+  const frontendUrl = config.FRONTEND_URL || 'https://zed.com';
   const consentUrl = new URL(`${frontendUrl}/oauth/authorize`);
   consentUrl.searchParams.set('request_id', requestId);
 

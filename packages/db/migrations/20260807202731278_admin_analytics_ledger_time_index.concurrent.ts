@@ -1,6 +1,6 @@
 // Migration: admin_analytics_ledger_time_index  (NON-TRANSACTIONAL -- CONCURRENTLY escape hatch)
 //
-// Adds kortix.credit_ledger (created_at) for the admin credit-burn dashboard
+// Adds zed.credit_ledger (created_at) for the admin credit-burn dashboard
 // (apps/api/src/admin/analytics.ts -> GET /v1/admin/analytics/usage).
 //
 // WHY: that route sums debits across a trailing 1-90 day window for ALL
@@ -27,7 +27,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create index concurrently if not exists idx_credit_ledger_created_at
-      on kortix.credit_ledger (created_at)
+      on zed.credit_ledger (created_at)
   `);
 };
 

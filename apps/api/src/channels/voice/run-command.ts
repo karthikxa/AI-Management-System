@@ -3,13 +3,13 @@
  *
  * This is deliberately UNRESTRICTED (no allowlist, no cwd jail) at the user's
  * explicit request. That makes the voice agent a second writer on the same
- * sandbox the Kortix session's own agent is working in — no audit/policy layer
+ * sandbox the Zed session's own agent is working in — no audit/policy layer
  * wraps it (the only one that exists, connector/gateway.ts, is scoped to
  * connector actions and doesn't apply to raw sandbox shell access). Treat this
  * the same as giving the sandbox's owner a second terminal.
  *
  * There is no one-shot "run a command, get stdout/exit code back" primitive on
- * the sandbox daemon — only `/kortix/pty` (spawn a PTY, attach a WebSocket to
+ * the sandbox daemon — only `/zed/pty` (spawn a PTY, attach a WebSocket to
  * watch it live; see the exec-path notes this module was written against).
  * This function builds that primitive on top: POST to spawn, then attach a
  * WS just long enough to collect output and an exit code. Output is whatever
@@ -20,14 +20,14 @@
  * output IS in that stream — leaving `stderr` empty would silently drop it).
  *
  * One caller: mcp.ts's `run_command` tool, invoked by apps/voice-agent's
- * `run_command` tool (kortix-client.ts) over the voice MCP. That worker call
+ * `run_command` tool (zed-client.ts) over the voice MCP. That worker call
  * additionally times out CLIENT-side at 12s — this file's OVERALL_TIMEOUT_MS
  * is set safely under that so a slow provider call here degrades to
  * `timedOut: true` well before the worker's own timeout would otherwise turn
  * the whole request into a bare network error instead of a readable result.
  */
 import { eq } from 'drizzle-orm';
-import { projectSessions, sessionSandboxes } from '@kortix/db';
+import { projectSessions, sessionSandboxes } from '@zed/db';
 import { db } from '../../shared/db';
 import {
   buildSandboxUpstreamHeaders,
@@ -35,14 +35,14 @@ import {
   resolveSandboxIngress,
   type SandboxRecord,
 } from '../../sandbox-proxy/backend';
-import { KORTIX_USER_CONTEXT_HEADER } from '../../shared/kortix-user-context';
+import { ZED_USER_CONTEXT_HEADER } from '../../shared/zed-user-context';
 
 const SPAWN_TIMEOUT_MS = 3_000;
 const CAPTURE_TIMEOUT_MS = 6_000;
 /** Hard ceiling on the whole operation — see the file header's two-callers note. */
 const OVERALL_TIMEOUT_MS = 9_000;
 /**
- * The daemon's `/kortix/pty` has no REST way to fetch a finished pty's output
+ * The daemon's `/zed/pty` has no REST way to fetch a finished pty's output
  * — only a live WS attach, which replays scrollback ONLY when the pty is still
  * 'running' at attach time (see routes/pty.ts's `attachOrCreate`). A fast
  * command (`echo hi`) can exit before our POST's response even comes back, so
@@ -149,9 +149,9 @@ async function execCommand(
     providerHeaders: httpIngress.headers,
   });
 
-  const wrapped = `${command}; __kortix_exit=$?; sleep ${CAPTURE_TAIL_SECONDS}; exit $__kortix_exit`;
+  const wrapped = `${command}; __zed_exit=$?; sleep ${CAPTURE_TAIL_SECONDS}; exit $__zed_exit`;
 
-  const createRes = await fetch(`${httpIngress.url.replace(/\/$/, '')}/kortix/pty`, {
+  const createRes = await fetch(`${httpIngress.url.replace(/\/$/, '')}/zed/pty`, {
     method: 'POST',
     headers: { ...httpHeaders, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -167,7 +167,7 @@ async function execCommand(
     throw new Error(`pty create failed: ${createRes.status}${body ? ` ${body.slice(0, 300)}` : ''}`);
   }
   const created = (await createRes.json()) as { id: string };
-  const ptyPath = `/kortix/pty/${created.id}/connect`;
+  const ptyPath = `/zed/pty/${created.id}/connect`;
 
   const wsIngress = await resolveSandboxIngress(record, { port: 8000, path: ptyPath, transport: 'websocket' });
   const wsHeaders = await buildSandboxUpstreamHeaders({
@@ -183,7 +183,7 @@ async function execCommand(
   // ResolvedSandboxIngress.websocket in platform/providers/index.ts) —
   // identical to how preview.ts's resolvePreviewWsUpstream handles it.
   if (wsIngress.websocket?.userContextQueryParam) {
-    const signed = wsHeaders[KORTIX_USER_CONTEXT_HEADER];
+    const signed = wsHeaders[ZED_USER_CONTEXT_HEADER];
     if (signed) wsUrl.searchParams.set(wsIngress.websocket.userContextQueryParam, signed);
   }
 
@@ -191,7 +191,7 @@ async function execCommand(
 
   // Best-effort cleanup — never let a slow/failed DELETE hold up the tool
   // response, which by this point already has everything it needs.
-  void fetch(`${httpIngress.url.replace(/\/$/, '')}/kortix/pty/${created.id}`, {
+  void fetch(`${httpIngress.url.replace(/\/$/, '')}/zed/pty/${created.id}`, {
     method: 'DELETE',
     headers: httpHeaders,
     signal: AbortSignal.timeout(SPAWN_TIMEOUT_MS),

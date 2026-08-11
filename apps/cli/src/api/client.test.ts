@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { platformConfig } from '@kortix/sdk';
+import { platformConfig } from '@zed/sdk';
 
 import { ApiError, clientFromAuth, createApiClient } from './client.ts';
 import type { Auth } from './auth.ts';
@@ -38,8 +38,8 @@ function stubFetch(status: number, payload: unknown): void {
 
 function auth(overrides: Partial<Auth> = {}): Auth {
   return {
-    api_base: 'https://api.kortix.com',
-    token: 'kortix_pat_test',
+    api_base: 'https://api.zed.com',
+    token: 'zed_pat_test',
     user_id: 'u1',
     user_email: 'u@example.com',
     account_id: 'a1',
@@ -59,14 +59,14 @@ describe('createApiClient transport', () => {
 
   test('routes every request through the SDK platform seam', async () => {
     stubFetch(200, { ok: true });
-    await createApiClient({ apiBase: 'https://api.kortix.com', token: 't' }).get('/accounts/me');
-    expect(captured[0]!.backendUrlInScope).toBe('https://api.kortix.com/v1');
+    await createApiClient({ apiBase: 'https://api.zed.com', token: 't' }).get('/accounts/me');
+    expect(captured[0]!.backendUrlInScope).toBe('https://api.zed.com/v1');
   });
 
   test('mounts a bare path under the version prefix exactly once', async () => {
     stubFetch(200, { ok: true });
-    await createApiClient({ apiBase: 'https://api.kortix.com', token: 't' }).get('/accounts/me');
-    expect(captured[0]!.url).toBe('https://api.kortix.com/v1/accounts/me');
+    await createApiClient({ apiBase: 'https://api.zed.com', token: 't' }).get('/accounts/me');
+    expect(captured[0]!.url).toBe('https://api.zed.com/v1/accounts/me');
   });
 
   test('does not double the version prefix for a sandbox-injected base', async () => {
@@ -77,13 +77,13 @@ describe('createApiClient transport', () => {
 
   test('sends the auth token as a bearer', async () => {
     stubFetch(200, { ok: true });
-    await createApiClient({ apiBase: 'https://api.kortix.com', token: 'kortix_pat_x' }).get('/projects');
-    expect(captured[0]!.authorization).toBe('Bearer kortix_pat_x');
+    await createApiClient({ apiBase: 'https://api.zed.com', token: 'zed_pat_x' }).get('/projects');
+    expect(captured[0]!.authorization).toBe('Bearer zed_pat_x');
   });
 
   test('returns the parsed payload', async () => {
     stubFetch(200, { project_id: 'p1' });
-    const out = await createApiClient({ apiBase: 'https://api.kortix.com', token: 't' }).get<{
+    const out = await createApiClient({ apiBase: 'https://api.zed.com', token: 't' }).get<{
       project_id: string;
     }>('/projects/p1');
     expect(out).toEqual({ project_id: 'p1' });
@@ -91,7 +91,7 @@ describe('createApiClient transport', () => {
 
   test('serializes a POST body as json', async () => {
     stubFetch(200, { ok: true });
-    await createApiClient({ apiBase: 'https://api.kortix.com', token: 't' }).post('/projects', {
+    await createApiClient({ apiBase: 'https://api.zed.com', token: 't' }).post('/projects', {
       name: 'demo',
     });
     expect(captured[0]!.method).toBe('POST');
@@ -101,31 +101,31 @@ describe('createApiClient transport', () => {
 
   test('appends account_id when the client is account-scoped', async () => {
     stubFetch(200, []);
-    await createApiClient({ apiBase: 'https://api.kortix.com', token: 't', accountId: 'acc_1' }).get(
+    await createApiClient({ apiBase: 'https://api.zed.com', token: 't', accountId: 'acc_1' }).get(
       '/projects',
     );
-    expect(captured[0]!.url).toBe('https://api.kortix.com/v1/projects?account_id=acc_1');
+    expect(captured[0]!.url).toBe('https://api.zed.com/v1/projects?account_id=acc_1');
   });
 
   test('merges account_id into an existing query string', async () => {
     stubFetch(200, []);
-    await createApiClient({ apiBase: 'https://api.kortix.com', token: 't', accountId: 'acc_1' }).get(
+    await createApiClient({ apiBase: 'https://api.zed.com', token: 't', accountId: 'acc_1' }).get(
       '/projects?limit=5',
     );
-    expect(captured[0]!.url).toBe('https://api.kortix.com/v1/projects?limit=5&account_id=acc_1');
+    expect(captured[0]!.url).toBe('https://api.zed.com/v1/projects?limit=5&account_id=acc_1');
   });
 
   test('never overrides an account_id the caller already set', async () => {
     stubFetch(200, []);
-    await createApiClient({ apiBase: 'https://api.kortix.com', token: 't', accountId: 'acc_1' }).get(
+    await createApiClient({ apiBase: 'https://api.zed.com', token: 't', accountId: 'acc_1' }).get(
       '/projects?account_id=acc_explicit',
     );
-    expect(captured[0]!.url).toBe('https://api.kortix.com/v1/projects?account_id=acc_explicit');
+    expect(captured[0]!.url).toBe('https://api.zed.com/v1/projects?account_id=acc_explicit');
   });
 
   test('preserves the http status on the thrown ApiError', async () => {
     stubFetch(404, { error: 'Session not found' });
-    const client = createApiClient({ apiBase: 'https://api.kortix.com', token: 't' });
+    const client = createApiClient({ apiBase: 'https://api.zed.com', token: 't' });
     await expect(client.get('/projects/p/sessions/missing')).rejects.toMatchObject({
       status: 404,
       message: 'Session not found',
@@ -134,13 +134,13 @@ describe('createApiClient transport', () => {
 
   test('surfaces a message field error body', async () => {
     stubFetch(402, { message: 'Out of credits' });
-    const client = createApiClient({ apiBase: 'https://api.kortix.com', token: 't' });
+    const client = createApiClient({ apiBase: 'https://api.zed.com', token: 't' });
     await expect(client.get('/projects')).rejects.toMatchObject({ status: 402, message: 'Out of credits' });
   });
 
   test('throws an ApiError instance so existing status branching keeps working', async () => {
     stubFetch(409, { error: 'conflict' });
-    const client = createApiClient({ apiBase: 'https://api.kortix.com', token: 't' });
+    const client = createApiClient({ apiBase: 'https://api.zed.com', token: 't' });
     const err = (await client.get('/projects').catch((e: unknown) => e)) as ApiError;
     expect(err).toBeInstanceOf(ApiError);
     expect(err.status).toBe(409);
@@ -151,7 +151,7 @@ describe('createApiClient transport', () => {
     globalThis.fetch = (async () => {
       throw new TypeError('connect ECONNREFUSED');
     }) as unknown as typeof fetch;
-    const client = createApiClient({ apiBase: 'https://api.kortix.com', token: 't' });
+    const client = createApiClient({ apiBase: 'https://api.zed.com', token: 't' });
     const err = (await client.get('/projects').catch((e: unknown) => e)) as ApiError;
     expect(err).toBeInstanceOf(ApiError);
     expect(err.status).toBe(0);
@@ -161,6 +161,6 @@ describe('createApiClient transport', () => {
     stubFetch(200, { ok: true });
     await clientFromAuth(auth({ api_base: 'http://localhost:14108' })).get('/accounts/me');
     expect(captured[0]!.url).toBe('http://localhost:14108/v1/accounts/me');
-    expect(captured[0]!.authorization).toBe('Bearer kortix_pat_test');
+    expect(captured[0]!.authorization).toBe('Bearer zed_pat_test');
   });
 });

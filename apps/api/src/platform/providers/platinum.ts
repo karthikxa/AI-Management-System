@@ -8,7 +8,7 @@
  *     template id/name) with `?wait_for_state=running` so create returns a
  *     running sandbox synchronously (provisioning.async = false, like Daytona).
  *   - the agent port (8000) is reached through Platinum's edge via a PUBLIC
- *     expose URL; the sandbox itself is gated by the KORTIX serviceKey bearer
+ *     expose URL; the sandbox itself is gated by the ZED serviceKey bearer
  *     (added as a header in resolveEndpoint, same effective auth as Daytona).
  */
 
@@ -109,13 +109,13 @@ export class PlatinumProvider implements SandboxProvider {
   async create(opts: CreateSandboxOpts): Promise<ProvisionResult> {
     // Boot from the session's own per-project template if one was built
     // (opts.snapshot), else fall back to the fixed PLATINUM_TEMPLATE (e.g.
-    // kortix-computer) — so Platinum works out of the box without a per-project
+    // zed-computer) — so Platinum works out of the box without a per-project
     // build. At least one must be set.
     const template = opts.snapshot ?? config.PLATINUM_TEMPLATE;
     if (!template) {
       throw new Error(
         'Platinum create() has no template: pass opts.snapshot or set PLATINUM_TEMPLATE ' +
-        '(a ready Platinum template id, e.g. kortix-computer).',
+        '(a ready Platinum template id, e.g. zed-computer).',
       );
     }
     return this.provisionFromTemplate(template, opts);
@@ -147,16 +147,16 @@ export class PlatinumProvider implements SandboxProvider {
 
   private async provisionFromTemplate(template: string, opts: CreateSandboxOpts): Promise<ProvisionResult> {
     const workloadType = sandboxWorkloadType(opts);
-    const sandboxApiBase = config.KORTIX_URL
+    const sandboxApiBase = config.ZED_URL
       .replace(/\/+$/, '')
       .replace(/\/v1\/router$/, '')
       .replace(/\/v1$/, '');
 
     const envVars: Record<string, string> = {
-      KORTIX_API_URL: `${sandboxApiBase}/v1`,
+      ZED_API_URL: `${sandboxApiBase}/v1`,
       // Frontend base for user-facing dashboard links (never the API host).
-      KORTIX_FRONTEND_URL: sandboxFrontendBaseUrl(),
-      ...(workloadType === 'app' ? { KORTIX_WORKLOAD_TYPE: workloadType } : {}),
+      ZED_FRONTEND_URL: sandboxFrontendBaseUrl(),
+      ...(workloadType === 'app' ? { ZED_WORKLOAD_TYPE: workloadType } : {}),
       ...opts.envVars,
     };
     assertWorkloadCredential(this.name, opts, envVars);
@@ -250,13 +250,13 @@ export class PlatinumProvider implements SandboxProvider {
     // "opencode not ready" retry) EXACTLY as it is for Daytona, whose create()
     // also returns a not-yet-usable box and defers readiness to the FE.
     //
-    // Why this matters: the old code polled /kortix/health for runtimeReady up
+    // Why this matters: the old code polled /zed/health for runtimeReady up
     // to 75s here. Under a restored-VM virtio-net RX stall the clone can hang,
     // so that poll burned the full 75s and surfaced as the dreaded provision
     // timeout. Returning at vm-running makes the 75s timeout IMPOSSIBLE (we never
     // poll) and — since a Platinum restore resumes in ~50ms — create() returns in
     // ~1s, FASTER than Daytona's cloud-start. The daemon's clone-retry +
-    // transfer-stall-timeout (kortix-sandbox-agent-server) recover any transient
+    // transfer-stall-timeout (zed-sandbox-agent-server) recover any transient
     // clone stall in the background while the FE waits, so the session still
     // becomes usable without any create-path hang.
     console.log(
@@ -285,7 +285,7 @@ export class PlatinumProvider implements SandboxProvider {
       `/v1/sandboxes/${externalId}/exec`,
       {
         method: 'POST',
-        body: JSON.stringify({ cmd: ['/kortix/bin/kortix-appd', '--daemon'], timeout_ms: 15_000 }),
+        body: JSON.stringify({ cmd: ['/zed/bin/zed-appd', '--daemon'], timeout_ms: 15_000 }),
       },
     );
     const result = response.result;
@@ -422,7 +422,7 @@ export class PlatinumProvider implements SandboxProvider {
       effectivePort: isOpencodePort(request.port) || ptyWebsocket ? AGENT_PORT : request.port,
       websocket: ptyWebsocket
         ? {
-            userContextQueryParam: '__kortix_user_context',
+            userContextQueryParam: '__zed_user_context',
             queryDefaults: { cursor: '0' },
           }
         : undefined,
@@ -432,8 +432,8 @@ export class PlatinumProvider implements SandboxProvider {
   async resolveEndpoint(externalId: string): Promise<ResolvedEndpoint> {
     // Expose the agent port through Platinum's edge. PUBLIC (no HMAC ?t= token)
     // because Platinum's edge reads the token from the query string only, which
-    // doesn't compose with the Kortix proxy appending a path — and the sandbox
-    // is already gated by the KORTIX serviceKey bearer below (same effective
+    // doesn't compose with the Zed proxy appending a path — and the sandbox
+    // is already gated by the ZED serviceKey bearer below (same effective
     // auth as Daytona's preview link + serviceKey). Idempotent: re-exposing an
     // already-exposed port returns the same URL.
     // POST /:id/expose takes a SINGLE {port,public} and returns a single

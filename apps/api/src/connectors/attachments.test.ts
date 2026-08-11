@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { connectorAttachments } from '@kortix/db';
+import type { connectorAttachments } from '@zed/db';
 import {
   type ConnectorAttachmentScope,
   cleanupConnectorAttachmentCandidates,

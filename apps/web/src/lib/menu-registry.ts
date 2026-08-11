@@ -21,7 +21,7 @@ import { Monitor as MonitorIcon } from '@/features/icon/icons/monitor';
 import { Moon } from '@/features/icon/icons/moon';
 import { Sun } from '@/features/icon/icons/sun';
 import { WALLPAPERS } from '@/lib/wallpapers';
-import type { FeatureFlagKey } from '@kortix/sdk';
+import type { FeatureFlagKey } from '@zed/sdk';
 import {
   ActivityIcon as Activity,
   SquaresFourIcon as Blocks,
@@ -322,7 +322,7 @@ export const menuRegistry: MenuItemDef[] = [
   },
   {
     id: 'restart-full',
-    // Says what it does. This maps to the daemon's /kortix/refresh, which pulls
+    // Says what it does. This maps to the daemon's /zed/refresh, which pulls
     // the workspace AND restarts the runtime — "Full" alone did not warn that it
     // touches the working tree, or that it ends the turn in flight.
     label: 'Restart: Pull & Restart Runtime',

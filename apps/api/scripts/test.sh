@@ -17,8 +17,8 @@ case "$mode" in
     # A suite that runs nothing must never exit 0. `bun test` with an empty
     # file list happily reports success, so a broken find/rename here would
     # turn the whole gate green while testing nothing. Floor it.
-    if [ "$count" -lt "${KORTIX_MIN_TEST_FILES:-400}" ]; then
-      echo "error: only $count test files matched (floor ${KORTIX_MIN_TEST_FILES:-400}) — the discovery glob is broken, refusing to report success." >&2
+    if [ "$count" -lt "${ZED_MIN_TEST_FILES:-400}" ]; then
+      echo "error: only $count test files matched (floor ${ZED_MIN_TEST_FILES:-400}) — the discovery glob is broken, refusing to report success." >&2
       exit 1
     fi
     cov=""

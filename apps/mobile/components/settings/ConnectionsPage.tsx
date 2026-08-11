@@ -260,8 +260,8 @@ function ConnectionsContent({
       setConnectingApp(app.slug);
       try {
         // Use app deep link scheme so Safari auto-dismisses after OAuth
-        const successUri = 'kortix://connections/success';
-        const errorUri = 'kortix://connections/error';
+        const successUri = 'zed://connections/success';
+        const errorUri = 'zed://connections/error';
 
         const result = await createToken.mutateAsync({
           app: app.slug,
@@ -276,7 +276,7 @@ function ConnectionsContent({
         url = `${url}${separator}app=${encodeURIComponent(app.slug)}`;
 
         // openAuthSessionAsync auto-dismisses when redirected to our app scheme
-        const authResult = await WebBrowser.openAuthSessionAsync(url, 'kortix://connections');
+        const authResult = await WebBrowser.openAuthSessionAsync(url, 'zed://connections');
 
         if (authResult.type === 'success') {
           const returnUrl = authResult.url;
@@ -505,7 +505,7 @@ function ConnectionsContent({
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 18, fontFamily: 'Roobert-SemiBold', color: fg }}>Pipedream Credentials</Text>
               <Text style={{ fontSize: 12, fontFamily: 'Roobert', color: muted, marginTop: 2 }}>
-                {isCustomCreds ? 'Using your own Pipedream project' : 'Using Kortix defaults'}
+                {isCustomCreds ? 'Using your own Pipedream project' : 'Using Zed defaults'}
               </Text>
             </View>
           </View>
@@ -525,7 +525,7 @@ function ConnectionsContent({
             }}>
               <Icon as={isCustomCreds ? Check : Shield} size={10} color={isCustomCreds ? '#10b981' : muted} strokeWidth={2} />
               <Text style={{ fontSize: 10, fontFamily: 'Roobert-Medium', color: isCustomCreds ? '#10b981' : muted, marginLeft: 4 }}>
-                {isCustomCreds ? 'Your credentials' : 'Kortix Default'}
+                {isCustomCreds ? 'Your credentials' : 'Zed Default'}
               </Text>
             </View>
           </View>

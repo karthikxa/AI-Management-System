@@ -18,7 +18,7 @@ describe('Health & System endpoints', () => {
 
     const body = await res.json();
     expect(body.status).toBe('ok');
-    expect(body.service).toBe('kortix-api');
+    expect(body.service).toBe('zed-api');
     expect(body.timestamp).toBeDefined();
     expect(body.environment).toBe('dev');
     expect(body.version).toBe('dev');
@@ -32,7 +32,7 @@ describe('Health & System endpoints', () => {
 
     const body = await res.json();
     expect(body.status).toBe('ok');
-    expect(body.service).toBe('kortix-api');
+    expect(body.service).toBe('zed-api');
     expect(body.timestamp).toBeDefined();
     expect(body.environment).toBe('dev');
     expect(body.version).toBe('dev');

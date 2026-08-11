@@ -73,23 +73,23 @@ import type { SandboxFile } from '@/api/types';
 import { useSandboxContext } from '@/contexts/SandboxContext';
 import { useSheetBottomPadding } from '@/hooks/useSheetKeyboard';
 import {
-  useKortixProject,
-  useKortixProjectSessions,
-  useKortixTasks,
+  useZedProject,
+  useZedProjectSessions,
+  useZedTasks,
   useUpdateProject,
   useDeleteProject,
-  useCreateKortixTask,
-  useUpdateKortixTask,
-  useDeleteKortixTask,
-  useStartKortixTask,
-  useApproveKortixTask,
-  type KortixTask,
-  type KortixTaskStatus,
-} from '@/lib/kortix';
+  useCreateZedTask,
+  useUpdateZedTask,
+  useDeleteZedTask,
+  useStartZedTask,
+  useApproveZedTask,
+  type ZedTask,
+  type ZedTaskStatus,
+} from '@/lib/zed';
 import { useTabStore } from '@/stores/tab-store';
 import { PageHeader } from '@/components/ui/page-header';
 import { PageContent } from '@/components/ui/page-content';
-import { formatCost, formatTokens } from '@kortix/sdk/turns';
+import { formatCost, formatTokens } from '@zed/sdk/turns';
 import {
   useProjectSessionStats,
   totalTokens as sumTokens,
@@ -155,16 +155,16 @@ export function ProjectDetailPage({
   const { sandboxUrl } = useSandboxContext();
   const themeColors = useThemeColors();
 
-  const { data: project, isLoading, refetch } = useKortixProject(sandboxUrl, projectId);
-  const { data: sessions } = useKortixProjectSessions(sandboxUrl, projectId);
-  const { data: tasks } = useKortixTasks(sandboxUrl, project?.id);
+  const { data: project, isLoading, refetch } = useZedProject(sandboxUrl, projectId);
+  const { data: sessions } = useZedProjectSessions(sandboxUrl, projectId);
+  const { data: tasks } = useZedTasks(sandboxUrl, project?.id);
   const updateProject = useUpdateProject(sandboxUrl);
   const deleteProject = useDeleteProject(sandboxUrl);
-  const createTask = useCreateKortixTask(sandboxUrl);
-  const updateTask = useUpdateKortixTask(sandboxUrl);
-  const deleteTask = useDeleteKortixTask(sandboxUrl);
-  const startTask = useStartKortixTask(sandboxUrl);
-  const approveTask = useApproveKortixTask(sandboxUrl);
+  const createTask = useCreateZedTask(sandboxUrl);
+  const updateTask = useUpdateZedTask(sandboxUrl);
+  const deleteTask = useDeleteZedTask(sandboxUrl);
+  const startTask = useStartZedTask(sandboxUrl);
+  const approveTask = useApproveZedTask(sandboxUrl);
 
   // Store project name in tab state for TabsOverview title
   useEffect(() => {
@@ -184,7 +184,7 @@ export function ProjectDetailPage({
   const tabLayoutsRef = useRef<Record<number, { x: number; width: number }>>({});
   const [editField, setEditField] = useState<'name' | 'description'>('name');
   const [editValue, setEditValue] = useState('');
-  const [selectedTask, setSelectedTask] = useState<KortixTask | null>(null);
+  const [selectedTask, setSelectedTask] = useState<ZedTask | null>(null);
 
   // ── New task state (ported from web new-task-dialog) ────────────────────
   type TaskAttachment = { uri: string; name: string; mimeType: string; isImage: boolean };
@@ -441,7 +441,7 @@ export function ProjectDetailPage({
   // ── CONTEXT.md hero (ported from web project-about.tsx) ──────────────────
   const contextPath = useMemo(() => {
     if (!project?.path || project.path === '/') return undefined;
-    return `${project.path.replace(/\/+$/, '')}/.kortix/CONTEXT.md`;
+    return `${project.path.replace(/\/+$/, '')}/.zed/CONTEXT.md`;
   }, [project?.path]);
 
   const {
@@ -473,7 +473,7 @@ export function ProjectDetailPage({
       const fileName = parts.pop() || 'CONTEXT.md';
       const dirPath = parts.join('/');
 
-      // Write draft to cache, then upload the file to the project .kortix dir.
+      // Write draft to cache, then upload the file to the project .zed dir.
       const cacheUri = `${FileSystem.cacheDirectory}${fileName}`;
       await FileSystem.writeAsStringAsync(cacheUri, contextDraft, {
         encoding: FileSystem.EncodingType.UTF8,
@@ -906,7 +906,7 @@ export function ProjectDetailPage({
                   paddingHorizontal: 20,
                   lineHeight: 17,
                 }}>
-                Create tasks so Kortix knows what to work on next.
+                Create tasks so Zed knows what to work on next.
               </RNText>
               <TouchableOpacity
                 onPress={openNewTaskSheet}
@@ -1050,7 +1050,7 @@ export function ProjectDetailPage({
                   backgroundColor: cardBg,
                   overflow: 'hidden',
                 }}>
-                {filteredTaskList.map((t: KortixTask, i: number) => {
+                {filteredTaskList.map((t: ZedTask, i: number) => {
                   const sc = STATUS_CONFIG[t.status] || STATUS_CONFIG.todo;
                   const StatusIcon = sc.icon;
                   const isTerminal = t.status === 'completed' || t.status === 'cancelled';
@@ -1134,7 +1134,7 @@ export function ProjectDetailPage({
                       }}
                       numberOfLines={1}
                     >
-                      .kortix/CONTEXT.md
+                      .zed/CONTEXT.md
                     </RNText>
                   </View>
                   {!contextEditing ? (
@@ -1535,7 +1535,7 @@ export function ProjectDetailPage({
                             if (isBusy) return;
                             startTask.mutate(
                               { id: selectedTask.id },
-                              { onSuccess: (updated: KortixTask) => setSelectedTask(updated) }
+                              { onSuccess: (updated: ZedTask) => setSelectedTask(updated) }
                             );
                           }}
                           activeOpacity={0.7}
@@ -1562,7 +1562,7 @@ export function ProjectDetailPage({
                           onPress={() => {
                             if (isBusy) return;
                             approveTask.mutate(selectedTask.id, {
-                              onSuccess: (updated: KortixTask) => setSelectedTask(updated),
+                              onSuccess: (updated: ZedTask) => setSelectedTask(updated),
                             });
                           }}
                           activeOpacity={0.7}
@@ -1778,7 +1778,7 @@ export function ProjectDetailPage({
                         'awaiting_review',
                         'completed',
                         'cancelled',
-                      ] as KortixTaskStatus[]
+                      ] as ZedTaskStatus[]
                     ).map((s) => {
                       const sc = STATUS_CONFIG[s];
                       const SIcon = sc.icon;
@@ -1791,7 +1791,7 @@ export function ProjectDetailPage({
                             updateTask.mutate(
                               { id: selectedTask.id, status: s },
                               {
-                                onSuccess: (updated: KortixTask) => {
+                                onSuccess: (updated: ZedTask) => {
                                   setSelectedTask(updated);
                                 },
                               }

@@ -32,9 +32,9 @@ describe('OptimisticTurn', () => {
   test('waits with a Thinking shimmer — no logomark, no boot copy', () => {
     const markup = render(<OptimisticTurn text="d" />);
     expect(markup).toContain('Thinking');
-    // The Kortix logomark used to sit above this row and then vanish the moment
+    // The Zed logomark used to sit above this row and then vanish the moment
     // a real turn landed. It is gone for good.
-    expect(markup).not.toContain('kortix-logomark');
+    expect(markup).not.toContain('zed-logomark');
     // None of the boot checklist's step labels may reach the thread.
     for (const label of [
       'Reserving your computer',

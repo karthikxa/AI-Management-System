@@ -1,7 +1,7 @@
 // Reaper for stale snapshot/build temp dirs.
 //
 // build-context.ts, warm-bake.ts, and the various CLI/e2e helpers all stage work
-// into mkdtemp(tmpdir(), 'kortix-…-') dirs and hand cleanup back to the caller.
+// into mkdtemp(tmpdir(), 'zed-…-') dirs and hand cleanup back to the caller.
 // Any error path or missed cleanup() leaks a dir full of staged binaries/tarballs
 // into the container's writable layer — which is node ephemeral storage. Over
 // many session-boot/bake builds these accumulate to GBs (observed ~20GB/pod),
@@ -9,7 +9,7 @@
 // wide. quota-gc.ts only reaps Daytona-side warm snapshots, not these local dirs.
 //
 // This sweep runs on EVERY replica (build contexts are created on any pod during
-// on-demand session boot, not just the leader) and removes kortix-* temp dirs
+// on-demand session boot, not just the leader) and removes zed-* temp dirs
 // whose mtime is older than MAX_AGE — long past the seconds-to-minutes a context
 // is actually needed, so in-flight builds are never touched.
 
@@ -18,7 +18,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { logger } from '../lib/logger';
 
-const PREFIX = 'kortix-';
+const PREFIX = 'zed-';
 const MAX_AGE_MS = 30 * 60 * 1000; // older than this ⇒ abandoned
 const SWEEP_INTERVAL_MS = 10 * 60 * 1000;
 

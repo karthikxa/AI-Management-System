@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/features/providers/auth-provider';
-import { SHOW_PERSONAL_CONTACT } from '@/lib/kortix-flags';
+import { SHOW_PERSONAL_CONTACT } from '@/lib/zed-flags';
 import { isWorkEmail } from '@/lib/personal-email';
 
 /**

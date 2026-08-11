@@ -167,13 +167,13 @@ describe('callUpstream', () => {
       fetchImpl: recording.impl,
       requestId: 'req_abc123',
     });
-    expect(recording.seenHeaders[0]?.['x-kortix-request-id']).toBe('req_abc123');
+    expect(recording.seenHeaders[0]?.['x-zed-request-id']).toBe('req_abc123');
   });
 
   test('omits the correlation header when no requestId is given', async () => {
     const recording = makeRecordingFetch();
     await callUpstream(chatBody(), descriptor, { retry: fastRetry, fetchImpl: recording.impl });
-    expect(recording.seenHeaders[0]).not.toHaveProperty('x-kortix-request-id');
+    expect(recording.seenHeaders[0]).not.toHaveProperty('x-zed-request-id');
   });
 });
 
@@ -198,7 +198,7 @@ function makeCapturingFetch(status = 200, body = okChatCompletionBody()) {
 
 // Regression coverage for the "gpt-5.5/5.6 BYOK sessions fail with 'Function
 // tools with reasoning_effort are not supported ... in /v1/chat/completions'"
-// incident (essentia.kortix.cloud, session 21c6cfd0-5157-4e78-9d26-4198656b1a81):
+// incident (essentia.zed.cloud, session 21c6cfd0-5157-4e78-9d26-4198656b1a81):
 // a genuine api.openai.com reasoning model + function tools + a live
 // reasoning_effort must be dispatched over OpenAI's Responses API (the
 // ai-sdk engine's `provider.responses()` model — see transports/ai-sdk/
@@ -329,7 +329,7 @@ describe('callUpstream — genuine OpenAI reasoning model auto-routes to /v1/res
     const capture = makeCapturingFetch();
     await callUpstream(
       {
-        model: 'kortix/o3',
+        model: 'zed/o3',
         messages: [{ role: 'user', content: 'hi' }],
         tools: [weatherTool],
         reasoning_effort: 'medium',

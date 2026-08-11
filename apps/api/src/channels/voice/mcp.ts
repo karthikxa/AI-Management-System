@@ -1,35 +1,35 @@
 /**
  * The voice MCP — how apps/voice-agent (the LiveKit worker, a SEPARATE
- * process — see runtime.ts's file header) calls back INTO Kortix.
+ * process — see runtime.ts's file header) calls back INTO Zed.
  *
  * JSON-RPC 2.0 over streamable HTTP, mounted at
  * /v1/projects/:projectId/sessions/:sessionId/mcp/voice (routes.ts). The
- * caller is not a Kortix agent — it is a third-party-hosted worker process
- * holding the per-call `kortix_api_token` HMAC minted in `startCall`
+ * caller is not a Zed agent — it is a third-party-hosted worker process
+ * holding the per-call `zed_api_token` HMAC minted in `startCall`
  * (worker-token.ts) and handed to it via private LiveKit dispatch metadata. That token
  * authorizes exactly one call; nothing here accepts session/PAT auth.
  *
- * This used to be the OTHER direction: the Kortix agent's own tool surface
+ * This used to be the OTHER direction: the Zed agent's own tool surface
  * for driving a call (voice_spawn/voice_read/send_prompt/run_command/
- * voice_end). That surface has moved to the `kortix_voice` channel connector
+ * voice_end). That surface has moved to the `zed_voice` channel connector
  * (connector/channels.ts's VOICE_ACTIONS, executed by executeVoiceCall in
  * connector/db-deps.ts) so it goes through the connector gateway like every
  * other connector call — policies, approvals, audit trail included, which a
  * direct MCP route never had. This file is now free to be what the worker
  * actually needs.
  *
- * THE INVARIANT: every tool returns quickly. `ask_kortix` in particular MUST
- * stay non-blocking — it hands the request to `askKortix` (runtime.ts) and
- * returns the instant that's queued, never waiting for the Kortix turn (which
+ * THE INVARIANT: every tool returns quickly. `ask_zed` in particular MUST
+ * stay non-blocking — it hands the request to `askZed` (runtime.ts) and
+ * returns the instant that's queued, never waiting for the Zed turn (which
  * runs 30s-10min). A voice call has no error boundary except "the agent goes
  * quiet", which blocking here would trigger immediately. `run_command` is the
  * one deliberate, SHORT-bounded exception — it waits, but only up to a hard
  * cap well under the worker's own client-side timeout (see run-command.ts).
  *
- * Naming note: the OLD Kortix-facing MCP had a `send_prompt` meaning "make
+ * Naming note: the OLD Zed-facing MCP had a `send_prompt` meaning "make
  * the voice agent speak into the call." The worker's OWN `send_prompt` tool
- * (apps/voice-agent/src/tools.ts) means the opposite — "ask Kortix to work."
- * That collision is why this file's hand-off tool is `ask_kortix`, not
+ * (apps/voice-agent/src/tools.ts) means the opposite — "ask Zed to work."
+ * That collision is why this file's hand-off tool is `ask_zed`, not
  * `send_prompt`: same direction as the worker's tool, and unambiguous now
  * that the speak-into-the-call meaning lives only in the connector.
  */
@@ -53,15 +53,15 @@ export interface VoiceMcpContext {
   projectId: string;
   sessionId: string;
   callId: string;
-  /** Fire-and-forget hand-off to the Kortix session. Never awaits the turn. */
-  askKortix(request: string): Promise<{ ok: true } | { ok: false; error: string }>;
+  /** Fire-and-forget hand-off to the Zed session. Never awaits the turn. */
+  askZed(request: string): Promise<{ ok: true } | { ok: false; error: string }>;
   /** Waits (short, bounded) for a shell command's result in the call's sandbox. */
   runCommand(command: string, cwd?: string): Promise<RunCommandToolResult>;
   /**
    * Persists one transcript line. 'user'/'agent' are either side of the spoken
    * conversation (the worker's own `post_turn` tool, below). 'tool' is written
    * for the worker, never by it — see `callTool`'s `run_command` case here, and
-   * `askKortix`/`settleAsk` in runtime.ts for the hand-off pair, which moved out
+   * `askZed`/`settleAsk` in runtime.ts for the hand-off pair, which moved out
    * of this file because those rows double as the in-flight flag.
    */
   postTurn(role: 'user' | 'agent' | 'tool', text: string, speaker?: string | null): Promise<void>;
@@ -89,11 +89,11 @@ const PROTOCOL_VERSION = '2025-06-18';
 function toolDefinitions() {
   return [
     {
-      name: 'ask_kortix',
+      name: 'ask_zed',
       description:
-        'Hand a request to the Kortix agent for this call. Use for anything needing real project ' +
+        'Hand a request to the Zed agent for this call. Use for anything needing real project ' +
         'knowledge, files, connectors, memory, or actions. Returns the instant the request is ' +
-        'queued — NEVER waits for Kortix to finish thinking, which can take minutes. The answer, ' +
+        'queued — NEVER waits for Zed to finish thinking, which can take minutes. The answer, ' +
         'if any, arrives later as a separate message to speak into the call. ONE request at a ' +
         'time: while an earlier one is still unanswered this is refused, with an explanation to ' +
         'relay. Do not re-send a request to chase or double-check an answer you already got.',
@@ -116,7 +116,7 @@ function toolDefinitions() {
         'checks only (reading a short file, listing a directory, checking something exists). Waits ' +
         'a few seconds and returns the result. Bounded by a short server-side timeout, so a ' +
         'long-running command reports timed_out with whatever output arrived before the cutoff. Not ' +
-        'a hand-off — use ask_kortix for anything that changes state or needs judgement.',
+        'a hand-off — use ask_zed for anything that changes state or needs judgement.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -175,22 +175,22 @@ async function callTool(
   const args = rawArgs && typeof rawArgs === 'object' ? (rawArgs as Record<string, unknown>) : {};
 
   switch (name) {
-    case 'ask_kortix': {
+    case 'ask_zed': {
       const request = String(args.request ?? '').trim();
       if (!request) return toolError('request is required');
-      const result = await ctx.askKortix(request);
+      const result = await ctx.askZed(request);
       // A refusal is a tool error so the model SEES it, but the text is
       // guidance, not a fault report — runtime.ts refuses an ask that is
       // already outstanding, or a call that is repeating itself, and writes
       // the sentence it wants relayed. apps/voice-agent passes it through.
       if (!result.ok) return toolError(result.error);
-      // NOTE: the `ask_kortix: …` transcript line is NOT written here any more.
+      // NOTE: the `ask_zed: …` transcript line is NOT written here any more.
       // It is the in-flight flag that stops a second overlapping hand-off
-      // (ask-ledger.ts), so it has to be written and AWAITED inside askKortix,
+      // (ask-ledger.ts), so it has to be written and AWAITED inside askZed,
       // before the next ask can read it — a fire-and-forget write from this
       // layer let two rapid asks both see an empty ledger, and could land
       // AFTER the settle row of a hand-off that failed instantly.
-      return toolText('Queued — Kortix is working on it. The answer will arrive later as something to say.', {
+      return toolText('Queued — Zed is working on it. The answer will arrive later as something to say.', {
         queued: true,
       });
     }
@@ -246,7 +246,7 @@ export async function handleVoiceMcp(
       return ok(id, {
         protocolVersion: PROTOCOL_VERSION,
         capabilities: { tools: {} },
-        serverInfo: { name: 'kortix-voice-worker', version: '1.0.0' },
+        serverInfo: { name: 'zed-voice-worker', version: '1.0.0' },
       });
 
     case 'ping':

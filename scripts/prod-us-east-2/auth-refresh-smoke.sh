@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-SOURCE_SECRET_ID="${SOURCE_SECRET_ID:-kortix-prod-env}"
+SOURCE_SECRET_ID="${SOURCE_SECRET_ID:-zed-prod-env}"
 SOURCE_AWS_REGION="${SOURCE_AWS_REGION:-eu-west-2}"
-TARGET_SECRET_ID="${TARGET_SECRET_ID:-kortix/prod-us-east-2-migration}"
+TARGET_SECRET_ID="${TARGET_SECRET_ID:-zed/prod-us-east-2-migration}"
 TARGET_AWS_REGION="${TARGET_AWS_REGION:-us-east-2}"
 
 if [[ "${ALLOW_SOURCE_AUTH_REFRESH_SMOKE:-}" != "1" ]]; then

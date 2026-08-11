@@ -16,7 +16,7 @@
  * have access.
  */
 
-import { type CreateSessionPublicShareInput, createSessionPublicShare } from '@kortix/sdk';
+import { type CreateSessionPublicShareInput, createSessionPublicShare } from '@zed/sdk';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 

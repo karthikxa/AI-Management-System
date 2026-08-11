@@ -1,23 +1,23 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "name": "kortix-examples",
-  "homepage": "https://github.com/kortix-ai/suna",
+  "name": "zed-examples",
+  "homepage": "https://github.com/zed-ai/suna",
   "items": [
     {
       "name": "hello-skill",
       "type": "registry:skill",
       "title": "Hello Skill",
-      "description": "A minimal example skill, installed into .kortix/opencode/skills/hello/.",
+      "description": "A minimal example skill, installed into .zed/opencode/skills/hello/.",
       "categories": ["example"],
       "files": [
         {
           "path": "hello/SKILL.md",
           "type": "registry:file",
           "target": "@skills/hello/SKILL.md",
-          "content": "---\nname: hello\ndescription: Say hello. A minimal example skill installed from the Kortix marketplace.\n---\n\n# Hello\n\nWhen asked to say hello, respond warmly and mention you were installed via `kortix marketplace install`.\n"
+          "content": "---\nname: hello\ndescription: Say hello. A minimal example skill installed from the Zed marketplace.\n---\n\n# Hello\n\nWhen asked to say hello, respond warmly and mention you were installed via `zed marketplace install`.\n"
         }
       ],
-      "meta": { "source": "kortix-examples", "primitive": "skill" }
+      "meta": { "source": "zed-examples", "primitive": "skill" }
     },
     {
       "name": "researcher",
@@ -30,10 +30,10 @@
           "path": "researcher.md",
           "type": "registry:file",
           "target": "@agents/researcher.md",
-          "content": "---\nname: researcher\nmode: primary\ndescription: Example research agent installed from the Kortix registry.\n---\n\nYou are a research agent. Use the hello skill to greet, then help with research.\n"
+          "content": "---\nname: researcher\nmode: primary\ndescription: Example research agent installed from the Zed registry.\n---\n\nYou are a research agent. Use the hello skill to greet, then help with research.\n"
         }
       ],
-      "meta": { "source": "kortix-examples", "primitive": "agent" }
+      "meta": { "source": "zed-examples", "primitive": "agent" }
     },
     {
       "name": "house-rules",
@@ -48,7 +48,7 @@
           "content": "# Project rules\n\n- Be concise.\n- Prefer existing helpers over new dependencies.\n"
         }
       ],
-      "meta": { "source": "kortix-examples" }
+      "meta": { "source": "zed-examples" }
     },
     {
       "name": "starter-bundle",
@@ -57,7 +57,7 @@
       "description": "A use-case bundle: one install pulls the researcher agent, the hello skill, and the house rules.",
       "registryDependencies": ["researcher", "house-rules"],
       "categories": ["example", "bundle"],
-      "meta": { "source": "kortix-examples" }
+      "meta": { "source": "zed-examples" }
     }
   ]
 }

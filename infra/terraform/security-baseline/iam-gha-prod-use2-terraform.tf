@@ -2,7 +2,7 @@
 # Terraform root. The GitHub environment is part of the OIDC subject. This
 # prevents workflows without that environment from assuming this role.
 resource "aws_iam_role" "gha_prod_use2_terraform" {
-  name = "kortix-gha-prod-use2-terraform"
+  name = "zed-gha-prod-use2-terraform"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -15,7 +15,7 @@ resource "aws_iam_role" "gha_prod_use2_terraform" {
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-          "token.actions.githubusercontent.com:sub" = "repo:kortix-ai/suna:environment:prod-use2-shadow"
+          "token.actions.githubusercontent.com:sub" = "repo:zed-ai/suna:environment:prod-use2-shadow"
         }
       }
     }]
@@ -23,7 +23,7 @@ resource "aws_iam_role" "gha_prod_use2_terraform" {
 
   tags = {
     ManagedBy  = "terraform"
-    Name       = "kortix-gha-prod-use2-terraform"
+    Name       = "zed-gha-prod-use2-terraform"
     Stack      = "security-baseline"
     Compliance = "soc2"
   }
@@ -66,7 +66,7 @@ resource "aws_iam_role_policy" "gha_prod_use2_iam" {
           "iam:UpdateRoleDescription",
         ]
         Resource = [
-          "arn:aws:iam::${local.account_id}:role/kortix-prod-use2-*",
+          "arn:aws:iam::${local.account_id}:role/zed-prod-use2-*",
         ]
       },
     ]

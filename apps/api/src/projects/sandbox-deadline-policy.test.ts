@@ -27,11 +27,11 @@ const {
 } = await import('./sandbox-deadline-policy');
 
 const KNOBS = [
-  'KORTIX_SANDBOX_TURN_GRANT_MINUTES',
-  'KORTIX_SANDBOX_LLM_ACTIVITY_GRANT_MINUTES',
-  'KORTIX_SANDBOX_PREVIEW_GRANT_MINUTES',
-  'KORTIX_SANDBOX_TURN_DELIVERY_GRACE_MINUTES',
-  'KORTIX_SANDBOX_WARM_GRANT_MINUTES',
+  'ZED_SANDBOX_TURN_GRANT_MINUTES',
+  'ZED_SANDBOX_LLM_ACTIVITY_GRANT_MINUTES',
+  'ZED_SANDBOX_PREVIEW_GRANT_MINUTES',
+  'ZED_SANDBOX_TURN_DELIVERY_GRACE_MINUTES',
+  'ZED_SANDBOX_WARM_GRANT_MINUTES',
 ];
 afterEach(() => {
   for (const knob of KNOBS) delete process.env[knob];
@@ -75,16 +75,16 @@ describe('the grants', () => {
     expect(warmPoolGrantMs()).toBeLessThan(ABSOLUTE_RUN_CAP_MS);
   });
 
-  test('the idle tail reuses KORTIX_SANDBOX_AUTOSTOP_MINUTES, already 15 in prod', () => {
+  test('the idle tail reuses ZED_SANDBOX_AUTOSTOP_MINUTES, already 15 in prod', () => {
     expect(idleGraceMs()).toBe(15 * 60_000);
   });
 
   test('every grant is independently tunable without a code change', () => {
-    process.env.KORTIX_SANDBOX_TURN_GRANT_MINUTES = '60';
-    process.env.KORTIX_SANDBOX_LLM_ACTIVITY_GRANT_MINUTES = '90';
-    process.env.KORTIX_SANDBOX_PREVIEW_GRANT_MINUTES = '10';
-    process.env.KORTIX_SANDBOX_TURN_DELIVERY_GRACE_MINUTES = '8';
-    process.env.KORTIX_SANDBOX_WARM_GRANT_MINUTES = '5';
+    process.env.ZED_SANDBOX_TURN_GRANT_MINUTES = '60';
+    process.env.ZED_SANDBOX_LLM_ACTIVITY_GRANT_MINUTES = '90';
+    process.env.ZED_SANDBOX_PREVIEW_GRANT_MINUTES = '10';
+    process.env.ZED_SANDBOX_TURN_DELIVERY_GRACE_MINUTES = '8';
+    process.env.ZED_SANDBOX_WARM_GRANT_MINUTES = '5';
 
     expect(turnGrantMs()).toBe(60 * 60_000);
     expect(llmActivityGrantMs()).toBe(90 * 60_000);
@@ -278,7 +278,7 @@ describe('isSandboxAuthored — provenance is decided by the CREDENTIAL', () => 
   });
 
   // ═══ THE SECOND CREDENTIAL ═══ every box also carries a session-scoped
-  // kortix_pat_ (`KORTIX_CLI_TOKEN`). Its auth branch never
+  // zed_pat_ (`ZED_CLI_TOKEN`). Its auth branch never
   // sets apiKeyType, so a gate keyed on TYPE ALONE failed open on the path-based
   // proxy edge — the one the in-box CLI actually uses.
   test('a SESSION-SCOPED credential is the box even though apiKeyType is unset', () => {
@@ -286,7 +286,7 @@ describe('isSandboxAuthored — provenance is decided by the CREDENTIAL', () => 
   });
 
   // The corollary, and the reason every CALL SITE must resolve the session id
-  // through `callerKortixSessionId`: this function cannot tell a Kortix session
+  // through `callerZedSessionId`: this function cannot tell a Zed session
   // binding from a Supabase auth session, so it treats any non-null value as the
   // box. Passing a browser's auth session here reads every human as a sandbox.
   test('it cannot distinguish which KIND of session id it was handed', () => {

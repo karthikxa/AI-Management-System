@@ -1,9 +1,9 @@
 import confetti from 'canvas-confetti';
 
-/** Kortix accent family (hex approximations of the `--kortix-*` oklch tokens —
+/** Zed accent family (hex approximations of the `--zed-*` oklch tokens —
  *  canvas-confetti parses hex, not oklch). Celebration reads as the brand's
  *  accent set rather than a generic rainbow. */
-const KORTIX_CONFETTI_COLORS = ['#4C8DFF', '#21A366', '#E5B93C', '#E8850C', '#A66DEE'];
+const ZED_CONFETTI_COLORS = ['#4C8DFF', '#21A366', '#E5B93C', '#E8850C', '#A66DEE'];
 
 /**
  * Fire a short, tasteful confetti burst — the "realistic" multi-layer recipe
@@ -17,7 +17,7 @@ export function fireConfetti() {
   const count = 200;
   const defaults = {
     origin: { y: 0.7 },
-    colors: KORTIX_CONFETTI_COLORS,
+    colors: ZED_CONFETTI_COLORS,
     disableForReducedMotion: true,
     zIndex: 9999,
   } satisfies confetti.Options;

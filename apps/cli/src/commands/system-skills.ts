@@ -1,5 +1,5 @@
 /**
- * `kortix system-skills <subcommand>` — the Kortix SYSTEM skills, served live.
+ * `zed system-skills <subcommand>` — the Zed SYSTEM skills, served live.
  *
  * This command makes an OpenCode session self-sufficient. The binary plus a
  * token can retrieve the platform instructions with no repo checkout, baked
@@ -7,27 +7,27 @@
  * system skill, `get` prints one in full, and both read `/v1/skills` on the host
  * you are actually signed into, so the instructions always match the deployment.
  *
- *   kortix system-skills                 list the system skills (how Kortix works)
- *   kortix system-skills get <name>      print one skill's SKILL.md + its file list
- *   kortix system-skills get <n> --full  …and inline every reference file
- *   kortix system-skills file <n> <path> print ONE reference file
- *   kortix system-skills path [name]     locate the on-disk skill dir
+ *   zed system-skills                 list the system skills (how Zed works)
+ *   zed system-skills get <name>      print one skill's SKILL.md + its file list
+ *   zed system-skills get <n> --full  …and inline every reference file
+ *   zed system-skills file <n> <path> print ONE reference file
+ *   zed system-skills path [name]     locate the on-disk skill dir
  *
- * SCOPE — system skills only, always. The command used to be `kortix skills` with
+ * SCOPE — system skills only, always. The command used to be `zed skills` with
  * an `--all` flag that folded the browsable marketplace catalog into the same
  * list, which made "what does this command return?" depend on a flag. It now
- * returns exactly one thing: the kortix-managed floor that describes how Kortix
+ * returns exactly one thing: the zed-managed floor that describes how Zed
  * works. Optional/marketplace skills were never lost — they are the marketplace's
  * job and stay reachable at their proper home:
  *
- *   kortix marketplace list --type skill
+ *   zed marketplace list --type skill
  *
  * which is the identical query `--all` issued (`/marketplace/items?type=skill`),
  * with richer output. Nothing was deleted; one surface stopped doing two jobs.
  *
- * `kortix skills` REMAINS a working alias, permanently and without a deprecation
- * nag. Every already-baked sandbox image carries a seeded `kortix-system` skill
- * whose `<live-skills>` pointer says `kortix skills get <name>`, and those images
+ * `zed skills` REMAINS a working alias, permanently and without a deprecation
+ * nag. Every already-baked sandbox image carries a seeded `zed-system` skill
+ * whose `<live-skills>` pointer says `zed skills get <name>`, and those images
  * pin the CLI they were baked with. Dropping the old name would break exactly the
  * surface this command exists to serve. Output is written in terms of whichever
  * name you invoked, so either entry point teaches a self-consistent set of
@@ -78,16 +78,16 @@ interface SkillsFlags {
 /** The canonical command name; `skills` is kept as an alias (see file header). */
 export const SYSTEM_SKILLS_COMMAND = 'system-skills';
 
-const helpFor = (cmd: string) => help`Usage: kortix ${cmd} <subcommand> [options]
+const helpFor = (cmd: string) => help`Usage: zed ${cmd} <subcommand> [options]
 
-Learn how to drive Kortix. The Kortix system skills are the platform's own
+Learn how to drive Zed. The Zed system skills are the platform's own
 documentation — sessions, sandboxes, the connector/approval loop, memory,
 channels — served live by the host you are signed into, so they always match
 the version you are talking to. This is all any harness needs: the binary,
 a token, and these skills.
 
 Subcommands:
-  list                 List the Kortix system skills (default).
+  list                 List the Zed system skills (default).
   get <name>           Print one skill's current SKILL.md body, then list the
                        paths of its reference files.
   file <name> <path>   Print ONE reference file. Cheaper than --full when you
@@ -95,24 +95,24 @@ Subcommands:
   path [name]          Print the on-disk skill directory.
 
 Options:
-  --full               get: also inline every referenced file (kortix-system is
+  --full               get: also inline every referenced file (zed-system is
                        ~230 KB in full — prefer \`file\` for a single document).
-  --host <name>        Use a configured Kortix host.
+  --host <name>        Use a configured Zed host.
   --json               Machine-readable output.
   -h, --help           Show this help.
 
 Examples:
-  kortix ${cmd}
-  kortix ${cmd} get kortix-system
-  kortix ${cmd} file kortix-system references/kortix/kortix-yaml.md
-  kortix ${cmd} get kortix-slack --json
+  zed ${cmd}
+  zed ${cmd} get zed-system
+  zed ${cmd} file zed-system references/zed/zed-yaml.md
+  zed ${cmd} get zed-slack --json
 
 Optional (non-system) skills live in the marketplace:
-  kortix marketplace list --type skill
+  zed marketplace list --type skill
 `;
 
-/** Where a skill's files live inside a Kortix project. */
-const SKILLS_DIR = '.kortix/opencode/skills';
+/** Where a skill's files live inside a Zed project. */
+const SKILLS_DIR = '.zed/opencode/skills';
 
 function parseFlags(argv: string[]): SkillsFlags {
   return {
@@ -128,17 +128,17 @@ function resolveClient(host?: string): { client: ApiClient; auth: Auth } | null 
   if (!auth?.token) {
     if (host) {
       process.stderr.write(
-        `${status.err(`Host "${host}" is not logged in.`)} Run ${C.cyan}kortix login --host ${host}${C.reset}.\n`,
+        `${status.err(`Host "${host}" is not logged in.`)} Run ${C.cyan}zed login --host ${host}${C.reset}.\n`,
       );
     } else {
-      process.stderr.write(`${status.err('Not logged in. Run `kortix login`.')}\n`);
+      process.stderr.write(`${status.err('Not logged in. Run `zed login`.')}\n`);
     }
     return null;
   }
   return { client: clientFromAuth(auth), auth };
 }
 
-/** The system floor — the kortix-managed skills that describe how Kortix works. */
+/** The system floor — the zed-managed skills that describe how Zed works. */
 async function fetchSystemSkills(client: ApiClient): Promise<SkillSummary[]> {
   const res = await client.get<SkillsListResponse>('/skills');
   return res.skills ?? [];
@@ -151,7 +151,7 @@ async function fetchSystemSkills(client: ApiClient): Promise<SkillSummary[]> {
 function noteAllFlagMoved(flags: SkillsFlags): void {
   if (!flags.all || flags.json) return;
   process.stderr.write(
-    `${C.dim}--all no longer applies: this lists system skills only. Optional skills:${C.reset} ${C.cyan}kortix marketplace list --type skill${C.reset}\n`,
+    `${C.dim}--all no longer applies: this lists system skills only. Optional skills:${C.reset} ${C.cyan}zed marketplace list --type skill${C.reset}\n`,
   );
 }
 
@@ -168,7 +168,7 @@ async function skillsList(flags: SkillsFlags, cmd: string): Promise<number> {
     // turns retrying a bare "Not found".
     if (err instanceof ApiError && err.status === 404) {
       process.stderr.write(
-        `${status.err('This Kortix host does not serve system skills yet.')} It needs a newer API; check ${C.cyan}kortix whoami${C.reset} for which host you are on.\n`,
+        `${status.err('This Zed host does not serve system skills yet.')} It needs a newer API; check ${C.cyan}zed whoami${C.reset} for which host you are on.\n`,
       );
       return 1;
     }
@@ -186,7 +186,7 @@ async function skillsList(flags: SkillsFlags, cmd: string): Promise<number> {
     return 0;
   }
   process.stdout.write(
-    `\n  ${C.bold}Kortix system skills${C.reset} ${C.faded}(live — how Kortix works)${C.reset}\n\n`,
+    `\n  ${C.bold}Zed system skills${C.reset} ${C.faded}(live — how Zed works)${C.reset}\n\n`,
   );
   const width = Math.min(24, Math.max(...skills.map((s) => s.name.length)));
   for (const s of skills) {
@@ -195,7 +195,7 @@ async function skillsList(flags: SkillsFlags, cmd: string): Promise<number> {
     );
   }
   process.stdout.write(
-    `\n  ${C.dim}Load one:${C.reset} ${C.cyan}kortix ${cmd} get <name>${C.reset}\n`,
+    `\n  ${C.dim}Load one:${C.reset} ${C.cyan}zed ${cmd} get <name>${C.reset}\n`,
   );
   return 0;
 }
@@ -210,7 +210,7 @@ function summarize(description: string): string {
 async function skillsGet(argv: string[], flags: SkillsFlags, cmd: string): Promise<number> {
   const name = argv.find((a) => !a.startsWith('-'));
   if (!name) {
-    process.stderr.write(`${status.err(`pass a skill name: kortix ${cmd} get kortix-system`)}\n`);
+    process.stderr.write(`${status.err(`pass a skill name: zed ${cmd} get zed-system`)}\n`);
     return 2;
   }
   const ctx = resolveClient(flags.host);
@@ -225,7 +225,7 @@ async function skillsGet(argv: string[], flags: SkillsFlags, cmd: string): Promi
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) {
       process.stderr.write(
-        `${status.err(`No Kortix system skill matches "${name}".`)} Run ${C.cyan}kortix ${cmd}${C.reset}.\n`,
+        `${status.err(`No Zed system skill matches "${name}".`)} Run ${C.cyan}zed ${cmd}${C.reset}.\n`,
       );
       return 1;
     }
@@ -265,7 +265,7 @@ async function skillsGet(argv: string[], flags: SkillsFlags, cmd: string): Promi
       process.stderr.write(`  ${C.dim}${f.path}${C.reset}\n`);
     }
     process.stderr.write(
-      `\n${C.dim}Read one with ${C.reset}${C.cyan}kortix ${cmd} file ${detail.name} <path>${C.reset}${C.dim}, or add ${C.reset}${C.cyan}--full${C.reset}${C.dim} to inline them all.${C.reset}\n`,
+      `\n${C.dim}Read one with ${C.reset}${C.cyan}zed ${cmd} file ${detail.name} <path>${C.reset}${C.dim}, or add ${C.reset}${C.cyan}--full${C.reset}${C.dim} to inline them all.${C.reset}\n`,
     );
   }
   return 0;
@@ -275,8 +275,8 @@ async function skillsGet(argv: string[], flags: SkillsFlags, cmd: string): Promi
  * `get <name> <path>` — ONE reference file, not the whole tree.
  *
  * `get --full` inlines every reference in a single response, which for
- * `kortix-system` is ~230 KB. An agent that needs one file (say
- * `references/kortix/kortix-yaml.md`, ~8 KB) should not have to spend the other
+ * `zed-system` is ~230 KB. An agent that needs one file (say
+ * `references/zed/zed-yaml.md`, ~8 KB) should not have to spend the other
  * 222 KB of its context to read it. This fronts the API's existing
  * `GET /skills/:name/file?path=…`, which was reachable over HTTP but had no CLI
  * surface at all, making the CLI all-or-nothing.
@@ -289,7 +289,7 @@ async function skillsFile(argv: string[], flags: SkillsFlags, cmd: string): Prom
   const [name, path] = positional;
   if (!name || !path) {
     process.stderr.write(
-      `${status.err('pass a skill and a file path')}: ${C.cyan}kortix ${cmd} file kortix-system references/kortix/kortix-yaml.md${C.reset}\n`,
+      `${status.err('pass a skill and a file path')}: ${C.cyan}zed ${cmd} file zed-system references/zed/zed-yaml.md${C.reset}\n`,
     );
     return 2;
   }
@@ -305,7 +305,7 @@ async function skillsFile(argv: string[], flags: SkillsFlags, cmd: string): Prom
       // Distinguish "no such skill" from "no such file in it" — the second is
       // the common typo, and the fix is to list the paths, not the skills.
       process.stderr.write(
-        `${status.err(`No file "${path}" in Kortix system skill "${name}".`)} List its files with ${C.cyan}kortix ${cmd} get ${name}${C.reset}.\n`,
+        `${status.err(`No file "${path}" in Zed system skill "${name}".`)} List its files with ${C.cyan}zed ${cmd} get ${name}${C.reset}.\n`,
       );
       return 1;
     }
@@ -320,16 +320,16 @@ async function skillsFile(argv: string[], flags: SkillsFlags, cmd: string): Prom
   return 0;
 }
 
-/** Walk up from cwd to a Kortix project root, else use cwd. Keys on a project
- *  marker (a `kortix.yaml`/`kortix.toml` manifest or a `.kortix/opencode` dir),
- *  not a bare `.kortix/` — otherwise the CLI's own `~/.kortix` home dir matches. */
+/** Walk up from cwd to a Zed project root, else use cwd. Keys on a project
+ *  marker (a `zed.yaml`/`zed.toml` manifest or a `.zed/opencode` dir),
+ *  not a bare `.zed/` — otherwise the CLI's own `~/.zed` home dir matches. */
 function projectRoot(): string {
   let dir = process.cwd();
   for (let i = 0; i < 8; i += 1) {
     if (
-      existsSync(join(dir, 'kortix.yaml')) ||
-      existsSync(join(dir, 'kortix.toml')) ||
-      existsSync(join(dir, '.kortix', 'opencode'))
+      existsSync(join(dir, 'zed.yaml')) ||
+      existsSync(join(dir, 'zed.toml')) ||
+      existsSync(join(dir, '.zed', 'opencode'))
     ) {
       return dir;
     }
@@ -367,8 +367,8 @@ export async function runSystemSkills(
   const sub = argv[0];
   const rest = argv.slice(1);
 
-  // Bare `kortix system-skills`, `list`/`ls`, or a leading flag
-  // (`kortix system-skills --json`) all list the system floor. A leading flag
+  // Bare `zed system-skills`, `list`/`ls`, or a leading flag
+  // (`zed system-skills --json`) all list the system floor. A leading flag
   // isn't a subcommand, so its flags come from the whole argv.
   if (!sub || sub === 'list' || sub === 'ls' || sub.startsWith('-')) {
     return skillsList(parseFlags(sub && sub.startsWith('-') ? argv.slice() : rest), invokedAs);

@@ -3,15 +3,15 @@ import { agentInMode, filterAgents } from './agent-filter';
 
 const agent = (name: string, mode: string | null, description: string | null = null) => ({
   name,
-  path: `.kortix/opencode/agents/${name}.md`,
+  path: `.zed/opencode/agents/${name}.md`,
   description,
   mode,
 });
 
 describe('agentInMode', () => {
   test('matches its own declared mode', () => {
-    expect(agentInMode(agent('kortix', 'primary'), 'primary')).toBe(true);
-    expect(agentInMode(agent('kortix', 'primary'), 'subagent')).toBe(false);
+    expect(agentInMode(agent('zed', 'primary'), 'primary')).toBe(true);
+    expect(agentInMode(agent('zed', 'primary'), 'subagent')).toBe(false);
     expect(agentInMode(agent('reviewer', 'subagent'), 'subagent')).toBe(true);
   });
 
@@ -26,19 +26,19 @@ describe('agentInMode', () => {
     // The runtime assumes primary when the frontmatter omits `mode`. If this
     // filtered as "neither", the project default agent would vanish under the
     // Primary tab.
-    expect(agentInMode(agent('kortix', null), 'primary')).toBe(true);
-    expect(agentInMode(agent('kortix', null), 'subagent')).toBe(false);
+    expect(agentInMode(agent('zed', null), 'primary')).toBe(true);
+    expect(agentInMode(agent('zed', null), 'subagent')).toBe(false);
   });
 
   test('is case-insensitive on the declared value', () => {
-    expect(agentInMode(agent('kortix', 'Primary'), 'primary')).toBe(true);
+    expect(agentInMode(agent('zed', 'Primary'), 'primary')).toBe(true);
     expect(agentInMode(agent('both', 'ALL'), 'subagent')).toBe(true);
   });
 });
 
 describe('filterAgents', () => {
   const all = [
-    agent('kortix', 'primary', 'Generic Kortix general knowledge worker'),
+    agent('zed', 'primary', 'Generic Zed general knowledge worker'),
     agent('memory-reflector', 'primary', 'Reflects on recent project activity'),
     agent('reviewer', 'subagent'),
     agent('utility', 'all'),
@@ -50,7 +50,7 @@ describe('filterAgents', () => {
 
   test('mode narrows, keeping the both-ways agent in each', () => {
     expect(filterAgents(all, { mode: 'primary', query: '' }).map((a) => a.name)).toEqual([
-      'kortix',
+      'zed',
       'memory-reflector',
       'utility',
     ]);
@@ -65,7 +65,7 @@ describe('filterAgents', () => {
       'memory-reflector',
     ]);
     expect(filterAgents(all, { mode: null, query: 'knowledge' }).map((a) => a.name)).toEqual([
-      'kortix',
+      'zed',
     ]);
   });
 

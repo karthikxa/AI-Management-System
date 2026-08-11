@@ -17,19 +17,19 @@ const FORBIDDEN_IMPORTS = [
   {
     kind: 'deprecated-sdk-runtime',
     match: (source) =>
-      source.startsWith('@kortix/sdk/internal/') ||
-      source === '@kortix/sdk/projects-client' ||
-      source === '@kortix/sdk/platform-client' ||
-      source === '@kortix/sdk/files' ||
-      source === '@kortix/sdk/session' ||
-      source === '@kortix/sdk/session/url' ||
-      source === '@kortix/sdk/opencode-client' ||
-      source === '@kortix/sdk/opencode-errors' ||
-      source === '@kortix/sdk/event-stream' ||
-      source === '@kortix/sdk/server-store' ||
-      source === '@kortix/sdk/sync-store' ||
-      source === '@kortix/sdk/sandbox-connection-store' ||
-      source === '@kortix/sdk/opencode-pending-store',
+      source.startsWith('@zed/sdk/internal/') ||
+      source === '@zed/sdk/projects-client' ||
+      source === '@zed/sdk/platform-client' ||
+      source === '@zed/sdk/files' ||
+      source === '@zed/sdk/session' ||
+      source === '@zed/sdk/session/url' ||
+      source === '@zed/sdk/opencode-client' ||
+      source === '@zed/sdk/opencode-errors' ||
+      source === '@zed/sdk/event-stream' ||
+      source === '@zed/sdk/server-store' ||
+      source === '@zed/sdk/sync-store' ||
+      source === '@zed/sdk/sandbox-connection-store' ||
+      source === '@zed/sdk/opencode-pending-store',
   },
   {
     kind: 'host-runtime-module',
@@ -42,7 +42,7 @@ const FORBIDDEN_IMPORTS = [
       source === '@/stores/pending-files-store',
   },
   {
-    kind: 'host-kortix-api',
+    kind: 'host-zed-api',
     match: (source) =>
       source === '@/lib/api' ||
       source.startsWith('@/lib/api/') ||
@@ -54,9 +54,9 @@ const FORBIDDEN_IMPORTS = [
 const FORBIDDEN_RUNTIME_IDENTIFIERS = new Set([
   'getClient',
   'getActiveOpenCodeUrl',
-  'createKortixPty',
-  'getKortixPtyWebSocketUrl',
-  'removeKortixPty',
+  'createZedPty',
+  'getZedPtyWebSocketUrl',
+  'removeZedPty',
 ]);
 
 const FORBIDDEN_RUNTIME_PATHS = [
@@ -64,7 +64,7 @@ const FORBIDDEN_RUNTIME_PATHS = [
   /^\/(?:event|session|message|question|permission|file|pty)(?:\/|\?|$)/,
 ];
 
-const FORBIDDEN_KORTIX_NETWORK_PATHS = [
+const FORBIDDEN_ZED_NETWORK_PATHS = [
   /\/tunnel\/permission-requests\/stream/,
   /\/p\/public-share\//,
   /\/admin\/stress-test\/run/,
@@ -106,7 +106,7 @@ function runtimePathViolation(value) {
 }
 
 function networkPathViolation(value) {
-  return FORBIDDEN_KORTIX_NETWORK_PATHS.some((pattern) => pattern.test(value));
+  return FORBIDDEN_ZED_NETWORK_PATHS.some((pattern) => pattern.test(value));
 }
 
 function networkTargetText(node) {
@@ -170,7 +170,7 @@ export function scanSdkBoundary(sourceRoot) {
         violations.push({
           file,
           line: lineOf(sourceFile, node),
-          kind: 'host-kortix-api',
+          kind: 'host-zed-api',
           source: node.text,
         });
       }
@@ -217,7 +217,7 @@ export function scanSdkBoundary(sourceRoot) {
           violations.push({
             file,
             line: lineOf(sourceFile, node),
-            kind: 'host-kortix-network',
+            kind: 'host-zed-network',
             source: target,
           });
         }

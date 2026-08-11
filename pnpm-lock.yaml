@@ -126,7 +126,7 @@ importers:
         specifier: ^8.15.5
         version: 8.20.4
       agent-tunnel:
-        specifier: workspace:@kortix/agent-tunnel@*
+        specifier: workspace:@zed/agent-tunnel@*
         version: link:packages/agent-tunnel
       dotenv:
         specifier: ^16
@@ -155,28 +155,28 @@ importers:
       '@hono/zod-openapi':
         specifier: ^0.19.10
         version: 0.19.10(hono@4.12.27)(zod@3.25.76)
-      '@kortix/api-contract':
+      '@zed/api-contract':
         specifier: workspace:*
         version: link:../../packages/api-contract
-      '@kortix/db':
+      '@zed/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@kortix/llm-catalog':
+      '@zed/llm-catalog':
         specifier: workspace:*
         version: link:../../packages/llm-catalog
-      '@kortix/llm-gateway':
+      '@zed/llm-gateway':
         specifier: workspace:*
         version: link:../../packages/llm-gateway
-      '@kortix/manifest-schema':
+      '@zed/manifest-schema':
         specifier: workspace:*
         version: link:../../packages/manifest-schema
-      '@kortix/registry':
+      '@zed/registry':
         specifier: workspace:*
         version: link:../../packages/registry
-      '@kortix/shared':
+      '@zed/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@kortix/starter':
+      '@zed/starter':
         specifier: workspace:*
         version: link:../../packages/starter
       '@logtail/node':
@@ -192,7 +192,7 @@ importers:
         specifier: ^2.95.3
         version: 2.110.0
       agent-tunnel:
-        specifier: workspace:@kortix/agent-tunnel@*
+        specifier: workspace:@zed/agent-tunnel@*
         version: link:../../packages/agent-tunnel
       croner:
         specifier: ^9.0.0
@@ -237,7 +237,7 @@ importers:
         specifier: ^3.23.0
         version: 3.25.76
     devDependencies:
-      '@kortix/sdk':
+      '@zed/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
       '@types/bun':
@@ -252,22 +252,22 @@ importers:
 
   apps/cli:
     dependencies:
-      '@kortix/llm-catalog':
+      '@zed/llm-catalog':
         specifier: workspace:*
         version: link:../../packages/llm-catalog
-      '@kortix/manifest-schema':
+      '@zed/manifest-schema':
         specifier: workspace:*
         version: link:../../packages/manifest-schema
-      '@kortix/registry':
+      '@zed/registry':
         specifier: workspace:*
         version: link:../../packages/registry
-      '@kortix/sdk':
+      '@zed/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
-      '@kortix/shared':
+      '@zed/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@kortix/starter':
+      '@zed/starter':
         specifier: workspace:*
         version: link:../../packages/starter
       ignore:
@@ -303,7 +303,7 @@ importers:
         specifier: ^25.1.8
         version: 25.1.8(electron-builder-squirrel-windows@25.1.8)
 
-  apps/kortix-sandbox-agent-server:
+  apps/zed-sandbox-agent-server:
     dependencies:
       hono:
         specifier: 4.12.27
@@ -321,10 +321,10 @@ importers:
 
   apps/llm-gateway:
     dependencies:
-      '@kortix/llm-gateway':
+      '@zed/llm-gateway':
         specifier: workspace:*
         version: link:../../packages/llm-gateway
-      '@kortix/shared':
+      '@zed/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       hono:
@@ -352,10 +352,10 @@ importers:
       '@gorhom/bottom-sheet':
         specifier: ^5.2.6
         version: 5.2.14(@types/react@19.2.18)(react-native-gesture-handler@2.28.0)(react-native-reanimated@4.1.7)(react-native@0.81.5)(react@19.1.0)
-      '@kortix/sdk':
+      '@zed/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
-      '@kortix/shared':
+      '@zed/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@lottiefiles/dotlottie-react':
@@ -807,13 +807,13 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.1
         version: 5.4.0(react-hook-form@7.81.0)
-      '@kortix/llm-catalog':
+      '@zed/llm-catalog':
         specifier: workspace:*
         version: link:../../packages/llm-catalog
-      '@kortix/sdk':
+      '@zed/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
-      '@kortix/shared':
+      '@zed/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@lezer/highlight':
@@ -1273,7 +1273,7 @@ importers:
       '@embedpdf/pdfium':
         specifier: 2.14.4
         version: 2.14.4
-      '@kortix/manifest-schema':
+      '@zed/manifest-schema':
         specifier: workspace:*
         version: link:../../packages/manifest-schema
       '@playwright/test':
@@ -1330,7 +1330,7 @@ importers:
 
   apps/whitelabel-demo:
     dependencies:
-      '@kortix/sdk':
+      '@zed/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
       '@tanstack/react-query':
@@ -1460,7 +1460,7 @@ importers:
 
   packages/executor-sdk:
     dependencies:
-      '@kortix/sdk':
+      '@zed/sdk':
         specifier: workspace:*
         version: link:../sdk
     devDependencies:
@@ -1494,10 +1494,10 @@ importers:
       '@ai-sdk/openai-compatible':
         specifier: 3.0.12
         version: 3.0.12(zod@3.25.76)
-      '@kortix/llm-catalog':
+      '@zed/llm-catalog':
         specifier: workspace:*
         version: link:../llm-catalog
-      '@kortix/shared':
+      '@zed/shared':
         specifier: workspace:*
         version: link:../shared
       ai:
@@ -1544,7 +1544,7 @@ importers:
 
   packages/sdk:
     dependencies:
-      '@kortix/llm-catalog':
+      '@zed/llm-catalog':
         specifier: workspace:*
         version: link:../llm-catalog
       '@opencode-ai/sdk':
@@ -1590,10 +1590,10 @@ importers:
 
   packages/starter:
     devDependencies:
-      '@kortix/llm-catalog':
+      '@zed/llm-catalog':
         specifier: workspace:*
         version: link:../llm-catalog
-      '@kortix/manifest-schema':
+      '@zed/manifest-schema':
         specifier: workspace:*
         version: link:../manifest-schema
       '@types/bun':
@@ -1605,7 +1605,7 @@ importers:
 
   tests/e2e:
     devDependencies:
-      '@kortix/sdk':
+      '@zed/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
 

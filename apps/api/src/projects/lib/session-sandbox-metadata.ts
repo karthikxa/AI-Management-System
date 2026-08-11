@@ -1,4 +1,4 @@
-import { WORKSPACE_MODES_V2, type WorkspaceModeV2 } from '@kortix/manifest-schema';
+import { WORKSPACE_MODES_V2, type WorkspaceModeV2 } from '@zed/manifest-schema';
 
 /** Read the server-owned resolved template from durable session metadata. */
 export function sandboxSlugFromSessionMetadata(metadata: unknown): string | undefined {

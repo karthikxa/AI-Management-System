@@ -1,6 +1,6 @@
 const ENVIRONMENTS = new Set(['dev', 'staging', 'prod', 'preview']);
 const APP_FRAME_ANCESTORS =
-  "frame-ancestors 'self' https://kortix.com https://*.kortix.com http://localhost:* http://127.0.0.1:*";
+  "frame-ancestors 'self' https://zed.com https://*.zed.com http://localhost:* http://127.0.0.1:*";
 
 function withoutFrameAncestors(value) {
   return value
@@ -71,21 +71,21 @@ export default {
     const url = new URL(request.url);
     const selected = backendFor(url.hostname.toLowerCase(), env);
     if (!selected?.backend) {
-      return Response.json({ error: 'Invalid Kortix App environment' }, { status: 404 });
+      return Response.json({ error: 'Invalid Zed App environment' }, { status: 404 });
     }
     const edgeSecret = edgeSecretFor(selected.environment, env);
     if (!edgeSecret) {
-      return Response.json({ error: 'Kortix Apps edge is not configured' }, { status: 503 });
+      return Response.json({ error: 'Zed Apps edge is not configured' }, { status: 503 });
     }
     const target = new URL(`${url.pathname}${url.search}`, selected.backend);
     const timestamp = String(Date.now());
     const headers = new Headers(request.headers);
-    headers.delete('x-kortix-app-host');
-    headers.delete('x-kortix-app-timestamp');
-    headers.delete('x-kortix-app-signature');
-    headers.set('x-kortix-app-host', url.hostname);
-    headers.set('x-kortix-app-timestamp', timestamp);
-    headers.set('x-kortix-app-signature', await signAppRequest(request, timestamp, edgeSecret));
+    headers.delete('x-zed-app-host');
+    headers.delete('x-zed-app-timestamp');
+    headers.delete('x-zed-app-signature');
+    headers.set('x-zed-app-host', url.hostname);
+    headers.set('x-zed-app-timestamp', timestamp);
+    headers.set('x-zed-app-signature', await signAppRequest(request, timestamp, edgeSecret));
     headers.set('x-forwarded-host', url.host);
     headers.set('x-forwarded-proto', 'https');
 
@@ -99,7 +99,7 @@ export default {
       }));
     } catch {
       return Response.json(
-        { error: 'Kortix App control plane is unavailable' },
+        { error: 'Zed App control plane is unavailable' },
         { status: 503, headers: { 'retry-after': '5' } },
       );
     }
@@ -111,7 +111,7 @@ export default {
       statusText: response.statusText,
       headers: embeddableAppHeaders(response.headers),
     });
-    output.headers.set('x-kortix-app-environment', selected.environment);
+    output.headers.set('x-zed-app-environment', selected.environment);
     return output;
   },
 };

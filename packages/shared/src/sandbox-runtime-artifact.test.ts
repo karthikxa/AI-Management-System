@@ -11,7 +11,7 @@ import {
 const roots: string[] = [];
 
 async function createCliFixture(): Promise<{ cliRoot: string; sdkRoot: string }> {
-  const root = await mkdtemp(join(tmpdir(), 'kortix-cli-attestation-'));
+  const root = await mkdtemp(join(tmpdir(), 'zed-cli-attestation-'));
   roots.push(root);
   const cliRoot = join(root, 'apps', 'cli');
   const sdkRoot = join(root, 'packages', 'sdk');
@@ -23,10 +23,10 @@ async function createCliFixture(): Promise<{ cliRoot: string; sdkRoot: string }>
     await mkdir(dirname(filePath), { recursive: true });
     await writeFile(filePath, `${relativePath}:v1\n`);
   }
-  await writeFile(join(cliRoot, 'package.json'), '{"name":"@kortix/cli"}\n');
+  await writeFile(join(cliRoot, 'package.json'), '{"name":"@zed/cli"}\n');
   await mkdir(join(sdkRoot, 'src'), { recursive: true });
   await writeFile(join(sdkRoot, 'src', 'index.ts'), 'export const sdk = "v1";\n');
-  await writeFile(join(sdkRoot, 'package.json'), '{"name":"@kortix/sdk"}\n');
+  await writeFile(join(sdkRoot, 'package.json'), '{"name":"@zed/sdk"}\n');
   return { cliRoot, sdkRoot };
 }
 
@@ -64,7 +64,7 @@ describe('sandbox CLI source digest', () => {
 
   test('changes when a compiled artifact changes', async () => {
     const { cliRoot } = await createCliFixture();
-    const binaryPath = join(cliRoot, 'dist', 'kortix');
+    const binaryPath = join(cliRoot, 'dist', 'zed');
     await mkdir(dirname(binaryPath), { recursive: true });
     await writeFile(binaryPath, 'binary:v1\n');
     const before = await buildFileSha256(binaryPath);

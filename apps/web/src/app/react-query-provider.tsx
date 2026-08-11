@@ -1,13 +1,13 @@
 'use client';
 
-import '@/lib/kortix-config'; // configure @kortix/sdk before any data-layer call
+import '@/lib/zed-config'; // configure @zed/sdk before any data-layer call
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { handleApiError } from '@/lib/error-handler';
 import { registerQueryClient } from '@/lib/query-client-singleton';
 
-import { isBillingError } from '@kortix/sdk/react';
+import { isBillingError } from '@zed/sdk/react';
 
 export function ReactQueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => {
@@ -54,7 +54,7 @@ export function ReactQueryProvider({ children }: { children: React.ReactNode }) 
             // isStale(...))`):
             //   refetchOnMount:false -> stale/optimistic value survives, 0 corrective fetches
             //   refetchOnMount:true  -> self-heals to the server value, 0 EXTRA fetches when fresh
-            // Every per-entity `contract()` (`@kortix/sdk/react`) already sets
+            // Every per-entity `contract()` (`@zed/sdk/react`) already sets
             // this explicitly for exactly this reason; this is the default for
             // the ~119 `useQuery` sites across 54 files that don't spread one.
             refetchOnMount: true,

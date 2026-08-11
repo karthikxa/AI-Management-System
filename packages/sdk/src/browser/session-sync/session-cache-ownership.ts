@@ -5,8 +5,8 @@
  *
  * Two kinds of owner scope exist, and the difference matters:
  *
- *  - `kortix:<projectId>/<sessionId>` — AUTHORITATIVE. The consumer was told
- *    which Kortix session it is reading, so it survives a sandbox replacement
+ *  - `zed:<projectId>/<sessionId>` — AUTHORITATIVE. The consumer was told
+ *    which Zed session it is reading, so it survives a sandbox replacement
  *    for that session (the transcript is not wiped when the box is re-created).
  *  - `runtime:<sandboxId>` — FALLBACK, for a standalone consumer that was given
  *    nothing but a bare OpenCode id.
@@ -20,7 +20,7 @@
 
 const owners = new Map<string, string>();
 
-const AUTHORITATIVE_PREFIX = 'kortix:';
+const AUTHORITATIVE_PREFIX = 'zed:';
 
 function isAuthoritative(ownerScope: string): boolean {
   return ownerScope.startsWith(AUTHORITATIVE_PREFIX);
@@ -28,9 +28,9 @@ function isAuthoritative(ownerScope: string): boolean {
 
 export function resolveSessionCacheOwnerScope(
   runtimeScope: string,
-  kortixSessionScope?: string,
+  zedSessionScope?: string,
 ): string | null {
-  if (kortixSessionScope) return `${AUTHORITATIVE_PREFIX}${kortixSessionScope}`;
+  if (zedSessionScope) return `${AUTHORITATIVE_PREFIX}${zedSessionScope}`;
   if (!runtimeScope || runtimeScope === 'none') return null;
   return `runtime:${runtimeScope}`;
 }
@@ -40,7 +40,7 @@ export function resolveSessionCacheOwnerScope(
  * — i.e. is the cached data for this id foreign to the asking consumer?
  *
  * Only two scopes of the same KIND can disagree. That is the real case this
- * module exists to catch: another sandbox (or another Kortix session) reusing
+ * module exists to catch: another sandbox (or another Zed session) reusing
  * an OpenCode id. A fallback scope never contradicts an authoritative one.
  */
 export function sessionCacheOwnerScopesConflict(a: string | null, b: string | null): boolean {
@@ -61,7 +61,7 @@ export function claimSessionCacheOwnership(
     return { changed: false, previousOwnerScope };
   }
   // A fallback claim never displaces an authoritative one — the consumer that
-  // knows which Kortix session this is stays the owner of record.
+  // knows which Zed session this is stays the owner of record.
   if (
     previousOwnerScope !== null &&
     !isAuthoritative(ownerScope) &&

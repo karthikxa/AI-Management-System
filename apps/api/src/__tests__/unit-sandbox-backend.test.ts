@@ -35,9 +35,9 @@ mock.module('../shared/preview-ownership', () => ({
   // satisfied for anything else that imports it in the same test run.
   resolveSandboxProjectId: async () => null,
 }));
-mock.module('../shared/kortix-user-context', () => ({
-  KORTIX_USER_CONTEXT_HEADER: 'X-Kortix-User-Context',
-  encodeKortixUserContext: (payload: any, key: string) => `signed:${key}:${payload.userId}`,
+mock.module('../shared/zed-user-context', () => ({
+  ZED_USER_CONTEXT_HEADER: 'X-Zed-User-Context',
+  encodeZedUserContext: (payload: any, key: string) => `signed:${key}:${payload.userId}`,
 }));
 
 const { buildSandboxUpstreamHeaders } = await import('../sandbox-proxy/backend');
@@ -75,21 +75,21 @@ describe('buildSandboxUpstreamHeaders', () => {
     expect(without['X-Daytona-Preview-Token']).toBeUndefined();
   });
 
-  test('signs X-Kortix-User-Context when user + service key + payload exist', async () => {
+  test('signs X-Zed-User-Context when user + service key + payload exist', async () => {
     const h = await buildSandboxUpstreamHeaders({ sandboxId: 'sbx', userId: 'u1', serviceKey: 'svc-key' });
-    expect(h['X-Kortix-User-Context']).toBe('signed:svc-key:u1');
+    expect(h['X-Zed-User-Context']).toBe('signed:svc-key:u1');
   });
 
   test('omits the signed context when the user has no resolvable payload', async () => {
     mockPayload = null;
     const h = await buildSandboxUpstreamHeaders({ sandboxId: 'sbx', userId: 'u1', serviceKey: 'svc-key' });
-    expect(h['X-Kortix-User-Context']).toBeUndefined();
+    expect(h['X-Zed-User-Context']).toBeUndefined();
   });
 
   test('omits the signed context for anonymous (no user) or keyless requests', async () => {
     const noUser = await buildSandboxUpstreamHeaders({ sandboxId: 'sbx', userId: '', serviceKey: 'svc-key' });
-    expect(noUser['X-Kortix-User-Context']).toBeUndefined();
+    expect(noUser['X-Zed-User-Context']).toBeUndefined();
     const noKey = await buildSandboxUpstreamHeaders({ sandboxId: 'sbx', userId: 'u1', serviceKey: null });
-    expect(noKey['X-Kortix-User-Context']).toBeUndefined();
+    expect(noKey['X-Zed-User-Context']).toBeUndefined();
   });
 });

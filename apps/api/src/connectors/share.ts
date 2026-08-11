@@ -24,7 +24,7 @@ import {
   accountGroupMembers,
   projectSessionGrants,
   projectSessions,
-} from '@kortix/db';
+} from '@zed/db';
 import { db } from '../shared/db';
 
 export type ShareScope = 'project' | 'restricted';
@@ -136,7 +136,7 @@ export type SessionVisibility = 'private' | 'project' | 'restricted';
  * Context needed to decide whether `created_by` may confer ownership.
  *
  * For an INTERACTIVE session created_by is one human, so ownership is real. For
- * a Kortix-as-a-Backend session it is the WRAPPER's credential — identical for
+ * a Zed-as-a-Backend session it is the WRAPPER's credential — identical for
  * every one of that wrapper's end-users — so it identifies nobody, and letting
  * it short-circuit would make every end-user's session visible to every other.
  */
@@ -178,7 +178,7 @@ export function isSessionVisibleTo(
   // A sandbox token acts for ONE end-user. It must not reach a sibling backend
   // session just because the wrapper credential created them both. Interactive
   // sessions are deliberately excluded: there created_by really is one person,
-  // and narrowing would break `kortix sessions ls` from inside a normal sandbox.
+  // and narrowing would break `zed sessions ls` from inside a normal sandbox.
   if (!isSessionTargetVisibleToCaller(ownership)) return false;
 
   if (ownerId && ownerId === subject.userId) return true;

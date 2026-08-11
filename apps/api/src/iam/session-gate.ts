@@ -12,7 +12,7 @@
 // PATs are exempt (no session_id, no iat for our purposes). Skip when
 // the auth method isn't 'supabase'.
 
-import { accountSessionActivity, accounts } from '@kortix/db';
+import { accountSessionActivity, accounts } from '@zed/db';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Context, MiddlewareHandler } from 'hono';
 import { HTTPException } from 'hono/http-exception';
@@ -115,7 +115,7 @@ async function touchActivity(
   // `xmax = 0` — Postgres sets xmax to 0 for new rows but to the
   // current xid for updates. Cheap, single round-trip.
   const rows = await db.execute<{ first_sight: boolean }>(sql`
-    INSERT INTO kortix.account_session_activity
+    INSERT INTO zed.account_session_activity
       (account_id, user_id, session_id, ip, user_agent)
     VALUES (${accountId}::uuid, ${userId}::uuid, ${sessionId}::uuid, ${ip}, ${userAgent})
     ON CONFLICT (account_id, user_id, session_id)
@@ -174,7 +174,7 @@ export function accountSessionGate(): MiddlewareHandler {
       return;
     }
 
-    // PATs and Kortix API keys don't carry a session_id — they're
+    // PATs and Zed API keys don't carry a session_id — they're
     // already governed by token lifecycle policies elsewhere.
     const authType = c.get('authType') as string | undefined;
     if (authType !== 'supabase') {

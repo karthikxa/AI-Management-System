@@ -18,14 +18,14 @@ describe('startErrorMessage', () => {
     expect(m.toLowerCase()).toContain('concurrent-session limit');
   });
 
-  test('404 → project moved/deleted, points to /kortix switch', () => {
+  test('404 → project moved/deleted, points to /zed switch', () => {
     const m = startErrorMessage(404, {});
-    expect(m).toContain('/kortix switch');
+    expect(m).toContain('/zed switch');
   });
 
-  test('409 → no owning account, points to /kortix login', () => {
+  test('409 → no owning account, points to /zed login', () => {
     const m = startErrorMessage(409, {});
-    expect(m).toContain('/kortix login');
+    expect(m).toContain('/zed login');
   });
 
   test('WORKSPACE_MODE_UNAVAILABLE explains the configuration change instead of login', () => {
@@ -35,7 +35,7 @@ describe('startErrorMessage', () => {
     });
     expect(m).toContain('`read`');
     expect(m).toContain('`runtime` or `branch`');
-    expect(m).not.toContain('/kortix login');
+    expect(m).not.toContain('/zed login');
   });
 
   test('403 → permission, ask an admin', () => {
@@ -49,15 +49,15 @@ describe('startErrorMessage', () => {
     expect(m.toLowerCase()).toContain('sandbox template');
   });
 
-  test('KORTIX_URL_UNREACHABLE code → runtime-unreachable copy', () => {
-    const m = startErrorMessage(503, { code: 'KORTIX_URL_UNREACHABLE', error: 'unreachable' });
+  test('ZED_URL_UNREACHABLE code → runtime-unreachable copy', () => {
+    const m = startErrorMessage(503, { code: 'ZED_URL_UNREACHABLE', error: 'unreachable' });
     expect(m.toLowerCase()).toContain('sandbox runtime');
   });
 
   test('400 with a short human detail surfaces it verbatim', () => {
     const m = startErrorMessage(400, { error: 'Unknown or disabled sandbox provider: platinum' });
     expect(m).toContain('platinum');
-    expect(m).toContain('/kortix');
+    expect(m).toContain('/zed');
   });
 
   test('400 with a long/internal detail drops the noise', () => {

@@ -1,5 +1,5 @@
 import { db } from '../src/shared/db';
-import { projects, sessionSandboxes } from '@kortix/db';
+import { projects, sessionSandboxes } from '@zed/db';
 import { createAccountToken } from '../src/repositories/account-tokens';
 import { readFileSync } from 'fs';
 const PTKEY = readFileSync('/tmp/ptkey', 'utf8').trim();

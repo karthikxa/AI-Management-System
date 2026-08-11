@@ -1,8 +1,8 @@
 /**
  * Snapshot quota GC — reclaim superseded snapshots before the org-wide cap bites.
  *
- * Template snapshots are content-addressed (`kortix-default-<hash>` /
- * `kortix-tpl-<hash>`), so every identity drift (each release bumps the runtime
+ * Template snapshots are content-addressed (`zed-default-<hash>` /
+ * `zed-tpl-<hash>`), so every identity drift (each release bumps the runtime
  * fingerprint; every Dockerfile/spec edit) mints a NEW name and silently
  * orphans the old one. Nothing else deletes them: the only same-name deletes
  * run while that exact identity is being rebuilt. Measured live (2026-06-12):
@@ -19,7 +19,7 @@
  * Never acts on a partial view: if the org listing fails, the pass does nothing.
  */
 
-import { sandboxTemplates } from '@kortix/db';
+import { sandboxTemplates } from '@zed/db';
 import { isNotNull, sql } from 'drizzle-orm';
 import {
   deleteDaytonaSnapshotById,
@@ -96,7 +96,7 @@ export async function reconcileSnapshotQuota(
         .where(isNotNull(sandboxTemplates.providerSnapshotName))
     ).map((r) => r.name as string),
   );
-  // Legacy per-project warm-snapshot pointers (kortix-wproj-*) may still live in
+  // Legacy per-project warm-snapshot pointers (zed-wproj-*) may still live in
   // projects.metadata from before the cold-only unification. Warm baking is gone,
   // but protect any lingering pointer while its project is alive and recently
   // ACTIVE so GC never reclaims a name a stale pointer still references.
@@ -106,12 +106,12 @@ export async function reconcileSnapshotQuota(
            (
              p.status <> 'archived' AND (
                EXISTS (
-                 SELECT 1 FROM kortix.project_sessions ps
+                 SELECT 1 FROM zed.project_sessions ps
                  WHERE ps.project_id = p.project_id AND ps.created_at > ${activityCutoff}::timestamptz
                )
              )
            ) AS active
-    FROM kortix.projects p
+    FROM zed.projects p
     WHERE p.metadata -> 'warm_snapshot' ->> 'name' IS NOT NULL
   `);
   const pointerList = ((pointerRows as unknown as { rows?: any[] }).rows ??

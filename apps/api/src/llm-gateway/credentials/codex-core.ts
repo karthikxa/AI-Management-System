@@ -1,4 +1,4 @@
-import { OPENCODE_USER_AGENT } from '@kortix/shared';
+import { OPENCODE_USER_AGENT } from '@zed/shared';
 
 export const CHATGPT_CODEX_BASE_URL = 'https://chatgpt.com/backend-api/codex';
 export const CODEX_USER_AGENT = OPENCODE_USER_AGENT;

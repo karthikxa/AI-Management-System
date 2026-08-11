@@ -4,7 +4,7 @@
  * the pass that applies them plus the DB-only counters `/health` alerts on.
  */
 
-import { appRuntimes, sandboxComputeSessions, sessionSandboxes } from '@kortix/db';
+import { appRuntimes, sandboxComputeSessions, sessionSandboxes } from '@zed/db';
 import { and, eq, sql } from 'drizzle-orm';
 import { logger } from '../../lib/logger';
 import { type ProviderName, type SandboxStatus, getProvider } from '../../platform/providers';

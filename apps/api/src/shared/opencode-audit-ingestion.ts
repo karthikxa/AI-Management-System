@@ -1,4 +1,4 @@
-import type { auditEvents } from '@kortix/db';
+import type { auditEvents } from '@zed/db';
 
 const SHA256_RE = /^[0-9a-f]{64}$/;
 const EVENT_TYPE_RE = /^[a-z0-9_.:-]{1,128}$/i;
@@ -10,7 +10,7 @@ const INITIATOR_TYPES = new Set(['human', 'agent', 'service_account', 'system'])
 const MAX_BATCH_SIZE = 200;
 const MAX_SUMMARY_BYTES = 16_384;
 const SECRET_VALUE_RE =
-  /(?:bearer\s+[a-z0-9._~+/=-]+|sk-[a-z0-9_-]{12,}|gh[opusr]_[a-z0-9_]{12,}|kortix_(?:pat|sbx)_[a-z0-9_-]+|(?:token|secret|password|api[_-]?key)=\S+)/i;
+  /(?:bearer\s+[a-z0-9._~+/=-]+|sk-[a-z0-9_-]{12,}|gh[opusr]_[a-z0-9_]{12,}|zed_(?:pat|sbx)_[a-z0-9_-]+|(?:token|secret|password|api[_-]?key)=\S+)/i;
 
 const SUMMARY_KEYS = new Set([
   'id',

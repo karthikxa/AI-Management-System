@@ -8,7 +8,7 @@ set statement_timeout = '30s';
 -- say "the agent may call gmail.send_email" and not "...but only to these
 -- addresses". `conditions` stores the optional argument predicates a rule must
 -- also satisfy to apply (shape: [{arg, match, negate?}] -- see
--- ExecutorPolicyCondition in src/schema/kortix.ts; evaluation semantics in
+-- ExecutorPolicyCondition in src/schema/zed.ts; evaluation semantics in
 -- apps/api/src/executor/policy.ts).
 --
 -- Purely additive and nullable, so it is mixed-version safe by construction:
@@ -17,6 +17,6 @@ set statement_timeout = '30s';
 -- NULL as an unconditional rule. No backfill, no rewrite -- ADD COLUMN with no
 -- DEFAULT is a catalog-only change in Postgres 11+.
 
-ALTER TABLE "kortix"."executor_connection_policies" ADD COLUMN "conditions" jsonb;
-ALTER TABLE "kortix"."executor_connector_policies" ADD COLUMN "conditions" jsonb;
-ALTER TABLE "kortix"."executor_project_policies" ADD COLUMN "conditions" jsonb;
+ALTER TABLE "zed"."executor_connection_policies" ADD COLUMN "conditions" jsonb;
+ALTER TABLE "zed"."executor_connector_policies" ADD COLUMN "conditions" jsonb;
+ALTER TABLE "zed"."executor_project_policies" ADD COLUMN "conditions" jsonb;

@@ -18,12 +18,12 @@ describe('OpenCode local model selection scoping', () => {
     expect(scopedModelSelectionKey(undefined, 'native')).toBeUndefined();
   });
 
-  test('detects gateway mode from the Kortix provider', () => {
+  test('detects gateway mode from the Zed provider', () => {
     expect(
       modelProviderMode({
-        all: [{ id: 'kortix', name: 'Kortix', models: {} }],
-        connected: ['kortix'],
-        default: { kortix: 'glm-5.2' },
+        all: [{ id: 'zed', name: 'Zed', models: {} }],
+        connected: ['zed'],
+        default: { zed: 'glm-5.2' },
       } as any),
     ).toBe('gateway');
   });
@@ -48,48 +48,48 @@ describe('OpenCode local model selection scoping', () => {
   });
 
   test('keeps managed and BYOK model wire formats unchanged', () => {
-    const managed = { providerID: 'kortix', modelID: 'claude-opus-4.8' };
-    const byok = { providerID: 'kortix', modelID: 'anthropic/claude-sonnet-4-6' };
-    expect(formatModelString(managed)).toBe('kortix/claude-opus-4.8');
+    const managed = { providerID: 'zed', modelID: 'claude-opus-4.8' };
+    const byok = { providerID: 'zed', modelID: 'anthropic/claude-sonnet-4-6' };
+    expect(formatModelString(managed)).toBe('zed/claude-opus-4.8');
     expect(formatPromptModel(managed)).toEqual(managed);
-    expect(formatModelString(byok)).toBe('kortix/anthropic/claude-sonnet-4-6');
+    expect(formatModelString(byok)).toBe('zed/anthropic/claude-sonnet-4-6');
     expect(formatPromptModel(byok)).toEqual(byok);
   });
 
   test('sends the concrete current model when no explicit model is selected', () => {
     expect(
       resolvePromptModel(undefined, {
-        providerID: 'kortix',
+        providerID: 'zed',
         modelID: 'claude-opus-4.8',
       }),
-    ).toEqual({ providerID: 'kortix', modelID: 'claude-opus-4.8' });
+    ).toEqual({ providerID: 'zed', modelID: 'claude-opus-4.8' });
   });
 
   test('never emits stale auto selections', () => {
     expect(
       resolvePromptModel(
-        { providerID: 'kortix', modelID: 'auto' },
-        { providerID: 'kortix', modelID: 'claude-opus-4.8' },
+        { providerID: 'zed', modelID: 'auto' },
+        { providerID: 'zed', modelID: 'claude-opus-4.8' },
       ),
-    ).toEqual({ providerID: 'kortix', modelID: 'claude-opus-4.8' });
+    ).toEqual({ providerID: 'zed', modelID: 'claude-opus-4.8' });
     expect(
-      resolvePromptModel(undefined, { providerID: 'kortix', modelID: 'auto' }),
+      resolvePromptModel(undefined, { providerID: 'zed', modelID: 'auto' }),
     ).toBeUndefined();
   });
 
   test('keeps the deprecated Auto resolver ABI while failing stale Auto closed', () => {
     expect(
       resolveHiddenAutoModel(
-        { providerID: 'kortix', modelID: 'auto' },
+        { providerID: 'zed', modelID: 'auto' },
         { enableAutoModel: true, isModelValid: () => true },
       ),
     ).toBeUndefined();
     expect(
       resolveHiddenAutoModel(
-        { providerID: 'kortix', modelID: 'glm-5.2' },
+        { providerID: 'zed', modelID: 'glm-5.2' },
         { enableAutoModel: false, isModelValid: () => false },
       ),
-    ).toEqual({ providerID: 'kortix', modelID: 'glm-5.2' });
+    ).toEqual({ providerID: 'zed', modelID: 'glm-5.2' });
   });
 
   test('project sessions prefer the server-bound agent over global last-used agent', () => {
@@ -120,17 +120,17 @@ describe('OpenCode local model selection scoping', () => {
   test('project composer prefers its declared default over a cross-project last-used agent', () => {
     expect(
       resolveCurrentAgentName({
-        defaultAgentName: 'kortix',
+        defaultAgentName: 'zed',
         lastAgentName: 'reviewer',
       }),
-    ).toBe('kortix');
+    ).toBe('zed');
   });
 
   test('an explicit picker choice can override the project default for the current composer', () => {
     expect(
       resolveCurrentAgentName({
         explicitAgentName: 'reviewer',
-        defaultAgentName: 'kortix',
+        defaultAgentName: 'zed',
         lastAgentName: 'builder',
       }),
     ).toBe('reviewer');

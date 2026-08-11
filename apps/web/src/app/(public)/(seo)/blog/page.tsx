@@ -9,24 +9,24 @@ import { siteMetadata } from '@/lib/site-metadata';
 
 const TITLE = 'Blog';
 const DESCRIPTION =
-  'Field notes on building, running, and governing AI agents that do real work — from the team building the Kortix command center.';
+  'Field notes on building, running, and governing AI agents that do real work — from the team building the Zed command center.';
 const URL = `${siteMetadata.url}/blog`;
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  keywords: ['Kortix blog', 'AI agents', 'AI command center', 'AI workforce', 'agent automation'],
+  keywords: ['Zed blog', 'AI agents', 'AI command center', 'AI workforce', 'agent automation'],
   openGraph: {
     type: 'website',
-    title: `Kortix ${TITLE}`,
+    title: `Zed ${TITLE}`,
     description: DESCRIPTION,
     url: URL,
-    siteName: 'Kortix',
+    siteName: 'Zed',
     images: [{ url: `${siteMetadata.url}/banner.png` }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: `Kortix ${TITLE}`,
+    title: `Zed ${TITLE}`,
     description: DESCRIPTION,
     images: [`${siteMetadata.url}/banner.png`],
   },
@@ -45,12 +45,12 @@ export default function BlogIndexPage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Blog',
-    name: 'Kortix Blog',
+    name: 'Zed Blog',
     description: DESCRIPTION,
     url: URL,
     publisher: {
       '@type': 'Organization',
-      name: 'Kortix',
+      name: 'Zed',
       logo: { '@type': 'ImageObject', url: `${siteMetadata.url}/favicon.png` },
     },
     blogPost: posts.map((post) => ({

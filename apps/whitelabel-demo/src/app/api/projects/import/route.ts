@@ -5,7 +5,7 @@
  * this is a deployment switch rather than a per-user permission, and why a real
  * product would not expose it at all.
  *
- * Calls upstream DIRECTLY rather than through `/api/kortix`, because the point is
+ * Calls upstream DIRECTLY rather than through `/api/zed`, because the point is
  * to see projects the proxy's ownership filter deliberately hides. That is the
  * whole reason this route is gated: it is the ONE place the tenancy filter is
  * bypassed, so the gate lives here where it is visible, not scattered.
@@ -18,14 +18,14 @@ import {
   selectImportableProjects,
 } from '@/server/project-adoption';
 import { addOwnedProject, isValidProjectId, listOwnedProjects } from '@/server/users';
-import { createScopedKortix } from '@kortix/sdk/server';
+import { createScopedZed } from '@zed/sdk/server';
 import type { NextRequest } from 'next/server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function upstreamBase(): string {
-  return (process.env.KORTIX_UPSTREAM ?? 'https://api.kortix.com/v1').replace(/\/+$/, '');
+  return (process.env.ZED_UPSTREAM ?? 'https://api.zed.com/v1').replace(/\/+$/, '');
 }
 
 function disabled() {
@@ -43,17 +43,17 @@ export async function GET(req: NextRequest) {
   if (!session) return Response.json({ error: 'Not authenticated' }, { status: 401 });
   if (!projectImportEnabled()) return disabled();
 
-  const key = process.env.KORTIX_API_KEY;
+  const key = process.env.ZED_API_KEY;
   if (!key) {
     return Response.json({ error: 'Wrapper mode is not enabled on this server.' }, { status: 500 });
   }
 
   // The SDK's server transport, not a raw fetch — the boundary lint enforces
-  // this so every server-side Kortix call goes through one audited path.
-  const kortix = createScopedKortix({ backendUrl: upstreamBase(), getToken: async () => key });
+  // this so every server-side Zed call goes through one audited path.
+  const zed = createScopedZed({ backendUrl: upstreamBase(), getToken: async () => key });
   let rows: unknown[];
   try {
-    const body = (await kortix.projects.list()) as unknown;
+    const body = (await zed.projects.list()) as unknown;
     rows = Array.isArray(body) ? body : [];
   } catch {
     return Response.json({ error: 'Could not read the account’s projects.' }, { status: 502 });

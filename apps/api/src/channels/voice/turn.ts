@@ -1,5 +1,5 @@
 /**
- * Turn relay for the voice platform — how a Kortix turn narrates itself into a
+ * Turn relay for the voice platform — how a Zed turn narrates itself into a
  * live call.
  *
  * Slack and Teams render a turn as a message that gets edited in place. Voice
@@ -10,16 +10,16 @@
  *    twelve steps aloud to a room is unbearable. We speak the first one (so the
  *    silence after "let me check" is explained) and then only occasionally.
  *  - Nothing is spoken twice. The realtime model already said "let me check
- *    that" when it called ask_kortix, so echoing the same beat back is worse
+ *    that" when it called ask_zed, so echoing the same beat back is worse
  *    than silence.
  */
 import { isCallLive, promptVoiceAgent } from './runtime';
 import {
-  kortixError,
-  kortixProgress,
-  kortixQuestion,
-  kortixResult,
-  kortixReview,
+  zedError,
+  zedProgress,
+  zedQuestion,
+  zedResult,
+  zedReview,
 } from './utterance';
 
 /** Speak at most one progress line per this interval, per session. */
@@ -55,7 +55,7 @@ export async function relayTurnStep(
   if (!shouldSpeak) return false;
 
   lastSpokenAt.set(sessionId, now);
-  return (await promptVoiceAgent(callId, kortixProgress(title))).delivered;
+  return (await promptVoiceAgent(callId, zedProgress(title))).delivered;
 }
 
 export async function relayTurnAnswer(
@@ -66,7 +66,7 @@ export async function relayTurnAnswer(
   if (!(await hasLiveCall(sessionId))) return false;
   const callId = sessionId;
   clear(sessionId);
-  return (await promptVoiceAgent(callId, kortixResult(text))).delivered;
+  return (await promptVoiceAgent(callId, zedResult(text))).delivered;
 }
 
 export async function relayTurnEnd(
@@ -82,7 +82,7 @@ export async function relayTurnEnd(
   // saying anything more would just be noise in the room.
   if (status !== 'error') return false;
 
-  return (await promptVoiceAgent(callId, kortixError(errorInfo?.message))).delivered;
+  return (await promptVoiceAgent(callId, zedError(errorInfo?.message))).delivered;
 }
 
 export async function relayTurnQuestion(
@@ -95,9 +95,9 @@ export async function relayTurnQuestion(
   const text = questions.map((q) => q.question ?? '').filter(Boolean).join(' ');
   if (!text) return { ok: false, error: 'no question' };
 
-  void promptVoiceAgent(callId, kortixQuestion(text));
+  void promptVoiceAgent(callId, zedQuestion(text));
 
-  // The answer arrives as speech, which reaches the session through ask_kortix as
+  // The answer arrives as speech, which reaches the session through ask_zed as
   // a NEW turn — there is no way to block here for it, and blocking is exactly
   // what would wedge the agent. So end the turn and let the reply wake it.
   return { ok: true, answers: [['(asked in the call — the reply will arrive as a new message)']] };
@@ -110,7 +110,7 @@ export async function relayReviewCard(
   if (!(await hasLiveCall(sessionId))) return { ok: false, error: 'no live call' };
   const callId = sessionId;
   const title = item.title ?? 'a change';
-  void promptVoiceAgent(callId, kortixReview(title));
+  void promptVoiceAgent(callId, zedReview(title));
   return { ok: true };
 }
 

@@ -16,11 +16,11 @@ import {
 } from '@/features/auth/auth-consent';
 import { ErrorStrip, Rise, StepHeader } from '@/features/auth/auth-primitives';
 import { useAuth } from '@/features/providers/auth-provider';
-import { createAccountToken, revokeAccountToken } from '@kortix/sdk';
+import { createAccountToken, revokeAccountToken } from '@zed/sdk';
 import { validateCallback } from './validate-callback';
 
 /**
- * Browser-callback authorization page. The CLI runs `kortix login`,
+ * Browser-callback authorization page. The CLI runs `zed login`,
  * spawns a one-shot HTTP server on `http://127.0.0.1:<port>/callback`,
  * and opens this page with `?callback=<encoded URL>&state=<nonce>`.
  *
@@ -75,7 +75,7 @@ function CliAuthorizeInner() {
       <AuthStatusScreen
         title="Open this page from the CLI"
         description="Run this command in your terminal to get a fresh sign-in link."
-        action={<CopyCommand command="kortix login" />}
+        action={<CopyCommand command="zed login" />}
       />
     );
   }
@@ -100,7 +100,7 @@ function CliAuthorizeInner() {
       const minted = await withTimeout(
         createAccountToken({ name }),
         MINT_TIMEOUT_MS,
-        'Timed out asking the Kortix API to mint an API key. Is the API reachable?',
+        'Timed out asking the Zed API to mint an API key. Is the API reachable?',
       );
 
       const controller = new AbortController();
@@ -119,11 +119,11 @@ function CliAuthorizeInner() {
         revokeAccountToken(minted.token_id).catch(() => {});
         if ((err as Error).name === 'AbortError') {
           throw new Error(
-            `Timed out delivering the API key to ${new URL(callback).host}. Is the \`kortix login\` process still running in your terminal?`,
+            `Timed out delivering the API key to ${new URL(callback).host}. Is the \`zed login\` process still running in your terminal?`,
           );
         }
         throw new Error(
-          `Could not reach ${new URL(callback).host}: ${(err as Error).message}. Make sure \`kortix login\` is running in your terminal and try again.`,
+          `Could not reach ${new URL(callback).host}: ${(err as Error).message}. Make sure \`zed login\` is running in your terminal and try again.`,
         );
       } finally {
         clearTimeout(callbackTimer);
@@ -164,10 +164,10 @@ function CliAuthorizeInner() {
     <AuthFrame>
       <Rise>
         <StepHeader
-          title="Sign in to the Kortix CLI"
+          title="Sign in to the Zed CLI"
           description={
             <>
-              <span className="text-foreground font-mono">kortix login</span> in your terminal is
+              <span className="text-foreground font-mono">zed login</span> in your terminal is
               waiting for you to approve this sign-in.
             </>
           }

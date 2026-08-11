@@ -1,6 +1,6 @@
 'use client';
 
-import type { AdminConnector } from '@kortix/sdk';
+import type { AdminConnector } from '@zed/sdk';
 
 import { Label } from '@/components/ui/label';
 import {

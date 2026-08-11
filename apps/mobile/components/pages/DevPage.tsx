@@ -5,7 +5,7 @@
  * A project can live entirely in the cloud, so this surface hands you the exact
  * copy-pasteable commands to clone the repo, run the same agent locally, and
  * ship changes back as a change request. Every command is pre-filled with this
- * project's real clone URL, id, and default branch. Managed (Kortix-owned) repos
+ * project's real clone URL, id, and default branch. Managed (Zed-owned) repos
  * get an extra first step to invite yourself as a GitHub collaborator.
  *
  * Mobile branding: PageHeader + PageContent chrome, design tokens.
@@ -24,7 +24,7 @@ import { PageContent } from '@/components/ui/page-content';
 import { useThemeColors } from '@/lib/theme-colors';
 import { useProject } from '@/lib/projects/hooks';
 import { inviteRepoCollaborator, isManagedGithubProject } from '@/lib/projects/projects-client';
-import type { KortixProject } from '@/lib/projects/projects-client';
+import type { ZedProject } from '@/lib/projects/projects-client';
 import { haptics } from '@/lib/haptics';
 
 const MONO = 'Menlo';
@@ -288,7 +288,7 @@ type DevStep =
   | { kind: 'commands'; title: string; hint?: string; lines: string[]; footer?: string }
   | { kind: 'launchers'; title: string; hint?: string; footer?: string };
 
-function buildSteps(project: KortixProject | undefined): DevStep[] {
+function buildSteps(project: ZedProject | undefined): DevStep[] {
   if (!project) return [];
   const cloneUrl = cloneUrlFor(project.repo_url);
   const repoDir = repoDirFor(project.repo_url) || 'my-project';
@@ -300,7 +300,7 @@ function buildSteps(project: KortixProject | undefined): DevStep[] {
     steps.push({
       kind: 'access',
       title: 'Get access to the repo',
-      hint: 'This repo is private and owned by Kortix. Add your GitHub account as a collaborator, then accept the invite GitHub emails you.',
+      hint: 'This repo is private and owned by Zed. Add your GitHub account as a collaborator, then accept the invite GitHub emails you.',
     });
   }
   steps.push({
@@ -311,36 +311,36 @@ function buildSteps(project: KortixProject | undefined): DevStep[] {
   });
   steps.push({
     kind: 'commands',
-    title: 'Install the Kortix CLI',
+    title: 'Install the Zed CLI',
     hint: "Manages this project's secrets, sessions, and change requests from your terminal.",
-    lines: ['curl -fsSL https://kortix.com/install | bash', 'kortix login'],
+    lines: ['curl -fsSL https://zed.com/install | bash', 'zed login'],
   });
   steps.push({
     kind: 'commands',
     title: 'Set up your local dev environment',
-    hint: 'Wires the Kortix skill into your coding agent and adds anything your local setup is missing — existing files are kept. The repo is already linked, so kortix commands target it automatically.',
-    lines: ['kortix init --force'],
+    hint: 'Wires the Zed skill into your coding agent and adds anything your local setup is missing — existing files are kept. The repo is already linked, so zed commands target it automatically.',
+    lines: ['zed init --force'],
   });
   steps.push({
     kind: 'commands',
     title: 'Pull secrets',
     hint: "Writes a .env with this project's secret names — fill in the values locally. Plaintext never leaves the cloud.",
-    lines: ['kortix env pull'],
+    lines: ['zed env pull'],
   });
   steps.push({
     kind: 'launchers',
     title: 'Build it in your coding agent',
-    hint: 'Open the repo in the agent you wired up and just talk to it — the Kortix skill is loaded, so it knows how to configure agents, edit kortix.yaml, add triggers, and write skills.',
+    hint: 'Open the repo in the agent you wired up and just talk to it — the Zed skill is loaded, so it knows how to configure agents, edit zed.yaml, add triggers, and write skills.',
   });
   steps.push({
     kind: 'commands',
     title: 'Ship your changes back',
-    hint: 'Open a change request, then review and merge it from the dashboard or with kortix cr merge.',
+    hint: 'Open a change request, then review and merge it from the dashboard or with zed cr merge.',
     lines: [
       'git checkout -b my-change',
       'git commit -am "Describe your change"',
       'git push origin HEAD',
-      'kortix cr open --title "Describe your change"',
+      'zed cr open --title "Describe your change"',
     ],
     footer: branch,
   });

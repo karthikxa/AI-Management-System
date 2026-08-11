@@ -71,7 +71,7 @@ export async function mintAccessToken(input: MintAccessTokenInput): Promise<stri
  * apps/voice-agent/src/index.ts. A mismatch means every dispatch below targets
  * a worker that does not exist, and calls start with nobody on the other end.
  */
-export const VOICE_AGENT_NAME = 'kortix-voice';
+export const VOICE_AGENT_NAME = 'zed-voice';
 
 let _dispatchClient: AgentDispatchClient | null = null;
 function dispatchClient(): AgentDispatchClient {
@@ -160,7 +160,7 @@ export async function roomHasAgent(room: string): Promise<boolean> {
 }
 
 /**
- * The `kortix_api_url` a live room's metadata was created with, or null if the
+ * The `zed_api_url` a live room's metadata was created with, or null if the
  * room is gone / has no usable metadata.
  *
  * Used to decide whether an existing room is still reusable: the worker
@@ -173,8 +173,8 @@ export async function roomCallbackUrl(room: string): Promise<string | null> {
     .catch(() => [] as Awaited<ReturnType<RoomServiceClient['listRooms']>>);
   if (!existing?.metadata) return null;
   try {
-    const parsed = JSON.parse(existing.metadata) as { kortix_api_url?: unknown };
-    return typeof parsed.kortix_api_url === 'string' ? parsed.kortix_api_url : null;
+    const parsed = JSON.parse(existing.metadata) as { zed_api_url?: unknown };
+    return typeof parsed.zed_api_url === 'string' ? parsed.zed_api_url : null;
   } catch {
     return null;
   }
@@ -211,13 +211,13 @@ export function joinPageUrl(frontendUrl: string, joinToken: string): string {
 }
 
 /**
- * Topic apps/voice-agent's `inbound-replies.ts` listens on for Kortix ->
+ * Topic apps/voice-agent's `inbound-replies.ts` listens on for Zed ->
  * call messages. Wire format is fixed by that app (not renegotiable from this
  * side without editing it, which is out of scope here): payload must be
- * `{ type: 'kortix_reply', call_id, text }`. See `promptVoiceAgent` in
+ * `{ type: 'zed_reply', call_id, text }`. See `promptVoiceAgent` in
  * runtime.ts, the only caller.
  */
-export const KORTIX_REPLY_TOPIC = 'kortix';
+export const ZED_REPLY_TOPIC = 'zed';
 
 /**
  * Publish a data message into a room via the server API (no participant

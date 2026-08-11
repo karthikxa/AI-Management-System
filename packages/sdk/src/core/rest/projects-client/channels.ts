@@ -158,7 +158,7 @@ export interface EmailSenderPolicy {
 }
 
 export interface EmailInstallation {
-  /** Kortix connection to pass in connector_bindings.email. */
+  /** Zed connection to pass in connector_bindings.email. */
   connectionId: string | null;
   connectorSlug: string;
   inboxId: string;
@@ -190,7 +190,7 @@ function normalizeEmailInstallation(value: EmailInstallationWire): EmailConnecti
     value.connector_slug ??
     value.connectionSlug ??
     value.connection_slug ??
-    'kortix_email';
+    'zed_email';
   return {
     ...value,
     connectionId,
@@ -274,7 +274,7 @@ export async function updateEmailPolicy(
   const installation = unwrap(
     await backendApi.patch<EmailInstallationWire>(
       `/projects/${encodeURIComponent(projectId)}/channels/email/installation`,
-      { connector_slug: connectorSlug ?? 'kortix_email', sender_policy: senderPolicy },
+      { connector_slug: connectorSlug ?? 'zed_email', sender_policy: senderPolicy },
       { showErrors: false },
     ),
     'Failed to update email policy',
@@ -302,7 +302,7 @@ export async function setMeetBotName(
 
 // ── Channel bindings — which agent/model/join-policy a bound chat channel uses ──
 // The web management surface for `chat_channel_bindings`. Today the only other
-// way to change these is the in-Slack `/kortix agent|model|policy` commands —
+// way to change these is the in-Slack `/zed agent|model|policy` commands —
 // this is the same underlying row, just editable from the dashboard.
 
 export type ChannelConversationPolicy = 'owner_approval' | 'owner_only' | 'project_open';

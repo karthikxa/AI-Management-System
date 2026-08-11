@@ -30,8 +30,8 @@ export function socialMetadata(title: string, description: string | undefined, u
       card: 'summary_large_image',
       title,
       description,
-      site: '@kortix',
-      creator: '@kortix',
+      site: '@zed',
+      creator: '@zed',
       images: [DEFAULT_OG_IMAGE.url],
     },
   } satisfies Pick<Metadata, 'openGraph' | 'twitter'>;
@@ -81,7 +81,7 @@ export async function localizedMarketingMetadata(pathname: string): Promise<Meta
   return {
     ...base,
     // The homepage title is the full brand line; running it through the root
-    // `%s | Kortix` template would double the brand. `absolute` also keeps the
+    // `%s | Zed` template would double the brand. `absolute` also keeps the
     // rendered title distinct from the root-layout default — a resolved title
     // identical to the parent default is dropped from the streamed metadata,
     // leaving the page with no <title> in the served HTML.

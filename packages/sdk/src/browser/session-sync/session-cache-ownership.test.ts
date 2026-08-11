@@ -13,12 +13,12 @@ beforeEach(() => {
 });
 
 describe('OpenCode session cache ownership', () => {
-  test('uses the Kortix session scope across sandbox replacements', () => {
+  test('uses the Zed session scope across sandbox replacements', () => {
     expect(resolveSessionCacheOwnerScope('sandbox-a', 'project-a/session-a')).toBe(
-      'kortix:project-a/session-a',
+      'zed:project-a/session-a',
     );
     expect(resolveSessionCacheOwnerScope('sandbox-b', 'project-a/session-a')).toBe(
-      'kortix:project-a/session-a',
+      'zed:project-a/session-a',
     );
   });
 
@@ -47,7 +47,7 @@ describe('OpenCode session cache ownership', () => {
     });
   });
 
-  test('a fallback scope never conflicts with the Kortix scope for the same session', () => {
+  test('a fallback scope never conflicts with the Zed scope for the same session', () => {
     const authoritative = resolveSessionCacheOwnerScope('sandbox-a', 'project-a/session-a');
     const fallback = resolveSessionCacheOwnerScope('sandbox-a');
     expect(sessionCacheOwnerScopesConflict(authoritative, fallback)).toBe(false);
@@ -57,7 +57,7 @@ describe('OpenCode session cache ownership', () => {
   test('two scopes of the same kind still conflict', () => {
     expect(sessionCacheOwnerScopesConflict('runtime:sandbox-a', 'runtime:sandbox-b')).toBe(true);
     expect(
-      sessionCacheOwnerScopesConflict('kortix:project-a/session-a', 'kortix:project-a/session-b'),
+      sessionCacheOwnerScopesConflict('zed:project-a/session-a', 'zed:project-a/session-b'),
     ).toBe(true);
   });
 
@@ -68,20 +68,20 @@ describe('OpenCode session cache ownership', () => {
   });
 
   test('a fallback claim does not displace the authoritative owner', () => {
-    claimSessionCacheOwnership('ses_shared', 'kortix:project-a/session-a');
+    claimSessionCacheOwnership('ses_shared', 'zed:project-a/session-a');
     expect(claimSessionCacheOwnership('ses_shared', 'runtime:sandbox-a')).toEqual({
       changed: false,
-      previousOwnerScope: 'kortix:project-a/session-a',
+      previousOwnerScope: 'zed:project-a/session-a',
     });
-    expect(getSessionCacheOwnership('ses_shared')).toBe('kortix:project-a/session-a');
+    expect(getSessionCacheOwnership('ses_shared')).toBe('zed:project-a/session-a');
   });
 
   test('an authoritative claim upgrades a fallback owner', () => {
     claimSessionCacheOwnership('ses_shared', 'runtime:sandbox-a');
-    expect(claimSessionCacheOwnership('ses_shared', 'kortix:project-a/session-a')).toEqual({
+    expect(claimSessionCacheOwnership('ses_shared', 'zed:project-a/session-a')).toEqual({
       changed: true,
       previousOwnerScope: 'runtime:sandbox-a',
     });
-    expect(getSessionCacheOwnership('ses_shared')).toBe('kortix:project-a/session-a');
+    expect(getSessionCacheOwnership('ses_shared')).toBe('zed:project-a/session-a');
   });
 });

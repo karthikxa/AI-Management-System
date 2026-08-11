@@ -2,13 +2,13 @@
 
 Date: 2026-08-06
 
-Service: `api.kortix.com`
+Service: `api.zed.com`
 
 Severity: production outage
 
 ## Impact
 
-`GET https://api.kortix.com/health` returned `504` after both API tasks stopped.
+`GET https://api.zed.com/health` returned `504` after both API tasks stopped.
 Better Stack opened the incident at `2026-08-06T19:51:39Z`.
 
 The public API recovered at `2026-08-06T19:59:24Z`.
@@ -24,7 +24,7 @@ Two independent failures combined into the outage.
    `buildExternalCatalog()` started every external registry load through one unbounded `Promise.allSettled()` call.
 
 2. ECS could not start replacement capacity.
-   Task definition `kortix-prod:33` referenced individual JSON keys in `kortix-prod-env`.
+   Task definition `zed-prod:33` referenced individual JSON keys in `zed-prod-env`.
    Six optional Mailtrap keys had been removed from the secret one day earlier.
    ECS rejected replacement task `e169687efae44e6e9c47f80f0f7ac8a5` before container startup because `MAILTRAP_ACCOUNT_ID` no longer existed.
 
@@ -36,12 +36,12 @@ The stale task-definition selector prevented ECS from replacing a failed contain
 - Failed API tasks:
   - `6ca084bb125844d5b75306080f05c288`
   - `f0ab890ddb2c4e1c8443e21857e8917b`
-- Both tasks used `kortix-prod:33`.
+- Both tasks used `zed-prod:33`.
 - Both API containers exited with code `137`.
 - Both ECS container reasons were `OutOfMemoryError: container killed due to memory usage`.
 - Replacement task `e169687efae44e6e9c47f80f0f7ac8a5` failed with `TaskFailedToStart`.
 - Its ECS reason named the missing `MAILTRAP_ACCOUNT_ID` JSON key.
-- CloudTrail event `f561aa00-1e1b-4002-be6e-617023662724` records `PutSecretValue` for `kortix-prod-env` at `2026-08-05T20:21:43Z` in `us-west-2`.
+- CloudTrail event `f561aa00-1e1b-4002-be6e-617023662724` records `PutSecretValue` for `zed-prod-env` at `2026-08-05T20:21:43Z` in `us-west-2`.
 - The previous secret version had `137` keys.
 - The current secret version had `131` keys.
 - Removed keys:
@@ -61,11 +61,11 @@ All times use UTC.
 - `2026-08-06T19:50:20Z`: Both existing API log streams stop during external marketplace registry loading.
 - `2026-08-06T19:50:52Z`: The extra ECS task stops before startup because `MAILTRAP_ACCOUNT_ID` is absent.
 - `2026-08-06T19:51:39Z`: Better Stack reports `504` from the production health endpoint.
-- `2026-08-06T19:56:17Z`: Task definition `kortix-prod:34` registers without the deleted Mailtrap selectors.
+- `2026-08-06T19:56:17Z`: Task definition `zed-prod:34` registers without the deleted Mailtrap selectors.
 - `2026-08-06T19:59:24Z`: The public health endpoint returns `200` again.
 - `2026-08-06T20:01:52Z`: ECS reports the recovery deployment complete.
-- `2026-08-06T20:05:40Z`: Task definition `kortix-prod:35` registers with `4 GiB` memory.
-- `2026-08-06T20:05:41Z`: Gateway task definition `kortix-prod-gateway:29` registers without the deleted selectors.
+- `2026-08-06T20:05:40Z`: Task definition `zed-prod:35` registers with `4 GiB` memory.
+- `2026-08-06T20:05:41Z`: Gateway task definition `zed-prod-gateway:29` registers without the deleted selectors.
 - `2026-08-06T20:09:07Z`: The gateway rollout completes with `2/2` tasks.
 - `2026-08-06T20:09:59Z`: The API rollout completes with `3/3` tasks.
 - `2026-08-06T20:17:06Z`: The API reaches steady state after the autoscaling floor changes to three tasks.
@@ -105,7 +105,7 @@ The image required `18` migrations that production had not applied.
 
 The migration runner then found two production-only schema differences:
 
-- `credit_accounts` did not contain the legacy `kortix_credit_accounts_billing_model_check` constraint.
+- `credit_accounts` did not contain the legacy `zed_credit_accounts_billing_model_check` constraint.
 - The disaster-recovery logical publication still published `project_session_connector_bindings.profile_id`.
 
 The billing migration now drops the old constraint with `IF EXISTS` before installing the canonical constraint.
@@ -121,7 +121,7 @@ This change removes each failure class.
 
 ### Secret deletion safety
 
-ECS now injects the full environment secret through one stable `KORTIX_ENV_JSON` selector.
+ECS now injects the full environment secret through one stable `ZED_ENV_JSON` selector.
 The API and gateway expand the JSON before any configuration or observability module reads `process.env`.
 Explicit task-definition environment variables override values from the secret.
 
@@ -146,9 +146,9 @@ Target health and response-time alarms now use the required target-group and loa
 - `bun test apps/api/src/__tests__/unit-marketplace.test.ts --timeout 30000`
 - `bun test infra/cloudflare/workers/api-router/worker.test.mjs`
 - `python3 -m unittest test_alb_alarm_reconciler.py`
-- `pnpm --filter kortix-api typecheck`
-- `pnpm --filter @kortix/llm-gateway-server typecheck`
-- `pnpm --filter @kortix/shared test`
+- `pnpm --filter zed-api typecheck`
+- `pnpm --filter @zed/llm-gateway-server typecheck`
+- `pnpm --filter @zed/shared test`
 - `terraform fmt -check` for all changed Terraform files
 - `terraform validate` for the ECS module, production root, and disaster-recovery root
 - `bash -n infra/scripts/ecs-deploy.sh`

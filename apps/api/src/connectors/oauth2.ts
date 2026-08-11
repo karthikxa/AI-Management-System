@@ -1,5 +1,5 @@
 import { createPrivateKey, createSecretKey, randomUUID } from 'node:crypto';
-import { OAuth2ClientCredentialsSchema, type OAuth2ClientCredentials } from '@kortix/api-contract';
+import { OAuth2ClientCredentialsSchema, type OAuth2ClientCredentials } from '@zed/api-contract';
 import { CompactSign } from 'jose';
 import { safeEgressFetch } from '../shared/ssrf-guard';
 

@@ -11,18 +11,18 @@ import { SparkleIcon as Sparkles } from '@phosphor-icons/react';
 type Skill = ConfigEntity;
 
 const PROJECT_GROUP = 'Project';
-const KORTIX_GROUP = 'Kortix';
+const ZED_GROUP = 'Zed';
 
 /**
- * The `kortix-*` family is platform runtime, not the project's own work: it is
+ * The `zed-*` family is platform runtime, not the project's own work: it is
  * force-injected into every session at boot, so it reads the same in every
  * project and isn't meaningfully editable here. New projects only scaffold
- * `kortix-cli`, but repos created before that still carry the whole family —
+ * `zed-cli`, but repos created before that still carry the whole family —
  * folding it into its own collapsed group keeps those lists readable without
  * hiding anything.
  */
 function groupForSkill(skill: Skill): string {
-  return skill.name.startsWith('kortix-') ? KORTIX_GROUP : PROJECT_GROUP;
+  return skill.name.startsWith('zed-') ? ZED_GROUP : PROJECT_GROUP;
 }
 
 export function SkillsView({ projectId }: { projectId: string }) {
@@ -43,8 +43,8 @@ export function SkillsView({ projectId }: { projectId: string }) {
       emptyBodyLabel="Skill body is empty. Add content below the frontmatter."
       select={(config) => config.skills}
       groupBy={groupForSkill}
-      groupOrder={[PROJECT_GROUP, KORTIX_GROUP]}
-      collapsedGroups={[KORTIX_GROUP]}
+      groupOrder={[PROJECT_GROUP, ZED_GROUP]}
+      collapsedGroups={[ZED_GROUP]}
       renderTriggerLabel={(skill) => skill.name}
       renderDetailTitle={(skill) => skill.name}
     />

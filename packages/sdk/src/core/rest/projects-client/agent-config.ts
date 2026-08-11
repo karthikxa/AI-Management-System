@@ -4,10 +4,10 @@ import { unwrap } from './shared';
 // ── Full v2 agent-config editor (the "agent builder", agent-first spec §2.2,
 // redirected 2026-07-05 — "one home per concern") ──
 // Round-trips the agent's TWO homes as one wire shape: `block` (governance —
-// connectors/secrets/skills/kortix_cli/workspace/enabled, written to
-// kortix.yaml) and `block.opencode` (OpenCode BEHAVIOR — mode/model/
+// connectors/secrets/skills/zed_cli/workspace/enabled, written to
+// zed.yaml) and `block.opencode` (OpenCode BEHAVIOR — mode/model/
 // temperature/top_p/steps/variant/color/hidden/permission/prompt, written to
-// the agent's own native `.kortix/opencode/agents/<name>.md` frontmatter +
+// the agent's own native `.zed/opencode/agents/<name>.md` frontmatter +
 // body). The backend route is what merges the two files into this one
 // response/request shape — see apps/api/src/projects/routes/agent-config.ts.
 // Distinct from setAgentScope (agent-scope.ts), which writes only the
@@ -15,7 +15,7 @@ import { unwrap } from './shared';
 // server-side (project.customize.write). v2-only: `editable:false` on the GET
 // means a v1 project — the UI degrades to the limited scope editor.
 
-/** A Kortix governance grant on the wire: an allowlist, or the sentinels. */
+/** A Zed governance grant on the wire: an allowlist, or the sentinels. */
 export type AgentGrantSetV2 = 'all' | 'none' | string[];
 
 /** A single OpenCode permission action. */
@@ -47,8 +47,8 @@ export interface OpencodeAgentConfig {
 }
 
 /** The full agent block on the wire — mirrors `AgentBlockV2` in
- *  @kortix/manifest-schema PLUS the merged `opencode` behavior half (a wire-
- *  only convenience; kortix.yaml itself never nests `opencode` — see the
+ *  @zed/manifest-schema PLUS the merged `opencode` behavior half (a wire-
+ *  only convenience; zed.yaml itself never nests `opencode` — see the
  *  module doc above). */
 export interface AgentConfigBlock {
   enabled?: boolean;
@@ -61,7 +61,7 @@ export interface AgentConfigBlock {
   connectors_personal?: string[];
   secrets?: AgentGrantSetV2;
   skills?: AgentGrantSetV2;
-  kortix_cli?: AgentGrantSetV2;
+  zed_cli?: AgentGrantSetV2;
   workspace?: 'runtime' | 'read' | 'branch';
   opencode?: OpencodeAgentConfig;
 }
@@ -70,7 +70,7 @@ export interface AgentConfigResponse {
   agent: string;
   /** The manifest's declared schema version — 2 means the full editor applies. */
   schema_version: number;
-  /** True iff the full block is editable (a kortix_version 2 manifest). */
+  /** True iff the full block is editable (a zed_version 2 manifest). */
   editable: boolean;
   /** The manifest's top-level `default_agent` (v2 only; null for v1). */
   default_agent: string | null;
@@ -148,7 +148,7 @@ export interface UpdateProjectDefaultAgentResponse {
   default_agent: string;
 }
 
-/** Set the declared project default in `kortix.yaml` (v2 projects). */
+/** Set the declared project default in `zed.yaml` (v2 projects). */
 export async function updateProjectDefaultAgent(projectId: string, agentName: string) {
   return unwrap(
     await backendApi.put<UpdateProjectDefaultAgentResponse>(

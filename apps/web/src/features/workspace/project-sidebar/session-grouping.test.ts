@@ -1,4 +1,4 @@
-import type { ProjectSession } from '@kortix/sdk';
+import type { ProjectSession } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 import { groupSessions } from './session-grouping';
 

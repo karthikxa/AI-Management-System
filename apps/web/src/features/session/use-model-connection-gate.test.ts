@@ -35,7 +35,7 @@ describe('model management entry-point routing', () => {
   // like a no-op. That answer must come from the server's `enabled` flag, never
   // from a second client-side entitlement derivation: the gate's old billing
   // `tier_key` free-tier rule contradicted the server's
-  // `KORTIX_BILLING_INTERNAL_ENABLED ? … : false` and killed every selection.
+  // `ZED_BILLING_INTERNAL_ENABLED ? … : false` and killed every selection.
   test('reads server-resolved enablement instead of re-deriving entitlement', () => {
     expect(gateSource).toContain('model.enabled !== false');
     expect(gateSource).toContain('return isModelOffered(model)');

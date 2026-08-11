@@ -2,7 +2,7 @@
  * Wrapper policy verification.
  *
  * Product flows use the public SDK. Unsupported route patterns exercise the
- * pure policy function. This file never constructs a Kortix HTTP request.
+ * pure policy function. This file never constructs a Zed HTTP request.
  */
 
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
@@ -13,7 +13,7 @@ import {
   APP_SETUP_TIMEOUT_MS,
   TEST_DATA_DIR,
   type AppInstance,
-  createTestKortix,
+  createTestZed,
   loginUser,
   resetUsersStore,
   startApp,
@@ -29,7 +29,7 @@ describe('wrapper-mode policy matrix', () => {
   beforeAll(async () => {
     resetUsersStore();
     mock = createMockUpstream(WRAPPER_KEY);
-    app = await startApp(wrapperEnv({ KORTIX_UPSTREAM: `${mock.url}/v1` }));
+    app = await startApp(wrapperEnv({ ZED_UPSTREAM: `${mock.url}/v1` }));
   }, APP_SETUP_TIMEOUT_MS);
 
   afterAll(async () => {
@@ -41,25 +41,25 @@ describe('wrapper-mode policy matrix', () => {
   async function freshUser(prefix: string) {
     const email = uniqueEmail(prefix);
     const token = await loginUser(app, email, DEMO_PASSWORD);
-    return { email, token, kortix: createTestKortix(app, token) };
+    return { email, token, zed: createTestZed(app, token) };
   }
 
   test('projects.list returns only projects provisioned by the caller', async () => {
-    const { kortix } = await freshUser('list-filter');
+    const { zed } = await freshUser('list-filter');
     const other = mock.seedProject({ name: "Someone Else's Project" });
-    const mine = await kortix.projects.provision({ name: 'My Project' });
+    const mine = await zed.projects.provision({ name: 'My Project' });
 
-    const ids = (await kortix.projects.list()).map((project) => project.project_id);
+    const ids = (await zed.projects.list()).map((project) => project.project_id);
 
     expect(ids).toContain(mine.project_id);
     expect(ids).not.toContain(other.project_id);
   });
 
   test('projects.create is denied because wrapper users must use projects.provision', async () => {
-    const { kortix } = await freshUser('bare-post-denied');
+    const { zed } = await freshUser('bare-post-denied');
 
     await expect(
-      kortix.projects.create({
+      zed.projects.create({
         name: 'Should be blocked',
         repo_url: 'https://git.example.test/blocked.git',
       }),
@@ -67,42 +67,42 @@ describe('wrapper-mode policy matrix', () => {
   });
 
   test('projects.provision records ownership', async () => {
-    const { kortix } = await freshUser('provision-records');
-    const project = await kortix.projects.provision({ name: 'Provisioned Project' });
+    const { zed } = await freshUser('provision-records');
+    const project = await zed.projects.provision({ name: 'Provisioned Project' });
 
-    expect((await kortix.projects.list()).map((item) => item.project_id)).toEqual([
+    expect((await zed.projects.list()).map((item) => item.project_id)).toEqual([
       project.project_id,
     ]);
   });
 
   test('projects.get forwards an owned project', async () => {
-    const { kortix } = await freshUser('owned-forward');
-    const project = await kortix.projects.provision({ name: 'Owned' });
+    const { zed } = await freshUser('owned-forward');
+    const project = await zed.projects.provision({ name: 'Owned' });
 
     mock.reset();
-    const detail = await kortix.projects.get(project.project_id);
+    const detail = await zed.projects.get(project.project_id);
 
     expect(detail.project_id).toBe(project.project_id);
     expect(mock.requests).toHaveLength(1);
   });
 
   test('projects.get rejects an unowned project before the upstream request', async () => {
-    const { kortix } = await freshUser('unowned-denied');
+    const { zed } = await freshUser('unowned-denied');
     const other = mock.seedProject({ name: 'Not Yours' });
 
     mock.reset();
-    await expect(kortix.projects.get(other.project_id)).rejects.toMatchObject({
+    await expect(zed.projects.get(other.project_id)).rejects.toMatchObject({
       status: 403,
     });
     expect(mock.requests).toHaveLength(0);
   });
 
   test('project.connectors.list forwards an owned project', async () => {
-    const { kortix } = await freshUser('connector-owned');
-    const project = await kortix.projects.provision({ name: 'Connector Owned' });
+    const { zed } = await freshUser('connector-owned');
+    const project = await zed.projects.provision({ name: 'Connector Owned' });
 
     mock.reset();
-    await kortix.project(project.project_id).connectors.list();
+    await zed.project(project.project_id).connectors.list();
 
     expect(mock.requests).toHaveLength(1);
     expect(mock.requests[0]!.path).toBe(
@@ -111,31 +111,31 @@ describe('wrapper-mode policy matrix', () => {
   });
 
   test('project.connectors.list rejects an unowned project', async () => {
-    const { kortix } = await freshUser('connector-unowned');
+    const { zed } = await freshUser('connector-unowned');
     const other = mock.seedProject({ name: 'Connector Not Yours' });
 
     await expect(
-      kortix.project(other.project_id).connectors.list(),
+      zed.project(other.project_id).connectors.list(),
     ).rejects.toMatchObject({ status: 403 });
   });
 
   test('validateToken can use the wrapper identity route', async () => {
-    const { kortix } = await freshUser('accounts-me');
-    expect((await kortix.validateToken()).valid).toBe(true);
+    const { zed } = await freshUser('accounts-me');
+    expect((await zed.validateToken()).valid).toBe(true);
   });
 
   test('account administration SDK methods remain denied', async () => {
-    const { kortix } = await freshUser('accounts-denied');
+    const { zed } = await freshUser('accounts-denied');
 
-    await expect(kortix.accounts.list()).rejects.toMatchObject({ status: 403 });
-    await expect(kortix.accounts.members('acct_test')).rejects.toMatchObject({
+    await expect(zed.accounts.list()).rejects.toMatchObject({ status: 403 });
+    await expect(zed.accounts.members('acct_test')).rejects.toMatchObject({
       status: 403,
     });
   });
 
   test('billing SDK methods remain denied', async () => {
-    const { kortix } = await freshUser('billing-denied');
-    await expect(kortix.billing.transactions()).rejects.toMatchObject({
+    const { zed } = await freshUser('billing-denied');
+    await expect(zed.billing.transactions()).rejects.toMatchObject({
       status: 403,
     });
   });
@@ -153,9 +153,9 @@ describe('wrapper-mode policy matrix', () => {
 
   test('session.start records runtime ownership and rejects another user', async () => {
     const owner = await freshUser('runtime-owner');
-    const project = await owner.kortix.projects.provision({ name: 'Runtime Owner' });
+    const project = await owner.zed.projects.provision({ name: 'Runtime Owner' });
     const sessionId = 'runtime-policy-session';
-    const ownerSession = owner.kortix.session(project.project_id, sessionId);
+    const ownerSession = owner.zed.session(project.project_id, sessionId);
 
     const started = await ownerSession.start();
     expect(started?.stage).toBe('ready');
@@ -163,19 +163,19 @@ describe('wrapper-mode policy matrix', () => {
 
     const other = await freshUser('runtime-other');
     await expect(
-      other.kortix.session(project.project_id, sessionId).start(),
+      other.zed.session(project.project_id, sessionId).start(),
     ).rejects.toMatchObject({ status: 403 });
   });
 
   test('near-concurrent SDK provisions both persist without lost writes', async () => {
-    const { kortix, email } = await freshUser('concurrent-provision');
+    const { zed, email } = await freshUser('concurrent-provision');
     const [a, b] = await Promise.all([
-      kortix.projects.provision({ name: 'Concurrent A' }),
-      kortix.projects.provision({ name: 'Concurrent B' }),
+      zed.projects.provision({ name: 'Concurrent A' }),
+      zed.projects.provision({ name: 'Concurrent B' }),
     ]);
 
     expect(a.project_id).not.toBe(b.project_id);
-    const ids = (await kortix.projects.list()).map((project) => project.project_id);
+    const ids = (await zed.projects.list()).map((project) => project.project_id);
     expect(ids.sort()).toEqual([a.project_id, b.project_id].sort());
 
     const store = JSON.parse(readFileSync(join(TEST_DATA_DIR, 'users.json'), 'utf8'));
@@ -183,11 +183,11 @@ describe('wrapper-mode policy matrix', () => {
   });
 
   test('ownership persists across separate SDK clients', async () => {
-    const { token, email, kortix } = await freshUser('persistence');
-    const project = await kortix.projects.provision({ name: 'Persisted' });
+    const { token, email, zed } = await freshUser('persistence');
+    const project = await zed.projects.provision({ name: 'Persisted' });
 
     expect(existsSync(join(TEST_DATA_DIR, 'users.json'))).toBe(true);
-    const laterClient = createTestKortix(app, token);
+    const laterClient = createTestZed(app, token);
     expect((await laterClient.projects.get(project.project_id)).project_id).toBe(
       project.project_id,
     );

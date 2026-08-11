@@ -23,9 +23,9 @@ setTestEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-service-role');
 setTestEnv('API_KEY_SECRET', 'test-api-key-secret');
 setTestEnv('TUNNEL_SIGNING_SECRET', 'test-tunnel-signing-secret');
 setTestEnv('ALLOWED_SANDBOX_PROVIDERS', 'platinum');
-setTestEnv('KORTIX_URL', 'https://api.example.test');
+setTestEnv('ZED_URL', 'https://api.example.test');
 setTestEnv('FRONTEND_URL', 'http://localhost:3000');
-setTestEnv('INTERNAL_KORTIX_ENV', 'dev');
+setTestEnv('INTERNAL_ZED_ENV', 'dev');
 
 const {
   stageWarmRepoCheckout,
@@ -43,8 +43,8 @@ const exec = promisify(execFile);
 // A distinctive marker that must NEVER appear in any staged build-context byte.
 // Deliberately NOT shaped like a real provider token so secret scanners don't
 // false-positive on it — the test only needs a unique string to grep for.
-const SENTINEL = 'kortix-warmrepo-cred-sentinel-not-a-real-token-DO-NOT-SHIP';
-const PROXY_ORIGIN = 'https://proxy.kortix.test/git/proj-1234.git';
+const SENTINEL = 'zed-warmrepo-cred-sentinel-not-a-real-token-DO-NOT-SHIP';
+const PROXY_ORIGIN = 'https://proxy.zed.test/git/proj-1234.git';
 
 const cleanup: string[] = [];
 afterEach(async () => {
@@ -281,7 +281,7 @@ describe('PHASE 1: warm cloneUrl transport is pinned (no remote-helper RCE / sec
   });
 
   test('accepts a clean https cloneUrl', () => {
-    expect(() => assertSafeCloneUrl('https://github.com/kortix-ai/suna.git')).not.toThrow();
+    expect(() => assertSafeCloneUrl('https://github.com/zed-ai/suna.git')).not.toThrow();
   });
 
   test('the credential-free rejection message never contains the token', () => {

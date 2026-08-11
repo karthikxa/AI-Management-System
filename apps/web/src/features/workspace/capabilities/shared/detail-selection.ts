@@ -20,7 +20,7 @@
  *     rename, toggle and connect. One failure empties `data`, the lookup
  *     misses, and a modal the user is working in disappears. Skills and
  *     commands have the same exposure through a background agent editing
- *     `kortix.yaml`: a changed `path` is indistinguishable from a deleted one.
+ *     `zed.yaml`: a changed `path` is indistinguishable from a deleted one.
  *
  * The fix is to keep the two concerns apart. `open` follows the SELECTION,
  * which only the user changes. The record is content: absent means show a

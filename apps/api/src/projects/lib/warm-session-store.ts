@@ -1,4 +1,4 @@
-import { projectSessions } from '@kortix/db';
+import { projectSessions } from '@zed/db';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { db } from '../../shared/db';
 import type { ProjectSessionRow } from './serializers';

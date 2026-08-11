@@ -1,4 +1,4 @@
-name: "Kortix CodeQL config"
+name: "Zed CodeQL config"
 
 # CodeQL scans product code. The paths below are internal test/CI tooling and
 # generated artifacts — not product code, and not web-facing — so their

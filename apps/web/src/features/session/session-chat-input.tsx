@@ -6,15 +6,15 @@ import { searchWorkspaceFiles } from '@/features/files';
 import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { isImageFile } from '@/lib/utils/file-utils';
-import { normalizeAppPathname } from '@kortix/sdk/instance-routes';
+import { normalizeAppPathname } from '@zed/sdk/instance-routes';
 import type {
   Agent,
   Command,
   MessageWithParts,
   ProviderListResponse,
   Session,
-} from '@kortix/sdk/react';
-import { useRuntimeSessions } from '@kortix/sdk/react';
+} from '@zed/sdk/react';
+import { useRuntimeSessions } from '@zed/sdk/react';
 
 import {
   ArrowUpLeftIcon as ArrowUpLeft,

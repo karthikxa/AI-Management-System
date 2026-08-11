@@ -71,7 +71,7 @@ export const config: Config = {
 /**
  * Whether billing (Stripe, credit tracking, paywall, plan picker) is enabled on
  * the frontend. Single switch — NEXT_PUBLIC_BILLING_ENABLED — which should
- * mirror the backend's KORTIX_BILLING_INTERNAL_ENABLED. Everything else (auth,
+ * mirror the backend's ZED_BILLING_INTERNAL_ENABLED. Everything else (auth,
  * sandbox provisioning, projects, accounts) runs the same code path whether
  * billing is on or off.
  */
@@ -80,13 +80,13 @@ export const isBillingEnabled = (): boolean => {
 };
 
 /**
- * Whether Kortix's own managed model lineup ("Managed · Included with your
- * plan" — Claude, GLM, and DeepSeek routed through Kortix's shared Bedrock,
+ * Whether Zed's own managed model lineup ("Managed · Included with your
+ * plan" — Claude, GLM, and DeepSeek routed through Zed's shared Bedrock,
  * AsterLab, and OpenRouter credentials) can appear anywhere in the UI.
  * CLOUD-ONLY: mirrors
- * the backend's KORTIX_MANAGED_PROVIDER_ENABLED, which already keeps managed
+ * the backend's ZED_MANAGED_PROVIDER_ENABLED, which already keeps managed
  * models out of the served model catalog when off. Use this for a surface
- * that reasons about "is `kortix` connected" independently of the live
+ * that reasons about "is `zed` connected" independently of the live
  * catalog (so it hides the managed entry outright instead of rendering it
  * with zero models) — most surfaces need no extra check since the catalog
  * itself is already empty of managed models on a self-host.
@@ -111,7 +111,7 @@ export const isConnectorsEnabled = (): boolean => {
 /**
  * Whether creating an ADDITIONAL/org account is restricted to platform
  * admins on this deployment. Mirrors the backend's
- * KORTIX_RESTRICT_ACCOUNT_CREATION (which 403s POST /v1/accounts for
+ * ZED_RESTRICT_ACCOUNT_CREATION (which 403s POST /v1/accounts for
  * non-admins) — this is a UI convenience so ordinary users don't even see a
  * "New account" affordance they can't use; the backend gate is authoritative
  * regardless of what the UI hides. Signups, existing teams, and SSO/JIT

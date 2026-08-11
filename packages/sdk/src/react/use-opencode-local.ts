@@ -16,7 +16,7 @@ import { featureFlags } from '../core/http/feature-flags';
 import type { Agent, Config, ProviderListResponse } from '@opencode-ai/sdk/v2/client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createAgentSelectionScope } from './agent-selection-scope';
-import { useKortixRouteProjectId } from './route-project';
+import { useZedRouteProjectId } from './route-project';
 import { normalizeProviderList } from './provider-selection';
 import { useModelStore, type ModelKey } from './use-model-store';
 
@@ -166,7 +166,7 @@ export function formatPromptModel(model: ModelKey): ModelKey {
 }
 
 function isRemovedAutoModel(model: ModelKey | undefined): boolean {
-  return model?.modelID === 'auto' || model?.modelID === 'kortix/auto';
+  return model?.modelID === 'auto' || model?.modelID === 'zed/auto';
 }
 
 /** Resolve the concrete model sent to OpenCode. Stale Auto values fail closed. */
@@ -197,7 +197,7 @@ export type ModelProviderMode = 'native' | 'gateway';
 export function modelProviderMode(providers: ProviderListResponse | undefined): ModelProviderMode {
   if (!providers) return 'native';
   const normalized = normalizeProviderList(providers);
-  return normalized.connected?.includes('kortix') ? 'gateway' : 'native';
+  return normalized.connected?.includes('zed') ? 'gateway' : 'native';
 }
 
 export function scopedModelSelectionKey(
@@ -255,7 +255,7 @@ export function useOpenCodeLocal({
   // ---- Flatten models from providers (shared with the chat input, so the
   // gateway-only allowlist applies here too — native providers never leak in) ----
   const flatModels = useMemo<FlatModel[]>(() => flattenModels(providers), [providers]);
-  const projectId = useKortixRouteProjectId();
+  const projectId = useZedRouteProjectId();
   const providerMode = useMemo(() => modelProviderMode(providers), [providers]);
 
   // ---- Model store (persisted: recent, variant, per-agent/session selection) ----

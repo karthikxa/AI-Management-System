@@ -1,7 +1,7 @@
 'use client';
 
 // Global MFA step-up dialog. The SDK's api-client dispatches
-// `kortix:mfa-required` whenever ANY backend call is denied with the coded
+// `zed:mfa-required` whenever ANY backend call is denied with the coded
 // 403 `account_mfa_required` (account-wide "Require MFA" is on and this
 // session is aal1). This provider — mounted once in the root layout — catches
 // that event and walks the user through a TOTP challenge, upgrading the
@@ -31,8 +31,8 @@ import { errorToast, successToast } from '@/components/ui/toast';
 import { invalidateTokenCache } from '@/lib/auth-token';
 import { supabaseMFAService } from '@/lib/supabase/mfa';
 
-export const MFA_REQUIRED_EVENT = 'kortix:mfa-required';
-export const MFA_VERIFIED_EVENT = 'kortix:mfa-verified';
+export const MFA_REQUIRED_EVENT = 'zed:mfa-required';
+export const MFA_VERIFIED_EVENT = 'zed:mfa-verified';
 
 export function MfaStepUpProvider({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -93,7 +93,7 @@ export function MfaStepUpProvider({ children }: { children?: React.ReactNode }) 
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <ShieldCheck className="text-kortix-green size-4" />
+              <ShieldCheck className="text-zed-green size-4" />
               Verify it’s you
             </DialogTitle>
             <DialogDescription>

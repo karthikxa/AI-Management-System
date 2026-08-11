@@ -27,7 +27,7 @@ let deductShouldFail = false;
 
 mock.module('../config', () => ({
   config: {
-    get KORTIX_BILLING_INTERNAL_ENABLED() {
+    get ZED_BILLING_INTERNAL_ENABLED() {
       return billingInternalEnabled;
     },
   },

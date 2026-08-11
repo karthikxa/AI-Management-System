@@ -21,7 +21,7 @@
 // runs test files in the same process/order. See the same caveat documented
 // in ../../sandbox-reaper.test.ts.
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { projectSessions, projects } from '@kortix/db';
+import { projectSessions, projects } from '@zed/db';
 
 const SESSION_ID = 'sess-deleted-guard-1';
 const ACCOUNT_ID = 'acct-1';

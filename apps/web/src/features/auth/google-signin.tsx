@@ -42,7 +42,7 @@ export default function GoogleSignIn({
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          // Desktop: bounce back via the kortix:// scheme so the OS hands
+          // Desktop: bounce back via the zed:// scheme so the OS hands
           // the callback to the desktop app. The OAuth navigation itself is
           // intercepted by the Tauri shell and opened in the system browser
           // (Google rejects embedded webviews with `disallowed_useragent`).

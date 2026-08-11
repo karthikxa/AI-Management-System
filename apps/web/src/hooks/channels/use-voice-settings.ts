@@ -1,6 +1,6 @@
 'use client';
 
-import { setMeetBotName } from '@kortix/sdk';
+import { setMeetBotName } from '@zed/sdk';
 import { useMutation } from '@tanstack/react-query';
 
 /**

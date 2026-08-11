@@ -31,15 +31,15 @@ afterEach(() => {
 
 describe('buildGithubAppManifest', () => {
   test('points redirect_url/setup_url at this API, sets public:false and the required permissions', () => {
-    const manifest = buildGithubAppManifest({ apiBaseUrl: 'https://api.kortix.example', homepageUrl: 'https://kortix.ai', appName: 'Kortix Self-Host test' });
-    expect(manifest.name).toBe('Kortix Self-Host test');
+    const manifest = buildGithubAppManifest({ apiBaseUrl: 'https://api.zed.example', homepageUrl: 'https://zed.ai', appName: 'Zed Self-Host test' });
+    expect(manifest.name).toBe('Zed Self-Host test');
     // Homepage URL is separate from the API base — GitHub validates it as a
     // public FQDN, so it is never the (possibly localhost) API origin.
-    expect(manifest.url).toBe('https://kortix.ai');
-    expect(manifest.redirect_url).toBe('https://api.kortix.example/v1/platform/github-app/manifest-callback');
-    expect(manifest.setup_url).toBe('https://api.kortix.example/v1/platform/github-app/install-callback');
+    expect(manifest.url).toBe('https://zed.ai');
+    expect(manifest.redirect_url).toBe('https://api.zed.example/v1/platform/github-app/manifest-callback');
+    expect(manifest.setup_url).toBe('https://api.zed.example/v1/platform/github-app/install-callback');
     expect(manifest.public).toBe(false);
-    expect(manifest.hook_attributes).toEqual({ url: 'https://kortix.ai', active: false });
+    expect(manifest.hook_attributes).toEqual({ url: 'https://zed.ai', active: false });
     expect(manifest.default_events).toEqual([]);
     expect(manifest.default_permissions).toEqual({
       administration: 'write',
@@ -50,14 +50,14 @@ describe('buildGithubAppManifest', () => {
   });
 
   test('strips a trailing slash from apiBaseUrl before appending route paths', () => {
-    const manifest = buildGithubAppManifest({ apiBaseUrl: 'https://api.kortix.example/', homepageUrl: 'https://kortix.ai' });
-    expect(manifest.redirect_url).toBe('https://api.kortix.example/v1/platform/github-app/manifest-callback');
+    const manifest = buildGithubAppManifest({ apiBaseUrl: 'https://api.zed.example/', homepageUrl: 'https://zed.ai' });
+    expect(manifest.redirect_url).toBe('https://api.zed.example/v1/platform/github-app/manifest-callback');
   });
 
   test('generates a unique-ish name when none is given', () => {
-    const a = buildGithubAppManifest({ apiBaseUrl: 'https://api.kortix.example', homepageUrl: 'https://kortix.ai' });
-    const b = buildGithubAppManifest({ apiBaseUrl: 'https://api.kortix.example', homepageUrl: 'https://kortix.ai' });
-    expect(a.name).toMatch(/^Kortix Self-Host [0-9a-f]+$/);
+    const a = buildGithubAppManifest({ apiBaseUrl: 'https://api.zed.example', homepageUrl: 'https://zed.ai' });
+    const b = buildGithubAppManifest({ apiBaseUrl: 'https://api.zed.example', homepageUrl: 'https://zed.ai' });
+    expect(a.name).toMatch(/^Zed Self-Host [0-9a-f]+$/);
     expect(a.name).not.toBe(b.name);
   });
 });
@@ -132,7 +132,7 @@ describe('exchangeManifestCode', () => {
       return new Response(
         JSON.stringify({
           id: 12345,
-          slug: 'kortix-self-host-abc',
+          slug: 'zed-self-host-abc',
           pem: '-----BEGIN RSA PRIVATE KEY-----\nabc\n-----END RSA PRIVATE KEY-----',
           client_id: 'client-id-1',
           client_secret: 'client-secret-1',
@@ -148,7 +148,7 @@ describe('exchangeManifestCode', () => {
     expect(capturedInit?.method).toBe('POST');
     expect(result).toEqual({
       id: 12345,
-      slug: 'kortix-self-host-abc',
+      slug: 'zed-self-host-abc',
       pem: '-----BEGIN RSA PRIVATE KEY-----\nabc\n-----END RSA PRIVATE KEY-----',
       client_id: 'client-id-1',
       client_secret: 'client-secret-1',

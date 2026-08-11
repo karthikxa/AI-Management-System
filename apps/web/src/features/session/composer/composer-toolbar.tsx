@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { Agent, MessageWithParts, ProviderListResponse } from '@kortix/sdk/react';
+import type { Agent, MessageWithParts, ProviderListResponse } from '@zed/sdk/react';
 import { PaperclipIcon as Paperclip } from '@phosphor-icons/react';
 
 import type { FlatModel } from '../model-flatten';

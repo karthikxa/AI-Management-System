@@ -18,7 +18,7 @@ export interface SessionPicks {
   setAgent: (agent: string | null) => void;
 }
 
-const storageKey = (sessionId: string) => `kortix:picks:${sessionId}`;
+const storageKey = (sessionId: string) => `zed:picks:${sessionId}`;
 
 export function useSessionPicks(sessionId: string): SessionPicks {
   const [picks, setPicks] = useState<{ model: ModelKey | null; agent: string | null }>({

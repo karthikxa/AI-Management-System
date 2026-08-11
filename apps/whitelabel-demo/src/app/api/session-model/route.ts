@@ -14,24 +14,24 @@
 import { getRequestSession } from '@/server/auth';
 import { consumeRateLimit } from '@/server/rate-limit';
 import { isOwner, isValidProjectId } from '@/server/users';
-import { createScopedKortix } from '@kortix/sdk/server';
+import { createScopedZed } from '@zed/sdk/server';
 import type { NextRequest } from 'next/server';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function upstreamBase(): string {
-  // KORTIX_UPSTREAM first, like the proxy and every other server route. Reading
-  // only KORTIX_API_URL sent the model control to the PUBLIC api on any
+  // ZED_UPSTREAM first, like the proxy and every other server route. Reading
+  // only ZED_API_URL sent the model control to the PUBLIC api on any
   // deployment that configures the documented variable, so every change 404'd.
   return (
-    process.env.KORTIX_UPSTREAM ??
-    process.env.KORTIX_API_URL ??
-    'https://api.kortix.com/v1'
+    process.env.ZED_UPSTREAM ??
+    process.env.ZED_API_URL ??
+    'https://api.zed.com/v1'
   ).replace(/\/+$/, '');
 }
 
 async function scoped(req: NextRequest) {
-  const apiKey = process.env.KORTIX_API_KEY;
+  const apiKey = process.env.ZED_API_KEY;
   if (!apiKey) return { error: Response.json({ error: 'Wrapper mode is off' }, { status: 500 }) };
 
   const session = getRequestSession(req);
@@ -53,7 +53,7 @@ async function scoped(req: NextRequest) {
   }
 
   return {
-    kortix: createScopedKortix({ backendUrl: upstreamBase(), getToken: async () => apiKey }),
+    zed: createScopedZed({ backendUrl: upstreamBase(), getToken: async () => apiKey }),
     projectId,
     sessionId,
   };
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
   if ('error' in ctx) return ctx.error;
 
   try {
-    const session = await ctx.kortix.session(ctx.projectId, ctx.sessionId).get();
+    const session = await ctx.zed.session(ctx.projectId, ctx.sessionId).get();
     const metadata = (session?.metadata ?? {}) as Record<string, unknown>;
     const model = metadata.opencode_model;
     return Response.json({ model: typeof model === 'string' ? model : null });
@@ -87,7 +87,7 @@ export async function PUT(req: NextRequest) {
   if (!model) return Response.json({ error: 'model is required' }, { status: 400 });
 
   try {
-    const result = await ctx.kortix.session(ctx.projectId, ctx.sessionId).changeModel(model);
+    const result = await ctx.zed.session(ctx.projectId, ctx.sessionId).changeModel(model);
     // `pushFailed` rides through: the write succeeded (hence 200), but a
     // REQUIRED live push may not have. Dropping it here is what made the UI
     // report a half-applied change as saved. See classifyModelChange.

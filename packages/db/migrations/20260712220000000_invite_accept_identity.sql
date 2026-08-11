@@ -1,8 +1,8 @@
 -- Up Migration
 --
--- Add kortix.account_invitations.accepted_by_user_id (uuid, nullable).
+-- Add zed.account_invitations.accepted_by_user_id (uuid, nullable).
 --
--- The Drizzle schema (packages/db/src/schema/kortix.ts) gained this column and
+-- The Drizzle schema (packages/db/src/schema/zed.ts) gained this column and
 -- the API began selecting it — every SELECT against account_invitations now
 -- projects `accepted_by_user_id` (Drizzle's `select()` reads the full row),
 -- e.g. GET /v1/accounts/:id/invites, GET /v1/account-invites/:id, and the
@@ -13,7 +13,7 @@
 -- The schema change was committed (and a Drizzle-generated SQL file landed in
 -- packages/db/drizzle/) but the corresponding node-pg-migrate migration in
 -- packages/db/migrations/ — the ONLY directory the deploy runner applies — was
--- never created. So every environment that ships this code has a kortix.ts that
+-- never created. So every environment that ships this code has a zed.ts that
 -- references a column the database does not have, and every invite-listing /
 -- invite-accept call 500s with `column "accepted_by_user_id" does not exist`
 -- (Better Stack error 97669531…; first seen 2026-07-04, 171 occurrences / 5
@@ -27,7 +27,7 @@
 -- accepted invites simply have no recorded acceptor, which the accept handler
 -- already tolerates (`if (alreadyAccepted && invite.acceptedByUserId …)`).
 
-ALTER TABLE kortix.account_invitations
+ALTER TABLE zed.account_invitations
   ADD COLUMN IF NOT EXISTS accepted_by_user_id uuid;
 
 -- Down Migration

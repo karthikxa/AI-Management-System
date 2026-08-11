@@ -1,1 +1,1 @@
-export * from '@kortix/sdk/react';
+export * from '@zed/sdk/react';

@@ -1,10 +1,10 @@
 /**
- * `kortix` CLI — local + auth flows (spec §2).
+ * `zed` CLI — local + auth flows (spec §2).
  *
  * These map 1:1 to the CLI spec IDs and are driven through the hermetic CLI
  * subprocess fixture (fixtures/cli.ts): a throwaway cwd + a private config file,
  * the CLI source entry invoked via `bun run` (never a stale binary), and the
- * ke2e target wired in via KORTIX_DEFAULT_API_BASE.
+ * ke2e target wired in via ZED_DEFAULT_API_BASE.
  *
  * Split of work:
  *   - INIT-1..4, CREATE-1, HOSTS-1..6, LOGOUT-1 are PURE-LOCAL — they make ZERO
@@ -34,7 +34,7 @@ function check(description: string, pass: boolean, expected: unknown, actual: un
 
 flow('INIT-1', { domain: 'cli', routes: [] }, async (ctx) => {
   await ctx.step(
-    'kortix init <name> -y → standalone scaffold + git init, exit 0, ZERO API',
+    'zed init <name> -y → standalone scaffold + git init, exit 0, ZERO API',
     async () => {
       const sb = new CliSandbox('init1');
       ctx.track('cli-sandbox', sb.cwd);
@@ -42,22 +42,22 @@ flow('INIT-1', { domain: 'cli', routes: [] }, async (ctx) => {
         const r = await sb.run(['init', 'init-one', '-y']);
         check('exit 0', r.exitCode === 0, 0, r.exitCode);
         check(
-          'kortix.yaml written',
-          sb.exists('init-one/kortix.yaml'),
+          'zed.yaml written',
+          sb.exists('init-one/zed.yaml'),
           true,
-          sb.exists('init-one/kortix.yaml'),
+          sb.exists('init-one/zed.yaml'),
         );
         check(
-          '.kortix/ written',
-          sb.exists('init-one/.kortix'),
+          '.zed/ written',
+          sb.exists('init-one/.zed'),
           true,
-          sb.exists('init-one/.kortix'),
+          sb.exists('init-one/.zed'),
         );
         check(
-          '.kortix/opencode/ runtime dir written (default agent + config)',
-          sb.exists('init-one/.kortix/opencode/opencode.jsonc'),
+          '.zed/opencode/ runtime dir written (default agent + config)',
+          sb.exists('init-one/.zed/opencode/opencode.jsonc'),
           true,
-          sb.exists('init-one/.kortix/opencode/opencode.jsonc'),
+          sb.exists('init-one/.zed/opencode/opencode.jsonc'),
         );
         // codex is the default primary → AGENTS.md pointer is wired.
         check(
@@ -80,7 +80,7 @@ flow('INIT-1', { domain: 'cli', routes: [] }, async (ctx) => {
 });
 
 flow('INIT-2', { domain: 'cli', routes: [] }, async (ctx) => {
-  await ctx.step('kortix init when kortix.yaml exists, no --force → exit 1 (refuses)', async () => {
+  await ctx.step('zed init when zed.yaml exists, no --force → exit 1 (refuses)', async () => {
     const sb = new CliSandbox('init2');
     ctx.track('cli-sandbox', sb.cwd);
     try {
@@ -102,7 +102,7 @@ flow('INIT-2', { domain: 'cli', routes: [] }, async (ctx) => {
 
 flow('INIT-3', { domain: 'cli', routes: [] }, async (ctx) => {
   await ctx.step(
-    'kortix init --primary opencode --agents claude,cursor -y → chosen agents wired via symlinks + AGENTS.md',
+    'zed init --primary opencode --agents claude,cursor -y → chosen agents wired via symlinks + AGENTS.md',
     async () => {
       const sb = new CliSandbox('init3');
       ctx.track('cli-sandbox', sb.cwd);
@@ -121,19 +121,19 @@ flow('INIT-3', { domain: 'cli', routes: [] }, async (ctx) => {
         // Selected agents' native dirs are symlinks onto the OpenCode config dir;
         // existsSync follows the link, so a resolving path proves it works.
         check(
-          '.opencode → .kortix/opencode resolves',
+          '.opencode → .zed/opencode resolves',
           sb.exists('wired/.opencode/opencode.jsonc'),
           true,
           sb.exists('wired/.opencode/opencode.jsonc'),
         );
-        // kortix-cli is the canonical scaffolded skill (agents.ts CANONICAL_SKILL);
-        // the other kortix-* skills are injected at sandbox boot, not scaffolded
+        // zed-cli is the canonical scaffolded skill (agents.ts CANONICAL_SKILL);
+        // the other zed-* skills are injected at sandbox boot, not scaffolded
         // (starter 10-skill floor, #5770).
         check(
-          '.claude → .kortix/opencode resolves to shared skills',
-          sb.exists('wired/.claude/skills/kortix-cli/SKILL.md'),
+          '.claude → .zed/opencode resolves to shared skills',
+          sb.exists('wired/.claude/skills/zed-cli/SKILL.md'),
           true,
-          sb.exists('wired/.claude/skills/kortix-cli/SKILL.md'),
+          sb.exists('wired/.claude/skills/zed-cli/SKILL.md'),
         );
         // cursor was selected → AGENTS.md pointer (read natively); no .cursor rule file.
         check(
@@ -163,7 +163,7 @@ flow('INIT-3', { domain: 'cli', routes: [] }, async (ctx) => {
 });
 
 flow('INIT-4', { domain: 'cli', routes: [] }, async (ctx) => {
-  await ctx.step('kortix init --no-git → no repo created', async () => {
+  await ctx.step('zed init --no-git → no repo created', async () => {
     const sb = new CliSandbox('init4');
     ctx.track('cli-sandbox', sb.cwd);
     try {
@@ -171,9 +171,9 @@ flow('INIT-4', { domain: 'cli', routes: [] }, async (ctx) => {
       check('exit 0', r.exitCode === 0, 0, r.exitCode);
       check(
         'scaffold written',
-        sb.exists('init-four/kortix.yaml'),
+        sb.exists('init-four/zed.yaml'),
         true,
-        sb.exists('init-four/kortix.yaml'),
+        sb.exists('init-four/zed.yaml'),
       );
       check('NO .git created', !sb.exists('init-four/.git'), false, sb.exists('init-four/.git'));
     } finally {
@@ -186,7 +186,7 @@ flow('INIT-4', { domain: 'cli', routes: [] }, async (ctx) => {
 
 flow('CREATE-1', { domain: 'cli', routes: [] }, async (ctx) => {
   await ctx.step(
-    'kortix <name> (bare) → explicit unknown-command error; never scaffolds',
+    'zed <name> (bare) → explicit unknown-command error; never scaffolds',
     async () => {
       const sb = new CliSandbox('create1');
       ctx.track('cli-sandbox', sb.cwd);
@@ -195,7 +195,7 @@ flow('CREATE-1', { domain: 'cli', routes: [] }, async (ctx) => {
         check('exit 2', r.exitCode === 2, 2, r.exitCode);
         check(
           'explains explicit init command',
-          /kortix init <name>/i.test(r.all),
+          /zed init <name>/i.test(r.all),
           true,
           r.stderr.slice(0, 240),
         );
@@ -231,13 +231,13 @@ flow('CREATE-1', { domain: 'cli', routes: [] }, async (ctx) => {
 // All hosts subcommands are config-only (config.ts) — ZERO API calls.
 
 flow('HOSTS-1', { domain: 'cli', routes: [] }, async (ctx) => {
-  await ctx.step('kortix hosts ls → lists built-in hosts, exit 0', async () => {
+  await ctx.step('zed hosts ls → lists built-in hosts, exit 0', async () => {
     const sb = new CliSandbox('hosts-ls');
     ctx.track('cli-sandbox', sb.cwd);
     try {
       const r = await sb.run(['hosts', 'ls']);
       check('exit 0', r.exitCode === 0, 0, r.exitCode);
-      // Built-ins always exist: cloud, selfhost, local-dev, kortix-internal-dev.
+      // Built-ins always exist: cloud, selfhost, local-dev, zed-internal-dev.
       check('lists cloud', /\bcloud\b/.test(r.stdout), true, r.stdout.includes('cloud'));
       check('lists local-dev', /local-dev/.test(r.stdout), true, r.stdout.includes('local-dev'));
     } finally {
@@ -247,7 +247,7 @@ flow('HOSTS-1', { domain: 'cli', routes: [] }, async (ctx) => {
 });
 
 flow('HOSTS-2', { domain: 'cli', routes: [] }, async (ctx) => {
-  await ctx.step('kortix hosts use <name> → switches active host', async () => {
+  await ctx.step('zed hosts use <name> → switches active host', async () => {
     const sb = new CliSandbox('hosts-use');
     ctx.track('cli-sandbox', sb.cwd);
     try {
@@ -270,7 +270,7 @@ flow('HOSTS-2', { domain: 'cli', routes: [] }, async (ctx) => {
 });
 
 flow('HOSTS-3', { domain: 'cli', routes: [] }, async (ctx) => {
-  await ctx.step('kortix hosts add <name> --url <url> → registers a placeholder host', async () => {
+  await ctx.step('zed hosts add <name> --url <url> → registers a placeholder host', async () => {
     const sb = new CliSandbox('hosts-add');
     ctx.track('cli-sandbox', sb.cwd);
     try {
@@ -293,7 +293,7 @@ flow('HOSTS-3', { domain: 'cli', routes: [] }, async (ctx) => {
 });
 
 flow('HOSTS-4', { domain: 'cli', routes: [] }, async (ctx) => {
-  await ctx.step('kortix hosts rm <name> → removes a custom host; built-ins reset', async () => {
+  await ctx.step('zed hosts rm <name> → removes a custom host; built-ins reset', async () => {
     const sb = new CliSandbox('hosts-rm');
     ctx.track('cli-sandbox', sb.cwd);
     try {
@@ -312,7 +312,7 @@ flow('HOSTS-4', { domain: 'cli', routes: [] }, async (ctx) => {
 });
 
 flow('HOSTS-5', { domain: 'cli', routes: [] }, async (ctx) => {
-  await ctx.step('kortix hosts info [<name>] → shows one host', async () => {
+  await ctx.step('zed hosts info [<name>] → shows one host', async () => {
     const sb = new CliSandbox('hosts-info');
     ctx.track('cli-sandbox', sb.cwd);
     try {
@@ -334,7 +334,7 @@ flow('HOSTS-5', { domain: 'cli', routes: [] }, async (ctx) => {
 });
 
 flow('HOSTS-6', { domain: 'cli', routes: [] }, async (ctx) => {
-  await ctx.step('kortix hosts current → prints the active host name', async () => {
+  await ctx.step('zed hosts current → prints the active host name', async () => {
     const sb = new CliSandbox('hosts-current');
     ctx.track('cli-sandbox', sb.cwd);
     try {
@@ -357,7 +357,7 @@ flow('HOSTS-6', { domain: 'cli', routes: [] }, async (ctx) => {
 
 flow('LOGOUT-1', { domain: 'cli', routes: [] }, async (ctx) => {
   await ctx.step(
-    'kortix logout → removes host creds (no API); not-logged-in is a no-op',
+    'zed logout → removes host creds (no API); not-logged-in is a no-op',
     async () => {
       const sb = new CliSandbox('logout1');
       ctx.track('cli-sandbox', sb.cwd);
@@ -369,7 +369,7 @@ flow('LOGOUT-1', { domain: 'cli', routes: [] }, async (ctx) => {
           hosts: {
             cloud: {
               url: 'http://localhost:8008',
-              token: 'kortix_pat_fake_for_logout_only',
+              token: 'zed_pat_fake_for_logout_only',
               user_id: 'u',
               user_email: 'u@example.com',
               account_id: 'a',
@@ -410,7 +410,7 @@ flow('LOGIN-1', { domain: 'cli', routes: ['GET /v1/accounts/me'] }, async (ctx) 
   ctx.track('cli-sandbox', sb.cwd);
   try {
     await ctx.step(
-      'kortix login --token <valid PAT> → validates via /accounts/me, saves host',
+      'zed login --token <valid PAT> → validates via /accounts/me, saves host',
       async () => {
         const r = await sb.login(pat);
         check('exit 0', r.exitCode === 0, 0, r.exitCode);
@@ -434,7 +434,7 @@ flow('LOGIN-2', { domain: 'cli', routes: ['GET /v1/accounts/me'] }, async (ctx) 
     name: ctx.fixtures.name('cli-login2'),
   });
   await ctx.step(
-    'kortix login (browser) → one-shot localhost callback; dashboard POSTs {state,token} → saved',
+    'zed login (browser) → one-shot localhost callback; dashboard POSTs {state,token} → saved',
     async () => {
       const sb = new CliSandbox('login2');
       ctx.track('cli-sandbox', sb.cwd);
@@ -468,14 +468,14 @@ flow('LOGIN-2', { domain: 'cli', routes: ['GET /v1/accounts/me'] }, async (ctx) 
 
 flow('LOGIN-3', { domain: 'cli', routes: ['GET /v1/accounts/me'] }, async (ctx) => {
   await ctx.step(
-    'kortix login --token <bad valid-prefix> → /accounts/me 401 → exit 1',
+    'zed login --token <bad valid-prefix> → /accounts/me 401 → exit 1',
     async () => {
       const sb = new CliSandbox('login3');
       ctx.track('cli-sandbox', sb.cwd);
       try {
-        // A well-formed-but-bogus PAT: passes the kortix_pat_ prefix check, gets
+        // A well-formed-but-bogus PAT: passes the zed_pat_ prefix check, gets
         // rejected by GET /accounts/me (401).
-        const r = await sb.login('kortix_pat_ke2e_definitely_not_a_real_token_000000');
+        const r = await sb.login('zed_pat_ke2e_definitely_not_a_real_token_000000');
         check('exit 1', r.exitCode === 1, 1, r.exitCode);
         check('reports token rejected', /rejected/i.test(r.all), true, r.stderr.slice(0, 200));
         check('config NOT logged in', !sb.isLoggedIn(), true, sb.isLoggedIn());
@@ -486,7 +486,7 @@ flow('LOGIN-3', { domain: 'cli', routes: ['GET /v1/accounts/me'] }, async (ctx) 
   );
 
   await ctx.step(
-    'kortix login --token <bad prefix> → rejected locally (no API call), exit 1',
+    'zed login --token <bad prefix> → rejected locally (no API call), exit 1',
     async () => {
       const sb = new CliSandbox('login3-prefix');
       ctx.track('cli-sandbox', sb.cwd);
@@ -540,7 +540,7 @@ flow('WHOAMI-1', { domain: 'cli', routes: ['GET /v1/accounts/me'] }, async (ctx)
   const sb = new CliSandbox('whoami1');
   ctx.track('cli-sandbox', sb.cwd);
   try {
-    await ctx.step('logged in → kortix whoami prints email/user_id/account', async () => {
+    await ctx.step('logged in → zed whoami prints email/user_id/account', async () => {
       const login = await sb.login(pat);
       check('login exit 0', login.exitCode === 0, 0, login.exitCode);
       const r = await sb.run(['whoami']);
@@ -556,7 +556,7 @@ flow('WHOAMI-1', { domain: 'cli', routes: ['GET /v1/accounts/me'] }, async (ctx)
         check('exit 1', r.exitCode === 1, 1, r.exitCode);
         check(
           'prompts to log in',
-          /not logged in|kortix login/i.test(r.all),
+          /not logged in|zed login/i.test(r.all),
           true,
           r.stderr.slice(0, 200),
         );

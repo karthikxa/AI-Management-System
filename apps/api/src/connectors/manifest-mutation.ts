@@ -50,7 +50,7 @@ export async function mutateManifestWithRetry(
     if (attempt === 1) {
       return {
         ok: false,
-        error: `kortix.yaml changed twice while ${operation}. Retry the command.`,
+        error: `zed.yaml changed twice while ${operation}. Retry the command.`,
         status: 409,
       };
     }

@@ -3,8 +3,8 @@
 import { createContext, useCallback, useContext, useState } from 'react';
 import { DemoQualifierModal } from './demo-qualifier-modal';
 
-const CAL_LINK = 'team/kortix/demo';
-const CAL_NAMESPACE = 'kortix-demo';
+const CAL_LINK = 'team/zed/demo';
+const CAL_NAMESPACE = 'zed-demo';
 
 const DEFAULT_SOURCE = 'request-demo';
 

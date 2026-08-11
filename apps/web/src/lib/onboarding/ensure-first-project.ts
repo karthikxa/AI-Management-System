@@ -1,4 +1,4 @@
-import { type KortixProject, listProjectsForAccount, provisionProject } from '@kortix/sdk';
+import { type ZedProject, listProjectsForAccount, provisionProject } from '@zed/sdk';
 
 import { isValidProjectId } from '@/lib/onboarding/landing-destination';
 import { hasPostAuthIntent } from '@/lib/onboarding/post-auth-intent';
@@ -31,7 +31,7 @@ export const FIRST_PROJECT_TEMPLATE = 'general-knowledge-worker';
  * Tab-scoped on purpose: the suppression is about *this* deliberate delete, so a
  * later sign-in or a fresh tab provisions again like any other empty account.
  */
-const SUPPRESS_AUTO_PROJECT_KEY = 'kortix:suppress-auto-project';
+const SUPPRESS_AUTO_PROJECT_KEY = 'zed:suppress-auto-project';
 
 function safeSessionStorage(): Storage | null {
   try {
@@ -69,7 +69,7 @@ function localAttemptStorage(): Storage | undefined {
   }
 }
 
-const PROVISION_ATTEMPT_KEY_PREFIX = 'kortix:onboarding-provision-key:';
+const PROVISION_ATTEMPT_KEY_PREFIX = 'zed:onboarding-provision-key:';
 
 /**
  * How long a persisted attempt key stays usable, ms.
@@ -270,8 +270,8 @@ export function isManagedGitUnavailableError(err: unknown): boolean {
  */
 export function isProvisionInFlightError(err: unknown): boolean {
   const code = (err as { code?: string } | null)?.code;
-  // The literal, not `PROVISION_IN_FLIGHT_CODE` from `@kortix/sdk`: this
-  // module's own test suite replaces `@kortix/sdk` wholesale via `mock.module`,
+  // The literal, not `PROVISION_IN_FLIGHT_CODE` from `@zed/sdk`: this
+  // module's own test suite replaces `@zed/sdk` wholesale via `mock.module`,
   // so an imported constant would read back `undefined` there and make every
   // code-less error match. Kept in sync with the SDK constant by name.
   if (code === 'provision_in_flight') return true;
@@ -287,9 +287,9 @@ export function isProvisionInFlightError(err: unknown): boolean {
  * only ever selects from the list the server already said this account owns.
  */
 export function pickLandingProject(
-  projects: KortixProject[],
+  projects: ZedProject[],
   preferredProjectId?: string | null,
-): KortixProject | null {
+): ZedProject | null {
   if (projects.length === 0) return null;
   if (isValidProjectId(preferredProjectId)) {
     const preferred = projects.find((project) => project.project_id === preferredProjectId);
@@ -300,14 +300,14 @@ export function pickLandingProject(
 
 /**
  * The two network calls `ensureFirstProject` needs, injectable so tests can
- * pass plain fakes instead of module-mocking `@kortix/sdk` (which is
+ * pass plain fakes instead of module-mocking `@zed/sdk` (which is
  * process-wide in this monorepo and leaks into sibling test suites — see
  * `mock.module` usage elsewhere in this package's tests for what NOT to
  * repeat). Defaults to the real SDK functions; production code never passes
  * this parameter.
  */
 export type EnsureFirstProjectClient = {
-  listProjectsForAccount: (accountId?: string) => Promise<KortixProject[]>;
+  listProjectsForAccount: (accountId?: string) => Promise<ZedProject[]>;
   provisionProject: typeof provisionProject;
 };
 
@@ -342,9 +342,9 @@ export async function ensureFirstProject(
   // as ES module LIVE bindings (re-resolved per call) rather than a
   // snapshot taken once at module-evaluation time. That distinction is
   // load-bearing for this file's own tests, which re-register
-  // `mock.module('@kortix/sdk', ...)` mid-suite.
+  // `mock.module('@zed/sdk', ...)` mid-suite.
   client: EnsureFirstProjectClient = { listProjectsForAccount, provisionProject },
-): Promise<KortixProject | null> {
+): Promise<ZedProject | null> {
   const existing = await client.listProjectsForAccount(accountId);
   const picked = pickLandingProject(existing, opts.preferredProjectId);
   if (picked) {

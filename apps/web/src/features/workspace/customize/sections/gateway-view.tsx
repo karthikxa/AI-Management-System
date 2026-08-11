@@ -28,13 +28,13 @@ import { GatewayLogs } from '@/features/workspace/customize/sections/view/gatewa
 import { GatewayOverview } from '@/features/workspace/customize/sections/view/gateway/gateway-overview';
 import { GatewayPlayground } from '@/features/workspace/customize/sections/view/gateway/gateway-playground';
 import { GatewayRouting } from '@/features/workspace/customize/sections/view/gateway/gateway-routing';
-import { useModelDefaults } from '@kortix/sdk/react';
+import { useModelDefaults } from '@zed/sdk/react';
 import { useGatewayKeys } from '@/hooks/projects/use-project-gateway';
 import type { CustomizeSection } from '@/lib/customize-sections';
 import { PROJECT_ACTIONS } from '@/lib/project-actions';
 import { useProjectCan } from '@/lib/use-project-can';
 import { useCustomizeStore } from '@/stores/customize-store';
-import { gatewayRoutingPolicyKey, useProjectModels } from '@kortix/sdk/react';
+import { gatewayRoutingPolicyKey, useProjectModels } from '@zed/sdk/react';
 import { useIsMutating } from '@tanstack/react-query';
 
 type LlmTab =
@@ -186,7 +186,7 @@ export function LlmManagementView({ projectId }: { projectId: string }) {
             <p className="text-foreground text-sm font-medium">Call the gateway</p>
             <p className="text-muted-foreground text-pretty text-xs">
               Drop-in OpenAI- and Anthropic-compatible endpoints for calling this project's gateway
-              from outside a Kortix session.{' '}
+              from outside a Zed session.{' '}
               <button
                 type="button"
                 onClick={() => setTab('keys')}
@@ -198,7 +198,7 @@ export function LlmManagementView({ projectId }: { projectId: string }) {
             </p>
           </div>
           <GatewayApiReference
-            apiKey="kortix_gw_..."
+            apiKey="zed_gw_..."
             gatewayUrl={gatewayUrl}
             onViewModels={() => setTab('providers')}
           />

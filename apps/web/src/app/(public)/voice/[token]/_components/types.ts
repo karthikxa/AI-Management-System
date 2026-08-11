@@ -24,16 +24,16 @@ export interface PresenceEntry {
  *  - `human` — someone in the room said this out loud.
  *  - `voice` — the voice on the call said this out loud (the LiveKit worker's
  *    own speech, labelled with the bot's display name).
- *  - `kortix` — the KORTIX agent, the one being handed work, put this into the
+ *  - `zed` — the ZED agent, the one being handed work, put this into the
  *    call from outside it: a `send_prompt`, a finished turn's result, an
  *    error. It reaches the room through the voice, so the `voice` line that
  *    follows is a paraphrase of it, not a duplicate of it.
- *  - `tool` — an MCP call the voice made (`ask_kortix`, `run_command`).
+ *  - `tool` — an MCP call the voice made (`ask_zed`, `run_command`).
  *    Nothing was spoken. It must never be rendered as speech.
  */
-export type CallEntryKind = 'human' | 'voice' | 'kortix' | 'tool';
+export type CallEntryKind = 'human' | 'voice' | 'zed' | 'tool';
 
-/** One line of the durable record (`kortix.voice_call_turns`), already
+/** One line of the durable record (`zed.voice_call_turns`), already
  *  interpreted — see `toCallRecordEntries` for the role/speaker rules that
  *  produce these, which are the only place they should be applied. */
 export interface CallRecordEntry {

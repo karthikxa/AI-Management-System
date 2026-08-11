@@ -81,7 +81,7 @@ flow(
 /**
  * BILL-16 — the yearly credit rotation cron (billing/index.ts). Same
  * `requireInternalCronAuth` gate as BILL-13's free-tier-rotation (Bearer or
- * X-Kortix-Internal-Key must timing-safe-equal INTERNAL_SERVICE_KEY), but
+ * X-Zed-Internal-Key must timing-safe-equal INTERNAL_SERVICE_KEY), but
  * unlike BILL-13 we deliberately do NOT call this one with the real internal
  * key: a genuine yearly rotation grants/rolls real credits across every
  * account on the deployment, which is not something ke2e should ever trigger

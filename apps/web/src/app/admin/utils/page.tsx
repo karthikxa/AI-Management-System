@@ -2,7 +2,7 @@
 
 
 import { Badge } from '@/components/ui/badge';
-import { KortixHyperLogo } from '@/components/ui/marketing/kortix-hyper-logo';
+import { ZedHyperLogo } from '@/components/ui/marketing/zed-hyper-logo';
 import {
   useMaintenanceAdmin,
   useUpdateMaintenanceConfig,
@@ -100,7 +100,7 @@ export default function AdminUtilsPage() {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <KortixHyperLogo size={72} startOnView={false} loop className="text-foreground" />
+        <ZedHyperLogo size={72} startOnView={false} loop className="text-foreground" />
       </div>
     );
   }

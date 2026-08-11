@@ -9,13 +9,13 @@ import {
 import { ApiError } from '../api/client.ts';
 import { C, help, status } from '../style.ts';
 
-const HELP = help`Usage: kortix channels <subcommand> [options]
+const HELP = help`Usage: zed channels <subcommand> [options]
 
 Connect this project to a chat platform (Slack by default; MS Teams via --platform teams).
 
 Subcommands:
   status                  Show the current connection.
-  connect                 Connect. Slack: on Kortix Cloud (or any host with the
+  connect                 Connect. Slack: on Zed Cloud (or any host with the
                           shared Slack app configured) this prints a one-click
                           "Add to Slack" install link — open it, pick the
                           workspace, Allow. Done: no app to create, no tokens.
@@ -34,7 +34,7 @@ Subcommands:
 Global options:
   --platform <slack|teams>  Chat platform (default: slack).
   --project <id>          Operate on this project id (default: linked or
-                          \$KORTIX_PROJECT_ID).
+                          \$ZED_PROJECT_ID).
   --host <name>           Use this host instead of the linked / active one.
   --json                  Machine-readable output (status/connect).
   -h, --help              Show this help.
@@ -167,7 +167,7 @@ async function channelsStatus(
     if (!install) {
       process.stdout.write(
         `${C.dim}slack${C.reset}  not connected\n` +
-          `       Run ${C.cyan}kortix channels connect${C.reset} — it prints a one-click "Add to Slack" link.\n`,
+          `       Run ${C.cyan}zed channels connect${C.reset} — it prints a one-click "Add to Slack" link.\n`,
       );
       return 0;
     }
@@ -239,7 +239,7 @@ async function channelsConnect(
     process.stdout.write(
       `\n  To reinstall or switch workspaces, open:\n` +
         `  ${C.cyan}${mode.install_url}${C.reset}\n` +
-        `  ${C.dim}(or run \`kortix channels disconnect\` first)${C.reset}\n`,
+        `  ${C.dim}(or run \`zed channels disconnect\` first)${C.reset}\n`,
     );
     return 0;
   } else {
@@ -248,7 +248,7 @@ async function channelsConnect(
         `  ${C.cyan}${mode.install_url}${C.reset}\n\n` +
         `  Open the link, pick your workspace, click ${C.bold}Allow${C.reset} — that's the whole setup.\n` +
         `  ${C.dim}No Slack app to create, no manifest, no tokens. Link valid ~10 minutes.${C.reset}\n` +
-        `  Confirm after installing with ${C.cyan}kortix channels status${C.reset}.\n\n`,
+        `  Confirm after installing with ${C.cyan}zed channels status${C.reset}.\n\n`,
     );
   }
 
@@ -286,7 +286,7 @@ async function waitForInstall(ctx: ProjectCtx, timeoutSec: number, json: boolean
     if (Date.now() >= deadline) {
       process.stderr.write(
         `${status.err(`Still not connected after ${timeoutSec}s.`)} The link stays usable — ` +
-          `check later with ${C.cyan}kortix channels status${C.reset}.\n`,
+          `check later with ${C.cyan}zed channels status${C.reset}.\n`,
       );
       return 1;
     }
@@ -303,9 +303,9 @@ async function connectManual(ctx: ProjectCtx, opts: ConnectOpts): Promise<number
   );
   if (botToken === null || signingSecret === null) {
     process.stderr.write(
-      `\nManual setup: create the app with ${C.cyan}kortix channels manifest${C.reset} ` +
+      `\nManual setup: create the app with ${C.cyan}zed channels manifest${C.reset} ` +
         `(api.slack.com/apps → "From a manifest"), install it to the workspace, then re-run\n` +
-        `${C.cyan}kortix channels connect --bot-token xoxb-… --signing-secret …${C.reset}\n`,
+        `${C.cyan}zed channels connect --bot-token xoxb-… --signing-secret …${C.reset}\n`,
     );
     return 2;
   }
@@ -375,11 +375,11 @@ async function channelsManifest(
 
   const manifest = {
     display_information: {
-      name: 'Kortix',
-      description: 'Run a Kortix project from Slack',
+      name: 'Zed',
+      description: 'Run a Zed project from Slack',
       background_color: '#0a0a0a',
     },
-    features: { bot_user: { display_name: 'kortix', always_online: true } },
+    features: { bot_user: { display_name: 'zed', always_online: true } },
     oauth_config: {
       scopes: {
         bot: [
@@ -467,7 +467,7 @@ async function teamsStatus(
     if (!install || !install.orgInstalled) {
       process.stdout.write(
         `${C.dim}teams${C.reset}  not connected\n` +
-          `       Run ${C.cyan}kortix channels connect --platform teams${C.reset} — it prints the Microsoft admin-consent URL.\n`,
+          `       Run ${C.cyan}zed channels connect --platform teams${C.reset} — it prints the Microsoft admin-consent URL.\n`,
       );
       return 0;
     }
@@ -516,8 +516,8 @@ async function teamsConnect(
       `\n  ${C.bold}Add to Microsoft Teams — admin consent:${C.reset}\n\n` +
       `  ${mode.orgConsentUrl}\n\n` +
       `  Open the link, sign in as a Teams admin, grant tenant-wide consent.\n` +
-      `  Kortix publishes the app to your Teams catalog automatically.\n` +
-      `  Confirm after install with ${C.cyan}kortix channels status --platform teams${C.reset}.\n\n`,
+      `  Zed publishes the app to your Teams catalog automatically.\n` +
+      `  Confirm after install with ${C.cyan}zed channels status --platform teams${C.reset}.\n\n`,
     );
     return 0;
   } catch (err) {

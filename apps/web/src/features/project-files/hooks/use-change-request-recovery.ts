@@ -2,9 +2,9 @@
 
 import { errorToast } from '@/components/ui/toast';
 import { useProjectContext } from '@/features/project-files/context';
-import { createProjectSession } from '@kortix/sdk';
-import { markSessionFresh } from '@kortix/sdk/fresh-sessions';
-import { prefetchSessionStart, qk } from '@kortix/sdk/react';
+import { createProjectSession } from '@zed/sdk';
+import { markSessionFresh } from '@zed/sdk/fresh-sessions';
+import { prefetchSessionStart, qk } from '@zed/sdk/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';

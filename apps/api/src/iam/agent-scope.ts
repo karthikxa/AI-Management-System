@@ -1,12 +1,12 @@
 import { canonicalConnectorAlias } from '../shared/connector-alias';
 /**
- * Agent-session scope enforcement — the `kortix_cli` half of per-agent
+ * Agent-session scope enforcement — the `zed_cli` half of per-agent
  * authorization.
  *
  * This runs BESIDE the role check (`assertAuthorized` / `loadProjectForUser`),
  * not inside the IAM engine (which stays role-only). The account token a
  * session presents carries a resolved `agentGrant` (see projects/agents.ts);
- * a route asserts the Kortix action it performs is in that grant. Combined with
+ * a route asserts the Zed action it performs is in that grant. Combined with
  * the route's existing user-role check, the net effect is `userRole ∩ agentGrant`
  * — an agent can never exceed the human who launched it, nor its own grant.
  *
@@ -15,7 +15,7 @@ import { canonicalConnectorAlias } from '../shared/connector-alias';
  */
 import { HTTPException } from 'hono/http-exception';
 import type { Context } from 'hono';
-import type { AgentGrant } from '@kortix/db';
+import type { AgentGrant } from '@zed/db';
 
 /** Read the agent grant off the request context (set by the auth middleware). */
 export function getAgentGrant(c: Context): AgentGrant | null {
@@ -32,7 +32,7 @@ export function isProjectSessionPrincipal(c: Context): boolean {
  * `project.cr.open` but the central agent-grant fold (via assertProjectCapability)
  * gates the underlying commit as `project.gitops.push`; likewise CR merge is
  * `project.cr.merge` ≡ `project.gitops.merge`. Without aliasing an agent would
- * need BOTH spellings in its kortix_cli to open/merge a CR — a silent
+ * need BOTH spellings in its zed_cli to open/merge a CR — a silent
  * double-gate. Granting EITHER member of a pair satisfies both checks.
  */
 const AGENT_ACTION_ALIASES: Readonly<Record<string, string>> = {
@@ -45,10 +45,10 @@ const AGENT_ACTION_ALIASES: Readonly<Record<string, string>> = {
 /** True if the agent-session grant permits `action` (or there is no grant). */
 export function agentMayPerform(grant: AgentGrant | null, action: string): boolean {
   if (!grant) return true; // no grant = no restriction
-  if (grant.kortixCli === 'all') return true;
-  if (grant.kortixCli.includes(action)) return true;
+  if (grant.zedCli === 'all') return true;
+  if (grant.zedCli.includes(action)) return true;
   const alias = AGENT_ACTION_ALIASES[action];
-  return alias ? grant.kortixCli.includes(alias) : false;
+  return alias ? grant.zedCli.includes(alias) : false;
 }
 
 /**
@@ -56,7 +56,7 @@ export function agentMayPerform(grant: AgentGrant | null, action: string): boole
  *
  * Three gates compare this grant, and they historically saw three different
  * spellings of the same connector: the catalog compared the public alias
- * (`email`), the call gate the raw slug (`kortix_email`), and session create the
+ * (`email`), the call gate the raw slug (`zed_email`), and session create the
  * caller's binding key. With an exact `includes()` match, whichever spelling a
  * manifest author picked satisfied one gate and failed another —
  * `connectors: ["email"]` made the connector VISIBLE in the catalog and then
@@ -93,7 +93,7 @@ export function agentMayUseEnv(grant: AgentGrant | null, identifier: string): bo
   if (!grant) return true; // no grant = no restriction
   const env = grant.env ?? 'all';
   if (env === 'all') return true;
-  // Identifiers are free-form-ish but a kortix.yaml `secrets:` allowlist
+  // Identifiers are free-form-ish but a zed.yaml `secrets:` allowlist
   // is hand-written and may use any case. Match case-insensitively so
   // `secrets: ["gmaps-primary"]` still admits identifier "GMAPS-primary".
   const target = identifier.toUpperCase();
@@ -108,6 +108,6 @@ export function assertAgentScope(c: Context, action: string): void {
   const grant = getAgentGrant(c);
   if (agentMayPerform(grant, action)) return;
   throw new HTTPException(403, {
-    message: `Agent "${grant!.agent}" is not granted "${action}". Add it to this agent's kortix_cli in kortix.yaml (CR-merged).`,
+    message: `Agent "${grant!.agent}" is not granted "${action}". Add it to this agent's zed_cli in zed.yaml (CR-merged).`,
   });
 }

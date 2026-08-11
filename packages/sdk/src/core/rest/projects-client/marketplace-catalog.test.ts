@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import {
   createMarketplaceInstallSession,
   addMarketplaceSource,
@@ -31,16 +31,16 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 const last = () => calls[calls.length - 1];
 
 test('listMarketplaceCatalogItems builds the query string from query/type/source', async () => {
   nextResponse = { status: 200, body: { items: [] } };
-  await listMarketplaceCatalogItems({ query: 'slack', type: 'agent', source: 'kortix' });
+  await listMarketplaceCatalogItems({ query: 'slack', type: 'agent', source: 'zed' });
   expect(last().url).toContain('/marketplace/items?');
   expect(last().url).toContain('query=slack');
   expect(last().url).toContain('type=agent');
-  expect(last().url).toContain('source=kortix');
+  expect(last().url).toContain('source=zed');
 });
 
 test('listMarketplaceCatalogItems omits the query string when no options given', async () => {
@@ -60,13 +60,13 @@ test('listMarketplaces and listFeaturedMarketplaces hit their own endpoints', as
 });
 
 test('getMarketplaceCatalogItem and getMarketplaceCatalogItemFile hit item-scoped endpoints', async () => {
-  nextResponse = { status: 200, body: { id: 'kortix:researcher', title: 'Researcher' } };
-  await getMarketplaceCatalogItem('kortix:researcher');
-  expect(last().url).toContain('/marketplace/items/kortix%3Aresearcher');
+  nextResponse = { status: 200, body: { id: 'zed:researcher', title: 'Researcher' } };
+  await getMarketplaceCatalogItem('zed:researcher');
+  expect(last().url).toContain('/marketplace/items/zed%3Aresearcher');
 
   nextResponse = { status: 200, body: { path: 'agent.md', content: '# hi' } };
-  await getMarketplaceCatalogItemFile('kortix:researcher', 'agent.md');
-  expect(last().url).toContain('/marketplace/items/kortix%3Aresearcher/file?path=agent.md');
+  await getMarketplaceCatalogItemFile('zed:researcher', 'agent.md');
+  expect(last().url).toContain('/marketplace/items/zed%3Aresearcher/file?path=agent.md');
 });
 
 test('getMarketplaceCatalogItem throws with "Item not found" on a 404', async () => {
@@ -95,9 +95,9 @@ test('marketplace sources: list/add/remove', async () => {
 
 test('createMarketplaceInstallSession starts a typed project install session', async () => {
   nextResponse = { status: 200, body: { session_id: 'session-1' } };
-  const result = await createMarketplaceInstallSession('project-1', 'kortix:researcher');
+  const result = await createMarketplaceInstallSession('project-1', 'zed:researcher');
   expect(last().url).toContain('/projects/project-1/marketplace/install-session');
   expect(last().method).toBe('POST');
-  expect(last().body).toEqual({ id: 'kortix:researcher' });
+  expect(last().body).toEqual({ id: 'zed:researcher' });
   expect(result.session_id).toBe('session-1');
 });

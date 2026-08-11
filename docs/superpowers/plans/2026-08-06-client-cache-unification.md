@@ -4,9 +4,9 @@
 
 **Goal:** Make every already-visited surface in `apps/web` render from cache instead of repainting a skeleton, and make one entity resolve to exactly one cache entry with one freshness contract.
 
-**Architecture:** Three layers, fixed in order. The Next.js router keeps dynamic page segments for 300 s so `loading.tsx` stops firing on return visits. React Query's `gcTime` rises above `staleTime` so a stale-while-revalidate window exists at all. A key factory in `@kortix/sdk/react` replaces roughly 176 hand-typed key literals across 30 `project*` families, and an ESLint rule makes a relapse a build failure.
+**Architecture:** Three layers, fixed in order. The Next.js router keeps dynamic page segments for 300 s so `loading.tsx` stops firing on return visits. React Query's `gcTime` rises above `staleTime` so a stale-while-revalidate window exists at all. A key factory in `@zed/sdk/react` replaces roughly 176 hand-typed key literals across 30 `project*` families, and an ESLint rule makes a relapse a build failure.
 
-**Tech Stack:** Next.js 16.3, React Query v5 (`@tanstack/react-query`), `@kortix/sdk` (published npm package), `bun:test`, ESLint flat config.
+**Tech Stack:** Next.js 16.3, React Query v5 (`@tanstack/react-query`), `@zed/sdk` (published npm package), `bun:test`, ESLint flat config.
 
 **Spec:** [`docs/superpowers/specs/2026-08-06-client-cache-unification-design.md`](../specs/2026-08-06-client-cache-unification-design.md)
 
@@ -260,7 +260,7 @@ went stale and no stale-while-revalidate window existed."
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: `qk`, and the types `ProjectScopeKey` and `ProjectsListKey`. Tasks 4–11 import `qk` from `@kortix/sdk/react`.
+- Produces: `qk`, and the types `ProjectScopeKey` and `ProjectsListKey`. Tasks 4–11 import `qk` from `@zed/sdk/react`.
 
 - [ ] **Step 1: Claim the task in PROGRESS.md**
 
@@ -348,7 +348,7 @@ Create `packages/sdk/src/react/query-keys.ts`:
 
 ```ts
 /**
- * The one place a Kortix query key is constructed.
+ * The one place a Zed query key is constructed.
  *
  * Before this existed, `apps/web` hand-typed roughly 176 key literals across
  * 30 `project*` families. One entity therefore had several cache entries
@@ -365,13 +365,13 @@ Create `packages/sdk/src/react/query-keys.ts`:
  *     and agents are `config.*` fields of the project detail response, not
  *     separate fetches — they are `select` projections over `detail(id)`.
  *
- * The root segment is `kx`, NOT `kortix`. `kortixKeys` in `use-kortix-master.ts`
- * already owns `['kortix', 'projects', …]` and passes `['kortix', 'projects']`
+ * The root segment is `kx`, NOT `zed`. `zedKeys` in `use-zed-master.ts`
+ * already owns `['zed', 'projects', …]` and passes `['zed', 'projects']`
  * to `invalidateQueries` (lines 371, 384). TanStack prefix-matches by default,
- * so a `kortix` root here would have made one factory's invalidation reach the
- * other's entries — and `kortixKeys.project(id)` would have been the SAME array
- * as `qk.projects.list(id)`. `kortixKeys` is published API and cannot move, so
- * `qk` roots elsewhere. Do not "tidy" this back to `kortix`; a test enforces it.
+ * so a `zed` root here would have made one factory's invalidation reach the
+ * other's entries — and `zedKeys.project(id)` would have been the SAME array
+ * as `qk.projects.list(id)`. `zedKeys` is published API and cannot move, so
+ * `qk` roots elsewhere. Do not "tidy" this back to `zed`; a test enforces it.
  */
 export const qk = {
   projects: {
@@ -816,7 +816,7 @@ One accessor makes the divergence impossible."
 
 **Interfaces:**
 - Consumes: Tasks 3–5.
-- Produces: `qk`, `contract`, `FRESHNESS`, `FreshnessTier`, `useProjectName`, `invalidateProject`, `invalidateProjectIdentity`, `writeProjectNameOptimistically` importable from `@kortix/sdk/react`.
+- Produces: `qk`, `contract`, `FRESHNESS`, `FreshnessTier`, `useProjectName`, `invalidateProject`, `invalidateProjectIdentity`, `writeProjectNameOptimistically` importable from `@zed/sdk/react`.
 
 - [ ] **Step 1: Add the re-exports**
 
@@ -870,15 +870,15 @@ git commit -m "feat(sdk): export the query-key factory and freshness contracts"
   - plus every remaining site found by the grep in Step 1
 
 **Interfaces:**
-- Consumes: `qk`, `contract` from `@kortix/sdk/react`.
+- Consumes: `qk`, `contract` from `@zed/sdk/react`.
 - Produces: no new exports. `project-detail-query.ts` still exists after this task; it is deleted in Task 11.
 
 - [ ] **Step 1: Enumerate every site**
 
 ```bash
-cd /Users/jay/root/kortix/suna-chat-thread
-grep -rn "'project-detail'" apps/web/src | grep -v "\.test\." > /private/tmp/claude-501/-Users-jay-root-kortix-suna-chat-thread/7c148bd6-973f-4572-9755-89aff67389f7/scratchpad/project-detail-sites.txt
-wc -l < /private/tmp/claude-501/-Users-jay-root-kortix-suna-chat-thread/7c148bd6-973f-4572-9755-89aff67389f7/scratchpad/project-detail-sites.txt
+cd /Users/jay/root/zed/suna-chat-thread
+grep -rn "'project-detail'" apps/web/src | grep -v "\.test\." > /private/tmp/claude-501/-Users-jay-root-zed-suna-chat-thread/7c148bd6-973f-4572-9755-89aff67389f7/scratchpad/project-detail-sites.txt
+wc -l < /private/tmp/claude-501/-Users-jay-root-zed-suna-chat-thread/7c148bd6-973f-4572-9755-89aff67389f7/scratchpad/project-detail-sites.txt
 ```
 
 Expected: 28. Work the list top to bottom; do not rely on memory of which are done.
@@ -888,7 +888,7 @@ Expected: 28. Work the list top to bottom; do not rely on memory of which are do
 Every read becomes:
 
 ```ts
-import { qk, contract } from '@kortix/sdk/react';
+import { qk, contract } from '@zed/sdk/react';
 
 const { data: projectDetail } = useQuery({
   queryKey: qk.project.detail(projectId),
@@ -901,7 +901,7 @@ const { data: projectDetail } = useQuery({
 Every invalidation becomes:
 
 ```ts
-import { invalidateProject } from '@kortix/sdk/react';
+import { invalidateProject } from '@zed/sdk/react';
 void invalidateProject(queryClient, projectId);
 ```
 
@@ -1100,7 +1100,7 @@ grep -rn "queryKey: \['project', " apps/web/src -A 3 | grep queryFn | sort -u
 #   2  getProjectSession(projectId!, gitSessionId!)
 ```
 
-`getProject` hits `/projects/:id` and returns a bare `KortixProject`.
+`getProject` hits `/projects/:id` and returns a bare `ZedProject`.
 `getProjectDetail` hits `/projects/:id/detail` and returns
 `{ project, config, file_count, files, git_connection }`. Folding one onto the
 other writes the wrong shape into a slot whose readers do `data.project.account_id`.
@@ -1159,7 +1159,7 @@ import {
   qk,
   invalidateProjectIdentity,
   writeProjectNameOptimistically,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 
 const ID = 'proj_1';
 
@@ -1289,7 +1289,7 @@ In `apps/web/eslint.config.mjs`, append to the existing `'no-restricted-syntax'`
             "Property[key.name='queryKey'] > ArrayExpression > " +
             "Literal[value=/^projects?(-[a-z-]+)?$/]",
           message:
-            'Query keys come from `qk` in @kortix/sdk/react. Never hand-type an entity key.',
+            'Query keys come from `qk` in @zed/sdk/react. Never hand-type an entity key.',
         },
 ```
 
@@ -1344,7 +1344,7 @@ grep -rn "registerQueryClient" apps/web/src -A 15 | head -40
 grep -rn "clear()\|resetQueries\|removeQueries" apps/web/src/lib/query-client-singleton.ts
 ```
 
-Determine whether the auth-change path calls `queryClient.clear()`. If it does, `qk` needs no identity segment — record that in the spec's Open Questions section. If it does **not**, add an identity segment to `qk.projects.list` and `qk.project.scope`, matching the SDK's existing `kortixKeys` pattern which appends `identity.userId ?? 'anonymous'`, and update `query-keys.test.ts` to assert two identities never collide.
+Determine whether the auth-change path calls `queryClient.clear()`. If it does, `qk` needs no identity segment — record that in the spec's Open Questions section. If it does **not**, add an identity segment to `qk.projects.list` and `qk.project.scope`, matching the SDK's existing `zedKeys` pattern which appends `identity.userId ?? 'anonymous'`, and update `query-keys.test.ts` to assert two identities never collide.
 
 - [ ] **Step 2: Answer open question 2 — `router.refresh()` after mutations**
 

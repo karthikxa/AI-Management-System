@@ -335,7 +335,7 @@ export function getToolInfo(
     case 'oc-session-start-background':
       return {
         icon: 'square-kanban',
-        title: `Worker (${input.agent || 'KortixWorker'})`,
+        title: `Worker (${input.agent || 'ZedWorker'})`,
         subtitle: input.description || input.prompt?.slice(0, 60),
       };
     case 'bash':

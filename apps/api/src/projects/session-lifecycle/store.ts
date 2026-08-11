@@ -1,4 +1,4 @@
-import { projectSessions, sessionLifecycleCommands } from '@kortix/db';
+import { projectSessions, sessionLifecycleCommands } from '@zed/db';
 import { and, asc, eq, isNull, lte, ne, or } from 'drizzle-orm';
 import { logger } from '../../lib/logger';
 import { db } from '../../shared/db';

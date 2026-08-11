@@ -11,7 +11,7 @@ import { mockConfigModule } from './reaping/test-support/mock-config';
 // function with none of that runtime surface, so everything below is purely
 // to let the module load in isolation.
 mock.module('../config', () => mockConfigModule());
-mock.module('@kortix/db', () => ({ projectSessions: {}, projects: {} }));
+mock.module('@zed/db', () => ({ projectSessions: {}, projects: {} }));
 mock.module('../connectors/attachments', () => ({
   ...realAttachments,
   cleanupExpiredConnectorAttachments: async () => ({ deleted: 0, errors: 0 }),
@@ -158,7 +158,7 @@ describe('shouldForceResetStaleLock', () => {
 // generation counter so only the run that's still current can release it.
 describe('runProjectMaintenance stale-lock generation guard', () => {
   test("an abandoned run settling late does not release a newer run's lock", async () => {
-    process.env.KORTIX_PROJECT_MAINTENANCE_STALL_MS = '20';
+    process.env.ZED_PROJECT_MAINTENANCE_STALL_MS = '20';
 
     let releaseHungRun: () => void = () => {};
     const hungRunSettled = new Promise<void>((resolve) => {
@@ -213,6 +213,6 @@ describe('runProjectMaintenance stale-lock generation guard', () => {
     await runA;
     expect(__isMaintenanceRunningForTest()).toBe(false);
 
-    delete process.env.KORTIX_PROJECT_MAINTENANCE_STALL_MS;
+    delete process.env.ZED_PROJECT_MAINTENANCE_STALL_MS;
   });
 });

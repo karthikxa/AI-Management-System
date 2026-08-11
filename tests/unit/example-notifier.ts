@@ -8,6 +8,6 @@ export async function notifyProjectCreated(mailer: Mailer, ownerEmail: string, p
   await mailer.send(
     ownerEmail,
     `Project ${projectName} is ready`,
-    `View it at ${sampleEnv.KORTIX_WEB_URL}`,
+    `View it at ${sampleEnv.ZED_WEB_URL}`,
   );
 }

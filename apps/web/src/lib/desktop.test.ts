@@ -43,7 +43,7 @@ afterEach(() => {
 
 describe('desktop external routes', () => {
   test('routes each legal page through a real top-level navigation on desktop', () => {
-    setNavigator('Mozilla/5.0 KortixDesktop/0.1.0', 'MacIntel');
+    setNavigator('Mozilla/5.0 ZedDesktop/0.1.0', 'MacIntel');
     const clicks: Array<{ href: string; target?: string; rel?: string }> = [];
     const anchor = {
       href: '',
@@ -55,7 +55,7 @@ describe('desktop external routes', () => {
       remove() {},
     };
     Object.defineProperty(globalThis, 'window', {
-      value: { location: { origin: 'https://kortix.com' } },
+      value: { location: { origin: 'https://zed.com' } },
       configurable: true,
       writable: true,
     });
@@ -71,8 +71,8 @@ describe('desktop external routes', () => {
     expect(openExternalRoute('/legal/terms')).toBe(true);
     expect(openExternalRoute('/legal?tab=privacy')).toBe(true);
     expect(clicks).toEqual([
-      { href: 'https://kortix.com/legal/terms', target: undefined, rel: undefined },
-      { href: 'https://kortix.com/legal?tab=privacy', target: undefined, rel: undefined },
+      { href: 'https://zed.com/legal/terms', target: undefined, rel: undefined },
+      { href: 'https://zed.com/legal?tab=privacy', target: undefined, rel: undefined },
     ]);
   });
 
@@ -90,27 +90,27 @@ describe('desktop shell detection', () => {
     expect(desktopShellPlatform()).toBeNull();
   });
 
-  test('KortixDesktop UA on a Mac resolves to macos', () => {
-    setNavigator('Mozilla/5.0 Chrome/130 Safari/537.36 KortixDesktop/0.1.0', 'MacIntel');
+  test('ZedDesktop UA on a Mac resolves to macos', () => {
+    setNavigator('Mozilla/5.0 Chrome/130 Safari/537.36 ZedDesktop/0.1.0', 'MacIntel');
     expect(isDesktop()).toBe(true);
     expect(desktopPlatform()).toBe('macos');
     expect(desktopShellPlatform()).toBe('macos');
   });
 
-  test('KortixDesktop UA on Windows buckets as other', () => {
-    setNavigator('Mozilla/5.0 Chrome/130 Safari/537.36 KortixDesktop/0.1.0', 'Win32');
+  test('ZedDesktop UA on Windows buckets as other', () => {
+    setNavigator('Mozilla/5.0 Chrome/130 Safari/537.36 ZedDesktop/0.1.0', 'Win32');
     expect(desktopPlatform()).toBe('windows');
     expect(desktopShellPlatform()).toBe('other');
   });
 
-  test('KortixDesktop UA on Linux buckets as other', () => {
-    setNavigator('Mozilla/5.0 Chrome/130 Safari/537.36 KortixDesktop/0.1.0', 'Linux x86_64');
+  test('ZedDesktop UA on Linux buckets as other', () => {
+    setNavigator('Mozilla/5.0 Chrome/130 Safari/537.36 ZedDesktop/0.1.0', 'Linux x86_64');
     expect(desktopPlatform()).toBe('linux');
     expect(desktopShellPlatform()).toBe('other');
   });
 
   test('unknown platform string under the desktop UA falls back to linux/other', () => {
-    setNavigator('KortixDesktop/0.1.0', '');
+    setNavigator('ZedDesktop/0.1.0', '');
     expect(desktopPlatform()).toBe('linux');
     expect(desktopShellPlatform()).toBe('other');
   });
@@ -150,7 +150,7 @@ describe('desktop zoom persistence', () => {
   test('a zoom chosen against the CURRENT base survives a restart', async () => {
     const store = setStorage();
     await setDesktopZoom(1.2);
-    expect(JSON.parse(store.get('kortix-desktop-zoom')!)).toEqual({
+    expect(JSON.parse(store.get('zed-desktop-zoom')!)).toEqual({
       scale: 1.2,
       base: DESKTOP_BASE_ZOOM,
     });
@@ -161,19 +161,19 @@ describe('desktop zoom persistence', () => {
   // winning, so changing the constant changed nothing on screen.
   test('a zoom chosen against an OLDER base is stale, and the new default wins', () => {
     setStorage({
-      'kortix-desktop-zoom': JSON.stringify({ scale: 0.8264462809917354, base: 0.9 }),
+      'zed-desktop-zoom': JSON.stringify({ scale: 0.8264462809917354, base: 0.9 }),
     });
     expect(getDesktopZoom()).toBe(DESKTOP_BASE_ZOOM);
   });
 
   // Values written before the stamp existed were bare numbers.
   test('an unstamped legacy value is treated as stale', () => {
-    setStorage({ 'kortix-desktop-zoom': '0.8264462809917354' });
+    setStorage({ 'zed-desktop-zoom': '0.8264462809917354' });
     expect(getDesktopZoom()).toBe(DESKTOP_BASE_ZOOM);
   });
 
   test('a corrupt value never throws, it falls back', () => {
-    setStorage({ 'kortix-desktop-zoom': '{not json' });
+    setStorage({ 'zed-desktop-zoom': '{not json' });
     expect(getDesktopZoom()).toBe(DESKTOP_BASE_ZOOM);
   });
 

@@ -15,7 +15,7 @@ flow(
   },
   async (ctx) => {
     // The catalog + /call are connector-principal routes (the sandbox runtime calls
-    // them with a project/sandbox KORTIX_TOKEN). A bare user JWT is NOT a connector
+    // them with a project/sandbox ZED_TOKEN). A bare user JWT is NOT a connector
     // principal → 401; ANON → 401. The 200 path is exercised by the in-sandbox
     // connector (covered by sandbox/agent-run flows), not a dashboard JWT.
     await ctx.step('user JWT is not a connector principal → 401', async () => {
@@ -96,7 +96,7 @@ flow(
 
 flow('CONN-3', { domain: 'connectors', routes: ['POST /v1/connectors/call'] }, async (ctx) => {
   // /call is connector-principal only: a user JWT and ANON both → 401 (the real
-  // caller is the sandbox runtime with KORTIX_TOKEN).
+  // caller is the sandbox runtime with ZED_TOKEN).
   await ctx.step('user JWT → 401', async () => {
     const r = await ctx.client.as(ctx.P.OWNER).post('/v1/connectors/call', {});
     r.status(401);
@@ -114,7 +114,7 @@ flow(
   { domain: 'connectors', routes: ['POST /v1/connectors/projects/:projectId/connectors/sync'] },
   async (ctx) => {
     const p = await ctx.fixtures.project();
-    await ctx.step('sync re-materializes from kortix.yaml → 200', async () => {
+    await ctx.step('sync re-materializes from zed.yaml → 200', async () => {
       const r = await ctx.client
         .as(ctx.P.OWNER)
         .post(
@@ -131,7 +131,7 @@ flow(
   'CONN-5',
   {
     domain: 'connectors',
-    // This flow mutates kortix.yaml. Run it after the parallel lanes so it can
+    // This flow mutates zed.yaml. Run it after the parallel lanes so it can
     // reuse the shared managed repository without racing read-only flows.
     global: true,
     routes: [
@@ -227,7 +227,7 @@ flow(
         {
           slug,
           provider: 'mcp',
-          url: 'https://ke2e.kortix.test/mcp',
+          url: 'https://ke2e.zed.test/mcp',
           auth: { type: 'none' },
           create_only: 'true',
         },
@@ -242,7 +242,7 @@ flow(
           slug,
           name: 'Original connector',
           provider: 'mcp',
-          url: 'https://ke2e.kortix.test/mcp',
+          url: 'https://ke2e.zed.test/mcp',
           auth: { type: 'none' },
           create_only: true,
         },
@@ -257,7 +257,7 @@ flow(
           slug,
           name: 'Replacement connector',
           provider: 'mcp',
-          url: 'https://ke2e.kortix.test/mcp',
+          url: 'https://ke2e.zed.test/mcp',
           auth: { type: 'none' },
           create_only: true,
         },
@@ -632,7 +632,7 @@ flow(
         .as(ctx.P.OWNER)
         .post(
           '/v1/connectors/projects/:projectId/connectors',
-          { slug, provider: 'mcp', url: 'https://ke2e.kortix.test/mcp', auth: { type: 'none' } },
+          { slug, provider: 'mcp', url: 'https://ke2e.zed.test/mcp', auth: { type: 'none' } },
           { params: { projectId: p.id } },
         );
       r.status(200).body().has('$.ok', true);
@@ -705,7 +705,7 @@ flow(
         .as(ctx.P.OWNER)
         .post(
           '/v1/connectors/projects/:projectId/connectors',
-          { slug: userSlug, provider: 'mcp', url: 'https://ke2e.kortix.test/mcp', auth: { type: 'none' } },
+          { slug: userSlug, provider: 'mcp', url: 'https://ke2e.zed.test/mcp', auth: { type: 'none' } },
           { params: { projectId: p.id } },
         );
       seeded.status(200).body().has('$.ok', true);
@@ -853,7 +853,7 @@ flow(
       {
         slug,
         provider: 'mcp',
-        url: 'https://ke2e.kortix.test/mcp',
+        url: 'https://ke2e.zed.test/mcp',
         auth: { type: 'none' },
       },
       { params: { projectId: p.id } },
@@ -992,7 +992,7 @@ flow(
 
 // CONN-18 — mint a Pipedream Quick Connect setup link (projects/routes/setup-links.ts).
 // The real 200 needs a live Pipedream-backed connector already declared in
-// kortix.yaml (which a bare e2e project has none of), so this covers the real
+// zed.yaml (which a bare e2e project has none of), so this covers the real
 // validation boundary: missing slug → 400; a slug that names no connected-via-
 // Pipedream connector on this project → 404 (or 501 if Pipedream isn't
 // configured on this deployment at all — both are legitimate real outcomes,

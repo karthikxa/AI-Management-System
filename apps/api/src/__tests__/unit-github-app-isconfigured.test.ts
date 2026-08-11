@@ -36,9 +36,9 @@ const { isGithubAppConfigured } = await import('../projects/github');
 const { githubBackend, managedGithubOwner } = await import('../projects/git-backends/github');
 
 const ENV_KEYS = [
-  'KORTIX_GITHUB_APP_ID',
+  'ZED_GITHUB_APP_ID',
   'GITHUB_APP_ID',
-  'KORTIX_GITHUB_APP_PRIVATE_KEY',
+  'ZED_GITHUB_APP_PRIVATE_KEY',
   'GITHUB_APP_PRIVATE_KEY',
   'MANAGED_GIT_GITHUB_OWNER',
   'MANAGED_GIT_GITHUB_INSTALL_ID',
@@ -63,15 +63,15 @@ describe('isGithubAppConfigured (DB-first, env-fallback)', () => {
   });
 
   test('true from env alone (unchanged self-host .env-only behavior)', () => {
-    process.env.KORTIX_GITHUB_APP_ID = '12345';
-    process.env.KORTIX_GITHUB_APP_PRIVATE_KEY = 'PEM';
+    process.env.ZED_GITHUB_APP_ID = '12345';
+    process.env.ZED_GITHUB_APP_PRIVATE_KEY = 'PEM';
     expect(isGithubAppConfigured()).toBe(true);
   });
 
   test('DB value wins over env when both are set', () => {
     dbConfig = { appId: 'from-db', privateKey: 'db-pem' };
-    process.env.KORTIX_GITHUB_APP_ID = 'from-env';
-    process.env.KORTIX_GITHUB_APP_PRIVATE_KEY = 'env-pem';
+    process.env.ZED_GITHUB_APP_ID = 'from-env';
+    process.env.ZED_GITHUB_APP_PRIVATE_KEY = 'env-pem';
     expect(isGithubAppConfigured()).toBe(true);
     // (id/privateKey aren't directly observable here without exporting the
     // signer — the DB-first read order is covered directly by
@@ -98,7 +98,7 @@ describe('githubBackend.isConfigured() — flips true once the DB config is comp
     dbConfig = {
       appId: '12345',
       privateKey: 'PEM',
-      slug: 'kortix-self-host-abc',
+      slug: 'zed-self-host-abc',
       owner: 'acme-corp',
       installationId: '987',
     };
@@ -107,8 +107,8 @@ describe('githubBackend.isConfigured() — flips true once the DB config is comp
 
   test('true via a mixed source: owner/installationId from the DB, App id/key from env', async () => {
     dbConfig = { owner: 'acme-corp', installationId: '987' };
-    process.env.KORTIX_GITHUB_APP_ID = '12345';
-    process.env.KORTIX_GITHUB_APP_PRIVATE_KEY = 'PEM';
+    process.env.ZED_GITHUB_APP_ID = '12345';
+    process.env.ZED_GITHUB_APP_PRIVATE_KEY = 'PEM';
     expect(await githubBackend.isConfigured()).toBe(true);
   });
 
@@ -121,8 +121,8 @@ describe('githubBackend.isConfigured() — flips true once the DB config is comp
   test('env-only (pre-existing self-host .env config) keeps working unchanged', async () => {
     process.env.MANAGED_GIT_GITHUB_OWNER = 'acme-corp';
     process.env.MANAGED_GIT_GITHUB_INSTALL_ID = '987';
-    process.env.KORTIX_GITHUB_APP_ID = '12345';
-    process.env.KORTIX_GITHUB_APP_PRIVATE_KEY = 'PEM';
+    process.env.ZED_GITHUB_APP_ID = '12345';
+    process.env.ZED_GITHUB_APP_PRIVATE_KEY = 'PEM';
     expect(await githubBackend.isConfigured()).toBe(true);
   });
 
@@ -130,7 +130,7 @@ describe('githubBackend.isConfigured() — flips true once the DB config is comp
     const { updateManagedGithubAppConfig } = await import('../platform/services/managed-github-app');
     expect(await githubBackend.isConfigured()).toBe(false);
 
-    await updateManagedGithubAppConfig({ appId: '12345', slug: 'kortix-self-host-abc', privateKey: 'PEM' });
+    await updateManagedGithubAppConfig({ appId: '12345', slug: 'zed-self-host-abc', privateKey: 'PEM' });
     expect(await githubBackend.isConfigured()).toBe(false); // App exists, not installed yet
 
     await updateManagedGithubAppConfig({ owner: 'acme-corp', installationId: '987' });

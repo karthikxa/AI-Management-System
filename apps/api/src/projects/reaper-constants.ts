@@ -15,15 +15,15 @@ export function positiveEnvInt(name: string, fallback: number): number {
 /** Rows examined per reaper pass. A cap is fine — a cap that can never reach a
  *  row is not, which is what the ORDER BY in the candidate query fixes. */
 export function reapBatchSize(): number {
-  return positiveEnvInt('KORTIX_REAP_BATCH_SIZE', REAP_BATCH_SIZE);
+  return positiveEnvInt('ZED_REAP_BATCH_SIZE', REAP_BATCH_SIZE);
 }
 
 /** No single compute window may exceed this, whatever the provider claims. */
 export function computeMaxWindowMs(): number {
-  return positiveEnvInt('KORTIX_COMPUTE_MAX_WINDOW_HOURS', 24) * 3_600_000;
+  return positiveEnvInt('ZED_COMPUTE_MAX_WINDOW_HOURS', 24) * 3_600_000;
 }
 
 /** How long a box may stay continuously unresolvable before billing closes. */
 export function computeUnresolvedCeilingMs(): number {
-  return positiveEnvInt('KORTIX_COMPUTE_UNRESOLVED_CEILING_MINUTES', 60) * 60_000;
+  return positiveEnvInt('ZED_COMPUTE_UNRESOLVED_CEILING_MINUTES', 60) * 60_000;
 }

@@ -2,7 +2,7 @@
 
 Status: working document
 Date: 2026-06-28
-Owner: Kortix product/infra
+Owner: Zed product/infra
 Related: `docs/specs/2026-06-28-token-session-agent-identity.md`
 
 ## Purpose
@@ -18,7 +18,7 @@ This exists because three product threads are now the same security problem:
    default.
 
 The token/session/agent identity work is the prerequisite. It makes the runtime
-principal explicit: a sandbox session has a `KORTIX_CLI_TOKEN` bound to one
+principal explicit: a sandbox session has a `ZED_CLI_TOKEN` bound to one
 project, one session, and one boot agent grant. This document defines what that
 grant should eventually control.
 
@@ -28,7 +28,7 @@ These raw inputs are kept here deliberately so the working document preserves th
 original product/security framing, not only the cleaned-up model.
 
 ```text
-https://kortix.com/accounts/2e3ad9d3-6381-4a64-8d72-33b7c9a9d365 Okay, next problem. We have both an account like users basically get permissions from the from an account and then there's account level permissions and project level permissions essentially we only ever really care about the project level permissions if we're for real and the creation of groups we actually don't really care about on a account level, but we do care about on a project level and also the qu the whole question of roles right like there's some default roles we the question is what what models to adapt like what like how you can do this whole authorization but what we need at the end of the day is i mean we have a project right in that project people should have access to one different customize settings but also to different resources like you know whether they can like by default which groups or like which users can access which agents and skills you know like by default it's all always public actually this means changing the way the runtime model works because right now we just git clone everything into the sandbox and that eliminates that by default shares everything with everyone which is non-optimal perhaps we should switch to a true like single source of truth Kortix.toml model where the tummel where it basically will build the sandbox or the the full config and everything from whatever we get in the tumml and then in the tomal we can have a like a like git clone like config or like allow self-improvement or self-config or whatever where it's actually actively able to edit and change its own config and even has access to git like all of these policies and permissions like we have cli access like general Kortix cli blah blah like in Kortix.toml but it's all a bit ugly right and we have shit like this which we have to consider so we can we yeah on a project level right now everything is shared by everyone one we have to just make sure okay certain groups can't change anything in the customize they can't change you know they can't new add connectors they can't do this they can't do that like they don't have any git permission like all the permissions like policies that we have on like a per pro project level needs to be managed right we need to have roles for that which give you which give you the role and the pro like in a project right and then we can have groups for instance like if we want to say finance department that just by default and actually i don't know like this is the weird thing like does the group inherit the role no roles are always user based there's one minimal role but then there's so there's one permissions and then there was resource access management because in the second thing or like in the first thing i was saying it's like what access to which agents and skills does this user have right now everything is exposed to everyone so in the future we will need to change this or right now we will need to change this or think of a way how we can change it and that would maybe mean that Kortix.toml just becomes a single source of truth that we build from you know like we don't do the regular git clone anymore where we just git clone by default but that's just like if self-improvement is enabled so that the Kortix system can actually load and then we also the open code we construct a bit differently we will only like clone the or like take the things that are enabled for that given agent of a given session and then even that we could scope better because we could make sure that every session always explicitly has to be started with one agent and that you can't change the agent midway through and that way we would have maximum isolation and security on a per agent like yeah I don't you can challenge if I have any gaps in my mental understanding but this would at least make it significantly more secure of running the agents and even only certain agents are capable of self-improvement then and like even looking into their own config and we just basically always parse the single source of truth being the Kortix Automil and that depends then on like does it can it do it or can it not you know kortix.toml & .kortix perhaps.
+https://zed.com/accounts/2e3ad9d3-6381-4a64-8d72-33b7c9a9d365 Okay, next problem. We have both an account like users basically get permissions from the from an account and then there's account level permissions and project level permissions essentially we only ever really care about the project level permissions if we're for real and the creation of groups we actually don't really care about on a account level, but we do care about on a project level and also the qu the whole question of roles right like there's some default roles we the question is what what models to adapt like what like how you can do this whole authorization but what we need at the end of the day is i mean we have a project right in that project people should have access to one different customize settings but also to different resources like you know whether they can like by default which groups or like which users can access which agents and skills you know like by default it's all always public actually this means changing the way the runtime model works because right now we just git clone everything into the sandbox and that eliminates that by default shares everything with everyone which is non-optimal perhaps we should switch to a true like single source of truth Zed.toml model where the tummel where it basically will build the sandbox or the the full config and everything from whatever we get in the tumml and then in the tomal we can have a like a like git clone like config or like allow self-improvement or self-config or whatever where it's actually actively able to edit and change its own config and even has access to git like all of these policies and permissions like we have cli access like general Zed cli blah blah like in Zed.toml but it's all a bit ugly right and we have shit like this which we have to consider so we can we yeah on a project level right now everything is shared by everyone one we have to just make sure okay certain groups can't change anything in the customize they can't change you know they can't new add connectors they can't do this they can't do that like they don't have any git permission like all the permissions like policies that we have on like a per pro project level needs to be managed right we need to have roles for that which give you which give you the role and the pro like in a project right and then we can have groups for instance like if we want to say finance department that just by default and actually i don't know like this is the weird thing like does the group inherit the role no roles are always user based there's one minimal role but then there's so there's one permissions and then there was resource access management because in the second thing or like in the first thing i was saying it's like what access to which agents and skills does this user have right now everything is exposed to everyone so in the future we will need to change this or right now we will need to change this or think of a way how we can change it and that would maybe mean that Zed.toml just becomes a single source of truth that we build from you know like we don't do the regular git clone anymore where we just git clone by default but that's just like if self-improvement is enabled so that the Zed system can actually load and then we also the open code we construct a bit differently we will only like clone the or like take the things that are enabled for that given agent of a given session and then even that we could scope better because we could make sure that every session always explicitly has to be started with one agent and that you can't change the agent midway through and that way we would have maximum isolation and security on a per agent like yeah I don't you can challenge if I have any gaps in my mental understanding but this would at least make it significantly more secure of running the agents and even only certain agents are capable of self-improvement then and like even looking into their own config and we just basically always parse the single source of truth being the Zed Automil and that depends then on like does it can it do it or can it not you know zed.toml & .zed perhaps.
 
 ---
 
@@ -41,11 +41,11 @@ https://kortix.com/accounts/2e3ad9d3-6381-4a64-8d72-33b7c9a9d365 Okay, next prob
      connector tokens. That made connector lookup resolve as unassigned/empty.
 
      Main fixes:
-      - Restored warm-snapshot sessions now mint session-bound connector tokens with project, session, agent, connector, and kortix_cli grant context.
+      - Restored warm-snapshot sessions now mint session-bound connector tokens with project, session, agent, connector, and zed_cli grant context.
       - Auth middleware now exposes sessionId for PAT/account-token auth.
-      - Connector principal resolution now uses token session context, not only X-Kortix-Session-Id.
-      - /accounts/me and kortix whoami/token now show explicit token_context.
-      - Added kortix token as a real alias instead of accidentally scaffolding token/.
+      - Connector principal resolution now uses token session context, not only X-Zed-Session-Id.
+      - /accounts/me and zed whoami/token now show explicit token_context.
+      - Added zed token as a real alias instead of accidentally scaffolding token/.
       - Blocked in-session prompt agent switches with 409 AGENT_SWITCH_REQUIRES_NEW_SESSION.
       - Added the spec: docs/specs/2026-06-28-token-session-agent-identity.md.
 
@@ -63,14 +63,14 @@ https://kortix.com/accounts/2e3ad9d3-6381-4a64-8d72-33b7c9a9d365 Okay, next prob
       - Minted real session connector token for veyris.
       - /v1/accounts/me.token_context returned correct project/session/agent grants.
       - Connector catalog returned 200.
-      - kortix token --json and human output showed session token context.
+      - zed token --json and human output showed session token context.
       - Confirmed no accidental token/ scaffold directory.
 
      Remote verified:
       - origin/main and origin/connector-session-identity both point to c21209bfdd02c78451f64145188d1dbae679e823.
       - CodeQL passed.
       - Deploy Dev initially hit Docker Hub timeout in Tag API dev-<sha8>, I reran failed jobs, and Deploy Dev is now green.
-      - https://dev-api.kortix.com/v1/health reports version: 0.9.83-dev.c21209bf, commit c21209bfdd02c78451f64145188d1dbae679e823.
+      - https://dev-api.zed.com/v1/health reports version: 0.9.83-dev.c21209bf, commit c21209bfdd02c78451f64145188d1dbae679e823.
 
   3. What remains unverified or risky
      No known code-path gap remains from the original bug. The only caveat is product behavior: explicit agent switching inside an existing
@@ -78,8 +78,8 @@ https://kortix.com/accounts/2e3ad9d3-6381-4a64-8d72-33b7c9a9d365 Okay, next prob
 
   4. What you should test next
      In dev, start a fresh Veyris session that has connectors = "all", then inside the sandbox run:
-      - kortix token
-      - kortix whoami --json
+      - zed token
+      - zed whoami --json
       - the connector/catalog call that previously returned empty or connector_not_assigned
 
      Expected result: it should identify as a session token with the correct project/session/agent context, and Connector should see the
@@ -94,8 +94,8 @@ https://kortix.com/accounts/2e3ad9d3-6381-4a64-8d72-33b7c9a9d365 Okay, next prob
 • Yes, for the bug we traced: fresh dev sessions should now get a session-scoped connector token, so connector discovery should no
   longer be empty just because the sandbox came from a restored warm snapshot.
 
-  The fix is live on dev: dev-api.kortix.com reports commit c21209bf. The thing to verify manually is the exact Veyris flow: start a new
-  session, run kortix token / kortix whoami --json, and then call the connector path. It should show session token context with
+  The fix is live on dev: dev-api.zed.com reports commit c21209bf. The thing to verify manually is the exact Veyris flow: start a new
+  session, run zed token / zed whoami --json, and then call the connector path. It should show session token context with
   project/session/agent grants and find the configured tools.
 
   One intentional behavior change: switching agents inside the same existing sandbox should now fail with 409 and require a new session.
@@ -144,19 +144,19 @@ there is a strong product reason.
 
 ### Agent grant shape
 
-`kortix.yaml` already has a first project-agent governance surface:
+`zed.yaml` already has a first project-agent governance surface:
 
 ```yaml
 agents:
   veyris:
     connectors: all
-    kortix_cli:
+    zed_cli:
       - project.read
       - project.cr.open
 ```
 
 When a project adopts `agents:`, listed agents receive connector and
-Kortix-CLI grants, while unlisted agents become default-deny. The effective
+Zed-CLI grants, while unlisted agents become default-deny. The effective
 permission is intended to be:
 
 ```text
@@ -273,7 +273,7 @@ the direct runtime surface for every session.
 At session birth, the control plane should build an effective runtime bundle:
 
 ```text
-kortix.yaml
+zed.yaml
   + project resource ACLs
   + selected boot agent
   + launching user role/groups
@@ -294,7 +294,7 @@ For compatibility, this generated config can still look like native OpenCode:
 - generated connector/gateway provider config
 
 The key change is ownership: OpenCode reads generated runtime material, while
-Kortix decides what may be generated.
+Zed decides what may be generated.
 
 ### 5. Full repo access is an explicit power
 
@@ -337,7 +337,7 @@ This is illustrative, not final syntax.
 [[agents]]
 name = "veyris"
 connectors = ["linear", "gmail"]
-kortix_cli = ["project.read", "project.session.read"]
+zed_cli = ["project.read", "project.session.read"]
 skills = ["financial-analysis", "report-writer"]
 commands = []
 workspace = "runtime"
@@ -346,7 +346,7 @@ git = "none"
 [[agents]]
 name = "builder"
 connectors = "all"
-kortix_cli = ["project.read", "project.write", "project.cr.open"]
+zed_cli = ["project.read", "project.write", "project.cr.open"]
 skills = "all"
 workspace = "branch"
 git = "cr"
@@ -384,8 +384,8 @@ Use this rule:
 
 | Concern | Source of truth |
 | --- | --- |
-| Resource definitions | `kortix.yaml` and `.kortix/*` |
-| Default project policy | `kortix.yaml` |
+| Resource definitions | `zed.yaml` and `.zed/*` |
+| Default project policy | `zed.yaml` |
 | Installed skills/tools/agents | Git repo |
 | User membership | DB |
 | Group membership/SCIM sync | DB |
@@ -570,13 +570,13 @@ Add audit events for:
 
 ## Open Questions
 
-1. Should resource ACLs be committed to `kortix.yaml`, stored only in DB, or
+1. Should resource ACLs be committed to `zed.yaml`, stored only in DB, or
    stored in DB with TOML defaults?
 2. Do project viewers get `project.session.start`, or is starting an agent an
    editor-level action by default?
 3. Should "use agent" and "view agent definition" be separate by default?
 4. Do skills need user-visible ACLs, or are they only agent-scoped resources?
-5. How private should `.kortix/memory` be by default?
+5. How private should `.zed/memory` be by default?
 6. Should an agent be able to reference another agent as a resource?
 7. Can a session upgrade from generated runtime to full checkout, or must that
    always start a new session?
@@ -603,7 +603,7 @@ Before this is considered implemented:
 8. Trying to switch agents inside a running session returns 409 and does not
    mutate token context.
 9. Revoking a group grant prevents new sessions and new connector calls.
-10. `/accounts/me`, `kortix token`, and sandbox health all report matching
+10. `/accounts/me`, `zed token`, and sandbox health all report matching
    project/session/agent context.
 
 ## Near-Term Checklist

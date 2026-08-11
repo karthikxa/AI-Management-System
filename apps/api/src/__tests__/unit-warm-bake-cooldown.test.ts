@@ -16,7 +16,7 @@ setTestEnv('DAYTONA_API_KEY', 'test-daytona-key');
 setTestEnv('DAYTONA_SERVER_URL', 'https://daytona.example.test');
 setTestEnv('DAYTONA_TARGET', 'test-target');
 setTestEnv('FRONTEND_URL', 'http://localhost:3000');
-setTestEnv('INTERNAL_KORTIX_ENV', 'dev');
+setTestEnv('INTERNAL_ZED_ENV', 'dev');
 
 const { warmBakeCooldownGate, warmBakeScopeId, perProjectWarmEligible, DEFAULT_SANDBOX_SLUG } = await import(
   '../snapshots/builder'
@@ -34,7 +34,7 @@ const FAKE_PROJECT: GitBackedProject = {
   projectId: PROJECT,
   repoUrl: 'https://example.test/repo.git',
   defaultBranch: 'main',
-  manifestPath: 'kortix.yaml',
+  manifestPath: 'zed.yaml',
 };
 
 function makeTemplate(overrides: Partial<ResolvedTemplate>): ResolvedTemplate {
@@ -174,7 +174,7 @@ describe('per-template warm identity — the runtime-matches-template invariant'
     expect(customResolved.dockerfile).not.toBe(sharedResolved.dockerfile);
   });
 
-  test('computeTemplateIdentity: a custom template gets a DISTINCT, kortix-tpl-prefixed snapshot identity from the shared default', async () => {
+  test('computeTemplateIdentity: a custom template gets a DISTINCT, zed-tpl-prefixed snapshot identity from the shared default', async () => {
     const shared = makeTemplate({ isShared: true });
     const custom = makeTemplate({
       templateId: 'tid-custom',
@@ -187,8 +187,8 @@ describe('per-template warm identity — the runtime-matches-template invariant'
     const sharedIdentity = await computeTemplateIdentity(FAKE_PROJECT, shared);
     const customIdentity = await computeTemplateIdentity(FAKE_PROJECT, custom);
 
-    expect(customIdentity.snapshotName.startsWith('kortix-tpl-')).toBe(true);
-    expect(sharedIdentity.snapshotName.startsWith('kortix-default-')).toBe(true);
+    expect(customIdentity.snapshotName.startsWith('zed-tpl-')).toBe(true);
+    expect(sharedIdentity.snapshotName.startsWith('zed-default-')).toBe(true);
     expect(customIdentity.snapshotName).not.toBe(sharedIdentity.snapshotName);
     expect(customIdentity.contentHash).not.toBe(sharedIdentity.contentHash);
   });

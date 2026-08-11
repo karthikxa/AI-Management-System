@@ -39,14 +39,14 @@ describe('dedup key + identity drift', () => {
     projectId: 'p1',
     targetProvider: 'platinum',
     commitSha: 'abc',
-    baseRuntimeIdentity: 'kortix-default-1',
+    baseRuntimeIdentity: 'zed-default-1',
   };
 
   test('same inputs produce the same key; a moved commit changes it', () => {
     expect(transitionDedupKey(base)).toBe(transitionDedupKey({ ...base }));
     expect(transitionDedupKey(base)).not.toBe(transitionDedupKey({ ...base, commitSha: 'def' }));
     expect(transitionDedupKey(base)).not.toBe(
-      transitionDedupKey({ ...base, baseRuntimeIdentity: 'kortix-default-2' }),
+      transitionDedupKey({ ...base, baseRuntimeIdentity: 'zed-default-2' }),
     );
   });
 

@@ -7,7 +7,7 @@ describe('resolveSessionAgentName', () => {
       resolveSessionAgentName({
         requestedAgent: 'writer',
         manifestDefaultAgent: 'veyris',
-        mirroredDefaultAgent: 'kortix',
+        mirroredDefaultAgent: 'zed',
       }),
     ).toBe('writer');
   });
@@ -17,7 +17,7 @@ describe('resolveSessionAgentName', () => {
       resolveSessionAgentName({
         requestedAgent: 'default',
         manifestDefaultAgent: 'veyris',
-        mirroredDefaultAgent: 'kortix',
+        mirroredDefaultAgent: 'zed',
       }),
     ).toBe('veyris');
   });
@@ -27,8 +27,8 @@ describe('resolveSessionAgentName', () => {
       resolveSessionAgentName({
         requestedAgent: null,
         manifestDefaultAgent: null,
-        mirroredDefaultAgent: 'kortix',
+        mirroredDefaultAgent: 'zed',
       }),
-    ).toBe('kortix');
+    ).toBe('zed');
   });
 });

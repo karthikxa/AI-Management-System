@@ -80,8 +80,8 @@ export function sanitizeAuthReturnUrl(
   // means every downstream rule sees the path that will actually be opened.
   let normalizedValue: string;
   try {
-    const resolved = new URL(trimmedValue, 'https://kortix.local');
-    if (resolved.origin !== 'https://kortix.local') return fallback;
+    const resolved = new URL(trimmedValue, 'https://zed.local');
+    if (resolved.origin !== 'https://zed.local') return fallback;
     normalizedValue = `${resolved.pathname}${resolved.search}${resolved.hash}`;
   } catch {
     return fallback;

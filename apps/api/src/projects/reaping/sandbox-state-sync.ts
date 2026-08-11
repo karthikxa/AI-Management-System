@@ -8,7 +8,7 @@
  * no-op, so the two paths can race freely.
  */
 
-import { projectSessions, sessionSandboxes } from '@kortix/db';
+import { projectSessions, sessionSandboxes } from '@zed/db';
 import { eq, sql } from 'drizzle-orm';
 import { pauseComputeSession } from '../../billing/services/compute-metering';
 import { revokeSessionConnectorTokens } from '../../repositories/account-tokens';

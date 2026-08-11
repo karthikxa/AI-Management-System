@@ -22,7 +22,7 @@ Usage:
   GATE5_DRILL_STATUS=passed \
   GATE5_DRILL_SUMMARY="Provider outage was detected in ops and recovery was verified." \
   GATE5_DRILL_EVIDENCE=$'ops-before.json\nops-after.json\nincident-notes.md' \
-  E2E_API_URL=https://new-api.kortix.com/v1 \
+  E2E_API_URL=https://new-api.zed.com/v1 \
   ADMIN_TOKEN=... \
   bash tests/e2e/scripts/record-gate5-runbook-drill.sh
 

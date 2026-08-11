@@ -8,13 +8,13 @@ import type { StepCliBlock } from './step-cli-terminal';
 /* ───────────────────────────────────────────────────────────────────────────
  * CLI movies for the platform-stack panels.
  *
- * Two panels overlay a floating terminal that types a real `kortix` command
+ * Two panels overlay a floating terminal that types a real `zed` command
  * and drives the web panel behind it. Both used to carry their own copy of the
  * typing/sleep/append machinery; `useCliMovie` is that machinery, once, and a
  * movie is now a declarative list of stages.
  *
  * Every command in a script is a command that exists — checked against
- * `apps/cli/src/commands/*`. `kortix sessions create` is not one; `new` is.
+ * `apps/cli/src/commands/*`. `zed sessions create` is not one; `new` is.
  * ─────────────────────────────────────────────────────────────────────────── */
 
 const SPEED = {

@@ -1,13 +1,13 @@
 import {
-  createKortixPty,
-  getKortixPtyWebSocketUrl,
-  listKortixPty,
-  updateKortixPty,
-  type KortixPty,
-} from '@kortix/sdk';
+  createZedPty,
+  getZedPtyWebSocketUrl,
+  listZedPty,
+  updateZedPty,
+  type ZedPty,
+} from '@zed/sdk';
 
-import { openKortixPtyWebSocket } from '../api/pty-socket.ts';
-import { kortixFromAuth, withKortixScope } from '../api/sdk.ts';
+import { openZedPtyWebSocket } from '../api/pty-socket.ts';
+import { zedFromAuth, withZedScope } from '../api/sdk.ts';
 import { takeFlagBool, takeFlagValue } from '../command-helpers.ts';
 import { C, help, status } from '../style.ts';
 import { loadSessionForChat, resolveRunningSessionId, type ResolvedSession } from './sessions-chat.ts';
@@ -35,7 +35,7 @@ function sanitizePtyChunk(chunk: string): string {
     .replace(/\x1b\[\?[0-9;]*c/g, '');
 }
 
-const SHELL_HELP = help`Usage: kortix sessions shell [<session-id>] [options]
+const SHELL_HELP = help`Usage: zed sessions shell [<session-id>] [options]
 
 Open a raw interactive terminal (PTY) inside a running session's sandbox —
 the same shell you'd get from the "Terminal" panel in the dashboard. Unlike
@@ -49,12 +49,12 @@ the remote shell, not this CLI; type \`exit\` or close the terminal to leave.
 
   --new            Start a brand-new shell instead of reattaching.
   --project <id>   Pin this project id (skips the cross-host scan).
-  --host <name>    Pin this Kortix host (skips the cross-host scan).
+  --host <name>    Pin this Zed host (skips the cross-host scan).
   -h, --help       Show this help.
 
 Examples:
-  kortix sessions shell <session-id>
-  kortix sessions shell <session-id> --new`;
+  zed sessions shell <session-id>
+  zed sessions shell <session-id> --new`;
 
 export async function runSessionsShell(argv: string[]): Promise<number> {
   const rest = [...argv];
@@ -95,15 +95,15 @@ export async function runSessionsShell(argv: string[]): Promise<number> {
   // The SDK resolves this session's runtime base URL. The CLI never builds a
   // `/p/<external-id>/<port>` proxy URL by hand any more.
   let runtimeUrl: string;
-  let pty: KortixPty;
+  let pty: ZedPty;
   try {
-    runtimeUrl = await withKortixScope(resolved.auth, async () => {
-      const ready = await kortixFromAuth(resolved.auth)
+    runtimeUrl = await withZedScope(resolved.auth, async () => {
+      const ready = await zedFromAuth(resolved.auth)
         .session(resolved.ctx.projectId, resolved.session.session_id)
         .ensureReady();
       return ready.runtimeUrl;
     });
-    pty = await withKortixScope(resolved.auth, async () =>
+    pty = await withZedScope(resolved.auth, async () =>
       wantNew ? createPty(runtimeUrl) : ensurePty(runtimeUrl),
     );
   } catch (err) {
@@ -122,14 +122,14 @@ export async function runSessionsShell(argv: string[]): Promise<number> {
 /** Reuse the session's existing terminal if one's already running (matches
  *  the dashboard's "ambient shell" — one persistent terminal per session,
  *  never killed on disconnect), else spawn one. */
-async function ensurePty(runtimeUrl: string): Promise<KortixPty> {
-  const existing = await listKortixPty(runtimeUrl);
+async function ensurePty(runtimeUrl: string): Promise<ZedPty> {
+  const existing = await listZedPty(runtimeUrl);
   if (existing.length > 0) return existing[0]!;
   return createPty(runtimeUrl);
 }
 
-function createPty(runtimeUrl: string): Promise<KortixPty> {
-  return createKortixPty(runtimeUrl, { title: 'Session terminal', env: { ...PTY_ENV } });
+function createPty(runtimeUrl: string): Promise<ZedPty> {
+  return createZedPty(runtimeUrl, { title: 'Session terminal', env: { ...PTY_ENV } });
 }
 
 /** Put the local terminal in raw mode, pipe bytes to/from the remote PTY's
@@ -137,20 +137,20 @@ function createPty(runtimeUrl: string): Promise<KortixPty> {
 async function runPtySession(
   resolved: ResolvedSession,
   runtimeUrl: string,
-  pty: KortixPty,
+  pty: ZedPty,
 ): Promise<number> {
-  const wsUrl = await withKortixScope(resolved.auth, async () =>
-    getKortixPtyWebSocketUrl(pty.id, runtimeUrl),
+  const wsUrl = await withZedScope(resolved.auth, async () =>
+    getZedPtyWebSocketUrl(pty.id, runtimeUrl),
   );
-  const ws = openKortixPtyWebSocket(wsUrl);
+  const ws = openZedPtyWebSocket(wsUrl);
   ws.binaryType = 'arraybuffer';
 
   let resizeTimer: ReturnType<typeof setTimeout> | null = null;
   const sendResize = () => {
     if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      withKortixScope(resolved.auth, async () =>
-        updateKortixPty(runtimeUrl, pty.id, {
+      withZedScope(resolved.auth, async () =>
+        updateZedPty(runtimeUrl, pty.id, {
           size: { rows: process.stdout.rows, cols: process.stdout.columns },
         }),
       ).catch(() => {});

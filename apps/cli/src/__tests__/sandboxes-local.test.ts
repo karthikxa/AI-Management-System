@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { SandboxTemplate } from '@kortix/shared/sandbox';
+import type { SandboxTemplate } from '@zed/shared/sandbox';
 
 import {
   composeSandboxDockerfile,
@@ -24,22 +24,22 @@ describe('composeSandboxDockerfile', () => {
     expect(out).toContain('uv python install --default');
     expect(out).toContain('pnpm runtime set node');
     expect(out).toContain('apt-get install');
-    expect(out).not.toContain('/opt/kortix/pyfloor');
+    expect(out).not.toContain('/opt/zed/pyfloor');
   });
 
   test('keeps the user Dockerfile verbatim, above the layer', () => {
     const out = composeSandboxDockerfile(USER, { layer: true });
     expect(out.startsWith('FROM ubuntu:24.04\nRUN apt-get update')).toBe(true);
-    expect(out.indexOf('gdal-bin')).toBeLessThan(out.indexOf('Kortix runtime layer'));
+    expect(out.indexOf('gdal-bin')).toBeLessThan(out.indexOf('Zed runtime layer'));
   });
 
   test('omits the artifact tail — those COPYs need binaries a consumer cannot stage', () => {
     const out = composeSandboxDockerfile(USER, { layer: true });
     for (const artifact of [
-      'COPY kortix-agent.gz',
-      'kortix.gz',
-      'kortix-entrypoint',
-      'kortix-slack-cli',
+      'COPY zed-agent.gz',
+      'zed.gz',
+      'zed-entrypoint',
+      'zed-slack-cli',
       'scaffold.git',
       'install-shims.sh',
       'ENTRYPOINT',
@@ -51,7 +51,7 @@ describe('composeSandboxDockerfile', () => {
   test('omits the staged-context steps (opencode config warm-up, warm repo)', () => {
     // Both would emit COPY/clone steps against a context this build doesn't have.
     const out = composeSandboxDockerfile(USER, { layer: true });
-    expect(out).not.toContain('/opt/kortix/warm-config');
+    expect(out).not.toContain('/opt/zed/warm-config');
     expect(out).not.toContain('warm-repo');
   });
 
@@ -62,7 +62,7 @@ describe('composeSandboxDockerfile', () => {
   test('normalizes the legacy starter block the same way the snapshot builder does', () => {
     const legacy =
       'FROM ubuntu:24.04\n\n' +
-      '# Bring in baseline tooling. The Kortix layer on top also installs\n' +
+      '# Bring in baseline tooling. The Zed layer on top also installs\n' +
       '# git/curl/ca-certificates/nodejs/npm, but having them in your base\n' +
       '# makes interactive sessions snappier.\n' +
       'RUN apt-get update \\\n' +

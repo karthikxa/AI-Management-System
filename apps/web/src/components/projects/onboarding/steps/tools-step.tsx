@@ -32,7 +32,7 @@ import {
 } from '@/features/workspace/customize/sections/connector-connection-form';
 import { ConnectorConnectionModal } from '@/features/workspace/customize/sections/connector-connection-modal';
 import { useToolConnect } from '@/hooks/connectors/use-tool-connect';
-import { listPipedreamApps } from '@kortix/sdk';
+import { listPipedreamApps } from '@zed/sdk';
 
 import { ActionRow, StepShell } from '../step-shell';
 /** Slack has its own dedicated step, so keep it out of this list. */

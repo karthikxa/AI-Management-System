@@ -115,7 +115,7 @@ describe('setup-link token codec', () => {
   test('secret link carries session id (sid) for callback', () => {
     const { token } = mintSetupLink(PROJECT_A, {
       kind: 'secret',
-      fields: [{ name: 'AGENT_KORTIX_GITHUB_TOKEN' }],
+      fields: [{ name: 'AGENT_ZED_GITHUB_TOKEN' }],
       scope: 'runtime',
       uid: 'user-1',
       sid: 'ses_abc123',

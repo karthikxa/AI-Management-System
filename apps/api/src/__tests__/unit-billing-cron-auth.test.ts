@@ -4,7 +4,7 @@ const actualConfig = await import('../config');
 mock.module('../config', () => ({
   ...actualConfig,
   config: {
-    KORTIX_BILLING_INTERNAL_ENABLED: false,
+    ZED_BILLING_INTERNAL_ENABLED: false,
     INTERNAL_SERVICE_KEY: 'internal-test-key',
   },
 }));
@@ -24,7 +24,7 @@ describe('billing cron route auth', () => {
   test('allows the internal service key for scheduler callers', async () => {
     const res = await billingApp.request('/cron/free-tier-rotation', {
       method: 'POST',
-      headers: { 'X-Kortix-Internal-Key': 'internal-test-key' },
+      headers: { 'X-Zed-Internal-Key': 'internal-test-key' },
     });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ skipped: true, reason: 'billing disabled' });

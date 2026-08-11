@@ -1,6 +1,6 @@
 import { createAccountToken } from '../src/repositories/account-tokens';
 import { db } from '../src/shared/db';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 
 const ACC = 'fbea71d0-9655-4ab4-aca5-1b68e1ae7f71';
@@ -34,7 +34,7 @@ for (let n=1;n<=N;n++){
   if(!baseUrl){ console.log(`[#${n}] TIMEOUT no baseUrl in 100s`); continue; }
   // verify the FE-facing calls that were 503ing: health(runtimeReady), session list, command
   let health='?', sess='?', cmd='?', rr=false;
-  try{ const r=await proxy(baseUrl,'/kortix/health'); const j:any=await r.json().catch(()=>({})); rr=j?.runtimeReady===true; health=`${r.status}/rr=${rr}`; }catch(e:any){ health=`ERR ${e?.name}`; }
+  try{ const r=await proxy(baseUrl,'/zed/health'); const j:any=await r.json().catch(()=>({})); rr=j?.runtimeReady===true; health=`${r.status}/rr=${rr}`; }catch(e:any){ health=`ERR ${e?.name}`; }
   try{ const r=await proxy(baseUrl,'/session?limit=10'); sess=String(r.status); }catch(e:any){ sess=`ERR ${e?.name}`; }
   try{ const r=await proxy(baseUrl,'/command'); cmd=String(r.status); }catch(e:any){ cmd=`ERR ${e?.name}`; }
   const ok = rr && sess==='200';

@@ -304,7 +304,7 @@ function Chart({ artifact }: { artifact: Extract<UseCaseArtifact, { kind: 'chart
 /**
  * The artifact — the work product a team receives, and the largest thing on the
  * card. It is markup, never a picture of a screen: the card shows what the agent
- * produced, and must never imply a Kortix UI that does not exist.
+ * produced, and must never imply a Zed UI that does not exist.
  */
 function Artifact({ artifact }: { artifact: UseCaseArtifact }) {
   return (
@@ -332,7 +332,7 @@ function Artifact({ artifact }: { artifact: UseCaseArtifact }) {
 }
 
 /**
- * One card. Identical chrome for every department — Kortix is monochrome, so a
+ * One card. Identical chrome for every department — Zed is monochrome, so a
  * card is told apart by its mono tag and its artifact, not by a colour.
  */
 function UseCaseCard({ card, index, active }: { card: UseCase; index: number; active: boolean }) {
@@ -372,7 +372,7 @@ const EDGE_MASK =
 function SectionHeader({ counter }: { counter?: ReactNode }) {
   return (
     <div className="mx-auto w-full max-w-7xl px-6">
-      <Badge variant="kortix" className="rounded">
+      <Badge variant="zed" className="rounded">
         {useCases.eyebrow}
       </Badge>
       <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

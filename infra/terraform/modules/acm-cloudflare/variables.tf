@@ -1,5 +1,5 @@
 variable "domain_name" {
-  description = "Primary domain for the certificate (e.g. dev-api.kortix.com)."
+  description = "Primary domain for the certificate (e.g. dev-api.zed.com)."
   type        = string
 }
 

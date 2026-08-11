@@ -1,5 +1,5 @@
 import { z } from '@hono/zod-openapi';
-import { accountInvitations, accountMembers, type accounts } from '@kortix/db';
+import { accountInvitations, accountMembers, type accounts } from '@zed/db';
 import { and, asc, count, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import type { Context } from 'hono';
 import { makeOpenApiApp } from '../../openapi';
@@ -114,7 +114,7 @@ export const MeSchema = z
         session_id: z.string().nullable(),
         agent: z.string().nullable(),
         connectors: z.union([z.literal('all'), z.array(z.string())]).nullable(),
-        kortix_cli: z.union([z.literal('all'), z.array(z.string())]).nullable(),
+        zed_cli: z.union([z.literal('all'), z.array(z.string())]).nullable(),
         env: z.union([z.literal('all'), z.array(z.string())]).nullable(),
       })
       .optional(),

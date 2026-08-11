@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { listAgentIdentities, listGroups, listPolicies, listRoles } from './iam';
 
 let reportedErrors = 0;
@@ -12,7 +12,7 @@ beforeEach(() => {
       headers: { 'content-type': 'application/json' },
     }),
   ) as unknown as typeof fetch;
-  configureKortix({
+  configureZed({
     backendUrl: 'http://test.local',
     getToken: async () => 'tok',
     onError: () => {

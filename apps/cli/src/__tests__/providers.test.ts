@@ -115,7 +115,7 @@ describe('provider positional help', () => {
       (process.stdout as any).write = stdout;
       (process.stderr as any).write = stderr;
     }
-    expect(chunks.join('')).toContain('Usage: kortix providers login <provider>');
+    expect(chunks.join('')).toContain('Usage: zed providers login <provider>');
     expect(errors.join('')).toBe('');
   });
 });

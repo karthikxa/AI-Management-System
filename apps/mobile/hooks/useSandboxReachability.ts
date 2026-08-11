@@ -1,6 +1,6 @@
 /**
  * useSandboxReachability — lightweight poller that tracks whether the
- * sandbox's /kortix/health endpoint is currently reachable.
+ * sandbox's /zed/health endpoint is currently reachable.
  *
  * Mirrors the web's sandbox-connection-store reachability tracking, but
  * scoped to a single hook call: the caller passes the sandboxUrl and we
@@ -20,7 +20,7 @@ const INITIAL_GRACE_MS = 3_000;
  * Reachability probe for a session sandbox. Unlike the generic
  * `checkInstanceHealth` (which is keyed off a `version` field the per-session
  * sandbox runtime doesn't return, and sends no auth), this hits the proxied
- * `/kortix/health` WITH the bearer token — the session sandbox proxy 403s
+ * `/zed/health` WITH the bearer token — the session sandbox proxy 403s
  * without it — and treats any 200 as reachable. Mirrors the authenticated
  * probe the connect loop uses. Returns false only on a non-200 / network error.
  */
@@ -29,7 +29,7 @@ async function probeSandboxReachable(sandboxUrl: string): Promise<boolean> {
     const token = await getAuthToken();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch(`${sandboxUrl.replace(/\/$/, '')}/kortix/health`, {
+    const res = await fetch(`${sandboxUrl.replace(/\/$/, '')}/zed/health`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       signal: controller.signal,
     });
@@ -43,7 +43,7 @@ async function probeSandboxReachable(sandboxUrl: string): Promise<boolean> {
 export interface SandboxReachability {
   /** True once we've completed at least one probe. */
   checked: boolean;
-  /** Last known reachability. `true` = /kortix/health returned 200. */
+  /** Last known reachability. `true` = /zed/health returned 200. */
   reachable: boolean;
   /** ms timestamp when the sandbox first became unreachable. `null` when up. */
   downSince: number | null;

@@ -6,15 +6,15 @@ import { join } from 'node:path';
 import { renderHostNotice } from '../host-notice.ts';
 
 const ENV_KEYS = [
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_SESSION_ID',
+  'ZED_CLI_TOKEN',
+  'ZED_TOKEN',
+  'ZED_API_URL',
+  'ZED_PROJECT_ID',
+  'ZED_SESSION_ID',
   'BASH_ENV',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_AUTH_FILE',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CONFIG_FILE',
+  'ZED_AUTH_FILE',
 ] as const;
 
 let saved: Record<string, string | undefined>;
@@ -25,7 +25,7 @@ beforeEach(() => {
     saved[key] = process.env[key];
     delete process.env[key];
   }
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
 });
 
 afterEach(() => {
@@ -36,10 +36,10 @@ afterEach(() => {
 });
 
 function writeConfig(hosts: Record<string, unknown>, active = 'cloud'): string {
-  const dir = mkdtempSync(join(tmpdir(), 'kortix-cli-banner-'));
+  const dir = mkdtempSync(join(tmpdir(), 'zed-cli-banner-'));
   const file = join(dir, 'config.json');
   writeFileSync(file, JSON.stringify({ active, hosts }, null, 2));
-  process.env.KORTIX_CONFIG_FILE = file;
+  process.env.ZED_CONFIG_FILE = file;
   return dir;
 }
 
@@ -47,7 +47,7 @@ describe('host notice', () => {
   test('shows env-provided sandbox host and project-token auth instead of logged-out config host', () => {
     const dir = writeConfig({
       cloud: {
-        url: 'https://api.kortix.com',
+        url: 'https://api.zed.com',
         token: '',
         user_id: '',
         user_email: '',
@@ -56,26 +56,26 @@ describe('host notice', () => {
       },
     });
     try {
-      process.env.KORTIX_API_URL = 'https://dev-api.kortix.com/v1';
-      process.env.KORTIX_CLI_TOKEN = 'kortix_pat_project';
-      process.env.KORTIX_PROJECT_ID = 'proj_123';
+      process.env.ZED_API_URL = 'https://dev-api.zed.com/v1';
+      process.env.ZED_CLI_TOKEN = 'zed_pat_project';
+      process.env.ZED_PROJECT_ID = 'proj_123';
 
       const notice = renderHostNotice(['whoami']);
       expect(notice).toContain('host sandbox');
-      expect(notice).toContain('https://dev-api.kortix.com/v1');
+      expect(notice).toContain('https://dev-api.zed.com/v1');
       expect(notice).toContain('authenticated (project token)');
-      expect(notice).not.toContain('https://api.kortix.com');
+      expect(notice).not.toContain('https://api.zed.com');
       expect(notice).not.toContain('not logged in');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  test('shows KORTIX_API_URL override for stored user auth', () => {
+  test('shows ZED_API_URL override for stored user auth', () => {
     const dir = writeConfig({
       cloud: {
-        url: 'https://api.kortix.com',
-        token: 'kortix_pat_user',
+        url: 'https://api.zed.com',
+        token: 'zed_pat_user',
         user_id: 'user_123',
         user_email: 'user@example.com',
         account_id: 'acct_123',
@@ -83,13 +83,13 @@ describe('host notice', () => {
       },
     });
     try {
-      process.env.KORTIX_API_URL = 'https://dev-api.kortix.com/v1';
+      process.env.ZED_API_URL = 'https://dev-api.zed.com/v1';
 
       const notice = renderHostNotice(['whoami']);
       expect(notice).toContain('host env');
-      expect(notice).toContain('https://dev-api.kortix.com/v1');
+      expect(notice).toContain('https://dev-api.zed.com/v1');
       expect(notice).toContain('user@example.com (user)');
-      expect(notice).not.toContain('https://api.kortix.com');
+      expect(notice).not.toContain('https://api.zed.com');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -98,7 +98,7 @@ describe('host notice', () => {
   test('shows session-token auth when sandbox env includes a session id', () => {
     const dir = writeConfig({
       cloud: {
-        url: 'https://api.kortix.com',
+        url: 'https://api.zed.com',
         token: '',
         user_id: '',
         user_email: '',
@@ -107,10 +107,10 @@ describe('host notice', () => {
       },
     });
     try {
-      process.env.KORTIX_API_URL = 'https://api.kortix.com/v1';
-      process.env.KORTIX_CLI_TOKEN = 'kortix_pat_session';
-      process.env.KORTIX_PROJECT_ID = 'proj_123';
-      process.env.KORTIX_SESSION_ID = 'sess_123';
+      process.env.ZED_API_URL = 'https://api.zed.com/v1';
+      process.env.ZED_CLI_TOKEN = 'zed_pat_session';
+      process.env.ZED_PROJECT_ID = 'proj_123';
+      process.env.ZED_SESSION_ID = 'sess_123';
 
       const notice = renderHostNotice(['whoami']);
       expect(notice).toContain('host sandbox');
@@ -125,8 +125,8 @@ describe('host notice', () => {
     const dir = writeConfig(
       {
         customdev: {
-          url: 'https://dev-api.kortix.com/v1',
-          token: 'kortix_pat_user',
+          url: 'https://dev-api.zed.com/v1',
+          token: 'zed_pat_user',
           user_id: 'user_123',
           user_email: 'dev@example.com',
           account_id: 'acct_123',
@@ -136,14 +136,14 @@ describe('host notice', () => {
       'customdev',
     );
     try {
-      process.env.KORTIX_API_URL = 'https://sandbox-api.kortix.test/v1';
-      process.env.KORTIX_CLI_TOKEN = 'kortix_pat_project';
+      process.env.ZED_API_URL = 'https://sandbox-api.zed.test/v1';
+      process.env.ZED_CLI_TOKEN = 'zed_pat_project';
 
       const notice = renderHostNotice(['whoami', '--host', 'customdev']);
       expect(notice).toContain('host customdev');
-      expect(notice).toContain('https://dev-api.kortix.com/v1');
+      expect(notice).toContain('https://dev-api.zed.com/v1');
       expect(notice).toContain('dev@example.com (user)');
-      expect(notice).not.toContain('https://sandbox-api.kortix.test/v1');
+      expect(notice).not.toContain('https://sandbox-api.zed.test/v1');
       expect(notice).not.toContain('project token');
     } finally {
       rmSync(dir, { recursive: true, force: true });

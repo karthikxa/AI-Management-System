@@ -42,7 +42,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create index concurrently if not exists idx_project_trigger_runtime_due
-      on kortix.project_trigger_runtime (enabled, next_fire_at)
+      on zed.project_trigger_runtime (enabled, next_fire_at)
   `);
 };
 

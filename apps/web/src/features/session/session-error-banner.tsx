@@ -12,7 +12,7 @@ import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/comp
 import Loading from '@/components/ui/loading';
 import { cn } from '@/lib/utils';
 import { useAccountSettingsModalStore } from '@/stores/account-settings-modal-store';
-import type { KortixSendError } from '@kortix/sdk/react';
+import type { ZedSendError } from '@zed/sdk/react';
 import {
   WarningCircleIcon as AlertCircle,
   CreditCardIcon as CreditCard,
@@ -132,7 +132,7 @@ function InsufficientCreditsCard({
 // ============================================================================
 
 /** The LLM gateway's structured error fields, when the failure carries them —
- *  mirrors `GatewayErrorDetails`/`KortixSendError['gateway']` from the SDK,
+ *  mirrors `GatewayErrorDetails`/`ZedSendError['gateway']` from the SDK,
  *  restated here so this component doesn't need a type-only SDK import for a
  *  handful of optional strings. */
 interface TurnErrorGatewayDetails {
@@ -163,7 +163,7 @@ interface TurnErrorDisplayProps {
    * (and `.billing.detail.code` for the credits-vs-usage-limit card) instead
    * of regexing the message.
    */
-  error?: KortixSendError | null;
+  error?: ZedSendError | null;
   className?: string;
 }
 

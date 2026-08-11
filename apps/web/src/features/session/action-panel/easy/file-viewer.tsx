@@ -42,7 +42,7 @@ import { getFileIcon } from '@/features/project-files';
 import { useIsMobile } from '@/hooks/utils';
 import { track } from '@/lib/track';
 import { cn } from '@/lib/utils';
-import { useIsExpanded, useToggleExpanded } from '@/stores/kortix-computer-store';
+import { useIsExpanded, useToggleExpanded } from '@/stores/zed-computer-store';
 import {
   CodeSimpleIcon as Code2,
   DownloadIcon as Download,

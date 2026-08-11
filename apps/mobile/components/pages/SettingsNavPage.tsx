@@ -39,7 +39,7 @@ import {
   useArchiveProject,
 } from '@/lib/projects/hooks';
 import { inviteRepoCollaborator, isManagedGithubProject } from '@/lib/projects/projects-client';
-import type { KortixProject, ExperimentalFeatureView } from '@/lib/projects/projects-client';
+import type { ZedProject, ExperimentalFeatureView } from '@/lib/projects/projects-client';
 import { useMutation } from '@tanstack/react-query';
 import { haptics } from '@/lib/haptics';
 
@@ -117,7 +117,7 @@ function SaveButton({ onPress, disabled, pending }: { onPress: () => void; disab
 
 // ─── General ──────────────────────────────────────────────────────────────────
 
-function GeneralCard({ project, canManage, isDark }: { project: KortixProject; canManage: boolean; isDark: boolean }) {
+function GeneralCard({ project, canManage, isDark }: { project: ZedProject; canManage: boolean; isDark: boolean }) {
   const c = useColors(isDark);
   const update = useUpdateProject(project.project_id);
   const [name, setName] = useState(project.name);
@@ -155,7 +155,7 @@ function GeneralCard({ project, canManage, isDark }: { project: KortixProject; c
 
 // ─── Repository ───────────────────────────────────────────────────────────────
 
-function RepositoryCard({ project, canManage, isDark }: { project: KortixProject; canManage: boolean; isDark: boolean }) {
+function RepositoryCard({ project, canManage, isDark }: { project: ZedProject; canManage: boolean; isDark: boolean }) {
   const c = useColors(isDark);
   const update = useUpdateProject(project.project_id);
   const githubUrl = githubRepoWebUrl(project.repo_url);
@@ -233,7 +233,7 @@ function RepoCollaboratorInvite({ projectId, isDark }: { projectId: string; isDa
     <View style={{ marginTop: 22, paddingTop: 18, borderTopWidth: 1, borderTopColor: c.border }}>
       <Text style={{ fontSize: 14, fontFamily: 'Roobert-Medium', color: c.fg }}>Add people to this repo</Text>
       <Text style={{ fontSize: 12, lineHeight: 17, color: c.muted, marginTop: 4 }}>
-        Kortix owns this repo. Add GitHub users as collaborators so they can clone, browse, and work on it directly on github.com.
+        Zed owns this repo. Add GitHub users as collaborators so they can clone, browse, and work on it directly on github.com.
       </Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 }}>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, borderRadius: 11, borderWidth: 1, borderColor: c.inputBorder, backgroundColor: c.inputBg, paddingHorizontal: 12 }}>
@@ -263,7 +263,7 @@ function RepoCollaboratorInvite({ projectId, isDark }: { projectId: string; isDa
 
 // ─── Experimental ─────────────────────────────────────────────────────────────
 
-function ExperimentalCard({ project, canManage, isDark }: { project: KortixProject; canManage: boolean; isDark: boolean }) {
+function ExperimentalCard({ project, canManage, isDark }: { project: ZedProject; canManage: boolean; isDark: boolean }) {
   const c = useColors(isDark);
   const features = (project.experimental_features ?? []).filter((f) => f.available);
   const [expanded, setExpanded] = useState(false);
@@ -347,7 +347,7 @@ function ExperimentalRow({ projectId, feature, canManage, isDark }: { projectId:
 
 // ─── Danger zone ──────────────────────────────────────────────────────────────
 
-function DangerCard({ project, isDark }: { project: KortixProject; isDark: boolean }) {
+function DangerCard({ project, isDark }: { project: ZedProject; isDark: boolean }) {
   const c = useColors(isDark);
   const archive = useArchiveProject();
 

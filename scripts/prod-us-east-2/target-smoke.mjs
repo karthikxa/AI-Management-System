@@ -33,7 +33,7 @@ const authSequenceHeadroom = Number.parseInt(
 const keepAuthSequenceHeadroom =
   process.env.KEEP_TARGET_AUTH_SEQUENCE_HEADROOM === '1';
 const smokePassword = `${randomBytes(32).toString('base64url')}aA1!`;
-const smokeEmail = `migration-smoke-${Date.now()}-${randomUUID().slice(0, 8)}@invalid.kortix.test`;
+const smokeEmail = `migration-smoke-${Date.now()}-${randomUUID().slice(0, 8)}@invalid.zed.test`;
 
 if (!Number.isSafeInteger(authSequenceHeadroom) || authSequenceHeadroom < 1) {
   throw new Error(
@@ -86,7 +86,7 @@ async function apiRequest(path, accessToken, expectedStatuses = [200]) {
   const response = await fetch(`${apiUrl}${path}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      'User-Agent': 'kortix-us-east-2-migration-smoke',
+      'User-Agent': 'zed-us-east-2-migration-smoke',
     },
   });
   if (!expectedStatuses.includes(response.status)) {
@@ -220,11 +220,11 @@ async function removeSmokeData() {
 SELECT COALESCE(json_agg(account_id ORDER BY account_id), '[]'::json)::text
 FROM (
   SELECT account_id
-  FROM kortix.account_members
+  FROM zed.account_members
   WHERE user_id = :'smoke_user_id'::uuid
   UNION
   SELECT account_id
-  FROM kortix.accounts
+  FROM zed.accounts
   WHERE account_id = :'smoke_user_id'::uuid
 ) AS smoke_accounts;
 `,
@@ -248,16 +248,16 @@ FROM (
 DELETE FROM auth.audit_log_entries
 WHERE payload::text LIKE '%' || :'smoke_user_id' || '%';
 
-DELETE FROM kortix.audit_events
+DELETE FROM zed.audit_events
 WHERE actor_user_id = :'smoke_user_id'::uuid;
 
-DELETE FROM kortix.credit_ledger
+DELETE FROM zed.credit_ledger
 WHERE account_id = ANY(:'smoke_account_ids'::uuid[]);
 
-DELETE FROM kortix.credit_accounts
+DELETE FROM zed.credit_accounts
 WHERE account_id = ANY(:'smoke_account_ids'::uuid[]);
 
-DELETE FROM kortix.accounts
+DELETE FROM zed.accounts
 WHERE account_id = ANY(:'smoke_account_ids'::uuid[]);
 
 DELETE FROM auth.refresh_tokens
@@ -339,16 +339,16 @@ SELECT json_build_object(
   (SELECT count(*) FROM auth.sessions WHERE user_id = :'smoke_user_id'::uuid),
   'auth.users',
   (SELECT count(*) FROM auth.users WHERE id = :'smoke_user_id'::uuid),
-  'kortix.audit_events',
-  (SELECT count(*) FROM kortix.audit_events WHERE actor_user_id = :'smoke_user_id'::uuid),
-  'kortix.accounts',
-  (SELECT count(*) FROM kortix.accounts WHERE account_id = ANY(:'smoke_account_ids'::uuid[])),
-  'kortix.account_members',
-  (SELECT count(*) FROM kortix.account_members WHERE account_id = ANY(:'smoke_account_ids'::uuid[])),
-  'kortix.credit_accounts',
-  (SELECT count(*) FROM kortix.credit_accounts WHERE account_id = ANY(:'smoke_account_ids'::uuid[])),
-  'kortix.credit_ledger',
-  (SELECT count(*) FROM kortix.credit_ledger WHERE account_id = ANY(:'smoke_account_ids'::uuid[]))
+  'zed.audit_events',
+  (SELECT count(*) FROM zed.audit_events WHERE actor_user_id = :'smoke_user_id'::uuid),
+  'zed.accounts',
+  (SELECT count(*) FROM zed.accounts WHERE account_id = ANY(:'smoke_account_ids'::uuid[])),
+  'zed.account_members',
+  (SELECT count(*) FROM zed.account_members WHERE account_id = ANY(:'smoke_account_ids'::uuid[])),
+  'zed.credit_accounts',
+  (SELECT count(*) FROM zed.credit_accounts WHERE account_id = ANY(:'smoke_account_ids'::uuid[])),
+  'zed.credit_ledger',
+  (SELECT count(*) FROM zed.credit_ledger WHERE account_id = ANY(:'smoke_account_ids'::uuid[]))
 )::text;
 `,
       {
@@ -413,7 +413,7 @@ WHERE id = 1;
         email: smokeEmail,
         password: smokePassword,
         email_confirm: true,
-        user_metadata: { kortix_migration_smoke: true },
+        user_metadata: { zed_migration_smoke: true },
       }),
     });
     const created = await createResponse.json();
@@ -471,9 +471,9 @@ WHERE id = 1;
       method: 'POST',
       headers: userHeaders(accessToken),
       body: JSON.stringify({
-        friendly_name: 'kortix-us-east-2-migration-smoke',
+        friendly_name: 'zed-us-east-2-migration-smoke',
         factor_type: 'totp',
-        issuer: 'Kortix migration smoke',
+        issuer: 'Zed migration smoke',
       }),
     });
     const enrolled = await enrollResponse.json();

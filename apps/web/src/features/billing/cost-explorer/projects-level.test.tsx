@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import type { CostSummary, ProjectCostPage, ProjectCostSort } from '@kortix/sdk';
+import type { CostSummary, ProjectCostPage, ProjectCostSort } from '@zed/sdk';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
 

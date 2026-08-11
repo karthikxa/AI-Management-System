@@ -1,7 +1,7 @@
 set lock_timeout = '2s';
 set statement_timeout = '30s';
 
-CREATE TABLE "kortix"."executor_attachments" (
+CREATE TABLE "zed"."executor_attachments" (
 	"attachment_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"account_id" uuid NOT NULL,
 	"project_id" uuid NOT NULL,
@@ -20,10 +20,10 @@ CREATE TABLE "kortix"."executor_attachments" (
 	"consumed_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "executor_attachments_object_path_unique" UNIQUE("object_path"),
-	CONSTRAINT "executor_attachments_disposition_check" CHECK ("kortix"."executor_attachments"."content_disposition" IN ('attachment', 'inline')),
-	CONSTRAINT "executor_attachments_status_check" CHECK ("kortix"."executor_attachments"."status" IN ('uploaded', 'claimed', 'consumed')),
-	CONSTRAINT "executor_attachments_size_check" CHECK ("kortix"."executor_attachments"."size_bytes" > 0)
+	CONSTRAINT "executor_attachments_disposition_check" CHECK ("zed"."executor_attachments"."content_disposition" IN ('attachment', 'inline')),
+	CONSTRAINT "executor_attachments_status_check" CHECK ("zed"."executor_attachments"."status" IN ('uploaded', 'claimed', 'consumed')),
+	CONSTRAINT "executor_attachments_size_check" CHECK ("zed"."executor_attachments"."size_bytes" > 0)
 );
 --> statement-breakpoint
-CREATE INDEX "idx_executor_attachments_scope" ON "kortix"."executor_attachments" USING btree ("project_id","session_id","user_id");--> statement-breakpoint
-CREATE INDEX "idx_executor_attachments_expiry" ON "kortix"."executor_attachments" USING btree ("expires_at");
+CREATE INDEX "idx_executor_attachments_scope" ON "zed"."executor_attachments" USING btree ("project_id","session_id","user_id");--> statement-breakpoint
+CREATE INDEX "idx_executor_attachments_expiry" ON "zed"."executor_attachments" USING btree ("expires_at");

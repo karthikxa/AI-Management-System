@@ -1,4 +1,4 @@
-import { appDeployments, appRuntimes, apps } from '@kortix/db';
+import { appDeployments, appRuntimes, apps } from '@zed/db';
 import { and, eq, isNull, lt, lte, or } from 'drizzle-orm';
 import { pauseComputeSession } from '../billing/services/compute-metering';
 import { type SandboxProviderName } from '../config';
@@ -8,7 +8,7 @@ import { AppHostingProvider } from './hosting';
 
 let running = false;
 const state = globalThis as unknown as {
-  __kortixAppsIdleTimer?: ReturnType<typeof setInterval> | null;
+  __zedAppsIdleTimer?: ReturnType<typeof setInterval> | null;
 };
 
 export async function runAppIdleReaper(now = new Date()): Promise<{ candidates: number; stopped: number; errors: number }> {
@@ -72,10 +72,10 @@ export async function runAppIdleReaper(now = new Date()): Promise<{ candidates: 
 }
 
 export function startAppIdleReaper(): void {
-  if (process.env.KORTIX_APPS_IDLE_REAPER_ENABLED === 'false') return;
+  if (process.env.ZED_APPS_IDLE_REAPER_ENABLED === 'false') return;
   stopAppIdleReaper();
-  const interval = Math.max(5_000, Number(process.env.KORTIX_APPS_IDLE_REAPER_INTERVAL_MS) || 30_000);
-  state.__kortixAppsIdleTimer = setInterval(() => {
+  const interval = Math.max(5_000, Number(process.env.ZED_APPS_IDLE_REAPER_INTERVAL_MS) || 30_000);
+  state.__zedAppsIdleTimer = setInterval(() => {
     void runAppIdleReaper().catch((error) => logger.error('[apps] idle reaper failed', {
       error: error instanceof Error ? error.message : String(error),
     }));
@@ -83,8 +83,8 @@ export function startAppIdleReaper(): void {
 }
 
 export function stopAppIdleReaper(): void {
-  if (state.__kortixAppsIdleTimer) {
-    clearInterval(state.__kortixAppsIdleTimer);
-    state.__kortixAppsIdleTimer = null;
+  if (state.__zedAppsIdleTimer) {
+    clearInterval(state.__zedAppsIdleTimer);
+    state.__zedAppsIdleTimer = null;
   }
 }

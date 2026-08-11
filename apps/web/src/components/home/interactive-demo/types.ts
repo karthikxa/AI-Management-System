@@ -19,7 +19,7 @@ export type Nav = (id: PageId) => void;
 /* ─── CLI-driven demo state ──────────────────────────────────────────────── */
 
 /** Lifecycle a project card moves through as the CLI drives it:
- *  `kortix init` creates a `draft`, `kortix ship` flips it `shipping` → `live`. */
+ *  `zed init` creates a `draft`, `zed ship` flips it `shipping` → `live`. */
 export type ProjectStatus = 'draft' | 'shipping' | 'live';
 
 export type ProjectCard = {

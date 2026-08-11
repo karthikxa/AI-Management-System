@@ -5,7 +5,7 @@
  * import the other (a `index.ts` ⇄ `json-schema.ts` cycle broke bun's
  * bundler: circular top-level `const` access threw "Cannot access before
  * initialization"). `index.ts` re-exports everything here for backward
- * compatibility with existing consumers of `@kortix/manifest-schema`.
+ * compatibility with existing consumers of `@zed/manifest-schema`.
  */
 
 /** The slug reserved for the platform-shared default sandbox template. */
@@ -18,7 +18,7 @@ export const SLUG_RE = /^[a-z0-9][a-z0-9_-]{0,127}$/;
 export const ENV_NAME_RE = /^[A-Z_][A-Z0-9_]*$/;
 
 export const TRIGGER_TYPES = ['cron', 'webhook'] as const;
-// Providers a kortix.yaml may declare. `channel` is included because the
+// Providers a zed.yaml may declare. `channel` is included because the
 // platform itself writes a `connectors:` entry with `provider: channel` into the
 // manifest when a Slack/email channel is connected (see connector/channel-manifest.ts), so
 // the gate must accept what the backend produces. MUST stay in sync with the
@@ -44,13 +44,13 @@ export const CHANNEL_PLATFORMS = ['slack', 'teams', 'email', 'voice'] as const;
 /**
  * Platform-owned slugs and the only provider allowed to use each — mirrors
  * connectors.ts RESERVED_SLUG_PROVIDERS so a user app can't shadow the built-in
- * catalog (the bug that made `slack thread` 404; see KORTIX-206).
+ * catalog (the bug that made `slack thread` 404; see ZED-206).
  */
 export const RESERVED_SLUG_PROVIDERS: Readonly<Record<string, string>> = {
-  kortix_slack: 'channel',
-  kortix_teams: 'channel',
-  kortix_email: 'channel',
-  kortix_voice: 'channel',
+  zed_slack: 'channel',
+  zed_teams: 'channel',
+  zed_email: 'channel',
+  zed_voice: 'channel',
   computer: 'computer',
 };
 export const CONNECTOR_POLICY_ACTIONS = ['always_run', 'require_approval', 'block'] as const;
@@ -60,7 +60,7 @@ export const SANDBOX_MEMORY_BOUNDS = { min: 1, max: 128 } as const;
 export const SANDBOX_DISK_BOUNDS = { min: 1, max: 500 } as const;
 
 /**
- * The actions an agent's `[[agents]].kortix_cli` may grant — the project-scoped
+ * The actions an agent's `[[agents]].zed_cli` may grant — the project-scoped
  * surface. MUST stay in sync with apps/api/src/iam/actions.ts PROJECT_ACTIONS —
  * every project-scoped action, including the manager-tier leaves
  * (`project.delete`, `project.members.manage`, `project.gateway.keys.manage`):
@@ -73,9 +73,9 @@ export const SANDBOX_DISK_BOUNDS = { min: 1, max: 500 } as const;
  * agent-session token is project-scoped (`account_tokens.project_id`):
  * apps/api's IAM v2 engine (`iam/engine-v2.ts`'s `computeTokenScope`) refuses
  * ANY account-scope action outright for a project-bound token — BEFORE the
- * agent's `kortix_cli` grant is even loaded or consulted. This list is a
+ * agent's `zed_cli` grant is even loaded or consulted. This list is a
  * curation/UX surface (what the CLI/dashboard editor OFFER as grantable, and
- * what `validateGrantList` flags as a bad `kortix_cli` entry), not the
+ * what `validateGrantList` flags as a bad `zed_cli` entry), not the
  * security boundary itself — grant-omission alone would not stop a
  * hypothetical non-project-scoped token from calling an account action.
  *
@@ -85,10 +85,10 @@ export const SANDBOX_DISK_BOUNDS = { min: 1, max: 500 } as const;
  * audit, 2026-07): none of them were ever asserted on any route, so granting
  * or omitting them was a silent no-op.
  */
-// MUST stay in sync with apps/api iam/actions.ts GRANTABLE_KORTIX_CLI (=
+// MUST stay in sync with apps/api iam/actions.ts GRANTABLE_ZED_CLI (=
 // Object.values(PROJECT_ACTIONS)). The unit-agents-parse drift-guard test
 // fails loudly if these diverge (this package can't import apps/api).
-export const GRANTABLE_KORTIX_CLI_ACTIONS: readonly string[] = [
+export const GRANTABLE_ZED_CLI_ACTIONS: readonly string[] = [
   'project.read',
   'project.write',
   'project.delete',
@@ -136,14 +136,14 @@ export const GRANTABLE_KORTIX_CLI_ACTIONS: readonly string[] = [
 /**
  * Actions removed from the enforcement catalog (IAM dead-catalog cleanup,
  * 2026-07) but that older project manifests may still list under
- * `kortix_cli`. None of them were ever asserted on any route, so granting or
+ * `zed_cli`. None of them were ever asserted on any route, so granting or
  * omitting them was always a no-op — but a manifest merge/ship must not start
  * hard-failing for projects that happen to still mention one. Kept out of
- * `GRANTABLE_KORTIX_CLI_ACTIONS` (they must never appear in the role editor
+ * `GRANTABLE_ZED_CLI_ACTIONS` (they must never appear in the role editor
  * or be recommended for new manifests) and instead surfaced as a
  * deprecation warning by `validateGrantList`.
  */
-export const LEGACY_TOLERATED_KORTIX_CLI_ACTIONS: readonly string[] = [
+export const LEGACY_TOLERATED_ZED_CLI_ACTIONS: readonly string[] = [
   'project.session.exec',
   'project.gateway.routing.edit',
   'project.schedule.read',

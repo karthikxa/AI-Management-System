@@ -22,7 +22,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { clearApiKey, getApiKey, kortix } from '@/lib/kortix';
+import { clearApiKey, getApiKey, zed } from '@/lib/zed';
 import { qk } from '@/lib/query-keys';
 import { clearSessionToken, getSessionToken } from '@/lib/session';
 import { relativeTime } from '@/lib/utils';
@@ -80,7 +80,7 @@ function Dashboard({
 }) {
   const projects = useQuery({
     queryKey: qk.projects,
-    queryFn: () => kortix.projects.list(),
+    queryFn: () => zed.projects.list(),
   });
   const items = projects.data ?? [];
 
@@ -186,7 +186,7 @@ function CreateProjectDialog() {
 
   const create = useMutation({
     mutationFn: () =>
-      kortix.projects.provision({ name: name.trim(), seed_starter: true }),
+      zed.projects.provision({ name: name.trim(), seed_starter: true }),
     onSuccess: (project) => {
       qc.invalidateQueries({ queryKey: qk.projects });
       setOpen(false);

@@ -2,7 +2,7 @@
 
 import type { QueryClient } from '@tanstack/react-query';
 
-import { prefetchSessionStart, qk } from '@kortix/sdk/react';
+import { prefetchSessionStart, qk } from '@zed/sdk/react';
 
 export interface SessionRouter {
   prefetch: (href: string) => void;

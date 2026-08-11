@@ -99,15 +99,15 @@ export function sparklinePath(values: number[], width = WIDTH, height = HEIGHT):
 /**
  * Colour carries cost semantics, which are the inverse of a revenue chart:
  * **rising spend is the alarming direction.** A FinOps reader is trying to
- * push this line down, so up is `kortix-red` and down is `kortix-green`.
+ * push this line down, so up is `zed-red` and down is `zed-green`.
  *
  * This is the only coloured element on a tile. The figure and its delta stay
  * neutral, so the tile spends its accent once — on the one element whose whole
  * job is to show direction.
  */
 const TREND_STROKE: Record<SparklineTrend, string> = {
-  up: 'text-kortix-red',
-  down: 'text-kortix-green',
+  up: 'text-zed-red',
+  down: 'text-zed-green',
   flat: 'text-muted-foreground/60',
 };
 

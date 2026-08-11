@@ -53,7 +53,7 @@ describe('provider guides', () => {
     const text = JSON.stringify(entra.steps);
     // Empty user.mail on onmicrosoft.com accounts → email claim must be UPN.
     expect(text).toContain('user.userprincipalname');
-    // Group claim name must match what Kortix is configured with.
+    // Group claim name must match what Zed is configured with.
     expect(entra.config.groupClaimName).toBe('memberOf');
     // Display names / group assignment need a paid Entra tier.
     expect(text).toContain('P1/P2');
@@ -108,7 +108,7 @@ describe('setup wizard wiring', () => {
   });
 
   test('progress persists per account + provider', () => {
-    expect(wizardSource).toContain('kortix:sso-setup');
+    expect(wizardSource).toContain('zed:sso-setup');
   });
 
   test('non-entitled accounts see the enterprise upsell, not the wizard', () => {
@@ -180,7 +180,7 @@ describe('directory sync wizard wiring', () => {
   });
 
   test('scim progress persists under its own key', () => {
-    expect(wizardSource).toContain('kortix:scim-setup');
+    expect(wizardSource).toContain('zed:scim-setup');
   });
 
   test('scim flow gates on the scim entitlement', () => {
@@ -290,7 +290,7 @@ describe('WorkOS-informed guide content, adopted per provider (not copied assets
       const text = JSON.stringify(getScimGuide(id)!.steps);
       // Each connects by pointing the IdP at the minted Tenant URL + secret.
       expect(text).toContain('Tenant URL');
-      // And each pins userName to the email Kortix correlates on.
+      // And each pins userName to the email Zed correlates on.
       expect(text.toLowerCase()).toContain('email');
     }
   });
@@ -514,7 +514,7 @@ describe('setup polish stays fixed', () => {
   });
 
   test("Entra's post-Save test popup is preempted", () => {
-    expect(guidesSource).toContain('Test single sign-on with Kortix?');
+    expect(guidesSource).toContain('Test single sign-on with Zed?');
   });
 
   test('every Entra SSO console step carries a breadcrumb', () => {
@@ -554,7 +554,7 @@ describe('Google SAML guide is novice-complete', () => {
   test('every Google IdP step has a where badge + breadcrumb', () => {
     const google = getProviderGuide('google')!;
     for (const step of google.steps) {
-      if (step.kind === 'import' || step.kind === 'test') continue; // Kortix-side
+      if (step.kind === 'import' || step.kind === 'test') continue; // Zed-side
       expect(step.menuPath, `google step ${step.id} missing menuPath`).toBeTruthy();
     }
   });
@@ -567,7 +567,7 @@ describe('Google SAML guide is novice-complete', () => {
     expect(text).toContain('OVERRIDES'); // the JSONata-breaks-attributes caution
     const policy = cf.steps.find((st) => st.id === 'policy')!;
     expect(policy.warning?.toLowerCase()).toContain('denies everyone'); // no-policy gotcha
-    // Cloudflare IS the SAML IdP to Kortix — every console step is on the IdP side.
+    // Cloudflare IS the SAML IdP to Zed — every console step is on the IdP side.
     for (const step of cf.steps) {
       if (step.kind === 'import' || step.kind === 'test') continue;
       expect(step.menuPath, `cloudflare step ${step.id} missing breadcrumb`).toBeTruthy();

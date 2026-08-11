@@ -22,7 +22,7 @@ describe('executeOpenCodeCommand', () => {
       command: 'review',
       args: 'src',
       agent: 'coder',
-      model: 'kortix/anthropic/claude-sonnet-4-6',
+      model: 'zed/anthropic/claude-sonnet-4-6',
       variant: 'high',
     });
 
@@ -31,7 +31,7 @@ describe('executeOpenCodeCommand', () => {
       command: 'review',
       arguments: 'src',
       agent: 'coder',
-      model: 'kortix/anthropic/claude-sonnet-4-6',
+      model: 'zed/anthropic/claude-sonnet-4-6',
       variant: 'high',
     });
   });

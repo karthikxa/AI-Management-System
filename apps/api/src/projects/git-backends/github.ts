@@ -64,7 +64,7 @@ export function managedGithubOwnerType(): 'User' | 'Organization' | undefined {
  * GitHub App: simpler to operate, no install/permission dance. Trade-off: a
  * long-lived, org-wide token (vs the App's short-lived, repo-scoped, auto-
  * rotating installation tokens). Either way the token stays server-side — the
- * sandbox only ever sees KORTIX_TOKEN via the proxy.
+ * sandbox only ever sees ZED_TOKEN via the proxy.
  */
 function managedGithubToken(): string | null {
   return (
@@ -150,7 +150,7 @@ export const githubBackend: GitHostBackend = {
   id: 'github',
 
   async isConfigured(): Promise<boolean> {
-    if (process.env.KORTIX_LOCAL_DEV === '1') return true;
+    if (process.env.ZED_LOCAL_DEV === '1') return true;
     const owner = managedGithubOwner();
     if (!owner) return false;
     // PAT path: a straight org token needs no App creds at all.
@@ -165,8 +165,8 @@ export const githubBackend: GitHostBackend = {
   },
 
   async createRepo(input: ProvisionInput): Promise<ProvisionedRepo> {
-    if (process.env.KORTIX_LOCAL_DEV === '1') {
-      const owner = managedGithubOwner() || 'kortix-dev-org';
+    if (process.env.ZED_LOCAL_DEV === '1') {
+      const owner = managedGithubOwner() || 'zed-dev-org';
       return {
         provider: 'github',
         upstreamUrl: `https://github.com/${owner}/${input.slug}.git`,
@@ -202,7 +202,7 @@ export const githubBackend: GitHostBackend = {
   },
 
   async deleteRepo(ref: GitConnectionRef): Promise<void> {
-    if (process.env.KORTIX_LOCAL_DEV === '1') return;
+    if (process.env.ZED_LOCAL_DEV === '1') return;
     if (!ref.repoOwner || !ref.repoName) return;
     const auth = await managedAdminAuth();
     await ghDeleteRepo({ owner: ref.repoOwner, repo: ref.repoName, auth });
@@ -218,7 +218,7 @@ export const githubBackend: GitHostBackend = {
     files: SeedFile[],
     opts: { branch: string; message: string; baseFiles?: SeedFile[] },
   ): Promise<void> {
-    if (process.env.KORTIX_LOCAL_DEV === '1') {
+    if (process.env.ZED_LOCAL_DEV === '1') {
       console.log('[github-dev] Local dev — skipping remote git push for seed files');
       return;
     }

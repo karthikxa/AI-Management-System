@@ -2,14 +2,14 @@ import {
   type RequiredConnectorConnection,
   type SessionConnectorBindings,
   SessionConnectorBindingsInputSchema,
-} from '@kortix/api-contract';
+} from '@zed/api-contract';
 import {
   connectorConnections,
   connectors,
   projectSessionConnectorBindings,
   projectSessions,
   serviceAccounts,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, desc, eq } from 'drizzle-orm';
 import {
   canonicalConnectorAlias,

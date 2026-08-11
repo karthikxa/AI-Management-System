@@ -1,6 +1,6 @@
 'use client';
 
-import { IconChevronDown, IconChevronUp, IconSort } from '@/components/ui/kortix-icons';
+import { IconChevronDown, IconChevronUp, IconSort } from '@/components/ui/zed-icons';
 import { TableHead } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 

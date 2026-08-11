@@ -41,17 +41,17 @@ import { useProjectFeatureFlags } from '@/lib/use-project-feature-flags';
 import { useCustomizeStore } from '@/stores/customize-store';
 import { useProjectSessionTabsStore } from '@/stores/project-session-tabs-store';
 import {
-  type KortixAccount,
-  type KortixProject,
+  type ZedAccount,
+  type ZedProject,
   type ProjectSession,
   listAccounts,
   listProjectSessions,
   listProjectsForAccount,
   systemReload,
-} from '@kortix/sdk';
-import { featureFlags } from '@kortix/sdk/feature-flags';
-import { normalizeAppPathname } from '@kortix/sdk/instance-routes';
-import { contract, qk, useRuntimeAgents, useRuntimeProviders } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { featureFlags } from '@zed/sdk/feature-flags';
+import { normalizeAppPathname } from '@zed/sdk/instance-routes';
+import { contract, qk, useRuntimeAgents, useRuntimeProviders } from '@zed/sdk/react';
 import {
   ArrowDownIcon as ArrowDown,
   ArrowUpIcon as ArrowUp,
@@ -88,7 +88,7 @@ import { isBillingEnabled } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
 import { track } from '@/lib/track';
 import { clearUserLocalStorage } from '@/lib/utils/clear-local-storage';
-import { stripKortixSystemTags } from '@/lib/utils/kortix-system-tags';
+import { stripZedSystemTags } from '@/lib/utils/zed-system-tags';
 import {
   buildWebProxyUrl,
   normalizeExternalInput,
@@ -103,14 +103,14 @@ import { openTabAndNavigate } from '@/stores/tab-store';
 import { useUpgradeDialogStore } from '@/stores/upgrade-dialog-store';
 import { useUserPreferencesStore } from '@/stores/user-preferences-store';
 import { type TextPart, groupMessagesIntoTurns, isTextPart } from '@/ui';
-import { clearSessionIDBCache } from '@kortix/sdk/idb-sync-cache';
+import { clearSessionIDBCache } from '@zed/sdk/idb-sync-cache';
 import {
   useCreatePty,
   useCreateRuntimeSession,
   useModelStore,
   useRuntimeMessages,
-} from '@kortix/sdk/react';
-import { chalkColors, formatRelativeTime } from '@kortix/shared';
+} from '@zed/sdk/react';
+import { chalkColors, formatRelativeTime } from '@zed/shared';
 import { UsersIcon as UsersSolid } from '@phosphor-icons/react';
 import { useTheme } from 'next-themes';
 
@@ -293,7 +293,7 @@ function MessagesPage({
       .map((turn) => {
         const textParts = turn.userMessage.parts.filter(isTextPart) as TextPart[];
         const raw = textParts.map((p) => p.text).join(' ');
-        const stripped = stripHtmlTags(stripKortixSystemTags(raw)).trim();
+        const stripped = stripHtmlTags(stripZedSystemTags(raw)).trim();
         return {
           id: turn.userMessage.info.id,
           text: stripped,
@@ -430,7 +430,7 @@ export function CommandPalette() {
   // panel rendered nothing unless it was ENABLED — a palette entry that opened
   // a blank pane. It now follows enablement like every other flag.
   // `projectFlags`, not `featureFlags` — the module-scope `featureFlags` import
-  // above is the DEPLOYMENT flag set (`@kortix/sdk/feature-flags`, build-time
+  // above is the DEPLOYMENT flag set (`@zed/sdk/feature-flags`, build-time
   // capabilities like `enableProjects`), a different concept from the
   // per-project feature flags this gates on.
   const { flags: projectFlags } = useProjectFeatureFlags(open ? projectId : null);
@@ -530,8 +530,8 @@ export function CommandPalette() {
       setPage('files');
       setOpen(true);
     };
-    window.addEventListener('kortix:open-file-search', openFileSearch);
-    return () => window.removeEventListener('kortix:open-file-search', openFileSearch);
+    window.addEventListener('zed:open-file-search', openFileSearch);
+    return () => window.removeEventListener('zed:open-file-search', openFileSearch);
   }, []);
 
   // Same door as ⌘K, for surfaces that have a button instead of a keystroke
@@ -740,7 +740,7 @@ export function CommandPalette() {
   const setSelectedAccountId = useCurrentAccountStore((s) => s.setSelectedAccountId);
 
   const handleSelectProject = useCallback(
-    (p: KortixProject) => {
+    (p: ZedProject) => {
       router.push(`/projects/${p.project_id}`);
       close();
     },
@@ -748,7 +748,7 @@ export function CommandPalette() {
   );
 
   const handleSelectAccount = useCallback(
-    (a: KortixAccount) => {
+    (a: ZedAccount) => {
       setSelectedAccountId(a.account_id);
       router.push('/projects');
       close();
@@ -1476,7 +1476,7 @@ export function CommandPalette() {
                               'componentsCommandPalette.line1248JsxTextSearchFiles',
                             )}
                           </span>
-                          <Badge variant="kortix" size="sm">
+                          <Badge variant="zed" size="sm">
                             repo
                           </Badge>
                           <ChevronRight className="text-muted-foreground/40 size-3" />
@@ -1683,13 +1683,13 @@ export function CommandPalette() {
                           )}
                           onSelect={handleOpenUrl}
                         >
-                          <Globe className="text-kortix-blue size-4" />
+                          <Globe className="text-zed-blue size-4" />
                           <span className="flex-1 truncate">
                             {detectedUrl.kind === 'localhost'
                               ? `Open localhost:${detectedUrl.port}${detectedUrl.path !== '/' ? detectedUrl.path : ''}`
                               : `Open ${new URL(detectedUrl.url).hostname}`}
                           </span>
-                          <Badge variant="kortix" size="sm">
+                          <Badge variant="zed" size="sm">
                             browser
                           </Badge>
                         </CommandItem>
@@ -1716,7 +1716,7 @@ export function CommandPalette() {
                             {query.trim()}
                             {tHardcodedUi.raw('componentsCommandPalette.line1444JsxTextText')}
                           </span>
-                          <Badge variant="kortix" size="sm">
+                          <Badge variant="zed" size="sm">
                             repo
                           </Badge>
                           <ChevronRight className="text-muted-foreground/40 size-3" />
@@ -1794,7 +1794,7 @@ export function CommandPalette() {
                   <CommandGroup heading="Sub-agents" forceMount>
                     {subAgents.map((agent) => {
                       const isActive = currentAgent?.name === agent.name;
-                      const isKortixAgent = agent.name.toLowerCase().includes('kortix');
+                      const isZedAgent = agent.name.toLowerCase().includes('zed');
                       const chalk = chalkColors(agent.name);
                       return (
                         <CommandItem
@@ -1812,7 +1812,7 @@ export function CommandPalette() {
                               borderColor: chalk.border,
                             }}
                           >
-                            {isKortixAgent ? (
+                            {isZedAgent ? (
                               <Bot className="size-5 shrink-0" />
                             ) : (
                               <span>{agent.name.charAt(0).toUpperCase()}</span>
@@ -1879,12 +1879,12 @@ export function CommandPalette() {
                           </div>
                           <div className="flex flex-shrink-0 items-center gap-1.5">
                             {model.capabilities?.reasoning && (
-                              <Badge variant="kortix" size="sm">
+                              <Badge variant="zed" size="sm">
                                 reasoning
                               </Badge>
                             )}
                             {model.capabilities?.vision && (
-                              <Badge variant="kortix" size="sm">
+                              <Badge variant="zed" size="sm">
                                 vision
                               </Badge>
                             )}

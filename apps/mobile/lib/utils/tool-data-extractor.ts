@@ -6,7 +6,7 @@
  */
 
 import type { UnifiedMessage, ParsedMetadata } from '@/api/types';
-import { safeJsonParse } from '@kortix/shared';
+import { safeJsonParse } from '@zed/shared';
 import { log } from '@/lib/logger';
 
 /**

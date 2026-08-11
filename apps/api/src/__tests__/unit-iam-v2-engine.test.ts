@@ -174,7 +174,7 @@ describe('computeTokenScope — token project-scope (D2 standing-identity)', () 
   });
 
   test('null binding: a direct SA bearer is in scope; a revoked/invalid token is NOT', () => {
-    // auth sets actingTokenId = serviceAccountId for a kortix_sa_ bearer; no account_tokens row.
+    // auth sets actingTokenId = serviceAccountId for a zed_sa_ bearer; no account_tokens row.
     expect(computeTokenScope(null, 'sa-id', 'service_account', 'project', proj('p1'))).toBe(true);
     // a member acting id with no token row = revoked/invalid → out of scope.
     expect(computeTokenScope(null, 'dead-token', 'member', 'project', proj('p1'))).toBe(false);
@@ -213,9 +213,9 @@ describe('agent grant central fold (userRole ∩ agentGrant)', () => {
   });
 
   test('a scoped agent is denied a gated capability it does not hold, but passes exempt + held ones', () => {
-    const grant = { agent: 'marketing', kortixCli: [PROJECT_ACTIONS.PROJECT_CR_OPEN], connectors: 'all' as const };
+    const grant = { agent: 'marketing', zedCli: [PROJECT_ACTIONS.PROJECT_CR_OPEN], connectors: 'all' as const };
     const denied = (action: string) => agentGrantGates('project', action) && !agentMayPerform(grant, action);
-    expect(denied(PROJECT_ACTIONS.PROJECT_SECRET_WRITE)).toBe(true); // not in kortixCli + gated → denied
+    expect(denied(PROJECT_ACTIONS.PROJECT_SECRET_WRITE)).toBe(true); // not in zedCli + gated → denied
     expect(denied(PROJECT_ACTIONS.PROJECT_TRIGGER_CREATE)).toBe(true);
     expect(denied(PROJECT_ACTIONS.PROJECT_CR_OPEN)).toBe(false); // held → allowed
     expect(denied(PROJECT_ACTIONS.PROJECT_READ)).toBe(false); // exempt → allowed
@@ -228,7 +228,7 @@ describe('agent grant central fold (userRole ∩ agentGrant)', () => {
   });
 
   test('all-grant and null-grant impose no restriction', () => {
-    const all = { agent: 'kortix', kortixCli: 'all' as const, connectors: 'all' as const };
+    const all = { agent: 'zed', zedCli: 'all' as const, connectors: 'all' as const };
     expect(agentMayPerform(all, PROJECT_ACTIONS.PROJECT_GITOPS_PUSH)).toBe(true);
     expect(agentMayPerform(null, PROJECT_ACTIONS.PROJECT_GITOPS_PUSH)).toBe(true);
   });

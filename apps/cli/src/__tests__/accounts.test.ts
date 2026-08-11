@@ -15,15 +15,15 @@ const ORIGINAL_STDOUT_WRITE = process.stdout.write;
 const ORIGINAL_STDERR_WRITE = process.stderr.write;
 
 const ENV_KEYS = [
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_FRONTEND_URL',
-  'KORTIX_PROJECT_ID',
+  'ZED_CLI_TOKEN',
+  'ZED_TOKEN',
+  'ZED_API_URL',
+  'ZED_FRONTEND_URL',
+  'ZED_PROJECT_ID',
   'BASH_ENV',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_AUTH_FILE',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CONFIG_FILE',
+  'ZED_AUTH_FILE',
 ] as const;
 
 let saved: Record<string, string | undefined>;
@@ -35,7 +35,7 @@ let requests: string[] = [];
 
 const ACCOUNTS = [
   { account_id: 'account_1', slug: 'personal', name: 'Personal', role: 'owner' },
-  { account_id: 'account_2', slug: 'kortix', name: 'Kortix', role: 'owner' },
+  { account_id: 'account_2', slug: 'zed', name: 'Zed', role: 'owner' },
 ];
 
 function writeConfig(activeAccountId = 'account_1'): void {
@@ -57,7 +57,7 @@ function writeConfig(activeAccountId = 'account_1'): void {
     }),
     'utf8',
   );
-  process.env.KORTIX_CONFIG_FILE = file;
+  process.env.ZED_CONFIG_FILE = file;
 }
 
 function captureOutput() {
@@ -95,9 +95,9 @@ beforeEach(() => {
     saved[key] = process.env[key];
     delete process.env[key];
   }
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
   originalCwd = process.cwd();
-  tmp = mkdtempSync(join(tmpdir(), 'kortix-accounts-test-'));
+  tmp = mkdtempSync(join(tmpdir(), 'zed-accounts-test-'));
   process.chdir(tmp);
   writeConfig();
   captureOutput();
@@ -116,7 +116,7 @@ afterEach(() => {
   rmSync(tmp, { recursive: true, force: true });
 });
 
-describe('kortix accounts', () => {
+describe('zed accounts', () => {
   test('ls lists accounts and marks the active one (no account scoping on /me)', async () => {
     mockApi();
     const code = await runAccounts(['ls']);
@@ -124,7 +124,7 @@ describe('kortix accounts', () => {
     expect(requests).toEqual(['https://api.test/v1/accounts/me']);
     const out = stripAnsi(stdout);
     expect(out).toContain('Personal');
-    expect(out).toContain('Kortix');
+    expect(out).toContain('Zed');
     // The active account (account_1 = Personal) is bulleted.
     expect(out).toMatch(/●\s+Personal/);
   });
@@ -135,15 +135,15 @@ describe('kortix accounts', () => {
     expect(code).toBe(0);
     const parsed = JSON.parse(stdout) as Array<{ slug: string; active: boolean }>;
     expect(parsed.find((a) => a.slug === 'personal')?.active).toBe(true);
-    expect(parsed.find((a) => a.slug === 'kortix')?.active).toBe(false);
+    expect(parsed.find((a) => a.slug === 'zed')?.active).toBe(false);
   });
 
   test('use <slug> switches the active account', async () => {
     mockApi();
-    const code = await runAccounts(['use', 'kortix']);
+    const code = await runAccounts(['use', 'zed']);
     expect(code).toBe(0);
-    expect(activeAccount()).toEqual({ id: 'account_2', slug: 'kortix', name: 'Kortix' });
-    expect(stripAnsi(stdout)).toContain('Active account is now Kortix');
+    expect(activeAccount()).toEqual({ id: 'account_2', slug: 'zed', name: 'Zed' });
+    expect(stripAnsi(stdout)).toContain('Active account is now Zed');
   });
 
   test('use rejects an unknown account', async () => {
@@ -157,15 +157,15 @@ describe('kortix accounts', () => {
 
   test('current prints the active account', async () => {
     mockApi();
-    await runAccounts(['use', 'kortix']);
+    await runAccounts(['use', 'zed']);
     stdout = '';
     const code = await runAccounts(['current']);
     expect(code).toBe(0);
-    expect(stripAnsi(stdout)).toContain('Kortix');
+    expect(stripAnsi(stdout)).toContain('Zed');
   });
 });
 
-describe('kortix projects use', () => {
+describe('zed projects use', () => {
   test('sets the default project and switches the active account to its account', async () => {
     mockApi((url) => {
       if (url === 'https://api.test/v1/projects/proj_x') {
@@ -176,7 +176,7 @@ describe('kortix projects use', () => {
             name: 'Beta',
             repo_url: 'https://github.com/x/beta.git',
             default_branch: 'main',
-            manifest_path: 'kortix.yaml',
+            manifest_path: 'zed.yaml',
             status: 'active',
             last_opened_at: null,
             created_at: '2026-01-01T00:00:00.000Z',
@@ -194,15 +194,15 @@ describe('kortix projects use', () => {
     expect(requests).toContain('https://api.test/v1/projects/proj_x');
     // Default project recorded …
     expect(defaultProject()).toEqual({ project_id: 'proj_x', account_id: 'account_2', name: 'Beta' });
-    // … and the active account followed it to Kortix (account_2).
-    expect(activeAccount()).toEqual({ id: 'account_2', slug: 'kortix', name: 'Kortix' });
+    // … and the active account followed it to Zed (account_2).
+    expect(activeAccount()).toEqual({ id: 'account_2', slug: 'zed', name: 'Zed' });
     const out = stripAnsi(stdout);
     expect(out).toContain('Default project: Beta');
     expect(out).toContain('now active');
   });
 });
 
-describe('kortix projects ls scoping', () => {
+describe('zed projects ls scoping', () => {
   test('scopes the list to the active account', async () => {
     mockApi((url) => {
       if (url.startsWith('https://api.test/v1/projects')) {

@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { KORTIX_CLI_INSTALL_COMMAND } from './kortix-cli';
+import { ZED_CLI_INSTALL_COMMAND } from './zed-cli';
 import { useDeploymentCliInstallCommand } from './use-deployment-cli-install-command';
 
 function InstallCommandProbe() {
@@ -22,7 +22,7 @@ test('keeps the server and first browser render identical before reading the bro
     const firstBrowserHtml = renderToStaticMarkup(<InstallCommandProbe />);
 
     expect(serverHtml).toBe(firstBrowserHtml);
-    expect(serverHtml).toContain(KORTIX_CLI_INSTALL_COMMAND);
+    expect(serverHtml).toContain(ZED_CLI_INSTALL_COMMAND);
   } finally {
     if (originalWindow) {
       Object.defineProperty(globalThis, 'window', originalWindow);

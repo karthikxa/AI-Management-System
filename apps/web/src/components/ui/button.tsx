@@ -5,17 +5,17 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  "flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50  [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none  aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-center cursor-pointer shadow-none data-[state=open]:ring-0 focus-visible:outline-none focus-visible:ring-kortix-base focus-visible:ring-[0.6px]",
+  "flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50  [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none  aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-center cursor-pointer shadow-none data-[state=open]:ring-0 focus-visible:outline-none focus-visible:ring-zed-base focus-visible:ring-[0.6px]",
 
   {
     variants: {
       variant: {
         default: 'bg-foreground text-background hover:bg-foreground/90',
         brand:
-          'bg-kortix-blue/90 dark:bg-kortix-blue/60 text-background dark:text-foreground shadow-xs hover:bg-kortix-blue/85 dark:hover:bg-kortix-blue/50 transition-colors duration-200 ease-in',
-        blue: 'bg-kortix-blue text-background dark:text-foreground shadow-xs hover:bg-kortix-blue/90',
-        'blue-ghost': 'hover:bg-sidebar-accent/40 text-kortix-blue',
-        'blue-secondary': 'bg-kortix-blue/10 text-kortix-blue hover:bg-kortix-blue/20',
+          'bg-zed-blue/90 dark:bg-zed-blue/60 text-background dark:text-foreground shadow-xs hover:bg-zed-blue/85 dark:hover:bg-zed-blue/50 transition-colors duration-200 ease-in',
+        blue: 'bg-zed-blue text-background dark:text-foreground shadow-xs hover:bg-zed-blue/90',
+        'blue-ghost': 'hover:bg-sidebar-accent/40 text-zed-blue',
+        'blue-secondary': 'bg-zed-blue/10 text-zed-blue hover:bg-zed-blue/20',
         danger:
           'bg-destructive text-background hover:bg-destructive/90 focus-visible:ring-destructive/35 focus-visible:ring-offset-4 focus-visible:ring-2',
         destructive:
@@ -47,10 +47,10 @@ const buttonVariants = cva(
         'outline-sidebar':
           'border border-border bg-transparent hover:bg-sidebar hover:text-sidebar-accent-foreground',
 
-        success: 'bg-kortix-green/80 text-background hover:bg-kortix-green/85',
-        error: 'bg-kortix-red/80 text-background hover:bg-kortix-red/85',
-        info: 'bg-kortix-blue/80 text-background hover:bg-kortix-blue/85',
-        warning: 'bg-kortix-yellow/80 text-background hover:bg-kortix-yellow/85',
+        success: 'bg-zed-green/80 text-background hover:bg-zed-green/85',
+        error: 'bg-zed-red/80 text-background hover:bg-zed-red/85',
+        info: 'bg-zed-blue/80 text-background hover:bg-zed-blue/85',
+        warning: 'bg-zed-yellow/80 text-background hover:bg-zed-yellow/85',
         popover: 'bg-popover text-foreground',
       },
       size: {

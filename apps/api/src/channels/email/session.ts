@@ -4,7 +4,7 @@ import {
   chatInstalls,
   chatThreads,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { config } from '../../config';
 import {
@@ -120,7 +120,7 @@ async function spawnEmailAgentTurn(
       source: 'email',
       sessionId: existing.sessionId,
       text: renderFollowUpPrompt(event),
-      opencodeEnv: { KORTIX_CONNECTORS_MCP_ENABLED: '1' },
+      opencodeEnv: { ZED_CONNECTORS_MCP_ENABLED: '1' },
     });
     if (outcome === 'delivered') {
       await db
@@ -205,7 +205,7 @@ async function createThreadSession(
         source: 'email',
         sessionId,
         text: renderFollowUpPrompt(event),
-        opencodeEnv: { KORTIX_CONNECTORS_MCP_ENABLED: '1' },
+        opencodeEnv: { ZED_CONNECTORS_MCP_ENABLED: '1' },
       });
     }
     return;
@@ -269,12 +269,12 @@ async function createThreadSession(
     extraEnvVars: {
       // Email delivery cannot depend on a shell fallback. Enable the
       // session-scoped MCP face so OpenCode exposes the bound inbox as tools.
-      KORTIX_CONNECTORS_MCP_ENABLED: '1',
-      KORTIX_EMAIL_INBOX_ID: inboxId,
-      KORTIX_EMAIL_THREAD_ID: threadId,
-      KORTIX_EMAIL_MESSAGE_ID: event.message.message_id,
-      KORTIX_EMAIL_ADDRESS: event.message.to?.[0] ?? '',
-      KORTIX_FRONTEND_URL: config.FRONTEND_URL,
+      ZED_CONNECTORS_MCP_ENABLED: '1',
+      ZED_EMAIL_INBOX_ID: inboxId,
+      ZED_EMAIL_THREAD_ID: threadId,
+      ZED_EMAIL_MESSAGE_ID: event.message.message_id,
+      ZED_EMAIL_ADDRESS: event.message.to?.[0] ?? '',
+      ZED_FRONTEND_URL: config.FRONTEND_URL,
     },
   });
 
@@ -378,7 +378,7 @@ function emailTurnInstructions(event: AgentMailMessageReceivedEvent): string {
   });
   return [
     'How to work:',
-    '- You are operating an AgentMail inbox assigned to this Kortix project.',
+    '- You are operating an AgentMail inbox assigned to this Zed project.',
     '- Use the Connector MCP meta-tools `connectors`, `discover`, `describe`, and `call`. Connector actions are not direct tools.',
     '- Start with `connectors`. Use `discover` to find an action and `describe` to confirm its input schema before the first call.',
     `- Read the current thread with \`call\`: \`${readThreadCall}\`.`,
@@ -409,7 +409,7 @@ function renderAgentPrompt(event: AgentMailMessageReceivedEvent, revived: boolea
     );
   }
   lines.push(
-    "You're answering an email thread as the Kortix agent.",
+    "You're answering an email thread as the Zed agent.",
     '',
     `Inbox ID:   ${event.message.inbox_id}`,
     `Thread ID:  ${event.message.thread_id}`,

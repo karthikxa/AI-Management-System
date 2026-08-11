@@ -1,7 +1,7 @@
 'use client';
 
 import { errorToast, successToast } from '@/components/ui/toast';
-import type { SessionScope, SessionScopeInput } from '@kortix/sdk';
+import type { SessionScope, SessionScopeInput } from '@zed/sdk';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { SessionScopeControl } from './session-scope-control';

@@ -25,8 +25,8 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import { kortix } from '@/lib/kortix';
-import type { ProjectTrigger } from '@kortix/sdk';
+import { zed } from '@/lib/zed';
+import type { ProjectTrigger } from '@zed/sdk';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Play, Trash2, Zap } from 'lucide-react';
 import { useState } from 'react';
@@ -41,7 +41,7 @@ export function TriggersTab({ projectId }: { projectId: string }) {
 
   const triggers = useQuery({
     queryKey: key,
-    queryFn: () => kortix.project(projectId).triggers.list(),
+    queryFn: () => zed.project(projectId).triggers.list(),
   });
 
   const [name, setName] = useState('');
@@ -53,7 +53,7 @@ export function TriggersTab({ projectId }: { projectId: string }) {
   const paused: boolean = Boolean(triggers.data?.triggers_paused);
 
   const setActivation = useMutation({
-    mutationFn: (next: boolean) => kortix.project(projectId).triggers.setActivation(next),
+    mutationFn: (next: boolean) => zed.project(projectId).triggers.setActivation(next),
     onSuccess: (_res, next) => {
       refresh();
       toast.success(next ? 'All triggers paused' : 'All triggers resumed');
@@ -63,7 +63,7 @@ export function TriggersTab({ projectId }: { projectId: string }) {
 
   const create = useMutation({
     mutationFn: () =>
-      kortix.project(projectId).triggers.create({
+      zed.project(projectId).triggers.create({
         name: name.trim(),
         type,
         prompt_template: prompt.trim() || name.trim(),
@@ -79,7 +79,7 @@ export function TriggersTab({ projectId }: { projectId: string }) {
   });
 
   const fire = useMutation({
-    mutationFn: (slug: string) => kortix.project(projectId).triggers.fire(slug),
+    mutationFn: (slug: string) => zed.project(projectId).triggers.fire(slug),
     onSuccess: (res) => {
       toast.success(`Trigger ${res.status}`);
     },
@@ -87,7 +87,7 @@ export function TriggersTab({ projectId }: { projectId: string }) {
   });
 
   const remove = useMutation({
-    mutationFn: (slug: string) => kortix.project(projectId).triggers.remove(slug),
+    mutationFn: (slug: string) => zed.project(projectId).triggers.remove(slug),
     onSuccess: () => {
       refresh();
       toast.success('Trigger deleted');
@@ -264,7 +264,7 @@ function EditTriggerDialog({
 
   const update = useMutation({
     mutationFn: () =>
-      kortix.project(projectId).triggers.update(slug, {
+      zed.project(projectId).triggers.update(slug, {
         name: name.trim() || undefined,
         prompt_template: prompt.trim() || undefined,
         enabled: enabled === 'on',

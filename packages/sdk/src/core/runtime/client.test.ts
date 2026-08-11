@@ -1,5 +1,5 @@
 import { test, expect, beforeEach, mock } from 'bun:test';
-import { configureKortix } from '../http/config';
+import { configureZed } from '../http/config';
 import { setCurrentRuntime } from '../session/current-runtime';
 
 // This file used to fake `getActiveOpenCodeUrl` entirely via
@@ -10,7 +10,7 @@ import { setCurrentRuntime } from '../session/current-runtime';
 // that module) would see every other export silently gutted to `undefined`.
 // Driving the same "active runtime url" control through the REAL state seam
 // instead (`setCurrentRuntime` — the same primitive `getActiveOpenCodeUrl`
-// itself reads — plus `configureKortix({ billingEnabled: true })` so "no
+// itself reads — plus `configureZed({ billingEnabled: true })` so "no
 // active session" resolves to '', matching the old default) gives this file
 // identical control with no mock at all — nothing left to collide with.
 
@@ -62,7 +62,7 @@ beforeEach(() => {
   // billingEnabled: true so `getActiveOpenCodeUrl()` resolves to '' with no
   // active session (matching this file's old `activeUrl = ''` default),
   // instead of the self-hosted local-dev fallback sandbox url.
-  configureKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => authToken ?? null, billingEnabled: true });
+  configureZed({ backendUrl: 'http://backend.local/v1', getToken: async () => authToken ?? null, billingEnabled: true });
 });
 
 function captureRequests() {
@@ -126,8 +126,8 @@ test('getPublicClientForUrl never sends an Authorization header, even with a tok
   expect(calls[0].auth).toBeNull();
 });
 
-test('getPublicClientForUrl works without configureKortix ever having been called (no token-provider requirement)', async () => {
-  // A real anonymous visitor's tab may never call configureKortix() with a
+test('getPublicClientForUrl works without configureZed ever having been called (no token-provider requirement)', async () => {
+  // A real anonymous visitor's tab may never call configureZed() with a
   // getToken — getClientForUrl would throw '[opencode-sdk] No auth token
   // provider configured' here; the public client must not.
   const calls = captureRequests();
@@ -176,7 +176,7 @@ const jsonResponse = (body: unknown, status = 200) =>
   });
 
 test("dispose-only POSTs /global/dispose — the endpoint that exists", async () => {
-  // It used to POST /kortix/services/system/reload, which is not a route. That
+  // It used to POST /zed/services/system/reload, which is not a route. That
   // path hits opencode's SPA catch-all, so the call got 200 + HTML and died on
   // response.json() — the command palette's "Restart: Config Only" never worked.
   setCurrentRuntime('http://sbx.test', 'active-sbx');
@@ -190,13 +190,13 @@ test("dispose-only POSTs /global/dispose — the endpoint that exists", async ()
   expect(result.mode).toBe('dispose-only');
 });
 
-test('full POSTs /kortix/refresh — the only client-reachable runtime restart', async () => {
+test('full POSTs /zed/refresh — the only client-reachable runtime restart', async () => {
   setCurrentRuntime('http://sbx.test', 'active-sbx');
   const calls = captureRawFetchCalls(() => jsonResponse({ ok: true }));
 
   const result = await systemReload('full');
 
-  expect(calls[0].url).toBe('http://sbx.test/kortix/refresh');
+  expect(calls[0].url).toBe('http://sbx.test/zed/refresh');
   expect(result.success).toBe(true);
 });
 
@@ -224,7 +224,7 @@ test('an uppercase or vendor JSON content-type still counts', async () => {
   expect((await systemReload('dispose-only')).success).toBe(true);
 
   captureRawFetchCalls(
-    () => new Response('true', { status: 200, headers: { 'content-type': 'application/vnd.kortix+json' } }),
+    () => new Response('true', { status: 200, headers: { 'content-type': 'application/vnd.zed+json' } }),
   );
   expect((await systemReload('dispose-only')).success).toBe(true);
 });

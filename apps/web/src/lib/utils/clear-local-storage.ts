@@ -10,7 +10,7 @@ export const clearUserLocalStorage = () => {
     // Clean up legacy keys
     localStorage.removeItem('opencode-model-store-v1');
     // Clear tab state so it doesn't leak across accounts
-    localStorage.removeItem('kortix-tabs');
+    localStorage.removeItem('zed-tabs');
     // Clear pattern-based keys
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('maintenance-dismissed-')) {
@@ -18,7 +18,7 @@ export const clearUserLocalStorage = () => {
       }
     });
     // Clear sessionStorage runtime connection flag
-    try { sessionStorage.removeItem('kortix-runtime-was-connected'); } catch {}
+    try { sessionStorage.removeItem('zed-runtime-was-connected'); } catch {}
 
     console.log('✅ Local storage cleared on logout');
   } catch (error) {

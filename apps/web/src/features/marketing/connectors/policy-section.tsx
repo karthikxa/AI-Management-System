@@ -13,14 +13,14 @@ import { Eyebrow, ProductShot, Section, SectionHeader } from './shared';
  * amber and red mean, or the screenshot stops being evidence.
  */
 const TINT: Record<PolicyStateId, string> = {
-  allow: 'text-kortix-green',
-  ask: 'text-kortix-yellow',
+  allow: 'text-zed-green',
+  ask: 'text-zed-yellow',
   block: 'text-destructive',
 };
 
 const DOT: Record<PolicyStateId, string> = {
-  allow: 'bg-kortix-green',
-  ask: 'bg-kortix-yellow',
+  allow: 'bg-zed-green',
+  ask: 'bg-zed-yellow',
   block: 'bg-destructive',
 };
 
@@ -82,7 +82,7 @@ function PauseTimeline() {
                 aria-hidden
                 className={cn(
                   'relative z-10 size-3 rounded-full',
-                  i === 1 ? 'bg-kortix-yellow' : 'bg-foreground/25',
+                  i === 1 ? 'bg-zed-yellow' : 'bg-foreground/25',
                 )}
               />
             </div>

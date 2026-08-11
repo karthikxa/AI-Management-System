@@ -78,7 +78,7 @@ export function TunnelSettingsDialog({
               className={cn(
                 'inline-flex size-8 shrink-0 items-center justify-center rounded-sm border',
                 isOnline
-                  ? 'bg-kortix-green/10 text-kortix-green'
+                  ? 'bg-zed-green/10 text-zed-green'
                   : 'text-muted-foreground border-border',
               )}
             >
@@ -175,7 +175,7 @@ function ConnectionInfoTab({ connection }: { connection: TunnelConnection }) {
             onClick={() => copy(connection.tunnelId)}
           >
             {copied ? (
-              <Check className="text-kortix-green size-3.5 shrink-0" />
+              <Check className="text-zed-green size-3.5 shrink-0" />
             ) : (
               <Copy className="text-muted-foreground size-3.5 shrink-0" />
             )}
@@ -186,7 +186,7 @@ function ConnectionInfoTab({ connection }: { connection: TunnelConnection }) {
     {
       label: 'Status',
       value: (
-        <span className={cn('text-sm', isOnline ? 'text-kortix-green' : 'text-muted-foreground')}>
+        <span className={cn('text-sm', isOnline ? 'text-zed-green' : 'text-muted-foreground')}>
           {isOnline ? 'Online' : 'Offline'}
         </span>
       ),

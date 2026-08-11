@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/loading';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import type { ProjectBranch } from '@kortix/sdk';
+import type { ProjectBranch } from '@zed/sdk';
 import {
   ArrowDownLeftIcon as ArrowDownLeft,
   ArrowUpRightIcon as ArrowUpRight,
@@ -215,7 +215,7 @@ function VersionRow({
         <div className="flex items-center gap-1.5">
           <span className="text-foreground truncate text-sm font-medium">{branch.name}</span>
           {branch.is_default && (
-            <Badge variant="kortix" size="xs">
+            <Badge variant="zed" size="xs">
               Main
             </Badge>
           )}
@@ -232,11 +232,11 @@ function VersionRow({
                   'featuresProjectFilesComponentsVersionSelector.line234JsxAttrTitleAheadBehindMainVersion',
                 )}
               >
-                <span className="text-kortix-green inline-flex items-center gap-0.5">
+                <span className="text-zed-green inline-flex items-center gap-0.5">
                   <ArrowUpRight className="h-2.5 w-2.5" />
                   {branch.ahead}
                 </span>
-                <span className="text-kortix-red inline-flex items-center gap-0.5">
+                <span className="text-zed-red inline-flex items-center gap-0.5">
                   <ArrowDownLeft className="h-2.5 w-2.5" />
                   {branch.behind}
                 </span>

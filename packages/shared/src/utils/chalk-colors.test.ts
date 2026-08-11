@@ -18,7 +18,7 @@ describe('chalkColors', () => {
   });
 
   test('is deterministic for the same label', () => {
-    expect(chalkColors('kortix')).toEqual(chalkColors('kortix'));
+    expect(chalkColors('zed')).toEqual(chalkColors('zed'));
   });
 
   test('produces different colors for different labels', () => {

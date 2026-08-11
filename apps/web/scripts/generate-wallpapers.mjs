@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 /**
- * Renders every downloadable Kortix wallpaper into `public/wallpapers/downloads`
+ * Renders every downloadable Zed wallpaper into `public/wallpapers/downloads`
  * and regenerates `src/lib/wallpaper-downloads.ts` (the manifest the
  * /design-system page reads).
  *
  * Two families:
  *
- * 1. `mark` — the brand wallpapers: the Kortix symbol, and the full logo
+ * 1. `mark` — the brand wallpapers: the Zed symbol, and the full logo
  *    lockup, each dead-centred on a solid brand field in black-on-white and
  *    white-on-black. Pure geometry, so both are drawn from the source SVGs in
  *    `public/brandkit/Logo` at each target size and stay exact at any
  *    resolution — nothing is ever upscaled from a raster.
  *
- * 2. `product` — the wallpapers you can set on a Kortix home
+ * 2. `product` — the wallpapers you can set on a Zed home
  *    (`src/lib/wallpapers.ts`). Five of the six are live WebGL compositions,
  *    so there is no file to copy: each one is rendered at the target pixel
  *    size in a real browser at `/debug/wallpaper` and the frame is captured.
@@ -28,7 +28,7 @@
  * as PNG and ~0.5 MB as high-quality JPEG.
  *
  * Usage:
- *   pnpm --filter @kortix/web dev            # a dev server must be running
+ *   pnpm --filter @zed/web dev            # a dev server must be running
  *   node scripts/generate-wallpapers.mjs --base=http://localhost:3000
  *
  * Flags:
@@ -235,7 +235,7 @@ async function main() {
 
       for (const size of MARK_SIZES) {
         await page.setViewportSize({ width: size.w, height: size.h });
-        const file = `kortix-${family.id}-${theme.id}-${size.w}x${size.h}.png`;
+        const file = `zed-${family.id}-${theme.id}-${size.w}x${size.h}.png`;
         const buf = await shot(size, 'png');
         writeFileSync(join(OUT_DIR, file), buf);
         entries.push({
@@ -252,7 +252,7 @@ async function main() {
       }
 
       await page.setViewportSize({ width: PREVIEW.w, height: PREVIEW.h });
-      const previewFile = `kortix-${family.id}-${theme.id}-preview.jpg`;
+      const previewFile = `zed-${family.id}-${theme.id}-preview.jpg`;
       writeFileSync(join(OUT_DIR, previewFile), await shot(PREVIEW, 'jpeg', PREVIEW_QUALITY));
       previews.set(`${family.id}-${theme.id}`, `/wallpapers/downloads/${previewFile}`);
     }
@@ -269,7 +269,7 @@ async function main() {
 
       for (const size of PRODUCT_SIZES) {
         await page.setViewportSize({ width: size.w, height: size.h });
-        const file = `kortix-${wallpaper.id}-${theme.id}-${size.w}x${size.h}.${ext(wallpaper.format)}`;
+        const file = `zed-${wallpaper.id}-${theme.id}-${size.w}x${size.h}.${ext(wallpaper.format)}`;
         const buf = await shot(size, wallpaper.format);
         writeFileSync(join(OUT_DIR, file), buf);
         entries.push({
@@ -287,7 +287,7 @@ async function main() {
 
       // Card preview for /design-system — the real composition, not a mockup.
       await page.setViewportSize({ width: PREVIEW.w, height: PREVIEW.h });
-      const previewFile = `kortix-${wallpaper.id}-${theme.id}-preview.jpg`;
+      const previewFile = `zed-${wallpaper.id}-${theme.id}-preview.jpg`;
       writeFileSync(join(OUT_DIR, previewFile), await shot(PREVIEW, 'jpeg', PREVIEW_QUALITY));
       previews.set(`${wallpaper.id}-${theme.id}`, `/wallpapers/downloads/${previewFile}`);
     }
@@ -352,7 +352,7 @@ export interface WallpaperDownloadFile {
 }
 
 export interface WallpaperDownload {
-  /** \`mark\` = the brand wallpaper; \`product\` = a wallpaper you can set on a Kortix home. */
+  /** \`mark\` = the brand wallpaper; \`product\` = a wallpaper you can set on a Zed home. */
   group: 'mark' | 'product';
   id: string;
   name: string;

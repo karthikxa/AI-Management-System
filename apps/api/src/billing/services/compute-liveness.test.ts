@@ -4,9 +4,9 @@ import { afterEach, describe, expect, mock, test } from 'bun:test';
 // incomplete local env). Everything else here is pure and takes its grace as an
 // argument. Mutable so a test can sweep the idle window.
 const cfg: {
-  KORTIX_SANDBOX_AUTOSTOP_MINUTES?: number;
-  KORTIX_SANDBOX_PROVIDER_AUTOSTOP_MINUTES?: number;
-} = { KORTIX_SANDBOX_AUTOSTOP_MINUTES: 15 };
+  ZED_SANDBOX_AUTOSTOP_MINUTES?: number;
+  ZED_SANDBOX_PROVIDER_AUTOSTOP_MINUTES?: number;
+} = { ZED_SANDBOX_AUTOSTOP_MINUTES: 15 };
 mock.module('../../config', () => ({ config: cfg }));
 
 const {
@@ -23,12 +23,12 @@ const HOUR = 3_600_000;
 const GRACE = HOUR; // billingLivenessGraceMinutes() is 60 in prod
 const NOW = new Date('2026-07-29T12:00:00Z');
 
-/** kortix-prod-env, confirmed 2026-07-29. */
+/** zed-prod-env, confirmed 2026-07-29. */
 const PROD_IDLE_WINDOW_MINUTES = 15;
 
 afterEach(() => {
-  cfg.KORTIX_SANDBOX_AUTOSTOP_MINUTES = PROD_IDLE_WINDOW_MINUTES;
-  cfg.KORTIX_SANDBOX_PROVIDER_AUTOSTOP_MINUTES = undefined;
+  cfg.ZED_SANDBOX_AUTOSTOP_MINUTES = PROD_IDLE_WINDOW_MINUTES;
+  cfg.ZED_SANDBOX_PROVIDER_AUTOSTOP_MINUTES = undefined;
 });
 
 describe('billingLivenessGraceMinutes — the money knob, and only the money knob', () => {
@@ -44,7 +44,7 @@ describe('billingLivenessGraceMinutes — the money knob, and only the money kno
   test('REGRESSION: identical to the pre-split derivation at every idle window', () => {
     const preSplit = (idle: number) => Math.max(60, Math.max(1, idle || 15) * 2);
     for (const idle of [0, 1, 5, 15, 29, 30, 31, 45, 120, 720]) {
-      cfg.KORTIX_SANDBOX_AUTOSTOP_MINUTES = idle;
+      cfg.ZED_SANDBOX_AUTOSTOP_MINUTES = idle;
       expect(billingLivenessGraceMinutes()).toBe(preSplit(idle));
       expect(computeLivenessGraceMs()).toBe(preSplit(idle) * 60_000);
     }
@@ -52,7 +52,7 @@ describe('billingLivenessGraceMinutes — the money knob, and only the money kno
 
   test('never dips below its floor', () => {
     for (const idle of [undefined, 0, -5, 1, 29] as (number | undefined)[]) {
-      cfg.KORTIX_SANDBOX_AUTOSTOP_MINUTES = idle;
+      cfg.ZED_SANDBOX_AUTOSTOP_MINUTES = idle;
       expect(billingLivenessGraceMinutes()).toBe(BILLING_LIVENESS_GRACE_FLOOR_MINUTES);
     }
   });
@@ -70,7 +70,7 @@ describe('billingLivenessGraceMinutes — the money knob, and only the money kno
   // the two lives in platform/providers/autostop-backstop.test.ts.
   test('REGRESSION: does not move when the provider backstop moves', () => {
     for (const backstop of [60, 720, 1440, 100_000]) {
-      cfg.KORTIX_SANDBOX_PROVIDER_AUTOSTOP_MINUTES = backstop;
+      cfg.ZED_SANDBOX_PROVIDER_AUTOSTOP_MINUTES = backstop;
       expect(billingLivenessGraceMinutes()).toBe(60);
     }
   });

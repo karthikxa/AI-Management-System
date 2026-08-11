@@ -9,7 +9,7 @@ import type { ComponentPropsWithoutRef } from 'react';
 // Visual parity with unified-markdown.tsx (the canonical markdown renderer)
 // — when that file's styles change, mirror them here. This map restyles
 // fumadocs MDX output (server-rendered, no 'use client') to the app's
-// markdown look: same heading scale, paragraph voice, list markers, kortix-blue
+// markdown look: same heading scale, paragraph voice, list markers, zed-blue
 // links, inline-code chips, tables, images, blockquote, hr and strong/em/del
 // — minus app-only interactivity (sandbox proxy, file-preview clicks, setup
 // links, KaTeX, Mermaid, streaming). Code blocks stay on fumadocs' native
@@ -17,15 +17,15 @@ import type { ComponentPropsWithoutRef } from 'react';
 // its chrome to the app surface (rounded-md, no shadow).
 
 const linkClass = cn(
-  'font-medium text-kortix-blue',
-  'underline decoration-kortix-blue/40 decoration-[1px] underline-offset-[3px]',
-  'transition-colors hover:decoration-kortix-blue',
+  'font-medium text-zed-blue',
+  'underline decoration-zed-blue/40 decoration-[1px] underline-offset-[3px]',
+  'transition-colors hover:decoration-zed-blue',
   '[overflow-wrap:anywhere]',
 );
 
 // Inline-code chip — unified-markdown's INLINE_CODE at its non-clickable size.
 // `[overflow-wrap:anywhere]` matches linkClass above: a long unbreakable token
-// (e.g. a full `kortix cr open --title ...` invocation) is wider than a 390px
+// (e.g. a full `zed cr open --title ...` invocation) is wider than a 390px
 // viewport and scrolls the whole page sideways without it.
 const inlineCodeClass =
   'rounded-sm border border-border/40 bg-muted px-1.5 py-[0.1rem] font-mono text-[0.8rem] text-foreground/95 dark:bg-card [overflow-wrap:anywhere]';

@@ -7,17 +7,17 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-// Importing the client configures the SDK platform seam once (createKortix),
+// Importing the client configures the SDK platform seam once (createZed),
 // defaulting to direct mode. `configureWrapperMode` re-points it below when
 // wrapper mode is confirmed.
-import { configureWrapperMode } from '@/lib/kortix';
+import { configureWrapperMode } from '@/lib/zed';
 import { fetchWrapperMode } from '@/lib/mode';
 
 const WrapperModeContext = createContext(false);
 
 /**
- * True when this server has `KORTIX_API_KEY` set — Lumen is running as a BFF
- * in front of Kortix rather than a pure client of it. Drives which auth gate
+ * True when this server has `ZED_API_KEY` set — Lumen is running as a BFF
+ * in front of Zed rather than a pure client of it. Drives which auth gate
  * renders (`LoginGate` vs `ApiKeyGate`) and how the preview iframe
  * authenticates.
  */

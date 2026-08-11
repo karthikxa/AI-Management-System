@@ -26,9 +26,9 @@ export interface ProjectUpgrade {
 export const PROJECT_UPGRADES: readonly ProjectUpgrade[] = [
   {
     id: 'manifest-v2',
-    title: 'Migrate manifest to v2 (kortix.yaml)',
+    title: 'Migrate manifest to v2 (zed.yaml)',
     description:
-      'Converts the v1 kortix.toml into the governance-first kortix.yaml, refreshes platform-managed skills to the latest marketplace baseline, and opens a change request for review.',
+      'Converts the v1 zed.toml into the governance-first zed.yaml, refreshes platform-managed skills to the latest marketplace baseline, and opens a change request for review.',
     applicable: (ctx) => ctx.manifestVersion === 1,
     prompt: MIGRATE_TO_V2_PROMPT,
   },
@@ -54,8 +54,8 @@ Ground rules — these override nothing above, they define how the change LANDS:
 
 1. Read the relevant files before writing anything; keep the change as small as the goal allows.
 2. Work on your session branch only.
-3. If you touched the manifest (kortix.yaml / kortix.toml), run \`kortix validate\` and fix every error before landing.
-4. Land it exactly per the kortix-system mandate: \`git fetch origin\` (rebase onto origin/main if it advanced) → commit → \`git push origin HEAD\` → \`kortix cr open --title "<short imperative summary>" --description "<what changed and why>"\` → verify with \`kortix cr diff <n>\` that the CR actually carries your diff. If the push is rejected because the remote session branch moved, fetch and \`git push --force-with-lease origin HEAD\` (your own session branch only).
-5. Do NOT run \`kortix cr merge\` — stop once the CR is open and verified non-empty, and tell the user its number.
+3. If you touched the manifest (zed.yaml / zed.toml), run \`zed validate\` and fix every error before landing.
+4. Land it exactly per the zed-system mandate: \`git fetch origin\` (rebase onto origin/main if it advanced) → commit → \`git push origin HEAD\` → \`zed cr open --title "<short imperative summary>" --description "<what changed and why>"\` → verify with \`zed cr diff <n>\` that the CR actually carries your diff. If the push is rejected because the remote session branch moved, fetch and \`git push --force-with-lease origin HEAD\` (your own session branch only).
+5. Do NOT run \`zed cr merge\` — stop once the CR is open and verified non-empty, and tell the user its number.
 6. If the goal is already satisfied and there is nothing to change, say so and stop — do not open an empty change request.`;
 }

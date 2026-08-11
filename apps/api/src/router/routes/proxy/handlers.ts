@@ -1,6 +1,6 @@
 import { HTTPException } from 'hono/http-exception';
 import { type ProxyServiceConfig } from '../../config/proxy-services';
-import { config, KORTIX_MARKUP, PLATFORM_FEE_MARKUP } from '../../../config';
+import { config, ZED_MARKUP, PLATFORM_FEE_MARKUP } from '../../../config';
 import { requireModelPricing } from '../../config/models';
 import {
   accumulateUsageChunk,
@@ -28,7 +28,7 @@ import {
 } from './helpers';
 
 function pricingProvider(service: ProxyServiceConfig, managed: boolean): string {
-  if (managed && service.kortixTargetBaseUrl === config.OPENROUTER_API_URL) {
+  if (managed && service.zedTargetBaseUrl === config.OPENROUTER_API_URL) {
     return 'openrouter';
   }
   return (
@@ -51,14 +51,14 @@ function usageRoute(service: ProxyServiceConfig, subPath: string): string {
 //
 // Three authentication/billing modes:
 //
-// 1. Kortix token (kortix_/kortix_sb_ in our DB) in Authorization header
-//    → Inject Kortix's API key, forward, bill at KORTIX_MARKUP (1.2×).
+// 1. Zed token (zed_/zed_sb_ in our DB) in Authorization header
+//    → Inject Zed's API key, forward, bill at ZED_MARKUP (1.2×).
 //
-// 2. User's own API key in Authorization + Kortix token in X-Kortix-Token header
+// 2. User's own API key in Authorization + Zed token in X-Zed-Token header
 //    → Passthrough (no key injection), bill at PLATFORM_FEE_MARKUP (0.1×).
 //
-// 3. User's own API key, no Kortix token anywhere
-//    → Pure passthrough. No billing, no gating (self-hosted / non-Kortix user).
+// 3. User's own API key, no Zed token anywhere
+//    → Pure passthrough. No billing, no gating (self-hosted / non-Zed user).
 
 export async function handleProxy(c: any, service: ProxyServiceConfig, prefix: string) {
   const fullPath = new URL(c.req.url).pathname;
@@ -71,18 +71,18 @@ export async function handleProxy(c: any, service: ProxyServiceConfig, prefix: s
 
   const auth = await tryAuthenticate(c);
 
-  if (auth.isKortixUser && auth.accountId && !auth.isPassthrough) {
-    // Mode 1: Kortix-owned key — inject our key, bill at 1.2×
-    return handleKortixProxy(c, service, subPath, queryString, method, auth.accountId);
+  if (auth.isZedUser && auth.accountId && !auth.isPassthrough) {
+    // Mode 1: Zed-owned key — inject our key, bill at 1.2×
+    return handleZedProxy(c, service, subPath, queryString, method, auth.accountId);
   } else if (auth.isPassthrough && auth.accountId) {
     // Mode 2: User's own key — passthrough, bill at 0.1×
-    return handleKortixPassthrough(c, service, subPath, queryString, method, auth.accountId);
+    return handleZedPassthrough(c, service, subPath, queryString, method, auth.accountId);
   } else {
-    // Mode 3: No Kortix token — pure passthrough, no billing.
-    // When billing is enabled, reject: only kortix_ tokens with billing are accepted.
-    if (config.KORTIX_BILLING_INTERNAL_ENABLED) {
+    // Mode 3: No Zed token — pure passthrough, no billing.
+    // When billing is enabled, reject: only zed_ tokens with billing are accepted.
+    if (config.ZED_BILLING_INTERNAL_ENABLED) {
       throw new HTTPException(401, {
-        message: 'Kortix API key required. Get one at https://kortix.com',
+        message: 'Zed API key required. Get one at https://zed.com',
       });
     }
     // Self-hosted: allow passthrough for BYOC users with their own API keys.
@@ -90,9 +90,9 @@ export async function handleProxy(c: any, service: ProxyServiceConfig, prefix: s
   }
 }
 
-// === Kortix User: match allowed route, inject our key, bill with route-specific pricing ===
+// === Zed User: match allowed route, inject our key, bill with route-specific pricing ===
 
-async function handleKortixProxy(
+async function handleZedProxy(
   c: any,
   service: ProxyServiceConfig,
   subPath: string,
@@ -126,8 +126,8 @@ async function handleKortixProxy(
     }
   }
 
-  const kortixKey = service.getKortixApiKey();
-  if (!kortixKey) {
+  const zedKey = service.getZedApiKey();
+  if (!zedKey) {
     throw new HTTPException(503, {
       message: `${service.name} not configured`,
     });
@@ -135,17 +135,17 @@ async function handleKortixProxy(
 
   const actor = resolveActorFromRequest(c, { logPrefix: '[PROXY]' });
 
-  // Use alternate target/key injection for Kortix-managed if configured (e.g. OpenRouter)
-  const baseUrl = service.kortixTargetBaseUrl || service.targetBaseUrl;
+  // Use alternate target/key injection for Zed-managed if configured (e.g. OpenRouter)
+  const baseUrl = service.zedTargetBaseUrl || service.targetBaseUrl;
   const targetUrl = `${baseUrl}${subPath}${queryString}`;
   const headers = buildForwardHeaders(c);
-  // Strip Kortix-specific and auth headers — upstream gets injected key only
-  headers.delete('x-kortix-token');
+  // Strip Zed-specific and auth headers — upstream gets injected key only
+  headers.delete('x-zed-token');
   headers.delete('x-api-key');
   headers.delete('authorization');
   let body = await getRequestBody(c, method);
 
-  body = injectApiKey(service, headers, body, /* useKortixInjection */ true);
+  body = injectApiKey(service, headers, body, /* useZedInjection */ true);
   body = maybeNormalizeOpenAIResponsesInput(service, method, subPath, body, headers);
   // Route-specific billing overrides service default.
   const billingToolName = matchedRoute.billingToolName || service.billingToolName;
@@ -155,7 +155,7 @@ async function handleKortixProxy(
     reservation = await reserveEstimatedLlmCredits(
       accountId,
       body,
-      KORTIX_MARKUP,
+      ZED_MARKUP,
       actor,
       pricingProvider(service, true),
     );
@@ -169,7 +169,7 @@ async function handleKortixProxy(
   }
 
   console.log(
-    `[PROXY] ${service.name} (kortix:${accountId}) ${method} ${subPath} → ${targetUrl} [bill:${billingToolName}]`,
+    `[PROXY] ${service.name} (zed:${accountId}) ${method} ${subPath} → ${targetUrl} [bill:${billingToolName}]`,
   );
 
   let upstream: Response;
@@ -200,14 +200,14 @@ async function handleKortixProxy(
     throw error;
   }
 
-  // LLM services: bill per-token at KORTIX_MARKUP (1.2×)
+  // LLM services: bill per-token at ZED_MARKUP (1.2×)
   if (service.isLlm === true) {
     if (upstream.ok) {
-      return billLlmKortixProxy(upstream, service, subPath, accountId, actor, reservation);
+      return billLlmZedProxy(upstream, service, subPath, accountId, actor, reservation);
     }
     // Upstream error — don't bill for failed requests
     console.warn(
-      `[PROXY] LLM kortix proxy ${service.name} upstream error ${upstream.status} — no billing`,
+      `[PROXY] LLM zed proxy ${service.name} upstream error ${upstream.status} — no billing`,
     );
     await refundLlmReservation(
       reservation,
@@ -234,13 +234,13 @@ async function handleKortixProxy(
   });
 }
 
-// === Kortix-managed LLM Billing ===
+// === Zed-managed LLM Billing ===
 //
 // Handles both response formats based on upstream:
 // - OpenAI-compatible: usage.prompt_tokens / completion_tokens
 // - Anthropic-native: usage.input_tokens / output_tokens
 
-async function billLlmKortixProxy(
+async function billLlmZedProxy(
   upstream: Response,
   service: ProxyServiceConfig,
   subPath: string,
@@ -264,7 +264,7 @@ async function billLlmKortixProxy(
     const [clientStream, billingStream] = upstreamBody.tee();
 
     // Fire-and-forget: extract usage from billing stream
-    extractUsageFromKortixProxyStream(
+    extractUsageFromZedProxyStream(
       billingStream,
       service,
       subPath,
@@ -310,7 +310,7 @@ async function billLlmKortixProxy(
       usage.completionTokens,
       usage.cachedTokens,
       usage.cacheWriteTokens,
-      KORTIX_MARKUP,
+      ZED_MARKUP,
       usage.upstreamCost,
     );
 
@@ -322,7 +322,7 @@ async function billLlmKortixProxy(
       actualCost: cost,
       reservation,
       actor,
-      logPrefix: 'LLM kortix billing',
+      logPrefix: 'LLM zed billing',
       provider: pricingProvider(service, true),
       route: usageRoute(service, subPath),
       cachedTokens: usage.cachedTokens,
@@ -332,10 +332,10 @@ async function billLlmKortixProxy(
     });
 
     console.log(
-      `[PROXY] LLM kortix ${modelId}: ${usage.promptTokens}/${usage.completionTokens} tokens, cost=$${cost.toFixed(6)} (${KORTIX_MARKUP}x)`,
+      `[PROXY] LLM zed ${modelId}: ${usage.promptTokens}/${usage.completionTokens} tokens, cost=$${cost.toFixed(6)} (${ZED_MARKUP}x)`,
     );
   } else {
-    console.warn(`[PROXY] LLM kortix ${service.name}: no usage data in response — billing skipped`);
+    console.warn(`[PROXY] LLM zed ${service.name}: no usage data in response — billing skipped`);
     await refundLlmReservation(
       reservation,
       `LLM reservation refund after missing usage: ${service.name}`,
@@ -349,11 +349,11 @@ async function billLlmKortixProxy(
 }
 
 /**
- * Extract usage from an SSE stream and bill at KORTIX_MARKUP.
+ * Extract usage from an SSE stream and bill at ZED_MARKUP.
  * Handles both OpenAI-compatible and Anthropic-native SSE formats.
  * Runs in background (fire-and-forget).
  */
-async function extractUsageFromKortixProxyStream(
+async function extractUsageFromZedProxyStream(
   stream: ReadableStream<Uint8Array>,
   service: ProxyServiceConfig,
   subPath: string,
@@ -391,7 +391,7 @@ async function extractUsageFromKortixProxyStream(
     }
 
     if (!usageState) {
-      console.warn(`[PROXY] LLM kortix stream (${service.name}): no usage data — billing skipped`);
+      console.warn(`[PROXY] LLM zed stream (${service.name}): no usage data — billing skipped`);
       await refundLlmReservation(
         reservation,
         `LLM reservation refund after missing stream usage: ${service.name}`,
@@ -411,7 +411,7 @@ async function extractUsageFromKortixProxyStream(
         completionTokens,
         cachedTokens,
         cacheWriteTokens,
-        KORTIX_MARKUP,
+        ZED_MARKUP,
         upstreamCost,
       );
       settlementStarted = true;
@@ -423,7 +423,7 @@ async function extractUsageFromKortixProxyStream(
         actualCost: cost,
         reservation,
         actor,
-        logPrefix: 'LLM kortix stream billing',
+        logPrefix: 'LLM zed stream billing',
         provider: pricingProvider(service, true),
         route: usageRoute(service, subPath),
         cachedTokens,
@@ -433,17 +433,17 @@ async function extractUsageFromKortixProxyStream(
         upstreamStatus: 200,
       });
       console.log(
-        `[PROXY] LLM kortix stream ${detectedModel}: ${promptTokens}/${completionTokens} tokens, cost=$${cost.toFixed(6)} (${KORTIX_MARKUP}x)`,
+        `[PROXY] LLM zed stream ${detectedModel}: ${promptTokens}/${completionTokens} tokens, cost=$${cost.toFixed(6)} (${ZED_MARKUP}x)`,
       );
     } else {
-      console.warn(`[PROXY] LLM kortix stream (${service.name}): zero tokens — billing skipped`);
+      console.warn(`[PROXY] LLM zed stream (${service.name}): zero tokens — billing skipped`);
       await refundLlmReservation(
         reservation,
         `LLM reservation refund after zero stream usage: ${service.name}`,
       );
     }
   } catch (err) {
-    console.error(`[PROXY] Error extracting usage from kortix proxy stream:`, err);
+    console.error(`[PROXY] Error extracting usage from zed proxy stream:`, err);
     if (!settlementStarted) {
       await refundLlmReservation(
         reservation,
@@ -453,9 +453,9 @@ async function extractUsageFromKortixProxyStream(
   }
 }
 
-// === Kortix user with own key: passthrough + bill at platform fee (0.1×) ===
+// === Zed user with own key: passthrough + bill at platform fee (0.1×) ===
 
-async function handleKortixPassthrough(
+async function handleZedPassthrough(
   c: any,
   service: ProxyServiceConfig,
   subPath: string,
@@ -465,8 +465,8 @@ async function handleKortixPassthrough(
 ) {
   const targetUrl = `${service.targetBaseUrl}${subPath}${queryString}`;
   const headers = buildForwardHeaders(c);
-  // Remove X-Kortix-Token from forwarded headers — upstream doesn't need it
-  headers.delete('x-kortix-token');
+  // Remove X-Zed-Token from forwarded headers — upstream doesn't need it
+  headers.delete('x-zed-token');
   let body = await getRequestBody(c, method);
 
   body = maybeNormalizeOpenAIResponsesInput(service, method, subPath, body, headers);
@@ -559,7 +559,7 @@ async function handleKortixPassthrough(
   });
 }
 
-// === Not Kortix user: pure passthrough ===
+// === Not Zed user: pure passthrough ===
 
 async function handlePassthrough(
   c: any,

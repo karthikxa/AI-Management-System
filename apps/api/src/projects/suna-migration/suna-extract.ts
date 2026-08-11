@@ -3,15 +3,15 @@
  * storage) but resumable: start() un-archives, we tar+base64 /workspace over
  * stdout (the proven pull pattern from legacy-migration-rehydrate.ts), then
  * re-archive to control cost. Config/system files are stripped so the legacy
- * dir is just the user's content — there is ONE root kortix.yaml per repo
+ * dir is just the user's content — there is ONE root zed.yaml per repo
  * (the synthesized config from buildStarterFiles; each legacy sandbox's own
- * v1 kortix.toml is excluded below, it isn't carried over).
+ * v1 zed.toml is excluded below, it isn't carried over).
  */
 import { getDaytona } from '../../shared/daytona';
 
 // Stripped from each legacy/<slug>/ — Suna-era config + heavy/system dirs.
 const EXCLUDES = [
-  './.git', './kortix.toml', './.kortix', './node_modules', './.venv', './venv',
+  './.git', './zed.toml', './.zed', './node_modules', './.venv', './venv',
   './.cache', './.npm', './.bun', './.cargo', './.rustup', './.pnpm-store',
   './.local', './.config', './.ssh', './.gnupg', './__pycache__', './.cursor-server',
   './.vscode-server', './.persistent-system',

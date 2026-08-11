@@ -20,9 +20,9 @@ describe('isInternalUrl', () => {
   });
 
   test('http(s), mailto and other protocols are external', () => {
-    expect(isInternalUrl('https://kortix.ai')).toBe(false);
+    expect(isInternalUrl('https://zed.ai')).toBe(false);
     expect(isInternalUrl('http://localhost:3000')).toBe(false);
-    expect(isInternalUrl('mailto:hi@kortix.ai')).toBe(false);
+    expect(isInternalUrl('mailto:hi@zed.ai')).toBe(false);
     expect(isInternalUrl('ftp://host/file')).toBe(false);
   });
 
@@ -37,9 +37,9 @@ describe('shouldUseNextLink', () => {
   test('uses Next Link only for trusted app-router hrefs', () => {
     expect(shouldUseNextLink('/dashboard')).toBe(true);
     expect(shouldUseNextLink('#section')).toBe(true);
-    expect(shouldUseNextLink('https://kortix.com/legal/terms.')).toBe(false);
+    expect(shouldUseNextLink('https://zed.com/legal/terms.')).toBe(false);
     expect(shouldUseNextLink('http://localhost:3000/dashboard')).toBe(false);
-    expect(shouldUseNextLink('mailto:hi@kortix.ai')).toBe(false);
+    expect(shouldUseNextLink('mailto:hi@zed.ai')).toBe(false);
     expect(shouldUseNextLink('relative/path')).toBe(false);
   });
 
@@ -137,7 +137,7 @@ describe('languageLabel', () => {
 
 describe('looksLikeUrl', () => {
   test('detects protocol urls', () => {
-    expect(looksLikeUrl('https://kortix.ai/x')).toBe(true);
+    expect(looksLikeUrl('https://zed.ai/x')).toBe(true);
     expect(looksLikeUrl('http://localhost:3000')).toBe(true);
   });
 
@@ -168,11 +168,11 @@ describe('isLinkSafeHref', () => {
   });
 
   test('accepts valid absolute URLs (external is fine — prefetch short-circuits)', () => {
-    expect(isLinkSafeHref('https://kortix.ai/x')).toBe(true);
+    expect(isLinkSafeHref('https://zed.ai/x')).toBe(true);
     expect(isLinkSafeHref('http://localhost:3000')).toBe(true);
     // `mailto:` has no `//` and `new URL('mailto:...')` parses fine, so it is
     // safe to hand to next/link (no prefetch throw).
-    expect(isLinkSafeHref('mailto:hi@kortix.ai')).toBe(true);
+    expect(isLinkSafeHref('mailto:hi@zed.ai')).toBe(true);
   });
 
   test('accepts internal hrefs that next/link always handles', () => {
@@ -195,7 +195,7 @@ describe('looksLikeFilePath', () => {
   });
 
   test('rejects urls, too-short, no-slash, spaced, and common abbreviations', () => {
-    expect(looksLikeFilePath('https://kortix.ai/a.js')).toBe(false);
+    expect(looksLikeFilePath('https://zed.ai/a.js')).toBe(false);
     expect(looksLikeFilePath('ab')).toBe(false);
     expect(looksLikeFilePath('e.g.')).toBe(false);
     expect(looksLikeFilePath('nofile.txt')).toBe(false);

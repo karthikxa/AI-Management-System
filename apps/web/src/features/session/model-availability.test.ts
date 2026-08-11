@@ -22,20 +22,20 @@ describe('session model availability', () => {
     expect(
       isModelRequiredButUnavailable({
         modelRequired: true,
-        selectedModel: { providerID: 'kortix', modelID: 'openai/gpt-5' },
+        selectedModel: { providerID: 'zed', modelID: 'openai/gpt-5' },
         lockForQuestion: false,
       }),
     ).toBe(false);
   });
 
   test('removes a selected model that is not usable for the account', () => {
-    const selectedModel = { providerID: 'kortix', modelID: 'glm-5.2' };
+    const selectedModel = { providerID: 'zed', modelID: 'glm-5.2' };
 
     expect(resolveAvailableSelectedModel(selectedModel, () => false)).toBeNull();
   });
 
   test('keeps a selected model that is usable for the account', () => {
-    const selectedModel = { providerID: 'kortix', modelID: 'glm-5.2' };
+    const selectedModel = { providerID: 'zed', modelID: 'glm-5.2' };
 
     expect(resolveAvailableSelectedModel(selectedModel, () => true)).toEqual(selectedModel);
   });

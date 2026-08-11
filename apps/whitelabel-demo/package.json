@@ -1,9 +1,9 @@
 {
-  "name": "@kortix/whitelabel-demo",
+  "name": "@zed/whitelabel-demo",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Golden white-label reference — a complete Kortix client built on ONLY @kortix/sdk. Reskin the brand config + point at any Kortix deployment.",
+  "description": "Golden white-label reference — a complete Zed client built on ONLY @zed/sdk. Reskin the brand config + point at any Zed deployment.",
   "scripts": {
     "dev": "next dev --port ${WHITELABEL_PORT:-3010}",
     "build": "pnpm lint:sdk-boundary && next build",
@@ -14,7 +14,7 @@
     "typecheck": "pnpm lint:sdk-boundary && tsc --noEmit"
   },
   "dependencies": {
-    "@kortix/sdk": "workspace:*",
+    "@zed/sdk": "workspace:*",
     "@tanstack/react-query": "^5.75.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -1,23 +1,23 @@
 /**
  * 05 — Cost pass-through: a marked-up usage table for re-billing.
  *
- * The shape a real "Kortix as a Backend" wrapper uses to charge its own
+ * The shape a real "Zed as a Backend" wrapper uses to charge its own
  * users: pull finalized per-session LLM + compute cost through
  * `billing.sessionCosts.list`, then apply a markup multiplier before showing
  * it to the end user. The list also reports cost records that the service
  * cannot reconcile to a current session.
  *
  * Run:
- *   KORTIX_API_URL=http://localhost:8008/v1 KORTIX_API_KEY=kortix_pat_... \
- *   KORTIX_PROJECT_ID=... COST_MARKUP=1.2 \
+ *   ZED_API_URL=http://localhost:8008/v1 ZED_API_KEY=zed_pat_... \
+ *   ZED_PROJECT_ID=... COST_MARKUP=1.2 \
  *     bun run examples/05-cost-passthrough.ts
  *
  * As an npm consumer:
- *   import { createKortix } from '@kortix/sdk';
+ *   import { createZed } from '@zed/sdk';
  */
 import {
-  createKortix,
-  type Kortix,
+  createZed,
+  type Zed,
   type SessionCostReconciliation,
   type SessionCostSummary,
 } from '../src/index';
@@ -26,14 +26,14 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-async function listAllSessionCosts(kortix: Kortix, projectId: string) {
+async function listAllSessionCosts(zed: Zed, projectId: string) {
   const sessions: SessionCostSummary[] = [];
   let reconciliation: SessionCostReconciliation | null = null;
   let total = 0;
   let offset: number | null = 0;
 
   while (offset !== null) {
-    const page = await kortix.billing.sessionCosts.list({
+    const page = await zed.billing.sessionCosts.list({
       projectId,
       limit: 100,
       offset,
@@ -61,24 +61,24 @@ async function listAllSessionCosts(kortix: Kortix, projectId: string) {
 }
 
 async function main() {
-  const backendUrl = process.env.KORTIX_API_URL ?? 'http://localhost:8008/v1';
-  const apiKey = process.env.KORTIX_API_KEY;
-  const projectId = process.env.KORTIX_PROJECT_ID;
+  const backendUrl = process.env.ZED_API_URL ?? 'http://localhost:8008/v1';
+  const apiKey = process.env.ZED_API_KEY;
+  const projectId = process.env.ZED_PROJECT_ID;
   const markup = Number(process.env.COST_MARKUP ?? 1.2);
 
   if (!apiKey || !projectId) {
-    console.error('Set KORTIX_API_KEY and KORTIX_PROJECT_ID and re-run.');
+    console.error('Set ZED_API_KEY and ZED_PROJECT_ID and re-run.');
     process.exit(1);
   }
 
-  const kortix = createKortix({ backendUrl, getToken: async () => apiKey });
+  const zed = createZed({ backendUrl, getToken: async () => apiKey });
 
   const [costs, credits] = await Promise.all([
-    listAllSessionCosts(kortix, projectId),
-    kortix.billing.creditBreakdown(),
+    listAllSessionCosts(zed, projectId),
+    zed.billing.creditBreakdown(),
   ]);
 
-  console.log(`Caller's own Kortix credit balance: ${credits.total} (${credits.non_expiring} non-expiring)\n`);
+  console.log(`Caller's own Zed credit balance: ${credits.total} (${credits.non_expiring} non-expiring)\n`);
   console.log(`Per-session finalized cost, ${markup}x markup applied:\n`);
   console.log('session_id                            raw_cost   billed_cost   requests');
   console.log('-------------------------------------------------------------------------');

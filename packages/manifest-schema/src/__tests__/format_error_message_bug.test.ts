@@ -11,26 +11,26 @@ describe('manifest error messages are format-aware (YAML vs TOML)', () => {
     {
       name: 'agents',
       toml: '[[agents]]',
-      yamlBad: `kortix_version: 1\nagents:\n  name: test`,
-      tomlBad: `kortix_version = 1\n[agents]\nname = "test"`,
+      yamlBad: `zed_version: 1\nagents:\n  name: test`,
+      tomlBad: `zed_version = 1\n[agents]\nname = "test"`,
     },
     {
       name: 'connectors',
       toml: '[[connectors]]',
-      yamlBad: `kortix_version: 1\nconnectors:\n  name: test`,
-      tomlBad: `kortix_version = 1\n[connectors]\nname = "test"`,
+      yamlBad: `zed_version: 1\nconnectors:\n  name: test`,
+      tomlBad: `zed_version = 1\n[connectors]\nname = "test"`,
     },
     {
       name: 'triggers',
       toml: '[[triggers]]',
-      yamlBad: `kortix_version: 1\ntriggers:\n  slug: test`,
-      tomlBad: `kortix_version = 1\n[triggers]\nslug = "test"`,
+      yamlBad: `zed_version: 1\ntriggers:\n  slug: test`,
+      tomlBad: `zed_version = 1\n[triggers]\nslug = "test"`,
     },
     {
       name: 'sandbox.templates',
       toml: '[[sandbox.templates]]',
-      yamlBad: `kortix_version: 1\nsandbox:\n  templates:\n    slug: test`,
-      tomlBad: `kortix_version = 1\n[sandbox.templates]\nslug = "test"`,
+      yamlBad: `zed_version: 1\nsandbox:\n  templates:\n    slug: test`,
+      tomlBad: `zed_version = 1\n[sandbox.templates]\nslug = "test"`,
     },
   ];
 

@@ -2,7 +2,7 @@
 # the velero IAM role that depended on the EKS OIDC provider has been removed.
 
 locals {
-  velero_bucket = "kortix-velero-backups"
+  velero_bucket = "zed-velero-backups"
 }
 
 data "aws_iam_policy_document" "velero_kms" {
@@ -65,7 +65,7 @@ resource "aws_kms_key" "velero" {
 
 resource "aws_kms_alias" "velero" {
   provider      = aws.euw2
-  name          = "alias/kortix-velero"
+  name          = "alias/zed-velero"
   target_key_id = aws_kms_key.velero.key_id
 }
 

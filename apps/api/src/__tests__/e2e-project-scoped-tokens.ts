@@ -16,7 +16,7 @@
  *   7. Revoking via DELETE /v1/projects/:id/cli-token/:tokenId yields
  *      401 on the next call.
  *
- * Requires the API on $KORTIX_API_URL (default http://localhost:8008)
+ * Requires the API on $ZED_API_URL (default http://localhost:8008)
  * and Postgres on the default local Supabase port.
  */
 
@@ -27,7 +27,7 @@ import {
   hashSecretKey,
 } from '../shared/crypto';
 
-const API_BASE = process.env.KORTIX_API_URL ?? 'http://localhost:8008';
+const API_BASE = process.env.ZED_API_URL ?? 'http://localhost:8008';
 
 function ok(msg: string) {
   process.stdout.write(`  \x1b[0;32m✓\x1b[0m  ${msg}\n`);
@@ -77,7 +77,7 @@ async function main() {
 
   // ── 1. Pick a user + two projects they own ──────────────────────────
   const member = await db.execute<Row>(
-    sql`select user_id, account_id from kortix.account_members order by joined_at limit 1`,
+    sql`select user_id, account_id from zed.account_members order by joined_at limit 1`,
   );
   const memberRows =
     (member as unknown as { rows?: Row[] }).rows ?? (member as unknown as Row[]);
@@ -86,7 +86,7 @@ async function main() {
 
   const projects = await db.execute<ProjectRow>(sql`
     select project_id, account_id, name
-    from kortix.projects
+    from zed.projects
     where account_id = ${m.account_id}
     order by created_at desc
     limit 2
@@ -100,7 +100,7 @@ async function main() {
   const [projA, projB] = projectRows;
   const foreignProjects = await db.execute<ProjectRow>(sql`
     select project_id, account_id, name
-    from kortix.projects
+    from zed.projects
     where account_id <> ${m.account_id}
     order by created_at desc
     limit 1
@@ -118,7 +118,7 @@ async function main() {
   const { publicKey, secretKey } = generateAccountTokenPair();
   const secretKeyHash = hashSecretKey(secretKey);
   await db.execute(sql`
-    insert into kortix.account_tokens
+    insert into zed.account_tokens
       (account_id, user_id, project_id, name, public_key, secret_key_hash)
     values
       (${m.account_id}, ${m.user_id}, ${projA.project_id}, 'e2e-scope-test', ${publicKey}, ${secretKeyHash})
@@ -194,7 +194,7 @@ async function main() {
     const forged = generateAccountTokenPair();
     const forgedHash = hashSecretKey(forged.secretKey);
     await db.execute(sql`
-      insert into kortix.account_tokens
+      insert into zed.account_tokens
         (account_id, user_id, project_id, name, public_key, secret_key_hash)
       values
         (${m.account_id}, ${m.user_id}, ${foreignProject.project_id}, 'e2e-forged-foreign-scope', ${forged.publicKey}, ${forgedHash})
@@ -207,7 +207,7 @@ async function main() {
       ok('forged token row with a foreign project_id cannot use Connector gateway routes → 403');
     } finally {
       await db.execute(sql`
-        delete from kortix.account_tokens where secret_key_hash = ${forgedHash}
+        delete from zed.account_tokens where secret_key_hash = ${forgedHash}
       `);
     }
   } else {
@@ -216,7 +216,7 @@ async function main() {
 
   // ── 9. Revoke + verify 401 ───────────────────────────────────────────
   await db.execute(sql`
-    update kortix.account_tokens
+    update zed.account_tokens
     set status = 'revoked', revoked_at = now()
     where secret_key_hash = ${secretKeyHash}
   `);
@@ -228,7 +228,7 @@ async function main() {
 
   // Cleanup
   await db.execute(sql`
-    delete from kortix.account_tokens where secret_key_hash = ${secretKeyHash}
+    delete from zed.account_tokens where secret_key_hash = ${secretKeyHash}
   `);
 
   process.stdout.write('\n  \x1b[0;32mAll scope-enforcement checks passed.\x1b[0m\n\n');

@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { chatChannelBindings, chatThreads } from '@kortix/db';
+import { chatChannelBindings, chatThreads } from '@zed/db';
 import { db } from '../../shared/db';
 
 /**

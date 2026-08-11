@@ -54,7 +54,7 @@ export function SidebarBalanceWarning({ accountId }: { accountId?: string }) {
           'flex w-full items-center gap-2 border font-medium [&_svg]:size-3.5!',
           isEmpty
             ? 'text-destructive border-destructive/30 bg-destructive/[0.06] hover:bg-destructive/10 hover:text-destructive'
-            : 'text-kortix-orange border-kortix-orange/30 bg-kortix-orange/[0.06] hover:bg-kortix-orange/10 hover:text-kortix-orange',
+            : 'text-zed-orange border-zed-orange/30 bg-zed-orange/[0.06] hover:bg-zed-orange/10 hover:text-zed-orange',
         )}
       >
         {isEmpty ? <AlertTriangle /> : <CreditCard />}

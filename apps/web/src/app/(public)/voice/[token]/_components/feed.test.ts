@@ -5,7 +5,7 @@ import type { CallRecordEntry } from './types';
 function entry(partial: Partial<CallRecordEntry> & { cursor: number }): CallRecordEntry {
   return {
     kind: 'voice',
-    name: 'Kortix',
+    name: 'Zed',
     text: 'hi',
     outcome: null,
     at: '2026-07-26T10:00:00.000Z',
@@ -14,14 +14,14 @@ function entry(partial: Partial<CallRecordEntry> & { cursor: number }): CallReco
 }
 
 function ask(cursor: number, text = 'what broke the build?', at?: string): CallRecordEntry {
-  return entry({ cursor, kind: 'tool', name: 'ask_kortix', text, ...(at ? { at } : {}) });
+  return entry({ cursor, kind: 'tool', name: 'ask_zed', text, ...(at ? { at } : {}) });
 }
 
 function settled(cursor: number, outcome = 'answered', at?: string): CallRecordEntry {
   return entry({
     cursor,
     kind: 'tool',
-    name: 'ask_kortix_done',
+    name: 'ask_zed_done',
     text: outcome,
     ...(at ? { at } : {}),
   });
@@ -32,7 +32,7 @@ describe('foldAskSettlements — one hand-off is one row, not two', () => {
     const rows = foldAskSettlements([ask(1), settled(2)]);
     expect(rows).toHaveLength(1);
     expect(rows[0]!.entry).toMatchObject({
-      name: 'ask_kortix',
+      name: 'ask_zed',
       text: 'what broke the build?',
       outcome: 'answered',
     });
@@ -56,7 +56,7 @@ describe('foldAskSettlements — one hand-off is one row, not two', () => {
   });
 
   test('every ending the watch can produce carries through as the outcome', () => {
-    // The vocabulary is answer-watch.ts's WatchOutcome plus askKortix's two
+    // The vocabulary is answer-watch.ts's WatchOutcome plus askZed's two
     // delivery failures — all of them settle a hand-off, so all of them have to
     // be able to close a row.
     for (const outcome of [
@@ -87,14 +87,14 @@ describe('foldAskSettlements — one hand-off is one row, not two', () => {
     // clue that something is off.
     const rows = foldAskSettlements([settled(5, 'timed out')]);
     expect(rows).toHaveLength(1);
-    expect(rows[0]!.entry).toMatchObject({ name: 'ask_kortix', text: '', outcome: 'timed out' });
+    expect(rows[0]!.entry).toMatchObject({ name: 'ask_zed', text: '', outcome: 'timed out' });
   });
 
   test('a settle already consumed does not reach back and re-close the same ask', () => {
     const rows = foldAskSettlements([ask(1), settled(2), settled(3, 'timed out')]);
     expect(rows).toHaveLength(2);
     expect(rows[0]!.entry.outcome).toBe('answered');
-    expect(rows[1]!.entry).toMatchObject({ name: 'ask_kortix', text: '', outcome: 'timed out' });
+    expect(rows[1]!.entry).toMatchObject({ name: 'ask_zed', text: '', outcome: 'timed out' });
   });
 
   test('a settle with an empty detail still says the hand-off ended', () => {
@@ -118,28 +118,28 @@ describe('foldAskSettlements — one hand-off is one row, not two', () => {
 describe('buildFeed — the name goes on the run, not on every bubble', () => {
   test('consecutive lines by the same speaker are labelled once', () => {
     const rows = buildFeed([
-      entry({ cursor: 1, kind: 'voice', name: 'Kortix' }),
-      entry({ cursor: 2, kind: 'voice', name: 'Kortix' }),
-      entry({ cursor: 3, kind: 'voice', name: 'Kortix' }),
+      entry({ cursor: 1, kind: 'voice', name: 'Zed' }),
+      entry({ cursor: 2, kind: 'voice', name: 'Zed' }),
+      entry({ cursor: 3, kind: 'voice', name: 'Zed' }),
     ]);
     expect(rows.map((r) => r.showLabel)).toEqual([true, false, false]);
   });
 
   test('the speaker changing starts a new run', () => {
     const rows = buildFeed([
-      entry({ cursor: 1, kind: 'voice', name: 'Kortix' }),
+      entry({ cursor: 1, kind: 'voice', name: 'Zed' }),
       entry({ cursor: 2, kind: 'human', name: 'Guest' }),
-      entry({ cursor: 3, kind: 'voice', name: 'Kortix' }),
+      entry({ cursor: 3, kind: 'voice', name: 'Zed' }),
     ]);
     expect(rows.map((r) => r.showLabel)).toEqual([true, true, true]);
   });
 
   test('the two agent-side sources never share a run — that is the whole point of telling them apart', () => {
     // Same role server-side, different actors: the voice speaking versus the
-    // Kortix agent putting a line into the call.
+    // Zed agent putting a line into the call.
     const rows = buildFeed([
-      entry({ cursor: 1, kind: 'voice', name: 'Kortix' }),
-      entry({ cursor: 2, kind: 'kortix', name: 'Kortix agent' }),
+      entry({ cursor: 1, kind: 'voice', name: 'Zed' }),
+      entry({ cursor: 2, kind: 'zed', name: 'Zed agent' }),
     ]);
     expect(rows.map((r) => r.showLabel)).toEqual([true, true]);
   });
@@ -157,26 +157,26 @@ describe('buildFeed — the name goes on the run, not on every bubble', () => {
     // a call; letting it break the run would put the name back on nearly every
     // bubble, which is exactly the noise being removed.
     const rows = buildFeed([
-      entry({ cursor: 1, kind: 'voice', name: 'Kortix' }),
+      entry({ cursor: 1, kind: 'voice', name: 'Zed' }),
       ask(2),
-      entry({ cursor: 3, kind: 'voice', name: 'Kortix' }),
+      entry({ cursor: 3, kind: 'voice', name: 'Zed' }),
     ]);
     expect(rows.map((r) => r.showLabel)).toEqual([true, false, false]);
   });
 
   test('a long silence re-labels the same speaker — after a lull, who this is stops being obvious', () => {
     const rows = buildFeed([
-      entry({ cursor: 1, kind: 'voice', name: 'Kortix', at: '2026-07-26T10:00:00.000Z' }),
-      entry({ cursor: 2, kind: 'voice', name: 'Kortix', at: '2026-07-26T10:01:00.000Z' }),
-      entry({ cursor: 3, kind: 'voice', name: 'Kortix', at: '2026-07-26T10:05:00.000Z' }),
+      entry({ cursor: 1, kind: 'voice', name: 'Zed', at: '2026-07-26T10:00:00.000Z' }),
+      entry({ cursor: 2, kind: 'voice', name: 'Zed', at: '2026-07-26T10:01:00.000Z' }),
+      entry({ cursor: 3, kind: 'voice', name: 'Zed', at: '2026-07-26T10:05:00.000Z' }),
     ]);
     expect(rows.map((r) => r.showLabel)).toEqual([true, false, true]);
   });
 
   test('an unreadable timestamp shows the label rather than dropping the attribution', () => {
     const rows = buildFeed([
-      entry({ cursor: 1, kind: 'voice', name: 'Kortix' }),
-      entry({ cursor: 2, kind: 'voice', name: 'Kortix', at: 'not a date' }),
+      entry({ cursor: 1, kind: 'voice', name: 'Zed' }),
+      entry({ cursor: 2, kind: 'voice', name: 'Zed', at: 'not a date' }),
     ]);
     expect(rows.map((r) => r.showLabel)).toEqual([true, true]);
   });

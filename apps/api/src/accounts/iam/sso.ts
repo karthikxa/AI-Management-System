@@ -1,7 +1,7 @@
 // IAM V2 routes: SAML SSO provider config + group mappings.
 // The Supabase auth.sso_providers row is created out-of-band (via Studio
 // or the auth admin API — admins paste the IdP metadata there). We just
-// record which kortix account owns it plus the claim mapping config. JIT
+// record which zed account owns it plus the claim mapping config. JIT
 // provisioning + group sync runs in the auth middleware on every request.
 
 import { createRoute, z } from '@hono/zod-openapi';
@@ -127,7 +127,7 @@ iamRouter.openapi(
 
   // Keep Supabase's attribute_mapping in step with the (possibly changed) group
   // claim name, so the IdP's group values actually reach the JWT — Supabase drops
-  // any SAML attribute not named in the mapping. Best-effort: the Kortix config is
+  // any SAML attribute not named in the mapping. Best-effort: the Zed config is
   // already persisted, so a Supabase hiccup here must not fail the save.
   if (provider.supabaseSsoProviderId) {
     const synced = await syncSupabaseSamlAttributeMapping(
@@ -324,7 +324,7 @@ iamRouter.openapi(
   if (!ok) return c.json({ error: 'no SSO provider configured' }, 404);
 
   // Unregister the provider in Supabase too — that's what frees the email
-  // domain so the admin can re-import it later. Best-effort: the Kortix row is
+  // domain so the admin can re-import it later. Best-effort: the Zed row is
   // already gone and disconnect must never fail, so a Supabase hiccup is logged
   // (leaving a reclaimable orphan) rather than surfaced. A 404 counts as ok.
   if (before?.supabaseSsoProviderId) {

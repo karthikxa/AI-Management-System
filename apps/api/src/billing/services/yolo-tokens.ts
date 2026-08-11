@@ -1,4 +1,4 @@
-// Billing v2 — per-member KORTIX YOLO tokens.
+// Billing v2 — per-member ZED YOLO tokens.
 //
 // One token per (user_id, account_id). Plaintext is generated at mint and
 // returned to the caller exactly once; only a hash + a short prefix are
@@ -9,7 +9,7 @@
 // storing recoverable plaintext at rest.
 //
 // Spec ref: manager wants "PER MEMBER secret" injected into the sandbox so
-// each member's YOLO usage is attributable. Token is what the kortix-agent-
+// each member's YOLO usage is attributable. Token is what the zed-agent-
 // sandbox-server demon ships to the YOLO endpoint as Bearer auth.
 
 import { createHash, randomBytes } from 'node:crypto';
@@ -56,7 +56,7 @@ export async function mintYoloTokenForMember(
   const tokenHash = hashToken(plaintext);
 
   const { db } = await import('../../shared/db');
-  const { yoloMemberTokens } = await import('@kortix/db');
+  const { yoloMemberTokens } = await import('@zed/db');
   await db
     .insert(yoloMemberTokens)
     .values({ userId, accountId, tokenPrefix, tokenHash })
@@ -104,7 +104,7 @@ export async function attributeYoloToken(
 
   // Direct equality on prefix + hash. Drizzle inline for clarity.
   const { db } = await import('../../shared/db');
-  const { yoloMemberTokens } = await import('@kortix/db');
+  const { yoloMemberTokens } = await import('@zed/db');
   const { and, eq, isNull } = await import('drizzle-orm');
 
   const rows = await db

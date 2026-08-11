@@ -7,7 +7,7 @@ test('SandboxTemplate types launch readiness independently for every supported p
       {
         provider: 'e2b',
         available: true,
-        snapshot_name: 'kortix-default-current',
+        snapshot_name: 'zed-default-current',
         state: 'building',
         status: 'building',
         launch_ready: false,
@@ -25,7 +25,7 @@ test('rebuild responses type partial provider startup failures', () => {
     status: 'started',
     slug: 'default',
     deleted_existing: true,
-    snapshot_name: 'kortix-default-current',
+    snapshot_name: 'zed-default-current',
     providers: ['daytona', 'e2b'],
     failed_providers: ['platinum'],
   } satisfies RebuildSnapshotResponse;

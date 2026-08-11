@@ -15,7 +15,7 @@ function fakeRow(overrides: Partial<ProviderTransitionRow> = {}): ProviderTransi
     sourceProvider: 'daytona',
     targetProvider: 'platinum',
     generation: 3,
-    snapshotName: 'kortix-ppwarm-p1-secretimage',
+    snapshotName: 'zed-ppwarm-p1-secretimage',
     externalTemplateId: 'tpl_internal_secret',
     commitSha: 'deadbeef',
     attempts: 2,
@@ -36,7 +36,7 @@ describe('serializeTransition (FIX-L discriminant)', () => {
 
   test('preserves the internal fields for the PATCH prepare body (unchanged wire reality)', () => {
     const v = serializeTransition(fakeRow(), 'daytona');
-    expect(v.snapshot_name).toBe('kortix-ppwarm-p1-secretimage');
+    expect(v.snapshot_name).toBe('zed-ppwarm-p1-secretimage');
     expect(v.external_template_id).toBe('tpl_internal_secret');
     expect(v.last_error).toContain('internal stack trace');
     expect(v.attempts).toBe(2);

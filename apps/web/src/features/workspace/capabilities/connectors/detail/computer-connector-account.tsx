@@ -1,7 +1,7 @@
 'use client';
 
-import { createConnector, getConnectorConfig, type AdminConnector } from '@kortix/sdk';
-import { formatRelative } from '@kortix/shared';
+import { createConnector, getConnectorConfig, type AdminConnector } from '@zed/sdk';
+import { formatRelative } from '@zed/shared';
 import { ArrowRightIcon, MonitorIcon } from '@phosphor-icons/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -128,7 +128,7 @@ export function ComputerMachineSelector({
                     className={cn(
                       'flex size-9 shrink-0 items-center justify-center rounded-sm',
                       connection.isLive
-                        ? 'bg-kortix-green/15 text-kortix-green'
+                        ? 'bg-zed-green/15 text-zed-green'
                         : 'bg-primary/5 text-muted-foreground',
                     )}
                   >

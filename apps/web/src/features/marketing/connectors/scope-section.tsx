@@ -7,7 +7,7 @@ import { Eyebrow, Section, SectionHeader } from './shared';
 
 /**
  * The three axes of reach, next to the file that sets them. The snippet is real
- * `kortix.yaml` — people copy what they see on a marketing page, so it has to
+ * `zed.yaml` — people copy what they see on a marketing page, so it has to
  * parse.
  */
 export function ScopeSection() {

@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { PermissionAction, PermissionConfig, PermissionRule } from '@kortix/sdk';
+import type { PermissionAction, PermissionConfig, PermissionRule } from '@zed/sdk';
 import { PlusIcon as Plus, TrashIcon as Trash2 } from '@phosphor-icons/react';
 import { AnimatePresence, m } from 'motion/react';
 import { useState } from 'react';

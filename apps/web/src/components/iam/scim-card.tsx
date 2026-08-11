@@ -13,7 +13,7 @@ import { getEnv } from '@/lib/env-config';
 import { buildScimBaseUrl, isAbsoluteHttpUrl } from '@/lib/scim-url';
 import { cn } from '@/lib/utils';
 import { copyToClipboard } from '@/lib/utils/clipboard';
-import { listAccountMembers } from '@kortix/sdk';
+import { listAccountMembers } from '@zed/sdk';
 import {
   CaretDownIcon as ChevronDown,
   CheckIcon as Check,
@@ -139,8 +139,8 @@ function ProvisioningHealthPanel({
           <span
             className={cn(
               'size-1.5 shrink-0 rounded-full',
-              freshness === 'live' && 'bg-kortix-green',
-              freshness === 'recent' && 'bg-kortix-green/60',
+              freshness === 'live' && 'bg-zed-green',
+              freshness === 'recent' && 'bg-zed-green/60',
               freshness === 'quiet' && 'bg-muted-foreground/40',
               freshness === 'never' && 'bg-amber-500',
             )}
@@ -338,7 +338,7 @@ export function ScimCard({ accountId, canManage }: ScimCardProps) {
                       </>
                     ) : (
                       <>
-                        Prepend your API origin (e.g. <code>https://api.kortix.com</code>). The IdP
+                        Prepend your API origin (e.g. <code>https://api.zed.com</code>). The IdP
                         appends <code>/Users</code> and <code>/Groups</code>.
                       </>
                     )}

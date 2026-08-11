@@ -18,7 +18,7 @@ import {
   LAPTOP_APP_REPLICAS,
   PROD_APP_REPLICAS,
   renderFullDockerCompose,
-  writeKortixRuntimeAssets,
+  writeZedRuntimeAssets,
   writeSupabaseVendorAssets,
 } from '../self-host/compose-assets.ts';
 import { SHARED_SELF_HOST_DEFAULTS } from '../self-host/shared-runtime-defaults.ts';
@@ -51,19 +51,19 @@ const UPDATE_TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const DEFAULT_HOST_NAME = 'selfhost';
 const DEFAULT_PUBLIC_URL = 'http://localhost:13737';
 const DEFAULT_API_URL = 'http://localhost:13738';
-const DEFAULT_FRONTEND_IMAGE_REPO = 'kortix/kortix-frontend';
-const DEFAULT_API_IMAGE_REPO = 'kortix/kortix-api';
-const DEFAULT_GATEWAY_IMAGE_REPO = 'kortix/kortix-gateway';
+const DEFAULT_FRONTEND_IMAGE_REPO = 'zed/zed-frontend';
+const DEFAULT_API_IMAGE_REPO = 'zed/zed-api';
+const DEFAULT_GATEWAY_IMAGE_REPO = 'zed/zed-gateway';
 // Shown whenever an instance is (or is being configured) NOT reachable via a
 // public domain — self-host is VPS-first, and the Cloudflare tunnel is an
 // evaluation convenience, not the recommended production setup.
 const VPS_FIRST_NOTICE =
   'Self-host is designed VPS-first — for reliable production use, deploy on a VPS with a domain.';
 
-const HELP = help`Usage: kortix self-host <subcommand> [options]
+const HELP = help`Usage: zed self-host <subcommand> [options]
 
-Run Kortix on your own VPS — a domain is the production path; a Cloudflare
-tunnel is for evaluation with no public domain. Docs: kortix.com/docs/guides/self-hosting
+Run Zed on your own VPS — a domain is the production path; a Cloudflare
+tunnel is for evaluation with no public domain. Docs: zed.com/docs/guides/self-hosting
 
 Subcommands:
   init                    Create/refresh this instance's Compose + env config.
@@ -92,7 +92,7 @@ Options:
   --auto-update <on|off>  Override the default (ON everywhere except --local-images).
   --update-time <HH:MM> / --update-tz <tz>   Auto-updater schedule.
   --local-images          Run locally-built images (dev mode); forces auto-update off.
-  --enterprise-license    Unlock SSO/SCIM/RBAC/audit (kortix.com/enterprise).
+  --enterprise-license    Unlock SSO/SCIM/RBAC/audit (zed.com/enterprise).
   --admin-email <email>   Grant platform-admin to this account.
   --no-restrict-account-creation   Let any signed-in user create new accounts/orgs (default: admin-only).
   --restrict-account-creation      Explicitly re-enable the admin-only restriction (the default).
@@ -101,44 +101,44 @@ Options:
   -h, --help              Show this help.
 
 Examples:
-  kortix self-host init
-  kortix self-host start
-  kortix self-host init --domain kortix.example.com
-  kortix self-host init --tunnel cloudflare
-  kortix self-host update --channel latest
-  kortix self-host init --version 0.10.1
-  kortix self-host init --version dev-a1b2c3d --local-images
-  kortix self-host env set DAYTONA_API_KEY=dtn_...
-  kortix self-host env set KORTIX_PLATFORM_ADMIN_EMAILS=you@company.com   # grant platform admin later
-  kortix self-host uninstall
-  kortix hosts ls
+  zed self-host init
+  zed self-host start
+  zed self-host init --domain zed.example.com
+  zed self-host init --tunnel cloudflare
+  zed self-host update --channel latest
+  zed self-host init --version 0.10.1
+  zed self-host init --version dev-a1b2c3d --local-images
+  zed self-host env set DAYTONA_API_KEY=dtn_...
+  zed self-host env set ZED_PLATFORM_ADMIN_EMAILS=you@company.com   # grant platform admin later
+  zed self-host uninstall
+  zed hosts ls
 `;
 
 type GlobalFlags = SelfHostCommandFlags;
 
 interface SelfHostEnv {
-  KORTIX_VERSION: string;
-  KORTIX_CHANNEL: string;
-  KORTIX_AUTO_UPDATE: string;
-  KORTIX_UPDATE_TIME: string;
-  KORTIX_UPDATE_TZ: string;
-  KORTIX_ALLOW_DOWNTIME: string;
+  ZED_VERSION: string;
+  ZED_CHANNEL: string;
+  ZED_AUTO_UPDATE: string;
+  ZED_UPDATE_TIME: string;
+  ZED_UPDATE_TZ: string;
+  ZED_ALLOW_DOWNTIME: string;
   // The app-tier replica count updater.sh rolls to — 2 in domain/prod mode,
-  // 1 with no domain configured. Recomputed from KORTIX_DOMAIN on every write (see
+  // 1 with no domain configured. Recomputed from ZED_DOMAIN on every write (see
   // normalizeFullSupabaseEnv), not operator-set.
-  KORTIX_APP_REPLICAS: string;
+  ZED_APP_REPLICAS: string;
   // This instance's config directory (docker-compose.yml, .env, updater.sh,
   // Supabase volumes/...), as an ABSOLUTE HOST PATH. Recomputed from
   // instanceDir() on every write (see normalizeFullSupabaseEnv) — not
   // operator-set (see UPDATER_MANAGED_RUNTIME_KEYS in secrets-registry.ts).
-  // The in-compose `kortix-updater` service runs `docker compose` INSIDE its
+  // The in-compose `zed-updater` service runs `docker compose` INSIDE its
   // own container against the HOST Docker daemon (over the mounted socket),
   // so any relative bind mount elsewhere in this stack's compose file (kong's
   // ./volumes/api/kong.yml, supabase-db's ./volumes/db/*, ...) has to resolve
   // to a path that ALSO exists on the real host. Bind-mounting the instance
   // dir at this same absolute path inside that container (source == target)
   // and setting its working_dir to match is what makes that true — see the
-  // kortix-updater service in assets/kortix-compose.yml and the DinD comment
+  // zed-updater service in assets/zed-compose.yml and the DinD comment
   // at the top of assets/updater.sh. Before this field existed, the updater
   // mounted the instance dir at a fixed in-container-only `/workspace`
   // instead, so every relative bind resolved to a host-side `/workspace/...`
@@ -146,22 +146,22 @@ interface SelfHostEnv {
   // shared from the host") — the api/gateway/frontend services have no binds
   // so they rolled fine, masking the bug until the first bind-mounted service
   // (e.g. supabase-kong) needed an updater-driven recreate.
-  KORTIX_INSTANCE_DIR: string;
-  KORTIX_DOMAIN: string;
-  KORTIX_API_DOMAIN: string;
-  KORTIX_ACME_EMAIL: string;
+  ZED_INSTANCE_DIR: string;
+  ZED_DOMAIN: string;
+  ZED_API_DOMAIN: string;
+  ZED_ACME_EMAIL: string;
   // Reachability: how cloud (Daytona) sandboxes and other external callers
   // reach this instance's API — see reachabilityMode() in self-host/tunnel.ts.
-  // KORTIX_DOMAIN set always means "domain" mode regardless of this value;
+  // ZED_DOMAIN set always means "domain" mode regardless of this value;
   // otherwise it's the persisted tunnel-vs-local preference (default local,
   // matching every self-host instance created before this field existed).
-  KORTIX_REACHABILITY_MODE: string;
+  ZED_REACHABILITY_MODE: string;
   // Public origin cloud sandboxes and webhook/OAuth callers reach this
-  // instance on — see the KORTIX_URL comment in assets/kortix-compose.yml.
+  // instance on — see the ZED_URL comment in assets/zed-compose.yml.
   // Computed by normalizeFullSupabaseEnv() per reachability mode; in tunnel
   // mode only reconcileTunnelReachability() (post `docker compose up`, since
   // the URL doesn't exist until cloudflared boots) overwrites it.
-  KORTIX_URL: string;
+  ZED_URL: string;
   // Cloudflare named-tunnel opt-in (tunnel mode only): both set = a stable
   // hostname instead of the zero-config ephemeral quick tunnel.
   CLOUDFLARE_TUNNEL_TOKEN: string;
@@ -176,10 +176,10 @@ interface SelfHostEnv {
   FRONTEND_IMAGE: string;
   API_IMAGE: string;
   GATEWAY_IMAGE: string;
-  // KORTIX_PUBLIC_AUTH_METHODS, ALLOWED_SANDBOX_PROVIDERS, DAYTONA_SERVER_URL,
-  // DAYTONA_TARGET, KORTIX_PUBLIC_DISABLE_LANDING_PAGE, ENTERPRISE_LICENSE_AVAILABLE,
-  // KORTIX_BILLING_INTERNAL_ENABLED, KORTIX_PUBLIC_BILLING_ENABLED, and
-  // KORTIX_PUBLIC_CONNECTORS_ENABLED are covered by the [key: string] index
+  // ZED_PUBLIC_AUTH_METHODS, ALLOWED_SANDBOX_PROVIDERS, DAYTONA_SERVER_URL,
+  // DAYTONA_TARGET, ZED_PUBLIC_DISABLE_LANDING_PAGE, ENTERPRISE_LICENSE_AVAILABLE,
+  // ZED_BILLING_INTERNAL_ENABLED, ZED_PUBLIC_BILLING_ENABLED, and
+  // ZED_PUBLIC_CONNECTORS_ENABLED are covered by the [key: string] index
   // signature below — their defaults come from the SHARED_SELF_HOST_DEFAULTS
   // spread in defaultEnv() (see shared-runtime-defaults.ts), not a literal
   // here, so TS can't see them as named properties.
@@ -201,20 +201,20 @@ interface SelfHostEnv {
   SAML_ENABLED: string;
   SAML_PRIVATE_KEY: string;
   DAYTONA_API_KEY: string;
-  KORTIX_GITHUB_APP_ID: string;
-  KORTIX_GITHUB_APP_PRIVATE_KEY: string;
-  KORTIX_GITHUB_APP_SLUG: string;
-  KORTIX_GITHUB_TOKEN: string;
-  KORTIX_GITHUB_OWNER: string;
+  ZED_GITHUB_APP_ID: string;
+  ZED_GITHUB_APP_PRIVATE_KEY: string;
+  ZED_GITHUB_APP_SLUG: string;
+  ZED_GITHUB_TOKEN: string;
+  ZED_GITHUB_OWNER: string;
   // Managed git: the backend that provisions project repos. The API reads these
-  // MANAGED_GIT_* vars (KORTIX_GITHUB_* alone don't reach it), so the wizard sets
+  // MANAGED_GIT_* vars (ZED_GITHUB_* alone don't reach it), so the wizard sets
   // both. Without it, project create/CRUD fails "provider github not configured".
   MANAGED_GIT_PROVIDER: string;
   MANAGED_GIT_GITHUB_TOKEN: string;
   MANAGED_GIT_GITHUB_OWNER: string;
   MANAGED_GIT_GITHUB_INSTALL_ID: string;
   CONNECTOR_AUTH_PROVIDER: string;
-  KORTIX_SELF_HOST_CONNECTIONS_REVIEWED: string;
+  ZED_SELF_HOST_CONNECTIONS_REVIEWED: string;
   PIPEDREAM_CLIENT_ID: string;
   PIPEDREAM_CLIENT_SECRET: string;
   PIPEDREAM_PROJECT_ID: string;
@@ -374,7 +374,7 @@ async function selfHostInit(flags: GlobalFlags): Promise<number> {
   // missing admin email would otherwise fail silently — and the operator only
   // finds out at the "Only a platform admin can configure GitHub" dead-end in
   // the dashboard. Same loud warning the interactive blank-answer path gets.
-  if (!shouldPrompt(flags) && existing === null && !env.KORTIX_PLATFORM_ADMIN_EMAILS.trim()) {
+  if (!shouldPrompt(flags) && existing === null && !env.ZED_PLATFORM_ADMIN_EMAILS.trim()) {
     warnNoAdminEmail();
   }
   warnIfReachabilityUnconfigured(env, flags);
@@ -424,7 +424,7 @@ async function selfHostInit(flags: GlobalFlags): Promise<number> {
 }
 
 function renderInitSummary(instance: string, dir: string, env: SelfHostEnv, refreshed: boolean): void {
-  process.stdout.write(`\n  ${C.bold}Kortix self-host${C.reset}\n\n`);
+  process.stdout.write(`\n  ${C.bold}Zed self-host${C.reset}\n\n`);
   process.stdout.write(`${status.ok(refreshed ? 'Self-host config refreshed' : 'Self-host config created')}\n`);
   process.stdout.write(`  ${C.dim}instance  ${C.reset}${instance}\n`);
   process.stdout.write(`  ${C.dim}config    ${C.reset}${dir}\n\n`);
@@ -432,16 +432,16 @@ function renderInitSummary(instance: string, dir: string, env: SelfHostEnv, refr
   process.stdout.write(`  ${C.dim}API       ${C.reset}${env.API_PUBLIC_URL}\n`);
   process.stdout.write(`  ${C.dim}Supabase  ${C.reset}${env.SUPABASE_PUBLIC_URL}\n`);
   process.stdout.write(`  ${C.dim}Images    ${C.reset}${env.FRONTEND_IMAGE}, ${env.API_IMAGE}\n`);
-  process.stdout.write(`  ${C.dim}Channel   ${C.reset}${env.KORTIX_CHANNEL}${C.dim} (auto-update: ${env.KORTIX_AUTO_UPDATE === 'true' ? 'on' : 'off'}, nightly at ${env.KORTIX_UPDATE_TIME} ${env.KORTIX_UPDATE_TZ})${C.reset}\n`);
+  process.stdout.write(`  ${C.dim}Channel   ${C.reset}${env.ZED_CHANNEL}${C.dim} (auto-update: ${env.ZED_AUTO_UPDATE === 'true' ? 'on' : 'off'}, nightly at ${env.ZED_UPDATE_TIME} ${env.ZED_UPDATE_TZ})${C.reset}\n`);
   process.stdout.write(`  ${C.dim}Reachability ${C.reset}${describeReachability(env)}\n`);
   if (reachabilityMode(env) !== 'domain') {
     process.stdout.write(`  ${C.dim}${VPS_FIRST_NOTICE}${C.reset}\n`);
   }
   process.stdout.write('\n');
   renderConnectionSummary(env);
-  process.stdout.write(`  ${C.dim}Start      ${C.reset}${C.cyan}kortix self-host start${instance === DEFAULT_INSTANCE ? '' : ` --instance ${instance}`}${C.reset}\n`);
-  process.stdout.write(`  ${C.dim}Configure  ${C.reset}${C.cyan}kortix self-host configure${C.reset}${C.dim} or ${C.reset}${C.cyan}kortix self-host env set KEY=VALUE${C.reset}\n`);
-  process.stdout.write(`  ${C.dim}Switch API  ${C.reset}${C.cyan}kortix hosts use selfhost${C.reset}${C.dim} / ${C.reset}${C.cyan}kortix hosts use cloud${C.reset}\n\n`);
+  process.stdout.write(`  ${C.dim}Start      ${C.reset}${C.cyan}zed self-host start${instance === DEFAULT_INSTANCE ? '' : ` --instance ${instance}`}${C.reset}\n`);
+  process.stdout.write(`  ${C.dim}Configure  ${C.reset}${C.cyan}zed self-host configure${C.reset}${C.dim} or ${C.reset}${C.cyan}zed self-host env set KEY=VALUE${C.reset}\n`);
+  process.stdout.write(`  ${C.dim}Switch API  ${C.reset}${C.cyan}zed hosts use selfhost${C.reset}${C.dim} / ${C.reset}${C.cyan}zed hosts use cloud${C.reset}\n\n`);
   renderAfterStartNote();
 }
 
@@ -464,7 +464,7 @@ async function selfHostStart(flags: GlobalFlags): Promise<number> {
   writeEnv(flags.instance, env);
   writeCompose(flags.instance, env);
 
-  process.stdout.write(`\n  ${C.bold}kortix self-host start${C.reset}\n`);
+  process.stdout.write(`\n  ${C.bold}zed self-host start${C.reset}\n`);
   process.stdout.write(`  ${C.dim}instance ${C.reset}${flags.instance}\n`);
   process.stdout.write(`  ${C.dim}images   ${C.reset}${env.FRONTEND_IMAGE}, ${env.API_IMAGE}\n`);
   process.stdout.write(`  ${C.dim}api      ${C.reset}${env.API_PUBLIC_URL}\n\n`);
@@ -479,7 +479,7 @@ async function selfHostStart(flags: GlobalFlags): Promise<number> {
       `${C.yellow}  warning${C.reset}  ${C.dim}sandbox runtime not configured — agent sessions will fail to start.${C.reset}\n`,
     );
     process.stdout.write(
-      `${C.dim}           run ${C.reset}${C.cyan}kortix self-host configure${C.reset}${C.dim} to set ${C.reset}${key}${C.dim}.${C.reset}\n\n`,
+      `${C.dim}           run ${C.reset}${C.cyan}zed self-host configure${C.reset}${C.dim} to set ${C.reset}${key}${C.dim}.${C.reset}\n\n`,
     );
   }
 
@@ -500,11 +500,11 @@ async function selfHostStart(flags: GlobalFlags): Promise<number> {
       `${C.dim}           git-proxy clone) can't call back to this API.${C.reset}\n`,
     );
     process.stdout.write(
-      `${C.dim}           run ${C.reset}${C.cyan}kortix self-host configure${C.reset}${C.dim} to set up a domain or Cloudflare tunnel.${C.reset}\n\n`,
+      `${C.dim}           run ${C.reset}${C.cyan}zed self-host configure${C.reset}${C.dim} to set up a domain or Cloudflare tunnel.${C.reset}\n\n`,
     );
   }
 
-  // Dev mode (--local-images / KORTIX_IMAGE_PULL=never): the Kortix app
+  // Dev mode (--local-images / ZED_IMAGE_PULL=never): the Zed app
   // images were built locally and were never pushed to any registry, so a
   // blanket `docker compose pull` fails outright (`manifest unknown`) instead
   // of just skipping those services — `docker compose pull` has no per-service
@@ -520,7 +520,7 @@ async function selfHostStart(flags: GlobalFlags): Promise<number> {
   }
   const up = compose(flags.instance, ['up', '-d']);
   if (up !== 0) return up;
-  const refreshApp = compose(flags.instance, ['up', '-d', '--force-recreate', '--no-deps', 'kortix-api', 'frontend']);
+  const refreshApp = compose(flags.instance, ['up', '-d', '--force-recreate', '--no-deps', 'zed-api', 'frontend']);
   if (refreshApp !== 0) return refreshApp;
 
   // Tunnel reachability mode only: the cloudflared quick-tunnel URL is
@@ -532,9 +532,9 @@ async function selfHostStart(flags: GlobalFlags): Promise<number> {
   if (tunnelCode !== 0) return tunnelCode;
 
   registerLocalHost(DEFAULT_HOST_NAME, env.API_PUBLIC_URL, env.PUBLIC_URL);
-  process.stdout.write(`${status.ok('Self-hosted Kortix is starting')}\n`);
+  process.stdout.write(`${status.ok('Self-hosted Zed is starting')}\n`);
   process.stdout.write(`${C.dim}  Dashboard: ${C.reset}${C.cyan}${env.PUBLIC_URL}${C.reset}\n`);
-  process.stdout.write(`${C.dim}  Logs:      ${C.reset}${C.cyan}kortix self-host logs${C.reset}\n\n`);
+  process.stdout.write(`${C.dim}  Logs:      ${C.reset}${C.cyan}zed self-host logs${C.reset}\n\n`);
   renderConnectionSummary(env);
   renderAfterStartNote();
   return 0;
@@ -548,7 +548,7 @@ async function selfHostRestart(flags: GlobalFlags): Promise<number> {
 
 function selfHostPlan(flags: GlobalFlags): number {
   if (!existsSync(composePath(flags.instance)) || !existsSync(envPath(flags.instance))) {
-    process.stderr.write(`${status.err('Self-host is not initialized. Run `kortix self-host init` first.')}\n`);
+    process.stderr.write(`${status.err('Self-host is not initialized. Run `zed self-host init` first.')}\n`);
     return 1;
   }
   const code = compose(flags.instance, ['config', '--quiet']);
@@ -609,32 +609,32 @@ function selfHostDoctor(flags: GlobalFlags): number {
     });
   }
   if (existsSync(envPath(flags.instance))) {
-    // KORTIX_INSTANCE_DIR is recomputed on every writeEnv() (see
+    // ZED_INSTANCE_DIR is recomputed on every writeEnv() (see
     // normalizeFullSupabaseEnv), so this can only be stale between writes —
     // e.g. the instance directory was moved/restored on disk (or
-    // KORTIX_SELF_HOST_CONFIG_DIR changed) since the last `init`/`start`/
+    // ZED_SELF_HOST_CONFIG_DIR changed) since the last `init`/`start`/
     // `update`/`configure`/`env set`. A stale value here means the in-compose
-    // `kortix-updater` service is still bind-mounted (and has its working_dir
+    // `zed-updater` service is still bind-mounted (and has its working_dir
     // set) at the OLD path — the exact DinD mounts-denied failure mode this
     // field exists to prevent — until something re-renders. Any of those
     // commands self-heals it; this check just surfaces the drift instead of
     // letting it fail silently at the next `update`.
     const env = loadEnv(flags.instance);
     const actual = instanceDir(flags.instance);
-    const recorded = env?.KORTIX_INSTANCE_DIR ?? '';
+    const recorded = env?.ZED_INSTANCE_DIR ?? '';
     checks.push({
       name: 'instance-dir',
       ok: recorded === actual,
       detail: recorded === actual
         ? actual
-        : `stale KORTIX_INSTANCE_DIR="${recorded}" (actual: ${actual}) — run \`kortix self-host configure\` (or any of init/start/update/env set) to reconcile`,
+        : `stale ZED_INSTANCE_DIR="${recorded}" (actual: ${actual}) — run \`zed self-host configure\` (or any of init/start/update/env set) to reconcile`,
     });
   }
   const ok = checks.every((check) => check.ok);
   if (flags.json) {
     process.stdout.write(`${JSON.stringify({ instance: flags.instance, ok, checks }, null, 2)}\n`);
   } else {
-    process.stdout.write(`\n  ${C.bold}kortix self-host doctor${C.reset}\n\n`);
+    process.stdout.write(`\n  ${C.bold}zed self-host doctor${C.reset}\n\n`);
     for (const check of checks) {
       process.stdout.write(`${check.ok ? status.ok(check.name) : status.err(check.name)} ${C.dim}${check.detail}${C.reset}\n`);
     }
@@ -662,9 +662,9 @@ async function selfHostUpdate(flags: GlobalFlags): Promise<number> {
   }
 
   const env = loadEnvWithDefaults(flags)!;
-  const oldVersion = env.KORTIX_VERSION || 'unknown';
+  const oldVersion = env.ZED_VERSION || 'unknown';
 
-  process.stdout.write(`\n  ${C.bold}kortix self-host update${C.reset}\n`);
+  process.stdout.write(`\n  ${C.bold}zed self-host update${C.reset}\n`);
   process.stdout.write(`  ${C.dim}instance ${C.reset}${flags.instance}\n`);
 
   applyChannelAndUpdatePolicy(env, flags);
@@ -679,18 +679,18 @@ async function selfHostUpdate(flags: GlobalFlags): Promise<number> {
   writeEnv(flags.instance, env);
   writeCompose(flags.instance, env);
 
-  process.stdout.write(`  ${C.dim}version  ${C.reset}${oldVersion} ${C.dim}→${C.reset} ${C.cyan}${env.KORTIX_VERSION}${C.reset}\n\n`);
+  process.stdout.write(`  ${C.dim}version  ${C.reset}${oldVersion} ${C.dim}→${C.reset} ${C.cyan}${env.ZED_VERSION}${C.reset}\n\n`);
 
   // Ensure Supabase/Caddy/cloudflared (and any not-yet-created app-tier
   // container) exist without recreating anything already running —
   // `--no-recreate` is the key: it never touches an existing
-  // kortix-api/llm-gateway/frontend container even though writeCompose() just
+  // zed-api/llm-gateway/frontend container even though writeCompose() just
   // changed its image tag. The zero-downtime rollout below is what actually
   // rolls those forward.
   const base = compose(flags.instance, ['up', '-d', '--no-recreate']);
   if (base !== 0) return base;
 
-  const rollout = compose(flags.instance, ['run', '--rm', '--no-deps', 'kortix-updater', 'once']);
+  const rollout = compose(flags.instance, ['run', '--rm', '--no-deps', 'zed-updater', 'once']);
   // 75 (EX_TEMPFAIL, see updater.sh's run_locked()) means this run never
   // actually started: the nightly scheduler (or another concurrent `update`)
   // already held the single-flight lock. That is NOT the same as a failed
@@ -699,31 +699,31 @@ async function selfHostUpdate(flags: GlobalFlags): Promise<number> {
   if (rollout === 75) {
     process.stderr.write(
       `${status.err('Another update is already in progress (nightly scheduler or a concurrent `update`) — this run was skipped, not failed.')}\n`
-      + `${C.dim}Check the outcome once it finishes: ${C.reset}${C.cyan}kortix self-host status --instance ${flags.instance}${C.reset}\n`,
+      + `${C.dim}Check the outcome once it finishes: ${C.reset}${C.cyan}zed self-host status --instance ${flags.instance}${C.reset}\n`,
     );
     return rollout;
   }
   if (rollout !== 0) {
     process.stderr.write(
       `${status.err('The update did not complete cleanly.')}\n`
-      + `${C.dim}Details: ${C.reset}${C.cyan}kortix self-host status --instance ${flags.instance}${C.reset}${C.dim} (per-service outcome, drift, last error)${C.reset}\n`,
+      + `${C.dim}Details: ${C.reset}${C.cyan}zed self-host status --instance ${flags.instance}${C.reset}${C.dim} (per-service outcome, drift, last error)${C.reset}\n`,
     );
     return rollout;
   }
 
   // Tunnel reachability mode only, and deliberately AFTER the zero-downtime
-  // rollout above (not before): recreating kortix-api early to pick up a
-  // changed KORTIX_URL would bypass updater.sh's start-first health-checked
+  // rollout above (not before): recreating zed-api early to pick up a
+  // changed ZED_URL would bypass updater.sh's start-first health-checked
   // swap and apply the new image tag as an ungated forced recreate instead.
-  // Once the rollout is done, kortix-api is already on the new version, so
+  // Once the rollout is done, zed-api is already on the new version, so
   // this is just a fast in-place recreate (like `env set` triggers) to
-  // pick up KORTIX_URL — no separate rollout semantics needed for that.
+  // pick up ZED_URL — no separate rollout semantics needed for that.
   return reconcileTunnelReachability(flags.instance, env);
 }
 
 /** Resolve the image tag to apply: an explicit pin wins, else the channel. */
 function resolveTag(flags: GlobalFlags, existing: SelfHostEnv | null): string {
-  return flags.tag ?? flags.release ?? flags.channel ?? existing?.KORTIX_CHANNEL ?? DEFAULT_CHANNEL;
+  return flags.tag ?? flags.release ?? flags.channel ?? existing?.ZED_CHANNEL ?? DEFAULT_CHANNEL;
 }
 
 /**
@@ -742,35 +742,35 @@ function defaultAutoUpdateFor(_tag: string): 'true' | 'false' {
   return DEFAULT_AUTO_UPDATE as 'true' | 'false';
 }
 
-/** Apply KORTIX_CHANNEL / auto-update policy flags onto env, defaults preserved. */
+/** Apply ZED_CHANNEL / auto-update policy flags onto env, defaults preserved. */
 function applyChannelAndUpdatePolicy(env: SelfHostEnv, flags: GlobalFlags): void {
   const tag = resolveTag(flags, env);
   if (flags.channel) {
-    env.KORTIX_CHANNEL = flags.channel;
+    env.ZED_CHANNEL = flags.channel;
   } else if (isChannel(tag)) {
-    env.KORTIX_CHANNEL = tag;
+    env.ZED_CHANNEL = tag;
   }
-  env.KORTIX_CHANNEL ||= DEFAULT_CHANNEL;
-  if (flags.autoUpdate !== undefined) env.KORTIX_AUTO_UPDATE = flags.autoUpdate ? 'true' : 'false';
-  env.KORTIX_AUTO_UPDATE ||= defaultAutoUpdateFor(tag);
-  if (flags.updateTime) env.KORTIX_UPDATE_TIME = flags.updateTime;
-  env.KORTIX_UPDATE_TIME ||= DEFAULT_UPDATE_TIME;
-  if (flags.updateTz) env.KORTIX_UPDATE_TZ = flags.updateTz;
-  env.KORTIX_UPDATE_TZ ||= DEFAULT_UPDATE_TZ;
-  // KORTIX_ALLOW_DOWNTIME is env-only now (no --allow-downtime flag) — set it
-  // directly with `env set KORTIX_ALLOW_DOWNTIME=1` when a specific release
+  env.ZED_CHANNEL ||= DEFAULT_CHANNEL;
+  if (flags.autoUpdate !== undefined) env.ZED_AUTO_UPDATE = flags.autoUpdate ? 'true' : 'false';
+  env.ZED_AUTO_UPDATE ||= defaultAutoUpdateFor(tag);
+  if (flags.updateTime) env.ZED_UPDATE_TIME = flags.updateTime;
+  env.ZED_UPDATE_TIME ||= DEFAULT_UPDATE_TIME;
+  if (flags.updateTz) env.ZED_UPDATE_TZ = flags.updateTz;
+  env.ZED_UPDATE_TZ ||= DEFAULT_UPDATE_TZ;
+  // ZED_ALLOW_DOWNTIME is env-only now (no --allow-downtime flag) — set it
+  // directly with `env set ZED_ALLOW_DOWNTIME=1` when a specific release
   // calls for accepting a brief downtime window; a release that needs it
   // says so. Defaults to off, and a bare init/update never resets a value
   // the operator already set.
-  env.KORTIX_ALLOW_DOWNTIME ||= '0';
+  env.ZED_ALLOW_DOWNTIME ||= '0';
 
   // Dev mode: locally-built images aren't on any registry — the updater
   // can't pull them, so it must not try, and it must never auto-move a local
   // dev box. --local-images always wins over channel defaults and even an
   // explicit --auto-update, since "on" would just fail against no registry.
   if (flags.localImages) {
-    env.KORTIX_IMAGE_PULL = 'never';
-    env.KORTIX_AUTO_UPDATE = 'false';
+    env.ZED_IMAGE_PULL = 'never';
+    env.ZED_AUTO_UPDATE = 'false';
   }
 }
 
@@ -781,21 +781,21 @@ function applyChannelAndUpdatePolicy(env: SelfHostEnv, flags: GlobalFlags): void
  * already set via a prior run or `configure`'s interactive prompt — same
  * convention as applyChannelAndUpdatePolicy/applyFeatureFlags above.
  * `--domain ""` explicitly clears a previously configured domain (falls back
- * to whatever KORTIX_REACHABILITY_MODE otherwise resolves to — tunnel or
+ * to whatever ZED_REACHABILITY_MODE otherwise resolves to — tunnel or
  * local); `--tunnel cloudflare` only ever sets tunnel mode, it never turns
  * itself off (switch to domain via --domain, or to local via
- * `env set KORTIX_REACHABILITY_MODE=local` — there's no "un-tunnel" flag
+ * `env set ZED_REACHABILITY_MODE=local` — there's no "un-tunnel" flag
  * because domain/tunnel/local is a single three-way choice, not independent
- * toggles). KORTIX_REACHABILITY_MODE always ends up non-empty so
+ * toggles). ZED_REACHABILITY_MODE always ends up non-empty so
  * reachabilityMode() never has to guess.
  */
 function applyReachabilityFlags(env: SelfHostEnv, flags: GlobalFlags): void {
   if (flags.domain !== undefined) {
-    env.KORTIX_DOMAIN = flags.domain;
-    if (flags.domain.trim()) env.KORTIX_REACHABILITY_MODE = 'domain';
+    env.ZED_DOMAIN = flags.domain;
+    if (flags.domain.trim()) env.ZED_REACHABILITY_MODE = 'domain';
   }
-  if (flags.tunnel !== undefined) env.KORTIX_REACHABILITY_MODE = 'tunnel';
-  env.KORTIX_REACHABILITY_MODE ||= 'local';
+  if (flags.tunnel !== undefined) env.ZED_REACHABILITY_MODE = 'tunnel';
+  env.ZED_REACHABILITY_MODE ||= 'local';
 }
 
 /**
@@ -856,15 +856,15 @@ async function promptReachability(env: SelfHostEnv, flags: GlobalFlags, isFreshI
   );
 
   if (mode === 'domain') {
-    env.KORTIX_DOMAIN = await prompt('Enter your domain (recommended — VPS + DNS; its A/AAAA record — and the API subdomain\'s — must already point at this box)', env.KORTIX_DOMAIN || '');
-    env.KORTIX_REACHABILITY_MODE = 'domain';
+    env.ZED_DOMAIN = await prompt('Enter your domain (recommended — VPS + DNS; its A/AAAA record — and the API subdomain\'s — must already point at this box)', env.ZED_DOMAIN || '');
+    env.ZED_REACHABILITY_MODE = 'domain';
     // Both have sane derived defaults (see normalizeFullSupabaseEnv) — asked
     // here, with the derived value pre-filled, so enter-to-accept just works.
-    env.KORTIX_API_DOMAIN = await prompt('API subdomain (its own A/AAAA record must also point here)', env.KORTIX_API_DOMAIN || `api.${env.KORTIX_DOMAIN}`);
-    env.KORTIX_ACME_EMAIL = await prompt('ACME email (renewal/expiry notices for the automatic TLS certificate)', env.KORTIX_ACME_EMAIL || `admin@${env.KORTIX_DOMAIN}`);
+    env.ZED_API_DOMAIN = await prompt('API subdomain (its own A/AAAA record must also point here)', env.ZED_API_DOMAIN || `api.${env.ZED_DOMAIN}`);
+    env.ZED_ACME_EMAIL = await prompt('ACME email (renewal/expiry notices for the automatic TLS certificate)', env.ZED_ACME_EMAIL || `admin@${env.ZED_DOMAIN}`);
   } else {
-    env.KORTIX_DOMAIN = '';
-    env.KORTIX_REACHABILITY_MODE = 'tunnel';
+    env.ZED_DOMAIN = '';
+    env.ZED_REACHABILITY_MODE = 'tunnel';
     const useNamed = await confirm(
       'Use a stable named Cloudflare tunnel? (needs a token from the Cloudflare Zero Trust dashboard; otherwise a free zero-config quick tunnel is used, but its URL changes every restart)',
       namedTunnelConfigured(env),
@@ -884,7 +884,7 @@ async function promptReachability(env: SelfHostEnv, flags: GlobalFlags, isFreshI
  *  flag was actually passed, same "explicit flag always wins, bare re-init
  *  never resets" convention as every other apply* helper here. */
 function applyAdminEmail(env: SelfHostEnv, flags: GlobalFlags): void {
-  if (flags.adminEmail !== undefined) env.KORTIX_PLATFORM_ADMIN_EMAILS = flags.adminEmail;
+  if (flags.adminEmail !== undefined) env.ZED_PLATFORM_ADMIN_EMAILS = flags.adminEmail;
 }
 
 /**
@@ -899,9 +899,9 @@ async function promptAdminEmail(env: SelfHostEnv, flags: GlobalFlags): Promise<v
 
   const answer = await prompt(
     'Admin email (grants platform-admin so you can configure GitHub etc. in the dashboard; blank to skip)',
-    env.KORTIX_PLATFORM_ADMIN_EMAILS || '',
+    env.ZED_PLATFORM_ADMIN_EMAILS || '',
   );
-  env.KORTIX_PLATFORM_ADMIN_EMAILS = answer;
+  env.ZED_PLATFORM_ADMIN_EMAILS = answer;
   if (!answer.trim()) warnNoAdminEmail();
 }
 
@@ -912,7 +912,7 @@ function warnNoAdminEmail(): void {
   process.stdout.write(
     `  ${C.yellow}warning${C.reset}  ${C.dim}No admin email set — some in-app server settings (e.g. Settings → Git)${C.reset}\n` +
       `           ${C.dim}need at least one platform admin. Pass ${C.reset}${C.cyan}--admin-email you@example.com${C.reset}${C.dim} or set later:${C.reset}\n` +
-      `           ${C.cyan}kortix self-host env set KORTIX_PLATFORM_ADMIN_EMAILS=you@example.com${C.reset}\n\n`,
+      `           ${C.cyan}zed self-host env set ZED_PLATFORM_ADMIN_EMAILS=you@example.com${C.reset}\n\n`,
   );
 }
 
@@ -926,9 +926,9 @@ function warnNoAdminEmail(): void {
  *
  * The marketing landing page is NOT a guided-flow question (there's no
  * `--landing`/`--no-landing` flag either) — it's just an env var
- * (KORTIX_PUBLIC_DISABLE_LANDING_PAGE, defaulted 'true' in
+ * (ZED_PUBLIC_DISABLE_LANDING_PAGE, defaulted 'true' in
  * SHARED_SELF_HOST_DEFAULTS) an operator flips directly:
- * `kortix self-host env set KORTIX_PUBLIC_DISABLE_LANDING_PAGE=false`. It
+ * `zed self-host env set ZED_PUBLIC_DISABLE_LANDING_PAGE=false`. It
  * isn't a decision that needs asking — self-host is an app deployment, not a
  * marketing site, full stop.
  */
@@ -938,8 +938,8 @@ function applyFeatureFlags(env: SelfHostEnv, flags: GlobalFlags): void {
   }
   if (flags.restrictAccountCreation !== undefined) {
     const value = flags.restrictAccountCreation ? 'true' : 'false';
-    env.KORTIX_RESTRICT_ACCOUNT_CREATION = value;
-    env.KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION = value;
+    env.ZED_RESTRICT_ACCOUNT_CREATION = value;
+    env.ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION = value;
   }
 }
 
@@ -956,7 +956,7 @@ async function promptFeatureFlags(env: SelfHostEnv, flags: GlobalFlags): Promise
   process.stdout.write(`\n  ${C.bold}Deployment shape${C.reset}\n`);
 
   const enterpriseLicense = await selectFrom(
-    'Do you have an Enterprise license? (SSO / RBAC / Directory Sync / Groups — kortix.com/enterprise)',
+    'Do you have an Enterprise license? (SSO / RBAC / Directory Sync / Groups — zed.com/enterprise)',
     ['no', 'yes'] as const,
     env.ENTERPRISE_LICENSE_AVAILABLE === 'true' ? 'yes' : 'no',
   );
@@ -966,15 +966,15 @@ async function promptFeatureFlags(env: SelfHostEnv, flags: GlobalFlags): Promise
   // gates who can spin up a brand-new organization (POST /v1/accounts).
   const restrictAccountCreation = await confirm(
     'Restrict account creation to the admin? (new organizations can only be created by platform admins; users join by invite or SSO)',
-    env.KORTIX_RESTRICT_ACCOUNT_CREATION !== 'false',
+    env.ZED_RESTRICT_ACCOUNT_CREATION !== 'false',
   );
-  env.KORTIX_RESTRICT_ACCOUNT_CREATION = restrictAccountCreation ? 'true' : 'false';
-  env.KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION = restrictAccountCreation ? 'true' : 'false';
+  env.ZED_RESTRICT_ACCOUNT_CREATION = restrictAccountCreation ? 'true' : 'false';
+  env.ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION = restrictAccountCreation ? 'true' : 'false';
 }
 
-/** Point every Kortix app image (and the tracked version) at the given tag. */
+/** Point every Zed app image (and the tracked version) at the given tag. */
 function applyImagesForTag(env: SelfHostEnv, tag: string): void {
-  env.KORTIX_VERSION = tag;
+  env.ZED_VERSION = tag;
   env.FRONTEND_IMAGE = `${DEFAULT_FRONTEND_IMAGE_REPO}:${tag}`;
   env.API_IMAGE = `${DEFAULT_API_IMAGE_REPO}:${tag}`;
   env.GATEWAY_IMAGE = `${DEFAULT_GATEWAY_IMAGE_REPO}:${tag}`;
@@ -1024,27 +1024,27 @@ async function fetchPublishedVersions(repo: string, trackingTag: string): Promis
 async function selfHostVersion(flags: GlobalFlags): Promise<number> {
   const env = loadEnvWithDefaults(flags);
   if (!env) {
-    process.stderr.write(`${status.err('Self-host is not initialized. Run `kortix self-host init` first.')}\n`);
+    process.stderr.write(`${status.err('Self-host is not initialized. Run `zed self-host init` first.')}\n`);
     return 1;
   }
-  const configured = env.KORTIX_VERSION || DEFAULT_CHANNEL;
+  const configured = env.ZED_VERSION || DEFAULT_CHANNEL;
   const { latest, trackingResolved } = await fetchPublishedVersions(DEFAULT_API_IMAGE_REPO, configured);
 
   // What you're actually running: a pinned semver is itself; a moving tag
   // (stable/latest) resolves to whatever version that tag currently points to.
   const running = isSemverTag(configured) ? configured : trackingResolved ?? latest ?? configured;
 
-  process.stdout.write(`\n  ${C.bold}kortix self-host version${C.reset}\n`);
+  process.stdout.write(`\n  ${C.bold}zed self-host version${C.reset}\n`);
   process.stdout.write(`  ${C.dim}instance ${C.reset}${flags.instance}\n`);
   const tagNote = !isSemverTag(configured) ? `${C.dim} (tracking :${configured})${C.reset}` : '';
   process.stdout.write(`  ${C.dim}running  ${C.reset}${C.cyan}${running}${C.reset}${tagNote}\n`);
   process.stdout.write(`  ${C.dim}latest   ${C.reset}${latest ?? C.dim + 'unknown (offline?)' + C.reset}\n`);
-  process.stdout.write(`  ${C.dim}channel  ${C.reset}${env.KORTIX_CHANNEL || DEFAULT_CHANNEL}${C.dim} (auto-update: ${env.KORTIX_AUTO_UPDATE === 'true' ? 'on' : 'off'}, nightly at ${env.KORTIX_UPDATE_TIME} ${env.KORTIX_UPDATE_TZ})${C.reset}\n`);
+  process.stdout.write(`  ${C.dim}channel  ${C.reset}${env.ZED_CHANNEL || DEFAULT_CHANNEL}${C.dim} (auto-update: ${env.ZED_AUTO_UPDATE === 'true' ? 'on' : 'off'}, nightly at ${env.ZED_UPDATE_TIME} ${env.ZED_UPDATE_TZ})${C.reset}\n`);
 
   // Update hint: only meaningful for a semver pin with a known newer release.
   if (latest) {
     if (isSemverTag(running) && compareSemver(running, latest) < 0) {
-      process.stdout.write(`  ${C.yellow}update   ${C.reset}${running} ${C.dim}→${C.reset} ${C.green}${latest}${C.reset}${C.dim} available — run ${C.reset}${C.cyan}kortix self-host update${C.reset}\n`);
+      process.stdout.write(`  ${C.yellow}update   ${C.reset}${running} ${C.dim}→${C.reset} ${C.green}${latest}${C.reset}${C.dim} available — run ${C.reset}${C.cyan}zed self-host update${C.reset}\n`);
     } else if (isSemverTag(running)) {
       process.stdout.write(`  ${C.green}up to date${C.reset}\n`);
     }
@@ -1055,13 +1055,13 @@ async function selfHostVersion(flags: GlobalFlags): Promise<number> {
   process.stdout.write(`  ${C.dim}  frontend ${C.reset}${env.FRONTEND_IMAGE}\n`);
   process.stdout.write(`  ${C.dim}  gateway  ${C.reset}${env.GATEWAY_IMAGE}\n`);
   process.stdout.write('\n');
-  process.stdout.write(`  ${C.dim}Update: ${C.reset}${C.cyan}kortix self-host update${C.reset}${C.dim} (current channel) or ${C.reset}${C.cyan}--tag <version>${C.reset}\n\n`);
+  process.stdout.write(`  ${C.dim}Update: ${C.reset}${C.cyan}zed self-host update${C.reset}${C.dim} (current channel) or ${C.reset}${C.cyan}--tag <version>${C.reset}\n\n`);
   return 0;
 }
 
 function composeCommand(flags: GlobalFlags, args: string[]): number {
   if (!existsSync(composePath(flags.instance))) {
-    process.stderr.write(`${status.err('Self-host is not initialized. Run `kortix self-host init` first.')}\n`);
+    process.stderr.write(`${status.err('Self-host is not initialized. Run `zed self-host init` first.')}\n`);
     return 1;
   }
   return compose(flags.instance, args);
@@ -1092,7 +1092,7 @@ interface UpdaterReport {
 }
 
 /**
- * Ask the (already-running or freshly-spawned) `kortix-updater` service for
+ * Ask the (already-running or freshly-spawned) `zed-updater` service for
  * its last recorded run outcome plus a live drift check — see the `report`
  * subcommand in assets/updater.sh. Read-only, no lock taken: safe to run
  * anytime, including while a real update is in flight. Returns null (not a
@@ -1105,7 +1105,7 @@ function readUpdaterReport(instance: string): UpdaterReport | null {
     [
       'compose', '--project-name', composeProject(instance),
       '--env-file', envPath(instance), '-f', composePath(instance),
-      'run', '--rm', '--no-deps', '-T', 'kortix-updater', 'report',
+      'run', '--rm', '--no-deps', '-T', 'zed-updater', 'report',
     ],
     { cwd: instanceDir(instance), encoding: 'utf8' },
   );
@@ -1128,7 +1128,7 @@ const OUTCOME_LABEL: Record<string, (text: string) => string> = {
 };
 
 /**
- * `kortix self-host status`: container state PLUS the update mechanism's own
+ * `zed self-host status`: container state PLUS the update mechanism's own
  * visibility — last run outcome (ok/degraded/failed/skipped/never-run),
  * from->to version, per-service breakdown, the auto-update schedule, and an
  * explicit drift check (declared image vs. what's actually running). This is
@@ -1139,7 +1139,7 @@ const OUTCOME_LABEL: Record<string, (text: string) => string> = {
  */
 function selfHostStatus(flags: GlobalFlags): number {
   if (!existsSync(composePath(flags.instance)) || !existsSync(envPath(flags.instance))) {
-    process.stderr.write(`${status.err('Self-host is not initialized. Run `kortix self-host init` first.')}\n`);
+    process.stderr.write(`${status.err('Self-host is not initialized. Run `zed self-host init` first.')}\n`);
     return 1;
   }
   const env = loadEnvWithDefaults(flags)!;
@@ -1148,9 +1148,9 @@ function selfHostStatus(flags: GlobalFlags): number {
   if (flags.json) {
     process.stdout.write(`${JSON.stringify({
       instance: flags.instance,
-      auto_update: env.KORTIX_AUTO_UPDATE === 'true',
-      update_time: env.KORTIX_UPDATE_TIME,
-      update_tz: env.KORTIX_UPDATE_TZ,
+      auto_update: env.ZED_AUTO_UPDATE === 'true',
+      update_time: env.ZED_UPDATE_TIME,
+      update_tz: env.ZED_UPDATE_TZ,
       update: report?.status ?? null,
       drift: report?.drift ?? null,
       lock: report?.lock ?? null,
@@ -1159,19 +1159,19 @@ function selfHostStatus(flags: GlobalFlags): number {
     return 0;
   }
 
-  process.stdout.write(`\n  ${C.bold}kortix self-host status${C.reset}\n`);
+  process.stdout.write(`\n  ${C.bold}zed self-host status${C.reset}\n`);
   process.stdout.write(`  ${C.dim}instance ${C.reset}${flags.instance}\n\n`);
   compose(flags.instance, ['ps']);
   process.stdout.write('\n');
 
   if (!report) {
-    process.stdout.write(`  ${status.err('update status unavailable')}${C.dim} (kortix-updater not reachable — is the stack running?)${C.reset}\n\n`);
+    process.stdout.write(`  ${status.err('update status unavailable')}${C.dim} (zed-updater not reachable — is the stack running?)${C.reset}\n\n`);
     return 0;
   }
 
   const outcome = report.status.outcome;
   const label = (OUTCOME_LABEL[outcome] ?? ((t: string) => t))(outcome);
-  const schedule = `${env.KORTIX_AUTO_UPDATE === 'true' ? 'on' : 'off'}, nightly at ${env.KORTIX_UPDATE_TIME} ${env.KORTIX_UPDATE_TZ}`;
+  const schedule = `${env.ZED_AUTO_UPDATE === 'true' ? 'on' : 'off'}, nightly at ${env.ZED_UPDATE_TIME} ${env.ZED_UPDATE_TZ}`;
 
   // One terse line, as specified: last update, outcome, next window.
   process.stdout.write(`  ${C.dim}last update  ${C.reset}${label}${report.status.finished_at ? `${C.dim} (${report.status.finished_at})${C.reset}` : ''}${C.dim} — auto-update ${schedule}${C.reset}\n`);
@@ -1201,7 +1201,7 @@ function selfHostStatus(flags: GlobalFlags): number {
 function selfHostOpen(flags: GlobalFlags): number {
   const env = loadEnv(flags.instance);
   if (!env) {
-    process.stderr.write(`${status.err('Self-host is not initialized. Run `kortix self-host init` first.')}\n`);
+    process.stderr.write(`${status.err('Self-host is not initialized. Run `zed self-host init` first.')}\n`);
     return 1;
   }
   openInBrowser(env.PUBLIC_URL);
@@ -1209,11 +1209,11 @@ function selfHostOpen(flags: GlobalFlags): number {
   return 0;
 }
 
-// ── kortix self-host env ────────────────────────────────────────────────────
+// ── zed self-host env ────────────────────────────────────────────────────
 //
 // The ONE surface for every persistent value this instance's Compose stack
 // reads: it all lives in a single `.env` file
-// (~/.config/kortix/self-host/<instance>/.env), consumed by that instance's
+// (~/.config/zed/self-host/<instance>/.env), consumed by that instance's
 // Docker services via `env_file:` — nothing leaves this machine. `env ls`
 // shows it grouped by service category, masking anything in the secret
 // registry (secrets-registry.ts's SECRET_DEFS) by default (`--show` reveals);
@@ -1253,7 +1253,7 @@ function selfHostEnvLs(args: string[], flags: GlobalFlags): number {
   const show = takeFlagBool(args, ['--show']);
   const env = loadEnvWithDefaults(flags);
   if (!env) {
-    process.stderr.write(`${status.err('Self-host is not initialized. Run `kortix self-host init` first.')}\n`);
+    process.stderr.write(`${status.err('Self-host is not initialized. Run `zed self-host init` first.')}\n`);
     return 1;
   }
   const groups = groupSecretsByCategory(env);
@@ -1298,7 +1298,7 @@ function selfHostEnvLs(args: string[], flags: GlobalFlags): number {
     return 0;
   }
 
-  process.stdout.write(`\n  ${C.bold}kortix self-host env${C.reset}${show ? C.dim + '  (values revealed — do not paste this output anywhere public)' + C.reset : ''}\n`);
+  process.stdout.write(`\n  ${C.bold}zed self-host env${C.reset}${show ? C.dim + '  (values revealed — do not paste this output anywhere public)' + C.reset : ''}\n`);
   process.stdout.write(`  ${C.dim}All values live in ${C.reset}${envPath(flags.instance)}${C.dim}, read only by this instance's Docker services.${C.reset}\n`);
   for (const group of groups) {
     if (group.rows.length === 0) continue;
@@ -1329,7 +1329,7 @@ function selfHostEnvLs(args: string[], flags: GlobalFlags): number {
   if (missing.length > 0) {
     process.stdout.write(`  ${C.yellow}Missing required:${C.reset}\n`);
     for (const item of missing) process.stdout.write(`    ${C.dim}- ${C.reset}${item.label}\n`);
-    process.stdout.write(`\n  ${C.dim}Fix: ${C.reset}${C.cyan}kortix self-host env set KEY=VALUE${C.reset}${C.dim} or ${C.reset}${C.cyan}kortix self-host configure${C.reset}\n\n`);
+    process.stdout.write(`\n  ${C.dim}Fix: ${C.reset}${C.cyan}zed self-host env set KEY=VALUE${C.reset}${C.dim} or ${C.reset}${C.cyan}zed self-host configure${C.reset}\n\n`);
   } else {
     process.stdout.write(`  ${status.ok('All required secrets are set.')}\n\n`);
   }
@@ -1349,7 +1349,7 @@ function refuseUpdaterManagedKeyMessage(key: string): string {
  *  `env set CLOUDFLARE_TUNNEL_TOKEN=...` (settable ahead of actually
  *  switching to tunnel mode) into a hard failure instead of a silent no-op. */
 function restartServicesForKeys(instance: string, env: SelfHostEnv, keys: readonly string[]): number {
-  const domainConfigured = Boolean(env.KORTIX_DOMAIN?.trim());
+  const domainConfigured = Boolean(env.ZED_DOMAIN?.trim());
   const tunnelActive = reachabilityMode(env) === 'tunnel';
   const services = servicesForKeys(keys).filter((service) => {
     if (service === 'caddy') return domainConfigured;
@@ -1361,7 +1361,7 @@ function restartServicesForKeys(instance: string, env: SelfHostEnv, keys: readon
     return 0;
   }
   if (!composeHasRunningServices(instance)) {
-    process.stdout.write(`${C.dim}  stack isn't running — this takes effect on the next ${C.reset}${C.cyan}kortix self-host start${C.reset}\n\n`);
+    process.stdout.write(`${C.dim}  stack isn't running — this takes effect on the next ${C.reset}${C.cyan}zed self-host start${C.reset}\n\n`);
     return 0;
   }
   const code = compose(instance, ['up', '-d', '--force-recreate', '--no-deps', ...services]);
@@ -1373,7 +1373,7 @@ function restartServicesForKeys(instance: string, env: SelfHostEnv, keys: readon
 async function selfHostEnvSet(args: string[], flags: GlobalFlags): Promise<number> {
   const env = loadEnvWithDefaults(flags);
   if (!env) {
-    process.stderr.write(`${status.err('Self-host is not initialized. Run `kortix self-host init` first.')}\n`);
+    process.stderr.write(`${status.err('Self-host is not initialized. Run `zed self-host init` first.')}\n`);
     return 1;
   }
   if (args.length === 0) {
@@ -1490,7 +1490,7 @@ function refuseRotateMessage(key: string, def: SecretDef | undefined): string {
 async function selfHostEnvRotate(args: string[], flags: GlobalFlags): Promise<number> {
   const env = loadEnvWithDefaults(flags);
   if (!env) {
-    process.stderr.write(`${status.err('Self-host is not initialized. Run `kortix self-host init` first.')}\n`);
+    process.stderr.write(`${status.err('Self-host is not initialized. Run `zed self-host init` first.')}\n`);
     return 1;
   }
 
@@ -1500,7 +1500,7 @@ async function selfHostEnvRotate(args: string[], flags: GlobalFlags): Promise<nu
     return 2;
   }
   if (!allGenerated && args.length !== 1) {
-    process.stderr.write(`${status.err('Usage: kortix self-host env rotate <KEY> | --all-generated')}\n`);
+    process.stderr.write(`${status.err('Usage: zed self-host env rotate <KEY> | --all-generated')}\n`);
     return 2;
   }
   const keys = allGenerated ? [...ROTATABLE_GENERATED_KEYS] : [args[0]!];
@@ -1535,7 +1535,7 @@ async function selfHostEnvRotate(args: string[], flags: GlobalFlags): Promise<nu
   return restartServicesForKeys(flags.instance, env, [...rotated]);
 }
 
-// ── kortix self-host uninstall ──────────────────────────────────────────────
+// ── zed self-host uninstall ──────────────────────────────────────────────
 
 /** Pure: the exact `docker compose down` args `uninstall` runs — removing
  *  containers/networks AND named Compose volumes (Caddy's ACME cache, the
@@ -1605,7 +1605,7 @@ async function selfHostUninstall(_args: string[], flags: GlobalFlags): Promise<n
   process.stdout.write(`\n${status.ok(`Uninstalled self-host instance "${flags.instance}"`)}\n`);
   process.stdout.write(`  ${C.dim}Removed:   ${C.reset}containers, volumes, ${dir}\n`);
   process.stdout.write(
-    `  ${C.dim}Reinstall: ${C.reset}${C.cyan}kortix self-host init${flags.instance === DEFAULT_INSTANCE ? '' : ` --instance ${flags.instance}`}${C.reset}${C.dim} && ${C.reset}${C.cyan}kortix self-host start${C.reset}\n\n`,
+    `  ${C.dim}Reinstall: ${C.reset}${C.cyan}zed self-host init${flags.instance === DEFAULT_INSTANCE ? '' : ` --instance ${flags.instance}`}${C.reset}${C.dim} && ${C.reset}${C.cyan}zed self-host start${C.reset}\n\n`,
   );
   return 0;
 }
@@ -1613,7 +1613,7 @@ async function selfHostUninstall(_args: string[], flags: GlobalFlags): Promise<n
 async function selfHostConfigure(flags: GlobalFlags): Promise<number> {
   const env = loadEnvWithDefaults(flags);
   if (!env) {
-    process.stderr.write(`${status.err('Self-host is not initialized. Run `kortix self-host init` first.')}\n`);
+    process.stderr.write(`${status.err('Self-host is not initialized. Run `zed self-host init` first.')}\n`);
     return 1;
   }
   // Same ordering as `init`: reachability first (the decision that determines
@@ -1646,7 +1646,7 @@ async function selfHostConfigure(flags: GlobalFlags): Promise<number> {
 }
 
 /**
- * `kortix self-host connect-github` — DEPRECATED. The GitHub App manifest
+ * `zed self-host connect-github` — DEPRECATED. The GitHub App manifest
  * flow it used to run never worked reliably from a local machine (GitHub rejects the
  * flow's hook/callback URLs when they aren't reachable over the public
  * internet: "Hook url is not supported because it isn't reachable over the
@@ -1658,7 +1658,7 @@ async function selfHostConfigure(flags: GlobalFlags): Promise<number> {
  */
 async function selfHostConnectGithub(_args: string[], _flags: GlobalFlags): Promise<number> {
   process.stdout.write(
-    `\n  ${C.yellow}kortix self-host connect-github is deprecated.${C.reset}\n` +
+    `\n  ${C.yellow}zed self-host connect-github is deprecated.${C.reset}\n` +
       `  ${C.dim}GitHub (projects) is configured in the dashboard: Settings → Git.${C.reset}\n\n`,
   );
   return 0;
@@ -1673,20 +1673,20 @@ async function configureUpdatePolicy(env: SelfHostEnv, flags: GlobalFlags): Prom
   const autoUpdate = await selectFrom(
     'Auto-update this instance',
     ['on', 'off'] as const,
-    env.KORTIX_AUTO_UPDATE === 'false' ? 'off' : 'on',
+    env.ZED_AUTO_UPDATE === 'false' ? 'off' : 'on',
   );
-  env.KORTIX_AUTO_UPDATE = autoUpdate === 'on' ? 'true' : 'false';
+  env.ZED_AUTO_UPDATE = autoUpdate === 'on' ? 'true' : 'false';
   const channel = await selectFrom(
     'Channel to track (stable is recommended; latest is bleeding-edge)',
     CHANNELS,
-    isChannel(env.KORTIX_CHANNEL) ? env.KORTIX_CHANNEL as Channel : DEFAULT_CHANNEL,
+    isChannel(env.ZED_CHANNEL) ? env.ZED_CHANNEL as Channel : DEFAULT_CHANNEL,
   );
-  env.KORTIX_CHANNEL = channel;
-  if (!isSemverTag(env.KORTIX_VERSION)) applyImagesForTag(env, channel);
-  const updateTime = await prompt('Daily update time (HH:MM, 24h)', env.KORTIX_UPDATE_TIME || DEFAULT_UPDATE_TIME);
-  env.KORTIX_UPDATE_TIME = UPDATE_TIME_PATTERN.test(updateTime) ? updateTime : DEFAULT_UPDATE_TIME;
-  const updateTz = await prompt('Timezone for that time (IANA, e.g. UTC)', env.KORTIX_UPDATE_TZ || DEFAULT_UPDATE_TZ);
-  env.KORTIX_UPDATE_TZ = updateTz.trim() || DEFAULT_UPDATE_TZ;
+  env.ZED_CHANNEL = channel;
+  if (!isSemverTag(env.ZED_VERSION)) applyImagesForTag(env, channel);
+  const updateTime = await prompt('Daily update time (HH:MM, 24h)', env.ZED_UPDATE_TIME || DEFAULT_UPDATE_TIME);
+  env.ZED_UPDATE_TIME = UPDATE_TIME_PATTERN.test(updateTime) ? updateTime : DEFAULT_UPDATE_TIME;
+  const updateTz = await prompt('Timezone for that time (IANA, e.g. UTC)', env.ZED_UPDATE_TZ || DEFAULT_UPDATE_TZ);
+  env.ZED_UPDATE_TZ = updateTz.trim() || DEFAULT_UPDATE_TZ;
 }
 
 /**
@@ -1702,18 +1702,18 @@ async function promptUpdatePolicyCompact(env: SelfHostEnv, flags: GlobalFlags): 
 
   process.stdout.write(`\n  ${C.bold}Updates${C.reset}\n`);
   const autoUpdate = await confirm(
-    `Auto-update nightly at ${env.KORTIX_UPDATE_TIME || DEFAULT_UPDATE_TIME} ${env.KORTIX_UPDATE_TZ || DEFAULT_UPDATE_TZ}?`,
-    env.KORTIX_AUTO_UPDATE !== 'false',
+    `Auto-update nightly at ${env.ZED_UPDATE_TIME || DEFAULT_UPDATE_TIME} ${env.ZED_UPDATE_TZ || DEFAULT_UPDATE_TZ}?`,
+    env.ZED_AUTO_UPDATE !== 'false',
   );
-  env.KORTIX_AUTO_UPDATE = autoUpdate ? 'true' : 'false';
+  env.ZED_AUTO_UPDATE = autoUpdate ? 'true' : 'false';
   if (!autoUpdate) return;
 
   const customize = await confirm('Change the update time/timezone?', false);
   if (!customize) return;
-  const updateTime = await prompt('Daily update time (HH:MM, 24h)', env.KORTIX_UPDATE_TIME || DEFAULT_UPDATE_TIME);
-  env.KORTIX_UPDATE_TIME = UPDATE_TIME_PATTERN.test(updateTime) ? updateTime : DEFAULT_UPDATE_TIME;
-  const updateTz = await prompt('Timezone (IANA, e.g. UTC)', env.KORTIX_UPDATE_TZ || DEFAULT_UPDATE_TZ);
-  env.KORTIX_UPDATE_TZ = updateTz.trim() || DEFAULT_UPDATE_TZ;
+  const updateTime = await prompt('Daily update time (HH:MM, 24h)', env.ZED_UPDATE_TIME || DEFAULT_UPDATE_TIME);
+  env.ZED_UPDATE_TIME = UPDATE_TIME_PATTERN.test(updateTime) ? updateTime : DEFAULT_UPDATE_TIME;
+  const updateTz = await prompt('Timezone (IANA, e.g. UTC)', env.ZED_UPDATE_TZ || DEFAULT_UPDATE_TZ);
+  env.ZED_UPDATE_TZ = updateTz.trim() || DEFAULT_UPDATE_TZ;
 }
 
 const SANDBOX_PROVIDER_CHOICES = ['daytona', 'platinum', 'e2b'] as const;
@@ -1747,7 +1747,7 @@ async function configureConnections(env: SelfHostEnv, flags: GlobalFlags): Promi
     // an instance runs on exactly one sandbox provider.
     process.stdout.write(
       `  ${C.cyan}daytona${C.reset}      ${C.dim}https://app.daytona.io (default, recommended)${C.reset}\n` +
-        `  ${C.cyan}platinum${C.reset}     ${C.dim}https://www.platinum.dev (recommended) — Kortix's own microVM sandbox provider${C.reset}\n` +
+        `  ${C.cyan}platinum${C.reset}     ${C.dim}https://www.platinum.dev (recommended) — Zed's own microVM sandbox provider${C.reset}\n` +
         `  ${C.cyan}e2b${C.reset}          ${C.dim}https://e2b.dev (also supported)${C.reset}\n`,
     );
     provider = await selectFrom('Sandbox provider', SANDBOX_PROVIDER_CHOICES, defaultProvider);
@@ -1769,7 +1769,7 @@ async function configureConnections(env: SelfHostEnv, flags: GlobalFlags): Promi
   // that belongs here — the platform-level OAuth app Pipedream issues per
   // operator, not a per-user connection (those live in the DB and are
   // configured per-project in the app). Never gates init/start either way;
-  // KORTIX_PUBLIC_CONNECTORS_ENABLED is re-derived from whatever ends up set
+  // ZED_PUBLIC_CONNECTORS_ENABLED is re-derived from whatever ends up set
   // here on every write (see normalizeFullSupabaseEnv), so skipping just
   // leaves connectors hidden in the frontend rather than half-configured.
   if (shouldPrompt(flags)) {
@@ -1788,7 +1788,7 @@ async function configureConnections(env: SelfHostEnv, flags: GlobalFlags): Promi
     }
   }
 
-  env.KORTIX_SELF_HOST_CONNECTIONS_REVIEWED = 'true';
+  env.ZED_SELF_HOST_CONNECTIONS_REVIEWED = 'true';
 }
 
 // Managed git (GitHub) is deliberately NOT configured from this guided flow
@@ -1812,14 +1812,14 @@ function pipedreamConfigured(env: SelfHostEnv): boolean {
 
 /**
  * Whether `start` should run `docker compose pull` at all. False for
- * KORTIX_IMAGE_PULL=never (set by --local-images — see applyChannelAndUpdatePolicy)
+ * ZED_IMAGE_PULL=never (set by --local-images — see applyChannelAndUpdatePolicy)
  * since those images were built locally and were never pushed to any
  * registry, so a blanket pull fails outright (`manifest unknown`) instead of
  * skipping just the local ones. Mirrors updater.sh's perform_update(), which
  * already skips its own pull step under the same flag.
  */
 export function shouldPullImages(env: Record<string, string>): boolean {
-  return env.KORTIX_IMAGE_PULL !== 'never';
+  return env.ZED_IMAGE_PULL !== 'never';
 }
 
 export function sandboxProviders(env: Record<string, string>): string[] {
@@ -1843,8 +1843,8 @@ export function gitProviderConfigured(env: Record<string, string>): boolean {
   if (env.MANAGED_GIT_PROVIDER !== 'github') return false;
   const pat = !!(env.MANAGED_GIT_GITHUB_TOKEN && env.MANAGED_GIT_GITHUB_OWNER);
   const app = !!(
-    env.KORTIX_GITHUB_APP_ID &&
-    env.KORTIX_GITHUB_APP_PRIVATE_KEY &&
+    env.ZED_GITHUB_APP_ID &&
+    env.ZED_GITHUB_APP_PRIVATE_KEY &&
     env.MANAGED_GIT_GITHUB_OWNER &&
     env.MANAGED_GIT_GITHUB_INSTALL_ID
   );
@@ -1863,8 +1863,8 @@ const GIT_AND_SANDBOX_SECRET_KEYS: ReadonlySet<string> = new Set([
   'MANAGED_GIT_GITHUB_OWNER',
   'MANAGED_GIT_GITHUB_TOKEN',
   'MANAGED_GIT_GITHUB_INSTALL_ID',
-  'KORTIX_GITHUB_APP_ID',
-  'KORTIX_GITHUB_APP_PRIVATE_KEY',
+  'ZED_GITHUB_APP_ID',
+  'ZED_GITHUB_APP_PRIVATE_KEY',
 ]);
 
 /** Friendlier labels for required secrets whose bare key name isn't obvious
@@ -1918,7 +1918,7 @@ export function missingRequiredSecrets(env: Record<string, string>): MissingSecr
     const key = SANDBOX_PROVIDER_KEY[provider] ?? 'DAYTONA_API_KEY';
     missing.push({
       label: `Agent sandbox runtime (${provider} API key)`,
-      hint: `kortix self-host env set ${key}=<key>`,
+      hint: `zed self-host env set ${key}=<key>`,
     });
   }
 
@@ -1928,7 +1928,7 @@ export function missingRequiredSecrets(env: Record<string, string>): MissingSecr
     if (value.trim() !== '') continue;
     missing.push({
       label: REQUIRED_SECRET_LABELS[def.key] ?? `${def.key} (${CATEGORY_LABELS[def.category]})`,
-      hint: `kortix self-host env set ${def.key}=<value>`,
+      hint: `zed self-host env set ${def.key}=<value>`,
     });
   }
 
@@ -1987,7 +1987,7 @@ function connectionReviewNeeded(env: SelfHostEnv): boolean {
   // dashboard after `start`). A missing key always warrants the wizard, even
   // after a prior review.
   if (!sandboxProviderConfigured(env)) return true;
-  if (env.KORTIX_SELF_HOST_CONNECTIONS_REVIEWED === 'true') return false;
+  if (env.ZED_SELF_HOST_CONNECTIONS_REVIEWED === 'true') return false;
   return true;
 }
 
@@ -2006,7 +2006,7 @@ function renderConnectionSummary(env: SelfHostEnv): void {
     {
       name: `Agent sandbox runtime (${sandboxProviders(env).join(',') || 'none'})`,
       configured: sandboxProviderConfigured(env),
-      hint: `${SANDBOX_PROVIDER_KEY[provider ?? 'daytona'] ?? 'DAYTONA_API_KEY'} (via kortix self-host configure)`,
+      hint: `${SANDBOX_PROVIDER_KEY[provider ?? 'daytona'] ?? 'DAYTONA_API_KEY'} (via zed self-host configure)`,
     },
   ];
 
@@ -2019,7 +2019,7 @@ function renderConnectionSummary(env: SelfHostEnv): void {
   }
   const missing = rows.filter((row) => !row.configured).length;
   if (missing > 0) {
-    process.stdout.write(`  ${C.dim}Configure: ${C.reset}${C.cyan}kortix self-host configure${C.reset}${C.dim} or ${C.reset}${C.cyan}kortix self-host env set KEY=VALUE${C.reset}\n`);
+    process.stdout.write(`  ${C.dim}Configure: ${C.reset}${C.cyan}zed self-host configure${C.reset}${C.dim} or ${C.reset}${C.cyan}zed self-host env set KEY=VALUE${C.reset}\n`);
   }
   process.stdout.write('\n');
 }
@@ -2141,36 +2141,36 @@ function defaultEnv(flags: GlobalFlags): SelfHostEnv {
         ? 'true'
         : 'false';
   return {
-    KORTIX_VERSION: tag,
-    KORTIX_CHANNEL: flags.channel ?? (isChannel(tag) ? tag : DEFAULT_CHANNEL),
-    KORTIX_AUTO_UPDATE: autoUpdate,
+    ZED_VERSION: tag,
+    ZED_CHANNEL: flags.channel ?? (isChannel(tag) ? tag : DEFAULT_CHANNEL),
+    ZED_AUTO_UPDATE: autoUpdate,
     // Dev mode only: locally-built images the updater must never try to pull
     // from a registry. Empty/unset = normal pull behavior.
-    KORTIX_IMAGE_PULL: flags.localImages ? 'never' : '',
-    KORTIX_UPDATE_TIME: flags.updateTime ?? DEFAULT_UPDATE_TIME,
-    KORTIX_UPDATE_TZ: flags.updateTz ?? DEFAULT_UPDATE_TZ,
+    ZED_IMAGE_PULL: flags.localImages ? 'never' : '',
+    ZED_UPDATE_TIME: flags.updateTime ?? DEFAULT_UPDATE_TIME,
+    ZED_UPDATE_TZ: flags.updateTz ?? DEFAULT_UPDATE_TZ,
     // Env-only (no --allow-downtime flag) — see applyChannelAndUpdatePolicy.
-    KORTIX_ALLOW_DOWNTIME: '0',
-    // Recomputed from KORTIX_DOMAIN on every write in normalizeFullSupabaseEnv;
+    ZED_ALLOW_DOWNTIME: '0',
+    // Recomputed from ZED_DOMAIN on every write in normalizeFullSupabaseEnv;
     // this initial value only matters before that first normalize pass.
-    KORTIX_APP_REPLICAS: String(LAPTOP_APP_REPLICAS),
+    ZED_APP_REPLICAS: String(LAPTOP_APP_REPLICAS),
     // Recomputed from instanceDir() on every write in normalizeFullSupabaseEnv
     // (see the field's own doc comment on SelfHostEnv above); this initial
     // value only matters before that first normalize pass.
-    KORTIX_INSTANCE_DIR: instanceDir(flags.instance),
-    KORTIX_DOMAIN: '',
-    KORTIX_API_DOMAIN: '',
-    KORTIX_ACME_EMAIL: '',
+    ZED_INSTANCE_DIR: instanceDir(flags.instance),
+    ZED_DOMAIN: '',
+    ZED_API_DOMAIN: '',
+    ZED_ACME_EMAIL: '',
     // Reachability preference (tunnel vs local; domain mode is inferred from
-    // KORTIX_DOMAIN instead — see reachabilityMode() in self-host/tunnel.ts).
+    // ZED_DOMAIN instead — see reachabilityMode() in self-host/tunnel.ts).
     // Defaults to 'local', matching every self-host instance created before
     // this feature existed — a bare `init` with no flags never silently
     // starts provisioning a tunnel.
-    KORTIX_REACHABILITY_MODE: flags.tunnel ? 'tunnel' : 'local',
+    ZED_REACHABILITY_MODE: flags.tunnel ? 'tunnel' : 'local',
     // Recomputed per reachability mode in normalizeFullSupabaseEnv; this
     // initial value only matters before that first normalize pass (and, in
     // tunnel mode, until the first `start` captures the real tunnel URL).
-    KORTIX_URL: DEFAULT_API_URL,
+    ZED_URL: DEFAULT_API_URL,
     CLOUDFLARE_TUNNEL_TOKEN: '',
     CLOUDFLARE_TUNNEL_HOSTNAME: '',
     PUBLIC_URL: DEFAULT_PUBLIC_URL,
@@ -2213,7 +2213,7 @@ function defaultEnv(flags: GlobalFlags): SelfHostEnv {
     SMTP_PORT: '587',
     SMTP_USER: 'unused',
     SMTP_PASS: 'unused',
-    SMTP_SENDER_NAME: 'Kortix',
+    SMTP_SENDER_NAME: 'Zed',
     MAILER_URLPATHS_INVITE: '/auth/v1/verify',
     MAILER_URLPATHS_CONFIRMATION: '/auth/v1/verify',
     MAILER_URLPATHS_RECOVERY: '/auth/v1/verify',
@@ -2226,7 +2226,7 @@ function defaultEnv(flags: GlobalFlags): SelfHostEnv {
     // `existing` override in loadEnvWithDefaults()/selfHostInit().
     SAML_ENABLED: 'true',
     SAML_PRIVATE_KEY: samlPrivateKeyDer(),
-    DASHBOARD_USERNAME: 'kortix',
+    DASHBOARD_USERNAME: 'zed',
     DASHBOARD_PASSWORD: token(24),
     SECRET_KEY_BASE: token(48),
     REALTIME_DB_ENC_KEY: token(8),
@@ -2243,11 +2243,11 @@ function defaultEnv(flags: GlobalFlags): SelfHostEnv {
     POOLER_DEFAULT_POOL_SIZE: '20',
     POOLER_MAX_CLIENT_CONN: '100',
     POOLER_DB_POOL_SIZE: '5',
-    STUDIO_DEFAULT_ORGANIZATION: 'Kortix',
+    STUDIO_DEFAULT_ORGANIZATION: 'Zed',
     STUDIO_DEFAULT_PROJECT: flags.instance,
     OPENAI_API_KEY: '',
     FUNCTIONS_VERIFY_JWT: 'false',
-    GLOBAL_S3_BUCKET: 'kortix-storage',
+    GLOBAL_S3_BUCKET: 'zed-storage',
     STORAGE_TENANT_ID: composeProject(flags.instance),
     REGION: 'local',
     IMGPROXY_AUTO_WEBP: 'true',
@@ -2255,9 +2255,9 @@ function defaultEnv(flags: GlobalFlags): SelfHostEnv {
     INTERNAL_SERVICE_KEY: token(32),
     API_KEY_SECRET: token(32),
     TUNNEL_SIGNING_SECRET: token(32),
-    // Sandboxes run on a real provider, just like Kortix Cloud — Daytona,
-    // E2B, or Kortix's own Platinum (SandboxProviderName in
-    // apps/api/src/config.ts); `kortix self-host configure` asks which one
+    // Sandboxes run on a real provider, just like Zed Cloud — Daytona,
+    // E2B, or Zed's own Platinum (SandboxProviderName in
+    // apps/api/src/config.ts); `zed self-host configure` asks which one
     // and collects only that provider's key(s).
     DAYTONA_API_KEY: '',
     E2B_API_KEY: '',
@@ -2265,11 +2265,11 @@ function defaultEnv(flags: GlobalFlags): SelfHostEnv {
     PLATINUM_API_URL: '',
     PLATINUM_TEMPLATE: '',
     PLATINUM_WEBHOOK_SECRET: '',
-    KORTIX_GITHUB_APP_ID: '',
-    KORTIX_GITHUB_APP_PRIVATE_KEY: '',
-    KORTIX_GITHUB_APP_SLUG: '',
-    KORTIX_GITHUB_TOKEN: '',
-    KORTIX_GITHUB_OWNER: '',
+    ZED_GITHUB_APP_ID: '',
+    ZED_GITHUB_APP_PRIVATE_KEY: '',
+    ZED_GITHUB_APP_SLUG: '',
+    ZED_GITHUB_TOKEN: '',
+    ZED_GITHUB_OWNER: '',
     MANAGED_GIT_PROVIDER: 'github',
     MANAGED_GIT_GITHUB_TOKEN: '',
     MANAGED_GIT_GITHUB_OWNER: '',
@@ -2277,9 +2277,9 @@ function defaultEnv(flags: GlobalFlags): SelfHostEnv {
     // Operator admin allowlist — these emails are platform admins on this
     // self-host (so they can configure the managed GitHub App etc. in-app).
     // Set at init via --admin-email or the guided prompt; the API reads it.
-    KORTIX_PLATFORM_ADMIN_EMAILS: flags.adminEmail ?? '',
+    ZED_PLATFORM_ADMIN_EMAILS: flags.adminEmail ?? '',
     CONNECTOR_AUTH_PROVIDER: 'pipedream',
-    KORTIX_SELF_HOST_CONNECTIONS_REVIEWED: 'false',
+    ZED_SELF_HOST_CONNECTIONS_REVIEWED: 'false',
     PIPEDREAM_CLIENT_ID: '',
     PIPEDREAM_CLIENT_SECRET: '',
     PIPEDREAM_PROJECT_ID: '',
@@ -2291,11 +2291,11 @@ function defaultEnv(flags: GlobalFlags): SelfHostEnv {
 function writeCompose(instance: string, env: SelfHostEnv): void {
   const root = instanceDir(instance);
   writeSupabaseVendorAssets(root);
-  writeKortixRuntimeAssets(root);
+  writeZedRuntimeAssets(root);
   writeFileSync(
     composePath(instance),
     renderFullDockerCompose(composeProject(instance), {
-      domainConfigured: Boolean(env.KORTIX_DOMAIN?.trim()),
+      domainConfigured: Boolean(env.ZED_DOMAIN?.trim()),
       tunnelConfigured: reachabilityMode(env) === 'tunnel',
       namedTunnelConfigured: namedTunnelConfigured(env),
     }),
@@ -2334,7 +2334,7 @@ function writeEnv(instance: string, env: SelfHostEnv): void {
 
 function normalizeFullSupabaseEnv(instance: string, env: SelfHostEnv): void {
   // The official Supabase distribution uses the unprefixed names. Keep the
-  // historical Kortix variables canonical and derive upstream aliases so an
+  // historical Zed variables canonical and derive upstream aliases so an
   // existing .env upgrades without rotating its JWT or API keys.
   env.JWT_SECRET = env.SUPABASE_JWT_SECRET;
   env.ANON_KEY = env.SUPABASE_ANON_KEY;
@@ -2349,29 +2349,29 @@ function normalizeFullSupabaseEnv(instance: string, env: SelfHostEnv): void {
   // Recomputed on every write (not just when the now-removed guided-init
   // Pipedream question used to run) so setting/clearing PIPEDREAM_CLIENT_ID
   // et al. via `env set` directly keeps this in sync too.
-  env.KORTIX_PUBLIC_CONNECTORS_ENABLED = pipedreamConfigured(env) ? 'true' : 'false';
+  env.ZED_PUBLIC_CONNECTORS_ENABLED = pipedreamConfigured(env) ? 'true' : 'false';
 
-  // Public domain + TLS (opt-in): when KORTIX_DOMAIN is set, the bundled Caddy
+  // Public domain + TLS (opt-in): when ZED_DOMAIN is set, the bundled Caddy
   // service fronts the stack on 80/443 and every public URL becomes the real
   // domain instead of a loopback port. api.<domain> is the default API host;
-  // an explicit KORTIX_API_DOMAIN overrides it. Supabase's data-plane routes
+  // an explicit ZED_API_DOMAIN overrides it. Supabase's data-plane routes
   // live on the same host as the frontend (see assets/Caddyfile.txt), so the
   // browser-facing Supabase URL is the frontend domain too.
-  if (env.KORTIX_DOMAIN?.trim()) {
-    env.KORTIX_API_DOMAIN ||= `api.${env.KORTIX_DOMAIN}`;
-    env.KORTIX_ACME_EMAIL ||= `admin@${env.KORTIX_DOMAIN}`;
-    env.PUBLIC_URL = `https://${env.KORTIX_DOMAIN}`;
-    env.API_PUBLIC_URL = `https://${env.KORTIX_API_DOMAIN}`;
-    env.SUPABASE_PUBLIC_URL = `https://${env.KORTIX_DOMAIN}`;
+  if (env.ZED_DOMAIN?.trim()) {
+    env.ZED_API_DOMAIN ||= `api.${env.ZED_DOMAIN}`;
+    env.ZED_ACME_EMAIL ||= `admin@${env.ZED_DOMAIN}`;
+    env.PUBLIC_URL = `https://${env.ZED_DOMAIN}`;
+    env.API_PUBLIC_URL = `https://${env.ZED_API_DOMAIN}`;
+    env.SUPABASE_PUBLIC_URL = `https://${env.ZED_DOMAIN}`;
   }
 
   // The app-tier replica count the auto-updater rolls to: 2 (behind Caddy,
   // no host ports) once a domain is configured, else 1 (loopback host ports,
-  // no LB) — must always track KORTIX_DOMAIN, the same signal
+  // no LB) — must always track ZED_DOMAIN, the same signal
   // renderFullDockerCompose() uses to decide the Compose-side topology.
-  env.KORTIX_APP_REPLICAS = String(env.KORTIX_DOMAIN?.trim() ? PROD_APP_REPLICAS : LAPTOP_APP_REPLICAS);
+  env.ZED_APP_REPLICAS = String(env.ZED_DOMAIN?.trim() ? PROD_APP_REPLICAS : LAPTOP_APP_REPLICAS);
 
-  // KORTIX_URL — the PUBLIC origin cloud (Daytona) sandboxes and other
+  // ZED_URL — the PUBLIC origin cloud (Daytona) sandboxes and other
   // external callers (webhooks, Slack/Teams OAuth, git-proxy clone) reach this
   // instance on. Computed per reachability mode (see reachabilityMode() in
   // self-host/tunnel.ts):
@@ -2381,7 +2381,7 @@ function normalizeFullSupabaseEnv(instance: string, env: SelfHostEnv): void {
   //              Sandboxes can never reach this — see the `start` warning —
   //              but it is at least a real, resolvable, honestly-loopback URL
   //              instead of the old hardcoded internal Docker hostname
-  //              (`http://kortix-api:8008`, unresolvable from outside the
+  //              (`http://zed-api:8008`, unresolvable from outside the
   //              compose network and NOT recognized as loopback by the API's
   //              own sandboxCallbackUnreachableReason() guard — so it used to
   //              fail mysteriously ~60s later instead of failing fast).
@@ -2394,24 +2394,24 @@ function normalizeFullSupabaseEnv(instance: string, env: SelfHostEnv): void {
   //              moments ago by that same `start`/`update` run.
   const mode = reachabilityMode(env);
   if (mode !== 'tunnel') {
-    env.KORTIX_URL = env.API_PUBLIC_URL;
+    env.ZED_URL = env.API_PUBLIC_URL;
   } else {
-    env.KORTIX_URL ||= env.API_PUBLIC_URL;
+    env.ZED_URL ||= env.API_PUBLIC_URL;
   }
 
   env.API_EXTERNAL_URL = `${env.SUPABASE_PUBLIC_URL.replace(/\/$/, '')}/auth/v1`;
   env.SITE_URL = env.PUBLIC_URL;
 
-  // Always recomputed (never `||=`) — see the KORTIX_INSTANCE_DIR field's doc
+  // Always recomputed (never `||=`) — see the ZED_INSTANCE_DIR field's doc
   // comment on SelfHostEnv. Unconditional on purpose: if the instance
   // directory itself moved (operator relocated it, or restored it under a
-  // different KORTIX_SELF_HOST_CONFIG_DIR), the next `init`/`start`/`update`/
+  // different ZED_SELF_HOST_CONFIG_DIR), the next `init`/`start`/`update`/
   // `configure`/`env set` — anything that calls writeEnv() — self-heals a
   // stale value instead of quietly leaving the in-compose updater mounted at
   // an address that no longer matches. `doctor` also flags a mismatch
   // directly (see selfHostDoctor) for the read-only "is this still stale?"
   // check.
-  env.KORTIX_INSTANCE_DIR = instanceDir(instance);
+  env.ZED_INSTANCE_DIR = instanceDir(instance);
 
   env.POOLER_TENANT_ID ||= composeProject(instance);
   env.STORAGE_TENANT_ID ||= composeProject(instance);
@@ -2451,7 +2451,7 @@ function readComposeLogs(instance: string, service: string): string {
  * Tunnel reachability mode only (no-op otherwise): capture the cloudflared
  * tunnel's public URL — instant for a named tunnel (the hostname IS the URL),
  * polled from the `cloudflared` container's logs for the zero-config quick
- * tunnel — and rewire KORTIX_URL to it, recreating kortix-api so it actually
+ * tunnel — and rewire ZED_URL to it, recreating zed-api so it actually
  * picks up the change (env_file is only read at container creation, not
  * live). Must run on every `start`/`update`, not just the first one: the
  * quick-tunnel URL is EPHEMERAL — a fresh one is minted whenever the
@@ -2461,7 +2461,7 @@ function readComposeLogs(instance: string, service: string): string {
  *
  * Non-fatal on timeout: the stack is still up, just unreachable for
  * sandboxes until the operator re-runs `start`/`update` (or checks
- * `kortix self-host logs cloudflared`).
+ * `zed self-host logs cloudflared`).
  */
 async function reconcileTunnelReachability(instance: string, env: SelfHostEnv): Promise<number> {
   if (reachabilityMode(env) !== 'tunnel') return 0;
@@ -2474,14 +2474,14 @@ async function reconcileTunnelReachability(instance: string, env: SelfHostEnv): 
   }
 
   const ephemeralNote = namedTunnelConfigured(env) ? '' : `${C.dim} (ephemeral — changes on next restart)${C.reset}`;
-  process.stdout.write(`  ${C.dim}KORTIX_URL -> ${C.reset}${C.cyan}${result.url}${C.reset}${ephemeralNote}\n\n`);
+  process.stdout.write(`  ${C.dim}ZED_URL -> ${C.reset}${C.cyan}${result.url}${C.reset}${ephemeralNote}\n\n`);
 
-  if (env.KORTIX_URL === result.url) return 0;
+  if (env.ZED_URL === result.url) return 0;
 
-  env.KORTIX_URL = result.url!;
+  env.ZED_URL = result.url!;
   writeEnv(instance, env);
   writeCompose(instance, env);
-  return compose(instance, ['up', '-d', '--force-recreate', '--no-deps', 'kortix-api']);
+  return compose(instance, ['up', '-d', '--force-recreate', '--no-deps', 'zed-api']);
 }
 
 /** Human-readable one-line summary of the resolved reachability mode, for
@@ -2491,7 +2491,7 @@ function describeReachability(env: SelfHostEnv): string {
   if (mode === 'domain') return `${C.green}domain${C.reset}${C.dim} — ${env.API_PUBLIC_URL}${C.reset}`;
   if (mode === 'tunnel') {
     const via = namedTunnelConfigured(env) ? 'named Cloudflare tunnel (stable)' : 'Cloudflare quick tunnel (ephemeral)';
-    const known = env.KORTIX_URL && !isLocalhostUrlOnPort(env.KORTIX_URL, Number(env.API_PORT)) ? env.KORTIX_URL : '(captured on next start)';
+    const known = env.ZED_URL && !isLocalhostUrlOnPort(env.ZED_URL, Number(env.API_PORT)) ? env.ZED_URL : '(captured on next start)';
     return `${C.green}tunnel${C.reset}${C.dim} — ${via} — ${known}${C.reset}`;
   }
   return `${C.yellow}not configured${C.reset}${C.dim} — agent sessions won't work: the cloud sandbox can't call back to this API${C.reset}`;
@@ -2499,12 +2499,12 @@ function describeReachability(env: SelfHostEnv): string {
 
 /**
  * Register (or refresh) the CLI's built-in `selfhost` host entry so
- * `kortix hosts use selfhost` + `kortix login` work against this stack
+ * `zed hosts use selfhost` + `zed login` work against this stack
  * out of the box.
  *
  * Also stamps `dashboard_url` with this instance's own frontend origin
  * (`PUBLIC_URL` — loopback port on a local machine, `https://<domain>` once
- * `KORTIX_DOMAIN` is set). Without it, `kortix login`'s browser flow has to
+ * `ZED_DOMAIN` is set). Without it, `zed login`'s browser flow has to
  * *guess* the frontend from the API URL's shape (see web-url.ts), which
  * assumes cloud conventions (`api.<domain>` → `<domain>`, `:8008` → `:3000`)
  * — a guess that is simply wrong for a self-host stack on non-default ports
@@ -2540,7 +2540,7 @@ function composePath(instance: string): string {
 }
 
 function composeProject(instance: string): string {
-  return `kortix-${instance}`.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+  return `zed-${instance}`.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
 }
 
 function token(bytes: number): string {

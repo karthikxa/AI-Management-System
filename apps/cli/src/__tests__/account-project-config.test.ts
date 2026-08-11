@@ -16,14 +16,14 @@ import { renderContext, renderHostNotice } from '../host-notice.ts';
 import { stripAnsi } from '../style.ts';
 
 const ENV_KEYS = [
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_PROJECT_ID',
+  'ZED_CLI_TOKEN',
+  'ZED_TOKEN',
+  'ZED_API_URL',
+  'ZED_PROJECT_ID',
   'BASH_ENV',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_AUTH_FILE',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CONFIG_FILE',
+  'ZED_AUTH_FILE',
 ] as const;
 
 let saved: Record<string, string | undefined>;
@@ -33,7 +33,7 @@ let originalCwd: string;
 function writeConfig(hosts: Record<string, unknown>, active = 'test'): void {
   const file = join(tmp, 'config.json');
   writeFileSync(file, JSON.stringify({ active, hosts }, null, 2));
-  process.env.KORTIX_CONFIG_FILE = file;
+  process.env.ZED_CONFIG_FILE = file;
 }
 
 function loggedInHost(extra: Record<string, unknown> = {}) {
@@ -54,9 +54,9 @@ beforeEach(() => {
     saved[key] = process.env[key];
     delete process.env[key];
   }
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
   originalCwd = process.cwd();
-  tmp = mkdtempSync(join(tmpdir(), 'kortix-acct-cfg-'));
+  tmp = mkdtempSync(join(tmpdir(), 'zed-acct-cfg-'));
 });
 
 afterEach(() => {
@@ -80,12 +80,12 @@ describe('config: account + default-project state', () => {
 
   test('setActiveAccount persists display fields and round-trips', () => {
     writeConfig({ test: loggedInHost({ account_id: '' }) });
-    setActiveAccount({ id: 'acc_kortix', slug: 'kortix', name: 'Kortix' });
-    expect(activeAccount()).toEqual({ id: 'acc_kortix', slug: 'kortix', name: 'Kortix' });
+    setActiveAccount({ id: 'acc_zed', slug: 'zed', name: 'Zed' });
+    expect(activeAccount()).toEqual({ id: 'acc_zed', slug: 'zed', name: 'Zed' });
     // Persisted to disk, not just in memory.
-    const onDisk = JSON.parse(readFileSync(process.env.KORTIX_CONFIG_FILE!, 'utf8'));
-    expect(onDisk.hosts.test.account_slug).toBe('kortix');
-    expect(onDisk.hosts.test.account_name).toBe('Kortix');
+    const onDisk = JSON.parse(readFileSync(process.env.ZED_CONFIG_FILE!, 'utf8'));
+    expect(onDisk.hosts.test.account_slug).toBe('zed');
+    expect(onDisk.hosts.test.account_name).toBe('Zed');
   });
 
   test('setDefaultProject + defaultProject round-trip and clearDefaultProject removes it', () => {
@@ -130,7 +130,7 @@ describe('resolveProjectId fallback order', () => {
     expect(resolveProjectId()).toBe('proj_default');
   });
 
-  test('explicit arg and KORTIX_PROJECT_ID outrank the default', () => {
+  test('explicit arg and ZED_PROJECT_ID outrank the default', () => {
     writeConfig({
       test: loggedInHost({
         default_project: { project_id: 'proj_default', account_id: 'account_1' },
@@ -138,7 +138,7 @@ describe('resolveProjectId fallback order', () => {
     });
     process.chdir(tmp);
     expect(resolveProjectId('explicit')).toBe('explicit');
-    process.env.KORTIX_PROJECT_ID = 'env_proj';
+    process.env.ZED_PROJECT_ID = 'env_proj';
     expect(resolveProjectId()).toBe('env_proj');
   });
 
@@ -148,13 +148,13 @@ describe('resolveProjectId fallback order', () => {
         default_project: { project_id: 'proj_default', account_id: 'account_1' },
       }),
     });
-    mkdirSync(join(tmp, '.kortix'), { recursive: true });
+    mkdirSync(join(tmp, '.zed'), { recursive: true });
     process.chdir(tmp);
     saveLink(
       { project_id: 'proj_linked', account_id: 'account_1', linked_at: '2026-01-01T00:00:00.000Z' },
       tmp,
     );
-    expect(existsSync(join(tmp, '.kortix', 'link.json'))).toBe(true);
+    expect(existsSync(join(tmp, '.zed', 'link.json'))).toBe(true);
     expect(resolveProjectId()).toBe('proj_linked');
   });
 });
@@ -163,8 +163,8 @@ describe('renderContext + host notice', () => {
   test('context block shows host, account, and default project', () => {
     writeConfig({
       test: loggedInHost({
-        account_slug: 'kortix',
-        account_name: 'Kortix',
+        account_slug: 'zed',
+        account_name: 'Zed',
         default_project: { project_id: 'proj_a', account_id: 'account_1', name: 'Alpha' },
       }),
     });
@@ -173,23 +173,23 @@ describe('renderContext + host notice', () => {
     expect(out).toContain('host');
     expect(out).toContain('test');
     expect(out).toContain('account');
-    expect(out).toContain('Kortix');
+    expect(out).toContain('Zed');
     expect(out).toContain('project');
     expect(out).toContain('Alpha');
     expect(out).toContain('(default)');
     // A bound default project points at the switch verb.
-    expect(out).toContain('switch with `kortix projects use`');
+    expect(out).toContain('switch with `zed projects use`');
   });
 
   test('a directory-linked project does not show the default-project switch hint', () => {
     writeConfig({
       test: loggedInHost({
-        account_slug: 'kortix',
-        account_name: 'Kortix',
+        account_slug: 'zed',
+        account_name: 'Zed',
         default_project: { project_id: 'proj_a', account_id: 'account_1', name: 'Alpha' },
       }),
     });
-    mkdirSync(join(tmp, '.kortix'), { recursive: true });
+    mkdirSync(join(tmp, '.zed'), { recursive: true });
     saveLink(
       { project_id: 'proj_linked', account_id: 'account_1', linked_at: '2026-01-01T00:00:00.000Z' },
       tmp,
@@ -204,15 +204,15 @@ describe('renderContext + host notice', () => {
     writeConfig({ test: loggedInHost({ account_id: '' }) });
     process.chdir(tmp);
     const out = stripAnsi(renderContext());
-    expect(out).toContain('kortix accounts use');
-    expect(out).toContain('kortix projects use');
+    expect(out).toContain('zed accounts use');
+    expect(out).toContain('zed projects use');
   });
 
   test('breadcrumb renders the full host -> account -> project -> session path when signed in', () => {
     writeConfig({
       test: loggedInHost({
-        account_slug: 'kortix',
-        account_name: 'Kortix',
+        account_slug: 'zed',
+        account_name: 'Zed',
         default_project: { project_id: 'proj_a', account_id: 'account_1', name: 'Alpha' },
       }),
     });
@@ -220,13 +220,13 @@ describe('renderContext + host notice', () => {
     const out = stripAnsi(renderContext());
     // Signed-in host row carries the ● glyph + the navigation verb.
     expect(out).toMatch(/●\s+host/);
-    expect(out).toContain('▸ kortix hosts use');
+    expect(out).toContain('▸ zed hosts use');
     // Every level is present, top-down.
     expect(out).toContain('account');
     expect(out).toContain('project');
     expect(out).toContain('session');
     // The session leaf is empty (no persisted active session) and offers a verb.
-    expect(out).toContain('open one: kortix chat');
+    expect(out).toContain('open one: zed chat');
   });
 
   test('breadcrumb hides lower levels + points at login when signed out of the active host', () => {
@@ -244,7 +244,7 @@ describe('renderContext + host notice', () => {
     const out = stripAnsi(renderContext());
     expect(out).toMatch(/○\s+host/);
     expect(out).toContain('not logged in');
-    expect(out).toContain('→ kortix hosts login');
+    expect(out).toContain('→ zed hosts login');
     // Can't have an account/project without a signed-in host.
     expect(out).not.toContain('account');
     expect(out).not.toContain('session');
@@ -255,37 +255,37 @@ describe('renderContext + host notice', () => {
     process.chdir(tmp);
     const out = stripAnsi(renderContext());
     expect(out).toMatch(/⚠\s+account/);
-    expect(out).toContain('→ kortix accounts use');
+    expect(out).toContain('→ zed accounts use');
   });
 
   test('subcommand host notice appends account + default project', () => {
     writeConfig({
       test: loggedInHost({
-        account_slug: 'kortix',
-        account_name: 'Kortix',
+        account_slug: 'zed',
+        account_name: 'Zed',
         default_project: { project_id: 'proj_a', account_id: 'account_1', name: 'Alpha' },
       }),
     });
     process.chdir(tmp);
     const notice = stripAnsi(renderHostNotice(['whoami']) ?? '');
     expect(notice).toContain('host test');
-    expect(notice).toContain('account Kortix');
+    expect(notice).toContain('account Zed');
     expect(notice).toContain('project Alpha');
     expect(notice).toContain('(default)');
   });
 
   test('a directory link displays its own host instead of the globally active host', () => {
     writeConfig({
-      cloud: loggedInHost({ url: 'https://api.kortix.com' }),
-      customdev: loggedInHost({ url: 'https://dev-api.kortix.com' }),
+      cloud: loggedInHost({ url: 'https://api.zed.com' }),
+      customdev: loggedInHost({ url: 'https://dev-api.zed.com' }),
     });
-    mkdirSync(join(tmp, '.kortix'), { recursive: true });
+    mkdirSync(join(tmp, '.zed'), { recursive: true });
     saveLink(
       {
         project_id: 'proj_linked',
         account_id: 'account_1',
         host: 'customdev',
-        host_url: 'https://dev-api.kortix.com',
+        host_url: 'https://dev-api.zed.com',
         linked_at: '2026-01-01T00:00:00.000Z',
       },
       tmp,
@@ -294,7 +294,7 @@ describe('renderContext + host notice', () => {
 
     const notice = stripAnsi(renderHostNotice(['env', 'pull']) ?? '');
     expect(notice).toContain('host customdev');
-    expect(notice).toContain('https://dev-api.kortix.com');
+    expect(notice).toContain('https://dev-api.zed.com');
     expect(notice).toContain('project proj_lin');
     expect(notice).not.toContain('host cloud');
   });
@@ -302,15 +302,15 @@ describe('renderContext + host notice', () => {
   test('--host override does not claim the active account / project', () => {
     writeConfig({
       test: loggedInHost({
-        account_slug: 'kortix',
-        account_name: 'Kortix',
+        account_slug: 'zed',
+        account_name: 'Zed',
         default_project: { project_id: 'proj_a', account_id: 'account_1', name: 'Alpha' },
       }),
     });
     process.chdir(tmp);
     const notice = stripAnsi(renderHostNotice(['whoami', '--host', 'cloud']) ?? '');
     expect(notice).toContain('host cloud');
-    expect(notice).not.toContain('account Kortix');
+    expect(notice).not.toContain('account Zed');
     expect(notice).not.toContain('project Alpha');
   });
 });

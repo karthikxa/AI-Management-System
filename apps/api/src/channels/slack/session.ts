@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { chatEventDedup, chatThreads, projects } from '@kortix/db';
+import { chatEventDedup, chatThreads, projects } from '@zed/db';
 import { db } from '../../shared/db';
 import { filterAccessibleProjectResources } from '../../iam';
 import {
@@ -65,7 +65,7 @@ export async function createOrJoinThreadSession(input: {
   envelope: SlackEnvelope;
   event: SlackEvent;
   revived: boolean;
-  // The Kortix user this Slack sender linked via `/login`, already verified by
+  // The Zed user this Slack sender linked via `/login`, already verified by
   // the gate in spawnAgentTurn to be a member of the project's account. The
   // session runs AS this user, so their credentials/secrets/connectors apply —
   // never the account owner's.
@@ -120,7 +120,7 @@ export async function createOrJoinThreadSession(input: {
 
   const handle = await startTurn(projectId, teamId, event, 'Spinning up a sandbox');
 
-  // Per-channel agent + model overrides (set via `/kortix agents` / `models`).
+  // Per-channel agent + model overrides (set via `/zed agents` / `models`).
   // Null/unset falls back to the project's default agent and configured model.
   const selection = event.channel
     ? await currentChannelSelection({ teamId, channelId: event.channel })
@@ -157,7 +157,7 @@ export async function createOrJoinThreadSession(input: {
   if (allowedAgents.length === 0) {
     if (handle) {
       await finalizeTurn(handle, {
-        error: `You don't have access to the \`${launchAgent}\` agent in this project. Ask a project manager to grant it, or switch the agent with \`/kortix agents\`.`,
+        error: `You don't have access to the \`${launchAgent}\` agent in this project. Ask a project manager to grant it, or switch the agent with \`/zed agents\`.`,
       });
     }
     return;
@@ -303,11 +303,11 @@ async function waitForThreadSession(teamId: string, threadId: string): Promise<s
 
 const TURN_INSTRUCTIONS = [
   'How to work:',
-  '- **First, load the `kortix-slack` skill** via the `skill` tool. It is the canonical',
+  '- **First, load the `zed-slack` skill** via the `skill` tool. It is the canonical',
   '  reference for posting in Slack — covers step/send semantics, link syntax,',
   '  Block Kit answers, sources, tone, and gotchas. Do not skip it.',
   '- The `slack` CLI needs **no token** in your sandbox — every command runs through the',
-  '  Kortix Connector (the Slack bot token is resolved server-side). The whole surface',
+  '  Zed Connector (the Slack bot token is resolved server-side). The whole surface',
   '  works, **including `slack send --file` (file upload) and `slack download`**. Do NOT',
   '  conclude "file upload isn\'t supported", do NOT look for `$SLACK_BOT_TOKEN`, and do',
   '  NOT build an upload workaround (connector/MCP, manual files.getUploadURLExternal, an',

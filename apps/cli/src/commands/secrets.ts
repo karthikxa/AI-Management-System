@@ -5,9 +5,9 @@ import {
   type SecretBrokerRequest,
   type SecretEgressPolicy,
   type SecretInjectionSlot,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import type { ProjectSecret, ProjectSecretsResponse } from '../api/types.ts';
-import { withKortixScope } from '../api/sdk.ts';
+import { withZedScope } from '../api/sdk.ts';
 import {
   emitJson,
   resolveProjectContext,
@@ -18,10 +18,10 @@ import {
 import { loadLocalManifest } from '../manifest.ts';
 import { C, help, pad, status } from '../style.ts';
 
-const HELP = help`Usage: kortix secrets <subcommand> [options]
+const HELP = help`Usage: zed secrets <subcommand> [options]
 
-Manage encrypted secrets on the linked Kortix project. A delivery policy
-controls whether each value reaches a sandbox or stays on Kortix services.
+Manage encrypted secrets on the linked Zed project. A delivery policy
+controls whether each value reaches a sandbox or stays on Zed services.
 
 A secret has an IDENTIFIER (the unique handle an agent's
 \`secrets\` grant references), a KEY (the env var injected into the sandbox),
@@ -71,11 +71,11 @@ Subcommands:
   unset IDENTIFIER [IDENTIFIER …]   Remove one or more secrets (by identifier).
 
 Which agents may use a secret is governed by that agent's \`secrets\` grant in
-kortix.yaml (by identifier), not a per-secret setting here.
+zed.yaml (by identifier), not a per-secret setting here.
 
 Global options:
   --project <id>     Operate on this project id (default: linked or
-                     \$KORTIX_PROJECT_ID).
+                     \$ZED_PROJECT_ID).
   -h, --help         Show this help.
 `;
 
@@ -157,10 +157,10 @@ async function secretsLs(opts: CtxOpts, json = false): Promise<number> {
     return surfaceApiError(err);
   }
 
-  // The server's required/optional come from its mirror of kortix.yaml, which
-  // is eventually-consistent — right after `kortix ship` it can still be empty
+  // The server's required/optional come from its mirror of zed.yaml, which
+  // is eventually-consistent — right after `zed ship` it can still be empty
   // ("missing"), which would mislabel freshly-declared secrets as "undeclared".
-  // The local kortix.yaml is authoritative + instant, so fall back to it
+  // The local zed.yaml is authoritative + instant, so fall back to it
   // whenever the cloud mirror isn't loaded yet.
   const local = (() => {
     try {
@@ -268,7 +268,7 @@ async function secretsLs(opts: CtxOpts, json = false): Promise<number> {
   process.stdout.write('\n');
   if (usingLocal) {
     process.stdout.write(
-      `  ${C.dim}Manifest: cloud mirror ${resp.manifest_status} — showing local kortix.yaml [env] spec.${C.reset}\n\n`,
+      `  ${C.dim}Manifest: cloud mirror ${resp.manifest_status} — showing local zed.yaml [env] spec.${C.reset}\n\n`,
     );
   } else if (resp.manifest_status !== 'loaded') {
     process.stdout.write(
@@ -279,7 +279,7 @@ async function secretsLs(opts: CtxOpts, json = false): Promise<number> {
   }
 
   if (resp.items.length === 0 && required.length === 0 && optional.length === 0) {
-    process.stdout.write(`  ${C.dim}No secrets set, no [env] spec in kortix.yaml.${C.reset}\n\n`);
+    process.stdout.write(`  ${C.dim}No secrets set, no [env] spec in zed.yaml.${C.reset}\n\n`);
     return 0;
   }
 
@@ -305,7 +305,7 @@ async function secretsLs(opts: CtxOpts, json = false): Promise<number> {
         : r.strategy === 'denied'
           ? 'disabled'
           : r.strategy === 'broker'
-            ? (r.consumer ?? 'Kortix broker')
+            ? (r.consumer ?? 'Zed broker')
             : 'approved hosts';
     const rotation = r.requiresRotation ? ' · rotate' : '';
     const deliveryText = `${delivery}${rotation}`;
@@ -356,7 +356,7 @@ function takeFlagValues(args: string[], names: string[]): string[] {
 
 function deliveryLabel(strategy: SecretStrategy): string {
   if (strategy === 'runtime') return 'Readable in sandbox';
-  if (strategy === 'broker') return 'Used through Kortix';
+  if (strategy === 'broker') return 'Used through Zed';
   if (strategy === 'egress') return 'Sent only to approved hosts';
   return 'Stored but disabled';
 }
@@ -366,7 +366,7 @@ async function secretsDelivery(args: string[], opts: CtxOpts, json = false): Pro
   const options = args.slice(2);
   if (!identifier || !IDENTIFIER_RE.test(identifier)) {
     process.stderr.write(
-      `${status.err('Usage: kortix secrets delivery IDENTIFIER runtime|broker|egress|denied')}\n`,
+      `${status.err('Usage: zed secrets delivery IDENTIFIER runtime|broker|egress|denied')}\n`,
     );
     return 2;
   }
@@ -481,7 +481,7 @@ async function secretsDelivery(args: string[], opts: CtxOpts, json = false): Pro
         ? { kind: 'query', name: injectQuery }
         : { kind: 'json_body_field', path: injectJson! };
     policy = {
-      backend: 'kortix_fetch',
+      backend: 'zed_fetch',
       rules: allowedHosts.map((host) => ({
         host,
         ...(allowedMethods.length > 0 ? { methods: allowedMethods } : {}),
@@ -494,7 +494,7 @@ async function secretsDelivery(args: string[], opts: CtxOpts, json = false): Pro
   }
 
   try {
-    const result = await withKortixScope(ctx.auth, () =>
+    const result = await withZedScope(ctx.auth, () =>
       setProjectSecretStrategy(ctx.projectId, identifier, strategy, {
         ...(strategy === 'broker'
           ? { consumer: consumer as 'llm_gateway' | 'connector' | 'http_broker' }
@@ -527,7 +527,7 @@ async function secretsCall(args: string[], opts: CtxOpts, json = false): Promise
   const [identifier, rawUrl] = args;
   const options = args.slice(2);
   if (!identifier || !IDENTIFIER_RE.test(identifier) || !rawUrl) {
-    process.stderr.write(`${status.err('Usage: kortix secrets call IDENTIFIER URL [options]')}\n`);
+    process.stderr.write(`${status.err('Usage: zed secrets call IDENTIFIER URL [options]')}\n`);
     return 2;
   }
 
@@ -602,7 +602,7 @@ async function secretsCall(args: string[], opts: CtxOpts, json = false): Promise
   const ctx = await resolveProjectContext(opts);
   if (!ctx) return 1;
   try {
-    const result = await withKortixScope(ctx.auth, () =>
+    const result = await withZedScope(ctx.auth, () =>
       brokerProjectSecretRequest(ctx.projectId, identifier, request),
     );
     if (json) {

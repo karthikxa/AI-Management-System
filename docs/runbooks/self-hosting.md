@@ -1,6 +1,6 @@
-# Runbook: Self-hosting Kortix
+# Runbook: Self-hosting Zed
 
-**Kortix self-host is VPS-first.** The supported way to run it is on your own
+**Zed self-host is VPS-first.** The supported way to run it is on your own
 VPS or server with a persistent domain pointed at it — that combination is
 what makes reachability, TLS, and agent sessions work correctly and durably.
 Running it on a local machine with no public domain is a convenience for
@@ -10,19 +10,19 @@ default, and browsers enforce connection limits against plain-HTTP
 `localhost` that a real deployment won't hit. If you're deciding where to run
 this for real, provision a VPS and point a domain at it.
 
-Kortix self-host is **one generic Docker-native system**: `kortix self-host`
+Zed self-host is **one generic Docker-native system**: `zed self-host`
 generates a `docker-compose.yml` + `.env` (+ a `Caddyfile` and `updater.sh` when
-a domain is configured) into `~/.config/kortix/self-host/<instance>/` and runs
+a domain is configured) into `~/.config/zed/self-host/<instance>/` and runs
 `docker compose up`. The same artifact happens to also run on a local
 machine, any VPS, or a cloud VM (EC2, Droplet, etc.) — there is no separate "target" to
 pick, no AWS profile, no Terraform, no TUF/signing, no SSM. A public domain is
-just an env var (`KORTIX_DOMAIN`) the same stack reacts to, not a different
+just an env var (`ZED_DOMAIN`) the same stack reacts to, not a different
 deployment mechanism.
 
 The stack: Caddy (reverse proxy + ACME TLS, only present when a domain is
-configured) → `kortix-api`, `llm-gateway`, `frontend`, plus the official
+configured) → `zed-api`, `llm-gateway`, `frontend`, plus the official
 Supabase Docker distribution (Kong, Postgres, Auth, Storage, Realtime, etc.),
-plus an in-compose `kortix-updater` service that keeps the stack converged to
+plus an in-compose `zed-updater` service that keeps the stack converged to
 the configured image channel. Agent sessions still run on Daytona (or another
 configured sandbox provider) — sandboxes are managed compute, not part of this
 box.
@@ -51,9 +51,9 @@ box.
 - **Required for agent sessions to actually run:** a sandbox provider and
   managed-git access (a GitHub PAT or GitHub App) so the platform can create
   project repos. Recommended, standard choices: [Daytona](https://www.daytona.io/)
-  (the default) or [Platinum](https://www.platinum.dev/), Kortix's own microVM
+  (the default) or [Platinum](https://www.platinum.dev/), Zed's own microVM
   sandbox provider. [E2B](https://e2b.dev/) is also supported. Any of these
-  need an API key, settable after first boot with `kortix self-host configure`.
+  need an API key, settable after first boot with `zed self-host configure`.
 - **Not required to get started:** SMTP. A fresh install auto-confirms email
   signups and leads with password auth, so the first account works with zero
   email configuration. Configure SMTP later to enable magic-link sign-in.
@@ -62,27 +62,27 @@ box.
 
 Agent sessions run inside a **cloud** sandbox VM — outside your network —
 that calls back to this instance's API over the public internet via
-`KORTIX_URL`. That means `KORTIX_URL` can never be a loopback/internal
+`ZED_URL`. That means `ZED_URL` can never be a loopback/internal
 address: a sandbox trying to reach `http://localhost:...` or an internal
-Docker hostname like `http://kortix-api:8008` will simply never connect, and
+Docker hostname like `http://zed-api:8008` will simply never connect, and
 agent sessions fail with a fast, explicit error (or, before this URL was
 validated, a confusing hang). Note the failure is specifically in that
 **callback** — a cloud sandbox itself is perfectly reachable compute; it's
-`KORTIX_URL` (this API, reachable from the sandbox) that has to be real.
+`ZED_URL` (this API, reachable from the sandbox) that has to be real.
 
-`kortix self-host init`/`configure` ask interactively how this instance is
+`zed self-host init`/`configure` ask interactively how this instance is
 reachable from the internet, and only ever offer two choices (defaulting to
 the domain path); non-interactively, pick one of:
 
-1. **`--domain kortix.example.com`** — you have a public domain pointed at
+1. **`--domain zed.example.com`** — you have a public domain pointed at
    this machine. **The recommended, production path**: turns on the bundled
-   Caddy reverse proxy + ACME TLS, and `KORTIX_URL` becomes
+   Caddy reverse proxy + ACME TLS, and `ZED_URL` becomes
    `https://api.<domain>`. This is the only choice with a stable URL and no
    browser caveats — deploy on a VPS with a domain for anything beyond
    kicking the tyres.
 2. **`--tunnel cloudflare`** — no public domain. A `cloudflared` Compose
    service exposes the API to the internet with zero DNS/firewall setup, and
-   the CLI wires `KORTIX_URL` to the tunnel's public URL automatically. **For
+   the CLI wires `ZED_URL` to the tunnel's public URL automatically. **For
    local machines / evaluation — not recommended for production.** By
    default that URL is **ephemeral** (a fresh one on every restart) and
    browsers enforce connection limits against plain-HTTP `localhost` that a
@@ -94,25 +94,25 @@ non-interactively just leaves the instance in an unconfigured fallback state
 — `init`/`start` print a loud warning every time that's the case, because
 agent sessions genuinely cannot run until one of the two is set.
 
-Switch reachability any time with `kortix self-host configure` (interactive)
+Switch reachability any time with `zed self-host configure` (interactive)
 or the same flags on `init`/`update`. Re-running with neither flag never
 resets an already-configured choice.
 
 ### Cloudflare tunnel mechanics (no public domain, evaluation only)
 
 `--tunnel cloudflare` adds a `cloudflared` service to the Compose stack that
-tunnels straight to `kortix-api` (Caddy is never present in this mode — there
+tunnels straight to `zed-api` (Caddy is never present in this mode — there
 is no domain). By default this is a **zero-config quick tunnel**
 (`cloudflared tunnel --url ...`, no Cloudflare account needed): a fresh
 `https://<random>.trycloudflare.com` URL is minted every time the
 `cloudflared` container starts.
 
-Because that URL is **ephemeral**, `kortix self-host start`/`update` always:
+Because that URL is **ephemeral**, `zed self-host start`/`update` always:
 
 1. Bring the stack (including `cloudflared`) up.
 2. Poll the `cloudflared` container's logs for the URL it just printed
    (up to 30s).
-3. Write it into `.env` as `KORTIX_URL` and recreate `kortix-api` so the new
+3. Write it into `.env` as `ZED_URL` and recreate `zed-api` so the new
    value actually takes effect.
 
 If `cloudflared` was already running (a plain re-`start` with nothing
@@ -126,13 +126,13 @@ tyres — create a named tunnel in the
 hostname to it, and set:
 
 ```sh
-kortix self-host env set CLOUDFLARE_TUNNEL_TOKEN=... CLOUDFLARE_TUNNEL_HOSTNAME=kortix-tunnel.example.com
-kortix self-host start
+zed self-host env set CLOUDFLARE_TUNNEL_TOKEN=... CLOUDFLARE_TUNNEL_HOSTNAME=zed-tunnel.example.com
+zed self-host start
 ```
 
 With both set, `cloudflared` authenticates to that specific tunnel
 (`cloudflared tunnel run --token ...`) instead of opening a quick tunnel, and
-`KORTIX_URL` is derived directly from the hostname — no log-scraping, and it
+`ZED_URL` is derived directly from the hostname — no log-scraping, and it
 never changes across restarts.
 
 ## Quickstart
@@ -149,25 +149,25 @@ only — not for production use.
    subdomain, `api.<domain>` by default) pointing at the box's public IP.
    Ports **80** and **443** must be reachable from the internet for ACME
    HTTP-01 once you set the domain.
-3. **Run the bootstrap script**, which installs Docker, installs the `kortix`
-   CLI, runs `kortix self-host init --domain <your-domain>`, and starts the
+3. **Run the bootstrap script**, which installs Docker, installs the `zed`
+   CLI, runs `zed self-host init --domain <your-domain>`, and starts the
    stack:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/kortix-ai/suna/main/scripts/kortix-selfhost-up.sh \
-  | bash -s -- --domain kortix.example.com --email ops@example.com
+curl -fsSL https://raw.githubusercontent.com/zed-ai/suna/main/scripts/zed-selfhost-up.sh \
+  | bash -s -- --domain zed.example.com --email ops@example.com
 ```
 
 or, if you already cloned the repo:
 
 ```sh
-bash scripts/kortix-selfhost-up.sh --domain kortix.example.com --email ops@example.com
+bash scripts/zed-selfhost-up.sh --domain zed.example.com --email ops@example.com
 ```
 
-This installs Docker if missing, installs the `kortix` CLI, runs
-`kortix self-host init`, points the stack at your domain (turning on the
+This installs Docker if missing, installs the `zed` CLI, runs
+`zed self-host init`, points the stack at your domain (turning on the
 bundled Caddy reverse proxy with ACME HTTP-01 TLS on 80/443), and runs
-`kortix self-host start`. See `scripts/kortix-selfhost-up.sh --help` for every
+`zed self-host start`. See `scripts/zed-selfhost-up.sh --help` for every
 flag (channel, auto-update policy, instance name, Daytona key). Re-running the
 script is safe — every step it drives (`init`, `env set`, `start`) is
 idempotent.
@@ -176,18 +176,18 @@ Or drive it directly with the CLI, without the bootstrap script (e.g. Docker
 is already installed):
 
 ```sh
-curl -fsSL https://kortix.com/install | bash
-kortix self-host init --domain kortix.example.com
-kortix self-host start
+curl -fsSL https://zed.com/install | bash
+zed self-host init --domain zed.example.com
+zed self-host start
 ```
 
 After first boot, configure the sandbox provider and managed git:
 
 ```sh
-kortix self-host configure       # interactive wizard: Daytona key, GitHub, Pipedream
+zed self-host configure       # interactive wizard: Daytona key, GitHub, Pipedream
 # or non-interactively:
-kortix self-host env set DAYTONA_API_KEY=... MANAGED_GIT_GITHUB_TOKEN=... MANAGED_GIT_GITHUB_OWNER=...
-kortix self-host start           # re-applies env + restarts affected services
+zed self-host env set DAYTONA_API_KEY=... MANAGED_GIT_GITHUB_TOKEN=... MANAGED_GIT_GITHUB_OWNER=...
+zed self-host start           # re-applies env + restarts affected services
 ```
 
 ### Provisioning a VPS with Terraform (optional)
@@ -199,20 +199,20 @@ EC2 instance, a separate encrypted EBS data volume, a security group (80/443),
 an Elastic IP, optional Route53 records, and a configurable-schedule snapshot
 policy for the data volume (`backup_interval_hours` / `backup_retention_count`
 — every 24h/7 kept by default, but e.g. every 6h/10 kept works too), then
-cloud-init runs the *exact same* `kortix self-host init` /
-`kortix self-host start` described above. After `apply` finishes, the
+cloud-init runs the *exact same* `zed self-host init` /
+`zed self-host start` described above. After `apply` finishes, the
 in-compose auto-updater — not Terraform — is what keeps the app current;
 re-running `terraform apply` never redeploys it. Secrets (the Daytona key,
 managed git, SMTP, ...) are deliberately not Terraform inputs; the module's
-`post_apply_next_steps` output tells you how to set them (SSM in, `kortix
+`post_apply_next_steps` output tells you how to set them (SSM in, `zed
 self-host configure`, or the dashboard) once the box is up.
 
 ```hcl
-module "kortix_selfhost" {
-  source = "github.com/kortix-ai/suna//infra/terraform/modules/selfhost-ec2"
+module "zed_selfhost" {
+  source = "github.com/zed-ai/suna//infra/terraform/modules/selfhost-ec2"
 
-  domain = "kortix.example.com"
-  tags   = { Project = "kortix-selfhost" }
+  domain = "zed.example.com"
+  tags   = { Project = "zed-selfhost" }
 }
 ```
 
@@ -220,7 +220,7 @@ See `infra/terraform/examples/selfhost-ec2` for a runnable root module and
 `infra/terraform/modules/selfhost-ec2/README.md` for the full variable/output
 reference — including why the data volume is mounted the way it is (Postgres
 is a bind mount under the CLI's instance directory, not a Docker named volume,
-so the module points `KORTIX_SELF_HOST_CONFIG_DIR` at the EBS volume rather
+so the module points `ZED_SELF_HOST_CONFIG_DIR` at the EBS volume rather
 than just bind-mounting `/var/lib/docker`) and how an instance can be replaced
 without losing data (daily EBS snapshots + `delete_on_termination = false`).
 
@@ -232,9 +232,9 @@ recommended for real use. See Reachability above for the specific caveats
 and no external reachability at all without the tunnel).
 
 ```sh
-curl -fsSL https://kortix.com/install | bash
-kortix self-host init --tunnel cloudflare
-kortix self-host start
+curl -fsSL https://zed.com/install | bash
+zed self-host init --tunnel cloudflare
+zed self-host start
 ```
 
 Supabase, the API, the gateway, and the frontend come up on loopback ports
@@ -245,28 +245,28 @@ URL, and warns if the sandbox provider or managed git aren't configured yet.
 Omitting `--tunnel cloudflare` leaves reachability unconfigured — no agent
 sessions, and `init`/`start` warn loudly every time (see Reachability above).
 When you're ready for real use, switch to a VPS with a domain (see above) —
-`kortix self-host configure` or `init --domain <domain>` any time, on the
+`zed self-host configure` or `init --domain <domain>` any time, on the
 same box or a new one.
 
-## The `kortix self-host` command surface
+## The `zed self-host` command surface
 
 | Command | Effect |
 | --- | --- |
-| `kortix self-host init` | Create or refresh this instance's Compose + `.env`. Non-mutating to a running stack. |
-| `kortix self-host configure` | Interactive wizard for integrations (Daytona, GitHub, Pipedream) and update policy. |
-| `kortix self-host start` | Pull images and start (or re-converge) the stack. Creates config first if needed. |
-| `kortix self-host update` / `reconcile` | Pull the configured channel's newest images now, migrate, and roll the stack forward. Exactly what the in-compose auto-updater does on its own schedule, run once immediately. |
-| `kortix self-host rollback --release <v>` | Roll back to an explicit older version (same mechanics as `update`, pinned). |
-| `kortix self-host version` | Show the running version, the configured channel, and whether a newer release is available. |
-| `kortix self-host stop` / `restart` | Stop / restart the stack. |
-| `kortix self-host status` | Container status (`docker compose ps`). |
-| `kortix self-host doctor` | Validate Docker tooling and the rendered Compose config. Non-mutating. |
-| `kortix self-host logs [service]` | Tail Compose logs. |
-| `kortix self-host open` | Open the dashboard in a browser. |
-| `kortix self-host env ls [--show]` | Show every persistent value, grouped by service; secrets masked by default (`--show` reveals). |
-| `kortix self-host env set KEY=VALUE …` | Set any value (secret or plain config) and restart exactly the services it affects. |
-| `kortix self-host env rotate KEY \| --all-generated` | Regenerate a rotatable CLI-generated secret (JWT signing key, internal tokens, ...) in place. |
-| `kortix self-host uninstall` | Stop the stack and permanently delete this instance's containers, volumes, and config. Interactive confirmation (type the instance name); `--yes` for scripts. |
+| `zed self-host init` | Create or refresh this instance's Compose + `.env`. Non-mutating to a running stack. |
+| `zed self-host configure` | Interactive wizard for integrations (Daytona, GitHub, Pipedream) and update policy. |
+| `zed self-host start` | Pull images and start (or re-converge) the stack. Creates config first if needed. |
+| `zed self-host update` / `reconcile` | Pull the configured channel's newest images now, migrate, and roll the stack forward. Exactly what the in-compose auto-updater does on its own schedule, run once immediately. |
+| `zed self-host rollback --release <v>` | Roll back to an explicit older version (same mechanics as `update`, pinned). |
+| `zed self-host version` | Show the running version, the configured channel, and whether a newer release is available. |
+| `zed self-host stop` / `restart` | Stop / restart the stack. |
+| `zed self-host status` | Container status (`docker compose ps`). |
+| `zed self-host doctor` | Validate Docker tooling and the rendered Compose config. Non-mutating. |
+| `zed self-host logs [service]` | Tail Compose logs. |
+| `zed self-host open` | Open the dashboard in a browser. |
+| `zed self-host env ls [--show]` | Show every persistent value, grouped by service; secrets masked by default (`--show` reveals). |
+| `zed self-host env set KEY=VALUE …` | Set any value (secret or plain config) and restart exactly the services it affects. |
+| `zed self-host env rotate KEY \| --all-generated` | Regenerate a rotatable CLI-generated secret (JWT signing key, internal tokens, ...) in place. |
+| `zed self-host uninstall` | Stop the stack and permanently delete this instance's containers, volumes, and config. Interactive confirmation (type the instance name); `--yes` for scripts. |
 
 Common flags: `--instance <name>` (default `default` — run multiple isolated
 stacks on one box), `--tag <version>` / `--release <version>` (pin an explicit
@@ -276,24 +276,24 @@ image tag), `--channel stable|latest`, `--auto-update on|off`,
 
 Full reference: [`/docs/reference/cli#self-host`](../../apps/web/content/docs/reference/cli.mdx).
 
-## Using the main `kortix` CLI against your self-host
+## Using the main `zed` CLI against your self-host
 
-`kortix self-host …` only manages the Compose stack itself. Everything else —
+`zed self-host …` only manages the Compose stack itself. Everything else —
 `login`, `whoami`, `projects`, `ship`, `sessions`, … — is the same CLI you'd
-point at Kortix Cloud, just aimed at your own instance via the built-in
+point at Zed Cloud, just aimed at your own instance via the built-in
 `selfhost` host:
 
 ```sh
-kortix hosts use selfhost   # switch the CLI's active host to your self-host stack
-kortix login                # browser-based approval, same flow as Cloud
-kortix whoami                # confirm identity + active account/project
-kortix projects ls
-cd your-project && kortix ship   # first ship creates the project + repo; every ship after just syncs
+zed hosts use selfhost   # switch the CLI's active host to your self-host stack
+zed login                # browser-based approval, same flow as Cloud
+zed whoami                # confirm identity + active account/project
+zed projects ls
+cd your-project && zed ship   # first ship creates the project + repo; every ship after just syncs
 ```
 
-`kortix self-host init`/`start` register the `selfhost` host for you —
+`zed self-host init`/`start` register the `selfhost` host for you —
 pointed at `API_PUBLIC_URL` (the API) with `PUBLIC_URL` (the dashboard)
-stamped alongside it as `dashboard_url`, so `kortix login`'s browser flow
+stamped alongside it as `dashboard_url`, so `zed login`'s browser flow
 opens the right origin. That matters because the CLI has no other way to
 learn your dashboard's URL from the API URL alone: it normally *derives* one
 from the API URL's shape (`api.<domain>` → `<domain>`, or the `pnpm dev`
@@ -301,42 +301,42 @@ pairing `:8008` → `:3000`), which is right for a domain deployment
 (`https://api.<domain>` → `https://<domain>`) but **wrong** for the
 local-machine default (API `:13738`, dashboard `:13737` — not `:3000`) or any
 custom port.
-If you ever add the host by hand instead of through `kortix self-host`
+If you ever add the host by hand instead of through `zed self-host`
 (pointing the CLI at a self-host instance from a *different* machine, for
-example) and `kortix login` opens a dead-looking `:3000`, pass the dashboard
+example) and `zed login` opens a dead-looking `:3000`, pass the dashboard
 URL explicitly:
 
 ```sh
-kortix hosts add selfhost --url http://localhost:13738 --dashboard-url http://localhost:13737   # local machine
-kortix hosts add selfhost --url https://api.kortix.example.com --dashboard-url https://kortix.example.com   # domain
+zed hosts add selfhost --url http://localhost:13738 --dashboard-url http://localhost:13737   # local machine
+zed hosts add selfhost --url https://api.zed.example.com --dashboard-url https://zed.example.com   # domain
 ```
 
-**`kortix ship`** needs a git backend to push to — either an existing GitHub
+**`zed ship`** needs a git backend to push to — either an existing GitHub
 remote (via the GitHub App or `--github-token`, both set up in the dashboard
 under **Settings → Git**, see step 4 of the quickstart) or no origin at all
-(ship then creates a managed Kortix-hosted repo, no GitHub needed). If
+(ship then creates a managed Zed-hosted repo, no GitHub needed). If
 managed git isn't configured yet, `ship -n` (dry-run) still validates
-`kortix.yaml`, resolves the target project, and shows the push plan without
+`zed.yaml`, resolves the target project, and shows the push plan without
 needing it.
 
 ## The auto-updater + channels
 
-Every instance always has a `kortix-updater` service in its Compose file (an
+Every instance always has a `zed-updater` service in its Compose file (an
 `image: docker:cli` container with the Docker socket mounted). On an interval
-(default: daily — `KORTIX_UPDATE_INTERVAL`, 86400s) it:
+(default: daily — `ZED_UPDATE_INTERVAL`, 86400s) it:
 
 1. Pulls this stack's configured image tags.
 2. Fingerprints the resulting image IDs. If nothing changed, it no-ops.
-3. If something changed, runs the `kortix-migrate` one-shot to apply any new
+3. If something changed, runs the `zed-migrate` one-shot to apply any new
    database migrations, then rolls the stack forward (`docker compose up -d --wait`).
 4. Writes a breadcrumb (`deployed-version.json`) recording what it applied.
 
 A `flock` around each cycle means an overlapping run always skips rather than
-racing a previous one. `KORTIX_AUTO_UPDATE=false` makes every cycle a no-op
+racing a previous one. `ZED_AUTO_UPDATE=false` makes every cycle a no-op
 without removing the service.
 
-Two channels, both moving Docker tags on `kortix/kortix-api`,
-`kortix/kortix-frontend`, and `kortix/kortix-gateway`:
+Two channels, both moving Docker tags on `zed/zed-api`,
+`zed/zed-frontend`, and `zed/zed-gateway`:
 
 - **`stable`** (default) — recommended for production use.
 - **`latest`** — bleeding-edge, tracks the newest published build.
@@ -344,29 +344,29 @@ Two channels, both moving Docker tags on `kortix/kortix-api`,
 Change channel or policy any time:
 
 ```sh
-kortix self-host configure                              # interactive
-kortix self-host env set KORTIX_CHANNEL=latest           # or: kortix self-host update --channel latest
-kortix self-host env set KORTIX_AUTO_UPDATE=false
-kortix self-host env set KORTIX_UPDATE_INTERVAL=3600
+zed self-host configure                              # interactive
+zed self-host env set ZED_CHANNEL=latest           # or: zed self-host update --channel latest
+zed self-host env set ZED_AUTO_UPDATE=false
+zed self-host env set ZED_UPDATE_INTERVAL=3600
 ```
 
 Or pin an exact version instead of tracking a moving tag:
 
 ```sh
-kortix self-host update --tag 0.9.84
+zed self-host update --tag 0.9.84
 ```
 
-`kortix self-host version` shows what's actually running (resolving a moving
+`zed self-host version` shows what's actually running (resolving a moving
 tag to the concrete version it currently points to, via Docker Hub) and
 whether a newer release is available.
 
 > **Release-flow contract this depends on:** the self-host default channel is
 > `stable`. A prod release (`deploy-prod.yml` → GitHub Release) retags
-> `:latest` and the exact `:X.Y.Z` on all three app images (`kortix-api`,
-> `kortix-frontend`, `kortix-gateway`) automatically. The moving `:stable`
+> `:latest` and the exact `:X.Y.Z` on all three app images (`zed-api`,
+> `zed-frontend`, `zed-gateway`) automatically. The moving `:stable`
 > tag is promoted **separately and deliberately**, not on every release: a
 > human runs the
-> [`Promote Self-Host Stable`](https://github.com/kortix-ai/suna/actions/workflows/promote-self-host-stable.yml)
+> [`Promote Self-Host Stable`](https://github.com/zed-ai/suna/actions/workflows/promote-self-host-stable.yml)
 > workflow (`workflow_dispatch`, picks a version) to repoint `:stable` →
 > that version's digest (`docker buildx imagetools create`) on all three
 > images. Curation is intentional — we don't push every prod release to
@@ -378,29 +378,29 @@ whether a newer release is available.
 
 ## Configuring SMTP, Daytona, and other integrations later
 
-Everything is `kortix self-host env set KEY=VALUE …` followed by
-`kortix self-host start` (or the interactive `kortix self-host configure`),
+Everything is `zed self-host env set KEY=VALUE …` followed by
+`zed self-host start` (or the interactive `zed self-host configure`),
 whether at first boot or months later:
 
 ```sh
 # Sandbox runtime (required for agent sessions)
-kortix self-host env set DAYTONA_API_KEY=... DAYTONA_SERVER_URL=https://app.daytona.io/api DAYTONA_TARGET=us
+zed self-host env set DAYTONA_API_KEY=... DAYTONA_SERVER_URL=https://app.daytona.io/api DAYTONA_TARGET=us
 
 # Managed git (required to create projects) — PAT or GitHub App
-kortix self-host env set MANAGED_GIT_PROVIDER=github MANAGED_GIT_GITHUB_TOKEN=... MANAGED_GIT_GITHUB_OWNER=your-org
+zed self-host env set MANAGED_GIT_PROVIDER=github MANAGED_GIT_GITHUB_TOKEN=... MANAGED_GIT_GITHUB_OWNER=your-org
 
 # SMTP (optional — enables magic-link / email verification instead of the
 # password-only, auto-confirmed default)
-kortix self-host env set SMTP_HOST=smtp.example.com SMTP_PORT=587 SMTP_USER=... SMTP_PASS=... \
-  SMTP_ADMIN_EMAIL=admin@example.com SMTP_SENDER_NAME=Kortix
-kortix self-host env set ENABLE_EMAIL_AUTOCONFIRM=false KORTIX_PUBLIC_AUTH_METHODS=password,magic
+zed self-host env set SMTP_HOST=smtp.example.com SMTP_PORT=587 SMTP_USER=... SMTP_PASS=... \
+  SMTP_ADMIN_EMAIL=admin@example.com SMTP_SENDER_NAME=Zed
+zed self-host env set ENABLE_EMAIL_AUTOCONFIRM=false ZED_PUBLIC_AUTH_METHODS=password,magic
 
 # Pipedream connectors (optional)
-kortix self-host env set CONNECTOR_AUTH_PROVIDER=pipedream PIPEDREAM_CLIENT_ID=... \
+zed self-host env set CONNECTOR_AUTH_PROVIDER=pipedream PIPEDREAM_CLIENT_ID=... \
   PIPEDREAM_CLIENT_SECRET=... PIPEDREAM_PROJECT_ID=...
 ```
 
-`kortix self-host env ls` lists every key (secrets masked); `kortix self-host
+`zed self-host env ls` lists every key (secrets masked); `zed self-host
 doctor` validates the rendered Compose config without applying anything.
 
 ## SAML SSO + SCIM (Enterprise)
@@ -414,21 +414,21 @@ enterprise IAM surface (SSO/SCIM/RBAC/audit) stays hidden behind a 402 until
 you unlock the entitlement:
 
 ```sh
-kortix self-host env set ENTERPRISE_LICENSE_AVAILABLE=true
+zed self-host env set ENTERPRISE_LICENSE_AVAILABLE=true
 # or pass --enterprise-license to `init`/`configure`
-kortix self-host start
+zed self-host start
 ```
 
-With that flag on, register an IdP exactly like on Kortix Cloud — see
+With that flag on, register an IdP exactly like on Zed Cloud — see
 `docs/ENTRA_SSO_SCIM_SETUP.md` for the full walkthrough (Entra/Okta/Google/
 custom SAML, group→role mapping, SCIM). Two paths:
 
 - **Self-serve (recommended)**: sign in as an account owner/admin → Account →
-  Settings → Identity → SAML SSO → Configure → Import IdP metadata. Kortix
+  Settings → Identity → SAML SSO → Configure → Import IdP metadata. Zed
   registers the IdP with your self-hosted Supabase Auth (`/auth/v1/admin/sso/
   providers`) server-side — you never touch Supabase directly. Everything
   (Entity ID, ACS URL, metadata endpoint) is derived from your own
-  `KORTIX_DOMAIN`/tunnel URL, never a Kortix Cloud URL.
+  `ZED_DOMAIN`/tunnel URL, never a Zed Cloud URL.
 - **Advanced/operator path**: run `supabase sso add --type saml --metadata-url
   "<idp metadata url>" --domains your-company.com` yourself against your
   self-hosted Supabase project, then paste the returned provider UUID into the
@@ -437,14 +437,14 @@ custom SAML, group→role mapping, SCIM). Two paths:
 Verify the plumbing independent of any IdP with:
 
 ```sh
-curl -s https://<your-domain>/auth/v1/settings -H "apikey: $(kortix self-host env ls --json --show | jq -r '.categories[] | select(.category=="database") | .secrets[] | select(.key=="SUPABASE_ANON_KEY") | .value')" | jq .saml_enabled
+curl -s https://<your-domain>/auth/v1/settings -H "apikey: $(zed self-host env ls --json --show | jq -r '.categories[] | select(.category=="database") | .secrets[] | select(.key=="SUPABASE_ANON_KEY") | .value')" | jq .saml_enabled
 # → true
 ```
 
 Notes:
 - **Never rotate `SAML_PRIVATE_KEY`** once an IdP is registered — it's the SP's
   signing identity; regenerating it breaks every already-trusted IdP
-  relationship until you re-register. `kortix self-host env rotate` refuses it
+  relationship until you re-register. `zed self-host env rotate` refuses it
   for this reason.
 - First-login auto-provisioning ("does every SSO sign-in land in the right
   account automatically?") is governed by the account's `auto_create_members`
@@ -454,24 +454,24 @@ Notes:
 
 ## Restricting account creation
 
-By default only the admin (`KORTIX_PLATFORM_ADMIN_EMAILS`) creates new
+By default only the admin (`ZED_PLATFORM_ADMIN_EMAILS`) creates new
 accounts/organizations on a self-hosted instance; everyone else joins an
 existing account by invitation or SSO. This is narrower than the removed
 single-account mode — signups still work, existing teams/orgs still fully
 function, and SSO/JIT still lands users in their org; only `POST
 /v1/accounts` (spinning up a brand-new organization) is gated to platform
-admins. `kortix self-host init`/`configure` ask about it as part of
+admins. `zed self-host init`/`configure` ask about it as part of
 "Deployment shape" (default Yes); disable it with:
 
 ```sh
-kortix self-host env set KORTIX_RESTRICT_ACCOUNT_CREATION=false KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION=false
+zed self-host env set ZED_RESTRICT_ACCOUNT_CREATION=false ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION=false
 ```
 
 ## Backups
 
 There is no separate backup system — it's plain Docker volumes and bind
 mounts under the instance directory
-(`~/.config/kortix/self-host/<instance>/`):
+(`~/.config/zed/self-host/<instance>/`):
 
 - `volumes/db/data` — the Postgres data directory (**the durable state that
   matters**: every table, every row).
@@ -480,8 +480,8 @@ mounts under the instance directory
   API keys, GitHub/Daytona/SMTP credentials). Back this up separately and
   keep it at least as protected as a password vault.
 - Two named Docker volumes, both fully regenerable and low-value to back up:
-  `kortix-caddy-data` (cached ACME certificates — a fresh cert is issued
-  automatically on next start if lost) and `kortix-updater-state` (just the
+  `zed-caddy-data` (cached ACME certificates — a fresh cert is issued
+  automatically on next start if lost) and `zed-updater-state` (just the
   updater's lock file + last-deployed breadcrumb).
 
 **Whole-directory snapshot** (simplest, works everywhere a block/file-level
@@ -489,17 +489,17 @@ snapshot is available — EBS snapshot, a VPS provider's volume snapshot,
 `rsync`, `tar`):
 
 ```sh
-kortix self-host stop
-tar -C ~/.config/kortix/self-host -czf kortix-self-host-backup.tar.gz <instance>
-kortix self-host start
+zed self-host stop
+tar -C ~/.config/zed/self-host -czf zed-self-host-backup.tar.gz <instance>
+zed self-host start
 ```
 
 **Logical backup** (portable across Postgres versions, no downtime required):
 
 ```sh
-docker compose --project-name kortix-<instance> \
-  --env-file ~/.config/kortix/self-host/<instance>/.env \
-  -f ~/.config/kortix/self-host/<instance>/docker-compose.yml \
+docker compose --project-name zed-<instance> \
+  --env-file ~/.config/zed/self-host/<instance>/.env \
+  -f ~/.config/zed/self-host/<instance>/docker-compose.yml \
   exec supabase-db pg_dump -U postgres -d postgres > backup-$(date +%F).sql
 ```
 
@@ -519,11 +519,11 @@ things explicitly:
   floor; for tighter RPO use a host-level block snapshot of the instance
   directory on a schedule (EBS snapshots, your VPS provider's volume
   snapshots, or a `cron` + `rsync`/`tar` to a separate host). The whole-
-  directory `tar` approach above requires `kortix self-host stop` (brief
+  directory `tar` approach above requires `zed self-host stop` (brief
   downtime); the `pg_dump` logical approach does not.
-- **RTO (recovery-time objective).** A fresh box: provision → `kortix
+- **RTO (recovery-time objective).** A fresh box: provision → `zed
   self-host init` → restore `.env` + `volumes/db/data` (or `psql <
-  backup.sql`) → `kortix self-host start`. State how long that takes on
+  backup.sql`) → `zed self-host start`. State how long that takes on
   YOUR box and practice it once (below).
 - **`.env` is the root of trust.** Lose `volumes/db/data` and you lose
   data; lose `.env` and you lose the ability to ever authenticate or
@@ -535,14 +535,14 @@ things explicitly:
 - **Restore drill (run once before going live, then ~quarterly).** An
   untested restore procedure is not a restore procedure. On a throwaway
   box:
-  1. `kortix self-host init` a fresh instance with the SAME domain (or a
+  1. `zed self-host init` a fresh instance with the SAME domain (or a
      test domain) — do NOT start it yet.
   2. Restore the backed-up `.env` over the freshly-generated one (so JWT
      keys match the restored DB).
   3. Restore data: `psql < backup.sql` (logical) against the running
-     `supabase-db`, or `kortix self-host stop` then replace
+     `supabase-db`, or `zed self-host stop` then replace
      `volumes/db/data` (whole-directory).
-  4. `kortix self-host start`; verify sign-in with an existing account
+  4. `zed self-host start`; verify sign-in with an existing account
      works (proves JWT keys + DB are consistent) and one project/session
      loads (proves Storage + DB rows).
   5. Record how long steps 1-4 took — that's your real RTO.
@@ -552,18 +552,18 @@ at least once against a backup taken from the production instance.
 
 ## Uninstalling / starting over
 
-`kortix self-host uninstall` is the full, clean teardown for one instance: it
+`zed self-host uninstall` is the full, clean teardown for one instance: it
 stops the stack, runs `docker compose down --volumes --remove-orphans`
 (containers, networks, and the two named Docker volumes above — NOT a
 substitute for the backup step if you need the data), deletes the instance's
-config directory (`~/.config/kortix/self-host/<instance>/`, including
+config directory (`~/.config/zed/self-host/<instance>/`, including
 `.env` and `volumes/`), and clears the CLI's `selfhost` host entry if it
 still points at this instance.
 
 ```sh
-kortix self-host uninstall                    # interactive: type the instance name to confirm
-kortix self-host uninstall --yes              # non-interactive / scripts
-kortix self-host uninstall --instance staging # a specific --instance
+zed self-host uninstall                    # interactive: type the instance name to confirm
+zed self-host uninstall --yes              # non-interactive / scripts
+zed self-host uninstall --instance staging # a specific --instance
 ```
 
 **This permanently deletes all data for that instance** (Postgres, Storage,
@@ -574,38 +574,38 @@ just `init` + `start` again, on the same box or a fresh one.
 
 - **`docker compose version` fails / "Cannot connect to the Docker daemon"** —
   Docker isn't installed or the daemon isn't running.
-  `scripts/kortix-selfhost-up.sh` installs and starts it; on an existing box,
+  `scripts/zed-selfhost-up.sh` installs and starts it; on an existing box,
   `systemctl status docker` (Linux) or open Docker Desktop (local machine).
 - **A newly created Linux user can't run `docker` without `sudo`** — group
   membership (`usermod -aG docker $USER`) only takes effect in a *new* login
   session; log out/in or start a new shell.
-- **`kortix self-host doctor` reports a Compose config error** — usually a
-  bad manual edit via `env set`; run `kortix self-host env ls` to see what's
+- **`zed self-host doctor` reports a Compose config error** — usually a
+  bad manual edit via `env set`; run `zed self-host env ls` to see what's
   actually persisted, fix the offending key, and doctor again.
 - **Sessions fail to start / "sandbox runtime not configured"** — `DAYTONA_API_KEY`
-  isn't set. `kortix self-host configure` or
-  `kortix self-host env set DAYTONA_API_KEY=...` then `kortix self-host start`.
+  isn't set. `zed self-host configure` or
+  `zed self-host env set DAYTONA_API_KEY=...` then `zed self-host start`.
 - **Creating a project fails ("provider github not configured")** — managed
   git isn't configured. Same fix, with the `MANAGED_GIT_GITHUB_*` keys above.
-- **Agent sessions fail with "Cannot connect to the API" / a `KORTIX_URL`
+- **Agent sessions fail with "Cannot connect to the API" / a `ZED_URL`
   error, or hang forever** — the cloud sandbox can't call back to this API:
   reachability is unconfigured (the default absent `--domain`/`--tunnel`), or
   a Cloudflare quick tunnel's URL wasn't captured yet. Run
-  `kortix self-host configure` to set up a domain or `--tunnel cloudflare`,
-  or re-run `kortix self-host start` — see Reachability above. Check
-  `kortix self-host logs cloudflared` if a tunnel is configured but the URL
+  `zed self-host configure` to set up a domain or `--tunnel cloudflare`,
+  or re-run `zed self-host start` — see Reachability above. Check
+  `zed self-host logs cloudflared` if a tunnel is configured but the URL
   capture keeps timing out (cloudflared may be missing its image locally yet,
   or outbound network access to Cloudflare may be blocked).
 - **ACME/TLS cert issuance fails** — confirm the domain's (and API domain's)
   DNS A/AAAA record actually resolves to the box's public IP, and that ports
   80/443 are open in any cloud/VPS firewall or security group — HTTP-01
   validation needs both reachable from the internet.
-- **After `kortix self-host update`, the app looks unchanged** — check
-  `kortix self-host version`; if you're tracking `stable` and the release
+- **After `zed self-host update`, the app looks unchanged** — check
+  `zed self-host version`; if you're tracking `stable` and the release
   pipeline hasn't published a `:stable` tag for the new version yet, see the
   auto-updater section above. `--channel latest` or an explicit `--tag` always
   reflects what's actually published.
-- **Logs** — `kortix self-host logs [service]` (services: `frontend`,
-  `kortix-api`, `llm-gateway`, `kortix-updater`, `caddy` when a domain is
+- **Logs** — `zed self-host logs [service]` (services: `frontend`,
+  `zed-api`, `llm-gateway`, `zed-updater`, `caddy` when a domain is
   configured, `cloudflared` when tunnel mode is configured, plus the Supabase
   services `supabase-db`, `supabase-kong`, `supabase-auth`, etc.).

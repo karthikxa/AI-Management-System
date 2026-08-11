@@ -66,7 +66,7 @@ import {
 import { PROJECT_ACTIONS } from '@/lib/project-actions';
 import { useProjectCan } from '@/lib/use-project-can';
 import { cn } from '@/lib/utils';
-import { getProject, listProjectAccess } from '@kortix/sdk';
+import { getProject, listProjectAccess } from '@zed/sdk';
 import {
   type Agent,
   contract,
@@ -76,7 +76,7 @@ import {
   useRuntimeProviders,
   useVisibleAgents,
   wireToModelKey,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 import {
   CheckIcon as Check,
   CheckCircleIcon as CheckCircleSolid,
@@ -92,7 +92,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
 /** Reserved slug for the built-in Email channel (see api connectors.ts). */
-const EMAIL_CONNECTOR_SLUG = 'kortix_email';
+const EMAIL_CONNECTOR_SLUG = 'zed_email';
 const CHANNEL_LOADING_ROWS = ['channel-loading-1', 'channel-loading-2', 'channel-loading-3'];
 const SLACK_MANIFEST_STEPS = [
   'Click Open Slack, choose "From a manifest", paste the JSON, confirm.',
@@ -259,7 +259,7 @@ export function ChannelsView({ projectId }: { projectId: string | null }) {
 /**
  * Per-channel agent/model/join-policy overrides — the web management surface
  * for `chat_channel_bindings` (spec §2.5 "Channels become manageable"). Today
- * the only other way to change these is the in-Slack `/kortix agent|model|policy`
+ * the only other way to change these is the in-Slack `/zed agent|model|policy`
  * commands; this edits the same row through `PATCH …/channels/bindings/:id`.
  */
 function ChannelBindingsSection({ projectId, canWrite }: { projectId: string; canWrite: boolean }) {
@@ -320,9 +320,9 @@ function agentDefaultLabel(projectDefaultAgent: string | null): string {
   return projectDefaultAgent ? `Project default (${projectDefaultAgent})` : 'Project default';
 }
 
-/** Bare model id → the compact form callers below already assume (`kortix/x` → `x`). */
+/** Bare model id → the compact form callers below already assume (`zed/x` → `x`). */
 function stripOpencodeNamespace(model: string): string {
-  return model.startsWith('kortix/') ? model.slice('kortix/'.length) : model;
+  return model.startsWith('zed/') ? model.slice('zed/'.length) : model;
 }
 
 /**

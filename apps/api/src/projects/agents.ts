@@ -1,7 +1,7 @@
 import { canonicalizeGrantConnectors } from '../iam/agent-scope';
 /**
- * `agents` block parsing for `kortix.yaml` (a legacy v1 project may instead
- * declare `[[agents]]` in `kortix.toml` — both are parsed here).
+ * `agents` block parsing for `zed.yaml` (a legacy v1 project may instead
+ * declare `[[agents]]` in `zed.toml` — both are parsed here).
  *
  * An agent's *behavior* still comes from its OpenCode `.md` (front matter:
  * prompt/model/mode/tools/permission/skill-perms). Once a project declares
@@ -11,21 +11,21 @@ import { canonicalizeGrantConnectors } from '../iam/agent-scope';
  *
  *   1. `connectors` — which connectors (by `connectors[].slug`) the
  *      agent may call. Default: none.
- *   2. `kortix_cli` — what the agent may do to Kortix itself via the `kortix`
+ *   2. `zed_cli` — what the agent may do to Zed itself via the `zed`
  *      CLI/API (project-scoped iam actions: deploy, open CRs, triggers, …).
  *      Default: none. Account-scoped admin actions are NEVER grantable.
  *
  * The effective grant at session birth is `declared ∩ launching-user role`
- * (agent ≤ human). The default `kortix` agent is granted everything (`"all"`),
+ * (agent ≤ human). The default `zed` agent is granted everything (`"all"`),
  * which ∩ the user = exactly the user's own permissions.
  *
- * Example (kortix.yaml, v2):
+ * Example (zed.yaml, v2):
  *
  *   agents:
- *     kortix: {}                          # default GP agent — connectors/kortix_cli = "all" (∩ user)
+ *     zed: {}                          # default GP agent — connectors/zed_cli = "all" (∩ user)
  *     release-bot:
  *       connectors: ["github"]            # which connectors
- *       kortix_cli: ["project.trigger.create", "project.cr.open"]   # Kortix CLI/API powers
+ *       zed_cli: ["project.trigger.create", "project.cr.open"]   # Zed CLI/API powers
  *
  * Parser mirrors `projects/connectors.ts`: never throws on a bad entry, collects
  * them in `errors` so the UI can render them next to the good ones.
@@ -34,17 +34,17 @@ import { createHash } from 'node:crypto';
 import type { ParsedManifest } from './triggers';
 import { PROJECT_ACTIONS, VALID_ACTIONS } from '../iam/actions';
 import type { GitBackedProject } from './git';
-import type { AgentGrant } from '@kortix/db';
+import type { AgentGrant } from '@zed/db';
 import {
   resolveGrantSet,
   SLUG_RE,
   WORKSPACE_MODES_V2,
   type GrantSetV2,
   type WorkspaceModeV2,
-} from '@kortix/manifest-schema';
+} from '@zed/manifest-schema';
 import { normalizeRequiredConnectorAliases } from './lib/agent-config-v2';
 
-const MANIFEST_FILENAME = 'kortix.toml';
+const MANIFEST_FILENAME = 'zed.toml';
 
 /**
  * The non-binding agent sentinel. `project_sessions.agent_name` defaults to this
@@ -56,7 +56,7 @@ const MANIFEST_FILENAME = 'kortix.toml';
 export const DEFAULT_AGENT_SENTINEL = 'default';
 
 /**
- * The actions an agent's `kortix_cli` may grant — the project-scoped surface,
+ * The actions an agent's `zed_cli` may grant — the project-scoped surface,
  * including the manager-tier project leaves (`project.delete`,
  * `project.members.manage`, `project.gateway.keys.manage`) — these are still
  * reachable via a project's `manager` role, so an agent can be granted them
@@ -72,13 +72,13 @@ export const DEFAULT_AGENT_SENTINEL = 'default';
  * (`iam/engine-v2.ts` `computeTokenScope`) refuses ANY account-scope action
  * for a project-bound token BEFORE this grant is even loaded. This set is a
  * curation/UX surface (the CLI/editor's offered catalog, and what
- * `validateKortixAction` below flags as a bad `kortix_cli` entry), not the
+ * `validateZedAction` below flags as a bad `zed_cli` entry), not the
  * enforcement boundary itself.
  */
-export const GRANTABLE_KORTIX_CLI: ReadonlySet<string> = new Set(Object.values(PROJECT_ACTIONS));
+export const GRANTABLE_ZED_CLI: ReadonlySet<string> = new Set(Object.values(PROJECT_ACTIONS));
 
-/** Sorted list for `kortix validate` / error messages / the UI picker. */
-export const GRANTABLE_KORTIX_CLI_LIST: readonly string[] = [...GRANTABLE_KORTIX_CLI].sort();
+/** Sorted list for `zed validate` / error messages / the UI picker. */
+export const GRANTABLE_ZED_CLI_LIST: readonly string[] = [...GRANTABLE_ZED_CLI].sort();
 
 /** `"all"` = every grantable action / every project connector (capped at the user). */
 export type GrantSet = string[] | 'all';
@@ -86,7 +86,7 @@ export type GrantSet = string[] | 'all';
 export interface AgentSpec {
   /** Agent name — unique per project. Matches projectSessions.agentName + the `.md` filename. */
   name: string;
-  /** e.g. `kortix.yaml#agents.<name>` (or the project's actual manifest filename) for UI / error reporting. */
+  /** e.g. `zed.yaml#agents.<name>` (or the project's actual manifest filename) for UI / error reporting. */
   path: string;
   /** When false the overlay is skipped (the agent still runs from its `.md`, with default-deny scope). */
   enabled: boolean;
@@ -94,8 +94,8 @@ export interface AgentSpec {
   connectors: GrantSet;
   /** Connectors that must resolve before the session starts. */
   connectorsRequired?: string[];
-  /** Kortix CLI/API powers (project-scoped iam actions). `[]` = none (default). */
-  kortixCli: GrantSet;
+  /** Zed CLI/API powers (project-scoped iam actions). `[]` = none (default). */
+  zedCli: GrantSet;
   /** Project-secret IDENTIFIERS (project_secrets.identifier, not raw env-var
    *  keys) this agent receives as sandbox env + may read via the secrets API.
    *  `'all'` = every secret in the project (default when the `env` key is
@@ -141,7 +141,7 @@ export interface LoadedAgents {
 
 /**
  * Pull the manifest's agent declarations out of a parsed manifest. Never
- * throws. Dispatches on the manifest's OWN declared `kortix_version` (not
+ * throws. Dispatches on the manifest's OWN declared `zed_version` (not
  * shape-sniffing `raw.agents`) so a malformed v1 manifest that happens to
  * write `agents` as an object still gets the v1 "must be an array" error
  * instead of silently routing into the v2 reader:
@@ -205,7 +205,7 @@ export function extractAgents(manifest: ParsedManifest): LoadedAgents {
 /**
  * v2's `agents:` map reader (spec §2.1/§2.2). Maps each `AgentBlockV2` onto
  * the same `AgentSpec` shape the rest of the grant pipeline already consumes:
- *   - `connectors` / `kortix_cli` / `secrets` (v2's rename of v1's `env`) are
+ *   - `connectors` / `zed_cli` / `secrets` (v2's rename of v1's `env`) are
  *     resolved via `resolveGrantSet` with v2's deny-by-default default
  *     (an omitted grant → `'none'`), the opposite of v1's `env: 'all'`
  *     back-compat default.
@@ -221,7 +221,7 @@ function extractAgentsV2(raw: unknown, manifest: ParsedManifest, filename: strin
         name: '(top-level)',
         path: filename,
         error:
-          `\`agents\` must be a map of agent name → agent block in kortix_version ${manifest.schemaVersion} (the v1 \`[[agents]]\` array becomes a map)`,
+          `\`agents\` must be a map of agent name → agent block in zed_version ${manifest.schemaVersion} (the v1 \`[[agents]]\` array becomes a map)`,
       }],
       defaultAgent: null,
     };
@@ -262,7 +262,7 @@ function extractAgentsV2(raw: unknown, manifest: ParsedManifest, filename: strin
  * `readManifest`'s literal `null` → zero declared agents → every
  * declared-agent check (`resolveGovernedAgentGrant`) 400'd AGENT_NOT_DECLARED
  * even though the project "should" already resolve to the synthesized
- * `kortix` default agent with zero writes. Synthesizing here too closes that
+ * `zed` default agent with zero writes. Synthesizing here too closes that
  * gap — a blank project's very first session-create with no agent forced now
  * resolves the same declared default the write path already promises.
  */
@@ -289,7 +289,7 @@ export async function loadProjectAgents(
     // The manifest failed to parse before we learned which candidate file it
     // actually was (.yaml/.yml/.toml) — fall back to the project's configured
     // manifestPath (best-effort; may be stale for a project that switched
-    // format by hand without updating it) rather than always naming kortix.toml.
+    // format by hand without updating it) rather than always naming zed.toml.
     return {
       specs: [],
       errors: [{
@@ -311,10 +311,10 @@ export async function loadProjectAgents(
  *   - Manifest declares NO `[[agents]]` at all → returns `null` (no restriction;
  *     full access, capped at the launching user by the route's own role check).
  *     Every existing project keeps working exactly as today.
- *   - Agent IS listed → its declared overlay (connectors + kortix_cli).
+ *   - Agent IS listed → its declared overlay (connectors + zed_cli).
  *   - Project adopted `[[agents]]` but the agent is NOT listed → default-DENY
  *     (the agent still runs its `.md` behavior, but with no connectors and no
- *     Kortix-CLI powers).
+ *     Zed-CLI powers).
  *
  * The `∩ launching-user role` is NOT applied here — it's enforced for free at
  * the route layer (the account token resolves to the user, whose role is
@@ -338,10 +338,10 @@ export function grantFromLoadedAgents(agentName: string, loaded: LoadedAgents): 
   if (spec) {
     // Canonicalize the connector list here so all three gates (catalog, call,
     // session-create) compare the same spelling — a manifest may say `email` or
-    // `kortix_email` and both must mean the same connector.
+    // `zed_email` and both must mean the same connector.
     return canonicalizeGrantConnectors({
       agent: agentName,
-      kortixCli: spec.kortixCli,
+      zedCli: spec.zedCli,
       connectors: spec.connectors,
       env: spec.env,
     });
@@ -349,9 +349,9 @@ export function grantFromLoadedAgents(agentName: string, loaded: LoadedAgents): 
 
   // The `default` sentinel is non-binding for v1: no agent is ever named
   // `default`, so a `default`-booted session is OpenCode's configured
-  // `default_agent` (a general-purpose agent, conventionally `kortix`, granted
+  // `default_agent` (a general-purpose agent, conventionally `zed`, granted
   // "all") — NOT an unlisted concrete agent. Default-denying it stripped EVERY
-  // connector from such sessions (the `kortix connectors ls` → [] bug,
+  // connector from such sessions (the `zed connectors ls` → [] bug,
   // and synthetic channel/computer connectors never reaching the agent) even
   // though OpenCode runs them as the fully-privileged default agent. Resolve
   // it the way the proxy already does: non-binding → null (no restriction,
@@ -370,11 +370,11 @@ export function grantFromLoadedAgents(agentName: string, loaded: LoadedAgents): 
       if (declared) {
         // Canonicalize here for the SAME reason the concrete-agent branch does
         // (see above): catalog / call / create all compare canonical slugs, so
-        // a manifest that writes `email` rather than `kortix_email` would be
+        // a manifest that writes `email` rather than `zed_email` would be
         // silently denied at the call gate.
         return canonicalizeGrantConnectors({
           agent: loaded.defaultAgent,
-          kortixCli: declared.kortixCli,
+          zedCli: declared.zedCli,
           connectors: declared.connectors,
           env: declared.env,
         });
@@ -396,7 +396,7 @@ export function grantFromLoadedAgents(agentName: string, loaded: LoadedAgents): 
     // allowed to use gets nothing, which is the same rule the secrets path
     // already follows (secret-grant.ts passes rethrowReadErrors for this).
     if (loaded.errors.length > 0) {
-      return { agent: agentName, kortixCli: [], connectors: [], env: [] };
+      return { agent: agentName, zedCli: [], connectors: [], env: [] };
     }
     return null;
   }
@@ -404,7 +404,7 @@ export function grantFromLoadedAgents(agentName: string, loaded: LoadedAgents): 
   // Governance adopted but this concrete agent is unlisted → default-deny
   // everything, including secrets/env (an unlisted agent receives no project
   // secrets).
-  return { agent: agentName, kortixCli: [], connectors: [], env: [] };
+  return { agent: agentName, zedCli: [], connectors: [], env: [] };
 }
 
 /** Resolve the selected agent's sandbox template without repository I/O. */
@@ -516,7 +516,7 @@ export function resolveGovernedAgentGrant(
         code: 'AGENT_NOT_DECLARED',
         error:
           'This project requires declared agents but has no default_agent configured — ' +
-          'set one in the project settings or kortix.yaml before starting a session.',
+          'set one in the project settings or zed.yaml before starting a session.',
       };
     }
     const spec = findDeclared(declaredDefault);
@@ -529,7 +529,7 @@ export function resolveGovernedAgentGrant(
     }
     return {
       ok: true,
-      grant: { agent: declaredDefault, kortixCli: spec.kortixCli, connectors: spec.connectors, env: spec.env },
+      grant: { agent: declaredDefault, zedCli: spec.zedCli, connectors: spec.connectors, env: spec.env },
     };
   }
 
@@ -541,13 +541,13 @@ export function resolveGovernedAgentGrant(
       error: `Agent "${agentName}" is not declared in this project's \`agents\` manifest — this project requires every session/trigger to name a declared agent.`,
     };
   }
-  return { ok: true, grant: { agent: agentName, kortixCli: spec.kortixCli, connectors: spec.connectors, env: spec.env } };
+  return { ok: true, grant: { agent: agentName, zedCli: spec.zedCli, connectors: spec.connectors, env: spec.env } };
 }
 
 /**
  * Convert an AgentSpec back to the raw manifest-entry object for the CRUD
- * round-trip (serialized as YAML for `kortix.yaml`, or TOML for a legacy v1
- * `kortix.toml`). Inverse of `parseAgentEntry`. Omits empty/default fields so
+ * round-trip (serialized as YAML for `zed.yaml`, or TOML for a legacy v1
+ * `zed.toml`). Inverse of `parseAgentEntry`. Omits empty/default fields so
  * the emitted entry stays minimal.
  */
 export function agentSpecToTomlEntry(spec: AgentSpec): Record<string, unknown> {
@@ -557,8 +557,8 @@ export function agentSpecToTomlEntry(spec: AgentSpec): Record<string, unknown> {
   if (spec.model) entry.model = spec.model;
   if (spec.connectors === 'all') entry.connectors = 'all';
   else if (spec.connectors.length > 0) entry.connectors = spec.connectors;
-  if (spec.kortixCli === 'all') entry.kortix_cli = 'all';
-  else if (spec.kortixCli.length > 0) entry.kortix_cli = spec.kortixCli;
+  if (spec.zedCli === 'all') entry.zed_cli = 'all';
+  else if (spec.zedCli.length > 0) entry.zed_cli = spec.zedCli;
   // 'all' is the env default, so only emit when narrowed (a list or explicit none).
   if (spec.env !== 'all') entry.env = spec.env;
   return entry;
@@ -569,7 +569,7 @@ export function agentSpecToTomlEntry(spec: AgentSpec): Record<string, unknown> {
  * `[[agents]]` array-of-tables shape; the dashboard "Access scope" editor's
  * write step), returning a new array. Pure — the route wraps it with
  * load/commit. Preserves every other field on the entry (name, model, file,
- * kortix_cli, enabled) and omits a key when it equals the parser default so
+ * zed_cli, enabled) and omits a key when it equals the parser default so
  * the emitted manifest matches hand-authored files:
  *   - env:        'all' is the default → omit; a list/`[]` narrows it.
  *   - connectors: none is the default → omit `[]`; 'all'/a list is explicit.
@@ -607,7 +607,7 @@ export function manifestHashForAgent(spec: AgentSpec): string {
     enabled: spec.enabled,
     connectors: spec.connectors,
     connectorsRequired: spec.connectorsRequired,
-    kortixCli: spec.kortixCli,
+    zedCli: spec.zedCli,
     env: spec.env,
     file: spec.file,
     workspace: spec.workspace,
@@ -641,8 +641,8 @@ function parseAgentEntry(entry: unknown, index: number, filename: string = MANIF
   const connectorsParsed = parseGrantSet(name, 'connectors', row.connectors, null, filename);
   if (!connectorsParsed.ok) return connectorsParsed;
 
-  const kortixParsed = parseGrantSet(name, 'kortix_cli', row.kortix_cli, validateKortixAction, filename);
-  if (!kortixParsed.ok) return kortixParsed;
+  const zedParsed = parseGrantSet(name, 'zed_cli', row.zed_cli, validateZedAction, filename);
+  if (!zedParsed.ok) return zedParsed;
 
   // `env` is a NEW dimension — default to 'all' when omitted so existing
   // [[agents]] keep receiving the secrets they already got; an explicit list
@@ -660,7 +660,7 @@ function parseAgentEntry(entry: unknown, index: number, filename: string = MANIF
       path: `${filename}#agents.${name}`,
       enabled,
       connectors: connectorsParsed.value,
-      kortixCli: kortixParsed.value,
+      zedCli: zedParsed.value,
       env: envParsed.value,
       file,
       model,
@@ -672,12 +672,12 @@ function parseAgentEntry(entry: unknown, index: number, filename: string = MANIF
 
 /**
  * Parse one v2 `agents.<name>` block (a map entry, not an array table) into
- * an `AgentSpec`. Reuses `resolveGrantSet` from `@kortix/manifest-schema` so
+ * an `AgentSpec`. Reuses `resolveGrantSet` from `@zed/manifest-schema` so
  * v2's deny-by-default default (an omitted grant → `'none'`) is shared, not
  * re-derived — the opposite default from v1's `parseGrantSet` above, which
  * defaults `env` to `'all'` (adopt-to-govern back-compat for an existing
- * dimension). `kortix_cli` actions are still validated against the grantable
- * project-action set here (not just at `kortix validate` time), so a manifest
+ * dimension). `zed_cli` actions are still validated against the grantable
+ * project-action set here (not just at `zed validate` time), so a manifest
  * that reached this reader without going through the CR-merge gate (a raw git
  * push / out-of-band edit) can't smuggle an ungrantable action into a grant.
  */
@@ -695,11 +695,11 @@ function parseAgentEntryV2(name: string, block: unknown, filename: string): Pars
   if (!normalizedRequired.ok) return err(name, `agents.${name}.${normalizedRequired.error}`);
   const normalizedRow = normalizedRequired.block;
 
-  // v2's `enabled` is a top-level Kortix-governance boolean (validated
+  // v2's `enabled` is a top-level Zed-governance boolean (validated
   // upstream by manifest-schema); only a literal `false` disables. Behavior
   // (`file`/`model`) is NOT read from the manifest anymore (2026-07-05
   // redirect, spec §2.2: "one home per concern") — it lives entirely in the
-  // agent's own `.kortix/opencode/agents/<name>.md` frontmatter, which this
+  // agent's own `.zed/opencode/agents/<name>.md` frontmatter, which this
   // GOVERNANCE-only parser has no reason to read (no I/O here). `file` stays
   // `null`, which downstream callers already treat as "use the conventional
   // `.md` by name" (see `AgentSpec.file`'s doc comment); `model` stays `null`,
@@ -739,16 +739,16 @@ function parseAgentEntryV2(name: string, block: unknown, filename: string): Pars
     }
   }
 
-  const kortixResolved = resolveGrantSet(normalizedRow.kortix_cli, 'none');
-  if (Array.isArray(kortixResolved)) {
-    for (const action of kortixResolved) {
-      const problem = validateKortixAction(action);
+  const zedResolved = resolveGrantSet(normalizedRow.zed_cli, 'none');
+  if (Array.isArray(zedResolved)) {
+    for (const action of zedResolved) {
+      const problem = validateZedAction(action);
       if (problem) return err(name, problem);
     }
   }
 
   // v2 renamed the grant-set key `env` → `secrets` (spec §2.2/§2.4); same
-  // shape as connectors/kortix_cli, same deny-by-default resolution — mapped
+  // shape as connectors/zed_cli, same deny-by-default resolution — mapped
   // onto AgentSpec's `env` field, which the rest of the pipeline (secret
   // scoping in sessions.ts, `agentMayUseEnv`) already consumes.
   const secretsResolved = resolveGrantSet(normalizedRow.secrets, 'none');
@@ -761,7 +761,7 @@ function parseAgentEntryV2(name: string, block: unknown, filename: string): Pars
       enabled,
       connectors: toGrantSet(connectorsResolved),
       connectorsRequired,
-      kortixCli: toGrantSet(kortixResolved),
+      zedCli: toGrantSet(zedResolved),
       env: toGrantSet(secretsResolved),
       file,
       model,
@@ -779,7 +779,7 @@ function toGrantSet(value: GrantSetV2): GrantSet {
 }
 
 /**
- * Parse a `connectors` / `kortix_cli` value, which may be:
+ * Parse a `connectors` / `zed_cli` value, which may be:
  *   - omitted / null          → [] (default-deny)
  *   - the string "all"        → 'all'
  *   - the string "none"       → []
@@ -825,12 +825,12 @@ function parseGrantSet(
 }
 
 /** Returns an error message if the action is not grantable to an agent, else null. */
-function validateKortixAction(action: string): string | null {
-  if (GRANTABLE_KORTIX_CLI.has(action)) return null;
+function validateZedAction(action: string): string | null {
+  if (GRANTABLE_ZED_CLI.has(action)) return null;
   if (VALID_ACTIONS.has(action)) {
-    return `\`kortix_cli\` action "${action}" is account-scoped and can never be granted to an agent — only project-scoped actions are allowed`;
+    return `\`zed_cli\` action "${action}" is account-scoped and can never be granted to an agent — only project-scoped actions are allowed`;
   }
-  return `\`kortix_cli\` has unknown action "${action}" — see the grantable list (project.*)`;
+  return `\`zed_cli\` has unknown action "${action}" — see the grantable list (project.*)`;
 }
 
 function coerceBool(value: unknown, fallback: boolean): boolean {

@@ -52,7 +52,7 @@ import {
 } from '@/lib/iam-client';
 import { usePermission, usePermissionsFor } from '@/lib/use-permission';
 import { cn } from '@/lib/utils';
-import { getAccount, listAccountMembers, type AccountRole } from '@kortix/sdk';
+import { getAccount, listAccountMembers, type AccountRole } from '@zed/sdk';
 
 const ROLE_LABEL: Record<string, string> = {
   owner: 'Owner',
@@ -414,7 +414,7 @@ function CapabilityRow({
       {isLoading ? (
         <span className="bg-muted-foreground/20 size-3.5 animate-pulse rounded-full" />
       ) : allowed ? (
-        <span className="bg-kortix-green/15 text-kortix-green inline-flex size-5 items-center justify-center rounded-full">
+        <span className="bg-zed-green/15 text-zed-green inline-flex size-5 items-center justify-center rounded-full">
           <Check className="size-3" />
         </span>
       ) : (
@@ -675,9 +675,9 @@ function ViewAsUserDialog({
                       {row.isLoading ? (
                         <span className="bg-muted block size-3.5 animate-pulse rounded-full" />
                       ) : row.allowed ? (
-                        <Check className="text-kortix-green size-3.5" />
+                        <Check className="text-zed-green size-3.5" />
                       ) : (
-                        <X className="text-kortix-red size-3.5" />
+                        <X className="text-zed-red size-3.5" />
                       )}
                     </span>
                     <div className="min-w-0 flex-1">

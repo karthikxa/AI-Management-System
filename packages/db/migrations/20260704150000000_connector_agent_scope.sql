@@ -13,8 +13,8 @@
 -- fields — unlike config jsonb, which only rewrites on a catalog re-fetch); set
 -- DB-side for synthetic channel/computer connectors that have no manifest entry.
 
-ALTER TABLE "kortix"."executor_connectors"
+ALTER TABLE "zed"."executor_connectors"
   ADD COLUMN IF NOT EXISTS "agent_scope" text[];
 
 -- Down Migration
-ALTER TABLE "kortix"."executor_connectors" DROP COLUMN IF EXISTS "agent_scope";
+ALTER TABLE "zed"."executor_connectors" DROP COLUMN IF EXISTS "agent_scope";

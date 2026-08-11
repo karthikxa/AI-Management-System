@@ -19,7 +19,7 @@ import {
   getSecretSetupLink,
   submitSecretSetupLink,
   type SecretSetupLinkInfo,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 type Phase = 'loading' | 'error' | 'expired' | 'invalid' | 'ready' | 'submitting' | 'done';
 
@@ -65,7 +65,7 @@ export function SecretIntakeForm({
           setError(
             cause instanceof Error
               ? cause.message
-              : 'Could not reach Kortix. Check your connection and try again.',
+              : 'Could not reach Zed. Check your connection and try again.',
           );
           setPhase('error');
         }
@@ -115,8 +115,8 @@ export function SecretIntakeForm({
   if (phase === 'expired') {
     return (
       <div className="flex flex-col items-center gap-2 py-8 text-center">
-        <span className="bg-kortix-orange/15 flex size-9 items-center justify-center rounded-sm">
-          <ClockCountdownIcon weight="fill" className="text-kortix-orange size-5" />
+        <span className="bg-zed-orange/15 flex size-9 items-center justify-center rounded-sm">
+          <ClockCountdownIcon weight="fill" className="text-zed-orange size-5" />
         </span>
         <p className="text-foreground text-sm font-medium">This link has expired</p>
         <p className="text-muted-foreground max-w-xs text-xs">
@@ -131,8 +131,8 @@ export function SecretIntakeForm({
   if (phase === 'invalid') {
     return (
       <div className="flex flex-col items-center gap-2 py-8 text-center">
-        <span className="bg-kortix-red/15 flex size-9 items-center justify-center rounded-sm">
-          <LinkBreakIcon weight="fill" className="text-kortix-red size-5" />
+        <span className="bg-zed-red/15 flex size-9 items-center justify-center rounded-sm">
+          <LinkBreakIcon weight="fill" className="text-zed-red size-5" />
         </span>
         <p className="text-foreground text-sm font-medium">This link is not valid</p>
         <p className="text-muted-foreground max-w-xs text-xs">
@@ -146,7 +146,7 @@ export function SecretIntakeForm({
   if (phase === 'error') {
     return (
       <div className="text-muted-foreground py-6 text-center text-sm">
-        {error || 'Could not reach Kortix. Check your connection and try again.'}
+        {error || 'Could not reach Zed. Check your connection and try again.'}
       </div>
     );
   }
@@ -154,8 +154,8 @@ export function SecretIntakeForm({
   if (phase === 'done') {
     return (
       <div className="flex flex-col items-center gap-2 py-8 text-center">
-        <span className="bg-kortix-green/15 flex size-9 items-center justify-center rounded-sm">
-          <CheckIcon weight="fill" className="text-kortix-green size-5" />
+        <span className="bg-zed-green/15 flex size-9 items-center justify-center rounded-sm">
+          <CheckIcon weight="fill" className="text-zed-green size-5" />
         </span>
         <p className="text-foreground text-sm font-medium">
           {tI18nHardcoded.raw(

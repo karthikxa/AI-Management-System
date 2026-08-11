@@ -1,9 +1,9 @@
 /**
- * The canonical, PUBLIC JSON Schema for `kortix.toml` / `kortix.yaml` —
- * the Kortix equivalent of opencode's https://opencode.ai/config.json.
+ * The canonical, PUBLIC JSON Schema for `zed.toml` / `zed.yaml` —
+ * the Zed equivalent of opencode's https://opencode.ai/config.json.
  *
  * This is DATA generated from the same constants/enums the imperative
- * validator (`./index.ts`) uses (`GRANTABLE_KORTIX_CLI_ACTIONS`,
+ * validator (`./index.ts`) uses (`GRANTABLE_ZED_CLI_ACTIONS`,
  * `CONNECTOR_PROVIDERS`, `AGENT_MODES_V2`, `WORKSPACE_MODES_V2`, …) so the
  * two can never silently drift apart — see the conformance test
  * (`__tests__/json-schema.conformance.test.ts`), which runs a shared fixture
@@ -13,10 +13,10 @@
  * Three documents are published (see `apps/web/public/schema/` +
  * `scripts/generate-schema.ts`):
  *
- *   - `kortix.v1.schema.json` — the `[[agents]]`-array / `[[channels]]` shape.
- *   - `kortix.v2.schema.json` — the `agents:`-map, governance-only shape.
- *   - `kortix.schema.json`    — BOTH, dispatched by an `if/then` on
- *     `kortix_version` (const 1 vs const 2), so ONE URL always validates
+ *   - `zed.v1.schema.json` — the `[[agents]]`-array / `[[channels]]` shape.
+ *   - `zed.v2.schema.json` — the `agents:`-map, governance-only shape.
+ *   - `zed.schema.json`    — BOTH, dispatched by an `if/then` on
+ *     `zed_version` (const 1 vs const 2), so ONE URL always validates
  *     whichever version a manifest declares.
  *
  * Deliberate scope limits (documented, not bugs — see spec header of
@@ -48,10 +48,10 @@ import {
   CONNECTOR_POLICY_ACTIONS,
   CONNECTOR_PROVIDERS,
   ENV_NAME_RE,
-  GRANTABLE_KORTIX_CLI_ACTIONS,
+  GRANTABLE_ZED_CLI_ACTIONS,
   HEX_COLOR_RE_V2,
   LEGACY_SANDBOX_KEYS,
-  LEGACY_TOLERATED_KORTIX_CLI_ACTIONS,
+  LEGACY_TOLERATED_ZED_CLI_ACTIONS,
   PERMISSION_ACTION_ONLY_KEYS_V2,
   PERMISSION_ACTIONS_V2,
   RESERVED_SANDBOX_SLUG,
@@ -77,7 +77,7 @@ import {
 // biome-ignore lint: recursive JSON Schema shape, `unknown` would fight every builder below
 export type JsonSchemaFragment = Record<string, any>;
 
-export const KORTIX_SCHEMA_BASE_URL = 'https://kortix.com/schema';
+export const ZED_SCHEMA_BASE_URL = 'https://zed.com/schema';
 const DRAFT = 'https://json-schema.org/draft/2020-12/schema';
 
 /** Case-sensitive uppercase env-var-name pattern (matches `ENV_NAME_RE`) —
@@ -93,9 +93,9 @@ const ENV_NAME_PATTERN_CASE_INSENSITIVE = '^[A-Za-z_][A-Za-z0-9_]*$';
 
 const NON_EMPTY_STRING: JsonSchemaFragment = { type: 'string', minLength: 1 };
 
-/** The `connectors` / `secrets` / `skills` / `kortix_cli` grant-set shape:
+/** The `connectors` / `secrets` / `skills` / `zed_cli` grant-set shape:
  *  an allowlist of names, or the "all"/"none" sentinel (spec §2.2/§2.4/§2.5).
- *  `itemSchema` lets `kortix_cli` additionally constrain each entry to the
+ *  `itemSchema` lets `zed_cli` additionally constrain each entry to the
  *  grantable-action enum. */
 function grantSetSchema(itemSchema: JsonSchemaFragment = NON_EMPTY_STRING): JsonSchemaFragment {
   return {
@@ -108,21 +108,21 @@ function grantSetSchema(itemSchema: JsonSchemaFragment = NON_EMPTY_STRING): Json
 }
 
 /**
- * Every string a `kortix_cli` grant-list entry may legally be, version-gated
+ * Every string a `zed_cli` grant-list entry may legally be, version-gated
  * to mirror `validateGrantList`'s clean break (`./index.ts`): v1 still
  * tolerates the legacy no-op actions (warning, not error — an existing
  * manifest that lists one must keep validating), so its enum is the live
  * grantable catalog PLUS the legacy set. v2 hard-rejects them, so its enum
  * is the live grantable catalog ONLY. Both always accept the `"*"` wildcard.
  */
-function kortixCliEnum(version: 1 | 2): readonly string[] {
+function zedCliEnum(version: 1 | 2): readonly string[] {
   return version === 2
-    ? [...GRANTABLE_KORTIX_CLI_ACTIONS, '*']
-    : [...GRANTABLE_KORTIX_CLI_ACTIONS, ...LEGACY_TOLERATED_KORTIX_CLI_ACTIONS, '*'];
+    ? [...GRANTABLE_ZED_CLI_ACTIONS, '*']
+    : [...GRANTABLE_ZED_CLI_ACTIONS, ...LEGACY_TOLERATED_ZED_CLI_ACTIONS, '*'];
 }
 
-function kortixCliGrantSetSchema(version: 1 | 2): JsonSchemaFragment {
-  return grantSetSchema({ type: 'string', enum: [...kortixCliEnum(version)] });
+function zedCliGrantSetSchema(version: 1 | 2): JsonSchemaFragment {
+  return grantSetSchema({ type: 'string', enum: [...zedCliEnum(version)] });
 }
 
 /** `PermissionRuleConfig`: a bare action, or a glob-pattern → action map. */
@@ -157,7 +157,7 @@ function permissionConfigSchema(): JsonSchemaFragment {
   };
 }
 
-/** An agent's native `.kortix/opencode/agents/<name>.md` frontmatter — full
+/** An agent's native `.zed/opencode/agents/<name>.md` frontmatter — full
  *  OpenCode `AgentConfig` parity (mirrors `validateAgentMdFrontmatter`). Not
  *  part of the manifest schema's own tree (frontmatter lives in a sibling
  *  file the manifest never embeds) — published as a `$defs` entry on the v2
@@ -168,7 +168,7 @@ function agentMdFrontmatterSchema(): JsonSchemaFragment {
   return {
     type: 'object',
     description:
-      "OpenCode behavior for one agent — lives in .kortix/opencode/agents/<name>.md frontmatter, never in the manifest. Provided here as an authoring aid; not itself part of kortix.yaml.",
+      "OpenCode behavior for one agent — lives in .zed/opencode/agents/<name>.md frontmatter, never in the manifest. Provided here as an authoring aid; not itself part of zed.yaml.",
     properties: {
       description: { type: 'string' },
       model: { type: 'string' },
@@ -510,7 +510,7 @@ function agentEntryV1Schema(): JsonSchemaFragment {
     properties: {
       name: SLUG_SCHEMA,
       connectors: grantSetSchema(),
-      kortix_cli: kortixCliGrantSetSchema(1),
+      zed_cli: zedCliGrantSetSchema(1),
       env: grantSetSchema(),
     },
     additionalProperties: true,
@@ -541,7 +541,7 @@ function agentBlockV2Schema(): JsonSchemaFragment {
       },
       secrets: grantSetSchema(),
       skills: grantSetSchema(),
-      kortix_cli: kortixCliGrantSetSchema(2),
+      zed_cli: zedCliGrantSetSchema(2),
       workspace: { type: 'string', enum: [...WORKSPACE_MODES_V2] },
     },
     additionalProperties: false,
@@ -624,21 +624,21 @@ function sharedSectionProperties(connectorVersion: 1 | 2): JsonSchemaFragment {
   };
 }
 
-/** `kortix_version: 1` body. */
+/** `zed_version: 1` body. */
 export function buildManifestV1Schema(): JsonSchemaFragment {
   return {
     $schema: DRAFT,
-    $id: `${KORTIX_SCHEMA_BASE_URL}/kortix.v1.schema.json`,
-    title: 'Kortix manifest (kortix_version 1)',
+    $id: `${ZED_SCHEMA_BASE_URL}/zed.v1.schema.json`,
+    title: 'Zed manifest (zed_version 1)',
     description:
-      'kortix.toml / kortix.yaml, schema version 1 — `[[agents]]` is a per-agent governance ' +
-      'OVERLAY (connectors/kortix_cli/env grants); absence means an unrestricted default agent ' +
+      'zed.toml / zed.yaml, schema version 1 — `[[agents]]` is a per-agent governance ' +
+      'OVERLAY (connectors/zed_cli/env grants); absence means an unrestricted default agent ' +
       '(adopt-to-govern back-compat). `[[channels]]` is accepted (validated, though dead at ' +
       'runtime — see docs/specs/2026-07-05-agent-first-config-unification.md §1.5).',
     type: 'object',
-    required: ['kortix_version'],
+    required: ['zed_version'],
     properties: {
-      kortix_version: { const: 1 },
+      zed_version: { const: 1 },
       ...sharedSectionProperties(1),
       agents: { type: 'array', items: agentEntryV1Schema() },
       channels: { type: 'array', items: channelSchema() },
@@ -647,24 +647,24 @@ export function buildManifestV1Schema(): JsonSchemaFragment {
   };
 }
 
-/** `kortix_version: 2` body. */
+/** `zed_version: 2` body. */
 export function buildManifestV2Schema(): JsonSchemaFragment {
   return {
     $schema: DRAFT,
-    $id: `${KORTIX_SCHEMA_BASE_URL}/kortix.v2.schema.json`,
-    title: 'Kortix manifest (kortix_version 2)',
+    $id: `${ZED_SCHEMA_BASE_URL}/zed.v2.schema.json`,
+    title: 'Zed manifest (zed_version 2)',
     description:
-      'kortix.yaml, schema version 2 — YAML-only. `agents` is a name→block MAP, ' +
-      'GOVERNANCE ONLY (connectors/secrets/skills/kortix_cli/workspace/enabled); every agent must ' +
+      'zed.yaml, schema version 2 — YAML-only. `agents` is a name→block MAP, ' +
+      'GOVERNANCE ONLY (connectors/secrets/skills/zed_cli/workspace/enabled); every agent must ' +
       'be declared, and OpenCode behavior (description/model/mode/temperature/permission/the ' +
       'prompt itself) lives entirely in that agent’s own native ' +
-      '`.kortix/opencode/agents/<name>.md` frontmatter + body — authoring any of those fields ' +
+      '`.zed/opencode/agents/<name>.md` frontmatter + body — authoring any of those fields ' +
       'here is a hard error. `[[channels]]` is removed outright. See ' +
       'docs/specs/2026-07-05-agent-first-config-unification.md §2.1/§2.2/§2.5.',
     type: 'object',
-    required: ['kortix_version', 'default_agent', 'agents'],
+    required: ['zed_version', 'default_agent', 'agents'],
     properties: {
-      kortix_version: { const: 2 },
+      zed_version: { const: 2 },
       // Cross-field: must resolve to a declared, enabled agent — dynamic,
       // left to the imperative validator.
       default_agent: NON_EMPTY_STRING,
@@ -688,9 +688,9 @@ export function buildManifestV2Schema(): JsonSchemaFragment {
 
 /**
  * The combined document: ONE stable URL that validates a manifest of
- * EITHER known version, dispatched by an `if/then` on `kortix_version`
+ * EITHER known version, dispatched by an `if/then` on `zed_version`
  * (spec ask: "one single validator reference"). Each branch inlines the
- * SAME body a standalone `kortix.v1`/`kortix.v2` document would use (the
+ * SAME body a standalone `zed.v1`/`zed.v2` document would use (the
  * builder functions above are the single source for both), so this document
  * is fully self-contained — no cross-document `$ref` resolution required to
  * validate with it.
@@ -704,37 +704,37 @@ export function buildManifestSchema(): JsonSchemaFragment {
   const { $schema: _s2, $id: _i2, title: _t2, description: _d2, ...v2Body } = v2;
   return {
     $schema: DRAFT,
-    $id: `${KORTIX_SCHEMA_BASE_URL}/kortix.schema.json`,
-    title: 'Kortix manifest',
+    $id: `${ZED_SCHEMA_BASE_URL}/zed.schema.json`,
+    title: 'Zed manifest',
     description:
-      'kortix.toml / kortix.yaml — combined schema covering every published `kortix_version`. ' +
-      'Dispatches to the v1 or v2 shape by `kortix_version`. Prefer this URL when the version is ' +
-      `not known ahead of time; pin \`${KORTIX_SCHEMA_BASE_URL}/kortix.v2.schema.json\` (or v1) ` +
+      'zed.toml / zed.yaml — combined schema covering every published `zed_version`. ' +
+      'Dispatches to the v1 or v2 shape by `zed_version`. Prefer this URL when the version is ' +
+      `not known ahead of time; pin \`${ZED_SCHEMA_BASE_URL}/zed.v2.schema.json\` (or v1) ` +
       'when it is.',
     type: 'object',
-    required: ['kortix_version'],
+    required: ['zed_version'],
     properties: {
-      kortix_version: { type: 'integer', enum: [1, 2] },
+      zed_version: { type: 'integer', enum: [1, 2] },
     },
     allOf: [
-      { if: { properties: { kortix_version: { const: 1 } } }, then: v1Body },
-      { if: { properties: { kortix_version: { const: 2 } } }, then: v2Body },
+      { if: { properties: { zed_version: { const: 1 } } }, then: v1Body },
+      { if: { properties: { zed_version: { const: 2 } } }, then: v2Body },
     ],
   };
 }
 
 /** Precomputed, frozen exports — the single in-code source everything else
- *  (the CLI's `kortix schema` command, the web app's `/schema/*.json`
- *  static files, the kortix-system skill) reads from. */
-export const KORTIX_V1_JSON_SCHEMA: JsonSchemaFragment = buildManifestV1Schema();
-export const KORTIX_V2_JSON_SCHEMA: JsonSchemaFragment = buildManifestV2Schema();
-export const KORTIX_JSON_SCHEMA: JsonSchemaFragment = buildManifestSchema();
+ *  (the CLI's `zed schema` command, the web app's `/schema/*.json`
+ *  static files, the zed-system skill) reads from. */
+export const ZED_V1_JSON_SCHEMA: JsonSchemaFragment = buildManifestV1Schema();
+export const ZED_V2_JSON_SCHEMA: JsonSchemaFragment = buildManifestV2Schema();
+export const ZED_JSON_SCHEMA: JsonSchemaFragment = buildManifestSchema();
 
 /** The one accessor every caller should use — "always return the correct,
- *  fully-valid schema for a given kortix_version." Pass no argument (or
- *  `'combined'`) for the single URL that dispatches on `kortix_version`. */
+ *  fully-valid schema for a given zed_version." Pass no argument (or
+ *  `'combined'`) for the single URL that dispatches on `zed_version`. */
 export function manifestJsonSchema(version: 1 | 2 | 'combined' = 'combined'): JsonSchemaFragment {
-  if (version === 1) return KORTIX_V1_JSON_SCHEMA;
-  if (version === 2) return KORTIX_V2_JSON_SCHEMA;
-  return KORTIX_JSON_SCHEMA;
+  if (version === 1) return ZED_V1_JSON_SCHEMA;
+  if (version === 2) return ZED_V2_JSON_SCHEMA;
+  return ZED_JSON_SCHEMA;
 }

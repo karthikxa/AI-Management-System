@@ -16,7 +16,7 @@ const execFileAsync = promisify(execFile);
 const dirs: string[] = [];
 
 function stageDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'kortix-staging-tar-'));
+  const dir = mkdtempSync(join(tmpdir(), 'zed-staging-tar-'));
   dirs.push(dir);
   return dir;
 }

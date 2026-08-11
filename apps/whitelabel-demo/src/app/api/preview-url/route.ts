@@ -6,7 +6,7 @@
  * an upstream base URL, or runtime coordinates.
  *
  * Wrapper mode authenticates the Lumen session and checks project ownership.
- * Direct mode forwards the caller's Kortix token through the server SDK.
+ * Direct mode forwards the caller's Zed token through the server SDK.
  */
 
 import {
@@ -14,8 +14,8 @@ import {
   appendPreviewToken,
   isProxiableLocalhostUrl,
   type CreatedProjectCliToken,
-} from '@kortix/sdk';
-import { createScopedKortix } from '@kortix/sdk/server';
+} from '@zed/sdk';
+import { createScopedZed } from '@zed/sdk/server';
 import { getRequestSession } from '@/server/auth';
 import { consumeRateLimit } from '@/server/rate-limit';
 import { isOwner, isValidProjectId } from '@/server/users';
@@ -41,9 +41,9 @@ interface PreviewRequest {
 
 function upstreamBase(): string {
   return (
-    process.env.KORTIX_UPSTREAM ??
-    process.env.NEXT_PUBLIC_KORTIX_API_URL ??
-    'https://api.kortix.com/v1'
+    process.env.ZED_UPSTREAM ??
+    process.env.NEXT_PUBLIC_ZED_API_URL ??
+    'https://api.zed.com/v1'
   ).replace(/\/+$/, '');
 }
 
@@ -92,7 +92,7 @@ function parseRequest(body: PreviewRequest): {
 }
 
 export async function POST(req: NextRequest) {
-  const wrapperKey = process.env.KORTIX_API_KEY?.trim() || null;
+  const wrapperKey = process.env.ZED_API_KEY?.trim() || null;
   const appSession = wrapperKey ? getRequestSession(req) : null;
   const directToken = wrapperKey ? null : bearerToken(req);
 
@@ -120,11 +120,11 @@ export async function POST(req: NextRequest) {
   const token = wrapperKey ?? directToken;
   if (!token) return errorResponse(401, 'Not authenticated');
 
-  const kortix = createScopedKortix({
+  const zed = createScopedZed({
     backendUrl: upstreamBase(),
     getToken: async () => token,
   });
-  const session = kortix.session(input.projectId, input.sessionId);
+  const session = zed.session(input.projectId, input.sessionId);
 
   let previewUrl: string | undefined;
   let created: CreatedProjectCliToken;
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
         : session.previewUrl(input.target.port, input.target.path);
     if (!previewUrl) return errorResponse(400, 'Could not resolve preview URL');
 
-    created = await kortix
+    created = await zed
       .project(input.projectId)
       .tokens.create({ name: `lumen-preview-${Date.now()}` });
   } catch (error) {

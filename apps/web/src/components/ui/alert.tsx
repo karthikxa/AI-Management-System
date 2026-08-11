@@ -11,7 +11,7 @@ const alertVariants = cva('w-full rounded-md', {
       destructive:
         'text-destructive bg-popover [&_[data-slot=item-media]_svg]:text-current [&_[data-slot=item-description]]:text-destructive/90',
       warning:
-        'text-kortix-orange   bg-kortix-orange/10 [&_[data-slot=item-media]_svg]:text-current [&_[data-slot=item-description]]:text-kortix-orange/90',
+        'text-zed-orange   bg-zed-orange/10 [&_[data-slot=item-media]_svg]:text-current [&_[data-slot=item-description]]:text-zed-orange/90',
     },
   },
   defaultVariants: {

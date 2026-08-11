@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { useDownloadRestriction } from '@/hooks/billing';
 import { useSandboxProxy } from '@/hooks/use-sandbox-proxy';
 import { PRESENTATION_WITH_MODALS_IFRAME_SANDBOX } from '@/lib/security/iframe-sandbox';
@@ -537,7 +537,7 @@ export function FullScreenPresentationViewer({
                   disabled={isDownloadingPDF || isDownloadingPPTX || isDownloadingGoogleSlides}
                 >
                   {isDownloadingPDF || isDownloadingPPTX || isDownloadingGoogleSlides ? (
-                    <KortixLoader customSize={14} />
+                    <ZedLoader customSize={14} />
                   ) : (
                     <Download className="h-3.5 w-3.5" />
                   )}
@@ -593,7 +593,7 @@ export function FullScreenPresentationViewer({
       <div className="flex min-h-0 flex-1 items-center justify-center bg-zinc-100 p-2 dark:bg-zinc-900">
         {isLoading || !currentSlideData ? (
           <div className="text-center">
-            <KortixLoader size="large" className="mx-auto mb-4" />
+            <ZedLoader size="large" className="mx-auto mb-4" />
             <p className="text-zinc-700 dark:text-zinc-300">
               {retryAttempt > 0
                 ? `Retrying... (attempt ${retryAttempt + 1})`

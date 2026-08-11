@@ -9,22 +9,22 @@ import { extractAgents } from '../projects/agents';
 // merges into the map correctly: v1 wire `env` ↦ v2 `secrets`, deny-by-default
 // omit, and every other governance field preserved.
 
-const YAML = `kortix_version: 2
-default_agent: kortix
+const YAML = `zed_version: 2
+default_agent: zed
 agents:
-  kortix:
+  zed:
     connectors: all
     secrets: all
-    kortix_cli: all
+    zed_cli: all
     skills: all
   scout:
-    kortix_cli: [project.cr.open]
+    zed_cli: [project.cr.open]
     connectors: [github]
     skills: [research]
 `;
 
 function manifest() {
-  return parseManifestString(YAML, 'yaml', 'kortix.yaml');
+  return parseManifestString(YAML, 'yaml', 'zed.yaml');
 }
 
 describe('applyAgentScopeV2 — v2 agents map scope edit', () => {
@@ -35,8 +35,8 @@ describe('applyAgentScopeV2 — v2 agents map scope edit', () => {
     if (!r.ok) return;
     const scout = (r.raw.agents as Record<string, any>).scout;
     expect(scout.connectors).toEqual(['github', 'linear']);
-    // kortix_cli + skills untouched.
-    expect(scout.kortix_cli).toEqual(['project.cr.open']);
+    // zed_cli + skills untouched.
+    expect(scout.zed_cli).toEqual(['project.cr.open']);
     expect(scout.skills).toEqual(['research']);
   });
 
@@ -69,7 +69,7 @@ describe('applyAgentScopeV2 — v2 agents map scope edit', () => {
     expect(scout).not.toHaveProperty('secrets');
     expect(scout).not.toHaveProperty('connectors');
     // Non-scope fields still preserved.
-    expect(scout.kortix_cli).toEqual(['project.cr.open']);
+    expect(scout.zed_cli).toEqual(['project.cr.open']);
   });
 
   test('undeclared agent → notFound (route maps to 404)', () => {
@@ -89,7 +89,7 @@ describe('applyAgentScopeV2 — v2 agents map scope edit', () => {
     const out = serializeManifest(m);
     expect(out).toContain('agents:');
     expect(out).not.toContain('[[agents]]');
-    const m2 = parseManifestString(out, 'yaml', 'kortix.yaml');
+    const m2 = parseManifestString(out, 'yaml', 'zed.yaml');
     const scout = extractAgents(m2).specs.find((s) => s.name === 'scout')!;
     expect(scout.connectors).toEqual(['github', 'linear']);
     // extractAgentsV2 surfaces v2 `secrets` as the unified spec.env field.

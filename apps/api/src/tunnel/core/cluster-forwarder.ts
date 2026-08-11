@@ -1,5 +1,5 @@
 import { and, eq, inArray, lt, sql } from 'drizzle-orm';
-import { tunnelConnections, tunnelRpcForwards } from '@kortix/db';
+import { tunnelConnections, tunnelRpcForwards } from '@zed/db';
 import { TunnelErrorCode, TunnelRelayError } from 'agent-tunnel';
 import { config } from '../../config';
 import { db } from '../../shared/db';
@@ -217,7 +217,7 @@ async function claimPendingForwards(): Promise<ForwardRow[]> {
   const rows = await db.execute<ForwardRow>(sql`
     WITH picked AS (
       SELECT request_id
-      FROM kortix.tunnel_rpc_forwards
+      FROM zed.tunnel_rpc_forwards
       WHERE target_relay_owner_id = ${API_INSTANCE_ID}
         AND status = 'pending'
         AND expires_at > now()
@@ -225,7 +225,7 @@ async function claimPendingForwards(): Promise<ForwardRow[]> {
       LIMIT ${FORWARD_BATCH_SIZE}
       FOR UPDATE SKIP LOCKED
     )
-    UPDATE kortix.tunnel_rpc_forwards f
+    UPDATE zed.tunnel_rpc_forwards f
     SET status = 'processing', updated_at = now()
     FROM picked
     WHERE f.request_id = picked.request_id

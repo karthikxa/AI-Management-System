@@ -11,5 +11,5 @@ set statement_timeout = '30s';
 -- own DEFAULT is '[]', a valid jsonb array), so this completes near-instantly
 -- regardless of table size.
 
-ALTER TABLE "kortix"."project_llm_routing_policies"
+ALTER TABLE "zed"."project_llm_routing_policies"
   VALIDATE CONSTRAINT "project_llm_routing_policies_disabled_models_array_check";

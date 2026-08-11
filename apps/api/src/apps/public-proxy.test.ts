@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
-process.env.INTERNAL_KORTIX_ENV = 'dev';
-process.env.KORTIX_APPS_BASE_DOMAIN = 'apps.kortix.com';
-process.env.KORTIX_APPS_ALLOW_LOCAL_EDGE = 'true';
+process.env.INTERNAL_ZED_ENV = 'dev';
+process.env.ZED_APPS_BASE_DOMAIN = 'apps.zed.com';
+process.env.ZED_APPS_ALLOW_LOCAL_EDGE = 'true';
 
 const {
   appPublicUnavailableResponse,
@@ -23,7 +23,7 @@ const { createAppAccessToken } = await import('./access');
 
 describe('Apps public edge', () => {
   test('public Apps bypass browser authentication', async () => {
-    const request = new Request('https://dev-public-aaaaaaaaaaaaaaaa.apps.kortix.com/asset.js');
+    const request = new Request('https://dev-public-aaaaaaaaaaaaaaaa.apps.zed.com/asset.js');
     const response = await authorizeAppRequest(request, new URL(request.url), {
       appId: '11111111-1111-4111-8111-111111111111',
       accountId: '99999999-9999-4999-8999-999999999999',
@@ -39,7 +39,7 @@ describe('Apps public edge', () => {
     expect(response).toBeNull();
   });
 
-  test('requires Kortix access by default and exchanges a scoped link into a host-only cookie', async () => {
+  test('requires Zed access by default and exchanges a scoped link into a host-only cookie', async () => {
     const app = {
       appId: '11111111-1111-4111-8111-111111111111',
       accountId: '99999999-9999-4999-8999-999999999999',
@@ -52,45 +52,45 @@ describe('Apps public edge', () => {
       updatedAt: new Date('2026-08-07T19:00:00.000Z'),
     };
     const denied = await authorizeAppRequest(
-      new Request('https://dev-private-aaaaaaaaaaaaaaaa.apps.kortix.com/', {
+      new Request('https://dev-private-aaaaaaaaaaaaaaaa.apps.zed.com/', {
         headers: { accept: 'text/html' },
       }),
-      new URL('https://dev-private-aaaaaaaaaaaaaaaa.apps.kortix.com/'),
+      new URL('https://dev-private-aaaaaaaaaaaaaaaa.apps.zed.com/'),
       app,
     );
     expect(denied?.status).toBe(401);
-    expect(await denied?.text()).toContain('Continue with Kortix');
+    expect(await denied?.text()).toContain('Continue with Zed');
 
     const token = createAppAccessToken({
       appId: app.appId,
-      kind: 'kortix',
+      kind: 'zed',
       userId: '33333333-3333-4333-8333-333333333333',
       revision: app.accessRevision,
       expiresAt: new Date(Date.now() + 60_000),
     });
-    const url = new URL(`https://dev-private-aaaaaaaaaaaaaaaa.apps.kortix.com/path?__kortix_access=${token}`);
+    const url = new URL(`https://dev-private-aaaaaaaaaaaaaaaa.apps.zed.com/path?__zed_access=${token}`);
     const exchanged = await authorizeAppRequest(new Request(url), url, app, async () => true);
     expect(exchanged?.status).toBe(303);
     expect(exchanged?.headers.get('location')).toBe('/path');
-    expect(exchanged?.headers.get('set-cookie')).toContain('__Host-kortix_app_access=');
+    expect(exchanged?.headers.get('set-cookie')).toContain('__Host-zed_app_access=');
     expect(exchanged?.headers.get('set-cookie')).not.toContain('Domain=');
 
     const cookie = exchanged!.headers.get('set-cookie')!.split(';', 1)[0]!;
     const asset = await authorizeAppRequest(
-      new Request('https://dev-private-aaaaaaaaaaaaaaaa.apps.kortix.com/assets/app.js', {
+      new Request('https://dev-private-aaaaaaaaaaaaaaaa.apps.zed.com/assets/app.js', {
         headers: { cookie },
       }),
-      new URL('https://dev-private-aaaaaaaaaaaaaaaa.apps.kortix.com/assets/app.js'),
+      new URL('https://dev-private-aaaaaaaaaaaaaaaa.apps.zed.com/assets/app.js'),
       { ...app, updatedAt: new Date('2026-08-07T19:01:00.000Z') },
       async () => true,
     );
     expect(asset).toBeNull();
 
     const revoked = await authorizeAppRequest(
-      new Request('https://dev-private-aaaaaaaaaaaaaaaa.apps.kortix.com/assets/app.js', {
+      new Request('https://dev-private-aaaaaaaaaaaaaaaa.apps.zed.com/assets/app.js', {
         headers: { cookie },
       }),
-      new URL('https://dev-private-aaaaaaaaaaaaaaaa.apps.kortix.com/assets/app.js'),
+      new URL('https://dev-private-aaaaaaaaaaaaaaaa.apps.zed.com/assets/app.js'),
       { ...app, accessRevision: 8 },
       async () => true,
     );
@@ -111,12 +111,12 @@ describe('Apps public edge', () => {
     };
     const token = createAppAccessToken({
       appId: app.appId,
-      kind: 'kortix',
+      kind: 'zed',
       userId: app.createdBy,
       revision: app.accessRevision,
       expiresAt: new Date(Date.now() + 60_000),
     });
-    const url = new URL(`http://aaaaaaaaaaaaaaaa.apps.localhost:8008/?__kortix_access=${token}`);
+    const url = new URL(`http://aaaaaaaaaaaaaaaa.apps.localhost:8008/?__zed_access=${token}`);
     const response = await authorizeAppRequest(
       new Request(url),
       url,
@@ -125,14 +125,14 @@ describe('Apps public edge', () => {
     );
 
     expect(response?.status).toBe(303);
-    expect(response?.headers.get('set-cookie')).toStartWith('kortix_app_access=');
+    expect(response?.headers.get('set-cookie')).toStartWith('zed_app_access=');
     expect(response?.headers.get('set-cookie')).toContain('; Secure;');
     expect(response?.headers.get('set-cookie')).toContain('; SameSite=None; Partitioned');
   });
 
   test('preserves the requested deep path through the password form', async () => {
     const request = new Request(
-      'https://dev-password-aaaaaaaaaaaaaaaa.apps.kortix.com/reports/weekly?team=core',
+      'https://dev-password-aaaaaaaaaaaaaaaa.apps.zed.com/reports/weekly?team=core',
       { headers: { accept: 'text/html' } },
     );
     const response = await authorizeAppRequest(request, new URL(request.url), {
@@ -155,7 +155,7 @@ describe('Apps public edge', () => {
 
   test('verifies an App password and never stores it in the browser cookie', async () => {
     const password = 'correct-horse-battery-staple';
-    const request = new Request('https://dev-password-aaaaaaaaaaaaaaaa.apps.kortix.com/_kortix/access/password', {
+    const request = new Request('https://dev-password-aaaaaaaaaaaaaaaa.apps.zed.com/_zed/access/password', {
       method: 'POST',
       headers: { accept: 'text/html', 'content-type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ password, return_to: '/dashboard' }),
@@ -178,7 +178,7 @@ describe('Apps public edge', () => {
 
   test('rejects an incorrect App password without setting a cookie', async () => {
     const password = 'correct-horse-battery-staple';
-    const request = new Request('https://dev-password-aaaaaaaaaaaaaaaa.apps.kortix.com/_kortix/access/password', {
+    const request = new Request('https://dev-password-aaaaaaaaaaaaaaaa.apps.zed.com/_zed/access/password', {
       method: 'POST',
       headers: { accept: 'text/html', 'content-type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ password: 'incorrect-password', return_to: '/reports' }),
@@ -201,7 +201,7 @@ describe('Apps public edge', () => {
     expect(html).toContain('The password is incorrect.');
     expect(html).toContain('name="return_to" value="/reports"');
   });
-  test('revalidates a running row after its Kortix idle deadline passes', () => {
+  test('revalidates a running row after its Zed idle deadline passes', () => {
     const now = new Date('2026-08-07T10:30:00.000Z');
     expect(appRuntimeNeedsWake({
       status: 'running',
@@ -218,25 +218,25 @@ describe('Apps public edge', () => {
     expect(resolveAppHost('aaaaaaaaaaaaaaaa.apps.localhost')).toEqual({
       routeKey: 'aaaaaaaaaaaaaaaa', local: true,
     });
-    expect(resolveAppHost('dev-hello-world-aaaaaaaaaaaaaaaa.apps.kortix.com')).toEqual({
+    expect(resolveAppHost('dev-hello-world-aaaaaaaaaaaaaaaa.apps.zed.com')).toEqual({
       routeKey: 'aaaaaaaaaaaaaaaa', local: false,
     });
-    expect(resolveAppHost('prod-hello-aaaaaaaaaaaaaaaa.apps.kortix.com')).toBeNull();
+    expect(resolveAppHost('prod-hello-aaaaaaaaaaaaaaaa.apps.zed.com')).toBeNull();
     expect(resolveAppHost('anything.example.com')).toBeNull();
   });
 
   test('accepts a valid edge signature and rejects header or path substitution', () => {
     const timestamp = String(Date.now());
-    const host = 'dev-hello-aaaaaaaaaaaaaaaa.apps.kortix.com';
+    const host = 'dev-hello-aaaaaaaaaaaaaaaa.apps.zed.com';
     const secret = 'edge-secret-at-least-sixteen';
-    process.env.KORTIX_APPS_EDGE_SECRET = secret;
+    process.env.ZED_APPS_EDGE_SECRET = secret;
     const signature = appEdgeSignature(timestamp, host, 'POST', '/api/items?q=1', secret);
     const request = new Request(`https://${host}/api/items?q=1`, {
       method: 'POST',
       headers: {
-        'x-kortix-app-host': host,
-        'x-kortix-app-timestamp': timestamp,
-        'x-kortix-app-signature': signature,
+        'x-zed-app-host': host,
+        'x-zed-app-timestamp': timestamp,
+        'x-zed-app-signature': signature,
       },
     });
     expect(verifyAppEdgeRequest(request, new URL(request.url), false)).toBe(true);
@@ -245,15 +245,15 @@ describe('Apps public edge', () => {
 
   test('resolves and verifies the signed public host after the Worker forwards to the API host', () => {
     const timestamp = String(Date.now());
-    const publicHost = 'dev-hello-aaaaaaaaaaaaaaaa.apps.kortix.com';
+    const publicHost = 'dev-hello-aaaaaaaaaaaaaaaa.apps.zed.com';
     const secret = 'edge-secret-at-least-sixteen';
-    process.env.KORTIX_APPS_EDGE_SECRET = secret;
+    process.env.ZED_APPS_EDGE_SECRET = secret;
     const signature = appEdgeSignature(timestamp, publicHost, 'GET', '/assets/app.js?q=1', secret);
-    const request = new Request('https://dev-api.kortix.com/assets/app.js?q=1', {
+    const request = new Request('https://dev-api.zed.com/assets/app.js?q=1', {
       headers: {
-        'x-kortix-app-host': publicHost,
-        'x-kortix-app-timestamp': timestamp,
-        'x-kortix-app-signature': signature,
+        'x-zed-app-host': publicHost,
+        'x-zed-app-timestamp': timestamp,
+        'x-zed-app-signature': signature,
       },
     });
 
@@ -277,10 +277,10 @@ describe('Apps public edge', () => {
   });
 
   test('forces identity encoding because Bun fetch transparently decompresses upstream bodies', () => {
-    const request = new Request('https://dev-app-aaaaaaaaaaaaaaaa.apps.kortix.com/', {
+    const request = new Request('https://dev-app-aaaaaaaaaaaaaaaa.apps.zed.com/', {
       headers: { 'accept-encoding': 'gzip, br, zstd' },
     });
-    const headers = appUpstreamHeaders(request, {}, 'dev-app-aaaaaaaaaaaaaaaa.apps.kortix.com');
+    const headers = appUpstreamHeaders(request, {}, 'dev-app-aaaaaaaaaaaaaaaa.apps.zed.com');
 
     expect(headers.get('accept-encoding')).toBe('identity');
   });
@@ -299,7 +299,7 @@ describe('Apps public edge', () => {
 
   test('renders a stable budget state without exposing account billing details', async () => {
     const browser = appPublicBudgetResponse(
-      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.kortix.com/', {
+      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.zed.com/', {
         headers: { accept: 'text/html' },
       }),
       { name: 'Storefront' },
@@ -312,7 +312,7 @@ describe('Apps public edge', () => {
     expect(html).not.toContain('http-equiv="refresh"');
 
     const machine = appPublicBudgetResponse(
-      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.kortix.com/'),
+      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.zed.com/'),
       { name: 'Storefront' },
     );
     expect(machine.status).toBe(402);
@@ -325,7 +325,7 @@ describe('Apps public edge', () => {
 
   test('renders an auto-refreshing boot page instead of unavailable JSON for browser requests', async () => {
     const response = appPublicUnavailableResponse(
-      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.kortix.com/', {
+      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.zed.com/', {
         headers: { accept: 'text/html' },
       }),
       { name: 'Storefront' },
@@ -342,7 +342,7 @@ describe('Apps public edge', () => {
   });
 
   test('converts only a cold-wake ingress 502 into the branded starting response', async () => {
-    const request = new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.kortix.com/', {
+    const request = new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.zed.com/', {
       headers: { accept: 'text/html' },
     });
 
@@ -375,7 +375,7 @@ describe('Apps public edge', () => {
     expect(appProviderStoppedResponse('daytona', 502, 'no IP address found')).toBe(false);
   });
 
-  test('allows Apps to render inside Kortix while preserving the rest of the upstream CSP', () => {
+  test('allows Apps to render inside Zed while preserving the rest of the upstream CSP', () => {
     const headers = new Headers({
       'x-frame-options': 'DENY',
       'content-security-policy': "default-src 'self'; frame-ancestors 'none'; script-src 'self'",
@@ -386,14 +386,14 @@ describe('Apps public edge', () => {
 
     expect(result.get('x-frame-options')).toBeNull();
     expect(result.get('content-security-policy')).toBe(
-      "default-src 'self'; script-src 'self'; frame-ancestors 'self' https://kortix.com https://*.kortix.com http://localhost:* http://127.0.0.1:*",
+      "default-src 'self'; script-src 'self'; frame-ancestors 'self' https://zed.com https://*.zed.com http://localhost:* http://127.0.0.1:*",
     );
     expect(result.get('content-security-policy-report-only')).toBe("img-src 'self'");
   });
 
   test('renders a branded, auto-refreshing browser page while an App is building', async () => {
     const response = appPublicStatusResponse(
-      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.kortix.com/', {
+      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.zed.com/', {
         headers: { accept: 'text/html' },
       }),
       { name: 'Storefront' },
@@ -426,7 +426,7 @@ describe('Apps public edge', () => {
 
     for (const [status, heading, httpStatus, refreshes] of cases) {
       const response = appPublicStatusResponse(
-        new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.kortix.com/', {
+        new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.zed.com/', {
           headers: { accept: 'text/html' },
         }),
         { name: 'Storefront' },
@@ -444,7 +444,7 @@ describe('Apps public edge', () => {
 
   test('returns machine-readable state to non-browser callers', async () => {
     const response = appPublicStatusResponse(
-      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.kortix.com/'),
+      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.zed.com/'),
       { name: 'Storefront' },
       { status: 'checking' },
     );
@@ -459,7 +459,7 @@ describe('Apps public edge', () => {
 
   test('shows a stable failed state without auto-refreshing forever', async () => {
     const response = appPublicStatusResponse(
-      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.kortix.com/', {
+      new Request('https://dev-store-aaaaaaaaaaaaaaaa.apps.zed.com/', {
         headers: { 'sec-fetch-dest': 'document' },
       }),
       { name: 'Storefront' },

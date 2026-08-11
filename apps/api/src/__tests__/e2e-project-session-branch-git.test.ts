@@ -32,18 +32,18 @@ function gitTransportModuleUrl(): string {
 
 describe('session branch git transport', () => {
   beforeEach(async () => {
-    root = await mkdtemp(join(tmpdir(), 'kortix-session-branch-e2e-'));
-    previousCacheDir = process.env.KORTIX_GIT_CACHE_DIR;
-    previousBranchWorkDir = process.env.KORTIX_GIT_BRANCH_WORK_DIR;
-    process.env.KORTIX_GIT_CACHE_DIR = join(root, 'git-cache');
-    process.env.KORTIX_GIT_BRANCH_WORK_DIR = join(root, 'branch-work');
+    root = await mkdtemp(join(tmpdir(), 'zed-session-branch-e2e-'));
+    previousCacheDir = process.env.ZED_GIT_CACHE_DIR;
+    previousBranchWorkDir = process.env.ZED_GIT_BRANCH_WORK_DIR;
+    process.env.ZED_GIT_CACHE_DIR = join(root, 'git-cache');
+    process.env.ZED_GIT_BRANCH_WORK_DIR = join(root, 'branch-work');
   });
 
   afterEach(async () => {
-    if (previousCacheDir === undefined) delete process.env.KORTIX_GIT_CACHE_DIR;
-    else process.env.KORTIX_GIT_CACHE_DIR = previousCacheDir;
-    if (previousBranchWorkDir === undefined) delete process.env.KORTIX_GIT_BRANCH_WORK_DIR;
-    else process.env.KORTIX_GIT_BRANCH_WORK_DIR = previousBranchWorkDir;
+    if (previousCacheDir === undefined) delete process.env.ZED_GIT_CACHE_DIR;
+    else process.env.ZED_GIT_CACHE_DIR = previousCacheDir;
+    if (previousBranchWorkDir === undefined) delete process.env.ZED_GIT_BRANCH_WORK_DIR;
+    else process.env.ZED_GIT_BRANCH_WORK_DIR = previousBranchWorkDir;
     if (root) await rm(root, { recursive: true, force: true });
   });
 
@@ -58,13 +58,13 @@ describe('session branch git transport', () => {
         const method = init.method ?? 'GET';
         const body = init.body ? JSON.parse(String(init.body)) : null;
         requests.push({ url, method, body });
-        if (method === 'GET' && url.endsWith('/repos/kortix-ai/suna/git/ref/heads%2Fmain')) {
+        if (method === 'GET' && url.endsWith('/repos/zed-ai/suna/git/ref/heads%2Fmain')) {
           return new Response(JSON.stringify({ object: { sha: '${baseSha}', type: 'commit' } }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
           });
         }
-        if (method === 'POST' && url.endsWith('/repos/kortix-ai/suna/git/refs')) {
+        if (method === 'POST' && url.endsWith('/repos/zed-ai/suna/git/refs')) {
           return new Response(JSON.stringify({ ok: true }), {
             status: 201,
             headers: { 'Content-Type': 'application/json' },
@@ -76,9 +76,9 @@ describe('session branch git transport', () => {
       await createRemoteSessionBranch(
         {
           projectId: '00000000-0000-4000-a000-000000000998',
-          repoUrl: 'https://github.com/kortix-ai/suna.git',
+          repoUrl: 'https://github.com/zed-ai/suna.git',
           defaultBranch: 'main',
-          manifestPath: 'kortix.yaml',
+          manifestPath: 'zed.yaml',
           gitAuthToken: 'github-token',
         },
         'session-branch-002',
@@ -87,8 +87,8 @@ describe('session branch git transport', () => {
       process.stdout.write(JSON.stringify({
         methods: requests.map((request) => request.method),
         body: requests[1]?.body ?? null,
-        branchWorkExists: existsSync(process.env.KORTIX_GIT_BRANCH_WORK_DIR),
-        cacheExists: existsSync(process.env.KORTIX_GIT_CACHE_DIR),
+        branchWorkExists: existsSync(process.env.ZED_GIT_BRANCH_WORK_DIR),
+        cacheExists: existsSync(process.env.ZED_GIT_CACHE_DIR),
       }));
     `));
 
@@ -107,8 +107,8 @@ describe('session branch git transport', () => {
     mkdirSync(source, { recursive: true });
 
     git(['init', '-b', 'main'], source);
-    git(['config', 'user.email', 'e2e@kortix.test'], source);
-    git(['config', 'user.name', 'Kortix E2E'], source);
+    git(['config', 'user.email', 'e2e@zed.test'], source);
+    git(['config', 'user.name', 'Zed E2E'], source);
     writeFileSync(join(source, 'README.md'), '# test repo\n', 'utf8');
     git(['add', 'README.md'], source);
     git(['commit', '-m', 'initial'], source);
@@ -124,7 +124,7 @@ describe('session branch git transport', () => {
           projectId: '00000000-0000-4000-a000-000000000999',
           repoUrl: ${JSON.stringify(origin)},
           defaultBranch: 'main',
-          manifestPath: 'kortix.yaml',
+          manifestPath: 'zed.yaml',
         },
         'session-branch-001',
         'main',
@@ -135,7 +135,7 @@ describe('session branch git transport', () => {
     const sessionSha = git(['--git-dir', origin, 'rev-parse', 'refs/heads/session-branch-001']);
     expect(sessionSha).toBe(baseSha);
 
-    const cacheDir = process.env.KORTIX_GIT_CACHE_DIR!;
+    const cacheDir = process.env.ZED_GIT_CACHE_DIR!;
     const cacheEntries = existsSync(cacheDir) ? readdirSync(cacheDir) : [];
     expect(cacheEntries).toEqual([]);
   });

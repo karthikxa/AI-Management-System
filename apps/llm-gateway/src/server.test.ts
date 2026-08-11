@@ -2,8 +2,8 @@ import { describe, expect, test } from 'bun:test';
 
 // `config` (imported transitively by `./server`) reads required env vars at
 // module-load time — set them before the dynamic import below so this file
-// can run standalone without a real Kortix API / gateway token.
-process.env.KORTIX_API_URL = process.env.KORTIX_API_URL ?? 'https://api.test.invalid';
+// can run standalone without a real Zed API / gateway token.
+process.env.ZED_API_URL = process.env.ZED_API_URL ?? 'https://api.test.invalid';
 process.env.GATEWAY_INTERNAL_TOKEN = process.env.GATEWAY_INTERNAL_TOKEN ?? 'test-internal-token';
 
 const { buildServer } = await import('./server');

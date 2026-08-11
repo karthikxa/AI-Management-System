@@ -1,9 +1,9 @@
-# Kortix-as-a-Backend — depth plan
+# Zed-as-a-Backend — depth plan
 
 > **Historical and superseded.** This plan records a 2026-07-27 implementation
 > state. Customer-reference usage attribution and per-reference limits no
 > longer exist. Use
-> [Drive Kortix as a Backend](./KORTIX_AS_A_BACKEND_GUIDE.md) for the current
+> [Drive Zed as a Backend](./ZED_AS_A_BACKEND_GUIDE.md) for the current
 > contract.
 
 Written 2026-07-27, after a 7-lens adversarial audit (63 agents, 45 findings that
@@ -60,7 +60,7 @@ on a measurement. The dispatch run cost two minutes and settled it.
 ### What I got wrong, and why it matters
 
 1. **"26 failures in `e2e-project-session-contract.test.ts`"** — that was my
-   local `KORTIX_BILLING_INTERNAL_ENABLED=true`. With CI's value the file is
+   local `ZED_BILLING_INTERNAL_ENABLED=true`. With CI's value the file is
    **44 pass / 0 fail**. I asserted it repeatedly and built a plan section on it.
 2. **"93 failures across the suite"** — I ran `bun test src`, which includes
    integration and live files that `scripts/test.sh` deliberately excludes.
@@ -83,7 +83,7 @@ priority list.
 
   | Hypothesis | Verdict |
   | --- | --- |
-  | The `KORTIX_BILLING_INTERNAL_ENABLED` flag | **No** — fails under CI's value too |
+  | The `ZED_BILLING_INTERNAL_ENABLED` flag | **No** — fails under CI's value too |
   | Incomplete `mock.module` (the sibling-file failure mode) | **No** — stubbing `projects/lib/secret-grant` fully changed nothing |
   | Wrong sandbox id in the fixture | **No** — every prompt test uses `TEST_SANDBOX_ID`, and one env-sync test on that id PASSES |
   | The retry classifier mis-ranks a 401 as transient | **No** — `isRetryableEnvSyncFailure` (preview.ts:71) matches only 502/503/504, then returns `false` for any `env sync failed:` prefix |
@@ -114,7 +114,7 @@ priority list.
    same `end_user_ref`, both running the baked prompt. Fix: `retryable: false`
    on the inline path.
 3. **Three connector-alias forms across three gates** (`db-deps.ts:845`,
-   `router.ts:380`, `sessions.ts:880`). A manifest grant of `kortix_email` makes
+   `router.ts:380`, `sessions.ts:880`). A manifest grant of `zed_email` makes
    the connector invisible in the catalog; a grant of `email` makes it visible
    and then 403s on call. Canonicalize once at grant construction. Folds in the
    duplicate-alias raw-Postgres 500.
@@ -142,7 +142,7 @@ Remaining, in order of what teaches the most:
 5. **Idempotency** — demonstrate that replaying a key under a different
    end-user is refused, which is the safety property wrapper authors most often
    get wrong.
-6. **Per-end-user concurrency cap** — currently `KORTIX_BACKEND_PER_ORIGIN_SESSION_LIMIT`
+6. **Per-end-user concurrency cap** — currently `ZED_BACKEND_PER_ORIGIN_SESSION_LIMIT`
    defaults to 0 (off) and is set in no chart, so it is dark everywhere.
 
 ## Shipped since this plan was written
@@ -150,7 +150,7 @@ Remaining, in order of what teaches the most:
 - **Session list filters by `end_user_ref`** (indexed, server-side), so a wrapper
   no longer pulls the whole project to find one customer — and the demo scopes
   its list to the signed-in end-user rather than showing everyone's.
-- **Mid-session agent switch re-mints the token grant.** Connectors and Kortix
+- **Mid-session agent switch re-mints the token grant.** Connectors and Zed
   CLI actions now follow the agent that actually runs; secrets keep refusing the
   switch, for the reason that difference exists (secrets are already in the box).
 - **Connector tokens are revoked when their sandbox is gone.** They had no

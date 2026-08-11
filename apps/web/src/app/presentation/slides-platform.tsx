@@ -2,19 +2,19 @@
 
 import { useTranslations } from 'next-intl';
 /**
- * The Kortix deck — the complete story end to end, styled 1:1 with the marketing
+ * The Zed deck — the complete story end to end, styled 1:1 with the marketing
  * site (home + /developers + /enterprise). Same components and vocabulary:
  * marketing Button/Badge, mono-uppercase eyebrows, `font-medium tracking-tight`
  * titles, `rounded-sm` thin-border cards on bg-card, lucide icon features, code
- * windows, KortixGrid / KortixLetterField motifs, KortixAsterisk bullets.
+ * windows, ZedGrid / ZedLetterField motifs, ZedAsterisk bullets.
  */
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/marketing/button';
-import KortixGrid from '@/components/ui/marketing/gridder';
-import { KortixLetterField } from '@/components/ui/marketing/kortix-letter-field';
-import { KORTIX_CLI_INSTALL_COMMAND } from '@/lib/kortix-cli';
+import ZedGrid from '@/components/ui/marketing/gridder';
+import { ZedLetterField } from '@/components/ui/marketing/zed-letter-field';
+import { ZED_CLI_INSTALL_COMMAND } from '@/lib/zed-cli';
 import { cn } from '@/lib/utils';
 import {
   ArrowRightIcon as ArrowRight,
@@ -90,7 +90,7 @@ function IconFeature({
 function LetterBg({ seed = 3382 }: { seed?: number }) {
   return (
     <div className="pointer-events-none absolute inset-0 z-0 mask-y-to-95%" aria-hidden>
-      <KortixLetterField seed={seed} />
+      <ZedLetterField seed={seed} />
     </div>
   );
 }
@@ -102,7 +102,7 @@ function InstallChip() {
       <div className="flex min-w-0 flex-1 gap-3 overflow-hidden">
         <span className="text-foreground shrink-0 font-mono text-sm">$ </span>
         <span className="text-foreground min-w-0 truncate font-mono text-sm">
-          {KORTIX_CLI_INSTALL_COMMAND}
+          {ZED_CLI_INSTALL_COMMAND}
         </span>
       </div>
       <Copy className="text-muted-foreground size-4 shrink-0" />
@@ -163,7 +163,7 @@ export function useSlides(): SlideDef[] {
           <LetterBg seed={3382} />
           <div className="relative z-10 grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="space-y-6">
-              <KortixLogo variant="logomark" size={28} className="text-foreground" />
+              <ZedLogo variant="logomark" size={28} className="text-foreground" />
               <Badge variant="update" className="rounded">
                 {tI18nHardcoded.raw(
                   'autoAppPresentationSlidesPlatformJsxTextAutonomousCompanyOperatingSystem23597d7f',
@@ -200,7 +200,7 @@ export function useSlides(): SlideDef[] {
                 </Button>
               </div>
             </div>
-            <Shot src={`${SHOT}/01-command-center.png`} alt="The Kortix command center" />
+            <Shot src={`${SHOT}/01-command-center.png`} alt="The Zed command center" />
           </div>
         </Slide>
       ),
@@ -301,7 +301,7 @@ export function useSlides(): SlideDef[] {
                 'autoAppPresentationSlidesPlatformJsxAttrLabelTheRefusal713e5d74',
               )}
               title={tI18nHardcoded.raw(
-                'autoAppPresentationSlidesPlatformJsxAttrTitleKortixIsThedce2722e',
+                'autoAppPresentationSlidesPlatformJsxAttrTitleZedIsThedce2722e',
               )}
               body={tI18nHardcoded.raw(
                 'autoAppPresentationSlidesPlatformJsxAttrBodyAToyOr30c5182d',
@@ -329,7 +329,7 @@ export function useSlides(): SlideDef[] {
                 )}
                 <br />
                 {tI18nHardcoded.raw(
-                  'autoAppPresentationSlidesPlatformJsxTextKortixGivesYouA2de643b9',
+                  'autoAppPresentationSlidesPlatformJsxTextZedGivesYouA2de643b9',
                 )}
                 <Dim>
                   {tI18nHardcoded.raw(
@@ -394,7 +394,7 @@ export function useSlides(): SlideDef[] {
               </h2>
               <Lead>
                 {tI18nHardcoded.raw(
-                  'autoAppPresentationSlidesPlatformJsxTextAKortixProjectIsa8e122a4',
+                  'autoAppPresentationSlidesPlatformJsxTextAZedProjectIsa8e122a4',
                 )}
                 <em>is</em>{' '}
                 {tI18nHardcoded.raw(
@@ -404,13 +404,13 @@ export function useSlides(): SlideDef[] {
               <Bullets
                 items={[
                   <>
-                    <Mono>kortix.yaml</Mono>{' '}
+                    <Mono>zed.yaml</Mono>{' '}
                     {tI18nHardcoded.raw(
-                      'autoAppPresentationSlidesPlatformJsxTextTheKortixLayerSandboxca190b4e',
+                      'autoAppPresentationSlidesPlatformJsxTextTheZedLayerSandboxca190b4e',
                     )}
                   </>,
                   <>
-                    <Mono>.kortix/opencode/</Mono>{' '}
+                    <Mono>.zed/opencode/</Mono>{' '}
                     {tI18nHardcoded.raw(
                       'autoAppPresentationSlidesPlatformJsxTextTheRuntimeAgentsSkillscceeb26a',
                     )}
@@ -421,9 +421,9 @@ export function useSlides(): SlideDef[] {
               />
             </div>
             <Terminal
-              title="kortix.yaml"
+              title="zed.yaml"
               lines={[
-                { kind: 'comment', text: 'kortix_version: 2' },
+                { kind: 'comment', text: 'zed_version: 2' },
                 { kind: 'out', text: '' },
                 { kind: 'out', text: 'project:' },
                 { kind: 'out', text: '  name: acme' },
@@ -461,7 +461,7 @@ export function useSlides(): SlideDef[] {
           />
           <div className="mt-12 flex flex-wrap items-stretch gap-3">
             {[
-              ['project', 'git repo', 'kortix.yaml + config'],
+              ['project', 'git repo', 'zed.yaml + config'],
               ['session', 'isolated sandbox', 'its own branch'],
               ['agent', 'OpenCode', 'works · commits · pushes'],
               ['change request', 'you review', 'approve to merge'],
@@ -526,12 +526,12 @@ export function useSlides(): SlideDef[] {
               [
                 '01',
                 'Boot',
-                'A sandbox boots from one generic snapshot already running the kortix-sandbox-agent-server daemon.',
+                'A sandbox boots from one generic snapshot already running the zed-sandbox-agent-server daemon.',
               ],
               [
                 '02',
                 'Materialize',
-                'The daemon clones the repo, cuts a fresh branch, and reads kortix.yaml + OpenCode config into a live runtime.',
+                'The daemon clones the repo, cuts a fresh branch, and reads zed.yaml + OpenCode config into a live runtime.',
               ],
               [
                 '03',
@@ -646,7 +646,7 @@ export function useSlides(): SlideDef[] {
                 ))}
               </div>
             </div>
-            <Shot src={`${SHOT}/01-command-center.png`} alt="The Kortix command center" />
+            <Shot src={`${SHOT}/01-command-center.png`} alt="The Zed command center" />
           </div>
         </Slide>
       ),
@@ -750,7 +750,7 @@ export function useSlides(): SlideDef[] {
               <Bullets
                 items={[
                   'Connector credentials never enter a sandbox',
-                  'Agents act through a single scoped Kortix token',
+                  'Agents act through a single scoped Zed token',
                   'Allow, ask-first, or block — connector action rules you control',
                 ]}
               />
@@ -768,7 +768,7 @@ export function useSlides(): SlideDef[] {
               </div>
               <ArrowRight className="text-muted-foreground/50 size-5 rotate-90" />
               <div className="bg-foreground text-background rounded-sm px-7 py-4 font-mono text-lg font-medium">
-                {tI18nHardcoded.raw('autoAppPresentationSlidesPlatformJsxText1KORTIXTOKEN7cd8465b')}
+                {tI18nHardcoded.raw('autoAppPresentationSlidesPlatformJsxText1ZEDTOKEN7cd8465b')}
               </div>
               <ArrowRight className="text-muted-foreground/50 size-5 rotate-90" />
               <Pill>
@@ -1273,7 +1273,7 @@ export function useSlides(): SlideDef[] {
               <IconFeature
                 icon={GitBranch}
                 title={tI18nHardcoded.raw(
-                  'autoAppPresentationSlidesPlatformJsxAttrTitleKortixInitShip24f086f1',
+                  'autoAppPresentationSlidesPlatformJsxAttrTitleZedInitShip24f086f1',
                 )}
                 body={tI18nHardcoded.raw(
                   'autoAppPresentationSlidesPlatformJsxAttrBodyScaffoldAProject47c3905e',
@@ -1308,15 +1308,15 @@ export function useSlides(): SlideDef[] {
               'autoAppPresentationSlidesPlatformJsxAttrTitleSameProductEverywhere41c9494d',
             )}
             lead={tI18nHardcoded.raw(
-              'autoAppPresentationSlidesPlatformJsxAttrLeadRunKortixOn275c3486',
+              'autoAppPresentationSlidesPlatformJsxAttrLeadRunZedOn275c3486',
             )}
           />
           <div className="mt-10 grid items-center gap-6 lg:grid-cols-2">
             <Terminal
               title="self-host"
               lines={[
-                { kind: 'cmd', text: 'kortix self-host start' },
-                { kind: 'cmd', text: 'kortix hosts use local   # ↔  cloud' },
+                { kind: 'cmd', text: 'zed self-host start' },
+                { kind: 'cmd', text: 'zed hosts use local   # ↔  cloud' },
                 { kind: 'comment', text: '# your data, your models, your keys' },
               ]}
             />
@@ -1440,7 +1440,7 @@ export function useSlides(): SlideDef[] {
                 [
                   Code2,
                   'Developers',
-                  'A managed cloud for your OpenCode agents. kortix init, kortix ship. Bring the subscription you already pay for; every PR gets a preview you can click through.',
+                  'A managed cloud for your OpenCode agents. zed init, zed ship. Bring the subscription you already pay for; every PR gets a preview you can click through.',
                 ],
                 [
                   Users,
@@ -1536,10 +1536,10 @@ export function useSlides(): SlideDef[] {
       node: (
         <Slide className="overflow-hidden">
           <div className="pointer-events-none absolute inset-0 z-0 mask-y-from-80% mask-x-from-90% opacity-60">
-            <KortixGrid count={58} seed={4228} />
+            <ZedGrid count={58} seed={4228} />
           </div>
           <div className="relative z-10 space-y-8">
-            <KortixLogo variant="symbol" size={40} className="text-foreground" />
+            <ZedLogo variant="symbol" size={40} className="text-foreground" />
             <h2 className="text-foreground max-w-4xl text-4xl leading-[1.12] font-medium tracking-tight sm:text-5xl">
               {tI18nHardcoded.raw(
                 'autoAppPresentationSlidesPlatformJsxTextWeReBuildingTheda31c271',
@@ -1564,7 +1564,7 @@ export function useSlides(): SlideDef[] {
                   )}
                 </Link>
               </Button>
-              <span className="text-muted-foreground ml-1 font-mono text-sm">kortix.com</span>
+              <span className="text-muted-foreground ml-1 font-mono text-sm">zed.com</span>
             </div>
             <p className="text-muted-foreground font-mono text-xs tracking-wider">
               {tI18nHardcoded.raw(

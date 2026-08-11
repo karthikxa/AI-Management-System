@@ -13,7 +13,7 @@ import type {
 // Mock the notification sink BEFORE importing the module under test, so
 // `handle-event.ts`'s `import { infoToast, notify* } from '../../platform/ui'`
 // resolves to these spies instead of the real (host-configured) sinks. Same
-// mock-then-dynamic-import pattern as `use-kortix-master.test.ts`.
+// mock-then-dynamic-import pattern as `use-zed-master.test.ts`.
 interface ToastCall {
   level: string;
   message: string;

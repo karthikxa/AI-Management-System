@@ -137,7 +137,7 @@ describe('session sharing — default private; team-wide or select-members', () 
     expect(isSessionVisibleTo('private', ALICE, [], { userId: BOB, groupIds: [] }, INTERACTIVE)).toBe(false);
   });
 
-  // ── Kortix-as-a-Backend isolation ──
+  // ── Zed-as-a-Backend isolation ──
   // Every KaaB session is created by the SAME wrapper credential, so created_by
   // is identical for every end-user. The ownership short-circuit above therefore
   // makes every backend session look owned by whoever asks — which, for a token
@@ -178,7 +178,7 @@ describe('session sharing — default private; team-wide or select-members', () 
 
   test('interactive sessions are untouched — a sandbox token still lists its siblings', () => {
     // created_by genuinely IS one person for interactive sessions, so narrowing
-    // here would break `kortix sessions ls` from inside a normal sandbox.
+    // here would break `zed sessions ls` from inside a normal sandbox.
     expect(
       isSessionVisibleTo('private', ALICE, [], { userId: ALICE, groupIds: [] }, {
         origin: 'interactive',

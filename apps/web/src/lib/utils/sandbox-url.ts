@@ -1,10 +1,10 @@
 /**
  * Sandbox URL detection / rewriting / proxy utilities.
  *
- * Moved into the SDK — this is a thin re-export of `@kortix/sdk`,
+ * Moved into the SDK — this is a thin re-export of `@zed/sdk`,
  * the single source of truth, verified against the current Sandbox Agent
  * Server's `/proxy/:port` + `/web-proxy` surface. Import from here or directly
- * from `@kortix/sdk`.
+ * from `@zed/sdk`.
  */
 export {
   buildWebProxyUrl,
@@ -25,4 +25,4 @@ export {
   rewriteLocalhostUrl,
   toInternalUrl,
   type DetectedLocalhostUrl,
-} from '@kortix/sdk';
+} from '@zed/sdk';

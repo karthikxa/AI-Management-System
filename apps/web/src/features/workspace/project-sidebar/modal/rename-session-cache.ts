@@ -1,4 +1,4 @@
-import type { ProjectSession } from '@kortix/sdk';
+import type { ProjectSession } from '@zed/sdk';
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
 
 /**

@@ -59,7 +59,7 @@ test('platform-client barrel exports the canonical SANDBOX_PORTS', () => {
     DESKTOP_HTTPS: '6081',
     PRESENTATION_VIEWER: '3210',
     STATIC_FILE_SERVER: '3211',
-    KORTIX_MASTER: '8000',
+    ZED_MASTER: '8000',
     BROWSER_STREAM: '9223',
     BROWSER_VIEWER: '9224',
     SSH: '22',

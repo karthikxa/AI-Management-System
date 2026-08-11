@@ -17,7 +17,7 @@ import {
   resolveBranchAheadState,
 } from '../git';
 import { createRoute, z } from '@hono/zod-openapi';
-import { changeRequests, projectSessions, sessionSandboxes } from '@kortix/db';
+import { changeRequests, projectSessions, sessionSandboxes } from '@zed/db';
 import { and, desc, eq } from 'drizzle-orm';
 import {
   assertAgentSessionWorkspaceAllowsRepository,
@@ -27,7 +27,7 @@ import {
 } from '../lib/access';
 import { assertAgentScope } from '../../iam/agent-scope';
 import { PROJECT_ACTIONS } from '../../iam';
-import { callerKortixSessionId } from '../lib/caller-session';
+import { callerZedSessionId } from '../lib/caller-session';
 import { sandboxTokenMayActOnSession } from '../lib/sandbox-token-session';
 import { AnyObject, ChangeRequestSchema, SessionStartResultSchema, projectsApp } from '../lib/app';
 import { withProjectGitAuth } from '../lib/git';
@@ -230,10 +230,10 @@ projectsApp.openapi(
 );
 
 // ─── Change Requests ────────────────────────────────────────────────────────
-// Kortix-native PR layer. The CR is metadata stored alongside the project;
+// Zed-native PR layer. The CR is metadata stored alongside the project;
 // the underlying merge runs through ./git.ts which works against any git
 // backend (GitHub, GitLab, plain git) — so the merge UI lives in
-// Kortix even when the repo is hosted elsewhere.
+// Zed even when the repo is hosted elsewhere.
 //
 // v1 is intentionally minimal: open / merged / closed, head_ref + base_ref,
 // head/base commit SHAs auto-refreshed on read. No reviews, no comments,
@@ -429,7 +429,7 @@ projectsApp.openapi(
 //
 // NOTE (2026-05-29): currently UNUSED by the UI. The shipped change-request
 // flow lets the agent commit + open the CR from a single chat prompt instead.
-// Kept (wired through to the daemon /kortix/git/commit-push route) as the
+// Kept (wired through to the daemon /zed/git/commit-push route) as the
 // host-driven primitive for a possible fully-UI flow. Remove together with the
 // daemon route + web client/hook if that direction is dropped.
 
@@ -462,13 +462,13 @@ projectsApp.openapi(
       PROJECT_ACTIONS.PROJECT_GITOPS_PUSH,
     );
 
-    // The capability check above is PROJECT-wide, and in Kortix-as-a-Backend the
+    // The capability check above is PROJECT-wide, and in Zed-as-a-Backend the
     // sandbox's own token holds it — every KaaB session shares the wrapper's
     // credential, so "may push in this project" is true for every end-user's
     // agent. Without this, end-user A's sandbox could commit and push end-user
     // B's working tree to B's branch. A sandbox token acts for exactly one
     // session (sandbox_id == session_id by construction); bind it to that one.
-    const callerSandboxSessionId = callerKortixSessionId(c);
+    const callerSandboxSessionId = callerZedSessionId(c);
     if (
       callerSandboxSessionId !== null &&
       !sandboxTokenMayActOnSession(callerSandboxSessionId, sessionId)
@@ -503,8 +503,8 @@ projectsApp.openapi(
     }
 
     // resolveEndpoint already injects the sandbox service key as a Bearer token
-    // (and the Daytona preview headers), which the daemon's /kortix/git route
-    // validates against KORTIX_TOKEN — same contract as /kortix/env.
+    // (and the Daytona preview headers), which the daemon's /zed/git route
+    // validates against ZED_TOKEN — same contract as /zed/env.
     let endpoint: { url: string; headers: Record<string, string> };
     try {
       endpoint = await getProvider(providerName).resolveEndpoint(row.externalId);
@@ -519,7 +519,7 @@ projectsApp.openapi(
 
     let daemonRes: Response;
     try {
-      daemonRes = await fetch(`${endpoint.url.replace(/\/$/, '')}/kortix/git/commit-push`, {
+      daemonRes = await fetch(`${endpoint.url.replace(/\/$/, '')}/zed/git/commit-push`, {
           method: 'POST',
           headers: endpoint.headers,
           body: JSON.stringify({ message }),

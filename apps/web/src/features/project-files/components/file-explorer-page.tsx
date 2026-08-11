@@ -43,7 +43,7 @@ import { FileHistoryPopoverContent } from './file-history-popover';
 import { FilePreviewModal } from './file-preview-modal';
 import { type FilesRightPanel, requestedFilesRightPanel } from './file-route-state';
 
-const ELEVATED_DIRS = new Set(['.kortix', '.opencode']);
+const ELEVATED_DIRS = new Set(['.zed', '.opencode']);
 
 /**
  * The project-level file explorer. It has no session context — sharing is

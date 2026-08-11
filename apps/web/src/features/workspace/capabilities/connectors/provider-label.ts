@@ -1,4 +1,4 @@
-import type { AdminConnector } from '@kortix/sdk';
+import type { AdminConnector } from '@zed/sdk';
 
 /**
  * Forward-facing provider label — "App" for the 1-click (Pipedream) connectors.

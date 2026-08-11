@@ -28,7 +28,7 @@ export function runSelfHostedSql(sql: string): boolean {
     [
       'compose',
       '--project-name',
-      process.env.E2E_COMPOSE_PROJECT_NAME || 'kortix-default',
+      process.env.E2E_COMPOSE_PROJECT_NAME || 'zed-default',
       '--env-file',
       envFile,
       '-f',
@@ -64,9 +64,9 @@ export function seedSelfHostedProject({
   repoUrl,
 }: SeedSelfHostedProjectOptions): string {
   const projectId = randomUUID();
-  const projectRepoUrl = repoUrl ?? `https://github.com/kortix-ai/sandbox-template-${projectId}.git`;
+  const projectRepoUrl = repoUrl ?? `https://github.com/zed-ai/sandbox-template-${projectId}.git`;
   const sql = `
-insert into kortix.projects (
+insert into zed.projects (
   project_id,
   account_id,
   name,
@@ -81,12 +81,12 @@ insert into kortix.projects (
   '${escapeSql(name)}',
   '${escapeSql(projectRepoUrl)}',
   'main',
-  'kortix.yaml',
+  'zed.yaml',
   'active',
   '{"self_host_e2e":true}'::jsonb
 );
 
-insert into kortix.project_members (
+insert into zed.project_members (
   account_id,
   project_id,
   user_id,

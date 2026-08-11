@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# End-to-end test for the Kortix Change Request system.
+# End-to-end test for the Zed Change Request system.
 #
-# Sets up a local bare git repo, registers it as a Kortix project, mints a
+# Sets up a local bare git repo, registers it as a Zed project, mints a
 # user PAT, then drives the CR API through every state. v1 of the CR system
 # is intentionally minimal — no reviews, no comments — so the assertions cover
 # just the core lifecycle:
@@ -20,18 +20,18 @@
 #   bash apps/api/scripts/e2e-change-requests.sh
 #
 # Env overrides:
-#   KORTIX_API_URL  (default http://localhost:8008)
+#   ZED_API_URL  (default http://localhost:8008)
 #   DATABASE_URL    (default postgresql://postgres:postgres@127.0.0.1:54322/postgres)
 #
 # Exits non-zero on the first failed assertion.
 
 set -euo pipefail
 
-API="${KORTIX_API_URL:-http://localhost:8008}"
+API="${ZED_API_URL:-http://localhost:8008}"
 DB_URL="${DATABASE_URL:-postgresql://postgres:postgres@127.0.0.1:54322/postgres}"
 
 # Force a fresh local git remote to avoid colliding with any user-created CRs.
-REPO_ROOT="${REPO_ROOT:-/tmp/kortix-cr-e2e-$$}"
+REPO_ROOT="${REPO_ROOT:-/tmp/zed-cr-e2e-$$}"
 
 bold()  { printf '\033[1m%s\033[0m\n' "$*"; }
 ok()    { printf '  \033[0;32m✓\033[0m  %s\n' "$*"; }
@@ -67,10 +67,10 @@ psql_one() {
 
 cleanup() {
   if [[ -n "${PAT_HASH:-}" ]]; then
-    psql_one "delete from kortix.account_tokens where secret_key_hash = '$PAT_HASH';" >/dev/null || true
+    psql_one "delete from zed.account_tokens where secret_key_hash = '$PAT_HASH';" >/dev/null || true
   fi
   if [[ -n "${PROJECT_ID:-}" ]]; then
-    psql_one "delete from kortix.projects where project_id = '$PROJECT_ID';" >/dev/null || true
+    psql_one "delete from zed.projects where project_id = '$PROJECT_ID';" >/dev/null || true
   fi
   rm -rf "$REPO_ROOT"
 }
@@ -83,8 +83,8 @@ mkdir -p "$REPO_ROOT"
   git init --bare origin.git -b main >/dev/null
   git clone origin.git work >/dev/null 2>&1
   cd work
-  git config user.name  "Kortix E2E"
-  git config user.email "e2e@kortix.ai"
+  git config user.name  "Zed E2E"
+  git config user.email "e2e@zed.ai"
 
   cat > README.md <<EOF
 # E2E CR Project
@@ -126,7 +126,7 @@ EOF
 dim "remote" "file://$REPO_ROOT/origin.git"
 
 bold "2. Picking a user and minting a PAT"
-USER_ROW="$(psql_one "select user_id || '|' || account_id from kortix.account_members order by joined_at limit 1;")"
+USER_ROW="$(psql_one "select user_id || '|' || account_id from zed.account_members order by joined_at limit 1;")"
 USER_ID="${USER_ROW%%|*}"
 ACCOUNT_ID="${USER_ROW##*|}"
 [[ -z "$USER_ID" || -z "$ACCOUNT_ID" ]] && fail "no account_members row found"
@@ -148,7 +148,7 @@ def rand(n):
         out.append(chars[secrets.randbelow(len(chars))])
     return ''.join(out)
 public = 'pk_' + rand(32)
-secret = 'kortix_pat_' + rand(32)
+secret = 'zed_pat_' + rand(32)
 key = os.environ['API_KEY_SECRET'].encode()
 print(public)
 print(secret)
@@ -164,15 +164,15 @@ PAT_SECRET="${PAT_PARTS[1]}"
 PAT_HASH="${PAT_PARTS[2]}"
 
 psql_one "
-  insert into kortix.account_tokens (account_id, user_id, name, public_key, secret_key_hash)
+  insert into zed.account_tokens (account_id, user_id, name, public_key, secret_key_hash)
   values ('$ACCOUNT_ID', '$USER_ID', 'e2e-cr-test', '$PAT_PUBLIC', '$PAT_HASH');
 " >/dev/null
 dim "pat"     "${PAT_SECRET:0:18}…"
 
 bold "3. Registering the test project"
 PROJECT_ID="$(psql_one "
-  insert into kortix.projects (account_id, name, repo_url, default_branch, manifest_path)
-  values ('$ACCOUNT_ID', 'E2E CR Project', 'file://$REPO_ROOT/origin.git', 'main', 'kortix.yaml')
+  insert into zed.projects (account_id, name, repo_url, default_branch, manifest_path)
+  values ('$ACCOUNT_ID', 'E2E CR Project', 'file://$REPO_ROOT/origin.git', 'main', 'zed.yaml')
   returning project_id;
 ")"
 [[ -z "$PROJECT_ID" ]] && fail "failed to insert project"

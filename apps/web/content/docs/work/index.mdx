@@ -6,7 +6,7 @@ description: How work moves from prompt to merged change, and the three ways it 
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Kortix does work inside a [session](/docs/work/sessions): a branch and a sandbox for one
+Zed does work inside a [session](/docs/work/sessions): a branch and a sandbox for one
 unit of work. A session ends when its [change request](/docs/work/change-requests) (CR)
 merges back to the default branch. This page walks through the loop, then shows the
 three ways a session can start.
@@ -19,11 +19,11 @@ three ways a session can start.
 
 ## What happens when a session starts
 
-1. Kortix creates the session row and cuts a branch from the default branch.
+1. Zed creates the session row and cuts a branch from the default branch.
    The branch name is the session id.
-2. Kortix resolves a sandbox image: the default image, or your own
-   `.kortix/Dockerfile` if the manifest declares one.
-3. The sandbox boots. Its daemon, `kortix-agent`, clones the repo to
+2. Zed resolves a sandbox image: the default image, or your own
+   `.zed/Dockerfile` if the manifest declares one.
+3. The sandbox boots. Its daemon, `zed-agent`, clones the repo to
    `/workspace`. It starts OpenCode REST.
    Session status becomes `running`.
 4. The agent works. It reads [secrets](/docs/project/secrets) as environment

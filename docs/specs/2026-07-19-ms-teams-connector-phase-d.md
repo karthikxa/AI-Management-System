@@ -45,18 +45,18 @@ connector's architecture:
 ### Gap 1: CLI surface (the blocker for self-hosters)
 
 `apps/cli/src/commands/channels.ts` has **zero Teams references**. An operator
-can `kortix channels connect` for Slack (prints a one-click OAuth link), but
-there's no `kortix channels connect --teams` equivalent. Self-hosters and
+can `zed channels connect` for Slack (prints a one-click OAuth link), but
+there's no `zed channels connect --teams` equivalent. Self-hosters and
 enterprise customers cannot set up Teams without the CLI.
 
 **This is the top priority.** The backend is ready; the operator-facing CLI
 isn't. The first PR should add:
-- `kortix channels status` — show Teams installation state (mirrors Slack
+- `zed channels status` — show Teams installation state (mirrors Slack
   status, hitting `/projects/:id/channels/teams/installation`)
-- `kortix channels connect --teams` — print the Teams admin-consent URL
+- `zed channels connect --teams` — print the Teams admin-consent URL
   (mirrors Slack's OAuth link, hitting `/v1/webhooks/teams/oauth`)
-- `kortix channels disconnect --teams` — remove the Teams install
-- `kortix channels manifest --teams` — print/download the Teams app manifest
+- `zed channels disconnect --teams` — remove the Teams install
+- `zed channels manifest --teams` — print/download the Teams app manifest
 
 ### Gap 2: Feature parity (lower priority — backend works without these)
 
@@ -86,7 +86,7 @@ regressions would be caught only in production.
 
 ## Proposed first PR
 
-**`kortix channels` CLI surface for Teams** (Gap 1) — the blocker for
+**`zed channels` CLI surface for Teams** (Gap 1) — the blocker for
 self-hosters/enterprise. Mirror the Slack CLI path in `channels.ts`:
 
 1. Add a `--platform slack|teams` flag (default `slack` for backward compat)
@@ -104,7 +104,7 @@ No backend changes (the API routes are already live).
 
 ## What I need from a human before the first PR
 
-- **Confirm the `--platform` flag approach** vs. a separate `kortix channels
+- **Confirm the `--platform` flag approach** vs. a separate `zed channels
   teams connect` subcommand (flag is simpler + consistent with the existing
   `channels` surface; subcommand is more discoverable).
 - **Confirm Teams is the next channel priority** (Telegram

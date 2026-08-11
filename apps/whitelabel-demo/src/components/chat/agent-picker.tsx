@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Agent } from '@kortix/sdk';
+import type { Agent } from '@zed/sdk';
 import { Bot, Check, ChevronsUpDown } from 'lucide-react';
 
 export function AgentPicker({

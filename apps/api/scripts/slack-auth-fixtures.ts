@@ -21,12 +21,12 @@ const supabaseUrl = (process.env.SUPABASE_URL || 'http://127.0.0.1:54321').repla
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 const users: Record<FixtureUserKey, { email: string; accountRole?: 'owner' | 'admin' | 'member'; projectRole?: 'editor' | 'member' }> = {
-  admin: { email: 'slack-fixture-admin@kortix.local', accountRole: 'owner' },
-  approved: { email: 'slack-fixture-approved@kortix.local', accountRole: 'member', projectRole: 'editor' },
-  viewer: { email: 'slack-fixture-viewer@kortix.local', accountRole: 'member', projectRole: 'member' },
-  accountOnly: { email: 'slack-fixture-account-only@kortix.local', accountRole: 'member' },
-  noAccess: { email: 'slack-fixture-no-access@kortix.local' },
-  pending: { email: 'slack-fixture-pending@kortix.local' },
+  admin: { email: 'slack-fixture-admin@zed.local', accountRole: 'owner' },
+  approved: { email: 'slack-fixture-approved@zed.local', accountRole: 'member', projectRole: 'editor' },
+  viewer: { email: 'slack-fixture-viewer@zed.local', accountRole: 'member', projectRole: 'member' },
+  accountOnly: { email: 'slack-fixture-account-only@zed.local', accountRole: 'member' },
+  noAccess: { email: 'slack-fixture-no-access@zed.local' },
+  pending: { email: 'slack-fixture-pending@zed.local' },
 };
 
 const sql = postgres(process.env.DATABASE_URL ?? '', { max: 1 });
@@ -73,15 +73,15 @@ async function ensureAuthUser(email: string): Promise<string> {
 
 async function ensureBaseRows() {
   await sql`
-    insert into kortix.accounts (account_id, name, setup_complete_at, setup_wizard_step)
+    insert into zed.accounts (account_id, name, setup_complete_at, setup_wizard_step)
     values (${accountId}, 'Slack Auth Fixture Account', now(), 99)
     on conflict (account_id) do update
     set name = excluded.name,
-        setup_complete_at = coalesce(kortix.accounts.setup_complete_at, excluded.setup_complete_at),
+        setup_complete_at = coalesce(zed.accounts.setup_complete_at, excluded.setup_complete_at),
         updated_at = now()
   `;
   await sql`
-    insert into kortix.projects (project_id, account_id, name, repo_url, default_branch, status)
+    insert into zed.projects (project_id, account_id, name, repo_url, default_branch, status)
     values (${projectId}, ${accountId}, ${projectName}, ${repoUrl}, 'main', 'active')
     on conflict (project_id) do update
     set account_id = excluded.account_id,
@@ -91,19 +91,19 @@ async function ensureBaseRows() {
         updated_at = now()
   `;
   await sql`
-    insert into kortix.chat_installs (platform, workspace_id, project_id)
+    insert into zed.chat_installs (platform, workspace_id, project_id)
     values ('slack', ${workspaceId}, ${projectId})
     on conflict (platform, workspace_id, project_id) do nothing
   `;
 }
 
 async function ensureMembership(userId: string, spec: (typeof users)[FixtureUserKey]) {
-  await sql`delete from kortix.project_members where account_id = ${accountId} and project_id = ${projectId} and user_id = ${userId}`;
-  await sql`delete from kortix.account_members where account_id = ${accountId} and user_id = ${userId}`;
+  await sql`delete from zed.project_members where account_id = ${accountId} and project_id = ${projectId} and user_id = ${userId}`;
+  await sql`delete from zed.account_members where account_id = ${accountId} and user_id = ${userId}`;
 
   if (spec.accountRole) {
     await sql`
-      insert into kortix.account_members (user_id, account_id, account_role)
+      insert into zed.account_members (user_id, account_id, account_role)
       values (${userId}, ${accountId}, ${spec.accountRole})
       on conflict (user_id, account_id) do update
       set account_role = excluded.account_role
@@ -111,7 +111,7 @@ async function ensureMembership(userId: string, spec: (typeof users)[FixtureUser
   }
   if (spec.projectRole) {
     await sql`
-      insert into kortix.project_members (account_id, project_id, user_id, project_role, granted_by)
+      insert into zed.project_members (account_id, project_id, user_id, project_role, granted_by)
       values (${accountId}, ${projectId}, ${userId}, ${spec.projectRole}, ${userId})
       on conflict (project_id, user_id) do update
       set project_role = excluded.project_role,
@@ -132,7 +132,7 @@ async function ensureUsers() {
 
 async function linkSlack(userId: string) {
   await sql`
-    insert into kortix.chat_user_identities (platform, workspace_id, platform_user_id, user_id, linked_at, revoked_at)
+    insert into zed.chat_user_identities (platform, workspace_id, platform_user_id, user_id, linked_at, revoked_at)
     values ('slack', ${workspaceId}, ${slackUserId}, ${userId}, now(), null)
     on conflict (platform, workspace_id, platform_user_id) do update
     set user_id = excluded.user_id,
@@ -143,7 +143,7 @@ async function linkSlack(userId: string) {
 
 async function unlinkSlack() {
   await sql`
-    update kortix.chat_user_identities
+    update zed.chat_user_identities
     set revoked_at = now()
     where platform = 'slack'
       and workspace_id = ${workspaceId}
@@ -154,7 +154,7 @@ async function unlinkSlack() {
 
 async function deleteOpenRequestsFor(userId: string) {
   await sql`
-    update kortix.project_access_requests
+    update zed.project_access_requests
     set status = 'rejected',
         reviewed_at = coalesce(reviewed_at, now()),
         updated_at = now()
@@ -165,10 +165,10 @@ async function deleteOpenRequestsFor(userId: string) {
 }
 
 async function ensurePendingRequest(userId: string, email: string) {
-  await sql`delete from kortix.account_members where account_id = ${accountId} and user_id = ${userId}`;
-  await sql`delete from kortix.project_members where account_id = ${accountId} and project_id = ${projectId} and user_id = ${userId}`;
+  await sql`delete from zed.account_members where account_id = ${accountId} and user_id = ${userId}`;
+  await sql`delete from zed.project_members where account_id = ${accountId} and project_id = ${projectId} and user_id = ${userId}`;
   await sql`
-    insert into kortix.project_access_requests (account_id, project_id, requester_user_id, requester_email, message)
+    insert into zed.project_access_requests (account_id, project_id, requester_user_id, requester_email, message)
     values (${accountId}, ${projectId}, ${userId}, ${email}, 'Slack auth fixture: pending project access request')
     on conflict do nothing
   `;
@@ -206,7 +206,7 @@ async function setPolicy(channelId: string, policy: string) {
     throw new Error('policy must be project_open, owner_approval, or owner_only');
   }
   await sql`
-    insert into kortix.chat_channel_bindings (platform, workspace_id, channel_id, project_id, conversation_policy)
+    insert into zed.chat_channel_bindings (platform, workspace_id, channel_id, project_id, conversation_policy)
     values ('slack', ${workspaceId}, ${channelId}, ${projectId}, ${policy})
     on conflict (platform, workspace_id, channel_id) do update
     set project_id = excluded.project_id,
@@ -219,11 +219,11 @@ async function inventory() {
   const data = {
     project: await sql`
       select project_id, account_id, name, repo_url, status
-      from kortix.projects where project_id = ${projectId}
+      from zed.projects where project_id = ${projectId}
     `,
     slackIdentity: await sql`
       select workspace_id, platform_user_id, user_id, linked_at, revoked_at
-      from kortix.chat_user_identities
+      from zed.chat_user_identities
       where platform = 'slack' and workspace_id = ${workspaceId} and platform_user_id = ${slackUserId}
     `,
     users: await sql`
@@ -232,26 +232,26 @@ async function inventory() {
              am.account_role,
              pm.project_role,
              exists (
-               select 1 from kortix.project_access_requests par
+               select 1 from zed.project_access_requests par
                where par.project_id = ${projectId}
                  and par.requester_user_id = u.id
                  and par.status = 'pending'
              ) as pending_request
       from auth.users u
-      left join kortix.account_members am on am.user_id = u.id and am.account_id = ${accountId}
-      left join kortix.project_members pm on pm.user_id = u.id and pm.project_id = ${projectId}
+      left join zed.account_members am on am.user_id = u.id and am.account_id = ${accountId}
+      left join zed.project_members pm on pm.user_id = u.id and pm.project_id = ${projectId}
       where u.email = any(${Object.values(users).map((u) => u.email)})
       order by u.email
     `,
     pendingRequests: await sql`
       select request_id, requester_user_id, requester_email, status, message, created_at
-      from kortix.project_access_requests
+      from zed.project_access_requests
       where project_id = ${projectId} and status = 'pending'
       order by created_at desc
     `,
     channelBindings: await sql`
       select workspace_id, channel_id, project_id, agent_name, opencode_model, conversation_policy
-      from kortix.chat_channel_bindings
+      from zed.chat_channel_bindings
       where platform = 'slack' and workspace_id = ${workspaceId}
       order by channel_id
     `,

@@ -3,37 +3,37 @@ import { excludePinnedTargets, ppwarmReapTargets, perProjectWarmImageName } from
 
 // proj8 = first 8 hex chars of the projectId with dashes stripped.
 const PROJ_A = '9ee8bc9c-5108-437f-a01f-6c5e26f2062c'; // proj8 = 9ee8bc9c
-const CURRENT = 'kortix-ppwarm-9ee8bc9c-aaaaaaaaaaaa';
+const CURRENT = 'zed-ppwarm-9ee8bc9c-aaaaaaaaaaaa';
 
 describe('ppwarmReapTargets — on-bake reap selector', () => {
   test('reaps superseded tips of the same project, keeps the current', () => {
     const names = [
-      'kortix-ppwarm-9ee8bc9c-aaaaaaaaaaaa', // current
-      'kortix-ppwarm-9ee8bc9c-bbbbbbbbbbbb', // superseded
-      'kortix-ppwarm-9ee8bc9c-cccccccccccc', // superseded
+      'zed-ppwarm-9ee8bc9c-aaaaaaaaaaaa', // current
+      'zed-ppwarm-9ee8bc9c-bbbbbbbbbbbb', // superseded
+      'zed-ppwarm-9ee8bc9c-cccccccccccc', // superseded
     ];
     expect(ppwarmReapTargets(PROJ_A, CURRENT, names).sort()).toEqual([
-      'kortix-ppwarm-9ee8bc9c-bbbbbbbbbbbb',
-      'kortix-ppwarm-9ee8bc9c-cccccccccccc',
+      'zed-ppwarm-9ee8bc9c-bbbbbbbbbbbb',
+      'zed-ppwarm-9ee8bc9c-cccccccccccc',
     ]);
   });
 
   test('never touches another project (proj8-scoped)', () => {
     const names = [
-      'kortix-ppwarm-9ee8bc9c-aaaaaaaaaaaa', // current, project A
-      'kortix-ppwarm-dc42fe89-bbbbbbbbbbbb', // project B — off-limits
-      'kortix-ppwarm-dc42fe89-cccccccccccc', // project B — off-limits
+      'zed-ppwarm-9ee8bc9c-aaaaaaaaaaaa', // current, project A
+      'zed-ppwarm-dc42fe89-bbbbbbbbbbbb', // project B — off-limits
+      'zed-ppwarm-dc42fe89-cccccccccccc', // project B — off-limits
     ];
     expect(ppwarmReapTargets(PROJ_A, CURRENT, names)).toEqual([]);
   });
 
   test('never targets the shared base/default, custom tpls, or prod stateful warm', () => {
     const names = [
-      'kortix-ppwarm-9ee8bc9c-aaaaaaaaaaaa', // current
-      'kortix-default-e881f000eae5', // shared base
-      'kortix-tpl-9ee8bc9c-deadbeef1234', // custom template
-      'kortix-wproj-9ee8bc9c-cafebabe5678', // prod stateful warm (daytona)
-      'kortix-wprojpt-9ee8bc9c-0badc0de9999', // prod stateful warm (platinum)
+      'zed-ppwarm-9ee8bc9c-aaaaaaaaaaaa', // current
+      'zed-default-e881f000eae5', // shared base
+      'zed-tpl-9ee8bc9c-deadbeef1234', // custom template
+      'zed-wproj-9ee8bc9c-cafebabe5678', // prod stateful warm (daytona)
+      'zed-wprojpt-9ee8bc9c-0badc0de9999', // prod stateful warm (platinum)
     ];
     expect(ppwarmReapTargets(PROJ_A, CURRENT, names)).toEqual([]);
   });
@@ -44,10 +44,10 @@ describe('ppwarmReapTargets — on-bake reap selector', () => {
   });
 
   test('integrates with perProjectWarmImageName: a moved tip makes the old image a target, a re-bake does not', () => {
-    const base = 'kortix-default-e881f000eae5';
+    const base = 'zed-default-e881f000eae5';
     const cur = perProjectWarmImageName(PROJ_A, 'tipB', base);
     const old = perProjectWarmImageName(PROJ_A, 'tipA', base);
-    expect(cur.startsWith('kortix-ppwarm-9ee8bc9c-')).toBe(true);
+    expect(cur.startsWith('zed-ppwarm-9ee8bc9c-')).toBe(true);
     expect(old).not.toBe(cur);
     // moved tip: the old image is a reap target, the current is kept
     expect(ppwarmReapTargets(PROJ_A, cur, [cur, old])).toEqual([old]);
@@ -57,9 +57,9 @@ describe('ppwarmReapTargets — on-bake reap selector', () => {
 
   test('never re-selects a Platinum soft-delete tombstone (…__deleted_<id>)', () => {
     const names = [
-      'kortix-ppwarm-9ee8bc9c-aaaaaaaaaaaa', // current tip
-      'kortix-ppwarm-9ee8bc9c-bbbbbbbbbbbb__deleted_tpl_01ABC', // already-reaped tombstone
-      'kortix-ppwarm-9ee8bc9c-cccccccccccc__deleted__deleted', // double-tombstone (the observed regression)
+      'zed-ppwarm-9ee8bc9c-aaaaaaaaaaaa', // current tip
+      'zed-ppwarm-9ee8bc9c-bbbbbbbbbbbb__deleted_tpl_01ABC', // already-reaped tombstone
+      'zed-ppwarm-9ee8bc9c-cccccccccccc__deleted__deleted', // double-tombstone (the observed regression)
     ];
     expect(ppwarmReapTargets(PROJ_A, CURRENT, names)).toEqual([]);
   });
@@ -70,23 +70,23 @@ describe('excludePinnedTargets — FIX-K-lite proj8-collision guard', () => {
     // Project A and project B collide on proj8 (both 9ee8bc9c). A bakes and its
     // raw prefix-scoped selection sweeps up B's live pinned tip as a "superseded"
     // one — the exact org-wide-collision bug. The pinned guard keeps B's image.
-    const bPinned = 'kortix-ppwarm-9ee8bc9c-bbbbbbbbbbbb'; // B's LIVE pinned image
+    const bPinned = 'zed-ppwarm-9ee8bc9c-bbbbbbbbbbbb'; // B's LIVE pinned image
     const names = [
       CURRENT, // A's current tip
-      'kortix-ppwarm-9ee8bc9c-aaaa00000000', // A's genuinely superseded tip
+      'zed-ppwarm-9ee8bc9c-aaaa00000000', // A's genuinely superseded tip
       bPinned, // B's live pinned image (same proj8 by collision)
     ];
     const raw = ppwarmReapTargets(PROJ_A, CURRENT, names);
-    expect(raw.sort()).toEqual(['kortix-ppwarm-9ee8bc9c-aaaa00000000', bPinned]); // bug: B included
+    expect(raw.sort()).toEqual(['zed-ppwarm-9ee8bc9c-aaaa00000000', bPinned]); // bug: B included
 
     const pinned = new Set([bPinned]); // any project's active pin
     const guarded = excludePinnedTargets(raw, pinned);
-    expect(guarded).toEqual(['kortix-ppwarm-9ee8bc9c-aaaa00000000']); // A's superseded reaped
+    expect(guarded).toEqual(['zed-ppwarm-9ee8bc9c-aaaa00000000']); // A's superseded reaped
     expect(guarded).not.toContain(bPinned); // B's LIVE pinned image survives
   });
 
   test('with no pins the targets are unchanged', () => {
-    const raw = ['kortix-ppwarm-9ee8bc9c-aaaa00000000'];
+    const raw = ['zed-ppwarm-9ee8bc9c-aaaa00000000'];
     expect(excludePinnedTargets(raw, new Set())).toEqual(raw);
   });
 });

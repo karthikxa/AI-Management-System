@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 
-import { useActiveSandboxProxyContext } from '@kortix/sdk/react';
+import { useActiveSandboxProxyContext } from '@zed/sdk/react';
 import {
   getSandboxServiceUrl,
   proxySandboxUrl,

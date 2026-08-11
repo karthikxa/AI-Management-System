@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Shared building blocks for the quiet, flat auth dialect: Kortix mark above a
+ * Shared building blocks for the quiet, flat auth dialect: Zed mark above a
  * left-aligned heading, slim notice strips, six-box code input, and the
  * two-part rise entrance. Used by /auth and every auth sub-surface.
  */
@@ -13,7 +13,7 @@ import {
 import { m, useReducedMotion } from 'motion/react';
 import { useRef } from 'react';
 
-import { KortixLogo } from '@/components/ui/kortix-logo';
+import { ZedLogo } from '@/components/ui/zed-logo';
 import {
   applyBackspace,
   applyBoxInput,
@@ -57,7 +57,7 @@ export function Rise({
 export function AuthMobileLogo() {
   return (
     <div className="absolute top-6 left-6 z-10 md:hidden">
-      <KortixLogo variant="icon" size={22} className="text-foreground" />
+      <ZedLogo variant="icon" size={22} className="text-foreground" />
     </div>
   );
 }
@@ -74,7 +74,7 @@ export function StepHeader({
 }) {
   return (
     <div className="mb-10">
-      <KortixLogo variant="icon" size={22} className="text-foreground hidden md:block" />
+      <ZedLogo variant="icon" size={22} className="text-foreground hidden md:block" />
       <h1 className="text-foreground text-2xl font-medium tracking-tight md:mt-6">{title}</h1>
       {tagline ? (
         <p className="text-muted-foreground/60 text-2xl font-medium tracking-tight">{tagline}</p>
@@ -115,7 +115,7 @@ export function InfoStrip({ message }: { message: string }) {
 export function SuccessStrip({ message }: { message: string }) {
   return (
     <div className="border-border bg-muted/60 text-foreground/80 mb-5 flex items-center gap-2 rounded-md border px-3 py-2.5">
-      <InfoCircleSolid weight="fill" className="text-kortix-green size-4 shrink-0" />
+      <InfoCircleSolid weight="fill" className="text-zed-green size-4 shrink-0" />
       <span className="text-sm">{message}</span>
     </div>
   );
@@ -182,7 +182,7 @@ export function CodeInput({
           }}
           onFocus={(e) => e.currentTarget.select()}
           aria-invalid={invalid || undefined}
-          className="border-border bg-input text-foreground focus:border-kortix-blue aria-invalid:border-destructive size-12 rounded-md border text-center text-lg font-medium tabular-nums transition-[border-color] outline-none disabled:opacity-50"
+          className="border-border bg-input text-foreground focus:border-zed-blue aria-invalid:border-destructive size-12 rounded-md border text-center text-lg font-medium tabular-nums transition-[border-color] outline-none disabled:opacity-50"
         />
       ))}
     </div>

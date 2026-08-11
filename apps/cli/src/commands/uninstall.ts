@@ -7,15 +7,15 @@ import { authFileLocation, clearAuth, loadAuth } from '../api/auth.ts';
 import { confirm } from '../prompts.ts';
 import { C, help, status } from '../style.ts';
 
-const HELP = help`Usage: kortix uninstall [options]
+const HELP = help`Usage: zed uninstall [options]
 
-Remove the Kortix CLI binary, the /usr/local/bin shim, the stored auth
-token, and (optionally) the ~/.kortix install directory.
+Remove the Zed CLI binary, the /usr/local/bin shim, the stored auth
+token, and (optionally) the ~/.zed install directory.
 
 Options:
   -y, --yes        Skip the confirmation prompt.
-  --keep-auth      Don't delete ~/.config/kortix/auth.json.
-  --keep-home      Don't touch ~/.kortix/ — only remove the binary +
+  --keep-auth      Don't delete ~/.config/zed/auth.json.
+  --keep-home      Don't touch ~/.zed/ — only remove the binary +
                    symlink.
   -h, --help       Show this help.
 `;
@@ -51,7 +51,7 @@ export async function runUninstall(argv: string[]): Promise<number> {
 
   const targets = collectTargets(flags);
   if (targets.length === 0) {
-    process.stdout.write(`${C.dim}Nothing to remove. Kortix CLI is already uninstalled.${C.reset}\n`);
+    process.stdout.write(`${C.dim}Nothing to remove. Zed CLI is already uninstalled.${C.reset}\n`);
     return 0;
   }
 
@@ -91,7 +91,7 @@ export async function runUninstall(argv: string[]): Promise<number> {
     process.stderr.write(`\n${status.warn(`${failed} item${failed === 1 ? '' : 's'} could not be removed.`)}\n`);
     return 1;
   }
-  process.stdout.write(`\n${status.ok('Kortix CLI uninstalled. Sorry to see you go.')}\n`);
+  process.stdout.write(`\n${status.ok('Zed CLI uninstalled. Sorry to see you go.')}\n`);
   return 0;
 }
 
@@ -107,8 +107,8 @@ function collectTargets(flags: UninstallFlags): Target[] {
 
   // 1. The /usr/local/bin symlink, if it points at us.
   const candidatePaths = [
-    '/usr/local/bin/kortix',
-    resolve(homedir(), '.local', 'bin', 'kortix'),
+    '/usr/local/bin/zed',
+    resolve(homedir(), '.local', 'bin', 'zed'),
   ];
   for (const p of candidatePaths) {
     if (existsSymlinkOrFile(p)) {
@@ -116,17 +116,17 @@ function collectTargets(flags: UninstallFlags): Target[] {
     }
   }
 
-  // 2. ~/.kortix
+  // 2. ~/.zed
   if (!flags.keepHome) {
-    const kortixHome = resolve(homedir(), '.kortix');
-    if (existsSync(kortixHome)) {
-      found.push({ path: kortixHome, kind: 'home' });
+    const zedHome = resolve(homedir(), '.zed');
+    if (existsSync(zedHome)) {
+      found.push({ path: zedHome, kind: 'home' });
     }
   } else {
     // Even with --keep-home, take out the binary if it's the only thing.
-    const kortixBin = resolve(homedir(), '.kortix', 'kortix');
-    if (existsSync(kortixBin)) {
-      found.push({ path: kortixBin, kind: 'binary' });
+    const zedBin = resolve(homedir(), '.zed', 'zed');
+    if (existsSync(zedBin)) {
+      found.push({ path: zedBin, kind: 'binary' });
     }
   }
 

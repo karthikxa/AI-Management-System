@@ -1,5 +1,5 @@
 /**
- * `kortix_version` 2 — types + validators.
+ * `zed_version` 2 — types + validators.
  *
  * Extracted from `./index.ts` (thermo-nuclear-review FIX 1: that file had
  * grown to ~1900 lines; the v2 surface — types plus every v2-only
@@ -8,7 +8,7 @@
  * versions are added — the same instinct that pulled the shared enums out
  * into `constants.ts`.
  *
- * `index.ts` re-exports everything here, so `@kortix/manifest-schema` /
+ * `index.ts` re-exports everything here, so `@zed/manifest-schema` /
  * `./index` consumers are unaffected by the split — see the re-export block
  * near the top of `index.ts`.
  *
@@ -42,7 +42,7 @@ import {
 } from './constants';
 import { expectStringOrAbsent, isTable, type ManifestIssue, validateGrantList } from './index';
 
-// ─── kortix_version 2 types ───────────────────────────────────────────────
+// ─── zed_version 2 types ───────────────────────────────────────────────
 //
 // v2 unifies identity + governance + runtime behavior into one `agents:` map
 // (spec §2.2). These types have no compiler/consumer yet (that's a later PR
@@ -52,7 +52,7 @@ import { expectStringOrAbsent, isTable, type ManifestIssue, validateGrantList } 
 /** Full OpenCode `AgentConfig.mode` parity — https://opencode.ai/config.json `$defs.AgentConfig`. */
 export type AgentModeV2 = 'primary' | 'subagent' | 'all';
 
-/** Kortix governance field — validated only in this phase; enforcement is Phase 4. */
+/** Zed governance field — validated only in this phase; enforcement is Phase 4. */
 export type WorkspaceModeV2 = 'runtime' | 'read' | 'branch';
 
 /** The only legal `runtime` today; reserved so `runtime: claude` is a one-line project change later. */
@@ -92,7 +92,7 @@ export interface PermissionConfigObjectV2 {
 export type PermissionConfigV2 = PermissionActionV2 | PermissionConfigObjectV2;
 
 /**
- * A Kortix grant set as it appears on the wire: an allowlist, or the "all"/
+ * A Zed grant set as it appears on the wire: an allowlist, or the "all"/
  * "none" sentinels. Distinct from the *resolved default* when the key is
  * omitted entirely — see `resolveGrantSet`.
  */
@@ -102,18 +102,18 @@ export type GrantSetV2 = 'all' | 'none' | string[];
  * One entry of the v2 `agents:` map — GOVERNANCE ONLY (decision 2026-07-05,
  * "one home per concern"). OpenCode behavior (mode, model, temperature,
  * top_p, steps, variant, color, hidden, permission, and the prompt itself)
- * lives entirely in the agent's native `.kortix/opencode/agents/<name>.md`
+ * lives entirely in the agent's native `.zed/opencode/agents/<name>.md`
  * frontmatter + body — a stock OpenCode agent `.md` is valid as-is, with no
- * Kortix-specific split. The agent NAME is the join between this map key and
+ * Zed-specific split. The agent NAME is the join between this map key and
  * that `.md` filename; there is no `prompt:`/file-ref field here anymore.
  *
- * Kortix governance (this type) is enforced platform-side (IAM grants,
+ * Zed governance (this type) is enforced platform-side (IAM grants,
  * secret scoping) and has no OpenCode representation, except `skills`, which
  * the compiler folds onto the frontmatter's `permission.skill` — see
  * compile-agent-config.ts.
  */
 export interface AgentBlockV2 {
-  /** Kortix governance: can this agent start a session at all? Default true
+  /** Zed governance: can this agent start a session at all? Default true
    *  when omitted. Compiles to the runtime's `disable` field (inverted,
    *  and only ever forces it ON — a hand-authored `disable: true` in the
    *  agent's own frontmatter still passes through when this is omitted) —
@@ -137,23 +137,23 @@ export interface AgentBlockV2 {
    *  configuration error (ambiguous) — see resolveGrantedSecretEnv. This is the
    *  SOLE authorization gate on agent secret access. */
   secrets?: GrantSetV2;
-  /** Which of the project's `.kortix/opencode/skills/*` this agent may invoke —
+  /** Which of the project's `.zed/opencode/skills/*` this agent may invoke —
    *  same grant-set shape as connectors/secrets (names | "all" | "none"), v2
-   *  deny-by-default when omitted. Unlike connectors/secrets/kortix_cli (pure
-   *  Kortix governance with no runtime representation), `skills` DOES compile
+   *  deny-by-default when omitted. Unlike connectors/secrets/zed_cli (pure
+   *  Zed governance with no runtime representation), `skills` DOES compile
    *  to something OpenCode understands: the runtime compiler
    *  (compile-agent-config.ts) maps it onto the agent's `permission.skill`, so
    *  it's a first-class, cleanly-named governance control instead of
    *  something the author has to express by hand-writing glob rules in the
    *  agent's own frontmatter. */
   skills?: GrantSetV2;
-  kortix_cli?: GrantSetV2;
+  zed_cli?: GrantSetV2;
   workspace?: WorkspaceModeV2;
 }
 
 /** The v2 manifest shape (YAML-only). Other sections keep their v1 shape. */
 export interface ManifestV2 {
-  kortix_version: 2;
+  zed_version: 2;
   default_agent: string;
   runtime?: RuntimeV2;
   agents: Record<string, AgentBlockV2>;
@@ -275,7 +275,7 @@ export function validateRequiredConnectorFields(
   if (entry.connectors_personal !== undefined) {
     issues.push({
       path: `${where}.connectors_personal`,
-      message: 'connectors_personal is deprecated in kortix_version 2; use connectors_required.',
+      message: 'connectors_personal is deprecated in zed_version 2; use connectors_required.',
       severity: 'warning',
     });
   }
@@ -380,7 +380,7 @@ export function validatePermissionConfig(node: unknown, path: string, issues: Ma
 /**
  * Behavioral fields that live ONLY in an agent's native `.md` frontmatter as
  * of the 2026-07-05 redirect ("one home per concern") — authoring one of
- * these flat on the `agents.<name>` block in kortix.yaml (the pre-redirect
+ * these flat on the `agents.<name>` block in zed.yaml (the pre-redirect
  * `opencode:`-nested shape, or the earlier flat shape before that) is a
  * clear, pointed error rather than a silent no-op. `opencode` itself is
  * included: the nested sub-object this schema version used to require is
@@ -529,7 +529,7 @@ function validateAgentBlockV2(entry: unknown, where: string, issues: ManifestIss
   if (entry.env !== undefined) {
     issues.push({
       path: `${where}.env`,
-      message: 'use `secrets` instead of `env` in kortix_version 2 manifests.',
+      message: 'use `secrets` instead of `env` in zed_version 2 manifests.',
       severity: 'error',
     });
   }
@@ -540,13 +540,13 @@ function validateAgentBlockV2(entry: unknown, where: string, issues: ManifestIss
     if ((entry as Record<string, unknown>)[key] !== undefined) {
       issues.push({
         path: `${where}.${key}`,
-        message: `"${key}" is OpenCode behavior — it lives in this agent's own \`.md\` frontmatter now, not in kortix.yaml. Remove ${where}.${key} and set it in the agent's \`.kortix/opencode/agents/<name>.md\` frontmatter instead.`,
+        message: `"${key}" is OpenCode behavior — it lives in this agent's own \`.md\` frontmatter now, not in zed.yaml. Remove ${where}.${key} and set it in the agent's \`.zed/opencode/agents/<name>.md\` frontmatter instead.`,
         severity: 'error',
       });
     }
   }
 
-  // Kortix governance — same grant-set shape/action rules as v1, reused as-is.
+  // Zed governance — same grant-set shape/action rules as v1, reused as-is.
   validateGrantList(entry.connectors, `${where}.connectors`, 'connectors', issues, false, 2);
   validateRequiredConnectorFields(entry, where, issues);
   validateGrantList(entry.secrets, `${where}.secrets`, 'secrets', issues, false, 2);
@@ -555,7 +555,7 @@ function validateAgentBlockV2(entry: unknown, where: string, issues: ManifestIss
   validateGrantList(entry.skills, `${where}.skills`, 'skills', issues, false, 2);
   // v2 clean break: a LEGACY_TOLERATED action is a hard error here, not a
   // warning (see `validateGrantList`'s doc comment).
-  validateGrantList(entry.kortix_cli, `${where}.kortix_cli`, 'kortix_cli', issues, true, 2);
+  validateGrantList(entry.zed_cli, `${where}.zed_cli`, 'zed_cli', issues, true, 2);
 
   if (entry.workspace !== undefined) {
     const w = typeof entry.workspace === 'string' ? entry.workspace.trim() : '';
@@ -589,7 +589,7 @@ export function validateAgentsV2(node: unknown, path: string, issues: ManifestIs
   if (node == null || (isTable(node) && Object.keys(node).length === 0)) {
     issues.push({
       path,
-      message: 'kortix_version 2 manifests must declare at least one agent under `agents`.',
+      message: 'zed_version 2 manifests must declare at least one agent under `agents`.',
       severity: 'error',
     });
     return { names, disabledNames };
@@ -598,7 +598,7 @@ export function validateAgentsV2(node: unknown, path: string, issues: ManifestIs
     issues.push({
       path,
       message:
-        '`agents` must be a map of agent name → agent block in kortix_version 2 (the v1 `[[agents]]` array becomes a map).',
+        '`agents` must be a map of agent name → agent block in zed_version 2 (the v1 `[[agents]]` array becomes a map).',
       severity: 'error',
     });
     return { names, disabledNames };
@@ -634,7 +634,7 @@ export function validateDefaultAgentV2(
     issues.push({
       path,
       message:
-        'kortix_version 2 manifests must set `default_agent` — it must always resolve to a declared agent.',
+        'zed_version 2 manifests must set `default_agent` — it must always resolve to a declared agent.',
       severity: 'error',
     });
     return;
@@ -665,7 +665,7 @@ export function rejectChannelsV2(node: unknown, path: string, issues: ManifestIs
   issues.push({
     path,
     message:
-      '`channels` is not supported in kortix_version 2 manifests — channel↔agent routing is managed in the dashboard, and the channel connection is expressed as a connector (provider="channel").',
+      '`channels` is not supported in zed_version 2 manifests — channel↔agent routing is managed in the dashboard, and the channel connection is expressed as a connector (provider="channel").',
     severity: 'error',
   });
 }

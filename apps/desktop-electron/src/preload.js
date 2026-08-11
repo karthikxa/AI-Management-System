@@ -1,4 +1,4 @@
-// Kortix desktop shell — Electron preload.
+// Zed desktop shell — Electron preload.
 //
 // Exposes a `window.__TAURI__` object with the shape the web app's desktop
 // bridge expects (the previous shell set Tauri's `withGlobalTauri`). The web
@@ -10,15 +10,15 @@
 //
 // Runs in an isolated context (contextIsolation: true). contextBridge proxies
 // the functions below into the page's main world; the heavy lifting happens in
-// the main process over the `kortix:invoke` / `kortix:window` IPC channels.
+// the main process over the `zed:invoke` / `zed:window` IPC channels.
 
 const { contextBridge, ipcRenderer } = require('electron');
 
 /** Tauri `core.invoke(cmd, args)` → main-process command funnel. */
-const invoke = (cmd, args) => ipcRenderer.invoke('kortix:invoke', cmd, args);
+const invoke = (cmd, args) => ipcRenderer.invoke('zed:invoke', cmd, args);
 
 /** Tauri `getCurrentWindow().<action>()` → window-control funnel. */
-const winCall = (action) => ipcRenderer.invoke('kortix:window', action);
+const winCall = (action) => ipcRenderer.invoke('zed:window', action);
 
 const currentWindow = {
   minimize: () => winCall('minimize'),
@@ -29,8 +29,8 @@ const currentWindow = {
   // fine — desktop.ts awaits it and `await fn` resolves to the fn itself.
   onResized: (cb) => {
     const listener = () => cb();
-    ipcRenderer.on('kortix:resized', listener);
-    return () => ipcRenderer.removeListener('kortix:resized', listener);
+    ipcRenderer.on('zed:resized', listener);
+    return () => ipcRenderer.removeListener('zed:resized', listener);
   },
   // Dragging is handled natively via `-webkit-app-region` CSS (see main.js),
   // so this is a no-op — only the Tauri-injected drag shim ever called it.
@@ -43,7 +43,7 @@ contextBridge.exposeInMainWorld('__TAURI__', {
 });
 
 // Explicit marker so the web app can detect the shell if it ever needs to.
-contextBridge.exposeInMainWorld('kortixDesktop', {
+contextBridge.exposeInMainWorld('zedDesktop', {
   shell: 'electron',
   version: '0.1.0',
 });

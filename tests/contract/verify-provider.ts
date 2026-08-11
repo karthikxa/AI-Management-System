@@ -18,7 +18,7 @@ function localPactFiles(): string[] {
 
 async function main(): Promise<void> {
   const base: VerifierOptions = {
-    provider: "kortix-api",
+    provider: "zed-api",
     providerBaseUrl: PROVIDER_BASE_URL,
     providerVersion: PROVIDER_VERSION,
     logLevel: "info",

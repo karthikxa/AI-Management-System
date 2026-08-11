@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 const dockerAvailable =
   Bun.spawnSync(['docker', 'version'], { stdout: 'ignore', stderr: 'ignore' }).exitCode === 0;
 
-const container = `kortix-retired-provider-migration-${crypto.randomUUID().slice(0, 8)}`;
+const container = `zed-retired-provider-migration-${crypto.randomUUID().slice(0, 8)}`;
 
 function psql(sql: string, allowFailure = false) {
   const result = Bun.spawnSync(
@@ -31,43 +31,43 @@ function psql(sql: string, allowFailure = false) {
 }
 
 const PRE_MIGRATION_SCHEMA = `
-  DROP SCHEMA IF EXISTS kortix CASCADE;
-  CREATE SCHEMA kortix;
-  CREATE TYPE kortix.sandbox_provider AS ENUM
+  DROP SCHEMA IF EXISTS zed CASCADE;
+  CREATE SCHEMA zed;
+  CREATE TYPE zed.sandbox_provider AS ENUM
     ('daytona', 'platinum', 'e2b', 'local-docker');
 
-  CREATE TABLE kortix.project_sessions (
+  CREATE TABLE zed.project_sessions (
     session_id text PRIMARY KEY,
-    sandbox_provider kortix.sandbox_provider NOT NULL DEFAULT 'daytona'
+    sandbox_provider zed.sandbox_provider NOT NULL DEFAULT 'daytona'
   );
-  CREATE TABLE kortix.session_sandboxes (
+  CREATE TABLE zed.session_sandboxes (
     sandbox_id uuid PRIMARY KEY,
     external_id text,
-    provider kortix.sandbox_provider NOT NULL DEFAULT 'daytona'
+    provider zed.sandbox_provider NOT NULL DEFAULT 'daytona'
   );
-  CREATE FUNCTION kortix.guard_session_sandbox_identity()
+  CREATE FUNCTION zed.guard_session_sandbox_identity()
   RETURNS trigger
   LANGUAGE plpgsql
   AS $$ BEGIN RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END; END $$;
   CREATE TRIGGER trg_session_sandbox_identity_immutable
   BEFORE UPDATE OF external_id, provider OR DELETE
-  ON kortix.session_sandboxes
+  ON zed.session_sandboxes
   FOR EACH ROW
-  EXECUTE FUNCTION kortix.guard_session_sandbox_identity();
-  CREATE TABLE kortix.provider_transitions (
+  EXECUTE FUNCTION zed.guard_session_sandbox_identity();
+  CREATE TABLE zed.provider_transitions (
     transition_id uuid PRIMARY KEY,
-    source_provider kortix.sandbox_provider NOT NULL,
-    target_provider kortix.sandbox_provider NOT NULL
+    source_provider zed.sandbox_provider NOT NULL,
+    target_provider zed.sandbox_provider NOT NULL
   );
-  CREATE TABLE kortix.sandbox_compute_sessions (
+  CREATE TABLE zed.sandbox_compute_sessions (
     id uuid PRIMARY KEY,
-    provider kortix.sandbox_provider NOT NULL DEFAULT 'daytona'
+    provider zed.sandbox_provider NOT NULL DEFAULT 'daytona'
   );
-  CREATE TABLE kortix.app_deployments (
+  CREATE TABLE zed.app_deployments (
     deployment_id uuid PRIMARY KEY,
     hosting_provider varchar(32)
   );
-  CREATE TABLE kortix.app_runtimes (
+  CREATE TABLE zed.app_runtimes (
     runtime_id uuid PRIMARY KEY,
     provider varchar(32) NOT NULL
   );
@@ -131,7 +131,7 @@ describe.skipIf(!dockerAvailable)('retired local provider migration — real Pos
       psql(`
         SELECT string_agg(enumlabel, ',' ORDER BY enumsortorder)
           FROM pg_enum
-         WHERE enumtypid = 'kortix.sandbox_provider'::regtype;
+         WHERE enumtypid = 'zed.sandbox_provider'::regtype;
       `).output.trim(),
     ).toBe('daytona,platinum,e2b');
 
@@ -139,7 +139,7 @@ describe.skipIf(!dockerAvailable)('retired local provider migration — real Pos
       psql(`
         SELECT table_name || ':' || column_name || ':' || column_default
           FROM information_schema.columns
-         WHERE table_schema = 'kortix'
+         WHERE table_schema = 'zed'
            AND (table_name, column_name) IN (
              ('project_sessions', 'sandbox_provider'),
              ('session_sandboxes', 'provider'),
@@ -148,16 +148,16 @@ describe.skipIf(!dockerAvailable)('retired local provider migration — real Pos
          ORDER BY table_name;
       `).output.trim(),
     ).toBe(
-      "project_sessions:sandbox_provider:'daytona'::kortix.sandbox_provider\n" +
-        "sandbox_compute_sessions:provider:'daytona'::kortix.sandbox_provider\n" +
-        "session_sandboxes:provider:'daytona'::kortix.sandbox_provider",
+      "project_sessions:sandbox_provider:'daytona'::zed.sandbox_provider\n" +
+        "sandbox_compute_sessions:provider:'daytona'::zed.sandbox_provider\n" +
+        "session_sandboxes:provider:'daytona'::zed.sandbox_provider",
     );
 
     expect(
       psql(`
         SELECT count(*)
           FROM pg_trigger
-         WHERE tgrelid = 'kortix.session_sandboxes'::regclass
+         WHERE tgrelid = 'zed.session_sandboxes'::regclass
            AND tgname = 'trg_session_sandbox_identity_immutable'
            AND NOT tgisinternal;
       `).output.trim(),
@@ -166,16 +166,16 @@ describe.skipIf(!dockerAvailable)('retired local provider migration — real Pos
 
   test('fails closed and names every table that still contains retired rows', () => {
     psql(`
-      INSERT INTO kortix.project_sessions VALUES ('session-1', 'local-docker');
-      INSERT INTO kortix.session_sandboxes VALUES
+      INSERT INTO zed.project_sessions VALUES ('session-1', 'local-docker');
+      INSERT INTO zed.session_sandboxes VALUES
         ('00000000-0000-4000-a000-000000000001', NULL, 'local-docker');
-      INSERT INTO kortix.provider_transitions VALUES
+      INSERT INTO zed.provider_transitions VALUES
         ('10000000-0000-4000-a000-000000000001', 'local-docker', 'daytona');
-      INSERT INTO kortix.sandbox_compute_sessions VALUES
+      INSERT INTO zed.sandbox_compute_sessions VALUES
         ('20000000-0000-4000-a000-000000000001', 'local-docker');
-      INSERT INTO kortix.app_deployments VALUES
+      INSERT INTO zed.app_deployments VALUES
         ('30000000-0000-4000-a000-000000000001', 'local-docker');
-      INSERT INTO kortix.app_runtimes VALUES
+      INSERT INTO zed.app_runtimes VALUES
         ('40000000-0000-4000-a000-000000000001', 'local-docker');
     `);
 

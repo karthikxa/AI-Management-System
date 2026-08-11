@@ -5,24 +5,24 @@
  *
  * Run (from packages/sdk):  bun run playground/marketplace/18-marketplace.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("marketplace", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
 
-  const items = await kortix.marketplace.items();
+  const items = await zed.marketplace.items();
   console.log(`✓ marketplace.items(): ${JSON.stringify(items).slice(0, 250)}…`);
 
-  const marketplaces = await kortix.marketplace.marketplaces();
+  const marketplaces = await zed.marketplace.marketplaces();
   console.log(
     `✓ marketplaces(): ${JSON.stringify(marketplaces).slice(0, 200)}…`,
   );
 
-  const sources = await kortix.marketplace.sources.list();
+  const sources = await zed.marketplace.sources.list();
   console.log(`✓ sources.list(): ${JSON.stringify(sources).slice(0, 200)}`);
 
-  const registry = kortix.project(projectId).registry;
+  const registry = zed.project(projectId).registry;
   const installed = await registry.list();
   console.log(
     `✓ project registry.list(): ${JSON.stringify(installed).slice(0, 250)}…`,

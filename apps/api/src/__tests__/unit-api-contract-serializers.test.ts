@@ -5,8 +5,8 @@ import {
   ProjectSessionSchema,
   SecretSchema,
   SessionStartResultSchema,
-} from '@kortix/api-contract';
-import type { projectSecrets, projectSessions, projects, sessionSandboxes } from '@kortix/db';
+} from '@zed/api-contract';
+import type { projectSecrets, projectSessions, projects, sessionSandboxes } from '@zed/db';
 import { config } from '../config';
 import { buildSecretView, serializeProject, serializeSession } from '../projects/lib/serializers';
 import { serializeSandboxRow } from '../projects/routes/shared';
@@ -28,7 +28,7 @@ function projectRow(
     secretDefaultStrategy: 'runtime' as const,
     repoUrl: 'https://github.com/acme/demo',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     idempotencyKey: null,
     status: 'active',
     metadata: {},
@@ -46,7 +46,7 @@ function sessionRow(
     sessionId: SESSION_ID,
     accountId: ACCOUNT_ID,
     projectId: PROJECT_ID,
-    branchName: 'kortix/session-1',
+    branchName: 'zed/session-1',
     baseRef: 'main',
     sandboxProvider: 'daytona',
     sandboxId: null,
@@ -82,7 +82,7 @@ function sandboxRow(
     activeSince: NOW,
     deadlineAt: NOW,
     externalId: 'sbx-123',
-    baseUrl: 'https://sbx-123.proxy.kortix.com',
+    baseUrl: 'https://sbx-123.proxy.zed.com',
     status: 'active',
     config: { serviceKey: 'sensitive', region: 'eu' },
     metadata: {},
@@ -308,7 +308,7 @@ describe('buildSecretView ⇄ SecretSchema', () => {
 
   test('generic HTTPS broker metadata reports an available server consumer', () => {
     const egressPolicy = {
-      backend: 'kortix_fetch' as const,
+      backend: 'zed_fetch' as const,
       rules: [{ host: 'api.example.com' }],
       inject: { kind: 'header' as const, name: 'authorization' },
     };
@@ -379,9 +379,9 @@ describe('buildSecretView ⇄ SecretSchema', () => {
 
   test('system git-auth secret parses and cannot be managed even by an editor', () => {
     const out = buildSecretView({
-      identifier: 'KORTIX_GIT_AUTH_TOKEN',
-      name: 'KORTIX_GIT_AUTH_TOKEN',
-      shared: secretRow({ identifier: 'KORTIX_GIT_AUTH_TOKEN', name: 'KORTIX_GIT_AUTH_TOKEN' }),
+      identifier: 'ZED_GIT_AUTH_TOKEN',
+      name: 'ZED_GIT_AUTH_TOKEN',
+      shared: secretRow({ identifier: 'ZED_GIT_AUTH_TOKEN', name: 'ZED_GIT_AUTH_TOKEN' }),
       canManageShared: true,
     });
     const parsed = SecretSchema.strict().parse(out);

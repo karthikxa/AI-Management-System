@@ -152,7 +152,7 @@ export function EmojiPicker({
       // Self-hosted, not frimousse's default CDN. Left unset, frimousse fetches
       // the emojibase dataset from `https://cdn.jsdelivr.net/npm/emojibase-data`
       // in the user's browser the first time the picker opens — the only
-      // external runtime CDN this app would have. Kortix ships self-hosted, so
+      // external runtime CDN this app would have. Zed ships self-hosted, so
       // that is wrong here regardless; what makes it a defect is that it fails
       // INVISIBLY. frimousse exposes `Loading` and `Empty` and no error slot,
       // and its cold-cache path is a bare `await` (only the etag-revalidation
@@ -185,7 +185,7 @@ export function EmojiPicker({
             className={cn(
               'border-border bg-popover text-foreground placeholder:text-muted-foreground/60',
               'h-9 w-full rounded-md border pr-3 pl-9 text-sm font-medium transition-[color] outline-none',
-              'focus:border-kortix-blue focus:border focus:outline-none',
+              'focus:border-zed-blue focus:border focus:outline-none',
               // frimousse hardcodes type="search". Tailwind's preflight resets
               // ::-webkit-search-decoration but not ::-webkit-search-cancel-button,
               // so without this WebKit paints its native clear X inside the field.

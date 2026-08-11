@@ -7,7 +7,7 @@
 // Index-backed where it matters: idx_audit_events_actor_time (actor + since)
 // and idx_audit_events_resource (resource_type).
 
-import { auditEvents } from '@kortix/db';
+import { auditEvents } from '@zed/db';
 import { type SQL, eq, gte, ilike, like, lte, or, sql } from 'drizzle-orm';
 
 export interface AuditFilterInput {

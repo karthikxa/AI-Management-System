@@ -1,4 +1,4 @@
-// Marketplace catalog ids are `${company}:${name}` (e.g. `kortix:code-review`).
+// Marketplace catalog ids are `${company}:${name}` (e.g. `zed:code-review`).
 // Company ids may contain slashes (`anthropics/skills`), so the public routes
 // encode them as a single path segment (`anthropics--skills`). Item names may
 // also contain slashes and use a catch-all segment after the company.

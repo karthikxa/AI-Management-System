@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { ProgressRing } from '@/components/ui/progress-ring';
 import { STATUS_TEXT } from '@/components/ui/status';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { MessageWithParts } from '@kortix/sdk/react';
+import type { MessageWithParts } from '@zed/sdk/react';
 
 import type { FlatModel } from '../model-flatten';
 

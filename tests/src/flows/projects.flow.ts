@@ -64,10 +64,10 @@ flow("PROJ-6", { domain: "projects", routes: ["GET /v1/projects/:projectId/detai
       const r = await admin.get("/v1/projects/:projectId/detail", { params: { projectId: p.id } });
       r.status(403);
     });
-    await ctx.step("platform admin WITH x-kortix-admin-bypass → 200 (read-only escape hatch)", async () => {
+    await ctx.step("platform admin WITH x-zed-admin-bypass → 200 (read-only escape hatch)", async () => {
       const r = await admin.get("/v1/projects/:projectId/detail", {
         params: { projectId: p.id },
-        headers: { "x-kortix-admin-bypass": "1" },
+        headers: { "x-zed-admin-bypass": "1" },
       });
       r.status(200).body().has("$.project.project_id", p.id);
     });

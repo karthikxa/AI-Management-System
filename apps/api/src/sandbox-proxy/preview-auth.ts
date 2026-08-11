@@ -11,18 +11,18 @@
  * This module is the single source of truth for "does this bare token grant
  * access to this sandbox", used by every NON-Hono edge (subdomain + WS). It
  * accepts exactly the set `combinedAuth` accepts for preview routes:
- *   - CLI Personal Access Tokens (kortix_pat_…)  → the minting user's id
- *   - Service-account tokens       (kortix_sa_…)  → the service-account id
- *   - Kortix API/sandbox tokens    (kortix_…)     → the owning account id
+ *   - CLI Personal Access Tokens (zed_pat_…)  → the minting user's id
+ *   - Service-account tokens       (zed_sa_…)  → the service-account id
+ *   - Zed API/sandbox tokens    (zed_…)     → the owning account id
  *   - Supabase JWTs                               → the user's id
  * and enforces sandbox ownership via `canAccessPreviewSandbox`.
  *
  * Returns the resolved *principal id* (the value callers thread through as the
- * downstream `userId` for signing X-Kortix-User-Context), or null on any
+ * downstream `userId` for signing X-Zed-User-Context), or null on any
  * failure — callers respond 401.
  */
 
-import { isKortixToken, isAccountToken, isServiceAccountToken } from '../shared/crypto';
+import { isZedToken, isAccountToken, isServiceAccountToken } from '../shared/crypto';
 import { validateSecretKey } from '../repositories/api-keys';
 import { validateAccountToken } from '../repositories/account-tokens';
 import { validateServiceAccountToken } from '../repositories/service-accounts';
@@ -36,11 +36,11 @@ import { canAccessPreviewSandbox } from '../shared/preview-ownership';
  * token, or valid token without access to this sandbox).
  */
 export interface PreviewPrincipal {
-  /** The principal's id (user, service account, or account for a kortix key). */
+  /** The principal's id (user, service account, or account for a zed key). */
   userId: string;
   /**
    * The session this credential is BOUND to, when it is a sandbox token. Null
-   * for a laptop CLI PAT, a service account, or a JWT. Kortix-as-a-Backend
+   * for a laptop CLI PAT, a service account, or a JWT. Zed-as-a-Backend
    * shares one `created_by` across every end-user, so this is the only thing
    * that distinguishes one end-user's sandbox from another's.
    */
@@ -77,8 +77,8 @@ export async function authenticatePreviewPrincipalDetailed(
         : null;
     }
 
-    // Kortix API / sandbox token — ownership is checked against the account.
-    if (isKortixToken(token)) {
+    // Zed API / sandbox token — ownership is checked against the account.
+    if (isZedToken(token)) {
       const r = await validateSecretKey(token);
       if (!r.isValid || !r.accountId) return null;
       return (await canAccessPreviewSandbox({ previewSandboxId: sandboxId, accountId: r.accountId }))
@@ -109,13 +109,13 @@ export async function authenticatePreviewPrincipalDetailed(
 
 /**
  * Extract the candidate token from a preview request, in priority order:
- * Authorization: Bearer → X-Kortix-Token → ?token= → __preview_session cookie.
+ * Authorization: Bearer → X-Zed-Token → ?token= → __preview_session cookie.
  * Mirrors the order used by `combinedAuth` for preview routes.
  */
 export function extractPreviewToken(req: Request, url: URL): string | null {
   const authHeader = req.headers.get('Authorization');
   if (authHeader?.startsWith('Bearer ')) return authHeader.slice(7);
-  const ktHeader = req.headers.get('X-Kortix-Token');
+  const ktHeader = req.headers.get('X-Zed-Token');
   if (ktHeader) return ktHeader;
   const qp = url.searchParams.get('token');
   if (qp) return qp;

@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { accountStateKeys } from './use-account-state';
 import { useBillingAccountId } from '@/stores/billing-account-context';
-import { dollarsToCredits } from '@kortix/shared';
-import { getBillingTransactionsSummary, listBillingTransactions } from '@kortix/sdk';
+import { dollarsToCredits } from '@zed/shared';
+import { getBillingTransactionsSummary, listBillingTransactions } from '@zed/sdk';
 
 export interface CreditTransaction {
   id: string;
@@ -63,7 +63,7 @@ export function useTransactions(
       { accountId: accountId ?? null },
     ],
     // Billing-disabled deployments (e.g. self-host with
-    // KORTIX_BILLING_INTERNAL_ENABLED=false) have no ledger to fetch — the
+    // ZED_BILLING_INTERNAL_ENABLED=false) have no ledger to fetch — the
     // endpoint 404s "Billing is not enabled". Callers pass `enabled: false` to
     // skip the request entirely rather than surfacing that raw error.
     enabled: options?.enabled ?? true,

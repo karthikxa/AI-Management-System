@@ -14,23 +14,23 @@
 -- of new value" error on a fresh-DB apply. project_role is referenced only by
 -- the two columns below (no functions / views / checks).
 
-ALTER TYPE "kortix"."project_role" RENAME TO "project_role__pre_user";
+ALTER TYPE "zed"."project_role" RENAME TO "project_role__pre_user";
 
-CREATE TYPE "kortix"."project_role" AS ENUM ('manager', 'editor', 'user', 'viewer');
+CREATE TYPE "zed"."project_role" AS ENUM ('manager', 'editor', 'user', 'viewer');
 
-ALTER TABLE "kortix"."project_members"
+ALTER TABLE "zed"."project_members"
   ALTER COLUMN "project_role" DROP DEFAULT,
-  ALTER COLUMN "project_role" TYPE "kortix"."project_role"
-    USING "project_role"::text::"kortix"."project_role",
+  ALTER COLUMN "project_role" TYPE "zed"."project_role"
+    USING "project_role"::text::"zed"."project_role",
   ALTER COLUMN "project_role" SET DEFAULT 'viewer';
 
-ALTER TABLE "kortix"."project_group_grants"
+ALTER TABLE "zed"."project_group_grants"
   ALTER COLUMN "role" DROP DEFAULT,
-  ALTER COLUMN "role" TYPE "kortix"."project_role"
-    USING "role"::text::"kortix"."project_role",
+  ALTER COLUMN "role" TYPE "zed"."project_role"
+    USING "role"::text::"zed"."project_role",
   ALTER COLUMN "role" SET DEFAULT 'viewer';
 
-DROP TYPE "kortix"."project_role__pre_user";
+DROP TYPE "zed"."project_role__pre_user";
 
 -- Down Migration
 --

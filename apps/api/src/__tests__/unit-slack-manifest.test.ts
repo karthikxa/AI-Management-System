@@ -68,7 +68,7 @@ describe('BYO per-project manifest endpoints', () => {
   test('BYO is self-installed → no OAuth redirect; canonical → has one', () => {
     expect(m.oauth_config.redirect_urls).toBeUndefined();
     expect(buildSlackManifest(CANONICAL_PROD).oauth_config.redirect_urls).toEqual([
-      'https://api.kortix.com/v1/webhooks/slack/oauth/callback',
+      'https://api.zed.com/v1/webhooks/slack/oauth/callback',
     ]);
   });
   test('requests the commands scope', () => {
@@ -77,35 +77,35 @@ describe('BYO per-project manifest endpoints', () => {
 });
 
 describe('BYO slash command naming', () => {
-  test('keeps a normal Kortix BYO app on /kortix', () => {
+  test('keeps a normal Zed BYO app on /zed', () => {
     const manifest = generateSlackManifest({
       baseUrl: 'https://api.example.com',
       projectId: 'proj-123',
-      appName: 'Kortix',
-      botName: 'kortix',
+      appName: 'Zed',
+      botName: 'zed',
     });
 
-    expect(manifest.features.slash_commands[0]?.command).toBe('/kortix');
+    expect(manifest.features.slash_commands[0]?.command).toBe('/zed');
   });
 
   test('derives non-conflicting dev commands from the BYO app name', () => {
     const manifest = generateSlackManifest({
       baseUrl: 'https://api.example.com',
       projectId: 'proj-123',
-      appName: 'kortix-no-access',
-      botName: 'kortix-no-access',
+      appName: 'zed-no-access',
+      botName: 'zed-no-access',
     });
 
-    expect(manifest.features.slash_commands[0]?.command).toBe('/kortix-no-access');
-    expect(defaultByoSlashCommand('Kortix No Access', 'Kortix No Access')).toBe('/kortix-no-access');
+    expect(manifest.features.slash_commands[0]?.command).toBe('/zed-no-access');
+    expect(defaultByoSlashCommand('Zed No Access', 'Zed No Access')).toBe('/zed-no-access');
   });
 
   test('allows an explicit command override', () => {
     const manifest = generateSlackManifest({
       baseUrl: 'https://api.example.com',
       projectId: 'proj-123',
-      appName: 'kortix-no-access',
-      botName: 'kortix-no-access',
+      appName: 'zed-no-access',
+      botName: 'zed-no-access',
       command: 'kna',
     });
 

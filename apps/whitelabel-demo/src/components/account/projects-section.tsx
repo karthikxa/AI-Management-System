@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { relativeTime } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { FolderGit2 } from 'lucide-react';
@@ -15,7 +15,7 @@ import Link from 'next/link';
 export function ProjectsSection({ accountId }: { accountId: string }) {
   const projects = useQuery({
     queryKey: ['account-projects', accountId],
-    queryFn: () => kortix.projects.listForAccount(accountId),
+    queryFn: () => zed.projects.listForAccount(accountId),
   });
 
   const items = projects.data ?? [];

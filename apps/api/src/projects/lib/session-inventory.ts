@@ -3,7 +3,7 @@ import {
   type SecretGrant,
   type ShareSubject,
 } from '../../connectors/share';
-import type { projectSessions, sessionSandboxes } from '@kortix/db';
+import type { projectSessions, sessionSandboxes } from '@zed/db';
 
 type ProjectSessionRow = typeof projectSessions.$inferSelect;
 type RuntimeStatus = typeof sessionSandboxes.$inferSelect.status;

@@ -11,7 +11,7 @@ import {
 } from '@/lib/onboarding/ensure-first-project';
 import { readLastProjectId, writeLastProjectId } from '@/lib/onboarding/last-project-cookie';
 import { useCurrentAccountStore } from '@/stores/current-account-store';
-import { listAccounts } from '@kortix/sdk';
+import { listAccounts } from '@zed/sdk';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

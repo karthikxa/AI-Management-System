@@ -15,7 +15,7 @@ shrinking, or gone quiet is flagged as at-risk in the same run. Nothing reaches
 a customer and no discount is ever applied until the account owner reviews it.
 
 Fresh session per sweep — state lives on the HubSpot deal record itself (a
-`kortix_renewal_stage_alerted` property marks the last window surfaced), not
+`zed_renewal_stage_alerted` property marks the last window surfaced), not
 in a local ledger file. A sweep can find several accounts at once; handle each
 as an independent unit — a failure preparing one account's packet is logged
 and skipped, never blocking any other account in the same sweep.
@@ -42,11 +42,11 @@ GET /crm/v3/objects/deals/search
     { propertyName: "dealstage", operator: "NEQ", value: "closedlost" }
   ]
   properties: ["{{renewal_date_property}}", "amount", "dealstage", "hubspot_owner_id",
-               "kortix_renewal_stage_alerted", "notes_last_updated", "hs_lastmodifieddate"]
+               "zed_renewal_stage_alerted", "notes_last_updated", "hs_lastmodifieddate"]
 ```
 
 For each deal, compute days-to-renewal and bucket it into 90 / 60 / 30. Skip a
-deal if `kortix_renewal_stage_alerted` already equals that bucket — it was
+deal if `zed_renewal_stage_alerted` already equals that bucket — it was
 packeted on a prior run. A deal moving into a *new*, tighter bucket (e.g. 90 →
 60) always gets a fresh packet, since more has likely changed.
 
@@ -108,7 +108,7 @@ This is the read summary; the packet and draft are the deliverables in
 
 ## Step 7 — Write the marker back
 
-Set `kortix_renewal_stage_alerted` on each packeted deal to the bucket just
+Set `zed_renewal_stage_alerted` on each packeted deal to the bucket just
 surfaced (with a timestamp). This is the only HubSpot write — never the deal
 stage, amount, or pipeline.
 
@@ -121,9 +121,9 @@ stage, amount, or pipeline.
   discount, credit, or price change. Pricing stays with the account owner.
 - **Calendar is read-only.** Check for an existing conversation; never create,
   move, or accept an event.
-- **HubSpot writes are scoped** to `kortix_renewal_stage_alerted`. Never
+- **HubSpot writes are scoped** to `zed_renewal_stage_alerted`. Never
   change deal stage, amount, or pipeline.
-- **No duplicate packets.** Always check `kortix_renewal_stage_alerted` before
+- **No duplicate packets.** Always check `zed_renewal_stage_alerted` before
   building a new packet — a deal already surfaced for its current bucket isn't
   re-packeted, though a move into a tighter bucket always gets a fresh one.
 - **At-risk flags aren't deduplicated.** Unlike packets, an at-risk flag

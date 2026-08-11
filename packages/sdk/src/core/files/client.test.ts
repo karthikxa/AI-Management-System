@@ -1,5 +1,5 @@
 import { test, expect, beforeEach, mock } from 'bun:test';
-import { configureKortix } from '../http/config';
+import { configureZed } from '../http/config';
 import { setCurrentRuntime } from '../session/current-runtime';
 import * as F from './client';
 import { ApiError } from '../http/api/errors';
@@ -8,16 +8,16 @@ import { ApiError } from '../http/api/errors';
 // (`globalThis.fetch`) instead of `mock.module('../http/auth', ...)` — the
 // active-sandbox base URL ('http://sbx.test') is driven through the REAL
 // `session/current-runtime` seam (`setCurrentRuntime`, in `beforeEach` below),
-// and the token through the REAL `configureKortix` seam, so the REAL
+// and the token through the REAL `configureZed` seam, so the REAL
 // `authenticatedFetch` (auth header injection, timeout, retry) runs end to
 // end. `mock.module('../http/auth', ...)` is process-wide and PERMANENT for
 // the whole `bun test` sweep (see `server-store/active.test.ts`'s and
 // `runtime/client.test.ts`'s own comments on this) — worse, `../http/auth` is
 // a singleton module reached from many entry points (`runtime/client.ts`,
-// hence `kortix.ts`), so whichever file's mock happens to be resident the
+// hence `zed.ts`), so whichever file's mock happens to be resident the
 // FIRST time `runtime/client.ts` evaluates wins for every OTHER file that
 // later shares that cached module instance too, including ones (like
-// `kortix.test.ts`) that never opted into any mock at all. Driving
+// `zed.test.ts`) that never opted into any mock at all. Driving
 // `globalThis.fetch` avoids the collision entirely: it's reset in every
 // test's own `beforeEach` (this file's and every other's), so there is
 // nothing shared to collide with.
@@ -31,7 +31,7 @@ beforeEach(() => {
   calls = [];
   mockFailStatus = null;
   setCurrentRuntime('http://sbx.test', 'sbx-test');
-  configureKortix({ backendUrl: 'http://sbx.test', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://sbx.test', getToken: async () => 'tok' });
   globalThis.fetch = mock(async (input: unknown, init: RequestInit = {}) => {
     calls.push({
       url: String(input),
@@ -161,7 +161,7 @@ test('deleteFile/mkdir/renameFile throw ApiError (with status) on a daemon failu
   await expect(F.renameFile('/workspace/a', '/workspace/b')).rejects.toBeInstanceOf(ApiError);
 });
 
-// ── explicit baseUrl param (internal plumbing for `kortix.session(pid, sid).files`)
+// ── explicit baseUrl param (internal plumbing for `zed.session(pid, sid).files`)
 
 test('every op accepts an explicit trailing baseUrl, overriding the module-global active sandbox', async () => {
   mockFailStatus = null;

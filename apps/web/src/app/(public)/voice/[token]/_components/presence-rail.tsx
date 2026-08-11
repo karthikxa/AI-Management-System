@@ -1,7 +1,7 @@
 'use client';
 
 import { EntityAvatar } from '@/components/ui/entity-avatar';
-import { IconMicOff, IconUser } from '@/components/ui/kortix-icons';
+import { IconMicOff, IconUser } from '@/components/ui/zed-icons';
 import { cn } from '@/lib/utils';
 
 import type { PresenceEntry } from './types';
@@ -9,7 +9,7 @@ import type { PresenceEntry } from './types';
 /**
  * Who's in the call. Audio-only, so this is deliberately built as a row of
  * initials/icon tiles (not blank video rects standing in for cameras that
- * don't exist) — the agent gets the Kortix mark, the human gets a plain
+ * don't exist) — the agent gets the Zed mark, the human gets a plain
  * person glyph, and whoever is talking right now gets a highlighted tile.
  */
 export function PresenceRail({ roster }: { roster: PresenceEntry[] }) {
@@ -33,12 +33,12 @@ function PresenceTile({ entry }: { entry: PresenceEntry }) {
       <div
         className={cn(
           'rounded-md p-0.5 transition-shadow duration-200',
-          entry.speaking && 'ring-kortix-green shadow-kortix-green/20 shadow-md ring-2',
+          entry.speaking && 'ring-zed-green shadow-zed-green/20 shadow-md ring-2',
         )}
       >
         <div className="relative">
           {entry.isAgent ? (
-            <EntityAvatar label="Kortix" size="xl" className="bg-foreground text-background" />
+            <EntityAvatar label="Zed" size="xl" className="bg-foreground text-background" />
           ) : (
             <EntityAvatar label={entry.name} icon={IconUser} size="xl" />
           )}

@@ -42,7 +42,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create index concurrently if not exists idx_project_session_connector_bindings_connection
-      on kortix.project_session_connector_bindings (connection_id)
+      on zed.project_session_connector_bindings (connection_id)
   `);
 };
 

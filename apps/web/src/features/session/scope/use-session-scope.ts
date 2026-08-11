@@ -10,8 +10,8 @@ import {
   type Connection,
   type ProjectSecret,
   type SessionScopeInput,
-} from '@kortix/sdk';
-import { qk, useProjectConfig } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { qk, useProjectConfig } from '@zed/sdk/react';
 import { useIsFetching, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 

@@ -96,13 +96,13 @@ function verifyRepairArtifacts(migrationsDir: string): void {
 
 async function readRepairRows(client: pg.Client): Promise<MigrationLedgerRow[]> {
   const tableResult = await client.query<{ exists: boolean }>(
-    "select to_regclass('kortix_migrations.pgmigrations') is not null as exists",
+    "select to_regclass('zed_migrations.pgmigrations') is not null as exists",
   );
   if (!tableResult.rows[0]?.exists) return [];
 
   const result = await client.query<{ name: string; run_on: Date }>(
     `select name, run_on
-       from kortix_migrations.pgmigrations
+       from zed_migrations.pgmigrations
       where name = any($1::text[])
       order by run_on, id`,
     [REPAIR_NAMES],
@@ -125,7 +125,7 @@ async function reconcileRepairPlan(databaseUrl: string): Promise<boolean> {
   await client.connect();
   try {
     await client.query('begin');
-    await client.query('lock table kortix_migrations.pgmigrations in exclusive mode');
+    await client.query('lock table zed_migrations.pgmigrations in exclusive mode');
     const plan = planMigrationLedgerRepair(await readRepairRows(client));
     if (!plan) {
       await client.query('commit');
@@ -139,12 +139,12 @@ async function reconcileRepairPlan(databaseUrl: string): Promise<boolean> {
 
     for (const { legacyName, currentName } of plan.renames) {
       const result = await client.query(
-        `update kortix_migrations.pgmigrations
+        `update zed_migrations.pgmigrations
             set name = $2
           where name = $1
             and not exists (
               select 1
-                from kortix_migrations.pgmigrations
+                from zed_migrations.pgmigrations
                where name = $2
             )`,
         [legacyName, currentName],
@@ -155,7 +155,7 @@ async function reconcileRepairPlan(databaseUrl: string): Promise<boolean> {
     }
 
     const orderResult = await client.query(
-      `update kortix_migrations.pgmigrations
+      `update zed_migrations.pgmigrations
           set run_on = $2::timestamptz - interval '1 millisecond'
         where name = $1`,
       [CONNECTOR_POLICY_MIGRATION.name, plan.legacyRunOn.toISOString()],

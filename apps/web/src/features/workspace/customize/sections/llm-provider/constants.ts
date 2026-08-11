@@ -1,4 +1,4 @@
-import { DEFAULT_MANAGED_MODEL_IDS } from '@kortix/llm-catalog';
+import { DEFAULT_MANAGED_MODEL_IDS } from '@zed/llm-catalog';
 
 export const MANAGED_MODEL_ID_SET = new Set<string>(DEFAULT_MANAGED_MODEL_IDS);
 

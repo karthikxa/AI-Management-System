@@ -1,5 +1,5 @@
 /**
- * Test helpers for kortix-api E2E tests.
+ * Test helpers for zed-api E2E tests.
  *
  * Provides:
  * - createTestApp() — Hono app shell with auth bypassed
@@ -14,7 +14,7 @@ import type { AuthVariables } from '../types';
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const TEST_USER_ID = '00000000-0000-4000-a000-000000000001';
-const TEST_USER_EMAIL = 'test@kortix.dev';
+const TEST_USER_EMAIL = 'test@zed.dev';
 
 // ─── Test App Factory ────────────────────────────────────────────────────────
 
@@ -37,7 +37,7 @@ export function createTestApp(opts: TestAppOptions = {}) {
   app.get('/health', (c) =>
     c.json({
       status: 'ok',
-      service: 'kortix-api',
+      service: 'zed-api',
       timestamp: new Date().toISOString(),
       environment: 'dev',
       version: 'dev',
@@ -47,7 +47,7 @@ export function createTestApp(opts: TestAppOptions = {}) {
   app.get('/v1/health', (c) =>
     c.json({
       status: 'ok',
-      service: 'kortix-api',
+      service: 'zed-api',
       timestamp: new Date().toISOString(),
       environment: 'dev',
       version: 'dev',

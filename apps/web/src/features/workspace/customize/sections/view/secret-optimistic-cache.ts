@@ -1,4 +1,4 @@
-import type { ProjectSecret, ProjectSecretsResponse } from '@kortix/sdk';
+import type { ProjectSecret, ProjectSecretsResponse } from '@zed/sdk';
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
 
 export type ProjectSecretsCache = ProjectSecretsResponse | ProjectSecret[];

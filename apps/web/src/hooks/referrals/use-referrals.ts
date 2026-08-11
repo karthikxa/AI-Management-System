@@ -7,7 +7,7 @@ import {
   refreshReferralCode,
   sendReferralEmails,
   validateReferralCode,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 

@@ -2,7 +2,7 @@
  * The prompt a freshly-installed project/template gets seeded with as its first
  * session, so an agent wires up the thing you just installed instead of dumping
  * you on an empty project. Deliberately generic — the agent reads the project's
- * own `kortix.yaml` + `.kortix/` files in the sandbox rather than us parsing the
+ * own `zed.yaml` + `.zed/` files in the sandbox rather than us parsing the
  * config here — and it defers to the installed agent's own guardrails (so e.g.
  * Website Studio still never contacts anyone or spends money without approval).
  */
@@ -13,8 +13,8 @@ export function buildTemplateSetupPrompt(title: string): string {
     '',
     'Set it up so it is ready to run:',
     '1. If the template includes an `install.md`, read it first and follow it as the template-specific setup guide.',
-    '2. Read `kortix.yaml` and the files under `.kortix/` to understand what this project is and what it needs.',
-    '3. Create the connections it requires (connectors + secrets). Always mint a setup link with the `request_secret` / `connect` tools (or `kortix secrets request` / `kortix connectors connect`) — never ask me to paste a raw key into chat.',
+    '2. Read `zed.yaml` and the files under `.zed/` to understand what this project is and what it needs.',
+    '3. Create the connections it requires (connectors + secrets). Always mint a setup link with the `request_secret` / `connect` tools (or `zed secrets request` / `zed connectors connect`) — never ask me to paste a raw key into chat.',
     '4. Leave any triggers that are off by default off, and ask before enabling anything that sends messages, spends money, or contacts people.',
     '5. When it is wired up, tell me in plain language what now works and what (if anything) you still need from me to go live.',
     '',
@@ -26,16 +26,16 @@ export function buildTemplateSetupPrompt(title: string): string {
  * The first-session prompt for a brand-new project (NOT cloned from a marketplace
  * item). This is the "agent creation" default — rather than dropping the user on
  * an empty project, the first session onboards + personalizes: it reads the
- * `kortix-onboarding` skill, learns what the user does, tailors the preloaded
+ * `zed-onboarding` skill, learns what the user does, tailors the preloaded
  * starter kit to them, and aims at one real first result.
  */
 export function buildProjectOnboardingPrompt(projectName: string): string {
   const name = projectName.replaceAll('-', ' ').trim() || 'this project';
   return [
-    `This is a brand-new Kortix project ("${name}") — it ships with the full starter skill kit (research, documents, slides, spreadsheets, the web, browser automation, and more) already installed.`,
+    `This is a brand-new Zed project ("${name}") — it ships with the full starter skill kit (research, documents, slides, spreadsheets, the web, browser automation, and more) already installed.`,
     '',
     'Onboard me and make this project mine:',
-    '1. Read the `kortix-onboarding` skill and follow it.',
+    '1. Read the `zed-onboarding` skill and follow it.',
     '2. Ask me — briefly — what I do and what I want to get done here, so you can tailor the starter to my work. One or two questions, not an interrogation.',
     '3. Get me one real, finished result fast (a document, a bit of research, a small site, a populated sheet — whatever fits what I told you). The finished thing is the point, not a feature tour.',
     '4. Only surface deeper capabilities (connectors, memory, triggers, subagents, the marketplace) when the task in front of us actually calls for it.',

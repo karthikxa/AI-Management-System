@@ -2,7 +2,7 @@
 
 Run **many feature branches at once**, each in its own git worktree with its own
 app ports and `node_modules` — zero collisions. By default, worktrees reuse the
-primary checkout's standard local Supabase project (`kortix-local` on
+primary checkout's standard local Supabase project (`zed-local` on
 `54321`/`54322`) so creation is fast and auth/data state is shared. Pass `--db`
 only when a branch needs a separate Supabase project/data plane.
 
@@ -14,7 +14,7 @@ pnpm worktree create --name billing-fix --yes
 # web  http://localhost:13000   ·   api http://localhost:13008   ·   db shared primary Supabase
 
 pnpm worktree create --name migration-fix --db --yes
-# same app isolation, plus a separate kortix-wt-migration-fix Supabase project.
+# same app isolation, plus a separate zed-wt-migration-fix Supabase project.
 ```
 
 ## Commands
@@ -59,13 +59,13 @@ bumps the slot rather than colliding silently.
 ## How isolation works
 
 - **Ports** — deterministic per-slot blocks (above), tracked in a machine-global
-  registry at `~/.kortix/worktrees/registry.json` (override with `$KORTIX_HOME`).
+  registry at `~/.zed/worktrees/registry.json` (override with `$ZED_HOME`).
 - **Supabase** — default shared mode reads credentials from the primary local
-  `kortix-local` Supabase stack and does not run migrations or stop/delete DB
+  `zed-local` Supabase stack and does not run migrations or stop/delete DB
   resources. Isolated mode (`--db`) runs a separate stack under `project_id =
-  kortix-wt-<name>`, which namespaces every container/volume/network
-  (`supabase_db_kortix-wt-<name>`, …). The CLI is pointed at a generated project
-  dir under `~/.kortix/worktrees/<name>/sb` via `supabase --workdir`, so the
+  zed-wt-<name>`, which namespaces every container/volume/network
+  (`supabase_db_zed-wt-<name>`, …). The CLI is pointed at a generated project
+  dir under `~/.zed/worktrees/<name>/sb` via `supabase --workdir`, so the
   worktree's **tracked `supabase/config.toml` stays pristine** (migrations are
   symlinked back, so they're shared + branch-correct).
 - **node_modules** — git worktrees have separate working trees, so each worktree
@@ -73,15 +73,15 @@ bumps the slot rather than colliding silently.
   a sibling's `pnpm install` can never touch it. Package **content** comes from
   the **shared global pnpm store** (default `~/Library/pnpm/store`), which is
   concurrency-safe and hardlinked, so N worktrees cost ~one copy on disk. (We used
-  to pass `--store-dir ~/.kortix/worktrees/<name>/pnpm-store`, giving each worktree
+  to pass `--store-dir ~/.zed/worktrees/<name>/pnpm-store`, giving each worktree
   a full private ~2.8GB store; that defeated dedup and leaked 244GB across 91
   abandoned slots. Don't reintroduce it.)
 - **Env** — the CLI **pre-sets** each slot's `PORT`/`WEB_PORT`/`DATABASE_URL`/
-  `SUPABASE_URL`/`KORTIX_API_PROXY_TARGET`/… into the launched processes.
+  `SUPABASE_URL`/`ZED_API_PROXY_TARGET`/… into the launched processes.
   `dotenvx run` does not override pre-set vars, so slot values win over the
   committed encrypted `.env` — **no committed file is ever edited.**
 
-The only in-worktree artifact is the gitignored `.kortix-worktree.json` marker.
+The only in-worktree artifact is the gitignored `.zed-worktree.json` marker.
 
 ## Stopping: why it kills trees, not ports
 
@@ -120,7 +120,7 @@ registry drift in both directions; `pnpm worktree stop --all` clears the lot.
 ## The two enabling changes (default to primary behavior)
 
 - `apps/web/next.config.ts` — the `/v1/*` proxy target reads
-  `KORTIX_API_PROXY_TARGET` (unset → `localhost:8008`). Without this, every
+  `ZED_API_PROXY_TARGET` (unset → `localhost:8008`). Without this, every
   worktree's browser would proxy to the **primary** API.
 - `apps/web/package.json` — `next dev … --port ${WEB_PORT:-3000}`.
 

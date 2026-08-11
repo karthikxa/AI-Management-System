@@ -5,7 +5,7 @@ import { parseRuntimeEnv, type RuntimeEnv } from '@/lib/env-schema'
 export type PublicRuntimeEnv = RuntimeEnv
 
 function read(name: string): string | undefined {
-  return process.env[`KORTIX_PUBLIC_${name}`] ?? process.env[`NEXT_PUBLIC_${name}`]
+  return process.env[`ZED_PUBLIC_${name}`] ?? process.env[`NEXT_PUBLIC_${name}`]
 }
 
 export function getServerPublicEnv(): PublicRuntimeEnv {
@@ -13,10 +13,10 @@ export function getServerPublicEnv(): PublicRuntimeEnv {
     SUPABASE_URL: read('SUPABASE_URL') || process.env.SUPABASE_PUBLIC_URL || process.env.SUPABASE_URL,
     SUPABASE_ANON_KEY: read('SUPABASE_ANON_KEY') || process.env.SUPABASE_ANON_KEY,
     BACKEND_URL: read('BACKEND_URL') || process.env.BACKEND_URL,
-    // The public API origin sandbox callbacks already use (KORTIX_URL = the dev
+    // The public API origin sandbox callbacks already use (ZED_URL = the dev
     // Cloudflare tunnel locally, the real API origin in prod). Lets the browser
     // build externally-reachable webhook URLs instead of the localhost BACKEND_URL.
-    WEBHOOK_BASE_URL: read('WEBHOOK_BASE_URL') || process.env.KORTIX_URL,
+    WEBHOOK_BASE_URL: read('WEBHOOK_BASE_URL') || process.env.ZED_URL,
     BILLING_ENABLED: read('BILLING_ENABLED') === 'true',
     MANAGED_PROVIDER_ENABLED: read('MANAGED_PROVIDER_ENABLED') === 'true',
     CONNECTORS_ENABLED: read('CONNECTORS_ENABLED') !== 'false',
@@ -26,7 +26,7 @@ export function getServerPublicEnv(): PublicRuntimeEnv {
     SANDBOX_ID: read('SANDBOX_ID') || undefined,
     AUTH_PROVIDERS: read('AUTH_PROVIDERS') || undefined,
     AUTH_METHODS: read('AUTH_METHODS') || undefined,
-    VERSION: process.env.NEXT_PUBLIC_KORTIX_VERSION || read('VERSION') || undefined,
+    VERSION: process.env.NEXT_PUBLIC_ZED_VERSION || read('VERSION') || undefined,
   })
 }
 
@@ -49,5 +49,5 @@ export function serializeRuntimeConfigScript(): string {
     .join('\\u2028')
     .split(PARAGRAPH_SEPARATOR)
     .join('\\u2029')
-  return `window.__KORTIX_RUNTIME_CONFIG=${json};window.__RUNTIME_ENV=window.__KORTIX_RUNTIME_CONFIG;`
+  return `window.__ZED_RUNTIME_CONFIG=${json};window.__RUNTIME_ENV=window.__ZED_RUNTIME_CONFIG;`
 }

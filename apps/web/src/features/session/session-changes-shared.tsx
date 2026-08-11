@@ -12,7 +12,7 @@ import { useCallback, useState } from 'react';
 import { STATUS_TEXT } from '@/components/ui/status';
 import { errorToast, successToast } from '@/components/ui/toast';
 import { useChatSendStore } from '@/stores/chat-send-store';
-import { useProjectSession } from '@kortix/sdk/react';
+import { useProjectSession } from '@zed/sdk/react';
 
 /** git-status status → single-letter badge, using the canonical status tones. */
 export const CHANGE_STATUS_BADGE: Record<string, { letter: string; cls: string; label: string }> = {
@@ -34,7 +34,7 @@ export function useSessionBaseRef(
 
 /**
  * Ask the agent to commit this session's work and open a change request — it
- * runs `kortix cr open` for the user to review & merge. When there's no live
+ * runs `zed cr open` for the user to review & merge. When there's no live
  * chat session to message, the prompt is copied to the clipboard instead.
  */
 export function useOpenChangeRequest(chatSessionId: string | undefined, baseRef: string) {
@@ -43,7 +43,7 @@ export function useOpenChangeRequest(chatSessionId: string | undefined, baseRef:
 
   const openChangeRequest = useCallback(async () => {
     if (asking) return;
-    const prompt = `Load the kortix-system skill and read about Versions & Change Requests. Then review the changes in this session, commit them, and open a change request to merge into \`${baseRef}\`. Give it a clear title and a description of what changed and why.`;
+    const prompt = `Load the zed-system skill and read about Versions & Change Requests. Then review the changes in this session, commit them, and open a change request to merge into \`${baseRef}\`. Give it a clear title and a description of what changed and why.`;
 
     if (!chatSessionId) {
       try {

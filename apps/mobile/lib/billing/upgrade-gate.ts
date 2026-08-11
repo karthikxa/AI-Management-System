@@ -58,7 +58,7 @@ export function createApiRequestError(
 }
 
 /**
- * `@kortix/sdk`'s `backendApi`/`projects-client` throws a different error
+ * `@zed/sdk`'s `backendApi`/`projects-client` throws a different error
  * shape than mobile's own `apiFetch` + `createApiRequestError`: a 402 comes
  * back as a `BillingError` with `.status` + `.message` at the top level, but
  * `code` / `account_id` / `balance` nested one level down under `.detail`

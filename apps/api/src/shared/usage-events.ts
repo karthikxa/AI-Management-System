@@ -1,4 +1,4 @@
-import { usageEvents } from '@kortix/db';
+import { usageEvents } from '@zed/db';
 import { db } from './db';
 
 export interface UsageEventInput {

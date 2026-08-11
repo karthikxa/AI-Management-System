@@ -1,5 +1,5 @@
 /**
- * @kortix/sdk — the Kortix frontend data layer, in one package.
+ * @zed/sdk — the Zed frontend data layer, in one package.
  *
  * THIS ROOT ENTRY IS CANONICAL: the whole framework-free surface (client,
  * session, turns, files, event stream, errors, REST clients) is exported
@@ -9,9 +9,9 @@
  *
  * Only three subpaths exist beyond the root, each for a reason that fits in
  * one sentence:
- *   @kortix/sdk/react       — React is an optional peer dependency
- *   @kortix/sdk/server      — imports node:async_hooks (Node-only)
- *   @kortix/sdk/internal/*  — apps/web's zustand stores; outside semver
+ *   @zed/sdk/react       — React is an optional peer dependency
+ *   @zed/sdk/server      — imports node:async_hooks (Node-only)
+ *   @zed/sdk/internal/*  — apps/web's zustand stores; outside semver
  *
  * The 20 legacy subpaths (`/projects-client`, `/turns`, …) still resolve as
  * `@deprecated` aliases under `src/deprecated/` and are removed only on a
@@ -23,26 +23,26 @@
  * module here, without renaming anything.
  */
 export {
-  configureKortix,
+  configureZed,
   platformConfig,
   isConfigured,
-  type KortixPlatformConfig,
-  type KortixFeatureFlagOverrides,
+  type ZedPlatformConfig,
+  type ZedFeatureFlagOverrides,
 } from './core/http/config';
 
 /**
- * The opinionated single entry point. `createKortix({ getToken })` wires the
+ * The opinionated single entry point. `createZed({ getToken })` wires the
  * platform seam and returns one client whose methods cover the whole REST +
- * opencode surface — so a host app imports ONLY from `@kortix/sdk`.
+ * opencode surface — so a host app imports ONLY from `@zed/sdk`.
  */
 export {
-  createKortix,
+  createZed,
   SessionNotReadyError,
-  type Kortix,
+  type Zed,
   type ProjectHandle,
   type SessionHandle,
   type SessionModel,
-} from './core/client/kortix';
+} from './core/client/zed';
 
 /** Workspace file operations (daemon `/file` + `/find`), owned by the SDK. */
 export {
@@ -89,9 +89,9 @@ export {
 
 /**
  * A session's runtime surface — proxy/preview/web-proxy URL building + the
- * `/kortix/health` liveness probe. The host reaches these through the session
- * handle (`createKortix(...).session(pid, sid).health()/.previewUrl()/.proxyUrl()`);
- * stateless helpers live at `@kortix/sdk/session`. "Sandbox" never appears in the
+ * `/zed/health` liveness probe. The host reaches these through the session
+ * handle (`createZed(...).session(pid, sid).health()/.previewUrl()/.proxyUrl()`);
+ * stateless helpers live at `@zed/sdk/session`. "Sandbox" never appears in the
  * public surface — a session owns its runtime.
  */
 export type { SessionHealthResponse, SessionHealthResult } from './core/session/health';
@@ -108,7 +108,7 @@ export type { SessionRuntimeEntry } from './core/session/session-runtime-registr
 /**
  * The framework-free SSE event-stream primitive — connect/reconnect/backoff,
  * heartbeat watchdog, and event coalescing, with ZERO react/react-query
- * imports. `@kortix/sdk/react`'s `useOpenCodeEventStream` is a thin wrapper
+ * imports. `@zed/sdk/react`'s `useOpenCodeEventStream` is a thin wrapper
  * around this for the React host; any other host (worker, CLI, non-React UI)
  * can call it directly.
  */
@@ -123,11 +123,11 @@ export {
 
 /**
  * Typed error classes for the REST surface — isomorphic (no DOM/React deps),
- * so a server-side "Kortix as a Backend" wrapper can `catch` a call into
- * `backendApi`/`createKortix(...)`, `instanceof BillingError` a 402 and pass
+ * so a server-side "Zed as a Backend" wrapper can `catch` a call into
+ * `backendApi`/`createZed(...)`, `instanceof BillingError` a 402 and pass
  * the cost/upgrade payload straight through to its own client, or
  * `instanceof ApiError` to branch on `.status`/`.code`. Same classes the
- * React host uses (`@kortix/sdk/react` re-exports from this same module) —
+ * React host uses (`@zed/sdk/react` re-exports from this same module) —
  * one error hierarchy across every host.
  */
 export {
@@ -156,7 +156,7 @@ export {
  * doesn't have to special-case "assistant message with zero parts but a
  * failure" as silent nothingness. `toolInfo` is a zero-icon tool-name ->
  * {label, category} registry a host maps to its own icon set. Also available
- * from `@kortix/sdk/turns`.
+ * from `@zed/sdk/turns`.
  */
 export {
   type ClassifiedAgentPart,
@@ -189,48 +189,48 @@ export {
  * down to the ~12 events a product chat UI needs (message/part updates,
  * session status/idle/error, question asked/answered, permission
  * asked/replied, todo updated, connection, heartbeat-gap), reshaped into
- * purpose-built payloads. Also available from `@kortix/sdk/event-stream`.
+ * purpose-built payloads. Also available from `@zed/sdk/event-stream`.
  */
 export {
   heartbeatGapEvent,
   narrowChatEvent,
-  type KortixChatEvent,
-  type KortixChatEventConnection,
-  type KortixChatEventHeartbeatGap,
-  type KortixChatEventMessageRemoved,
-  type KortixChatEventMessageUpdated,
-  type KortixChatEventPartRemoved,
-  type KortixChatEventPartUpdated,
-  type KortixChatEventPermissionAsked,
-  type KortixChatEventPermissionReplied,
-  type KortixChatEventQuestionAnswered,
-  type KortixChatEventQuestionAsked,
-  type KortixChatEventSessionError,
-  type KortixChatEventSessionIdle,
-  type KortixChatEventSessionStatus,
-  type KortixChatEventTodoUpdated,
-  type KortixChatQuestionInfo,
-  type KortixChatQuestionOption,
-  type KortixChatToolRef,
+  type ZedChatEvent,
+  type ZedChatEventConnection,
+  type ZedChatEventHeartbeatGap,
+  type ZedChatEventMessageRemoved,
+  type ZedChatEventMessageUpdated,
+  type ZedChatEventPartRemoved,
+  type ZedChatEventPartUpdated,
+  type ZedChatEventPermissionAsked,
+  type ZedChatEventPermissionReplied,
+  type ZedChatEventQuestionAnswered,
+  type ZedChatEventQuestionAsked,
+  type ZedChatEventSessionError,
+  type ZedChatEventSessionIdle,
+  type ZedChatEventSessionStatus,
+  type ZedChatEventTodoUpdated,
+  type ZedChatQuestionInfo,
+  type ZedChatQuestionOption,
+  type ZedChatToolRef,
 } from './core/stream/chat-events';
 
 /**
- * Domain result types from the REST facade (`kortix.project(id).*` /
- * `kortix.session(...)` / `kortix.accounts.*` / `kortix.billing.*`), re-exported
+ * Domain result types from the REST facade (`zed.project(id).*` /
+ * `zed.session(...)` / `zed.accounts.*` / `zed.billing.*`), re-exported
  * type-only so a consumer can name what a facade call returns without a
- * second import from `@kortix/sdk/projects-client`. Additive — no runtime
+ * second import from `@zed/sdk/projects-client`. Additive — no runtime
  * cost, and every name here already lives in `./platform/projects-client`
  * (this is a convenience re-export, not a new surface).
  */
 export type {
   // Projects
-  KortixProject,
+  ZedProject,
   ProjectConfigSummary,
   ProjectDetail,
   GatewayCatalogModel,
   ProjectLlmCatalogResponse,
   // Accounts / IAM
-  KortixAccount,
+  ZedAccount,
   AccountDetail,
   AccountMember,
   AccountRole,
@@ -319,7 +319,7 @@ export type {
   CheckoutSessionResult,
   PortalSessionResult,
   AutoTopupSettings,
-  // Public marketplace catalog (top-level `kortix.marketplace.*`)
+  // Public marketplace catalog (top-level `zed.marketplace.*`)
   MarketplaceCatalogItem,
   MarketplaceItemsResponse,
   MarketplaceEntry,
@@ -345,7 +345,7 @@ export { stripTrailingSlashes } from './platform/strings';
  * output body carries `success: false` or a top-level `error` — the shape
  * router/connector tools like `web_search` commonly return on failure — now
  * classifies as `status: 'error'` instead of rendering as a success with raw
- * JSON inside). Also available from `@kortix/sdk/turns`.
+ * JSON inside). Also available from `@zed/sdk/turns`.
  */
 export {
   type DiffLine,
@@ -376,7 +376,7 @@ export {
   type PermissionRule,
 } from './core/rest/projects-client/agent-config';
 
-export * from './core/client/kortix';
+export * from './core/client/zed';
 export * from './core/http/api-client';
 export * from './core/http/auth';
 export * from './core/http/config';

@@ -39,9 +39,9 @@ describe('buildOneOffUpgradePrompt — the freeform runner wrapper', () => {
 
   test('enforces the full landing contract — push, open, verify, never merge', () => {
     expect(prompt).toContain('git push origin HEAD');
-    expect(prompt).toContain('kortix cr open');
-    expect(prompt).toContain('kortix cr diff');
-    expect(prompt).toMatch(/do not run `kortix cr merge`/i);
+    expect(prompt).toContain('zed cr open');
+    expect(prompt).toContain('zed cr diff');
+    expect(prompt).toMatch(/do not run `zed cr merge`/i);
   });
 
   test('syncs with an advanced base before landing', () => {
@@ -54,6 +54,6 @@ describe('buildOneOffUpgradePrompt — the freeform runner wrapper', () => {
   });
 
   test('validates manifest edits before landing', () => {
-    expect(prompt).toContain('kortix validate');
+    expect(prompt).toContain('zed validate');
   });
 });

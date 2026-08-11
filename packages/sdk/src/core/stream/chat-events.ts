@@ -6,7 +6,7 @@
  * and more. A chat surface only ever cares about a small slice of that —
  * message/part updates, session status, questions, permissions, todos, and
  * connection health. `narrowChatEvent` filters + reshapes the raw stream down
- * to `KortixChatEvent`, so a host's dispatch switch only has to handle events
+ * to `ZedChatEvent`, so a host's dispatch switch only has to handle events
  * that actually matter to chat, each carrying a purpose-shaped payload
  * instead of the raw untyped `properties` bag.
  *
@@ -31,77 +31,77 @@
 import type { Message, Part, QuestionAnswer, SessionStatus, Todo } from '../runtime/client';
 import type { OpenCodeEvent } from './event-stream';
 
-export interface KortixChatEventMessageUpdated {
+export interface ZedChatEventMessageUpdated {
   type: 'message.updated';
   sessionID: string;
   message: Message;
 }
 
-export interface KortixChatEventMessageRemoved {
+export interface ZedChatEventMessageRemoved {
   type: 'message.removed';
   sessionID: string;
   messageID: string;
 }
 
-export interface KortixChatEventPartUpdated {
+export interface ZedChatEventPartUpdated {
   type: 'message.part.updated';
   sessionID: string;
   part: Part;
 }
 
-export interface KortixChatEventPartRemoved {
+export interface ZedChatEventPartRemoved {
   type: 'message.part.removed';
   sessionID: string;
   messageID: string;
   partID: string;
 }
 
-export interface KortixChatEventSessionStatus {
+export interface ZedChatEventSessionStatus {
   type: 'session.status';
   sessionID: string;
   status: SessionStatus;
 }
 
-export interface KortixChatEventSessionIdle {
+export interface ZedChatEventSessionIdle {
   type: 'session.idle';
   sessionID: string;
 }
 
-export interface KortixChatEventSessionError {
+export interface ZedChatEventSessionError {
   type: 'session.error';
   sessionID?: string;
   error?: unknown;
 }
 
-export interface KortixChatQuestionOption {
+export interface ZedChatQuestionOption {
   label: string;
   description: string;
 }
 
-export interface KortixChatQuestionInfo {
+export interface ZedChatQuestionInfo {
   question: string;
   header: string;
-  options: KortixChatQuestionOption[];
+  options: ZedChatQuestionOption[];
   multiple?: boolean;
   custom?: boolean;
 }
 
-export interface KortixChatToolRef {
+export interface ZedChatToolRef {
   messageID: string;
   callID: string;
 }
 
-export interface KortixChatEventQuestionAsked {
+export interface ZedChatEventQuestionAsked {
   type: 'question.asked';
   sessionID: string;
   requestID: string;
-  questions: KortixChatQuestionInfo[];
-  tool?: KortixChatToolRef;
+  questions: ZedChatQuestionInfo[];
+  tool?: ZedChatToolRef;
 }
 
 /** Merges the wire's `question.replied` / `question.rejected` events — a host
  *  usually just needs to know "this pending question resolved" plus how. */
-export interface KortixChatEventQuestionAnswered {
+export interface ZedChatEventQuestionAnswered {
   type: 'question.answered';
   sessionID: string;
   requestID: string;
@@ -109,64 +109,64 @@ export interface KortixChatEventQuestionAnswered {
   answers?: QuestionAnswer[];
 }
 
-export interface KortixChatEventPermissionAsked {
+export interface ZedChatEventPermissionAsked {
   type: 'permission.asked';
   sessionID: string;
   requestID: string;
   permission: string;
   patterns: string[];
-  tool?: KortixChatToolRef;
+  tool?: ZedChatToolRef;
 }
 
-export interface KortixChatEventPermissionReplied {
+export interface ZedChatEventPermissionReplied {
   type: 'permission.replied';
   sessionID: string;
   requestID: string;
   reply: 'once' | 'always' | 'reject';
 }
 
-export interface KortixChatEventTodoUpdated {
+export interface ZedChatEventTodoUpdated {
   type: 'todo.updated';
   sessionID: string;
   todos: Todo[];
 }
 
 /** Fired once per SSE (re)connect — a host can use it to clear a "reconnecting…" banner. */
-export interface KortixChatEventConnection {
+export interface ZedChatEventConnection {
   type: 'connection';
   status: 'connected';
 }
 
 /** Synthetic — see the module doc comment. Not derived from `narrowChatEvent`;
  *  built directly from `openEventStream`'s `onGapRehydrate(gapMs)`. */
-export interface KortixChatEventHeartbeatGap {
+export interface ZedChatEventHeartbeatGap {
   type: 'heartbeat-gap';
   gapMs: number;
 }
 
-export type KortixChatEvent =
-  | KortixChatEventMessageUpdated
-  | KortixChatEventMessageRemoved
-  | KortixChatEventPartUpdated
-  | KortixChatEventPartRemoved
-  | KortixChatEventSessionStatus
-  | KortixChatEventSessionIdle
-  | KortixChatEventSessionError
-  | KortixChatEventQuestionAsked
-  | KortixChatEventQuestionAnswered
-  | KortixChatEventPermissionAsked
-  | KortixChatEventPermissionReplied
-  | KortixChatEventTodoUpdated
-  | KortixChatEventConnection
-  | KortixChatEventHeartbeatGap;
+export type ZedChatEvent =
+  | ZedChatEventMessageUpdated
+  | ZedChatEventMessageRemoved
+  | ZedChatEventPartUpdated
+  | ZedChatEventPartRemoved
+  | ZedChatEventSessionStatus
+  | ZedChatEventSessionIdle
+  | ZedChatEventSessionError
+  | ZedChatEventQuestionAsked
+  | ZedChatEventQuestionAnswered
+  | ZedChatEventPermissionAsked
+  | ZedChatEventPermissionReplied
+  | ZedChatEventTodoUpdated
+  | ZedChatEventConnection
+  | ZedChatEventHeartbeatGap;
 
 /** Build the synthetic heartbeat-gap chat event from `openEventStream`'s `onGapRehydrate` callback. */
-export function heartbeatGapEvent(gapMs: number): KortixChatEventHeartbeatGap {
+export function heartbeatGapEvent(gapMs: number): ZedChatEventHeartbeatGap {
   return { type: 'heartbeat-gap', gapMs };
 }
 
 /**
- * Narrow a raw `OpenCodeEvent` down to the curated `KortixChatEvent` union a
+ * Narrow a raw `OpenCodeEvent` down to the curated `ZedChatEvent` union a
  * chat UI needs, reshaping `properties` into a purpose-built payload.
  *
  * Returns `null` for every event outside the curated set (LSP, PTY,
@@ -174,7 +174,7 @@ export function heartbeatGapEvent(gapMs: number): KortixChatEventHeartbeatGap {
  * …) — callers should treat `null` as "not a chat event, ignore" rather than
  * an error; this is a deliberate filter, not an exhaustive switch.
  */
-export function narrowChatEvent(event: OpenCodeEvent): KortixChatEvent | null {
+export function narrowChatEvent(event: OpenCodeEvent): ZedChatEvent | null {
   switch (event.type) {
     case 'message.updated':
       return {

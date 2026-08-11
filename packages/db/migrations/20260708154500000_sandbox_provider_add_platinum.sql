@@ -9,11 +9,11 @@
 -- (ALLOWED_SANDBOX_PROVIDERS=daytona,platinum + PLATINUM_API_KEY), so a project
 -- pinned to it via metadata.default_sandbox_provider resolved provider='platinum'
 -- and every session create on that project died in the INSERT with
---   22P02: invalid input value for enum kortix.sandbox_provider: "platinum"
+--   22P02: invalid input value for enum zed.sandbox_provider: "platinum"
 -- surfaced to the user as a 500. Same class of drift as the missing
 -- project_session_public_shares table; verify-live-schema.ts gates it going forward.
 --
 -- ADD VALUE only (never USED in this txn) — matches the precedent set by
 -- sandbox_provider 'managed' and executor_connector_provider 'channel'/'computer'.
 -- Non-destructive + idempotent.
-ALTER TYPE "kortix"."sandbox_provider" ADD VALUE IF NOT EXISTS 'platinum';
+ALTER TYPE "zed"."sandbox_provider" ADD VALUE IF NOT EXISTS 'platinum';

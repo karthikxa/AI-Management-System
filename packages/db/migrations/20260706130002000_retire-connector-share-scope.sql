@@ -4,7 +4,7 @@
 -- docs/specs/2026-07-05-agent-first-config-unification.md). Connectors are now
 -- always project-wide visible; the ONLY gate on which agents may call a
 -- connector is the agent's `connectors` grant (`[[agents]].connectors` in
--- kortix.toml, enforced by iam/agent-scope.ts). This retires BOTH other
+-- zed.toml, enforced by iam/agent-scope.ts). This retires BOTH other
 -- connector-side gates removed from the app in this same change:
 --
 --   1. executor_connectors.share_scope + executor_connector_grants — the
@@ -22,18 +22,18 @@
 
 -- 1. Flip any restricted connectors to project-wide (the picker is gone; a
 --    connector is unconditionally project-wide now).
-UPDATE "kortix"."executor_connectors"
+UPDATE "zed"."executor_connectors"
 SET "share_scope" = 'project', "updated_at" = now()
 WHERE "share_scope" = 'restricted';
 
 -- 2. Drop the now-dead per-connector member/group grant rows.
-DELETE FROM "kortix"."executor_connector_grants";
+DELETE FROM "zed"."executor_connector_grants";
 
 -- 3. Belt-and-suspenders: make `project` the only value Postgres will accept
 --    for this column going forward, independent of app-layer discipline
 --    (mirrors the `executor_connectors_credential_mode_shared_only` CHECK
 --    added when `per_user` was retired).
-ALTER TABLE "kortix"."executor_connectors"
+ALTER TABLE "zed"."executor_connectors"
   ADD CONSTRAINT "executor_connectors_share_scope_project_only"
   CHECK ("share_scope" = 'project');
 
@@ -44,9 +44,9 @@ ALTER TABLE "kortix"."executor_connectors"
 --    `per_user` value left in `executor_credential_mode`: Postgres can't
 --    cleanly drop a column's meaning without a bigger migration, and there is
 --    no live write path left to reintroduce a non-null value (the CRUD
---    function + `/agent-scope` route + kortix.toml parsing were all removed
+--    function + `/agent-scope` route + zed.toml parsing were all removed
 --    from the app in this same change).
-UPDATE "kortix"."executor_connectors"
+UPDATE "zed"."executor_connectors"
 SET "agent_scope" = NULL, "updated_at" = now()
 WHERE "agent_scope" IS NOT NULL;
 
@@ -56,5 +56,5 @@ WHERE "agent_scope" IS NOT NULL;
 -- per-connector member/department allow-list and the per-connector agent
 -- scope are intentionally not restored (their data was deliberately dropped
 -- above). Only the CHECK constraint is reversible.
-ALTER TABLE "kortix"."executor_connectors"
+ALTER TABLE "zed"."executor_connectors"
   DROP CONSTRAINT IF EXISTS "executor_connectors_share_scope_project_only";

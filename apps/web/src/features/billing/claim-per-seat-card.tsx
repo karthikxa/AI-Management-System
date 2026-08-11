@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/loading';
 import { useClaimPerSeat } from '@/hooks/billing/use-account-state';
-import type { AccountState } from '@kortix/sdk';
+import type { AccountState } from '@zed/sdk';
 import { ArrowRightIcon as ArrowRight } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 

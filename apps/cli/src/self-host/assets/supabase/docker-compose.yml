@@ -220,7 +220,7 @@ services:
       # GOTRUE_MFA_PHONE_VERIFY_ENABLED: ${MFA_PHONE_VERIFY_ENABLED}
       # GOTRUE_MFA_MAX_ENROLLED_FACTORS: ${MFA_MAX_ENROLLED_FACTORS}
 
-      # SAML SSO — enabled by default so `kortix self-host` matches Kortix Cloud
+      # SAML SSO — enabled by default so `zed self-host` matches Zed Cloud
       # out of the box: GOTRUE_SAML_ENABLED is "true" and GOTRUE_SAML_PRIVATE_KEY
       # is a per-instance RSA-2048 key the CLI generates at `init` (see
       # samlPrivateKeyDer() in commands/self-host.ts), the same way it generates

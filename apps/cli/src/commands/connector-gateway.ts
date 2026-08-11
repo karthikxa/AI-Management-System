@@ -1,22 +1,22 @@
 /**
- * `kortix connectors` — the agent's interface to every configured connector
+ * `zed connectors` — the agent's interface to every configured connector
  * (Pipedream / MCP / OpenAPI / Postman / GraphQL / HTTP), absorbed from the old in-sandbox
- * `connector` shim into the one kortix CLI.
+ * `connector` shim into the one zed CLI.
  *
  * Three faces over ONE core (see ../connector-gateway/gateway.ts):
- *   - this CLI        (`kortix connectors call …`, the agent's primary path)
- *   - the SDK         (`@kortix/sdk`, durable TypeScript workflows)
- *   - the MCP server  (`kortix connectors mcp`, optional compatibility face)
+ *   - this CLI        (`zed connectors call …`, the agent's primary path)
+ *   - the SDK         (`@zed/sdk`, durable TypeScript workflows)
+ *   - the MCP server  (`zed connectors mcp`, optional compatibility face)
  *
  * Thin client: it never holds a third-party credential. Every tool call goes to
- * the Kortix Connector Gateway (/v1/connectors/*), which checks sharing, resolves
+ * the Zed Connector Gateway (/v1/connectors/*), which checks sharing, resolves
  * the secret SERVER-SIDE, runs the call, and audits it. Auth comes from
- * KORTIX_CLI_TOKEN + KORTIX_API_URL, injected at sandbox spawn.
+ * ZED_CLI_TOKEN + ZED_API_URL, injected at sandbox spawn.
  *
  * MACHINE surface: emits JSON only (the agent parses stdout); index.ts skips the
  * host/update notices for machine-oriented connector subcommands.
  */
-import { ApiError } from '@kortix/sdk';
+import { ApiError } from '@zed/sdk';
 import {
   addConnector,
   callWithApprovalHandoff,
@@ -35,10 +35,10 @@ const PROVIDERS = ['pipedream', 'mcp', 'openapi', 'postman', 'graphql', 'http'];
 // right command instead of a generic reserved-slug error from the API.
 const BUILTIN_CHANNEL_HINTS: Record<string, string> = {
   slack:
-    'Slack is a built-in channel, not a connector. Run `kortix channels connect` — ' +
-    'it prints a one-click "Add to Slack" install link. Once installed, its tools appear here as `kortix_slack.*`.',
-  kortix_slack:
-    'The Slack channel connector is materialized automatically. To (re)connect Slack, run `kortix channels connect` ' +
+    'Slack is a built-in channel, not a connector. Run `zed channels connect` — ' +
+    'it prints a one-click "Add to Slack" install link. Once installed, its tools appear here as `zed_slack.*`.',
+  zed_slack:
+    'The Slack channel connector is materialized automatically. To (re)connect Slack, run `zed channels connect` ' +
     'for a one-click install link.',
 };
 
@@ -54,7 +54,7 @@ interface ConnectorCallInput {
 }
 
 const CONNECTOR_CALL_USAGE =
-  'usage: kortix connectors call <connector>.<action> [json-args] ' +
+  'usage: zed connectors call <connector>.<action> [json-args] ' +
   '(split form also supported: <connector> <action> [json-args])';
 
 /**
@@ -140,9 +140,9 @@ async function dispatch(command: string, args: string[], flags: Record<string, s
     case 'describe': {
       const connector = connectorClient(flags.project);
       const ref = args[0];
-      if (!ref || !ref.includes('.')) throw new CliError('usage: kortix connectors show <connector>.<action>', 'USAGE');
+      if (!ref || !ref.includes('.')) throw new CliError('usage: zed connectors show <connector>.<action>', 'USAGE');
       const tool = await connector.describe(ref);
-      if (!tool) throw new CliError(`unknown tool "${ref}" — run 'kortix connectors discover' to list tools`, 'NOT_FOUND');
+      if (!tool) throw new CliError(`unknown tool "${ref}" — run 'zed connectors discover' to list tools`, 'NOT_FOUND');
       out({ tool: tool.tool, risk: tool.risk, description: tool.description, inputSchema: tool.inputSchema });
       break;
     }
@@ -164,11 +164,11 @@ async function dispatch(command: string, args: string[], flags: Record<string, s
     case 'add':
     case 'create': {
       // Add (or update) a connector on the project NOW — committed to
-      // kortix.yaml on main + synced server-side, exactly like the dashboard's
+      // zed.yaml on main + synced server-side, exactly like the dashboard's
       // "Add app". No change request needed; it's live this session. Then run
-      // `kortix connectors connect <slug>` to surface the auth link.
+      // `zed connectors connect <slug>` to surface the auth link.
       const slug = args[0];
-      if (!slug) throw new CliError('usage: kortix connectors add <slug> --provider <p> [--app <app>] [--url <url>] …', 'USAGE');
+      if (!slug) throw new CliError('usage: zed connectors add <slug> --provider <p> [--app <app>] [--url <url>] …', 'USAGE');
       rejectBuiltinChannel(slug);
       const draft = connectorDraftFromFlags(slug, flags);
       const res = await addConnector(draft, flags.project);
@@ -178,7 +178,7 @@ async function dispatch(command: string, args: string[], flags: Record<string, s
         provider: draft.provider,
         applied: true,
         sync: res.sync,
-        note: `Live now (committed to kortix.yaml on main + synced). Next: 'kortix connectors connect ${slug}' to get the auth link.`,
+        note: `Live now (committed to zed.yaml on main + synced). Next: 'zed connectors connect ${slug}' to get the auth link.`,
       });
       break;
     }
@@ -187,9 +187,9 @@ async function dispatch(command: string, args: string[], flags: Record<string, s
     case 'remove':
     case 'delete': {
       const slug = args[0];
-      if (!slug) throw new CliError('usage: kortix connectors rm <slug>', 'USAGE');
+      if (!slug) throw new CliError('usage: zed connectors rm <slug>', 'USAGE');
       await removeConnector(slug, flags.project);
-      out({ ok: true, slug, removed: true, note: 'Removed from kortix.yaml on main + catalog.' });
+      out({ ok: true, slug, removed: true, note: 'Removed from zed.yaml on main + catalog.' });
       break;
     }
 
@@ -198,9 +198,9 @@ async function dispatch(command: string, args: string[], flags: Record<string, s
       // the URL to the human. SURFACE this url in your reply — in the web UI it
       // opens a 1-click connect popup; in Slack it's a tappable link. The agent
       // never touches the credential. The connector must already be declared in
-      // kortix.yaml (add it + land the change request first).
+      // zed.yaml (add it + land the change request first).
       const slug = args[0];
-      if (!slug) throw new CliError('usage: kortix connectors connect <connector-slug>', 'USAGE');
+      if (!slug) throw new CliError('usage: zed connectors connect <connector-slug>', 'USAGE');
       rejectBuiltinChannel(slug);
       const expires = flags.expires ? Number(flags.expires) : undefined;
       const link = await mintConnectLink({ slug, expiresInMinutes: expires, projectOverride: flags.project });
@@ -217,17 +217,17 @@ async function dispatch(command: string, args: string[], flags: Record<string, s
 
     default:
       out({
-        name: 'kortix connectors',
+        name: 'zed connectors',
         description: 'One interface to every configured connector. Calls run server-side; no secrets in the sandbox.',
         commands: {
-          ls: 'kortix connectors ls — list connectors + tools this session can use',
-          discover: 'kortix connectors discover "<intent>" — search tools by natural language',
-          show: 'kortix connectors show <connector>.<action> — show a tool\'s input schema',
-          call: 'kortix connectors call <connector> <action> \'<json-args>\' — run a tool or return its approval link',
-          add: 'kortix connectors add <slug> --provider pipedream --app <app> — add a connector NOW (no CR), then connect',
-          rm: 'kortix connectors rm <slug> — remove a connector from the project',
-          connect: 'kortix connectors connect <connector-slug> — mint a Pipedream Quick Connect link to hand the human',
-          mcp: 'kortix connectors mcp — run the optional stdio MCP compatibility server',
+          ls: 'zed connectors ls — list connectors + tools this session can use',
+          discover: 'zed connectors discover "<intent>" — search tools by natural language',
+          show: 'zed connectors show <connector>.<action> — show a tool\'s input schema',
+          call: 'zed connectors call <connector> <action> \'<json-args>\' — run a tool or return its approval link',
+          add: 'zed connectors add <slug> --provider pipedream --app <app> — add a connector NOW (no CR), then connect',
+          rm: 'zed connectors rm <slug> — remove a connector from the project',
+          connect: 'zed connectors connect <connector-slug> — mint a Pipedream Quick Connect link to hand the human',
+          mcp: 'zed connectors mcp — run the optional stdio MCP compatibility server',
         },
       });
   }

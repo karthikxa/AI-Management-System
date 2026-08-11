@@ -9,7 +9,7 @@
  *                                                           escape hatch (.concurrent.ts)
  *
  * For schema-shape changes prefer `pnpm migrate:generate <slug>` (drizzle-kit
- * diffs kortix.ts) — this script is for RLS, functions, data backfills, and
+ * diffs zed.ts) — this script is for RLS, functions, data backfills, and
  * the two cases drizzle-kit can't express: CONCURRENTLY operations and
  * anything else that must opt out of the wrapping transaction.
  */
@@ -93,7 +93,7 @@ export const up = (pgm) => {
   pgm.sql(\`set lock_timeout = '2s'\`);
   pgm.sql(\`
     create index concurrently if not exists idx_TODO_ON_TODO_TABLE
-      on kortix.TODO_TABLE (TODO_COLUMN)
+      on zed.TODO_TABLE (TODO_COLUMN)
   \`);
 };
 
@@ -104,7 +104,7 @@ export const down = false;
 `,
   );
   console.log(`Created: packages/db/migrations/${ts}_${slug}.concurrent.ts`);
-  console.log('Fill in the TODOs, then review with `pnpm --filter @kortix/db lint`.');
+  console.log('Fill in the TODOs, then review with `pnpm --filter @zed/db lint`.');
   process.exit(0);
 }
 
@@ -145,4 +145,4 @@ set statement_timeout = '30s';
 `,
 );
 console.log(`Created: packages/db/migrations/${ts}_${slug}.sql`);
-console.log('Fill it in, delete the checklist lines that don\'t apply, then review with `pnpm --filter @kortix/db lint`.');
+console.log('Fill it in, delete the checklist lines that don\'t apply, then review with `pnpm --filter @zed/db lint`.');

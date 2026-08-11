@@ -1,10 +1,10 @@
-# The Kortix Marketplace — philosophy & production architecture
+# The Zed Marketplace — philosophy & production architecture
 
-This is the "why" behind `@kortix/registry`. It defines what a production-grade
-Kortix marketplace *is*, the invariants it must never break, and the decisions
+This is the "why" behind `@zed/registry`. It defines what a production-grade
+Zed marketplace *is*, the invariants it must never break, and the decisions
 that make it safe to let strangers publish things other people install.
 
-> One-line thesis: **Git hosts the goods, the lock is the truth, Kortix is the
+> One-line thesis: **Git hosts the goods, the lock is the truth, Zed is the
 > index — and nothing installs without the user seeing exactly what it does.**
 
 The north star is **Go modules / Homebrew taps / GitHub Actions**, not npm. In
@@ -20,7 +20,7 @@ becoming.
 
 Everything below derives from these. If a feature violates one, it's wrong.
 
-1. **Git is the registry; Kortix is the index.** Items live in their authors'
+1. **Git is the registry; Zed is the index.** Items live in their authors'
    GitHub repos. The marketplace stores *metadata and trust signals*, never the
    files. This keeps us decentralized, removes us as a supply-chain bottleneck,
    and means the gallery is a thin catalog over the exact registries the CLI
@@ -32,7 +32,7 @@ Everything below derives from these. If a feature violates one, it's wrong.
    whose payload is `registryDependencies`. Build the engine once; everything
    rides it.
 
-3. **Install is a commit, not a side effect.** `kortix marketplace install`
+3. **Install is a commit, not a side effect.** `zed marketplace install`
    writes files into the project's repo and they get committed. No hidden runtime state, no
    service you depend on at runtime. The result is **diffable, reviewable,
    reversible (`git revert`), and self-contained.** This is the shadcn ethic:
@@ -65,10 +65,10 @@ layers, and the core belongs to the inner two.
 ```
 ┌─ Layer 3: MARKETPLACE ─ everyone's registries ─ marketplace install item ───┐
 │  optional, opt-in, the 64 GKW skills + community skills/agents/bundles       │
-│ ┌─ Layer 2: STANDARD LIBRARY ─ first-party @kortix/* registry ─────────────┐ │
-│ │  official, curated, updatable: the Kortix-managed runtime skills + packs │ │
+│ ┌─ Layer 2: STANDARD LIBRARY ─ first-party @zed/* registry ─────────────┐ │
+│ │  official, curated, updatable: the Zed-managed runtime skills + packs │ │
 │ │ ┌─ Layer 1: RUNTIME FLOOR ─ baked into the starter scaffold ───────────┐ │ │
-│ │ │  kortix-system, kortix-memory, connector/slack/computer, agent-browser │ │ │
+│ │ │  zed-system, zed-memory, connector/slack/computer, agent-browser │ │ │
 │ │ │  them with ZERO network. A project must boot before any registry.    │ │ │
 │ │ └──────────────────────────────────────────────────────────────────────┘ │ │
 │ └────────────────────────────────────────────────────────────────────────────┘ │
@@ -76,11 +76,11 @@ layers, and the core belongs to the inner two.
 ```
 
 - **Layer 1 (Runtime floor):** the absolute minimum every project must have to
-  function. **Baked into the starter, installed offline by `kortix init`.** It
+  function. **Baked into the starter, installed offline by `zed init`.** It
   must never require a live registry — otherwise project creation depends on a
   service being up. The sandbox image also carries the deployed managed copy.
   At boot, the daemon injects that copy into the OpenCode skill discovery path.
-- **Layer 2 (Standard library):** the official `@kortix/*` registry. The core
+- **Layer 2 (Standard library):** the official `@zed/*` registry. The core
   *is also published here* so an existing project can **update** it
   through the managed update workflow and so the same files have a single
   canonical source. Baked for bootstrap, marketplace-addressable for updates.
@@ -92,40 +92,40 @@ layers, and the core belongs to the inner two.
 registry item" is true as a *data model*; it is not true as a *delivery
 requirement*.
 
-### Current Kortix-managed contract
+### Current Zed-managed contract
 
-The current Kortix-managed set is intentionally small:
+The current Zed-managed set is intentionally small:
 
-- `kortix-system`
-- `kortix-memory`
-- `kortix-connectors`
-- `kortix-slack`
-- `kortix-computer`
+- `zed-system`
+- `zed-memory`
+- `zed-connectors`
+- `zed-slack`
+- `zed-computer`
 
 These are first-party runtime skills. They are baked into the starter so a new
 project boots with no marketplace/network dependency, and they are also exposed
 as marketplace items so existing projects can be inspected and updated through
 the same install/update machinery.
 
-Not Kortix-managed today:
+Not Zed-managed today:
 
-- Default agents (`kortix`, `memory-reflector`)
+- Default agents (`zed`, `memory-reflector`)
 - `agent-browser`
 - OpenCode config files (`opencode.jsonc`, `package.json`, `bun.lock`)
 - PTY/tools (`show`, `memory`, `web_search`, `scrape_webpage`, `image_search`)
 - General Knowledge Worker skills
 
-Those may be in the starter floor, but they do not carry `managedBy: "kortix"`
-or `updatePolicy: "kortix-managed"` until the update workflow owns them.
+Those may be in the starter floor, but they do not carry `managedBy: "zed"`
+or `updatePolicy: "zed-managed"` until the update workflow owns them.
 
-### Kortix-managed update policy
+### Zed-managed update policy
 
 The deployed system-skill overlay and project-owned files use separate update
 paths.
 
 1. The daemon overlays host-managed system skills at sandbox boot. This gives
    every OpenCode session instructions that match the deployed API and CLI.
-2. `kortix system-skills get <name> --full` retrieves the same deployed source
+2. `zed system-skills get <name> --full` retrieves the same deployed source
    through the authenticated API.
 3. Project-owned or optional marketplace files remain git state. Updates to
    those files use a normal branch, commit, and change request.
@@ -144,7 +144,7 @@ configuration as reviewable git state.
 registry is `name`; globally it's `registry-namespace + name`.
 
 **Registry.** A repo with a `registry.json` (or a JSON endpoint). Composable via
-`include`. Namespaced (`@kortix`, `@acme`).
+`include`. Namespaced (`@zed`, `@acme`).
 
 **Versioning — lean on git, pin by hash.** A "version" is a **git ref**
 (branch / tag / sha). A "release" is a tag (`@v1.2.0`). Integrity is the
@@ -153,7 +153,7 @@ Rules:
 - Unpinned install (`owner/repo/item`) resolves the default branch *now* and
   **pins the resolved sha + hash in the lock**. Reproducible thereafter.
 - Pinned install (`owner/repo@v1/item`) is explicit and stable.
-- `kortix update <item>` re-resolves the ref → new hash → **shows a diff** →
+- `zed update <item>` re-resolves the ref → new hash → **shows a diff** →
   applies on confirm. Updates are visible commits, never silent.
 - A publisher *may* set `meta.version` for display, but it is **never** the
   integrity source — the hash is.
@@ -164,7 +164,7 @@ is an item that is *only* dependencies — the unit of "install a whole use-case
 
 **Deprecation & yank.** `meta.deprecated: "reason / successor"` shows a warning
 on install/list. A **yank** (security) is an index-side flag that makes the
-gallery refuse to surface it and `kortix marketplace install` warn loudly — but because files
+gallery refuse to surface it and `zed marketplace install` warn loudly — but because files
 live in the author's repo, yanking is *advisory at the source*, *enforced at the
 index*. (Another reason index-not-host is honest: we can de-list, not rewrite
 history we don't own.)
@@ -179,17 +179,17 @@ history we don't own.)
 **Index, don't host (the central decision).** The global marketplace is a
 **catalog of registries + a checksum/trust authority**, modeled on Go's
 proxy + `sum.golang.org`:
-- Authors **submit a repo URL**; Kortix crawls + validates its `registry.json`,
+- Authors **submit a repo URL**; Zed crawls + validates its `registry.json`,
   denormalizes the items into a searchable index, and records a checksum.
 - The gallery's "Add to project" runs the **same install** the CLI does, from
-  the **author's repo**. Kortix never re-hosts the files.
+  the **author's repo**. Zed never re-hosts the files.
 - Optional **read-through proxy/cache** (like Go's GOPROXY) for availability +
   to survive an author deleting a repo — cache is keyed by hash, so it can't
   serve different bytes than what was indexed.
 
 **Private & company registries.** Public GitHub registries resolve over raw
-URLs. Private/company repos resolve through the **existing Kortix git-proxy**
-(`/v1/git/:projectId/*`), which authorizes with the caller's Kortix token and
+URLs. Private/company repos resolve through the **existing Zed git-proxy**
+(`/v1/git/:projectId/*`), which authorizes with the caller's Zed token and
 mints short-lived host credentials server-side — the real GitHub token never
 reaches the client. This is the piece plain shadcn *can't* do and our biggest
 structural advantage: **auth'd, private, company-scoped registries for free.**
@@ -201,10 +201,10 @@ by `(source, sha)`. Immutable once pinned. Cheap.
 
 ## Part 5 — Trust, safety, supply chain (the production heart)
 
-This is the part that makes it safe to let strangers publish. A Kortix item is
+This is the part that makes it safe to let strangers publish. A Zed item is
 not inert data: a skill is **instructions an autonomous agent will follow**, and
 a tool is **code that runs in the session sandbox** with the project's
-`KORTIX_TOKEN`, connectors, and secrets. The threat model is real:
+`ZED_TOKEN`, connectors, and secrets. The threat model is real:
 prompt-injection-style skills, tools that exfiltrate secrets or abuse a
 connector, and network egress.
 
@@ -246,7 +246,7 @@ At submit/index time, automated checks (a model reviewer is well-suited here):
 - **Secret scanning** — refuse items that embed credentials.
 - **Capability honesty** — diff declared capabilities vs. what the files
   actually reference (a tool that hits a domain not in `network` → flagged).
-- **Dangerous-pattern scan** — tool code that reads `KORTIX_TOKEN` and POSTs it
+- **Dangerous-pattern scan** — tool code that reads `ZED_TOKEN` and POSTs it
   out, obvious exfiltration, `curl | sh`, etc.
 - **Schema + install dry-run** — `registry validate` must pass; a sandboxed
   dry-run must produce only in-`target` writes.
@@ -256,7 +256,7 @@ At submit/index time, automated checks (a model reviewer is well-suited here):
 - **Content hashes** in the lock (built) → tamper-evident installs.
 - **Pin-by-sha** on unpinned installs → reproducible.
 - **Signed provenance** (roadmap): publishers sign releases (sigstore-style);
-  the index records the signature; `kortix marketplace install` can require verified provenance
+  the index records the signature; `zed marketplace install` can require verified provenance
   at the global tier.
 - **Publish cooldown.** Mirror the supply-chain defense **this repo already runs
   in pnpm** (`minimumReleaseAge: 4320` — a 72h cooldown that defeats
@@ -267,7 +267,7 @@ At submit/index time, automated checks (a model reviewer is well-suited here):
 
 ### 5.5 Naming attacks
 
-- **Typosquatting:** namespaces (`@kortix/pdf` vs `randoguy/pdf`) + verified
+- **Typosquatting:** namespaces (`@zed/pdf` vs `randoguy/pdf`) + verified
   publishers + the gallery ranking official/verified above community.
 - **Dependency confusion:** a company namespace (`@acme/*`) always resolves to
   the company registry first; a public item can never shadow it.
@@ -287,14 +287,14 @@ At submit/index time, automated checks (a model reviewer is well-suited here):
 
 **Listing = make a repo reachable, then (for global) submit it to the index.**
 
-1. `kortix registry build` -> `registry.json` -> `git push`. *(Repo tier done now.)*
+1. `zed registry build` -> `registry.json` -> `git push`. *(Repo tier done now.)*
 2. **Company:** push to the org registry repo; appears in **Customize → Add**.
 3. **Global:** the Marketplace submission flow takes the **repo URL + chosen
-   namespace**. Kortix validates, runs static gates,
+   namespace**. Zed validates, runs static gates,
    indexes the items, records the checksum, and lists them.
 
 **Ownership & names.** A **namespace** (`@acme`) is claimed once, tied to a
-Kortix account/org, and verified by proving control of the repo (a file or a
+Zed account/org, and verified by proving control of the repo (a file or a
 GitHub App grant). Item names are unique within a namespace. **Name transfer**
 and **takedown/yank** are index operations (we own the index, not the files).
 
@@ -321,10 +321,10 @@ broken for installers (the cache + lock still serve pinned installs).
 
 ## Part 8 — Lifecycle
 
-- `kortix marketplace install` — install (built).
-- `kortix outdated` — compare lock hashes vs. current source refs → what changed.
-- `kortix update [item]` — re-resolve → **diff** → apply on confirm (re-pin lock).
-- `kortix remove <item>` — delete its locked files + lock entry (clean uninstall
+- `zed marketplace install` — install (built).
+- `zed outdated` — compare lock hashes vs. current source refs → what changed.
+- `zed update [item]` — re-resolve → **diff** → apply on confirm (re-pin lock).
+- `zed remove <item>` — delete its locked files + lock entry (clean uninstall
   because the lock knows exactly what it wrote).
 - **Drift detection** — a locked file edited locally is shown on update so we
   never clobber a user's edits without telling them (the lock hash ≠ disk hash).
@@ -333,7 +333,7 @@ broken for installers (the cache + lock still serve pinned installs).
 
 ---
 
-## Part 9 — What Kortix actually stores (because it's index-not-host)
+## Part 9 — What Zed actually stores (because it's index-not-host)
 
 A small amount of metadata, no files:
 
@@ -364,10 +364,10 @@ search/trust projection of public git state.
 ## Part 11 — Phased rollout
 
 1. **P0 — Engine + CLI (DONE).** Format, build, resolve, install, lock, and
-   `kortix marketplace`. Repo-tier sharing works today with zero backend.
-2. **P1 — Cloud install.** `kortix marketplace install --project <id>` commits into a linked
+   `zed marketplace`. Repo-tier sharing works today with zero backend.
+2. **P1 — Cloud install.** `zed marketplace install --project <id>` commits into a linked
    repo via `POST /projects/:id/files/commit` (reusing `commitFileToBranch`).
-   Plus `kortix update/outdated/remove`.
+   Plus `zed update/outdated/remove`.
 3. **P2 — Capability manifest + consent.** Declare + approve. The safety
    foundation; do this *before* opening global publishing.
 4. **P3 — Company registries.** Org registry repo + Customize → Add, private via
@@ -387,7 +387,7 @@ the trust model is the classic mistake.
 - **We don't host files.** Git does. We index + checksum.
 - **We don't invent a package format.** We extend shadcn's; interop is a feature.
 - **We don't gate the repo tier.** Anyone can run their own registry with zero
-  Kortix involvement — that openness is the moat, not a leak.
+  Zed involvement — that openness is the moat, not a leak.
 - **We don't reinvent semver/VCS.** Refs + content hashes, Go-style.
 - **We don't auto-update or auto-run.** Installs and updates are explicit,
   diffable commits a human (or a reviewing agent) signs off on.

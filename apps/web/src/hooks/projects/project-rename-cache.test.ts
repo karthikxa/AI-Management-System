@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { QueryClient } from '@tanstack/react-query';
-import { qk } from '@kortix/sdk/react';
+import { qk } from '@zed/sdk/react';
 
 import { renameOnError, renameOnMutate, renameOnSettled } from './project-rename-cache';
 

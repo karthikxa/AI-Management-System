@@ -22,12 +22,12 @@ import { cn } from '@/lib/utils';
 import { isAppRouteUrl, parseLocalhostUrl } from '@/lib/utils/sandbox-url';
 import { enrichPreviewMetadata } from '@/lib/utils/session-context';
 import { useFilePreviewStore } from '@/stores/file-preview-store';
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { STATUS_BORDER } from '@/components/ui/status';
-import { buildStaticFileLocalUrl } from '@kortix/sdk';
+import { buildStaticFileLocalUrl } from '@zed/sdk';
 import {
   WarningIcon as AlertTriangle,
   CodeSimpleIcon as Code2,
@@ -216,7 +216,7 @@ export function ShowFileActions({
     // Expand AFTER requesting the open: the detail's own `openDetail` resets
     // the panel split, and `isExpanded` outranks the split, so setting it here
     // survives that reset regardless of which lands first.
-    useKortixComputerStore.getState().setIsExpanded(true);
+    useZedComputerStore.getState().setIsExpanded(true);
   }, [path]);
 
   return (

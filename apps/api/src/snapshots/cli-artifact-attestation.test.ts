@@ -6,7 +6,7 @@ import {
   CLI_CONNECTOR_RUNTIME_FILES,
   buildCliConnectorSourceDigest,
   buildFileSha256,
-} from '@kortix/shared/sandbox-runtime-artifact';
+} from '@zed/shared/sandbox-runtime-artifact';
 import { assertCliArtifactAttested } from './cli-artifact-attestation';
 
 const roots: string[] = [];
@@ -16,7 +16,7 @@ async function createCliFixture(): Promise<{
   binaryPath: string;
   attestationPath: string;
 }> {
-  const root = await mkdtemp(join(tmpdir(), 'kortix-cli-artifact-'));
+  const root = await mkdtemp(join(tmpdir(), 'zed-cli-artifact-'));
   roots.push(root);
   const cliRoot = join(root, 'apps', 'cli');
   const sdkRoot = join(root, 'packages', 'sdk');
@@ -31,9 +31,9 @@ async function createCliFixture(): Promise<{
   await writeFile(join(cliRoot, 'package.json'), '{"name":"fixture"}\n');
   await mkdir(join(sdkRoot, 'src'), { recursive: true });
   await writeFile(join(sdkRoot, 'src', 'index.ts'), 'export const sdk = "v1";\n');
-  await writeFile(join(sdkRoot, 'package.json'), '{"name":"@kortix/sdk"}\n');
-  const binaryPath = join(cliRoot, 'dist', 'kortix');
-  const attestationPath = join(cliRoot, 'dist', 'kortix-connectors-runtime.attestation.json');
+  await writeFile(join(sdkRoot, 'package.json'), '{"name":"@zed/sdk"}\n');
+  const binaryPath = join(cliRoot, 'dist', 'zed');
+  const attestationPath = join(cliRoot, 'dist', 'zed-connectors-runtime.attestation.json');
   await mkdir(dirname(attestationPath), { recursive: true });
   await writeFile(binaryPath, 'binary:v1\n');
   return { cliRoot, binaryPath, attestationPath };

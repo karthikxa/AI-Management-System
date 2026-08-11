@@ -27,7 +27,7 @@ async function waitForStatus(status: string, timeoutMs = 5_000, id = deliveryId)
       last_error: string | null;
     }>(
       `SELECT status, attempts, last_error
-       FROM kortix.audit_webhook_deliveries
+       FROM zed.audit_webhook_deliveries
        WHERE delivery_id = $1`,
       [id],
     );
@@ -42,28 +42,28 @@ describe.skipIf(!databaseUrl)('durable audit webhook worker — migrated Postgre
     client = new pg.Client({ connectionString: databaseUrl });
     await client.connect();
     await client.query(
-      `INSERT INTO kortix.accounts(account_id, name) VALUES ($1, 'audit-webhook-worker')`,
+      `INSERT INTO zed.accounts(account_id, name) VALUES ($1, 'audit-webhook-worker')`,
       [ACCOUNT],
     );
     await client.query(
-      `INSERT INTO kortix.credit_accounts(account_id, demo_enterprise)
+      `INSERT INTO zed.credit_accounts(account_id, demo_enterprise)
        VALUES ($1, true)`,
       [ACCOUNT],
     );
     await client.query(
-      `INSERT INTO kortix.audit_webhooks(webhook_id, account_id, url, secret, name)
+      `INSERT INTO zed.audit_webhooks(webhook_id, account_id, url, secret, name)
        VALUES ($1, $2, 'http://127.0.0.1:1/audit', 'test-secret', 'failure injection')`,
       [WEBHOOK, ACCOUNT],
     );
     const event = await client.query<{ event_id: string }>(
-      `INSERT INTO kortix.audit_events(account_id, action, resource_type, authoritative_source)
+      `INSERT INTO zed.audit_events(account_id, action, resource_type, authoritative_source)
        VALUES ($1, 'webhook.failure-injection', 'test', 'system')
        RETURNING event_id`,
       [ACCOUNT],
     );
     const delivery = await client.query<{ delivery_id: string }>(
       `SELECT delivery_id
-       FROM kortix.audit_webhook_deliveries
+       FROM zed.audit_webhook_deliveries
        WHERE webhook_id = $1 AND event_id = $2`,
       [WEBHOOK, event.rows[0]?.event_id],
     );
@@ -75,14 +75,14 @@ describe.skipIf(!databaseUrl)('durable audit webhook worker — migrated Postgre
   afterAll(async () => {
     await stopAuditWebhookWorker();
     if (!client) return;
-    await client.query(`SET kortix.audit_maintenance = 'on'`);
-    await client.query('DELETE FROM kortix.audit_webhook_deliveries WHERE webhook_id = $1', [
+    await client.query(`SET zed.audit_maintenance = 'on'`);
+    await client.query('DELETE FROM zed.audit_webhook_deliveries WHERE webhook_id = $1', [
       WEBHOOK,
     ]);
-    await client.query('DELETE FROM kortix.audit_events WHERE account_id = $1', [ACCOUNT]);
-    await client.query('DELETE FROM kortix.audit_webhooks WHERE webhook_id = $1', [WEBHOOK]);
-    await client.query('DELETE FROM kortix.credit_accounts WHERE account_id = $1', [ACCOUNT]);
-    await client.query('DELETE FROM kortix.accounts WHERE account_id = $1', [ACCOUNT]);
+    await client.query('DELETE FROM zed.audit_events WHERE account_id = $1', [ACCOUNT]);
+    await client.query('DELETE FROM zed.audit_webhooks WHERE webhook_id = $1', [WEBHOOK]);
+    await client.query('DELETE FROM zed.credit_accounts WHERE account_id = $1', [ACCOUNT]);
+    await client.query('DELETE FROM zed.accounts WHERE account_id = $1', [ACCOUNT]);
     await client.end();
   });
 
@@ -99,7 +99,7 @@ describe.skipIf(!databaseUrl)('durable audit webhook worker — migrated Postgre
     expect(replayed.last_error).toBeNull();
 
     await databaseClient().query(
-      `UPDATE kortix.audit_webhook_deliveries
+      `UPDATE zed.audit_webhook_deliveries
        SET status = 'delivering', attempts = 7,
            locked_by = 'crashed-worker', locked_until = now() - interval '1 second'
        WHERE delivery_id = $1`,
@@ -132,7 +132,7 @@ describe.skipIf(!databaseUrl)('durable audit webhook worker — migrated Postgre
 
     try {
       const webhook = await databaseClient().query<{ webhook_id: string }>(
-        `INSERT INTO kortix.audit_webhooks(account_id, url, secret, name)
+        `INSERT INTO zed.audit_webhooks(account_id, url, secret, name)
          VALUES ($1, $2, 'test-secret', 'lease fencing')
          RETURNING webhook_id`,
         [ACCOUNT, 'https://8.8.8.8/audit'],
@@ -140,14 +140,14 @@ describe.skipIf(!databaseUrl)('durable audit webhook worker — migrated Postgre
       const webhookId = webhook.rows[0]?.webhook_id;
       if (!webhookId) throw new Error('lease-fencing webhook was not created');
       const event = await databaseClient().query<{ event_id: string }>(
-        `INSERT INTO kortix.audit_events(account_id, action, resource_type, authoritative_source)
+        `INSERT INTO zed.audit_events(account_id, action, resource_type, authoritative_source)
          VALUES ($1, 'webhook.lease-fencing', 'test', 'system')
          RETURNING event_id`,
         [ACCOUNT],
       );
       const delivery = await databaseClient().query<{ delivery_id: string }>(
         `SELECT delivery_id
-           FROM kortix.audit_webhook_deliveries
+           FROM zed.audit_webhook_deliveries
           WHERE webhook_id = $1 AND event_id = $2`,
         [webhookId, event.rows[0]?.event_id],
       );
@@ -157,7 +157,7 @@ describe.skipIf(!databaseUrl)('durable audit webhook worker — migrated Postgre
       startAuditWebhookWorker();
       await waitForStatus('delivering', 5_000, fencedDeliveryId);
       await databaseClient().query(
-        `UPDATE kortix.audit_webhook_deliveries
+        `UPDATE zed.audit_webhook_deliveries
             SET locked_by = 'replacement-worker', locked_until = now() + interval '5 minutes'
           WHERE delivery_id = $1`,
         [fencedDeliveryId],
@@ -170,7 +170,7 @@ describe.skipIf(!databaseUrl)('durable audit webhook worker — migrated Postgre
         locked_by: string | null;
       }>(
         `SELECT status, locked_by
-           FROM kortix.audit_webhook_deliveries
+           FROM zed.audit_webhook_deliveries
           WHERE delivery_id = $1`,
         [fencedDeliveryId],
       );

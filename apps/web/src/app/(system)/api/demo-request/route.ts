@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { submitDemoRequest } from '@kortix/sdk';
+import { submitDemoRequest } from '@zed/sdk';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -46,7 +46,7 @@ function anonClient() {
 function backendUrl() {
   return (
     process.env.BACKEND_URL ||
-    process.env.KORTIX_PUBLIC_BACKEND_URL ||
+    process.env.ZED_PUBLIC_BACKEND_URL ||
     process.env.NEXT_PUBLIC_BACKEND_URL ||
     'http://localhost:8008/v1'
   ).replace(/\/$/, '');

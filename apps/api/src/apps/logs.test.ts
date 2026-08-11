@@ -20,7 +20,7 @@ test('deployment events remain readable before a runtime exists', () => {
       {
         cursor: 1,
         time: '2026-08-07T16:00:00.000Z',
-        source: 'kortix',
+        source: 'zed',
         line: '[build_started] Building image',
       },
       {

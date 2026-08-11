@@ -11,26 +11,26 @@ import {
 
 type CtxOpts = { projectArg?: string; hostArg?: string };
 
-const CONNECT_HELP = help`Usage: kortix sessions connect [<session-id>] [options] [-- <opencode attach args…>]
+const CONNECT_HELP = help`Usage: zed sessions connect [<session-id>] [options] [-- <opencode attach args…>]
 
 Attach your local OpenCode TUI to the OpenCode server already running inside a
-Kortix session sandbox. The CLI opens a local loopback proxy, injects your
-Kortix auth token, then runs \`opencode attach\` against it.
+Zed session sandbox. The CLI opens a local loopback proxy, injects your
+Zed auth token, then runs \`opencode attach\` against it.
 
 Given a session id, resolves the right host/project on its own: tries the
 active/linked project first, then — unless you pin --host/--project — scans
 every logged-in host and account for the id. One command, no manual
-\`kortix projects use\` / \`kortix hosts use\` first.
+\`zed projects use\` / \`zed hosts use\` first.
 
   --port <N>       Local loopback proxy port (default: random free port).
   --project <id>   Pin this project id (skips the cross-host scan).
-  --host <name>    Pin this Kortix host (skips the cross-host scan).
+  --host <name>    Pin this Zed host (skips the cross-host scan).
   -h, --help       Show this help.
 
 Examples:
-  kortix sessions connect <session-id>
-  kortix sessions connect <session-id> -- --mini
-  kortix sessions connect --port 4100 <session-id>`;
+  zed sessions connect <session-id>
+  zed sessions connect <session-id> -- --mini
+  zed sessions connect --port 4100 <session-id>`;
 
 export async function runSessionsConnect(argv: string[]): Promise<number> {
   const rest = [...argv];
@@ -133,13 +133,13 @@ function buildAttachArgs(url: string, opencodeSessionId: string, extraArgs: stri
 }
 
 function spawnOpenCodeAttach(args: string[]): Promise<number> {
-  const bin = process.env.KORTIX_OPENCODE_BIN || 'opencode';
+  const bin = process.env.ZED_OPENCODE_BIN || 'opencode';
   const child = spawn(bin, args, { stdio: 'inherit' });
   return new Promise((resolve) => {
     child.on('error', (err) => {
       process.stderr.write(
         `${status.err(`Could not run ${bin}: ${err.message}`)}\n` +
-          `  ${C.dim}Install OpenCode or set KORTIX_OPENCODE_BIN.${C.reset}\n`,
+          `  ${C.dim}Install OpenCode or set ZED_OPENCODE_BIN.${C.reset}\n`,
       );
       resolve(1);
     });

@@ -5,7 +5,7 @@ import { useAuth } from '@/features/providers/auth-provider';
 import { invalidateAccountState } from '@/hooks/billing';
 import { fireConfetti } from '@/lib/confetti';
 import { latestProjectPath } from '@/lib/onboarding/last-project-cookie';
-import { syncSubscription } from '@kortix/sdk';
+import { syncSubscription } from '@zed/sdk';
 import { type QueryClient, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef } from 'react';
@@ -45,7 +45,7 @@ const RETURNS = [
       await invalidateAccountState(queryClient);
     },
     title: 'Subscription activated',
-    description: 'Your team is on Kortix Team. Compute and LLM credits are ready.',
+    description: 'Your team is on Zed Team. Compute and LLM credits are ready.',
   },
   {
     param: 'credit_purchase',

@@ -6,7 +6,7 @@
  * the connector API and stores one or more selected tunnel ids in its DB config.
  * The normal connector row owns grants, policies, audit, and session exposure.
  *
- * Profiles never live in kortix.yaml because tunnel ids are account control-
+ * Profiles never live in zed.yaml because tunnel ids are account control-
  * plane identities, not repository configuration. This synthesizer reads the
  * stored profiles back into the normal materializer during connector sync.
  *
@@ -14,7 +14,7 @@
  * machine. The next sync folds those generated rows into one `computer`
  * profile. Explicit profiles carry `computer_profile=true` and are preserved.
  */
-import { connectors, projects, tunnelConnections } from '@kortix/db';
+import { connectors, projects, tunnelConnections } from '@zed/db';
 import { and, eq, inArray, isNotNull } from 'drizzle-orm';
 
 import type { ConnectorSpec } from '../projects/connectors';

@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 # ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  Kortix CLI — one-click install                                              ║
+# ║  Zed CLI — one-click install                                              ║
 # ║                                                                              ║
-# ║      curl -fsSL https://kortix.com/install | bash                            ║
+# ║      curl -fsSL https://zed.com/install | bash                            ║
 # ║                                                                              ║
-# ║  Downloads the prebuilt `kortix` binary for your OS + arch from              ║
+# ║  Downloads the prebuilt `zed` binary for your OS + arch from              ║
 # ║  GitHub Releases and drops it on PATH.                                       ║
 # ║                                                                              ║
-# ║  Re-run any time to update (or use `kortix update`).                         ║
+# ║  Re-run any time to update (or use `zed update`).                         ║
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
 set -euo pipefail
 
 # ─── Config ───────────────────────────────────────────────────────────────────
-REPO="${KORTIX_REPO:-kortix-ai/suna}"
-INSTALL_HOME="${KORTIX_HOME:-$HOME/.kortix}"
-BINARY_NAME="kortix"
-CHANNEL="${KORTIX_CHANNEL:-prod}"
+REPO="${ZED_REPO:-zed-ai/suna}"
+INSTALL_HOME="${ZED_HOME:-$HOME/.zed}"
+BINARY_NAME="zed"
+CHANNEL="${ZED_CHANNEL:-prod}"
 # Stable releases are tagged `vX.Y.Z` (unified version). The dev channel uses
 # the mutable `dev-latest` prerelease.
 DEV_TAG="dev-latest"
@@ -60,7 +60,7 @@ detect_platform() {
   case "$uname_s" in
     Darwin) OS=darwin ;;
     Linux)  OS=linux ;;
-    *) fatal "Unsupported OS: $uname_s. Kortix CLI builds for darwin + linux only." ;;
+    *) fatal "Unsupported OS: $uname_s. Zed CLI builds for darwin + linux only." ;;
   esac
   case "$uname_m" in
     x86_64|amd64) ARCH=x64 ;;
@@ -72,13 +72,13 @@ detect_platform() {
 
 # ─── Resolve target version ──────────────────────────────────────────────────
 resolve_version() {
-  if [ -n "${KORTIX_VERSION:-}" ]; then
+  if [ -n "${ZED_VERSION:-}" ]; then
     # Tolerate either `0.9.0` or `v0.9.0`.
-    case "$KORTIX_VERSION" in
-      v*) VERSION="$KORTIX_VERSION" ;;
-      *)  VERSION="v${KORTIX_VERSION}" ;;
+    case "$ZED_VERSION" in
+      v*) VERSION="$ZED_VERSION" ;;
+      *)  VERSION="v${ZED_VERSION}" ;;
     esac
-    info "Pinned version (from \$KORTIX_VERSION): $VERSION"
+    info "Pinned version (from \$ZED_VERSION): $VERSION"
     return
   fi
 
@@ -87,11 +87,11 @@ resolve_version() {
       ;;
     dev)
       VERSION="$DEV_TAG"
-      info "Dev channel selected (from \$KORTIX_CHANNEL): $VERSION"
+      info "Dev channel selected (from \$ZED_CHANNEL): $VERSION"
       return
       ;;
     *)
-      fatal "Unsupported KORTIX_CHANNEL: $CHANNEL. Use 'prod' or 'dev'."
+      fatal "Unsupported ZED_CHANNEL: $CHANNEL. Use 'prod' or 'dev'."
       ;;
   esac
 
@@ -104,7 +104,7 @@ resolve_version() {
     | head -1 \
     | sed -E 's/.*"tag_name": *"([^"]+)".*/\1/' || true)
   if [ -z "$tag" ]; then
-    fatal "Could not find a vX.Y.Z release on github.com/${REPO}. Pin one with \`KORTIX_VERSION=0.9.0 …\` or use the dev channel (\`KORTIX_CHANNEL=dev\`)."
+    fatal "Could not find a vX.Y.Z release on github.com/${REPO}. Pin one with \`ZED_VERSION=0.9.0 …\` or use the dev channel (\`ZED_CHANNEL=dev\`)."
   fi
   VERSION="$tag"
   ok "Latest release: $VERSION"
@@ -113,7 +113,7 @@ resolve_version() {
 # ─── Download the binary to a temp file ──────────────────────────────────────
 download_binary() {
   local url="https://github.com/${REPO}/releases/download/${VERSION}/${ASSET}"
-  TMP_BIN="$(mktemp -t kortix-install.XXXXXX)"
+  TMP_BIN="$(mktemp -t zed-install.XXXXXX)"
   info "Downloading ${ASSET}…"
   printf "    ${F}from ${url}${N}\n"
   if ! curl -fsSL "$url" -o "$TMP_BIN"; then
@@ -165,9 +165,9 @@ link_onto_path() {
       return
     fi
   fi
-  warn "Could not put kortix on PATH automatically."
+  warn "Could not put zed on PATH automatically."
   printf "    Run this when convenient:\n"
-  printf "    ${C}sudo ln -sf ${target} /usr/local/bin/kortix${N}\n"
+  printf "    ${C}sudo ln -sf ${target} /usr/local/bin/zed${N}\n"
 }
 
 # ─── Verify installed binary works ───────────────────────────────────────────
@@ -178,22 +178,22 @@ verify_install() {
     target="$INSTALL_HOME/$BINARY_NAME"
   fi
   if ! "$target" version >/dev/null 2>&1; then
-    warn "Binary installed but \`kortix version\` failed. Try running it directly: $target"
+    warn "Binary installed but \`zed version\` failed. Try running it directly: $target"
     return
   fi
-  ok "kortix --version → $("$target" version | head -1 | sed 's/^[[:space:]]*//')"
+  ok "zed --version → $("$target" version | head -1 | sed 's/^[[:space:]]*//')"
 }
 
 print_next_steps() {
   printf "\n"
   printf "  ${W}${B}Get started:${N}\n\n"
-  printf "    ${C}kortix login${N}           ${F}browser opens — one click to authorize${N}\n"
-  printf "    ${C}kortix projects ls${N}     ${F}list your projects${N}\n"
-  printf "    ${C}kortix projects link${N}   ${F}bind this directory to a project${N}\n"
-  printf "    ${C}kortix --help${N}          ${F}every command${N}\n"
+  printf "    ${C}zed login${N}           ${F}browser opens — one click to authorize${N}\n"
+  printf "    ${C}zed projects ls${N}     ${F}list your projects${N}\n"
+  printf "    ${C}zed projects link${N}   ${F}bind this directory to a project${N}\n"
+  printf "    ${C}zed --help${N}          ${F}every command${N}\n"
   printf "\n"
-  printf "  ${F}Update later:${N} ${C}kortix update${N}\n"
-  printf "  ${F}Remove:${N}      ${C}kortix uninstall${N}\n"
+  printf "  ${F}Update later:${N} ${C}zed update${N}\n"
+  printf "  ${F}Remove:${N}      ${C}zed uninstall${N}\n"
   printf "\n"
 }
 

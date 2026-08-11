@@ -12,9 +12,9 @@ import {
 import { resolveProjectCloneTarget } from '../commands/projects.ts';
 
 test('managed git auth headers honor the provider-selected username', () => {
-  const args = authHeaderArgs('https://kortix.code.storage/demo.git', 'jwt-token', 't');
+  const args = authHeaderArgs('https://zed.code.storage/demo.git', 'jwt-token', 't');
   expect(args.at(-1)).toStartWith(
-    'http.https://kortix.code.storage/.extraheader=Authorization: Basic ',
+    'http.https://zed.code.storage/.extraheader=Authorization: Basic ',
   );
   const encoded = args.at(-1)?.split('Authorization: Basic ')[1];
   expect(encoded && Buffer.from(encoded, 'base64').toString('utf8')).toBe('t:jwt-token');
@@ -25,9 +25,9 @@ function project(overrides: Partial<ProjectSummary> = {}): ProjectSummary {
     project_id: 'proj_1',
     account_id: 'acct_1',
     name: 'Demo',
-    repo_url: 'https://github.com/managed-kortix/demo.git',
+    repo_url: 'https://github.com/managed-zed/demo.git',
     default_branch: 'main',
-    manifest_path: 'kortix.yaml',
+    manifest_path: 'zed.yaml',
     status: 'active',
     metadata: {},
     last_opened_at: null,
@@ -42,7 +42,7 @@ function recordingClient(
   linkedProject: ProjectSummary,
 ): ApiClient {
   return {
-    apiBase: 'https://api.kortix.test',
+    apiBase: 'https://api.zed.test',
     post: async <T>(path: string, body?: unknown) => {
       calls.push({ path, body });
       return { project: linkedProject } as T;
@@ -103,11 +103,11 @@ describe('ship git target resolution', () => {
   // at all (POST /git-token 503s — the token would grant write to every managed
   // repo). Ship must therefore prefer the proxy origin for MANAGED projects
   // too, exactly like clone does; insisting on a minted provider token is what
-  // broke `kortix ship` against Kortix Cloud.
+  // broke `zed ship` against Zed Cloud.
   test('first-time managed ship pushes through the proxy origin, not the raw upstream', () => {
     const target = resolveProvisionShipGitTarget({
       ...project({
-        git_origin_url: 'https://api.kortix.com/v1/git/proj_1.git',
+        git_origin_url: 'https://api.zed.com/v1/git/proj_1.git',
         metadata: { git: { managed: true } },
       }),
       push_token: 'ghp_push',
@@ -115,28 +115,28 @@ describe('ship git target resolution', () => {
     });
 
     expect(target).toEqual({
-      repoUrl: 'https://api.kortix.com/v1/git/proj_1.git',
-      credentialMode: 'kortix-token',
+      repoUrl: 'https://api.zed.com/v1/git/proj_1.git',
+      credentialMode: 'zed-token',
     });
   });
 
   test('existing managed ship pushes through the proxy origin', () => {
     const target = resolveExistingShipGitTarget(
       project({
-        git_origin_url: 'https://api.kortix.com/v1/git/proj_1.git',
+        git_origin_url: 'https://api.zed.com/v1/git/proj_1.git',
         metadata: { git: { managed: true } },
       }),
     );
 
     expect(target).toEqual({
-      repoUrl: 'https://api.kortix.com/v1/git/proj_1.git',
-      credentialMode: 'kortix-token',
+      repoUrl: 'https://api.zed.com/v1/git/proj_1.git',
+      credentialMode: 'zed-token',
     });
   });
 
   test('managed ship falls back to a minted token when the host has no proxy', () => {
     // Proxy off ⇒ the server mirrors repo_url into git_origin_url.
-    const raw = 'https://github.com/managed-kortix/demo.git';
+    const raw = 'https://github.com/managed-zed/demo.git';
     const target = resolveExistingShipGitTarget(
       project({ git_origin_url: raw, metadata: { git: { managed: true } } }),
     );
@@ -152,23 +152,23 @@ describe('ship git target resolution', () => {
     });
 
     expect(target).toEqual({
-      repoUrl: 'https://github.com/managed-kortix/demo.git',
+      repoUrl: 'https://github.com/managed-zed/demo.git',
       credentialMode: 'managed-git-token',
     });
   });
 
-  test('non-managed proxy projects still push through the Kortix git proxy', () => {
+  test('non-managed proxy projects still push through the Zed git proxy', () => {
     const target = resolveExistingShipGitTarget(
       project({
         repo_url: 'https://github.com/acme/byo.git',
-        git_origin_url: 'https://api.kortix.com/v1/git/proj_1.git',
+        git_origin_url: 'https://api.zed.com/v1/git/proj_1.git',
         metadata: { git: { managed: false } },
       }),
     );
 
     expect(target).toEqual({
-      repoUrl: 'https://api.kortix.com/v1/git/proj_1.git',
-      credentialMode: 'kortix-token',
+      repoUrl: 'https://api.zed.com/v1/git/proj_1.git',
+      credentialMode: 'zed-token',
     });
   });
 
@@ -190,7 +190,7 @@ describe('ship git target resolution', () => {
   // apart and ship picked a credential the server can't issue. They resolve
   // from the same function now — assert they agree on every project shape.
   test('ship and clone resolve the same repo URL for every project shape', () => {
-    const proxy = 'https://api.kortix.com/v1/git/proj_1.git';
+    const proxy = 'https://api.zed.com/v1/git/proj_1.git';
     const shapes: ProjectSummary[] = [
       project({ git_origin_url: proxy, metadata: { git: { managed: true } } }),
       project({ git_origin_url: proxy, metadata: { git: { managed: false } } }),
@@ -200,10 +200,10 @@ describe('ship git target resolution', () => {
 
     for (const shape of shapes) {
       const ship = resolveExistingShipGitTarget(shape);
-      const clone = resolveProjectCloneTarget(shape, 'kortix_pat_abc');
+      const clone = resolveProjectCloneTarget(shape, 'zed_pat_abc');
       expect(clone.repoUrl).toBe(ship.repoUrl);
       expect(clone.needsManagedToken).toBe(ship.credentialMode === 'managed-git-token');
-      expect(clone.token).toBe(ship.credentialMode === 'kortix-token' ? 'kortix_pat_abc' : null);
+      expect(clone.token).toBe(ship.credentialMode === 'zed-token' ? 'zed_pat_abc' : null);
     }
   });
 });

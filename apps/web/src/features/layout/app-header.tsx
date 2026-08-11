@@ -1,6 +1,6 @@
 'use client';
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -70,11 +70,11 @@ export function AppHeader({
                   <Link
                     href={logoHref}
                     aria-label={tHardcodedUi.raw(
-                      'componentsLayoutAppHeader.line72JsxAttrAriaLabelKortixHome',
+                      'componentsLayoutAppHeader.line72JsxAttrAriaLabelZedHome',
                     )}
                     className="focus-visible:ring-ring/50 text-foreground inline-flex cursor-pointer items-center rounded-md focus-visible:ring-2 focus-visible:outline-none"
                   >
-                    <KortixLogo
+                    <ZedLogo
                       variant={isMobile ? 'symbol' : 'logomark'}
                       size={isMobile ? 20 : 16}
                     />

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 
 import { ApiError, MODEL_NOT_SERVABLE_CODE } from '../../http/api-client';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { setModelDefault } from './model-defaults';
 
 // Regression for Better Stack frontend pattern `ed07f6c5…`
@@ -24,7 +24,7 @@ describe('setModelDefault — model_not_servable 409 contract', () => {
 
   beforeEach(() => {
     onErrorCalls = 0;
-    configureKortix({
+    configureZed({
       backendUrl: 'http://test.local',
       getToken: async () => 'tok',
       onError: () => {

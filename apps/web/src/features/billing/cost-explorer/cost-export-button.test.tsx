@@ -37,7 +37,7 @@ describe('buildExportFilename', () => {
         from: '2026-07-01T00:00:00.000Z',
         to: '2026-07-08T00:00:00.000Z',
       }),
-    ).toBe('kortix-sessions-2026-07-01-to-2026-07-07.csv');
+    ).toBe('zed-sessions-2026-07-01-to-2026-07-07.csv');
   });
 
   test('names the same last day the range picker labels for that window', () => {
@@ -62,7 +62,7 @@ describe('buildExportFilename', () => {
         from: '2026-07-25T00:00:00.000Z',
         to: '2026-08-01T00:00:00.000Z',
       }),
-    ).toBe('kortix-projects-2026-07-25-to-2026-07-31.csv');
+    ).toBe('zed-projects-2026-07-25-to-2026-07-31.csv');
   });
 
   test('steps back across a year boundary', () => {
@@ -72,7 +72,7 @@ describe('buildExportFilename', () => {
         from: '2026-12-25T00:00:00.000Z',
         to: '2027-01-01T00:00:00.000Z',
       }),
-    ).toBe('kortix-sessions-2026-12-25-to-2026-12-31.csv');
+    ).toBe('zed-sessions-2026-12-25-to-2026-12-31.csv');
   });
 
   test('does not step back a bound that lands partway through a day', () => {
@@ -86,7 +86,7 @@ describe('buildExportFilename', () => {
         from: '2026-07-01T00:00:00.000Z',
         to: '2026-07-07T23:00:00.000Z',
       }),
-    ).toBe('kortix-sessions-2026-07-01-to-2026-07-07.csv');
+    ).toBe('zed-sessions-2026-07-01-to-2026-07-07.csv');
   });
 
   test('reads the last included day in UTC, not in the host timezone', () => {
@@ -100,25 +100,25 @@ describe('buildExportFilename', () => {
         from: '2026-07-08T00:00:00.000Z',
         to: '2026-07-09T00:00:00.000Z',
       }),
-    ).toBe('kortix-projects-2026-07-08-to-2026-07-08.csv');
+    ).toBe('zed-projects-2026-07-08-to-2026-07-08.csv');
   });
 
   test('uses the preset token when one is set', () => {
     expect(
       buildExportFilename('projects', resolvePreset('30d', new Date('2026-08-01T00:00:00.000Z'))),
-    ).toBe('kortix-projects-last-30d.csv');
+    ).toBe('zed-projects-last-30d.csv');
   });
 
   test('carries every preset token, not just 30d', () => {
     const now = new Date('2026-08-01T00:00:00.000Z');
     expect(buildExportFilename('sessions', resolvePreset('24h', now))).toBe(
-      'kortix-sessions-last-24h.csv',
+      'zed-sessions-last-24h.csv',
     );
     expect(buildExportFilename('sessions', resolvePreset('7d', now))).toBe(
-      'kortix-sessions-last-7d.csv',
+      'zed-sessions-last-7d.csv',
     );
     expect(buildExportFilename('projects', resolvePreset('90d', now))).toBe(
-      'kortix-projects-last-90d.csv',
+      'zed-projects-last-90d.csv',
     );
   });
 
@@ -134,16 +134,16 @@ describe('buildExportFilename', () => {
         from: '2026-07-01T01:00:00+02:00',
         to: '2026-07-08T00:00:00.000Z',
       }),
-    ).toBe('kortix-sessions-2026-06-30-to-2026-07-07.csv');
+    ).toBe('zed-sessions-2026-06-30-to-2026-07-07.csv');
   });
 
   test('falls back to an undated name rather than an NaN-filled one on an unparseable bound', () => {
     // Reading UTC calendar parts off an Invalid Date yields NaN, which would
-    // otherwise name the file `kortix-projects-NaN-NaN-NaN-to-…` for a URL
+    // otherwise name the file `zed-projects-NaN-NaN-NaN-to-…` for a URL
     // nobody can fix from the UI.
     expect(
       buildExportFilename('projects', { preset: 'custom', from: 'not-a-date', to: 'also-bad' }),
-    ).toBe('kortix-projects-export.csv');
+    ).toBe('zed-projects-export.csv');
   });
 });
 
@@ -261,7 +261,7 @@ describe('buildRowCapWarning', () => {
 
   test('stays silent when the header was absent or unparseable', () => {
     // `fetchCostExportCsv` yields `rowCap: null` for a missing or non-numeric
-    // x-kortix-row-cap. With no cap to compare against there is nothing
+    // x-zed-row-cap. With no cap to compare against there is nothing
     // truthful to say, so it says nothing.
     expect(buildRowCapWarning(10_000, null)).toBeNull();
   });

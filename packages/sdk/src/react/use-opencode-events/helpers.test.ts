@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { refetchKortixSessionMirrors } from './helpers';
+import { refetchZedSessionMirrors } from './helpers';
 import { qk } from '../query-keys';
 
 function fakeQueryClient() {
@@ -12,11 +12,11 @@ function fakeQueryClient() {
         calls.push(input);
         return Promise.resolve();
       },
-    } as unknown as Parameters<typeof refetchKortixSessionMirrors>[0],
+    } as unknown as Parameters<typeof refetchZedSessionMirrors>[0],
   };
 }
 
-describe('refetchKortixSessionMirrors', () => {
+describe('refetchZedSessionMirrors', () => {
   // Pre-migration this refetched a BARE, id-less flat `project-sessions`
   // array prefix, which matched every mounted project's sessions list.
   // `qk.project.scope(id)` requires an id up front, so there is no key that
@@ -26,7 +26,7 @@ describe('refetchKortixSessionMirrors', () => {
   // the function's doc comment in `helpers.ts`.
   test('refetches the sessions-family prefix for the given project only', () => {
     const { client, calls } = fakeQueryClient();
-    refetchKortixSessionMirrors(client, 'proj_1');
+    refetchZedSessionMirrors(client, 'proj_1');
     expect(calls).toEqual([
       { queryKey: qk.project.sessionsScope('proj_1'), type: 'active' },
     ]);
@@ -34,7 +34,7 @@ describe('refetchKortixSessionMirrors', () => {
 
   test('does nothing outside a project route (projectId null)', () => {
     const { client, calls } = fakeQueryClient();
-    refetchKortixSessionMirrors(client, null);
+    refetchZedSessionMirrors(client, null);
     expect(calls).toEqual([]);
   });
 
@@ -43,7 +43,7 @@ describe('refetchKortixSessionMirrors', () => {
   // project" prefix.
   test('never reaches a different project\'s sessions prefix', () => {
     const { client, calls } = fakeQueryClient();
-    refetchKortixSessionMirrors(client, 'proj_1');
+    refetchZedSessionMirrors(client, 'proj_1');
     const [call] = calls as Array<{ queryKey: readonly unknown[] }>;
     expect(call.queryKey).not.toEqual(qk.project.sessionsScope('proj_2'));
   });

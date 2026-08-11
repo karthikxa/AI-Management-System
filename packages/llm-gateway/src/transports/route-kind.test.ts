@@ -96,7 +96,7 @@ describe('resolveTransportKind', () => {
 
   test('reasoning model + tools on a DIFFERENT openai-compat host (OpenRouter) -> stays openai-compat', () => {
     const kind = resolveTransportKind(
-      { model: 'kortix/o3', messages: [], tools: [reasoningTool], reasoning_effort: 'medium' },
+      { model: 'zed/o3', messages: [], tools: [reasoningTool], reasoning_effort: 'medium' },
       {
         ...genuineOpenAiReasoning,
         provider: 'openrouter',

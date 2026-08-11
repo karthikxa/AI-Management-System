@@ -31,8 +31,8 @@ import {
   scheduleDowngrade,
   syncSubscription,
   type AccountState,
-} from '@kortix/sdk';
-import { dollarsToCredits } from '@kortix/shared';
+} from '@zed/sdk';
+import { dollarsToCredits } from '@zed/shared';
 import { SEAT_GRANT_USD } from '@/features/billing/compute-pricing';
 
 export type { AccountState };

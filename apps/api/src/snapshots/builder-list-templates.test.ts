@@ -3,7 +3,7 @@
  * template failures.
  *
  * Incident: Better Stack Frontend error (pattern b82b59c0…)
- *   "Failed to list sandbox templates: Sandbox template "kortix-dockerfile-sandbox":
+ *   "Failed to list sandbox templates: Sandbox template "zed-dockerfile-sandbox":
  *    Dockerfile ... is empty"
  *
  * Root cause: `resolveUserDockerfile` in `templates.ts` throws when a template's
@@ -36,7 +36,7 @@ const HEALTHY_TEMPLATE = {
   memoryGb: 2,
   diskGb: 10,
   providerState: 'active',
-  providerSnapshotName: 'kortix-default-abc',
+  providerSnapshotName: 'zed-default-abc',
   contentHash: 'a'.repeat(64),
   builtFromCommit: null,
   swapKey: null,
@@ -45,7 +45,7 @@ const HEALTHY_TEMPLATE = {
 const BROKEN_TEMPLATE = {
   ...HEALTHY_TEMPLATE,
   templateId: 'tpl-2',
-  slug: 'kortix-dockerfile-sandbox',
+  slug: 'zed-dockerfile-sandbox',
   name: 'Dockerfile Sandbox',
   isShared: false,
   source: 'toml' as const,
@@ -73,13 +73,13 @@ mock.module('./templates', () => ({
   computeTemplateIdentity: async (_project: any, template: any) => {
     // Simulate the exact error from resolveUserDockerfile when the Dockerfile
     // is empty or gets stripped to empty by normalizeUserDockerfileForSnapshot.
-    if (template.slug === 'kortix-dockerfile-sandbox') {
+    if (template.slug === 'zed-dockerfile-sandbox') {
       throw new Error(
         `Sandbox template "${template.slug}": Dockerfile ${template.dockerfilePath} is empty`,
       );
     }
     return {
-      snapshotName: `kortix-tpl-${template.slug}-abc123`,
+      snapshotName: `zed-tpl-${template.slug}-abc123`,
       contentHash: 'a'.repeat(64),
       shortHash: 'abc123',
       runtimeFingerprint: 'test-runtime-fp',

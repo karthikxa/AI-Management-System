@@ -22,7 +22,7 @@ import { SessionTerminalPanel } from '@/features/session/session-terminal-panel'
 import { SessionWallpaperLayerContext } from '@/features/session/session-wallpaper-layer';
 import { useIsMobile } from '@/hooks/utils';
 import { cn } from '@/lib/utils';
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import {
   normalizeSessionPanelLayoutView,
   SessionPanelView,
@@ -31,8 +31,8 @@ import {
 } from '@/stores/session-browser-store';
 import { useTabStore } from '@/stores/tab-store';
 import { useUserPreferencesStore } from '@/stores/user-preferences-store';
-import type { SessionStartStage } from '@kortix/sdk';
-import { useRuntimeMessages, useSessionStateStore } from '@kortix/sdk/react';
+import type { SessionStartStage } from '@zed/sdk';
+import { useRuntimeMessages, useSessionStateStore } from '@zed/sdk/react';
 import { SidebarSimpleIcon as PanelRight } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import type React from 'react';
@@ -65,21 +65,21 @@ export const SessionLayout = memo(function SessionLayout({
   // (e.g. pendingToolNavIndex, focusedToolCallId). Destructuring the whole
   // store subscribes to ALL properties and causes unnecessary re-renders for
   // every open session tab.
-  const isSidePanelOpen = useKortixComputerStore((s) => s.isSidePanelOpen);
-  const setIsSidePanelOpen = useKortixComputerStore((s) => s.setIsSidePanelOpen);
-  const setActiveSession = useKortixComputerStore((s) => s.setActiveSession);
-  const shouldOpenPanel = useKortixComputerStore((s) => s.shouldOpenPanel);
-  const clearShouldOpenPanel = useKortixComputerStore((s) => s.clearShouldOpenPanel);
-  const isExpanded = useKortixComputerStore((s) => s.isExpanded);
-  const toggleExpanded = useKortixComputerStore((s) => s.toggleExpanded);
+  const isSidePanelOpen = useZedComputerStore((s) => s.isSidePanelOpen);
+  const setIsSidePanelOpen = useZedComputerStore((s) => s.setIsSidePanelOpen);
+  const setActiveSession = useZedComputerStore((s) => s.setActiveSession);
+  const shouldOpenPanel = useZedComputerStore((s) => s.shouldOpenPanel);
+  const clearShouldOpenPanel = useZedComputerStore((s) => s.clearShouldOpenPanel);
+  const isExpanded = useZedComputerStore((s) => s.isExpanded);
+  const toggleExpanded = useZedComputerStore((s) => s.toggleExpanded);
   // Easy mode only — the side panel's requested share of the split (70 for a
   // presentation deliverable, 50 for the terminal layer, null for the default
   // card column). See the store's doc comment; Advanced ignores it.
-  const panelSplit = useKortixComputerStore((s) => s.panelSplit);
+  const panelSplit = useZedComputerStore((s) => s.panelSplit);
   // Easy mode only — the open document's own width/height, published by the
   // renderer that decoded it. Outranks `panelSplit`: a portrait PDF knows its
   // shape, and a file extension only ever guessed at it. See `resolveSideSize`.
-  const panelAspect = useKortixComputerStore((s) => s.panelAspect);
+  const panelAspect = useZedComputerStore((s) => s.panelAspect);
   // `detailOpen` is no longer read here. It gated the resize grip while Easy
   // mode's fixed-width card home lived in this panel; with the cards moved to
   // the floating overlay an open panel is always showing a resizable detail.
@@ -175,8 +175,8 @@ export const SessionLayout = memo(function SessionLayout({
   // container, so the drawer is up whenever either one is, and dismissing it
   // has to put both down or the next open would replay a surface the user just
   // swiped away.
-  const isActionPanelOpen = useKortixComputerStore((s) => s.isActionPanelOpen);
-  const setIsActionPanelOpen = useKortixComputerStore((s) => s.setIsActionPanelOpen);
+  const isActionPanelOpen = useZedComputerStore((s) => s.isActionPanelOpen);
+  const setIsActionPanelOpen = useZedComputerStore((s) => s.setIsActionPanelOpen);
   const shouldShowMobilePanel = isSidePanelOpen || isActionPanelOpen;
   const handleMobilePanelClose = useCallback(() => {
     handleSidePanelClose();
@@ -328,8 +328,8 @@ export const SessionLayout = memo(function SessionLayout({
     // glide it (the detail plays its own slide-out — a width animation under it
     // is a second, competing motion). Consume it here so the next deliberate
     // fullscreen/minimize toggle (or wide-open) animates as usual.
-    const skipAnimation = useKortixComputerStore.getState().skipNextExpandAnimation;
-    if (skipAnimation) useKortixComputerStore.setState({ skipNextExpandAnimation: false });
+    const skipAnimation = useZedComputerStore.getState().skipNextExpandAnimation;
+    if (skipAnimation) useZedComputerStore.setState({ skipNextExpandAnimation: false });
 
     const changed = expandChanged || splitChanged || aspectChanged;
     const shouldAnimate = changed && shouldShowPanel && !skipAnimation;
@@ -441,7 +441,7 @@ export const SessionLayout = memo(function SessionLayout({
     </div>
   );
 
-  // While booting, the panel is JUST the dead-center "Kortix Computer is
+  // While booting, the panel is JUST the dead-center "Zed Computer is
   // starting" loader — no header bar (the loader has its own heading, so a panel
   // title would be redundant), filling the whole card so it's perfectly
   // centered. The runtime-coupled views (Actions/Files/Terminal/Browser) need a

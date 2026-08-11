@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { relativeTime } from '@/lib/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal, UserMinus } from 'lucide-react';
@@ -45,7 +45,7 @@ export function MembersSection({ accountId }: { accountId: string }) {
   const membersKey = ['account-members', accountId] as const;
   const members = useQuery({
     queryKey: membersKey,
-    queryFn: () => kortix.accounts.members(accountId),
+    queryFn: () => zed.accounts.members(accountId),
   });
 
   const [email, setEmail] = useState('');
@@ -58,7 +58,7 @@ export function MembersSection({ accountId }: { accountId: string }) {
   };
 
   const invite = useMutation({
-    mutationFn: () => kortix.accounts.invite(accountId, { email: email.trim(), role }),
+    mutationFn: () => zed.accounts.invite(accountId, { email: email.trim(), role }),
     onSuccess: (result) => {
       setEmail('');
       refresh();
@@ -73,7 +73,7 @@ export function MembersSection({ accountId }: { accountId: string }) {
 
   const changeRole = useMutation({
     mutationFn: (vars: { userId: string; role: Role }) =>
-      kortix.accounts.updateMemberRole(accountId, vars.userId, vars.role),
+      zed.accounts.updateMemberRole(accountId, vars.userId, vars.role),
     onSuccess: () => {
       refresh();
       toast.success('Role updated');
@@ -82,7 +82,7 @@ export function MembersSection({ accountId }: { accountId: string }) {
   });
 
   const remove = useMutation({
-    mutationFn: (userId: string) => kortix.accounts.removeMember(accountId, userId),
+    mutationFn: (userId: string) => zed.accounts.removeMember(accountId, userId),
     onSuccess: () => {
       refresh();
       toast.success('Member removed');

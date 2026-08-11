@@ -1,6 +1,6 @@
 'use client';
 
-import { useFeatureFlag } from '@kortix/sdk/react';
+import { useFeatureFlag } from '@zed/sdk/react';
 import { ArrowRightIcon as ArrowRight, GitDiffIcon as FileDiff } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
@@ -64,7 +64,7 @@ function OpenCrChooser({
     <div className="w-full overflow-hidden py-1">
       <div className="border-border flex items-center justify-between gap-3 border-b px-3.5 py-1.5">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="bg-kortix-green/10 text-kortix-green grid size-8 shrink-0 place-items-center rounded-md">
+          <span className="bg-zed-green/10 text-zed-green grid size-8 shrink-0 place-items-center rounded-md">
             <FileDiff className="size-4" />
           </span>
           <div className="min-w-0">
@@ -102,7 +102,7 @@ function OpenCrChooser({
               </div>
               <div className="text-muted-foreground mt-0.5 flex min-w-0 items-center gap-1.5 text-xs">
                 <span className="shrink-0">into</span>
-                <Badge variant="kortix" size="xs" className="truncate">
+                <Badge variant="zed" size="xs" className="truncate">
                   {cr.base_ref}
                 </Badge>
               </div>

@@ -6,19 +6,19 @@ export {
   type EnablementCandidate,
 } from './enablement';
 
-// ─── Kortix-owned provider auth requirements ────────────────────────────────
+// ─── Zed-owned provider auth requirements ────────────────────────────────
 //
 // *** THE PROBLEM THIS FIXES ***
 // `CatalogProvider.env` (models.dev's `env` field, in catalog.generated.json)
 // lists EVERY env var the upstream's OFFICIAL SDK recognizes across ALL of
-// that SDK's supported auth methods — not what KORTIX's own gateway
+// that SDK's supported auth methods — not what ZED's own gateway
 // transport actually reads. Most providers have exactly one implemented auth
 // method, so `env` happens to be the right requirement as-is. A few don't:
 //
 //   - `amazon-bedrock`: models.dev lists BOTH the SigV4 access-key pair
 //     (AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY) AND the bearer-token var
 //     (AWS_BEARER_TOKEN_BEDROCK) plus AWS_REGION — because the AWS SDK
-//     supports both. Kortix's bedrock transport
+//     supports both. Zed's bedrock transport
 //     (packages/llm-gateway/src/transports/bedrock/request.ts) authenticates
 //     ONLY with the bearer token; the BYOK resolver
 //     (apps/api/src/llm-gateway/resolution/resolve-candidates.ts +
@@ -120,7 +120,7 @@ const PROVIDER_AUTH_REQUIREMENT_OVERRIDES: Record<string, ProviderAuthRequiremen
   google: {
     methods: [
       // GOOGLE_GENERATIVE_AI_API_KEY first: the name @ai-sdk/google's own
-      // docs lead with, and what Kortix's CLI/UI have always written when
+      // docs lead with, and what Zed's CLI/UI have always written when
       // connecting Google — kept as the connect form's primary field.
       { envVars: ['GOOGLE_GENERATIVE_AI_API_KEY'] },
       { envVars: ['GOOGLE_API_KEY'] },
@@ -130,7 +130,7 @@ const PROVIDER_AUTH_REQUIREMENT_OVERRIDES: Record<string, ProviderAuthRequiremen
 };
 
 /**
- * The auth requirement Kortix actually enforces for a catalog provider.
+ * The auth requirement Zed actually enforces for a catalog provider.
  * Falls back to a single method requiring every var in `provider.env`
  * (unchanged behavior) unless an override above corrects it.
  */
@@ -444,7 +444,7 @@ export interface ManagedModel {
   providerBrand?: string;
   // models.dev id for live pricing — upstream ids don't always match the catalog.
   // Must be the model's REAL models.dev id (dashes, e.g. `claude-opus-4-8`) —
-  // Kortix's own managed `id` above is dotted for display (`claude-opus-4.8`)
+  // Zed's own managed `id` above is dotted for display (`claude-opus-4.8`)
   // but models.dev never uses dots in a Claude id. See
   // `pricingRefLookupCandidates` below, which normalizes dot→dash as a safety
   // net for consumers, but this field itself should always be the correct
@@ -477,7 +477,7 @@ export interface ManagedModel {
 }
 
 // A managed model's `pricingRef` is supposed to be the model's real
-// models.dev id, but Kortix's own display id is dotted (`claude-opus-4.8`)
+// models.dev id, but Zed's own display id is dotted (`claude-opus-4.8`)
 // while models.dev Claude ids are dashed (`claude-opus-4-8`) — a mismatch
 // here silently misses the models.dev lookup and falls back to a permissive
 // synthetic capability record (no reasoning_options, temperature always
@@ -497,13 +497,13 @@ export function pricingRefLookupCandidates(pricingRef: string): string[] {
 }
 
 // Managed model ids are single-segment (no `provider/` prefix). They are served
-// to opencode under the `kortix` provider, so opencode references them as
-// `kortix/<id>` (e.g. `kortix/claude-opus-4.8`) and sends `<id>` as the wire
+// to opencode under the `zed` provider, so opencode references them as
+// `zed/<id>` (e.g. `zed/claude-opus-4.8`) and sends `<id>` as the wire
 // model. A bare, slash-free id is what lets the gateway tell a managed request
 // (`claude-opus-4.8` → our keys, credits-billed) apart from a BYOK one
 // (`anthropic/claude-...` → the user's own key) without the two ever colliding.
 //
-// Every managed model runs through OUR keys and is billed as Kortix credits with
+// Every managed model runs through OUR keys and is billed as Zed credits with
 // markup, so the gateway enforces budgets/logging/spend on all of them. Claude
 // runs on Bedrock (the proven Anthropic-payload InvokeModel transport). GLM
 // runs through AsterLab. DeepSeek V4 Flash remains on OpenRouter.
@@ -653,7 +653,7 @@ export const MANAGED_FLAGSHIP_MODEL_ID = (
   MANAGED_MODELS.find((m) => m.tier === 'flagship') ?? MANAGED_MODELS[0]
 ).id;
 
-/** Concrete Kortix-managed default used when no account or project default exists. */
+/** Concrete Zed-managed default used when no account or project default exists. */
 export const PLATFORM_DEFAULT_MODEL_ID = 'glm-5.2';
 
 function modelsByWireId(catalog: Catalog): Map<string, CatalogModel> {
@@ -720,7 +720,7 @@ export function catalogModelForWireModel(
 }
 
 export const MODEL_SELECTOR_PROVIDER_IDS = [
-  'kortix',
+  'zed',
   'opencode',
   'anthropic',
   'openai',
@@ -739,15 +739,15 @@ export const PROVIDER_LABELS: Record<string, string> = {
   moonshotai: 'Moonshot',
   'moonshotai-cn': 'Moonshot',
   opencode: 'OpenCode Zen',
-  kortix: 'Kortix',
+  zed: 'Zed',
   firmware: 'Firmware',
   // models.dev's canonical provider id is `amazon-bedrock` (see
   // `PROVIDER_AUTH_REQUIREMENT_OVERRIDES` above and `catalog.generated.json`),
   // and that is the id the gateway stamps onto `GatewayModel.provider`. The
   // short `bedrock` alias is kept for legacy call sites, mirroring the icon
   // map in apps/web's provider-branding. Missing the canonical key here is
-  // what made the picker label the whole Bedrock group "Kortix": the label
-  // lookup fell through to `FlatModel.providerName`, which is always "Kortix"
+  // what made the picker label the whole Bedrock group "Zed": the label
+  // lookup fell through to `FlatModel.providerName`, which is always "Zed"
   // under the gateway.
   'amazon-bedrock': 'Amazon Bedrock',
   bedrock: 'Amazon Bedrock',

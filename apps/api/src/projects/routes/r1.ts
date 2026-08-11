@@ -33,7 +33,7 @@ import { getCatalogItemDetail } from '../../marketplace/catalog';
 import { loadProjectTriggers } from '../triggers';
 import { invalidateProjectMirror, remoteBranchExists } from '../git';
 import { createRoute, z } from '@hono/zod-openapi';
-import { accountGithubInstallations, projectMembers, projects } from '@kortix/db';
+import { accountGithubInstallations, projectMembers, projects } from '@zed/db';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { createHash, randomUUID } from 'node:crypto';
 import { enforceProjectQuota, getProjectMemberRole, grantProjectRole, loadProjectForUser, resolveProjectAccount, assertProjectCapability } from '../lib/access';
@@ -71,9 +71,9 @@ projectWebhooksApp.post('/projects/:projectId/:slug', async (c) => {
   }
 
   const hasCredentialHeader = Boolean(
-    c.req.header('x-kortix-signature') ||
+    c.req.header('x-zed-signature') ||
       c.req.header('x-hub-signature-256') ||
-      c.req.header('x-kortix-token') ||
+      c.req.header('x-zed-token') ||
       c.req.header('authorization'),
   );
   if (!hasCredentialHeader) {
@@ -117,16 +117,16 @@ projectWebhooksApp.post('/projects/:projectId/:slug', async (c) => {
 
   // Primary auth: HMAC-SHA256 signature over the raw body (GitHub-compatible).
   // Fallback, ONLY when no signature header is present: a static shared token in
-  // X-Kortix-Token or Authorization, for sources that can't HMAC-sign their body
+  // X-Zed-Token or Authorization, for sources that can't HMAC-sign their body
   // (e.g. Better Stack error webhooks — custom headers / basic auth only). Both
   // paths require knowing the trigger's secret, so security is equivalent to a
   // shared bearer token; signed senders are unaffected.
   const signatureHeader =
-    c.req.header('x-kortix-signature') || c.req.header('x-hub-signature-256') || null;
+    c.req.header('x-zed-signature') || c.req.header('x-hub-signature-256') || null;
   const authed = signatureHeader
     ? verifyWebhookSignature(rawBody, secret, signatureHeader)
     : verifyWebhookToken(
-        extractWebhookToken(c.req.header('x-kortix-token'), c.req.header('authorization')),
+        extractWebhookToken(c.req.header('x-zed-token'), c.req.header('authorization')),
         secret,
       );
   if (!authed) {
@@ -142,12 +142,12 @@ projectWebhooksApp.post('/projects/:projectId/:slug', async (c) => {
   };
   const renderedPrompt = renderPromptTemplate(spec.promptTemplate, payload);
   const deliveryId =
-    c.req.header('x-kortix-delivery-id') ??
+    c.req.header('x-zed-delivery-id') ??
     c.req.header('x-github-delivery') ??
     c.req.header('x-request-id') ??
     null;
   const staticAuthFingerprint =
-    c.req.header('x-kortix-token') ??
+    c.req.header('x-zed-token') ??
     c.req.header('authorization') ??
     '';
   const idempotencyKey = deliveryId
@@ -336,7 +336,7 @@ projectsApp.openapi(
 
   const name = normalizeString(body.name) ?? deriveProjectName(repoUrl);
   const requestedBranch = normalizeString(body.default_branch ?? body.defaultBranch);
-  const manifestPath = normalizeString(body.manifest_path ?? body.manifestPath) ?? 'kortix.yaml';
+  const manifestPath = normalizeString(body.manifest_path ?? body.manifestPath) ?? 'zed.yaml';
 
   let imported: Awaited<ReturnType<typeof resolveGitHubImport>>;
   try {
@@ -438,7 +438,7 @@ async function provisionReplayAccess(
 // Managed-git "Create project": provisions a repo on the managed backend +
 // scoped per-project push token, optionally seeds the starter (web flow), and
 // registers the project.
-// Used by the web "Create project" button and `kortix ship` when a working tree
+// Used by the web "Create project" button and `zed ship` when a working tree
 // has no `origin` remote. BYO-repo projects go through POST / and /create-repo.
 
 projectsApp.openapi(
@@ -540,7 +540,7 @@ projectsApp.openapi(
   const projectId = randomUUID();
   const baseSlug = (
     name.trim().toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') ||
-    'kortix-project'
+    'zed-project'
   ).slice(0, 40);
   const repoSlug = `${baseSlug}-${projectId}`;
   const defaultBranch = normalizeString(body.default_branch ?? body.defaultBranch) ?? 'main';
@@ -615,7 +615,7 @@ projectsApp.openapi(
   const now = new Date();
 
   // Seed the starter into the empty repo when the caller has no local working
-  // tree to push (web "Create project"). `kortix ship` leaves this false and
+  // tree to push (web "Create project"). `zed ship` leaves this false and
   // pushes its own files instead (apps/cli/src/commands/ship.ts) — a plain,
   // non-force push, so seeding that repo would reject it. Resolved BEFORE the
   // insert so the row records the INTENT: a crash between the insert and a
@@ -643,12 +643,12 @@ projectsApp.openapi(
       repoUrl: provisioned.upstreamUrl,
       defaultBranch: provisioned.defaultBranch,
       // The starter this route seeds (buildProjectSeedFiles, below) ships
-      // kortix.yaml (kortix_version 2) — record that as the canonical path so
+      // zed.yaml (zed_version 2) — record that as the canonical path so
       // a project created here is never labeled with a stale v1 filename. A
-      // CLI `kortix ship` that pushes its own files instead of seeding still
-      // scaffolded via `kortix init` (same @kortix/starter, same kortix.yaml),
+      // CLI `zed ship` that pushes its own files instead of seeding still
+      // scaffolded via `zed init` (same @zed/starter, same zed.yaml),
       // so this holds for both the web and CLI creation paths.
-      manifestPath: 'kortix.yaml',
+      manifestPath: 'zed.yaml',
       status: 'active',
       metadata: {
         git: {
@@ -675,7 +675,7 @@ projectsApp.openapi(
         // unification.md §2.1/§3 Phase 2): every project created through this
         // route is "new" in the spec's sense — subject to declared-agent
         // enforcement from birth, regardless of the platform-wide
-        // KORTIX_REQUIRE_DECLARED_AGENTS flag (see projectRequiresDeclaredAgents /
+        // ZED_REQUIRE_DECLARED_AGENTS flag (see projectRequiresDeclaredAgents /
         // createProjectSession). Pre-existing projects (this flag absent/false)
         // keep the v1 adopt-to-govern behavior untouched.
         require_declared_agents: true,
@@ -816,9 +816,9 @@ projectsApp.openapi(
       ? null
       : resolved.auth?.token ?? null;
   }
-  if (process.env.KORTIX_LOCAL_DEV === '1') {
-    internalPushToken = internalPushToken || 'kortix-dev-token';
-    exportablePushToken = exportablePushToken || 'kortix-dev-token';
+  if (process.env.ZED_LOCAL_DEV === '1') {
+    internalPushToken = internalPushToken || 'zed-dev-token';
+    exportablePushToken = exportablePushToken || 'zed-dev-token';
   }
   const writeUpstream = internalPushToken
     ? backend.buildUpstream(connRef, internalPushToken, 'write')
@@ -856,7 +856,7 @@ projectsApp.openapi(
             now: now.toISOString(),
           });
       // Seed the project tip == the deterministic scaffold root (the constant
-      // 'kortix-project' render), byte-identical to the image-baked scaffold
+      // 'zed-project' render), byte-identical to the image-baked scaffold
       // (snapshots/build-context.ts). This lets a fresh session's fork REUSE
       // the warm-seed's already-opencode-initialized /workspace with ZERO
       // network (git.ts baked-checkout reuse fires when baseSha == scaffold
@@ -949,7 +949,7 @@ projectsApp.openapi(
     // Legal, but never silent: the caller owns this repo's first commit. Log it
     // so an empty managed repo in production is always attributable.
     console.warn(
-      `[projects] provisioned managed repo WITHOUT a scaffold seed project=${row.projectId} account=${scope.accountId} repo=${connRef.repoName ?? connRef.upstreamUrl} — the caller must push the first commit (kortix ship); the project has no default branch yet`,
+      `[projects] provisioned managed repo WITHOUT a scaffold seed project=${row.projectId} account=${scope.accountId} repo=${connRef.repoName ?? connRef.upstreamUrl} — the caller must push the first commit (zed ship); the project has no default branch yet`,
     );
   }
 
@@ -982,7 +982,7 @@ projectsApp.openapi(
 
 // POST /v1/projects/:projectId/git-token
 // Mint a fresh scoped push token for a *managed* project so the CLI
-// can push on a later `kortix ship` without persisting credentials in git config.
+// can push on a later `zed ship` without persisting credentials in git config.
 // Returns 409 for BYO projects (they push with the user's own git remote auth).
 
 projectsApp.openapi(
@@ -1023,16 +1023,16 @@ projectsApp.openapi(
   if (gitAuth.authSource === 'pat') {
     // This host's managed git runs on an org-wide token. Exporting it to a
     // client would hand out write access to EVERY managed repo, so we refuse —
-    // clients push through the Kortix git proxy (`git_origin_url`) with their
-    // own Kortix token instead, which needs no provider credential client-side.
+    // clients push through the Zed git proxy (`git_origin_url`) with their
+    // own Zed token instead, which needs no provider credential client-side.
     // Say so explicitly: the old message read as a server misconfiguration and
     // sent people hunting for GitHub App settings that aren't the problem.
     return c.json(
       {
         error:
           "This host's managed git uses an org-wide token, which is never exported. " +
-          "Push through the project's Kortix git origin instead (git_origin_url) — " +
-          'run `kortix update` if your CLI still asks for a push token.',
+          "Push through the project's Zed git origin instead (git_origin_url) — " +
+          'run `zed update` if your CLI still asks for a push token.',
         git_origin_url: serializeProject(loaded.row).git_origin_url,
       },
       503,
@@ -1055,7 +1055,7 @@ projectsApp.openapi(
 
 // POST /v1/projects/:projectId/git/collaborators
 // Invite a GitHub user as a collaborator on a MANAGED repo — lets the project
-// creator pull "their" Kortix-managed repo into their own GitHub account and
+// creator pull "their" Zed-managed repo into their own GitHub account and
 // work on it on github.com directly. Managed repos only (the user already owns
 // BYO repos). GitHub sends a pending invite the user accepts.
 
@@ -1146,7 +1146,7 @@ projectsApp.openapi(
 );
 
 // GET /v1/projects/github/installations?account_id=...
-// Vercel-style account Git connections surface. A Kortix account can connect
+// Vercel-style account Git connections surface. A Zed account can connect
 // multiple GitHub users/orgs and pick the exact installation during import.
 
 projectsApp.openapi(
@@ -1229,7 +1229,7 @@ async function upsertAccountGitHubInstallation(
 
 // POST /v1/projects/github/installations/linkable
 // The GitHub OAuth token cannot call GET /user/installations. GitHub restricts
-// that route to GitHub App user tokens. Kortix lists this App's installations
+// that route to GitHub App user tokens. Zed lists this App's installations
 // with the App JWT, then filters them with the authorized user's identity and
 // active organization-admin memberships.
 

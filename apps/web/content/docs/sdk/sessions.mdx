@@ -6,13 +6,13 @@ description: Run a session, stream its events, and handle the errors it can thro
 import { Callout } from 'fumadocs-ui/components/callout';
 
 A session is one agent run, in its own sandbox, on its own git branch.
-`kortix.session(projectId, sessionId)` returns the handle for everything a
+`zed.session(projectId, sessionId)` returns the handle for everything a
 session does: start it, send prompts, stream events, and read status. This
 page covers the handle, the readiness handshake, streaming, and the typed
 errors an SDK call can throw.
 
 ```ts
-const s = kortix.session(projectId, sessionId);
+const s = zed.session(projectId, sessionId);
 ```
 
 `s` is the handle for everything a session does. The session ID, the sandbox
@@ -46,7 +46,7 @@ Three more read methods round out the handle:
 - `s.publicShares.list()` / `.create(input)` / `.revoke(shareId)` — public share links.
 - `s.audit(limit?)` — the session's audit trail of agent actions.
 - `s.transcript(options?)` — a compact server-side transcript (text and tool calls, no tool inputs or outputs). This works with a project-scoped session token.
-- `s.voiceTranscript(options?)` — this session's live voice-call transcript (spoken turns plus `ask_kortix`/`run_command` worker tool calls). Returns an empty list when the session has no live call, not a 404.
+- `s.voiceTranscript(options?)` — this session's live voice-call transcript (spoken turns plus `ask_zed`/`run_command` worker tool calls). Returns an empty list when the session has no live call, not a 404.
 
 ## Readiness is a handshake
 
@@ -66,7 +66,7 @@ retry.
 ### Seed a server-authorized OpenCode pin
 
 A server-rendered React host can supply the OpenCode pin already persisted for
-the same Kortix session:
+the same Zed session:
 
 ```tsx
 const session = useSession(projectId, sessionId, {
@@ -79,7 +79,7 @@ not override the runtime identity. The pin returned by `/start` is
 authoritative and replaces a stale seed.
 
 Do not accept this value from an untrusted tenant selector. Do not create an
-OpenCode session in the host. Kortix creates and persists the root session.
+OpenCode session in the host. Zed creates and persists the root session.
 OpenCode query caches and transcript controllers are scoped to the sandbox
 runtime, so equal OpenCode ids from different sandboxes do not share cache
 entries.
@@ -96,14 +96,14 @@ await s.abort(); // stop the current run
 ```
 
 For OpenCode REST sessions, the first `send()` on a handle reads the model and
-agent persisted on the Kortix session. This prevents a snapshot-inherited
+agent persisted on the Zed session. This prevents a snapshot-inherited
 OpenCode session from reusing stale snapshot defaults.
 
 Prompt choice precedence is:
 
 1. The `send()` call.
 2. The handle's `setModel()` or `setAgent()` value.
-3. The persisted Kortix session default.
+3. The persisted Zed session default.
 
 `setModel` only chooses what the next local `send` asks for — it never leaves the
 handle. To **persist** a new model for a running session server-side, use
@@ -180,7 +180,7 @@ Use `s.stream()` to receive live events in a script or server. In a React
 app, use [`useSession`](/docs/sdk/react) instead — it manages the whole
 session lifecycle for you.
 
-`s.stream()` is the OpenCode REST compatibility event stream. The Kortix API
+`s.stream()` is the OpenCode REST compatibility event stream. The Zed API
 proxies it from the sandbox. There is no separate WebSocket endpoint. The
 transport is `fetch` with a streaming response body, read through
 `ReadableStream` and `TextDecoderStream`. The SDK handles reconnection,
@@ -196,7 +196,7 @@ Stream a session:
 4. Close the stream when you see `session.idle`.
 
 ```ts
-const session = kortix.session(projectId, sessionId);
+const session = zed.session(projectId, sessionId);
 const { opencodeSessionId } = await session.ensureReady();
 
 const stream = await session.stream({
@@ -298,7 +298,7 @@ await s.runtime.session.prompt({
 ```
 
 The OpenCode `sessionID` here is not the session ID you pass to
-`kortix.session(projectId, sessionId)`. The SDK resolves it during
+`zed.session(projectId, sessionId)`. The SDK resolves it during
 `ensureReady()` and caches it on the handle.
 
 ## Warm a project session
@@ -307,10 +307,10 @@ Use the server-owned warm-session operations when a project landing page needs
 one empty runtime before the first prompt.
 
 ```ts
-const project = kortix.project(projectId);
+const project = zed.project(projectId);
 const warm = await project.sessions.ensureWarm();
 
-await kortix.session(projectId, warm.session.session_id).ensureReady();
+await zed.session(projectId, warm.session.session_id).ensureReady();
 
 const claimed = await project.sessions.claimWarm({
   session_id: warm.session.session_id,
@@ -326,15 +326,15 @@ agent or sandbox differs.
 
 ## Handling errors
 
-Every call through `createKortix` rejects with a typed `Error` subclass,
+Every call through `createZed` rejects with a typed `Error` subclass,
 never a plain object. Catch the error, check `instanceof`, and branch on
 `.status` or `.code`.
 
 ```ts
-import { ApiError, BillingError } from '@kortix/sdk';
+import { ApiError, BillingError } from '@zed/sdk';
 
 try {
-  await kortix.project(projectId).sessions.create();
+  await zed.project(projectId).sessions.create();
 } catch (err) {
   if (err instanceof BillingError) {
     // 402 — out of credits or over a plan limit
@@ -351,7 +351,7 @@ try {
 | Class                  | Extends    | When it throws                                                                 | Key fields                                                           |
 | ---------------------- | ---------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
 | `ApiError`             | `Error`    | Default for any failed request: bad status, network failure, timeout, or abort | `status`, `code`, `detail`, `response`, `url`, `endpoint`, `timeout` |
-| `AuthError`            | `ApiError` | `getToken` returned `null`. Kortix never sent the request                      | `code` is always `'NO_SESSION'`                                      |
+| `AuthError`            | `ApiError` | `getToken` returned `null`. Zed never sent the request                      | `code` is always `'NO_SESSION'`                                      |
 | `BillingError`         | `Error`    | HTTP `402`. The only billing error class                                       | `status` (`402`), `detail.message`                                   |
 | `RequestTooLargeError` | `Error`    | HTTP `431`. Usually too many files in one request                              | `detail.suggestion`                                                  |
 | `SessionNotReadyError` | `Error`    | A runtime accessor ran before `ensureReady()`                                  | `name` is `'SessionNotReadyError'`                                   |
@@ -363,13 +363,13 @@ try {
 
 For any other failure, `status` holds the HTTP status code. `code` comes from the backend's `error_code`, or falls back to the status as a string. `message` is an enumerable own property on `ApiError`, so it survives `JSON.stringify` and object spread.
 
-Kortix retries some requests before your code sees an error. If a `GET` or `HEAD` request returns `502`, `503`, or `504`, Kortix retries it up to 2 times, with a 250ms then 500ms delay. A transient transport failure on a `GET` or `HEAD` — a network error, not a status code — is retried the same way. A retry that succeeds never reaches `onError`. Kortix never retries `POST`, `PUT`, `PATCH`, or `DELETE` requests, or a `500` response.
+Zed retries some requests before your code sees an error. If a `GET` or `HEAD` request returns `502`, `503`, or `504`, Zed retries it up to 2 times, with a 250ms then 500ms delay. A transient transport failure on a `GET` or `HEAD` — a network error, not a status code — is retried the same way. A retry that succeeds never reaches `onError`. Zed never retries `POST`, `PUT`, `PATCH`, or `DELETE` requests, or a `500` response.
 
-Kortix throws `AuthError` on the client, before it sends a request, when `getToken()` returns `null`. `AuthError` extends `ApiError`, so `err instanceof ApiError` still matches. Check `err instanceof AuthError`, or `err.code === 'NO_SESSION'`, to treat "not signed in" as a separate case from a backend failure.
+Zed throws `AuthError` on the client, before it sends a request, when `getToken()` returns `null`. `AuthError` extends `ApiError`, so `err instanceof ApiError` still matches. Check `err instanceof AuthError`, or `err.code === 'NO_SESSION'`, to treat "not signed in" as a separate case from a backend failure.
 
-Kortix throws `BillingError` for every HTTP `402` response: out of credits, over a plan limit, or another billing gate. `detail.message` holds the reason from the backend.
+Zed throws `BillingError` for every HTTP `402` response: out of credits, over a plan limit, or another billing gate. `detail.message` holds the reason from the backend.
 
-Kortix throws `RequestTooLargeError` for HTTP `431`. This usually means the request carried too many files. `detail.suggestion` holds a ready-to-show hint for the user.
+Zed throws `RequestTooLargeError` for HTTP `431`. This usually means the request carried too many files. `detail.suggestion` holds a ready-to-show hint for the user.
 
 ### Session readiness errors
 
@@ -378,9 +378,9 @@ Two errors mean the session's sandbox is not ready yet. Handle each one differen
 `SessionNotReadyError` throws synchronously when you call a runtime accessor — `session.previewUrl()`, `session.proxyUrl()`, or `session.runtime` — before this session handle has resolved its sandbox. A session handle only resolves its own sandbox; it never falls back to another session's sandbox.
 
 ```ts
-import { SessionNotReadyError } from '@kortix/sdk';
+import { SessionNotReadyError } from '@zed/sdk';
 
-const s = kortix.session(projectId, sessionId);
+const s = zed.session(projectId, sessionId);
 try {
   const url = s.previewUrl(3000); // throws: not resolved yet
 } catch (err) {
@@ -403,24 +403,24 @@ Call `await session.ensureReady()` first, or call `send()`, which readies the se
 | `formatBillingErrorForUI(error)` | `(error) => BillingErrorUI \| null` | Returns `null` for non-billing errors. Otherwise returns `{ alertTitle, alertSubtitle }` for an upgrade modal |
 
 ```ts
-import { formatBillingErrorForUI } from '@kortix/sdk';
+import { formatBillingErrorForUI } from '@zed/sdk';
 
 try {
-  await kortix.session(projectId, sessionId).start();
+  await zed.session(projectId, sessionId).start();
 } catch (err) {
   const ui = formatBillingErrorForUI(err);
   if (ui) showUpgradeModal(ui.alertTitle, ui.alertSubtitle);
 }
 ```
 
-### In `@kortix/sdk/react`
+### In `@zed/sdk/react`
 
-`@kortix/sdk/react` re-exports `BillingError`, `RequestTooLargeError`, `parseBillingError`, `isBillingError`, and `formatBillingErrorForUI`. It does not re-export `ApiError` or `AuthError` — import those from `@kortix/sdk`.
+`@zed/sdk/react` re-exports `BillingError`, `RequestTooLargeError`, `parseBillingError`, `isBillingError`, and `formatBillingErrorForUI`. It does not re-export `ApiError` or `AuthError` — import those from `@zed/sdk`.
 
 `useSession` classifies every `send`, `answerQuestion`, `answerPermission`, and `rejectQuestion` failure into one `sendError` object, so you do not need to write `instanceof` checks by hand:
 
 ```ts
-interface KortixSendError {
+interface ZedSendError {
   kind: 'billing' | 'runtime-not-ready' | 'runtime-error';
   message: string;
   billing?: BillingError; // set when kind is 'billing'

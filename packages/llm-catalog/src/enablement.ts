@@ -36,14 +36,14 @@ function releasedAt(model: EnablementCandidate): number | null {
 
 /**
  * The provider a model belongs to. Every gateway model is registered under the
- * one synthetic `kortix` provider, so grouping by the SERVED provider id would
+ * one synthetic `zed` provider, so grouping by the SERVED provider id would
  * collapse every upstream into a single bucket — prefer the explicit field and
- * fall back to the wire id's prefix (bare ids are managed, i.e. `kortix`).
+ * fall back to the wire id's prefix (bare ids are managed, i.e. `zed`).
  */
 function providerOf(model: EnablementCandidate): string {
   if (model.provider) return model.provider;
   const slash = model.id.indexOf('/');
-  return slash === -1 ? 'kortix' : model.id.slice(0, slash);
+  return slash === -1 ? 'zed' : model.id.slice(0, slash);
 }
 
 function groupBy<T>(items: T[], key: (item: T) => string): Map<string, T[]> {

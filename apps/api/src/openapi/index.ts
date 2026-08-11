@@ -1,5 +1,5 @@
 /**
- * Shared OpenAPI wiring for the Kortix API.
+ * Shared OpenAPI wiring for the Zed API.
  *
  * Every sub-router is an `OpenAPIHono` created via `makeOpenApiApp()` so it (a)
  * contributes typed route definitions to the spec and (b) shares one validation
@@ -7,7 +7,7 @@
  * served at /v1/openapi.json and rendered by Scalar at /v1/docs.
  */
 import { OpenAPIHono, z, type RouteConfig } from '@hono/zod-openapi';
-import { ErrorEnvelopeSchema } from '@kortix/api-contract';
+import { ErrorEnvelopeSchema } from '@zed/api-contract';
 import type { Env } from 'hono';
 import { Scalar } from '@scalar/hono-api-reference';
 
@@ -105,7 +105,7 @@ export function mountOpenApiDocs(app: OpenAPIHono<any, any, any>, version: strin
     type: 'http',
     scheme: 'bearer',
     description:
-      'Supabase user JWT, or a Kortix token: PAT (`kortix_pat_…`), API key (`kortix_…`), service account (`kortix_sa_…`), or (LLM Gateway inference routes only) a project gateway key (`kortix_gw_…`).',
+      'Supabase user JWT, or a Zed token: PAT (`zed_pat_…`), API key (`zed_…`), service account (`zed_sa_…`), or (LLM Gateway inference routes only) a project gateway key (`zed_gw_…`).',
   });
 
   // Serve the same document `doc31` would (getOpenAPI31Document is exactly what
@@ -115,19 +115,19 @@ export function mountOpenApiDocs(app: OpenAPIHono<any, any, any>, version: strin
     const document = app.getOpenAPI31Document({
       openapi: '3.1.0',
       info: {
-        title: 'Kortix API',
+        title: 'Zed API',
         version,
         description:
-          'The Kortix platform REST API — typed schemas via @hono/zod-openapi. ' +
-          'For application code, prefer the TypeScript SDK (`@kortix/sdk`), which wraps ' +
+          'The Zed platform REST API — typed schemas via @hono/zod-openapi. ' +
+          'For application code, prefer the TypeScript SDK (`@zed/sdk`), which wraps ' +
           'this API and OpenCode REST sessions behind ' +
           'one session-scoped client — ' +
-          'docs at https://kortix.com/docs/sdk.',
+          'docs at https://zed.com/docs/sdk.',
       },
       servers: [{ url: new URL(c.req.url).origin }],
     });
     return c.json(filterSpecPaths(document));
   });
 
-  app.get('/v1/docs', Scalar({ url: '/v1/openapi.json', pageTitle: 'Kortix API' }));
+  app.get('/v1/docs', Scalar({ url: '/v1/openapi.json', pageTitle: 'Zed API' }));
 }

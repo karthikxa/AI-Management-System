@@ -245,8 +245,8 @@ describe('AgentMail provisioning idempotency', () => {
     expect(beta.inbox).not.toBe(alpha.inbox);
     expect(beta.webhook).not.toBe(alpha.webhook);
     expect(otherProject.inbox).not.toBe(alpha.inbox);
-    expect(alpha.inbox).toMatch(/^kortix-inbox-[a-f0-9]{40}$/);
-    expect(alpha.webhook).toMatch(/^kortix-webhook-[a-f0-9]{40}$/);
+    expect(alpha.inbox).toMatch(/^zed-inbox-[a-f0-9]{40}$/);
+    expect(alpha.webhook).toMatch(/^zed-webhook-[a-f0-9]{40}$/);
   });
 });
 
@@ -265,8 +265,8 @@ describe('AgentMail webhook provisioning', () => {
       await createAgentMailWebhook({
         apiKey: 'am_test',
         inboxId: 'inb-1',
-        url: 'https://api.kortix.test/v1/webhooks/email/agentmail',
-        clientId: 'kortix-email-proj-1',
+        url: 'https://api.zed.test/v1/webhooks/email/agentmail',
+        clientId: 'zed-email-proj-1',
       });
       expect(requestBody.event_types).toEqual([
         'message.received',
@@ -297,7 +297,7 @@ describe('AgentMail provider errors', () => {
           apiKey: 'am_test',
           username: 'support',
           displayName: 'Support',
-          clientId: 'kortix-project-proj-1',
+          clientId: 'zed-project-proj-1',
         });
       } catch (err) {
         expect(err).toBeInstanceOf(AgentMailApiError);
@@ -359,8 +359,8 @@ describe('dispatchAgentMailEvent', () => {
     ]);
     expect(createCalls[0].postCreate[1].text).toContain('Need help');
     expectConnectorEmailPrompt(createCalls[0].postCreate[1].text);
-    expect(createCalls[0].extraEnvVars.KORTIX_EMAIL_INBOX_ID).toBe('inb-1');
-    expect(createCalls[0].extraEnvVars.KORTIX_CONNECTORS_MCP_ENABLED).toBe('1');
+    expect(createCalls[0].extraEnvVars.ZED_EMAIL_INBOX_ID).toBe('inb-1');
+    expect(createCalls[0].extraEnvVars.ZED_CONNECTORS_MCP_ENABLED).toBe('1');
     expect(createCalls[0].body.connector_bindings).toEqual({
       email: { connection_id: 'connection-email-1' },
     });
@@ -443,7 +443,7 @@ describe('dispatchAgentMailEvent', () => {
     expect(createCalls).toHaveLength(0);
     expect(continueCalls).toHaveLength(1);
     expect(continueCalls[0].sessionId).toBe('sess-1');
-    expect(continueCalls[0].opencodeEnv).toEqual({ KORTIX_CONNECTORS_MCP_ENABLED: '1' });
+    expect(continueCalls[0].opencodeEnv).toEqual({ ZED_CONNECTORS_MCP_ENABLED: '1' });
   });
 
   test('known thread routes a new email into the existing session', async () => {
@@ -471,7 +471,7 @@ describe('dispatchAgentMailEvent', () => {
     expect(createCalls).toHaveLength(0);
     expect(continueCalls).toHaveLength(1);
     expect(continueCalls[0].sessionId).toBe('sess-1');
-    expect(continueCalls[0].opencodeEnv).toEqual({ KORTIX_CONNECTORS_MCP_ENABLED: '1' });
+    expect(continueCalls[0].opencodeEnv).toEqual({ ZED_CONNECTORS_MCP_ENABLED: '1' });
     expect(continueCalls[0].text).toContain('Customer <customer@example.com>');
     expectConnectorEmailPrompt(continueCalls[0].text);
   });
@@ -504,7 +504,7 @@ describe('dispatchAgentMailEvent', () => {
     const policy = {
       mode: 'restricted' as const,
       allowedEmails: ['customer@example.com'],
-      allowedDomains: ['kortix.com'],
+      allowedDomains: ['zed.com'],
       allowedRegex: '^vip-[0-9]+@example\\.org$',
     };
 
@@ -515,7 +515,7 @@ describe('dispatchAgentMailEvent', () => {
           ...event,
           message: {
             ...event.message,
-            from: 'Teammate <person@ops.kortix.com>',
+            from: 'Teammate <person@ops.zed.com>',
           },
         },
         policy,

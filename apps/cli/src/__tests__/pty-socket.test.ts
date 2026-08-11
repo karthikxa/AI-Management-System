@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test';
-import { openKortixPtyWebSocket } from '../api/pty-socket.ts';
+import { openZedPtyWebSocket } from '../api/pty-socket.ts';
 
 let server: ReturnType<typeof Bun.serve> | undefined;
 
@@ -8,7 +8,7 @@ afterEach(() => {
   server = undefined;
 });
 
-describe('Kortix PTY WebSocket', () => {
+describe('Zed PTY WebSocket', () => {
   test('sends the CLI User-Agent during the WebSocket upgrade', async () => {
     let userAgent: string | null = null;
 
@@ -27,8 +27,8 @@ describe('Kortix PTY WebSocket', () => {
       },
     });
 
-    const websocket = openKortixPtyWebSocket(
-      `ws://127.0.0.1:${server.port}/kortix/pty/test/connect`,
+    const websocket = openZedPtyWebSocket(
+      `ws://127.0.0.1:${server.port}/zed/pty/test/connect`,
     );
     await new Promise<void>((resolve, reject) => {
       websocket.addEventListener('open', () => resolve(), { once: true });
@@ -37,6 +37,6 @@ describe('Kortix PTY WebSocket', () => {
       });
     });
 
-    expect(userAgent).toStartWith('kortix-cli/');
+    expect(userAgent).toStartWith('zed-cli/');
   });
 });

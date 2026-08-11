@@ -1,9 +1,9 @@
-# Test Kortix as a Backend
+# Test Zed as a Backend
 
 This guide verifies the current backend session contract.
 
 > **Runtime scope.** The OpenCode message and model steps below test the
-> `kortix_version: 2` REST compatibility path, which is the only runtime.
+> `zed_version: 2` REST compatibility path, which is the only runtime.
 
 It covers:
 
@@ -20,8 +20,8 @@ It covers:
 Set these shell variables:
 
 ```bash
-export KORTIX_API_URL="https://dev-api.kortix.com/v1"
-export KORTIX_API_KEY="kortix_pat_..."
+export ZED_API_URL="https://dev-api.zed.com/v1"
+export ZED_API_KEY="zed_pat_..."
 export PROJECT_ID="..."
 export CURL_STATUS='%{stderr}HTTP %{http_code}\n'
 ```
@@ -31,8 +31,8 @@ The API key must have access to `PROJECT_ID`.
 Verify authentication:
 
 ```bash
-curl -sS -w "$CURL_STATUS" "$KORTIX_API_URL/projects" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" |
+curl -sS -w "$CURL_STATUS" "$ZED_API_URL/projects" \
+  -H "Authorization: Bearer $ZED_API_KEY" |
   jq '{count: length}'
 ```
 
@@ -53,8 +53,8 @@ Create the session:
 
 ```bash
 curl -sS -w "$CURL_STATUS" -X POST \
-  "$KORTIX_API_URL/projects/$PROJECT_ID/sessions" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" \
+  "$ZED_API_URL/projects/$PROJECT_ID/sessions" \
+  -H "Authorization: Bearer $ZED_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: $CREATE_KEY" \
   -d '{
@@ -62,7 +62,7 @@ curl -sS -w "$CURL_STATUS" -X POST \
       "ticket_id": "ticket-123"
     }
   }' |
-  tee /tmp/kortix-session.json |
+  tee /tmp/zed-session.json |
   jq '{session_id, origin, status}'
 ```
 
@@ -76,10 +76,10 @@ Expected:
 Store the identifier:
 
 ```bash
-export SESSION_ID="$(jq -r '.session_id' /tmp/kortix-session.json)"
+export SESSION_ID="$(jq -r '.session_id' /tmp/zed-session.json)"
 ```
 
-Your application must store customer metadata outside Kortix. Associate that
+Your application must store customer metadata outside Zed. Associate that
 metadata with `SESSION_ID` in your application database.
 
 ## C. Verify idempotency
@@ -88,8 +88,8 @@ Replay the same key and body:
 
 ```bash
 curl -sS -w "$CURL_STATUS" -X POST \
-  "$KORTIX_API_URL/projects/$PROJECT_ID/sessions" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" \
+  "$ZED_API_URL/projects/$PROJECT_ID/sessions" \
+  -H "Authorization: Bearer $ZED_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: $CREATE_KEY" \
   -d '{
@@ -106,8 +106,8 @@ Replay the key with changed runtime context:
 
 ```bash
 curl -i -sS -X POST \
-  "$KORTIX_API_URL/projects/$PROJECT_ID/sessions" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" \
+  "$ZED_API_URL/projects/$PROJECT_ID/sessions" \
+  -H "Authorization: Bearer $ZED_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: $CREATE_KEY" \
   -d '{
@@ -126,8 +126,8 @@ Send a 256-character key:
 
 ```bash
 curl -i -sS -X POST \
-  "$KORTIX_API_URL/projects/$PROJECT_ID/sessions" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" \
+  "$ZED_API_URL/projects/$PROJECT_ID/sessions" \
+  -H "Authorization: Bearer $ZED_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: $(printf 'x%.0s' {1..256})" \
   -d '{}'
@@ -143,8 +143,8 @@ Expected:
 List project-secret identifiers:
 
 ```bash
-curl -sS -w "$CURL_STATUS" "$KORTIX_API_URL/projects/$PROJECT_ID/secrets" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" |
+curl -sS -w "$CURL_STATUS" "$ZED_API_URL/projects/$PROJECT_ID/secrets" \
+  -H "Authorization: Bearer $ZED_API_KEY" |
   jq '.items[] | {identifier, name, scope}'
 ```
 
@@ -152,8 +152,8 @@ Create a session with no project secrets:
 
 ```bash
 curl -sS -w "$CURL_STATUS" -X POST \
-  "$KORTIX_API_URL/projects/$PROJECT_ID/sessions" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" \
+  "$ZED_API_URL/projects/$PROJECT_ID/sessions" \
+  -H "Authorization: Bearer $ZED_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"secrets":[]}' |
   jq '{session_id, secrets_allowlist}'
@@ -168,8 +168,8 @@ Use an unknown identifier:
 
 ```bash
 curl -i -sS -X POST \
-  "$KORTIX_API_URL/projects/$PROJECT_ID/sessions" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" \
+  "$ZED_API_URL/projects/$PROJECT_ID/sessions" \
+  -H "Authorization: Bearer $ZED_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"secrets":["NOT_A_REAL_SECRET"]}'
 ```
@@ -218,7 +218,7 @@ Merge the manifest change before continuing.
 Create the connection through the SDK:
 
 ```ts
-const project = kortix.project(projectId);
+const project = zed.project(projectId);
 
 const connection = await project.connectors.connections.reconcile({
   connector_alias: "gmail-project",
@@ -242,8 +242,8 @@ export CONNECTION_ID="<connection-id>"
 
 ```bash
 curl -sS -w "$CURL_STATUS" -X POST \
-  "$KORTIX_API_URL/projects/$PROJECT_ID/sessions" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" \
+  "$ZED_API_URL/projects/$PROJECT_ID/sessions" \
+  -H "Authorization: Bearer $ZED_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "agent_name": "support",
@@ -253,7 +253,7 @@ curl -sS -w "$CURL_STATUS" -X POST \
       }
     }
   }' |
-  tee /tmp/kortix-connector-session.json |
+  tee /tmp/zed-connector-session.json |
   jq '{session_id, status}'
 ```
 
@@ -263,7 +263,7 @@ Store this session. It uses the `support` agent and its connector grant:
 
 ```bash
 export CONNECTOR_SESSION_ID="$(
-  jq -r '.session_id' /tmp/kortix-connector-session.json
+  jq -r '.session_id' /tmp/zed-connector-session.json
 )"
 ```
 
@@ -312,8 +312,8 @@ Read scope:
 
 ```bash
 curl -sS -w "$CURL_STATUS" \
-  "$KORTIX_API_URL/projects/$PROJECT_ID/sessions/$CONNECTOR_SESSION_ID/scope" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" |
+  "$ZED_API_URL/projects/$PROJECT_ID/sessions/$CONNECTOR_SESSION_ID/scope" \
+  -H "Authorization: Bearer $ZED_API_KEY" |
   jq .
 ```
 
@@ -327,8 +327,8 @@ Replace the complete connector binding map:
 
 ```bash
 curl -sS -w "$CURL_STATUS" -X PUT \
-  "$KORTIX_API_URL/projects/$PROJECT_ID/sessions/$CONNECTOR_SESSION_ID/scope" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" \
+  "$ZED_API_URL/projects/$PROJECT_ID/sessions/$CONNECTOR_SESSION_ID/scope" \
+  -H "Authorization: Bearer $ZED_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "connector_bindings": {
@@ -351,8 +351,8 @@ Replace the secret allowlist:
 
 ```bash
 curl -sS -w "$CURL_STATUS" -X PUT \
-  "$KORTIX_API_URL/projects/$PROJECT_ID/sessions/$CONNECTOR_SESSION_ID/scope" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" \
+  "$ZED_API_URL/projects/$PROJECT_ID/sessions/$CONNECTOR_SESSION_ID/scope" \
+  -H "Authorization: Bearer $ZED_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"secrets":[]}' |
   jq '{secrets_allowlist, dropped_secrets, retroactive, detail}'
@@ -376,9 +376,9 @@ List the project sessions:
 
 ```bash
 curl -sS -w "$CURL_STATUS" \
-  "$KORTIX_API_URL/usage/session-costs?project_id=$PROJECT_ID&limit=25&offset=0" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" |
-  tee /tmp/kortix-session-costs.json |
+  "$ZED_API_URL/usage/session-costs?project_id=$PROJECT_ID&limit=25&offset=0" \
+  -H "Authorization: Bearer $ZED_API_KEY" |
+  tee /tmp/zed-session-costs.json |
   jq '{
     total,
     limit,
@@ -405,8 +405,8 @@ Read one detail record:
 
 ```bash
 curl -sS -w "$CURL_STATUS" \
-  "$KORTIX_API_URL/usage/session-costs/$SESSION_ID?project_id=$PROJECT_ID" \
-  -H "Authorization: Bearer $KORTIX_API_KEY" |
+  "$ZED_API_URL/usage/session-costs/$SESSION_ID?project_id=$PROJECT_ID" \
+  -H "Authorization: Bearer $ZED_API_KEY" |
   jq '{
     session_id,
     llm_cost,
@@ -429,8 +429,8 @@ Use an invalid page size:
 
 ```bash
 curl -i -sS \
-  "$KORTIX_API_URL/usage/session-costs?limit=0" \
-  -H "Authorization: Bearer $KORTIX_API_KEY"
+  "$ZED_API_URL/usage/session-costs?limit=0" \
+  -H "Authorization: Bearer $ZED_API_KEY"
 ```
 
 Expected: HTTP `400`.
@@ -439,8 +439,8 @@ Use a sandbox token:
 
 ```bash
 curl -i -sS \
-  "$KORTIX_API_URL/usage/session-costs" \
-  -H "Authorization: Bearer $KORTIX_SANDBOX_TOKEN"
+  "$ZED_API_URL/usage/session-costs" \
+  -H "Authorization: Bearer $ZED_SANDBOX_TOKEN"
 ```
 
 Expected: HTTP `403`.
@@ -453,7 +453,7 @@ Configure wrapper mode according to
 Start the app:
 
 ```bash
-pnpm --filter @kortix/whitelabel-demo dev
+pnpm --filter @zed/whitelabel-demo dev
 ```
 
 Verify these surfaces:
@@ -485,9 +485,9 @@ pnpm exec dotenvx run -- bun test --isolate \
 Run the white-label gates:
 
 ```bash
-pnpm --filter @kortix/whitelabel-demo test
-pnpm --filter @kortix/whitelabel-demo typecheck
-pnpm --filter @kortix/whitelabel-demo build
+pnpm --filter @zed/whitelabel-demo test
+pnpm --filter @zed/whitelabel-demo typecheck
+pnpm --filter @zed/whitelabel-demo build
 ```
 
 Run the API route coverage gate:

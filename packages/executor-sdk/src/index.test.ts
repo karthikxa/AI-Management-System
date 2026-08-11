@@ -68,7 +68,7 @@ describe('final Executor compatibility adapter', () => {
     );
   });
 
-  test('maps the flat session-token surface to @kortix/sdk Connector routes', async () => {
+  test('maps the flat session-token surface to @zed/sdk Connector routes', async () => {
     const { calls, fetchImpl } = harness((call) =>
       call.url.endsWith('/call')
         ? { body: { ok: true, data: { id: 'message-1' } } }
@@ -99,7 +99,7 @@ describe('final Executor compatibility adapter', () => {
     });
   });
 
-  test('maps project-explicit calls and attachment uploads to @kortix/sdk', async () => {
+  test('maps project-explicit calls and attachment uploads to @zed/sdk', async () => {
     const { calls, fetchImpl } = harness((call) =>
       call.url.endsWith('/attachments')
         ? {

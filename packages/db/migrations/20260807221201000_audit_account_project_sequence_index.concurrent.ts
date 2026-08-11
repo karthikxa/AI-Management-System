@@ -6,7 +6,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create index concurrently if not exists idx_audit_events_account_project_sequence
-      on kortix.audit_events (account_id, project_id, session_sequence)
+      on zed.audit_events (account_id, project_id, session_sequence)
   `);
 };
 

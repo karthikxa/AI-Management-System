@@ -1,7 +1,7 @@
-import { chromium } from '/Users/markokraemer/Projects/kortix/suna-comms-revamp/node_modules/.pnpm/@playwright+test@1.61.1/node_modules/@playwright/test/index.mjs';
+import { chromium } from '/Users/markokraemer/Projects/zed/suna-comms-revamp/node_modules/.pnpm/@playwright+test@1.61.1/node_modules/@playwright/test/index.mjs';
 
 const OUT =
-  '/private/tmp/claude-501/-Users-markokraemer-Projects-kortix-suna/3bec9333-b597-47c4-be52-f0b692c56665/scratchpad';
+  '/private/tmp/claude-501/-Users-markokraemer-Projects-zed-suna/3bec9333-b597-47c4-be52-f0b692c56665/scratchpad';
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });

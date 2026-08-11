@@ -2,11 +2,11 @@ import { constants } from 'node:fs';
 import { open, realpath, stat } from 'node:fs/promises';
 import { basename, extname, isAbsolute, relative, resolve, sep } from 'node:path';
 /**
- * `kortix connectors mcp` — the Connector exposed as a stdio MCP server.
+ * `zed connectors mcp` — the Connector exposed as a stdio MCP server.
  *
  * This is the MCP face for every configured connector.
  * (Pipedream / MCP / OpenAPI / Postman / GraphQL / HTTP). The default agent path is the
- * `kortix connectors` CLI; OpenCode only sees this MCP server when the runtime
+ * `zed connectors` CLI; OpenCode only sees this MCP server when the runtime
  * explicitly registers it.
  *
  * Modeled on RhysSullivan/connector: instead of exploding every connector action
@@ -15,9 +15,9 @@ import { basename, extname, isAbsolute, relative, resolve, sep } from 'node:path
  * discover what it needs.
  *
  * Thin client: it never holds a third-party credential. Every call goes to the
- * Kortix Connector Gateway, which checks sharing, resolves the secret SERVER-SIDE,
- * runs the call, and audits it. The sandbox only carries KORTIX_CLI_TOKEN +
- * KORTIX_API_URL (injected at sandbox spawn).
+ * Zed Connector Gateway, which checks sharing, resolves the secret SERVER-SIDE,
+ * runs the call, and audits it. The sandbox only carries ZED_CLI_TOKEN +
+ * ZED_API_URL (injected at sandbox spawn).
  *
  * STDOUT IS THE JSON-RPC CHANNEL — nothing else may be written there. index.ts
  * skips host/update notices for `connectors mcp`, so this stays clean.
@@ -39,8 +39,8 @@ interface JsonRpcRequest {
   params?: unknown;
 }
 
-// The MCP server identity is `kortix-connectors`, matching the CLI command tree.
-const SERVER_INFO = { name: 'kortix-connectors', version: '0.3.0' };
+// The MCP server identity is `zed-connectors`, matching the CLI command tree.
+const SERVER_INFO = { name: 'zed-connectors', version: '0.3.0' };
 
 const MAX_ATTACHMENT_FILES = 20;
 const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
@@ -129,7 +129,7 @@ export async function uploadAttachmentFiles(
   }
 
   const workspaceRoot = await realpath(
-    options.workspaceRoot ?? process.env.KORTIX_INTERNAL_WORKSPACE_ROOT ?? '/workspace',
+    options.workspaceRoot ?? process.env.ZED_INTERNAL_WORKSPACE_ROOT ?? '/workspace',
   );
   const allowedRoots = DEFAULT_ATTACHMENT_ROOTS.map((name) => resolve(workspaceRoot, name));
   const maxBytes = options.maxBytes ?? MAX_ATTACHMENT_BYTES;
@@ -300,7 +300,7 @@ const META_TOOLS = [
   {
     name: 'connect',
     description:
-      'Get a 1-click Pipedream Quick Connect link for a connector that is declared but not yet authenticated, and SURFACE the returned url to the human in your reply. Use this the moment you add/need a Pipedream connector — never tell the human to open the dashboard. In the web UI the link opens a connect popup; in Slack it is a tappable link. No credential ever touches the sandbox. The connector must already exist in kortix.yaml (add it + land the change request first).',
+      'Get a 1-click Pipedream Quick Connect link for a connector that is declared but not yet authenticated, and SURFACE the returned url to the human in your reply. Use this the moment you add/need a Pipedream connector — never tell the human to open the dashboard. In the web UI the link opens a connect popup; in Slack it is a tappable link. No credential ever touches the sandbox. The connector must already exist in zed.yaml (add it + land the change request first).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -318,7 +318,7 @@ const META_TOOLS = [
   {
     name: 'request_secret',
     description:
-      'Get a link the human opens to enter one or more project SECRET values (e.g. an API key), and SURFACE the returned url in your reply. Use this whenever you need a credential you do not have — never ask the human to paste a raw key into chat or to hunt through the dashboard. The value is never pasted into chat; once they submit it, the secret becomes available to your session (check KORTIX_PROJECT_SECRET_NAMES). In the web UI the link opens a fill-in modal; in Slack it is a tappable link. scope "runtime" (default) injects the value into your sandbox env; "connector" keeps it server-side only.',
+      'Get a link the human opens to enter one or more project SECRET values (e.g. an API key), and SURFACE the returned url in your reply. Use this whenever you need a credential you do not have — never ask the human to paste a raw key into chat or to hunt through the dashboard. The value is never pasted into chat; once they submit it, the secret becomes available to your session (check ZED_PROJECT_SECRET_NAMES). In the web UI the link opens a fill-in modal; in Slack it is a tappable link. scope "runtime" (default) injects the value into your sandbox env; "connector" keeps it server-side only.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -354,7 +354,7 @@ const META_TOOLS = [
   {
     name: 'add_connector',
     description:
-      'Add or update a connector on this project now. The command commits kortix.yaml to main and syncs it server-side. Use `connect` for Pipedream or `request_secret` for its credential. For Pipedream pass provider="pipedream" and app (for example, "smartlead").',
+      'Add or update a connector on this project now. The command commits zed.yaml to main and syncs it server-side. Use `connect` for Pipedream or `request_secret` for its credential. For Pipedream pass provider="pipedream" and app (for example, "smartlead").',
     inputSchema: {
       type: 'object',
       properties: {
@@ -392,7 +392,7 @@ const META_TOOLS = [
   {
     name: 'remove_connector',
     description:
-      'Remove a connector from this project (committed to kortix.yaml on main + catalog). No change request needed.',
+      'Remove a connector from this project (committed to zed.yaml on main + catalog). No change request needed.',
     inputSchema: {
       type: 'object',
       properties: { slug: { type: 'string', description: 'Connector slug to remove.' } },
@@ -584,7 +584,7 @@ async function runMetaTool(client: ConnectorClient, name: string, args: Record<s
             url: link.url,
             expires_at: link.expires_at,
             instructions:
-              'Surface this url to the human now. Web: opens a fill-in modal. Slack: tappable link. The value is never pasted into chat; once submitted it appears in KORTIX_PROJECT_SECRET_NAMES.',
+              'Surface this url to the human now. Web: opens a fill-in modal. Slack: tappable link. The value is never pasted into chat; once submitted it appears in ZED_PROJECT_SECRET_NAMES.',
           }),
           isError: false,
         };
@@ -626,7 +626,7 @@ async function runMetaTool(client: ConnectorClient, name: string, args: Record<s
             provider,
             applied: true,
             sync: res.sync,
-            instructions: `Live now (committed to kortix.yaml on main + synced) — no change request needed. Next: call connect("${slug}") for a Pipedream app, or request_secret for an API key.`,
+            instructions: `Live now (committed to zed.yaml on main + synced) — no change request needed. Next: call connect("${slug}") for a Pipedream app, or request_secret for an API key.`,
           }),
           isError: false,
         };

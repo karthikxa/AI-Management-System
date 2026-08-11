@@ -1,6 +1,6 @@
-// Kortix desktop shell — Electron main process.
+// Zed desktop shell — Electron main process.
 //
-// A thin native wrapper around the remote web app: window sizing, the kortix://
+// A thin native wrapper around the remote web app: window sizing, the zed://
 // deep-link auth flow, a navigation gate (logged-in product + auth pages in-app;
 // everything else in the user's real browser), the "Frontend URL" dev menu, and
 // the native bridge (zoom / open-external / window controls / frontend-url
@@ -11,7 +11,7 @@
 // (the Pipedream Connect iframe) got punted to the system browser and failed
 // with "Must be inside iframe". Electron's will-navigate fires for the top
 // frame only, so iframes "just work", and real popups (OAuth) keep a working
-// window.opener. We expose the same `KortixDesktop` UA token + a
+// window.opener. We expose the same `ZedDesktop` UA token + a
 // `window.__TAURI__` bridge shape (see preload.js) so the web app's desktop
 // bridge (apps/web/src/lib/desktop.ts) runs UNCHANGED.
 
@@ -32,44 +32,44 @@ const {
   macTrafficLightPosition,
 } = require('./window-chrome');
 
-// Name comes from the bundle (productName): "Kortix" for prod, "Kortix Dev" for
+// Name comes from the bundle (productName): "Zed" for prod, "Zed Dev" for
 // dev builds. Per-name data dir so dev + prod coexist without sharing a session,
-// and so we never inherit another "Kortix" app's stale Chromium state (per-site
+// and so we never inherit another "Zed" app's stale Chromium state (per-site
 // zoom / GPU cache) — a real cause of blurry rendering. `${name} Desktop` keeps
-// us off the bare "Kortix" Application Support folder.
+// us off the bare "Zed" Application Support folder.
 app.setPath('userData', path.join(app.getPath('appData'), `${app.getName()} Desktop`));
 
 /* ─── Config ──────────────────────────────────────────────────────────── */
 
 // A packaged app has no build-time env at runtime, so CI bakes the target URL
-// into package.json (electron-builder --config.extraMetadata.kortixDefaultUrl).
-// Dev builds → dev.kortix.com; prod → kortix.com.
+// into package.json (electron-builder --config.extraMetadata.zedDefaultUrl).
+// Dev builds → dev.zed.com; prod → zed.com.
 function bakedDefaultUrl() {
   try {
-    return require('../package.json').kortixDefaultUrl || null;
+    return require('../package.json').zedDefaultUrl || null;
   } catch {
     return null;
   }
 }
 
 // Default target URL precedence:
-//   1. KORTIX_DESKTOP_DEFAULT_URL env (local dev convenience)
+//   1. ZED_DESKTOP_DEFAULT_URL env (local dev convenience)
 //   2. value baked into package.json at build time (CI dev vs prod)
-//   3. production kortix.com
-// A runtime KORTIX_DESKTOP_URL / the Frontend-URL menu still overrides this.
+//   3. production zed.com
+// A runtime ZED_DESKTOP_URL / the Frontend-URL menu still overrides this.
 const DEFAULT_URL =
-  process.env.KORTIX_DESKTOP_DEFAULT_URL ||
+  process.env.ZED_DESKTOP_DEFAULT_URL ||
   bakedDefaultUrl() ||
-  'https://kortix.com/projects';
+  'https://zed.com/projects';
 
-const PRESET_PROD = 'https://kortix.com/projects';
-const PRESET_DEV = 'https://dev.kortix.com/projects';
+const PRESET_PROD = 'https://zed.com/projects';
+const PRESET_DEV = 'https://dev.zed.com/projects';
 const PRESET_LOCAL = 'http://localhost:3000/projects';
 
-const URL_SCHEME = 'kortix';
+const URL_SCHEME = 'zed';
 // Matches DESKTOP_UA_TOKEN in apps/web/src/lib/desktop.ts and the
-// KortixDesktop check in apps/web/src/middleware.ts.
-const UA_TOKEN = 'KortixDesktop/0.1.0';
+// ZedDesktop check in apps/web/src/middleware.ts.
+const UA_TOKEN = 'ZedDesktop/0.1.0';
 
 // Opaque dark background so the first paint (before the remote app loads) is
 // the brand surface, never a white flash. Tauri sets this on <body> via CSS;
@@ -113,7 +113,7 @@ function clearUrlOverride() {
 }
 
 function appBaseUrl() {
-  return process.env.KORTIX_DESKTOP_URL || DEFAULT_URL;
+  return process.env.ZED_DESKTOP_URL || DEFAULT_URL;
 }
 
 /** Effective URL the window should load — persisted override beats the default. */
@@ -152,8 +152,8 @@ function writeMaximized(maximized) {
 function isPreviewHost(host) {
   return (
     host.endsWith('.localhost') ||
-    host === 'kortix.cloud' ||
-    host.endsWith('.kortix.cloud')
+    host === 'zed.cloud' ||
+    host.endsWith('.zed.cloud')
   );
 }
 
@@ -162,8 +162,8 @@ function isMainAppHost(host) {
   return (
     host === 'localhost' ||
     host === '127.0.0.1' ||
-    host === 'kortix.com' ||
-    host.endsWith('.kortix.com')
+    host === 'zed.com' ||
+    host.endsWith('.zed.com')
   );
 }
 
@@ -207,10 +207,10 @@ function shouldLoadInApp(urlStr) {
     return false;
   }
   if (u.protocol === `${URL_SCHEME}:`) return true; // deep links
-  // Supabase GoTrue auth service (e.g. supa.kortix.com/auth/v1/authorize, or a
+  // Supabase GoTrue auth service (e.g. supa.zed.com/auth/v1/authorize, or a
   // *.supabase.co project): the OAuth hand-off, NOT one of our own /auth pages.
   // It MUST open in the user's real browser — Google/GitHub reject embedded
-  // webviews, and the post-OAuth `kortix://auth/callback` bounce only works from
+  // webviews, and the post-OAuth `zed://auth/callback` bounce only works from
   // a real browser tab. Our own pages (/auth/callback, /auth/login) live on the
   // app host and still load in-app via isAppPath below.
   if (u.pathname.startsWith('/auth/v1/')) return false;
@@ -220,8 +220,8 @@ function shouldLoadInApp(urlStr) {
   return false;
 }
 
-/* ─── Deep links (kortix://) ──────────────────────────────────────────────
-   The OS hands us `kortix://auth/callback?code=…` after OAuth completes in the
+/* ─── Deep links (zed://) ──────────────────────────────────────────────
+   The OS hands us `zed://auth/callback?code=…` after OAuth completes in the
    user's browser (also email magic links). Translate the path onto the loaded
    origin and navigate the webview there; the web app then runs its existing
    /auth/callback flow inside the desktop session. */
@@ -241,7 +241,7 @@ function translateDeepLink(deepLink) {
   } catch {
     return null;
   }
-  // kortix://auth/callback?code=…  →  <appUrl>/auth/callback?code=…
+  // zed://auth/callback?code=…  →  <appUrl>/auth/callback?code=…
   // For custom schemes the "host" is the first path segment.
   const host = incoming.hostname || '';
   let p = `/${host}${incoming.pathname}`.replace(/\/+$/, '');
@@ -298,7 +298,7 @@ function createSplash() {
     center: true,
     hasShadow: true,
     backgroundColor: BG_COLOR,
-    title: 'Kortix',
+    title: 'Zed',
     webPreferences: { contextIsolation: true, nodeIntegration: false },
   });
   splashWindow.loadFile(path.join(__dirname, '..', 'assets', 'splash.html'));
@@ -331,7 +331,7 @@ function createMainWindow() {
     center: true,
     show: false, // revealed once the remote app finishes loading (splash covers the gap)
     backgroundColor: BG_COLOR,
-    title: 'Kortix',
+    title: 'Zed',
     // macOS: hidden title bar, traffic lights centered in the title-bar band
     // the web app's first row shares with them. The band height and every
     // offset derived from it live in ONE table (window-chrome.js →
@@ -387,7 +387,7 @@ function createMainWindow() {
       .executeJavaScript('window.devicePixelRatio')
       .then((dpr) =>
         console.log(
-          `[kortix-render] dpr=${dpr} zoom=${mainWindow?.webContents.getZoomFactor()}`,
+          `[zed-render] dpr=${dpr} zoom=${mainWindow?.webContents.getZoomFactor()}`,
         ),
       )
       .catch(() => {});
@@ -396,7 +396,7 @@ function createMainWindow() {
   // Persist ONLY the maximized flag, and notify the renderer so any custom
   // window controls can refresh their maximize/restore state (Tauri onResized).
   const emitResized = () =>
-    mainWindow?.webContents.send('kortix:resized');
+    mainWindow?.webContents.send('zed:resized');
   mainWindow.on('resize', emitResized);
   mainWindow.on('maximize', () => {
     writeMaximized(true);
@@ -481,14 +481,14 @@ function buildMenu() {
     label: 'Frontend URL',
     submenu: [
       {
-        label: 'Production (kortix.com)',
+        label: 'Production (zed.com)',
         click: () => {
           writeUrlOverride(PRESET_PROD);
           navigateMainWindow(PRESET_PROD);
         },
       },
       {
-        label: 'Dev (dev.kortix.com)',
+        label: 'Dev (dev.zed.com)',
         click: () => {
           writeUrlOverride(PRESET_DEV);
           navigateMainWindow(PRESET_DEV);
@@ -510,7 +510,7 @@ function buildMenu() {
         click: () => {
           if (!mainWindow) return;
           mainWindow.webContents.executeJavaScript(
-            "window.dispatchEvent(new CustomEvent('kortix-open-frontend-url'))",
+            "window.dispatchEvent(new CustomEvent('zed-open-frontend-url'))",
           );
           mainWindow.focus();
         },
@@ -582,7 +582,7 @@ function buildMenu() {
 
 // The preload exposes the native bridge to whatever page is loaded in the main
 // window — including sandbox-preview / tunnel content, which is untrusted
-// (agent- or attacker-rendered). Only the Kortix app shell may drive privileged
+// (agent- or attacker-rendered). Only the Zed app shell may drive privileged
 // commands; otherwise a preview page could call e.g. set_frontend_url to
 // permanently repoint the whole desktop app at an attacker origin. Derive the
 // SENDER's current origin and require it be a main-app host.
@@ -602,7 +602,7 @@ function registerIpc() {
   // Single funnel matching the Tauri `core.invoke(cmd, args)` contract so the
   // web app's existing calls (set_zoom / open_external / get_frontend_url /
   // set_frontend_url) work unchanged.
-  ipcMain.handle('kortix:invoke', (event, cmd, args = {}) => {
+  ipcMain.handle('zed:invoke', (event, cmd, args = {}) => {
     if (!isTrustedSender(event)) {
       throw new Error('Unauthorized IPC sender');
     }
@@ -646,7 +646,7 @@ function registerIpc() {
   });
 
   // Window controls (Tauri `getCurrentWindow().*`).
-  ipcMain.handle('kortix:window', (event, action) => {
+  ipcMain.handle('zed:window', (event, action) => {
     if (!isTrustedSender(event)) {
       throw new Error('Unauthorized IPC sender');
     }
@@ -672,11 +672,11 @@ function registerIpc() {
 
 /* ─── User agent ──────────────────────────────────────────────────────────
    Strip "Electron" (Google blocks embedded-webview UAs) and the product token,
-   append the KortixDesktop marker the web middleware + isDesktop() rely on. */
+   append the ZedDesktop marker the web middleware + isDesktop() rely on. */
 
 function applyUserAgent() {
   // Strip the Electron token and the product token (whatever the app is named —
-  // "Kortix" or "Kortix Dev") before appending the stable KortixDesktop marker.
+  // "Zed" or "Zed Dev") before appending the stable ZedDesktop marker.
   const name = app.getName().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const ua = app.userAgentFallback
     .replace(/\sElectron\/\S+/, '')
@@ -686,14 +686,14 @@ function applyUserAgent() {
 
 /* ─── App lifecycle ───────────────────────────────────────────────────────*/
 
-// Single-instance lock: a second launch (incl. a kortix:// deep link on
+// Single-instance lock: a second launch (incl. a zed:// deep link on
 // Windows/Linux where the URL arrives as an argv) routes to the running window
 // instead of spawning a new process.
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
   app.quit();
 } else {
-  // A kortix:// link that arrives before the window exists (macOS cold start).
+  // A zed:// link that arrives before the window exists (macOS cold start).
   let pendingDeepLink = null;
 
   app.on('second-instance', (_event, argv) => {
@@ -714,7 +714,7 @@ if (!gotLock) {
   });
 
   app.whenReady().then(() => {
-    // Register kortix:// so the OS routes auth callbacks back to the app.
+    // Register zed:// so the OS routes auth callbacks back to the app.
     if (process.defaultApp && process.argv.length >= 2) {
       app.setAsDefaultProtocolClient(URL_SCHEME, process.execPath, [
         path.resolve(process.argv[1]),

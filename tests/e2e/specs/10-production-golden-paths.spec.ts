@@ -131,7 +131,7 @@ async function waitForDaemonHealth(token: string, externalId: string) {
   return poll<Record<string, unknown>>(
     `daemon health ${externalId}`,
     async () => json<Record<string, unknown>>(
-      await fetch(`${apiBase}/p/${externalId}/8000/kortix/health`, {
+      await fetch(`${apiBase}/p/${externalId}/8000/zed/health`, {
         headers: { Authorization: `Bearer ${token}` },
       }),
       200,
@@ -262,7 +262,7 @@ test.describe.serial('10 - SPEC production golden paths', () => {
       {
         account_id: personalAccount!.account_id,
         name: personalProjectName,
-        repo_url: `https://github.com/kortix-ai/${personalProjectName}.git`,
+        repo_url: `https://github.com/zed-ai/${personalProjectName}.git`,
         default_branch: 'main',
       },
       201,
@@ -275,7 +275,7 @@ test.describe.serial('10 - SPEC production golden paths', () => {
       {
         account_id: account.account_id,
         name: accountProjectName,
-        repo_url: `https://github.com/kortix-ai/${accountProjectName}.git`,
+        repo_url: `https://github.com/zed-ai/${accountProjectName}.git`,
         default_branch: 'main',
       },
       201,
@@ -324,7 +324,7 @@ test.describe.serial('10 - SPEC production golden paths', () => {
   });
 
   test('E2E-1 and E2E-4: GitHub repo project starts a session and reaches daemon health', async () => {
-    const repoName = `kortix-golden-${runId}`.replace(/[^a-zA-Z0-9._-]/g, '-');
+    const repoName = `zed-golden-${runId}`.replace(/[^a-zA-Z0-9._-]/g, '-');
     project = await api<ProjectSummary>(
       ownerSession.access_token,
       'POST',
@@ -385,7 +385,7 @@ test.describe.serial('10 - SPEC production golden paths', () => {
 
     const legacyCount = Number(queryScalar(`
       SELECT count(*)::int
-      FROM kortix.sandboxes
+      FROM zed.sandboxes
       WHERE sandbox_id = '${primarySession.session_id}'::uuid
          OR external_id = '${primarySandbox.external_id}'
     `));
@@ -506,7 +506,7 @@ test.describe.serial('10 - SPEC production golden paths', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Kortix-Signature': 'sha256=bad',
+          'X-Zed-Signature': 'sha256=bad',
         },
         body: rawBody,
       }),
@@ -518,7 +518,7 @@ test.describe.serial('10 - SPEC production golden paths', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Kortix-Signature': webhookSignature(rawBody, secret),
+          'X-Zed-Signature': webhookSignature(rawBody, secret),
         },
         body: rawBody,
       }),
@@ -535,7 +535,7 @@ test.describe.serial('10 - SPEC production golden paths', () => {
 
     const storedEvent = queryScalar(`
       SELECT status || E'\\t' || COALESCE(session_id::text, '')
-      FROM kortix.project_trigger_events
+      FROM zed.project_trigger_events
       WHERE event_id = '${fired.event.event_id}'::uuid
     `);
     expect(storedEvent).toBe(`fired\t${fired.event.session_id}`);
@@ -546,7 +546,7 @@ test.describe.serial('10 - SPEC production golden paths', () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Kortix-Signature': webhookSignature(rawBody, secret),
+            'X-Zed-Signature': webhookSignature(rawBody, secret),
           },
           body: rawBody,
         }),

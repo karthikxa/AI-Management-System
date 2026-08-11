@@ -21,7 +21,7 @@ export interface ProjectFileEntry {
 }
 
 export interface ProjectConfigSummary {
-  is_kortix_repo: boolean;
+  is_zed_repo: boolean;
   signals: Record<string, boolean>;
   manifest_raw: string | null;
   manifest: Record<string, unknown>;
@@ -37,7 +37,7 @@ export interface ProjectConfigSummary {
     path: string;
     description: string | null;
     mode: string | null;
-    source: 'opencode' | 'kortix.yaml';
+    source: 'opencode' | 'zed.yaml';
     enabled?: boolean;
     sandbox?: string | null;
     /** Per-agent governance from the manifest's `agents` declarations (v2
@@ -47,7 +47,7 @@ export interface ProjectConfigSummary {
     scope?: {
       env: string[] | 'all';
       connectors: string[] | 'all';
-      kortix_cli: string[] | 'all';
+      zed_cli: string[] | 'all';
     };
   }>;
   skills: Array<{ name: string; path: string; description: string | null }>;

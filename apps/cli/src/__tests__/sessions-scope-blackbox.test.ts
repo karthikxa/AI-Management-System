@@ -47,17 +47,17 @@ function session() {
 async function runCli(args: string[]) {
   const env: Record<string, string | undefined> = {
     ...process.env,
-    KORTIX_CONFIG_FILE: join(root, "config.json"),
-    KORTIX_NO_UPDATE_CHECK: "1",
-    KORTIX_DISABLE_SANDBOX_ENV_FILE: "1",
+    ZED_CONFIG_FILE: join(root, "config.json"),
+    ZED_NO_UPDATE_CHECK: "1",
+    ZED_DISABLE_SANDBOX_ENV_FILE: "1",
     NO_COLOR: "1",
     FORCE_COLOR: "0",
   };
   for (const key of [
-    "KORTIX_API_URL",
-    "KORTIX_CLI_TOKEN",
-    "KORTIX_PROJECT_ID",
-    "KORTIX_TOKEN",
+    "ZED_API_URL",
+    "ZED_CLI_TOKEN",
+    "ZED_PROJECT_ID",
+    "ZED_TOKEN",
     "BASH_ENV",
   ]) {
     delete env[key];
@@ -79,11 +79,11 @@ async function runCli(args: string[]) {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "kortix-session-scope-cli-"));
+  root = mkdtempSync(join(tmpdir(), "zed-session-scope-cli-"));
   requests = [];
-  mkdirSync(join(root, ".kortix"), { recursive: true });
+  mkdirSync(join(root, ".zed"), { recursive: true });
   writeFileSync(
-    join(root, ".kortix", "link.json"),
+    join(root, ".zed", "link.json"),
     JSON.stringify({
       project_id: PROJECT_ID,
       account_id: ACCOUNT_ID,
@@ -179,7 +179,7 @@ afterEach(() => {
   if (root) rmSync(root, { recursive: true, force: true });
 });
 
-describe("kortix sessions scope", () => {
+describe("zed sessions scope", () => {
   test("limits the create-time backend-token notice to secret flags", async () => {
     const result = await runCli(["sessions", "--help"]);
 

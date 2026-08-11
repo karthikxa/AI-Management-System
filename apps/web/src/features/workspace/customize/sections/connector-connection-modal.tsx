@@ -1,6 +1,6 @@
 'use client';
 
-import type { ConnectorAuthorizationStrategy } from '@kortix/sdk';
+import type { ConnectorAuthorizationStrategy } from '@zed/sdk';
 import { useEffect, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -95,13 +95,13 @@ export function AuthorizationStrategyField({
           <span
             className={cn(
               'flex size-9 shrink-0 items-center justify-center rounded-sm',
-              isProject ? 'bg-kortix-blue/15' : 'bg-kortix-purple/15',
+              isProject ? 'bg-zed-blue/15' : 'bg-zed-purple/15',
             )}
           >
             {isProject ? (
-              <UsersThree className="text-kortix-blue size-5" weight="duotone" />
+              <UsersThree className="text-zed-blue size-5" weight="duotone" />
             ) : (
-              <User className="text-kortix-purple size-5" weight="duotone" />
+              <User className="text-zed-purple size-5" weight="duotone" />
             )}
           </span>
           <div className="min-w-0 flex-1 space-y-0.5">

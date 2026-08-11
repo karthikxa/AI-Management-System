@@ -8,7 +8,7 @@ import { useOpenCodeCompactionStore as realCompactionStore } from '../../browser
 // react-query's `useQuery`/`useMutation` are mocked down to identity functions
 // (return the config object passed in) so the hooks under test can be called
 // as plain functions — same harness as `./messages.test.ts` /
-// `../use-kortix-master.test.ts`. `useQueryClient` returns a minimal
+// `../use-zed-master.test.ts`. `useQueryClient` returns a minimal
 // hand-rolled cache (not a real `QueryClient`) with just the methods these
 // two hooks actually call.
 function makeFakeQueryClient() {
@@ -180,7 +180,7 @@ describe('useSummarizeOpenCodeSession — model resolution fallback chain', () =
       },
       provider: {
         list: async () => ({
-          data: { kortix: { models: { 'claude-opus-4.8': {} } } },
+          data: { zed: { models: { 'claude-opus-4.8': {} } } },
         }),
       },
     };
@@ -190,7 +190,7 @@ describe('useSummarizeOpenCodeSession — model resolution fallback chain', () =
     await mutationFn({ sessionId: 'ses_1' });
     expect(summarizeArgs).toEqual({
       sessionID: 'ses_1',
-      providerID: 'kortix',
+      providerID: 'zed',
       modelID: 'claude-opus-4.8',
     });
   });

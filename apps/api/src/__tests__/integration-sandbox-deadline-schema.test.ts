@@ -40,7 +40,7 @@ async function seed(status: 'active' | 'provisioning' | 'stopped', deadline?: st
   const sandboxId = crypto.randomUUID();
   created.push(sandboxId);
   await db.execute(sql`
-    INSERT INTO kortix.session_sandboxes (sandbox_id, session_id, account_id, project_id, status
+    INSERT INTO zed.session_sandboxes (sandbox_id, session_id, account_id, project_id, status
       ${deadline ? sql`, deadline_at` : sql``})
     VALUES (${sandboxId}::uuid, ${`deadline-it-${sandboxId}`}, ${crypto.randomUUID()}::uuid,
             ${crypto.randomUUID()}::uuid, ${status}
@@ -56,14 +56,14 @@ async function read(sandboxId: string) {
     SELECT active_since, deadline_at,
            extract(epoch from (deadline_at - active_since)) AS span_s,
            extract(epoch from (now() - active_since))       AS age_s
-      FROM kortix.session_sandboxes WHERE sandbox_id = ${sandboxId}::uuid`);
+      FROM zed.session_sandboxes WHERE sandbox_id = ${sandboxId}::uuid`);
   return ((rows as Rows).rows ?? (rows as Rows))[0];
 }
 
 afterAll(async () => {
   for (const id of created) {
     await db
-      .execute(sql`DELETE FROM kortix.session_sandboxes WHERE sandbox_id = ${id}::uuid`)
+      .execute(sql`DELETE FROM zed.session_sandboxes WHERE sandbox_id = ${id}::uuid`)
       .catch(() => undefined);
   }
 });
@@ -91,7 +91,7 @@ describe('the anchor trigger', () => {
     // A stale, already-expired deadline carried while the box was parked would
     // otherwise present to a user as "Start does nothing".
     await db.execute(
-      sql`UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = ${id}::uuid`,
+      sql`UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = ${id}::uuid`,
     );
     const row = await read(id);
 
@@ -107,7 +107,7 @@ describe('the anchor trigger', () => {
     const before = (await read(id)).active_since;
 
     await db.execute(sql`
-      UPDATE kortix.session_sandboxes
+      UPDATE zed.session_sandboxes
          SET active_since = now() + interval '10 hours'
        WHERE sandbox_id = ${id}::uuid`);
 
@@ -122,7 +122,7 @@ describe('the 24h cap — unbypassable by application code', () => {
     const err = await db
       .execute(
         sql`
-        UPDATE kortix.session_sandboxes
+        UPDATE zed.session_sandboxes
            SET deadline_at = active_since + interval '25 hours'
          WHERE sandbox_id = ${id}::uuid`,
       )
@@ -142,7 +142,7 @@ describe('the 24h cap — unbypassable by application code', () => {
     const err = await db
       .execute(
         sql`
-        UPDATE kortix.session_sandboxes
+        UPDATE zed.session_sandboxes
            SET active_since = now() + interval '10 hours',
                deadline_at  = now() + interval '30 hours'
          WHERE sandbox_id = ${id}::uuid`,
@@ -167,7 +167,7 @@ describe('the 24h cap — unbypassable by application code', () => {
     const id = await seed('active');
 
     await db.execute(sql`
-      UPDATE kortix.session_sandboxes
+      UPDATE zed.session_sandboxes
          SET deadline_at = active_since + interval '23 hours'
        WHERE sandbox_id = ${id}::uuid`);
 

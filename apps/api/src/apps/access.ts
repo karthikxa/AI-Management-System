@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { accountGroups, accountMembers, appAccessGrants, apps } from '@kortix/db';
+import { accountGroups, accountMembers, appAccessGrants, apps } from '@zed/db';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { resolveShareSubject, type SecretGrant, type ShareSubject } from '../connectors/share';
 import { config } from '../config';
@@ -7,7 +7,7 @@ import { authorize, PROJECT_ACTIONS } from '../iam';
 import { db } from '../shared/db';
 
 export type AppAccessMode = 'private' | 'project' | 'restricted' | 'public' | 'password';
-export type AppAccessTokenKind = 'kortix' | 'password';
+export type AppAccessTokenKind = 'zed' | 'password';
 
 export interface AppAccessPolicy {
   mode: AppAccessMode;
@@ -35,15 +35,15 @@ interface AppAccessTokenPayload {
 }
 
 export function appAccessCookieName(localHttp = false): string {
-  return localHttp ? 'kortix_app_access' : '__Host-kortix_app_access';
+  return localHttp ? 'zed_app_access' : '__Host-zed_app_access';
 }
 
 export function appAccessSecret(): string {
-  return process.env.KORTIX_APPS_ACCESS_SECRET || config.API_KEY_SECRET;
+  return process.env.ZED_APPS_ACCESS_SECRET || config.API_KEY_SECRET;
 }
 
 function signature(body: string, secret: string): string {
-  return createHmac('sha256', secret).update('kortix-app-access:v1\0').update(body).digest('base64url');
+  return createHmac('sha256', secret).update('zed-app-access:v1\0').update(body).digest('base64url');
 }
 
 export function createAppAccessToken(input: {
@@ -82,7 +82,7 @@ export function verifyAppAccessToken(
   try {
     const payload = JSON.parse(Buffer.from(body, 'base64url').toString('utf8')) as AppAccessTokenPayload;
     if (payload.v !== 1 || payload.appId !== appId || payload.exp <= Math.floor(now.getTime() / 1000)) return null;
-    if (!['kortix', 'password'].includes(payload.kind)) return null;
+    if (!['zed', 'password'].includes(payload.kind)) return null;
     return payload;
   } catch {
     return null;
@@ -257,13 +257,13 @@ export function appAccessSessionUrl(
   const expiresAt = new Date(now.getTime() + 5 * 60_000);
   const token = createAppAccessToken({
     appId: app.appId,
-    kind: 'kortix',
+    kind: 'zed',
     userId,
     revision: app.accessRevision,
     expiresAt,
   });
   const target = new URL(url);
-  target.searchParams.set('__kortix_access', token);
+  target.searchParams.set('__zed_access', token);
   return { url: target.toString(), expiresAt };
 }
 

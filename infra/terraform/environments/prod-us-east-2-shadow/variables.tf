@@ -7,17 +7,17 @@ variable "aws_region" {
 variable "api_image" {
   description = "Immutable production API image."
   type        = string
-  default     = "kortix/kortix-api:0.10.14"
+  default     = "zed/zed-api:0.10.14"
 }
 
 variable "gateway_image" {
   description = "Immutable production gateway image."
   type        = string
-  default     = "kortix/kortix-gateway:0.10.14"
+  default     = "zed/zed-gateway:0.10.14"
 }
 
 variable "cloudflare_zone_id" {
-  description = "Cloudflare zone ID for kortix.com and ACM DNS validation."
+  description = "Cloudflare zone ID for zed.com and ACM DNS validation."
   type        = string
   default     = "af378d3df4e4dd5052a1fcbf263b685d"
 }
@@ -65,5 +65,5 @@ variable "alb_ingress_cidrs" {
 variable "api_shadow_hostname" {
   description = "SNI hostname used for direct shadow API verification. Terraform does not create DNS."
   type        = string
-  default     = "api-use2-shadow.kortix.com"
+  default     = "api-use2-shadow.zed.com"
 }

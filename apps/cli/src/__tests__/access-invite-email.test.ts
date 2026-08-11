@@ -1,5 +1,5 @@
 /**
- * `kortix access invite` must not claim an email was sent when none was.
+ * `zed access invite` must not claim an email was sent when none was.
  *
  * Every deployment without `MAILTRAP_API_TOKEN` — which is every self-hosted
  * instance — skips the email. The server says so in the SAME response
@@ -31,13 +31,13 @@ const ORIGINAL_STDOUT_WRITE = process.stdout.write;
 const ORIGINAL_STDERR_WRITE = process.stderr.write;
 
 const ENV_KEYS = [
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_AUTH_FILE',
+  'ZED_CLI_TOKEN',
+  'ZED_TOKEN',
+  'ZED_API_URL',
+  'ZED_PROJECT_ID',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CONFIG_FILE',
+  'ZED_AUTH_FILE',
 ] as const;
 
 const PROJECT = 'proj-1';
@@ -71,7 +71,7 @@ function writeConfig(): void {
     }),
     'utf8',
   );
-  process.env.KORTIX_CONFIG_FILE = file;
+  process.env.ZED_CONFIG_FILE = file;
 }
 
 function json(data: unknown, status = 200): Response {
@@ -87,9 +87,9 @@ beforeEach(() => {
     saved[key] = process.env[key];
     delete process.env[key];
   }
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
   originalCwd = process.cwd();
-  tmp = mkdtempSync(join(tmpdir(), 'kortix-invite-test-'));
+  tmp = mkdtempSync(join(tmpdir(), 'zed-invite-test-'));
   process.chdir(tmp);
   writeConfig();
   stdout = '';
@@ -131,7 +131,7 @@ const invite = (extra: Record<string, unknown>) => ({
   ...extra,
 });
 
-describe('kortix access invite — email honesty', () => {
+describe('zed access invite — email honesty', () => {
   test('a SKIPPED email is reported as such, with the link that still works', async () => {
     inviteResponse = invite({ email_sent: false, email_skip_reason: 'email_not_configured' });
 

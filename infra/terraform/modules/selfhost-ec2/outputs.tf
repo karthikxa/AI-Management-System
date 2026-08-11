@@ -38,7 +38,7 @@ output "alarm_sns_topic_arn" {
 output "post_apply_next_steps" {
   description = "What to do after `terraform apply` finishes — secrets are deliberately NOT Terraform inputs."
   value       = <<-EOT
-    kortix self-host is provisioning on ${aws_eip.this.public_ip} (this takes a
+    zed self-host is provisioning on ${aws_eip.this.public_ip} (this takes a
     few minutes on first boot — Docker install, image pulls, ACME cert issuance).
 
     ${var.zone_id != "" ? "DNS: Terraform created these Route53 A records (nothing left to do) ->" : "ACTION NEEDED — DNS was NOT configured by Terraform (var.zone_id was left empty). Create these exact records with your DNS provider before ACME can issue a cert:"}
@@ -54,17 +54,17 @@ output "post_apply_next_steps" {
     Terraform inputs by design — set them once the box is up:
 
       aws ssm start-session --target ${aws_instance.this.id}
-      sudo kortix self-host configure --instance ${var.instance_name}
+      sudo zed self-host configure --instance ${var.instance_name}
       # or non-interactively:
-      sudo kortix self-host secrets set --instance ${var.instance_name} DAYTONA_API_KEY=...
-      sudo kortix self-host start --instance ${var.instance_name}
+      sudo zed self-host secrets set --instance ${var.instance_name} DAYTONA_API_KEY=...
+      sudo zed self-host start --instance ${var.instance_name}
 
     Then open the dashboard at https://${var.domain} -> Settings -> Git (connect
     a GitHub App or PAT) and Settings -> Model (connect your own model key,
     BYOK) to finish setup.
 
     Updates: the in-compose auto-updater keeps this box current on the
-    ${var.kortix_channel} channel (auto_update=${var.auto_update}), applying
+    ${var.zed_channel} channel (auto_update=${var.auto_update}), applying
     new versions with zero downtime on its own daily schedule — re-running
     `terraform apply` does NOT redeploy the app; it only touches the AWS
     resources (instance, volume, DNS, snapshots).

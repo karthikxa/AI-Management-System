@@ -17,18 +17,18 @@ import { performLogin, runLogin } from './login.ts';
 import { performLogout } from './logout.ts';
 import { performWhoami } from './whoami.ts';
 
-const HELP = help`Usage: kortix hosts <subcommand> [options]
+const HELP = help`Usage: zed hosts <subcommand> [options]
 
-Authentication is per host — one set of stored credentials per Kortix
+Authentication is per host — one set of stored credentials per Zed
 instance. The "active" host is what every other command operates on
 unless you pass \`--host <name>\` per invocation. Sign in with
-\`kortix hosts login\`; switch instance with \`kortix hosts use\`.
+\`zed hosts login\`; switch instance with \`zed hosts use\`.
 
 Built-in hosts (always exist):
-  cloud                Kortix Cloud (https://api.kortix.com)
-  selfhost             Your self-hosted stack (kortix self-host)
+  cloud                Zed Cloud (https://api.zed.com)
+  selfhost             Your self-hosted stack (zed self-host)
   local-dev            Local dev server (http://localhost:8008)
-  kortix-internal-dev  Kortix-internal hosted dev (http://dev-api.kortix.com)
+  zed-internal-dev  Zed-internal hosted dev (http://dev-api.zed.com)
 
 Authentication:
   login [<name>]                      Sign in to a host (browser flow or
@@ -46,7 +46,7 @@ Subcommands:
   add <name> --url <url>              Register a new host; with --login
     [--dashboard-url <url>] [--login]  run the browser flow immediately.
                                       Pass --dashboard-url for a self-host
-                                      instance if \`kortix login\` opens the
+                                      instance if \`zed login\` opens the
                                       wrong origin (it otherwise guesses the
                                       frontend URL from the API URL's shape).
   rm <name>                           Remove a custom host; built-ins
@@ -60,20 +60,20 @@ Global options:
   -h, --help     Show this help.
 
 Examples:
-  kortix hosts login                  # sign in to the active host
-  kortix hosts login selfhost         # sign in to a specific instance
-  kortix hosts use selfhost
-  kortix hosts use cloud
-  kortix hosts whoami
-  kortix projects ls --host selfhost
-  kortix hosts ls
+  zed hosts login                  # sign in to the active host
+  zed hosts login selfhost         # sign in to a specific instance
+  zed hosts use selfhost
+  zed hosts use cloud
+  zed hosts whoami
+  zed projects ls --host selfhost
+  zed hosts ls
 `;
 
-const LOGIN_HELP = help`Usage: kortix hosts login [<name>] [options]
+const LOGIN_HELP = help`Usage: zed hosts login [<name>] [options]
 
 Authenticate a host (browser device flow or --token PAT). Defaults to
 the active host when <name> is omitted; an unknown <name> is registered
-and signed in (like \`kortix hosts add\` + login).
+and signed in (like \`zed hosts add\` + login).
 
 A fresh login walks the hierarchy DOWN: host ✓ → account (auto when you
 belong to one, otherwise a prompt) → default project (prompt).
@@ -89,12 +89,12 @@ Options:
   -h, --help        Show this help.
 
 Examples:
-  kortix hosts login
-  kortix hosts login selfhost --api http://localhost:13738
-  kortix hosts login --token kortix_pat_... --account acme
+  zed hosts login
+  zed hosts login selfhost --api http://localhost:13738
+  zed hosts login --token zed_pat_... --account acme
 `;
 
-const LOGOUT_HELP = help`Usage: kortix hosts logout [<name>]
+const LOGOUT_HELP = help`Usage: zed hosts logout [<name>]
 
 Clear a host's stored auth token. Defaults to the active host when
 <name> is omitted.
@@ -103,7 +103,7 @@ Options:
   -h, --help        Show this help.
 `;
 
-const WHOAMI_HELP = help`Usage: kortix hosts whoami [<name>] [options]
+const WHOAMI_HELP = help`Usage: zed hosts whoami [<name>] [options]
 
 Show the authenticated user + active account for a host. Defaults to the
 active host when <name> is omitted.
@@ -166,7 +166,7 @@ function hostsLs(json = false): number {
   }
   if (rows.length === 0) {
     process.stdout.write(
-      `${C.dim}No hosts configured. Run \`kortix login\` or \`kortix self-host start\`.${C.reset}\n`,
+      `${C.dim}No hosts configured. Run \`zed login\` or \`zed self-host start\`.${C.reset}\n`,
     );
     return 0;
   }
@@ -199,7 +199,7 @@ function hostsLs(json = false): number {
   );
   if (active) {
     process.stdout.write(
-      `\n  ${C.dim}Sign in with ${C.reset}${C.cyan}kortix hosts login${C.reset}${C.dim}, switch with ${C.reset}${C.cyan}kortix hosts use <name>${C.reset}`,
+      `\n  ${C.dim}Sign in with ${C.reset}${C.cyan}zed hosts login${C.reset}${C.dim}, switch with ${C.reset}${C.cyan}zed hosts use <name>${C.reset}`,
     );
   }
   process.stdout.write('\n\n');
@@ -233,7 +233,7 @@ async function hostsUse(name: string | undefined): Promise<number> {
   }
   if (!useHost(target)) {
     process.stderr.write(
-      `${status.err(`Unknown host "${target}". Run \`kortix hosts ls\` to see configured hosts.`)}\n`,
+      `${status.err(`Unknown host "${target}". Run \`zed hosts ls\` to see configured hosts.`)}\n`,
     );
     return 1;
   }
@@ -244,7 +244,7 @@ async function hostsUse(name: string | undefined): Promise<number> {
 // ── login / logout / whoami ────────────────────────────────────────────────
 //
 // Host-centric auth. These reuse the exact shared helpers the top-level
-// `kortix login`/`logout`/`whoami` aliases call — the only difference is the
+// `zed login`/`logout`/`whoami` aliases call — the only difference is the
 // host is a positional `<name>` here (defaulting to the active host) rather
 // than a `--host <name>` flag.
 
@@ -325,7 +325,7 @@ async function hostsAdd(args: string[]): Promise<number> {
 
   if (getHost(name)) {
     process.stderr.write(
-      `${status.err(`Host "${name}" already exists. Use \`kortix hosts rm ${name}\` first or pick a new name.`)}\n`,
+      `${status.err(`Host "${name}" already exists. Use \`zed hosts rm ${name}\` first or pick a new name.`)}\n`,
     );
     return 1;
   }
@@ -353,13 +353,13 @@ async function hostsAdd(args: string[]): Promise<number> {
   }
 
   // Persist an empty-credential placeholder so `--host <name>` resolves
-  // before login. Subsequent `kortix login --host <name>` fills in token.
+  // before login. Subsequent `zed login --host <name>` fills in token.
   //
   // `dashboard_url` (when passed) is the frontend/dashboard origin for this
-  // host — pass it for a self-host instance so `kortix login`'s browser flow
+  // host — pass it for a self-host instance so `zed login`'s browser flow
   // opens the right origin instead of guessing one from the API URL's shape
   // (a guess that assumes cloud conventions and breaks for non-default local
-  // ports; see web-url.ts). `kortix self-host` sets this automatically for
+  // ports; see web-url.ts). `zed self-host` sets this automatically for
   // its own built-in `selfhost` host — only needed here for a manually added
   // host pointed at a self-host API the CLI didn't itself provision.
   const placeholder: Host = {
@@ -382,7 +382,7 @@ async function hostsAdd(args: string[]): Promise<number> {
   }
 
   process.stdout.write(
-    `${C.dim}  Next: ${C.reset}${C.cyan}kortix login --host ${name}${C.reset}\n`,
+    `${C.dim}  Next: ${C.reset}${C.cyan}zed login --host ${name}${C.reset}\n`,
   );
   return 0;
 }
@@ -433,7 +433,7 @@ async function hostsRm(args: string[]): Promise<number> {
     );
   } else if (isActive) {
     process.stdout.write(
-      `${C.dim}  Built-in host reset; run ${C.cyan}kortix login --host ${name}${C.reset}${C.dim} to authenticate again.${C.reset}\n`,
+      `${C.dim}  Built-in host reset; run ${C.cyan}zed login --host ${name}${C.reset}${C.dim} to authenticate again.${C.reset}\n`,
     );
   }
   return 0;
@@ -445,7 +445,7 @@ function hostsInfo(name: string | undefined, json = false): number {
   const target = name ?? activeHostName();
   if (!target) {
     process.stderr.write(
-      `${status.err('No host configured. Pass a name or run `kortix login`.')}\n`,
+      `${status.err('No host configured. Pass a name or run `zed login`.')}\n`,
     );
     return 1;
   }

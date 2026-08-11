@@ -4,9 +4,9 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "kortix.access_allowlist": {
+    "zed.access_allowlist": {
       "name": "access_allowlist",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -71,9 +71,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.access_requests": {
+    "zed.access_requests": {
       "name": "access_requests",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -103,7 +103,7 @@
         "status": {
           "name": "status",
           "type": "access_request_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'pending'"
@@ -162,9 +162,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_deletion_requests": {
+    "zed.account_deletion_requests": {
       "name": "account_deletion_requests",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -232,9 +232,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_github_installation_states": {
+    "zed.account_github_installation_states": {
       "name": "account_github_installation_states",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "state_nonce": {
           "name": "state_nonce",
@@ -317,7 +317,7 @@
           "name": "account_github_installation_states_account_id_accounts_account_id_fk",
           "tableFrom": "account_github_installation_states",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -334,9 +334,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_github_installations": {
+    "zed.account_github_installations": {
       "name": "account_github_installations",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "installation_row_id": {
           "name": "installation_row_id",
@@ -463,7 +463,7 @@
           "name": "account_github_installations_account_id_accounts_account_id_fk",
           "tableFrom": "account_github_installations",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -480,9 +480,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_group_members": {
+    "zed.account_group_members": {
       "name": "account_group_members",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "group_id": {
           "name": "group_id",
@@ -532,7 +532,7 @@
           "name": "account_group_members_group_id_account_groups_group_id_fk",
           "tableFrom": "account_group_members",
           "tableTo": "account_groups",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "group_id"
           ],
@@ -557,9 +557,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_groups": {
+    "zed.account_groups": {
       "name": "account_groups",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "group_id": {
           "name": "group_id",
@@ -589,7 +589,7 @@
         "source": {
           "name": "source",
           "type": "account_group_source",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'manual'"
@@ -664,7 +664,7 @@
           "name": "account_groups_account_id_accounts_account_id_fk",
           "tableFrom": "account_groups",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -681,9 +681,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_invitations": {
+    "zed.account_invitations": {
       "name": "account_invitations",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "invite_id": {
           "name": "invite_id",
@@ -713,7 +713,7 @@
         "initial_role": {
           "name": "initial_role",
           "type": "account_role",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'member'"
@@ -824,7 +824,7 @@
           "name": "account_invitations_account_id_accounts_account_id_fk",
           "tableFrom": "account_invitations",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -841,9 +841,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_members": {
+    "zed.account_members": {
       "name": "account_members",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "user_id": {
           "name": "user_id",
@@ -860,7 +860,7 @@
         "account_role": {
           "name": "account_role",
           "type": "account_role",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'owner'"
@@ -944,7 +944,7 @@
           "name": "account_members_account_id_accounts_account_id_fk",
           "tableFrom": "account_members",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -969,9 +969,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_model_preferences": {
+    "zed.account_model_preferences": {
       "name": "account_model_preferences",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -1075,7 +1075,7 @@
           "name": "account_model_preferences_account_id_accounts_account_id_fk",
           "tableFrom": "account_model_preferences",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -1092,9 +1092,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_session_activity": {
+    "zed.account_session_activity": {
       "name": "account_session_activity",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "account_id": {
           "name": "account_id",
@@ -1202,7 +1202,7 @@
           "name": "account_session_activity_account_id_accounts_account_id_fk",
           "tableFrom": "account_session_activity",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -1228,9 +1228,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_sso_group_mappings": {
+    "zed.account_sso_group_mappings": {
       "name": "account_sso_group_mappings",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "mapping_id": {
           "name": "mapping_id",
@@ -1335,7 +1335,7 @@
           "name": "account_sso_group_mappings_account_id_accounts_account_id_fk",
           "tableFrom": "account_sso_group_mappings",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -1349,7 +1349,7 @@
           "name": "account_sso_group_mappings_sso_provider_id_account_sso_providers_sso_provider_id_fk",
           "tableFrom": "account_sso_group_mappings",
           "tableTo": "account_sso_providers",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "sso_provider_id"
           ],
@@ -1363,7 +1363,7 @@
           "name": "account_sso_group_mappings_group_id_account_groups_group_id_fk",
           "tableFrom": "account_sso_group_mappings",
           "tableTo": "account_groups",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "group_id"
           ],
@@ -1380,9 +1380,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_sso_providers": {
+    "zed.account_sso_providers": {
       "name": "account_sso_providers",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "sso_provider_id": {
           "name": "sso_provider_id",
@@ -1516,7 +1516,7 @@
           "name": "account_sso_providers_account_id_accounts_account_id_fk",
           "tableFrom": "account_sso_providers",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -1533,9 +1533,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.account_tokens": {
+    "zed.account_tokens": {
       "name": "account_tokens",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "token_id": {
           "name": "token_id",
@@ -1583,7 +1583,7 @@
         "status": {
           "name": "status",
           "type": "api_key_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'active'"
@@ -1714,7 +1714,7 @@
           "name": "account_tokens_account_id_accounts_account_id_fk",
           "tableFrom": "account_tokens",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -1728,7 +1728,7 @@
           "name": "account_tokens_project_id_projects_project_id_fk",
           "tableFrom": "account_tokens",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -1742,7 +1742,7 @@
           "name": "account_tokens_service_account_id_service_accounts_service_account_id_fk",
           "tableFrom": "account_tokens",
           "tableTo": "service_accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "service_account_id"
           ],
@@ -1759,9 +1759,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.accounts": {
+    "zed.accounts": {
       "name": "accounts",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "account_id": {
           "name": "account_id",
@@ -1850,9 +1850,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.audit_events": {
+    "zed.audit_events": {
       "name": "audit_events",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "event_id": {
           "name": "event_id",
@@ -2000,7 +2000,7 @@
           "name": "audit_events_account_id_accounts_account_id_fk",
           "tableFrom": "audit_events",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -2017,9 +2017,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.audit_webhooks": {
+    "zed.audit_webhooks": {
       "name": "audit_webhooks",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "webhook_id": {
           "name": "webhook_id",
@@ -2147,7 +2147,7 @@
           "name": "audit_webhooks_account_id_accounts_account_id_fk",
           "tableFrom": "audit_webhooks",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -2164,9 +2164,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.billing_customers": {
+    "zed.billing_customers": {
       "name": "billing_customers",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "account_id": {
           "name": "account_id",
@@ -2200,8 +2200,8 @@
         }
       },
       "indexes": {
-        "idx_kortix_billing_customers_account_id": {
-          "name": "idx_kortix_billing_customers_account_id",
+        "idx_zed_billing_customers_account_id": {
+          "name": "idx_zed_billing_customers_account_id",
           "columns": [
             {
               "expression": "account_id",
@@ -2223,9 +2223,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.change_requests": {
+    "zed.change_requests": {
       "name": "change_requests",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "cr_id": {
           "name": "cr_id",
@@ -2280,7 +2280,7 @@
         "status": {
           "name": "status",
           "type": "change_request_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'open'"
@@ -2440,7 +2440,7 @@
           "name": "change_requests_account_id_accounts_account_id_fk",
           "tableFrom": "change_requests",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -2454,7 +2454,7 @@
           "name": "change_requests_project_id_projects_project_id_fk",
           "tableFrom": "change_requests",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -2468,7 +2468,7 @@
           "name": "change_requests_origin_session_id_project_sessions_session_id_fk",
           "tableFrom": "change_requests",
           "tableTo": "project_sessions",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "origin_session_id"
           ],
@@ -2485,9 +2485,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.chat_channel_bindings": {
+    "zed.chat_channel_bindings": {
       "name": "chat_channel_bindings",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "binding_id": {
           "name": "binding_id",
@@ -2614,7 +2614,7 @@
           "name": "chat_channel_bindings_project_id_projects_project_id_fk",
           "tableFrom": "chat_channel_bindings",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -2631,9 +2631,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.chat_event_dedup": {
+    "zed.chat_event_dedup": {
       "name": "chat_event_dedup",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "event_id": {
           "name": "event_id",
@@ -2672,9 +2672,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.chat_installs": {
+    "zed.chat_installs": {
       "name": "chat_installs",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "install_id": {
           "name": "install_id",
@@ -2779,7 +2779,7 @@
           "name": "chat_installs_project_id_projects_project_id_fk",
           "tableFrom": "chat_installs",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -2796,9 +2796,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.chat_pending_auth_messages": {
+    "zed.chat_pending_auth_messages": {
       "name": "chat_pending_auth_messages",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "pending_id": {
           "name": "pending_id",
@@ -2913,7 +2913,7 @@
           "name": "chat_pending_auth_messages_project_id_projects_project_id_fk",
           "tableFrom": "chat_pending_auth_messages",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -2930,9 +2930,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.chat_thread_participants": {
+    "zed.chat_thread_participants": {
       "name": "chat_thread_participants",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "participant_id": {
           "name": "participant_id",
@@ -3081,7 +3081,7 @@
           "name": "chat_thread_participants_session_id_project_sessions_session_id_fk",
           "tableFrom": "chat_thread_participants",
           "tableTo": "project_sessions",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "session_id"
           ],
@@ -3098,9 +3098,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.chat_threads": {
+    "zed.chat_threads": {
       "name": "chat_threads",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "thread_row_id": {
           "name": "thread_row_id",
@@ -3218,7 +3218,7 @@
           "name": "chat_threads_project_id_projects_project_id_fk",
           "tableFrom": "chat_threads",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -3232,7 +3232,7 @@
           "name": "chat_threads_session_id_project_sessions_session_id_fk",
           "tableFrom": "chat_threads",
           "tableTo": "project_sessions",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "session_id"
           ],
@@ -3249,9 +3249,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.chat_turn_streams": {
+    "zed.chat_turn_streams": {
       "name": "chat_turn_streams",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "session_id": {
           "name": "session_id",
@@ -3367,9 +3367,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.chat_user_identities": {
+    "zed.chat_user_identities": {
       "name": "chat_user_identities",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "identity_id": {
           "name": "identity_id",
@@ -3467,9 +3467,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.credit_accounts": {
+    "zed.credit_accounts": {
       "name": "credit_accounts",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "account_id": {
           "name": "account_id",
@@ -3826,8 +3826,8 @@
         }
       },
       "indexes": {
-        "kortix_credit_accounts_account_id_idx": {
-          "name": "kortix_credit_accounts_account_id_idx",
+        "zed_credit_accounts_account_id_idx": {
+          "name": "zed_credit_accounts_account_id_idx",
           "columns": [
             {
               "expression": "account_id",
@@ -3864,9 +3864,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.credit_ledger": {
+    "zed.credit_ledger": {
       "name": "credit_ledger",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -3970,8 +3970,8 @@
         }
       },
       "indexes": {
-        "idx_kortix_credit_ledger_idempotency": {
-          "name": "idx_kortix_credit_ledger_idempotency",
+        "idx_zed_credit_ledger_idempotency": {
+          "name": "idx_zed_credit_ledger_idempotency",
           "columns": [
             {
               "expression": "idempotency_key",
@@ -3981,7 +3981,7 @@
             }
           ],
           "isUnique": false,
-          "where": "\"kortix\".\"credit_ledger\".\"idempotency_key\" IS NOT NULL",
+          "where": "\"zed\".\"credit_ledger\".\"idempotency_key\" IS NOT NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -3990,8 +3990,8 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "kortix_unique_stripe_event": {
-          "name": "kortix_unique_stripe_event",
+        "zed_unique_stripe_event": {
+          "name": "zed_unique_stripe_event",
           "nullsNotDistinct": false,
           "columns": [
             "stripe_event_id"
@@ -4002,9 +4002,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.credit_purchases": {
+    "zed.credit_purchases": {
       "name": "credit_purchases",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -4098,9 +4098,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.credit_usage": {
+    "zed.credit_usage": {
       "name": "credit_usage",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -4163,9 +4163,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.executor_connection_profiles": {
+    "zed.executor_connection_profiles": {
       "name": "executor_connection_profiles",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "profile_id": {
           "name": "profile_id",
@@ -4195,7 +4195,7 @@
         "owner_type": {
           "name": "owner_type",
           "type": "executor_connection_profile_owner_type",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'project'"
@@ -4215,7 +4215,7 @@
         "status": {
           "name": "status",
           "type": "executor_connection_profile_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'active'"
@@ -4321,7 +4321,7 @@
             }
           ],
           "isUnique": true,
-          "where": "\"kortix\".\"executor_connection_profiles\".\"is_default\" = true",
+          "where": "\"zed\".\"executor_connection_profiles\".\"is_default\" = true",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -4349,7 +4349,7 @@
             }
           ],
           "isUnique": true,
-          "where": "\"kortix\".\"executor_connection_profiles\".\"owner_id\" is not null",
+          "where": "\"zed\".\"executor_connection_profiles\".\"owner_id\" is not null",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -4390,7 +4390,7 @@
           "name": "executor_connection_profiles_connector_tenant_fk",
           "tableFrom": "executor_connection_profiles",
           "tableTo": "executor_connectors",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id",
             "project_id",
@@ -4411,18 +4411,18 @@
       "checkConstraints": {
         "executor_connection_profiles_owner_check": {
           "name": "executor_connection_profiles_owner_check",
-          "value": "(\"kortix\".\"executor_connection_profiles\".\"owner_type\" = 'project' AND \"kortix\".\"executor_connection_profiles\".\"owner_id\" IS NULL) OR (\"kortix\".\"executor_connection_profiles\".\"owner_type\" <> 'project' AND \"kortix\".\"executor_connection_profiles\".\"owner_id\" IS NOT NULL AND btrim(\"kortix\".\"executor_connection_profiles\".\"owner_id\") <> '')"
+          "value": "(\"zed\".\"executor_connection_profiles\".\"owner_type\" = 'project' AND \"zed\".\"executor_connection_profiles\".\"owner_id\" IS NULL) OR (\"zed\".\"executor_connection_profiles\".\"owner_type\" <> 'project' AND \"zed\".\"executor_connection_profiles\".\"owner_id\" IS NOT NULL AND btrim(\"zed\".\"executor_connection_profiles\".\"owner_id\") <> '')"
         },
         "executor_connection_profiles_metadata_check": {
           "name": "executor_connection_profiles_metadata_check",
-          "value": "jsonb_typeof(\"kortix\".\"executor_connection_profiles\".\"metadata\") = 'object' AND octet_length(\"kortix\".\"executor_connection_profiles\".\"metadata\"::text) <= 16384"
+          "value": "jsonb_typeof(\"zed\".\"executor_connection_profiles\".\"metadata\") = 'object' AND octet_length(\"zed\".\"executor_connection_profiles\".\"metadata\"::text) <= 16384"
         }
       },
       "isRLSEnabled": false
     },
-    "kortix.executor_connector_actions": {
+    "zed.executor_connector_actions": {
       "name": "executor_connector_actions",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "action_id": {
           "name": "action_id",
@@ -4470,7 +4470,7 @@
         "risk": {
           "name": "risk",
           "type": "executor_risk",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'read'"
@@ -4540,7 +4540,7 @@
           "name": "executor_connector_actions_connector_id_executor_connectors_connector_id_fk",
           "tableFrom": "executor_connector_actions",
           "tableTo": "executor_connectors",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "connector_id"
           ],
@@ -4557,9 +4557,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.executor_connector_grants": {
+    "zed.executor_connector_grants": {
       "name": "executor_connector_grants",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "grant_id": {
           "name": "grant_id",
@@ -4577,7 +4577,7 @@
         "principal_type": {
           "name": "principal_type",
           "type": "secret_grant_principal",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
@@ -4644,7 +4644,7 @@
           "name": "executor_connector_grants_connector_id_executor_connectors_connector_id_fk",
           "tableFrom": "executor_connector_grants",
           "tableTo": "executor_connectors",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "connector_id"
           ],
@@ -4661,9 +4661,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.executor_connector_policies": {
+    "zed.executor_connector_policies": {
       "name": "executor_connector_policies",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "policy_id": {
           "name": "policy_id",
@@ -4687,7 +4687,7 @@
         "action": {
           "name": "action",
           "type": "executor_policy_action",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
@@ -4728,7 +4728,7 @@
           "name": "executor_connector_policies_connector_id_executor_connectors_connector_id_fk",
           "tableFrom": "executor_connector_policies",
           "tableTo": "executor_connectors",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "connector_id"
           ],
@@ -4745,9 +4745,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.executor_connectors": {
+    "zed.executor_connectors": {
       "name": "executor_connectors",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "connector_id": {
           "name": "connector_id",
@@ -4783,7 +4783,7 @@
         "provider_type": {
           "name": "provider_type",
           "type": "executor_connector_provider",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
@@ -4810,7 +4810,7 @@
         "share_scope": {
           "name": "share_scope",
           "type": "secret_share_scope",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'project'"
@@ -4824,7 +4824,7 @@
         "credential_mode": {
           "name": "credential_mode",
           "type": "executor_credential_mode",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'shared'"
@@ -4838,7 +4838,7 @@
         "status": {
           "name": "status",
           "type": "executor_connector_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'active'"
@@ -4988,7 +4988,7 @@
           "name": "executor_connectors_account_id_accounts_account_id_fk",
           "tableFrom": "executor_connectors",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -5002,7 +5002,7 @@
           "name": "executor_connectors_project_id_projects_project_id_fk",
           "tableFrom": "executor_connectors",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -5019,9 +5019,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.executor_credentials": {
+    "zed.executor_credentials": {
       "name": "executor_credentials",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "credential_id": {
           "name": "credential_id",
@@ -5124,7 +5124,7 @@
             }
           ],
           "isUnique": true,
-          "where": "\"kortix\".\"executor_credentials\".\"profile_id\" is not null",
+          "where": "\"zed\".\"executor_credentials\".\"profile_id\" is not null",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -5140,7 +5140,7 @@
             }
           ],
           "isUnique": true,
-          "where": "\"kortix\".\"executor_credentials\".\"profile_id\" is null",
+          "where": "\"zed\".\"executor_credentials\".\"profile_id\" is null",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -5151,7 +5151,7 @@
           "name": "executor_credentials_connector_id_executor_connectors_connector_id_fk",
           "tableFrom": "executor_credentials",
           "tableTo": "executor_connectors",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "connector_id"
           ],
@@ -5165,7 +5165,7 @@
           "name": "executor_credentials_connector_profile_fk",
           "tableFrom": "executor_credentials",
           "tableTo": "executor_connection_profiles",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "connector_id",
             "profile_id"
@@ -5184,9 +5184,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.executor_executions": {
+    "zed.executor_executions": {
       "name": "executor_executions",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "execution_id": {
           "name": "execution_id",
@@ -5240,14 +5240,14 @@
         "status": {
           "name": "status",
           "type": "executor_execution_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
         "risk": {
           "name": "risk",
           "type": "executor_risk",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": false
         },
@@ -5377,7 +5377,7 @@
           "name": "executor_executions_account_id_accounts_account_id_fk",
           "tableFrom": "executor_executions",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -5391,7 +5391,7 @@
           "name": "executor_executions_project_id_projects_project_id_fk",
           "tableFrom": "executor_executions",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -5405,7 +5405,7 @@
           "name": "executor_executions_connector_id_executor_connectors_connector_id_fk",
           "tableFrom": "executor_executions",
           "tableTo": "executor_connectors",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "connector_id"
           ],
@@ -5419,7 +5419,7 @@
           "name": "executor_executions_profile_id_executor_connection_profiles_profile_id_fk",
           "tableFrom": "executor_executions",
           "tableTo": "executor_connection_profiles",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "profile_id"
           ],
@@ -5436,9 +5436,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.executor_project_policies": {
+    "zed.executor_project_policies": {
       "name": "executor_project_policies",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "policy_id": {
           "name": "policy_id",
@@ -5462,7 +5462,7 @@
         "action": {
           "name": "action",
           "type": "executor_policy_action",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
@@ -5503,7 +5503,7 @@
           "name": "executor_project_policies_project_id_projects_project_id_fk",
           "tableFrom": "executor_project_policies",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -5520,9 +5520,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.executor_project_settings": {
+    "zed.executor_project_settings": {
       "name": "executor_project_settings",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "project_id": {
           "name": "project_id",
@@ -5533,7 +5533,7 @@
         "default_mode": {
           "name": "default_mode",
           "type": "executor_default_mode",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'allow_all'"
@@ -5552,7 +5552,7 @@
           "name": "executor_project_settings_project_id_projects_project_id_fk",
           "tableFrom": "executor_project_settings",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -5569,9 +5569,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.gateway_api_keys": {
+    "zed.gateway_api_keys": {
       "name": "gateway_api_keys",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "key_id": {
           "name": "key_id",
@@ -5613,7 +5613,7 @@
         "status": {
           "name": "status",
           "type": "api_key_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'active'"
@@ -5702,7 +5702,7 @@
           "name": "gateway_api_keys_account_id_accounts_account_id_fk",
           "tableFrom": "gateway_api_keys",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -5716,7 +5716,7 @@
           "name": "gateway_api_keys_project_id_projects_project_id_fk",
           "tableFrom": "gateway_api_keys",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -5733,9 +5733,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.gateway_budgets": {
+    "zed.gateway_budgets": {
       "name": "gateway_budgets",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "budget_id": {
           "name": "budget_id",
@@ -5753,7 +5753,7 @@
         "scope": {
           "name": "scope",
           "type": "gateway_budget_scope",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
@@ -5772,7 +5772,7 @@
         "period": {
           "name": "period",
           "type": "gateway_budget_period",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'month'"
@@ -5780,7 +5780,7 @@
         "action": {
           "name": "action",
           "type": "gateway_budget_action",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'block'"
@@ -5849,7 +5849,7 @@
           "name": "gateway_budgets_project_id_projects_project_id_fk",
           "tableFrom": "gateway_budgets",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -5866,9 +5866,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.gateway_request_logs": {
+    "zed.gateway_request_logs": {
       "name": "gateway_request_logs",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "log_id": {
           "name": "log_id",
@@ -6178,7 +6178,7 @@
           "name": "gateway_request_logs_account_id_accounts_account_id_fk",
           "tableFrom": "gateway_request_logs",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -6192,7 +6192,7 @@
           "name": "gateway_request_logs_project_id_projects_project_id_fk",
           "tableFrom": "gateway_request_logs",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -6209,9 +6209,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.iam_policies": {
+    "zed.iam_policies": {
       "name": "iam_policies",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "policy_id": {
           "name": "policy_id",
@@ -6353,7 +6353,7 @@
           "name": "iam_policies_account_id_accounts_account_id_fk",
           "tableFrom": "iam_policies",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -6367,7 +6367,7 @@
           "name": "iam_policies_role_id_iam_roles_role_id_fk",
           "tableFrom": "iam_policies",
           "tableTo": "iam_roles",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "role_id"
           ],
@@ -6384,9 +6384,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.iam_resource_grants": {
+    "zed.iam_resource_grants": {
       "name": "iam_resource_grants",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "grant_id": {
           "name": "grant_id",
@@ -6595,7 +6595,7 @@
           "name": "iam_resource_grants_account_id_accounts_account_id_fk",
           "tableFrom": "iam_resource_grants",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -6609,7 +6609,7 @@
           "name": "iam_resource_grants_project_id_projects_project_id_fk",
           "tableFrom": "iam_resource_grants",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -6626,9 +6626,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.iam_role_actions": {
+    "zed.iam_role_actions": {
       "name": "iam_role_actions",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "role_id": {
           "name": "role_id",
@@ -6649,7 +6649,7 @@
           "name": "iam_role_actions_role_id_iam_roles_role_id_fk",
           "tableFrom": "iam_role_actions",
           "tableTo": "iam_roles",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "role_id"
           ],
@@ -6674,9 +6674,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.iam_roles": {
+    "zed.iam_roles": {
       "name": "iam_roles",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "role_id": {
           "name": "role_id",
@@ -6787,7 +6787,7 @@
           "name": "iam_roles_account_id_accounts_account_id_fk",
           "tableFrom": "iam_roles",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -6804,9 +6804,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.api_keys": {
+    "zed.api_keys": {
       "name": "api_keys",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "key_id": {
           "name": "key_id",
@@ -6854,7 +6854,7 @@
         "type": {
           "name": "type",
           "type": "api_key_type",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'user'"
@@ -6862,7 +6862,7 @@
         "status": {
           "name": "status",
           "type": "api_key_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'active'"
@@ -6888,8 +6888,8 @@
         }
       },
       "indexes": {
-        "idx_kortix_api_keys_public_key": {
-          "name": "idx_kortix_api_keys_public_key",
+        "idx_zed_api_keys_public_key": {
+          "name": "idx_zed_api_keys_public_key",
           "columns": [
             {
               "expression": "public_key",
@@ -6903,8 +6903,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_kortix_api_keys_secret_hash": {
-          "name": "idx_kortix_api_keys_secret_hash",
+        "idx_zed_api_keys_secret_hash": {
+          "name": "idx_zed_api_keys_secret_hash",
           "columns": [
             {
               "expression": "secret_key_hash",
@@ -6918,8 +6918,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_kortix_api_keys_sandbox": {
-          "name": "idx_kortix_api_keys_sandbox",
+        "idx_zed_api_keys_sandbox": {
+          "name": "idx_zed_api_keys_sandbox",
           "columns": [
             {
               "expression": "sandbox_id",
@@ -6933,8 +6933,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_kortix_api_keys_account": {
-          "name": "idx_kortix_api_keys_account",
+        "idx_zed_api_keys_account": {
+          "name": "idx_zed_api_keys_account",
           "columns": [
             {
               "expression": "account_id",
@@ -6956,9 +6956,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.legacy_sandbox_migrations": {
+    "zed.legacy_sandbox_migrations": {
       "name": "legacy_sandbox_migrations",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "migration_id": {
           "name": "migration_id",
@@ -7192,9 +7192,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.oauth_access_tokens": {
+    "zed.oauth_access_tokens": {
       "name": "oauth_access_tokens",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -7306,7 +7306,7 @@
           "name": "oauth_access_tokens_client_id_oauth_clients_client_id_fk",
           "tableFrom": "oauth_access_tokens",
           "tableTo": "oauth_clients",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "client_id"
           ],
@@ -7323,9 +7323,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.oauth_authorization_codes": {
+    "zed.oauth_authorization_codes": {
       "name": "oauth_authorization_codes",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -7456,7 +7456,7 @@
           "name": "oauth_authorization_codes_client_id_oauth_clients_client_id_fk",
           "tableFrom": "oauth_authorization_codes",
           "tableTo": "oauth_clients",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "client_id"
           ],
@@ -7473,9 +7473,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.oauth_clients": {
+    "zed.oauth_clients": {
       "name": "oauth_clients",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "client_id": {
           "name": "client_id",
@@ -7533,9 +7533,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.oauth_refresh_tokens": {
+    "zed.oauth_refresh_tokens": {
       "name": "oauth_refresh_tokens",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -7631,7 +7631,7 @@
           "name": "oauth_refresh_tokens_access_token_id_oauth_access_tokens_id_fk",
           "tableFrom": "oauth_refresh_tokens",
           "tableTo": "oauth_access_tokens",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "access_token_id"
           ],
@@ -7645,7 +7645,7 @@
           "name": "oauth_refresh_tokens_client_id_oauth_clients_client_id_fk",
           "tableFrom": "oauth_refresh_tokens",
           "tableTo": "oauth_clients",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "client_id"
           ],
@@ -7662,9 +7662,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.platform_settings": {
+    "zed.platform_settings": {
       "name": "platform_settings",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "key": {
           "name": "key",
@@ -7694,9 +7694,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.platform_user_roles": {
+    "zed.platform_user_roles": {
       "name": "platform_user_roles",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -7714,7 +7714,7 @@
         "role": {
           "name": "role",
           "type": "platform_role",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'user'"
@@ -7772,9 +7772,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_access_requests": {
+    "zed.project_access_requests": {
       "name": "project_access_requests",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "request_id": {
           "name": "request_id",
@@ -7816,7 +7816,7 @@
         "status": {
           "name": "status",
           "type": "project_access_request_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'pending'"
@@ -7926,7 +7926,7 @@
             }
           ],
           "isUnique": true,
-          "where": "\"kortix\".\"project_access_requests\".\"status\" = 'pending'",
+          "where": "\"zed\".\"project_access_requests\".\"status\" = 'pending'",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -7937,7 +7937,7 @@
           "name": "project_access_requests_account_id_accounts_account_id_fk",
           "tableFrom": "project_access_requests",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -7951,7 +7951,7 @@
           "name": "project_access_requests_project_id_projects_project_id_fk",
           "tableFrom": "project_access_requests",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -7968,9 +7968,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_git_connections": {
+    "zed.project_git_connections": {
       "name": "project_git_connections",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "connection_id": {
           "name": "connection_id",
@@ -8198,7 +8198,7 @@
           "name": "project_git_connections_account_id_accounts_account_id_fk",
           "tableFrom": "project_git_connections",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -8212,7 +8212,7 @@
           "name": "project_git_connections_project_id_projects_project_id_fk",
           "tableFrom": "project_git_connections",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -8229,9 +8229,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_git_credentials": {
+    "zed.project_git_credentials": {
       "name": "project_git_credentials",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "credential_id": {
           "name": "credential_id",
@@ -8335,7 +8335,7 @@
           "name": "project_git_credentials_account_id_accounts_account_id_fk",
           "tableFrom": "project_git_credentials",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -8349,7 +8349,7 @@
           "name": "project_git_credentials_project_id_projects_project_id_fk",
           "tableFrom": "project_git_credentials",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -8366,9 +8366,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_group_grants": {
+    "zed.project_group_grants": {
       "name": "project_group_grants",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "project_id": {
           "name": "project_id",
@@ -8391,7 +8391,7 @@
         "role": {
           "name": "role",
           "type": "project_role",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'member'"
@@ -8475,7 +8475,7 @@
           "name": "project_group_grants_project_id_projects_project_id_fk",
           "tableFrom": "project_group_grants",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -8489,7 +8489,7 @@
           "name": "project_group_grants_group_id_account_groups_group_id_fk",
           "tableFrom": "project_group_grants",
           "tableTo": "account_groups",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "group_id"
           ],
@@ -8503,7 +8503,7 @@
           "name": "project_group_grants_account_id_accounts_account_id_fk",
           "tableFrom": "project_group_grants",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -8528,9 +8528,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_llm_routing_policies": {
+    "zed.project_llm_routing_policies": {
       "name": "project_llm_routing_policies",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "project_id": {
           "name": "project_id",
@@ -8590,7 +8590,7 @@
           "name": "project_llm_routing_policies_project_id_projects_project_id_fk",
           "tableFrom": "project_llm_routing_policies",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -8607,18 +8607,18 @@
       "checkConstraints": {
         "project_llm_routing_policies_fallback_pair_check": {
           "name": "project_llm_routing_policies_fallback_pair_check",
-          "value": "(\"kortix\".\"project_llm_routing_policies\".\"default_fallback_models\" IS NULL AND \"kortix\".\"project_llm_routing_policies\".\"default_fallback_on\" IS NULL) OR (\"kortix\".\"project_llm_routing_policies\".\"default_fallback_models\" IS NOT NULL AND \"kortix\".\"project_llm_routing_policies\".\"default_fallback_on\" IN ('transient', 'any-error'))"
+          "value": "(\"zed\".\"project_llm_routing_policies\".\"default_fallback_models\" IS NULL AND \"zed\".\"project_llm_routing_policies\".\"default_fallback_on\" IS NULL) OR (\"zed\".\"project_llm_routing_policies\".\"default_fallback_models\" IS NOT NULL AND \"zed\".\"project_llm_routing_policies\".\"default_fallback_on\" IN ('transient', 'any-error'))"
         },
         "project_llm_routing_policies_rules_array_check": {
           "name": "project_llm_routing_policies_rules_array_check",
-          "value": "jsonb_typeof(\"kortix\".\"project_llm_routing_policies\".\"rules\") = 'array'"
+          "value": "jsonb_typeof(\"zed\".\"project_llm_routing_policies\".\"rules\") = 'array'"
         }
       },
       "isRLSEnabled": false
     },
-    "kortix.project_members": {
+    "zed.project_members": {
       "name": "project_members",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "account_id": {
           "name": "account_id",
@@ -8641,7 +8641,7 @@
         "project_role": {
           "name": "project_role",
           "type": "project_role",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'member'"
@@ -8737,7 +8737,7 @@
           "name": "project_members_account_id_accounts_account_id_fk",
           "tableFrom": "project_members",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -8751,7 +8751,7 @@
           "name": "project_members_project_id_projects_project_id_fk",
           "tableFrom": "project_members",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -8768,9 +8768,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_secrets": {
+    "zed.project_secrets": {
       "name": "project_secrets",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "secret_id": {
           "name": "secret_id",
@@ -8806,7 +8806,7 @@
         "scope": {
           "name": "scope",
           "type": "project_secret_scope",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'runtime'"
@@ -8899,7 +8899,7 @@
             }
           ],
           "isUnique": true,
-          "where": "\"kortix\".\"project_secrets\".\"owner_user_id\" is null",
+          "where": "\"zed\".\"project_secrets\".\"owner_user_id\" is null",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -8927,7 +8927,7 @@
             }
           ],
           "isUnique": true,
-          "where": "\"kortix\".\"project_secrets\".\"owner_user_id\" is not null",
+          "where": "\"zed\".\"project_secrets\".\"owner_user_id\" is not null",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -8938,7 +8938,7 @@
           "name": "project_secrets_project_id_projects_project_id_fk",
           "tableFrom": "project_secrets",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -8955,9 +8955,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_session_connector_bindings": {
+    "zed.project_session_connector_bindings": {
       "name": "project_session_connector_bindings",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "session_id": {
           "name": "session_id",
@@ -8998,7 +8998,7 @@
         "source": {
           "name": "source",
           "type": "project_session_connector_binding_source",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'request'"
@@ -9061,7 +9061,7 @@
           "name": "project_session_connector_bindings_session_tenant_fk",
           "tableFrom": "project_session_connector_bindings",
           "tableTo": "project_sessions",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id",
             "project_id",
@@ -9079,7 +9079,7 @@
           "name": "project_session_connector_bindings_alias_tenant_fk",
           "tableFrom": "project_session_connector_bindings",
           "tableTo": "executor_connectors",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id",
             "project_id",
@@ -9099,7 +9099,7 @@
           "name": "project_session_connector_bindings_profile_tenant_fk",
           "tableFrom": "project_session_connector_bindings",
           "tableTo": "executor_connection_profiles",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id",
             "project_id",
@@ -9130,9 +9130,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_session_grants": {
+    "zed.project_session_grants": {
       "name": "project_session_grants",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "grant_id": {
           "name": "grant_id",
@@ -9150,7 +9150,7 @@
         "principal_type": {
           "name": "principal_type",
           "type": "secret_grant_principal",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
@@ -9217,7 +9217,7 @@
           "name": "project_session_grants_session_id_project_sessions_session_id_fk",
           "tableFrom": "project_session_grants",
           "tableTo": "project_sessions",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "session_id"
           ],
@@ -9234,9 +9234,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_session_public_shares": {
+    "zed.project_session_public_shares": {
       "name": "project_session_public_shares",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "share_id": {
           "name": "share_id",
@@ -9407,7 +9407,7 @@
           "name": "project_session_public_shares_session_id_project_sessions_session_id_fk",
           "tableFrom": "project_session_public_shares",
           "tableTo": "project_sessions",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "session_id"
           ],
@@ -9421,7 +9421,7 @@
           "name": "project_session_public_shares_project_id_projects_project_id_fk",
           "tableFrom": "project_session_public_shares",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -9435,7 +9435,7 @@
           "name": "project_session_public_shares_account_id_accounts_account_id_fk",
           "tableFrom": "project_session_public_shares",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -9452,9 +9452,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_session_runtime_contexts": {
+    "zed.project_session_runtime_contexts": {
       "name": "project_session_runtime_contexts",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "session_id": {
           "name": "session_id",
@@ -9511,7 +9511,7 @@
           "name": "project_session_runtime_contexts_session_id_project_sessions_session_id_fk",
           "tableFrom": "project_session_runtime_contexts",
           "tableTo": "project_sessions",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "session_id"
           ],
@@ -9528,18 +9528,18 @@
       "checkConstraints": {
         "project_session_runtime_contexts_byte_size_check": {
           "name": "project_session_runtime_contexts_byte_size_check",
-          "value": "\"kortix\".\"project_session_runtime_contexts\".\"byte_size\" >= 2 AND \"kortix\".\"project_session_runtime_contexts\".\"byte_size\" <= 16384"
+          "value": "\"zed\".\"project_session_runtime_contexts\".\"byte_size\" >= 2 AND \"zed\".\"project_session_runtime_contexts\".\"byte_size\" <= 16384"
         },
         "project_session_runtime_contexts_object_check": {
           "name": "project_session_runtime_contexts_object_check",
-          "value": "jsonb_typeof(\"kortix\".\"project_session_runtime_contexts\".\"context\") = 'object'"
+          "value": "jsonb_typeof(\"zed\".\"project_session_runtime_contexts\".\"context\") = 'object'"
         }
       },
       "isRLSEnabled": false
     },
-    "kortix.project_sessions": {
+    "zed.project_sessions": {
       "name": "project_sessions",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "session_id": {
           "name": "session_id",
@@ -9575,7 +9575,7 @@
         "sandbox_provider": {
           "name": "sandbox_provider",
           "type": "sandbox_provider",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'daytona'"
@@ -9608,7 +9608,7 @@
         "status": {
           "name": "status",
           "type": "project_session_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'queued'"
@@ -9628,7 +9628,7 @@
         "visibility": {
           "name": "visibility",
           "type": "project_session_visibility",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'private'"
@@ -9770,7 +9770,7 @@
           "name": "project_sessions_account_id_accounts_account_id_fk",
           "tableFrom": "project_sessions",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -9784,7 +9784,7 @@
           "name": "project_sessions_project_id_projects_project_id_fk",
           "tableFrom": "project_sessions",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -9801,9 +9801,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_snapshot_builds": {
+    "zed.project_snapshot_builds": {
       "name": "project_snapshot_builds",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "build_id": {
           "name": "build_id",
@@ -9943,7 +9943,7 @@
           "name": "project_snapshot_builds_account_id_accounts_account_id_fk",
           "tableFrom": "project_snapshot_builds",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -9957,7 +9957,7 @@
           "name": "project_snapshot_builds_project_id_projects_project_id_fk",
           "tableFrom": "project_snapshot_builds",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -9974,9 +9974,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.project_trigger_runtime": {
+    "zed.project_trigger_runtime": {
       "name": "project_trigger_runtime",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "project_id": {
           "name": "project_id",
@@ -10056,7 +10056,7 @@
           "name": "project_trigger_runtime_project_id_projects_project_id_fk",
           "tableFrom": "project_trigger_runtime",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -10070,7 +10070,7 @@
           "name": "project_trigger_runtime_session_id_project_sessions_session_id_fk",
           "tableFrom": "project_trigger_runtime",
           "tableTo": "project_sessions",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "session_id"
           ],
@@ -10095,9 +10095,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.projects": {
+    "zed.projects": {
       "name": "projects",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "project_id": {
           "name": "project_id",
@@ -10136,12 +10136,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'kortix.yaml'"
+          "default": "'zed.yaml'"
         },
         "status": {
           "name": "status",
           "type": "project_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'active'"
@@ -10247,7 +10247,7 @@
           "name": "projects_account_id_accounts_account_id_fk",
           "tableFrom": "projects",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -10264,9 +10264,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.provider_events": {
+    "zed.provider_events": {
       "name": "provider_events",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -10420,9 +10420,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.review_items": {
+    "zed.review_items": {
       "name": "review_items",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "review_item_id": {
           "name": "review_item_id",
@@ -10452,14 +10452,14 @@
         "kind": {
           "name": "kind",
           "type": "review_item_kind",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
         "status": {
           "name": "status",
           "type": "review_item_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'needs_you'"
@@ -10467,7 +10467,7 @@
         "risk": {
           "name": "risk",
           "type": "review_item_risk",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'none'"
@@ -10475,7 +10475,7 @@
         "source": {
           "name": "source",
           "type": "review_item_source",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'agent'"
@@ -10632,7 +10632,7 @@
           "name": "review_items_account_id_accounts_account_id_fk",
           "tableFrom": "review_items",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -10646,7 +10646,7 @@
           "name": "review_items_project_id_projects_project_id_fk",
           "tableFrom": "review_items",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -10660,7 +10660,7 @@
           "name": "review_items_origin_session_id_project_sessions_session_id_fk",
           "tableFrom": "review_items",
           "tableTo": "project_sessions",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "origin_session_id"
           ],
@@ -10677,9 +10677,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.sandbox_compute_sessions": {
+    "zed.sandbox_compute_sessions": {
       "name": "sandbox_compute_sessions",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -10715,7 +10715,7 @@
         "provider": {
           "name": "provider",
           "type": "sandbox_provider",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'daytona'"
@@ -10861,7 +10861,7 @@
             }
           ],
           "isUnique": false,
-          "where": "\"kortix\".\"sandbox_compute_sessions\".\"ended_at\" IS NULL",
+          "where": "\"zed\".\"sandbox_compute_sessions\".\"ended_at\" IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -10877,7 +10877,7 @@
             }
           ],
           "isUnique": true,
-          "where": "\"kortix\".\"sandbox_compute_sessions\".\"ended_at\" IS NULL",
+          "where": "\"zed\".\"sandbox_compute_sessions\".\"ended_at\" IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -10893,7 +10893,7 @@
             }
           ],
           "isUnique": false,
-          "where": "\"kortix\".\"sandbox_compute_sessions\".\"state\" = 'active'",
+          "where": "\"zed\".\"sandbox_compute_sessions\".\"state\" = 'active'",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -10906,9 +10906,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.sandbox_invites": {
+    "zed.sandbox_invites": {
       "name": "sandbox_invites",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "invite_id": {
           "name": "invite_id",
@@ -10944,7 +10944,7 @@
         "initial_role": {
           "name": "initial_role",
           "type": "account_role",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'member'"
@@ -11022,7 +11022,7 @@
           "name": "sandbox_invites_sandbox_id_sandboxes_sandbox_id_fk",
           "tableFrom": "sandbox_invites",
           "tableTo": "sandboxes",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "sandbox_id"
           ],
@@ -11039,9 +11039,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.sandbox_member_scopes": {
+    "zed.sandbox_member_scopes": {
       "name": "sandbox_member_scopes",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "sandbox_id": {
           "name": "sandbox_id",
@@ -11064,7 +11064,7 @@
         "effect": {
           "name": "effect",
           "type": "scope_effect",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
@@ -11137,7 +11137,7 @@
           "name": "sandbox_member_scopes_sandbox_id_sandboxes_sandbox_id_fk",
           "tableFrom": "sandbox_member_scopes",
           "tableTo": "sandboxes",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "sandbox_id"
           ],
@@ -11154,9 +11154,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.sandbox_members": {
+    "zed.sandbox_members": {
       "name": "sandbox_members",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "sandbox_id": {
           "name": "sandbox_id",
@@ -11261,7 +11261,7 @@
           "name": "sandbox_members_sandbox_id_sandboxes_sandbox_id_fk",
           "tableFrom": "sandbox_members",
           "tableTo": "sandboxes",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "sandbox_id"
           ],
@@ -11278,9 +11278,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.sandbox_templates": {
+    "zed.sandbox_templates": {
       "name": "sandbox_templates",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "template_id": {
           "name": "template_id",
@@ -11493,7 +11493,7 @@
           "name": "sandbox_templates_project_id_projects_project_id_fk",
           "tableFrom": "sandbox_templates",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -11507,7 +11507,7 @@
           "name": "sandbox_templates_account_id_accounts_account_id_fk",
           "tableFrom": "sandbox_templates",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -11524,9 +11524,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.sandboxes": {
+    "zed.sandboxes": {
       "name": "sandboxes",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "sandbox_id": {
           "name": "sandbox_id",
@@ -11563,7 +11563,7 @@
         "status": {
           "name": "status",
           "type": "sandbox_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'provisioning'"
@@ -11676,9 +11676,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.scim_tokens": {
+    "zed.scim_tokens": {
       "name": "scim_tokens",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "token_id": {
           "name": "token_id",
@@ -11780,7 +11780,7 @@
           "name": "scim_tokens_account_id_accounts_account_id_fk",
           "tableFrom": "scim_tokens",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -11797,9 +11797,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.service_accounts": {
+    "zed.service_accounts": {
       "name": "service_accounts",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "service_account_id": {
           "name": "service_account_id",
@@ -11982,7 +11982,7 @@
           "name": "service_accounts_account_id_accounts_account_id_fk",
           "tableFrom": "service_accounts",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -11996,7 +11996,7 @@
           "name": "service_accounts_project_id_projects_project_id_fk",
           "tableFrom": "service_accounts",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -12013,9 +12013,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.session_lifecycle_commands": {
+    "zed.session_lifecycle_commands": {
       "name": "session_lifecycle_commands",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "command_id": {
           "name": "command_id",
@@ -12039,7 +12039,7 @@
         "status": {
           "name": "status",
           "type": "session_lifecycle_command_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'queued'"
@@ -12223,7 +12223,7 @@
           "name": "session_lifecycle_commands_project_id_projects_project_id_fk",
           "tableFrom": "session_lifecycle_commands",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -12237,7 +12237,7 @@
           "name": "session_lifecycle_commands_session_id_project_sessions_session_id_fk",
           "tableFrom": "session_lifecycle_commands",
           "tableTo": "project_sessions",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "session_id"
           ],
@@ -12251,7 +12251,7 @@
           "name": "session_lifecycle_commands_account_id_accounts_account_id_fk",
           "tableFrom": "session_lifecycle_commands",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -12268,9 +12268,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.session_sandboxes": {
+    "zed.session_sandboxes": {
       "name": "session_sandboxes",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "sandbox_id": {
           "name": "sandbox_id",
@@ -12299,7 +12299,7 @@
         "provider": {
           "name": "provider",
           "type": "sandbox_provider",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'daytona'"
@@ -12319,7 +12319,7 @@
         "status": {
           "name": "status",
           "type": "session_sandbox_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'provisioning'"
@@ -12451,9 +12451,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.session_tool_approvals": {
+    "zed.session_tool_approvals": {
       "name": "session_tool_approvals",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -12549,7 +12549,7 @@
           "name": "session_tool_approvals_project_id_projects_project_id_fk",
           "tableFrom": "session_tool_approvals",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -12563,7 +12563,7 @@
           "name": "session_tool_approvals_connector_id_executor_connectors_connector_id_fk",
           "tableFrom": "session_tool_approvals",
           "tableTo": "executor_connectors",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "connector_id"
           ],
@@ -12580,9 +12580,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.stripe_webhook_events_processed": {
+    "zed.stripe_webhook_events_processed": {
       "name": "stripe_webhook_events_processed",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "event_id": {
           "name": "event_id",
@@ -12628,9 +12628,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.suna_account_migrations": {
+    "zed.suna_account_migrations": {
       "name": "suna_account_migrations",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "migration_id": {
           "name": "migration_id",
@@ -12803,9 +12803,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.teams_pending_uploads": {
+    "zed.teams_pending_uploads": {
       "name": "teams_pending_uploads",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "upload_id": {
           "name": "upload_id",
@@ -12899,9 +12899,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.tunnel_audit_logs": {
+    "zed.tunnel_audit_logs": {
       "name": "tunnel_audit_logs",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "log_id": {
           "name": "log_id",
@@ -12925,7 +12925,7 @@
         "capability": {
           "name": "capability",
           "type": "tunnel_capability",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
@@ -13041,7 +13041,7 @@
           "name": "tunnel_audit_logs_tunnel_id_tunnel_connections_tunnel_id_fk",
           "tableFrom": "tunnel_audit_logs",
           "tableTo": "tunnel_connections",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "tunnel_id"
           ],
@@ -13058,9 +13058,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.tunnel_connections": {
+    "zed.tunnel_connections": {
       "name": "tunnel_connections",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "tunnel_id": {
           "name": "tunnel_id",
@@ -13090,7 +13090,7 @@
         "status": {
           "name": "status",
           "type": "tunnel_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'offline'"
@@ -13227,7 +13227,7 @@
           "name": "tunnel_connections_sandbox_id_sandboxes_sandbox_id_fk",
           "tableFrom": "tunnel_connections",
           "tableTo": "sandboxes",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "sandbox_id"
           ],
@@ -13244,9 +13244,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.tunnel_device_auth_requests": {
+    "zed.tunnel_device_auth_requests": {
       "name": "tunnel_device_auth_requests",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "id": {
           "name": "id",
@@ -13270,7 +13270,7 @@
         "status": {
           "name": "status",
           "type": "tunnel_device_auth_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'pending'"
@@ -13372,7 +13372,7 @@
           "name": "tunnel_device_auth_requests_tunnel_id_tunnel_connections_tunnel_id_fk",
           "tableFrom": "tunnel_device_auth_requests",
           "tableTo": "tunnel_connections",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "tunnel_id"
           ],
@@ -13389,9 +13389,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.tunnel_permission_requests": {
+    "zed.tunnel_permission_requests": {
       "name": "tunnel_permission_requests",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "request_id": {
           "name": "request_id",
@@ -13415,7 +13415,7 @@
         "capability": {
           "name": "capability",
           "type": "tunnel_capability",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
@@ -13435,7 +13435,7 @@
         "status": {
           "name": "status",
           "type": "tunnel_permission_request_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'pending'"
@@ -13507,7 +13507,7 @@
           "name": "tunnel_permission_requests_tunnel_id_tunnel_connections_tunnel_id_fk",
           "tableFrom": "tunnel_permission_requests",
           "tableTo": "tunnel_connections",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "tunnel_id"
           ],
@@ -13524,9 +13524,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.tunnel_permissions": {
+    "zed.tunnel_permissions": {
       "name": "tunnel_permissions",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "permission_id": {
           "name": "permission_id",
@@ -13550,7 +13550,7 @@
         "capability": {
           "name": "capability",
           "type": "tunnel_capability",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true
         },
@@ -13564,7 +13564,7 @@
         "status": {
           "name": "status",
           "type": "tunnel_permission_status",
-          "typeSchema": "kortix",
+          "typeSchema": "zed",
           "primaryKey": false,
           "notNull": true,
           "default": "'active'"
@@ -13657,7 +13657,7 @@
           "name": "tunnel_permissions_tunnel_id_tunnel_connections_tunnel_id_fk",
           "tableFrom": "tunnel_permissions",
           "tableTo": "tunnel_connections",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "tunnel_id"
           ],
@@ -13674,9 +13674,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.tunnel_rpc_forwards": {
+    "zed.tunnel_rpc_forwards": {
       "name": "tunnel_rpc_forwards",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "request_id": {
           "name": "request_id",
@@ -13832,7 +13832,7 @@
           "name": "tunnel_rpc_forwards_tunnel_id_tunnel_connections_tunnel_id_fk",
           "tableFrom": "tunnel_rpc_forwards",
           "tableTo": "tunnel_connections",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "tunnel_id"
           ],
@@ -13849,9 +13849,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.usage_events": {
+    "zed.usage_events": {
       "name": "usage_events",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "event_id": {
           "name": "event_id",
@@ -14050,7 +14050,7 @@
           "name": "usage_events_account_id_accounts_account_id_fk",
           "tableFrom": "usage_events",
           "tableTo": "accounts",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "account_id"
           ],
@@ -14064,7 +14064,7 @@
           "name": "usage_events_project_id_projects_project_id_fk",
           "tableFrom": "usage_events",
           "tableTo": "projects",
-          "schemaTo": "kortix",
+          "schemaTo": "zed",
           "columnsFrom": [
             "project_id"
           ],
@@ -14081,9 +14081,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.worker_leader_lease": {
+    "zed.worker_leader_lease": {
       "name": "worker_leader_lease",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "lock_key": {
           "name": "lock_key",
@@ -14119,9 +14119,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "kortix.yolo_member_tokens": {
+    "zed.yolo_member_tokens": {
       "name": "yolo_member_tokens",
-      "schema": "kortix",
+      "schema": "zed",
       "columns": {
         "user_id": {
           "name": "user_id",
@@ -14179,7 +14179,7 @@
             }
           ],
           "isUnique": false,
-          "where": "\"kortix\".\"yolo_member_tokens\".\"revoked_at\" IS NULL",
+          "where": "\"zed\".\"yolo_member_tokens\".\"revoked_at\" IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -14217,62 +14217,62 @@
     }
   },
   "enums": {
-    "kortix.access_request_status": {
+    "zed.access_request_status": {
       "name": "access_request_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "pending",
         "approved",
         "rejected"
       ]
     },
-    "kortix.account_group_source": {
+    "zed.account_group_source": {
       "name": "account_group_source",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "manual",
         "scim",
         "sso"
       ]
     },
-    "kortix.account_role": {
+    "zed.account_role": {
       "name": "account_role",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "owner",
         "admin",
         "member"
       ]
     },
-    "kortix.api_key_status": {
+    "zed.api_key_status": {
       "name": "api_key_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "active",
         "revoked",
         "expired"
       ]
     },
-    "kortix.api_key_type": {
+    "zed.api_key_type": {
       "name": "api_key_type",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "user",
         "sandbox"
       ]
     },
-    "kortix.change_request_status": {
+    "zed.change_request_status": {
       "name": "change_request_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "open",
         "merged",
         "closed"
       ]
     },
-    "kortix.executor_connection_profile_owner_type": {
+    "zed.executor_connection_profile_owner_type": {
       "name": "executor_connection_profile_owner_type",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "project",
         "agent",
@@ -14281,18 +14281,18 @@
         "external"
       ]
     },
-    "kortix.executor_connection_profile_status": {
+    "zed.executor_connection_profile_status": {
       "name": "executor_connection_profile_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "active",
         "revoked",
         "error"
       ]
     },
-    "kortix.executor_connector_provider": {
+    "zed.executor_connector_provider": {
       "name": "executor_connector_provider",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "pipedream",
         "mcp",
@@ -14304,9 +14304,9 @@
         "computer"
       ]
     },
-    "kortix.executor_connector_status": {
+    "zed.executor_connector_status": {
       "name": "executor_connector_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "active",
         "disabled",
@@ -14314,25 +14314,25 @@
         "error"
       ]
     },
-    "kortix.executor_credential_mode": {
+    "zed.executor_credential_mode": {
       "name": "executor_credential_mode",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "shared",
         "per_user"
       ]
     },
-    "kortix.executor_default_mode": {
+    "zed.executor_default_mode": {
       "name": "executor_default_mode",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "risk",
         "allow_all"
       ]
     },
-    "kortix.executor_execution_status": {
+    "zed.executor_execution_status": {
       "name": "executor_execution_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "ok",
         "error",
@@ -14340,70 +14340,70 @@
         "pending_approval"
       ]
     },
-    "kortix.executor_policy_action": {
+    "zed.executor_policy_action": {
       "name": "executor_policy_action",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "always_run",
         "require_approval",
         "block"
       ]
     },
-    "kortix.executor_risk": {
+    "zed.executor_risk": {
       "name": "executor_risk",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "read",
         "write",
         "destructive"
       ]
     },
-    "kortix.gateway_budget_action": {
+    "zed.gateway_budget_action": {
       "name": "gateway_budget_action",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "block",
         "warn"
       ]
     },
-    "kortix.gateway_budget_period": {
+    "zed.gateway_budget_period": {
       "name": "gateway_budget_period",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "day",
         "week",
         "month"
       ]
     },
-    "kortix.gateway_budget_scope": {
+    "zed.gateway_budget_scope": {
       "name": "gateway_budget_scope",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "project",
         "member"
       ]
     },
-    "kortix.platform_role": {
+    "zed.platform_role": {
       "name": "platform_role",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "user",
         "admin",
         "super_admin"
       ]
     },
-    "kortix.project_access_request_status": {
+    "zed.project_access_request_status": {
       "name": "project_access_request_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "pending",
         "approved",
         "rejected"
       ]
     },
-    "kortix.project_role": {
+    "zed.project_role": {
       "name": "project_role",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "manager",
         "editor",
@@ -14411,25 +14411,25 @@
         "viewer"
       ]
     },
-    "kortix.project_secret_scope": {
+    "zed.project_secret_scope": {
       "name": "project_secret_scope",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "runtime",
         "connector"
       ]
     },
-    "kortix.project_session_connector_binding_source": {
+    "zed.project_session_connector_binding_source": {
       "name": "project_session_connector_binding_source",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "request",
         "default"
       ]
     },
-    "kortix.project_session_status": {
+    "zed.project_session_status": {
       "name": "project_session_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "queued",
         "branching",
@@ -14440,26 +14440,26 @@
         "completed"
       ]
     },
-    "kortix.project_session_visibility": {
+    "zed.project_session_visibility": {
       "name": "project_session_visibility",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "private",
         "project",
         "restricted"
       ]
     },
-    "kortix.project_status": {
+    "zed.project_status": {
       "name": "project_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "active",
         "archived"
       ]
     },
-    "kortix.review_item_kind": {
+    "zed.review_item_kind": {
       "name": "review_item_kind",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "change",
         "approval",
@@ -14468,9 +14468,9 @@
         "batch"
       ]
     },
-    "kortix.review_item_risk": {
+    "zed.review_item_risk": {
       "name": "review_item_risk",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "none",
         "low",
@@ -14478,18 +14478,18 @@
         "high"
       ]
     },
-    "kortix.review_item_source": {
+    "zed.review_item_source": {
       "name": "review_item_source",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "web",
         "slack",
         "agent"
       ]
     },
-    "kortix.review_item_status": {
+    "zed.review_item_status": {
       "name": "review_item_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "needs_you",
         "waiting",
@@ -14500,9 +14500,9 @@
         "dismissed"
       ]
     },
-    "kortix.sandbox_provider": {
+    "zed.sandbox_provider": {
       "name": "sandbox_provider",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "daytona",
         "platinum",
@@ -14510,9 +14510,9 @@
         "local-docker"
       ]
     },
-    "kortix.sandbox_status": {
+    "zed.sandbox_status": {
       "name": "sandbox_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "provisioning",
         "active",
@@ -14521,33 +14521,33 @@
         "error"
       ]
     },
-    "kortix.scope_effect": {
+    "zed.scope_effect": {
       "name": "scope_effect",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "grant",
         "revoke"
       ]
     },
-    "kortix.secret_grant_principal": {
+    "zed.secret_grant_principal": {
       "name": "secret_grant_principal",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "member",
         "group"
       ]
     },
-    "kortix.secret_share_scope": {
+    "zed.secret_share_scope": {
       "name": "secret_share_scope",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "project",
         "restricted"
       ]
     },
-    "kortix.session_lifecycle_command_status": {
+    "zed.session_lifecycle_command_status": {
       "name": "session_lifecycle_command_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "queued",
         "running",
@@ -14556,9 +14556,9 @@
         "dead_lettered"
       ]
     },
-    "kortix.session_sandbox_status": {
+    "zed.session_sandbox_status": {
       "name": "session_sandbox_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "provisioning",
         "active",
@@ -14567,9 +14567,9 @@
         "archived"
       ]
     },
-    "kortix.tunnel_capability": {
+    "zed.tunnel_capability": {
       "name": "tunnel_capability",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "filesystem",
         "shell",
@@ -14580,9 +14580,9 @@
         "gpu"
       ]
     },
-    "kortix.tunnel_device_auth_status": {
+    "zed.tunnel_device_auth_status": {
       "name": "tunnel_device_auth_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "pending",
         "approved",
@@ -14590,9 +14590,9 @@
         "expired"
       ]
     },
-    "kortix.tunnel_permission_request_status": {
+    "zed.tunnel_permission_request_status": {
       "name": "tunnel_permission_request_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "pending",
         "approved",
@@ -14600,18 +14600,18 @@
         "expired"
       ]
     },
-    "kortix.tunnel_permission_status": {
+    "zed.tunnel_permission_status": {
       "name": "tunnel_permission_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "active",
         "revoked",
         "expired"
       ]
     },
-    "kortix.tunnel_status": {
+    "zed.tunnel_status": {
       "name": "tunnel_status",
-      "schema": "kortix",
+      "schema": "zed",
       "values": [
         "online",
         "offline",
@@ -14620,7 +14620,7 @@
     }
   },
   "schemas": {
-    "kortix": "kortix"
+    "zed": "zed"
   },
   "sequences": {},
   "roles": {},

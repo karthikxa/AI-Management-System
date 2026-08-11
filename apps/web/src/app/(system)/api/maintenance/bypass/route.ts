@@ -5,7 +5,7 @@ import {
   MAINTENANCE_BYPASS_TTL_SECONDS,
   createBypassToken,
 } from '@/lib/maintenance-bypass';
-import { getUserRolesWithToken } from '@kortix/sdk';
+import { getUserRolesWithToken } from '@zed/sdk';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

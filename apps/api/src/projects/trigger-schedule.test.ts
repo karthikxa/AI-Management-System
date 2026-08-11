@@ -11,7 +11,7 @@ import type { GitTriggerSpec } from './triggers';
 function schedule(overrides: Partial<GitTriggerSpec> = {}): GitTriggerSpec {
   return {
     slug: 'morning-email',
-    path: 'kortix.yaml#triggers.morning-email',
+    path: 'zed.yaml#triggers.morning-email',
     name: 'Morning email',
     type: 'cron',
     agent: 'default',

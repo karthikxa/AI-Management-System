@@ -74,8 +74,8 @@ export function registerGlobalMocks() {
   mock.module('../../config', () => ({
     config: {
       STRIPE_WEBHOOK_SECRET: 'whsec_test',
-      KORTIX_BILLING_INTERNAL_ENABLED: true,
-      INTERNAL_KORTIX_ENV: 'staging',
+      ZED_BILLING_INTERNAL_ENABLED: true,
+      INTERNAL_ZED_ENV: 'staging',
     },
   }));
 
@@ -484,7 +484,7 @@ export function createMockRevenueCatEvent(type: string, overrides: Record<string
       id: overrides.id ?? `evt_rc_${type.toLowerCase()}`,
       type,
       app_user_id: overrides.app_user_id ?? 'acc_test_123',
-      product_id: overrides.product_id ?? 'kortix_pro_monthly',
+      product_id: overrides.product_id ?? 'zed_pro_monthly',
       subscriber_id: overrides.subscriber_id ?? 'sub_rc_123',
       price: overrides.price ?? 50,
       expiration_at_ms: overrides.expiration_at_ms ?? null,

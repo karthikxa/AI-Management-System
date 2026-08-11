@@ -1,39 +1,39 @@
 import { describe, expect, test } from 'bun:test';
 import { qk } from './query-keys';
-import { kortixKeys } from './use-kortix-master';
+import { zedKeys } from './use-zed-master';
 
 const startsWith = (key: readonly unknown[], prefix: readonly unknown[]) =>
   prefix.every((segment, i) => key[i] === segment);
 
-// `kortixKeys` (use-kortix-master.ts) addresses the multi-server Kortix
+// `zedKeys` (use-zed-master.ts) addresses the multi-server Zed
 // Master surface. `qk` addresses the platform project surface. Both used to
-// root at `'kortix'`, so `kortixKeys.project(id)` and `qk.projects.list(id)`
-// were the same array for a matching id, and `kortixKeys.projects()` — used
+// root at `'zed'`, so `zedKeys.project(id)` and `qk.projects.list(id)`
+// were the same array for a matching id, and `zedKeys.projects()` — used
 // as an `invalidateQueries` prefix — would prefix-match every `qk` key too.
 // `qk` now roots at `'kx'`; this test fails immediately if that ever drifts
-// back to `'kortix'`.
-describe('qk vs kortixKeys — disjoint key spaces', () => {
+// back to `'zed'`.
+describe('qk vs zedKeys — disjoint key spaces', () => {
   const id = 'p1';
 
   const qkKeys: Record<string, readonly unknown[]> = {
     'qk.projects.scope()': qk.projects.scope(),
     'qk.projects.list()': qk.projects.list(),
     "qk.projects.list('acct_1')": qk.projects.list('acct_1'),
-    // Same id as `kortixKeys.project(id)` below — this is the exact pair that
-    // collided when both factories rooted at `'kortix'`:
-    // `['kortix', 'projects', id]` for both.
+    // Same id as `zedKeys.project(id)` below — this is the exact pair that
+    // collided when both factories rooted at `'zed'`:
+    // `['zed', 'projects', id]` for both.
     'qk.projects.list(id)': qk.projects.list(id),
     'qk.project.scope(id)': qk.project.scope(id),
     'qk.project.detail(id)': qk.project.detail(id),
   };
 
-  const kortixMasterKeys: Record<string, readonly unknown[]> = {
-    'kortixKeys.projects()': kortixKeys.projects(),
-    'kortixKeys.project(id)': kortixKeys.project(id),
+  const zedMasterKeys: Record<string, readonly unknown[]> = {
+    'zedKeys.projects()': zedKeys.projects(),
+    'zedKeys.project(id)': zedKeys.project(id),
   };
 
   for (const [qkName, qkKey] of Object.entries(qkKeys)) {
-    for (const [kmName, kmKey] of Object.entries(kortixMasterKeys)) {
+    for (const [kmName, kmKey] of Object.entries(zedMasterKeys)) {
       test(`${kmName} is not a prefix of ${qkName}`, () => {
         expect(startsWith(qkKey, kmKey)).toBe(false);
       });
@@ -46,9 +46,9 @@ describe('qk vs kortixKeys — disjoint key spaces', () => {
 
   // The exact collision from the review finding, asserted directly and by
   // name rather than only via the parameterized loop above: with a matching
-  // id and a `'kortix'` root, these two would be the identical array.
-  test('qk.projects.list(id) never equals kortixKeys.project(id) for the same id', () => {
-    expect(qk.projects.list(id)).not.toEqual(kortixKeys.project(id) as never);
+  // id and a `'zed'` root, these two would be the identical array.
+  test('qk.projects.list(id) never equals zedKeys.project(id) for the same id', () => {
+    expect(qk.projects.list(id)).not.toEqual(zedKeys.project(id) as never);
   });
 });
 
@@ -108,7 +108,7 @@ describe('qk.project', () => {
     }
   });
 
-  // `getProject` (`/projects/:id`, a bare `KortixProject`) and `getProjectDetail`
+  // `getProject` (`/projects/:id`, a bare `ZedProject`) and `getProjectDetail`
   // (`/projects/:id/detail`, `{ project, config, file_count, files,
   // git_connection }`) are two DIFFERENT server requests with two DIFFERENT
   // response shapes. Folding them onto one key means whichever fetch resolves
@@ -211,7 +211,7 @@ describe('qk.project', () => {
     // that protection lives in a different package, enforced by a regex with
     // no link back to this file, so it is safety by external invariant, not
     // by construction — exactly the standard this file's own top comment
-    // rejects for the `'kx'` vs `'kortix'` root choice. The `'list'` segment
+    // rejects for the `'kx'` vs `'zed'` root choice. The `'list'` segment
     // below makes the collision structurally impossible instead: it gives the
     // scoped list an extra segment, so NO value of a session id can ever
     // produce the same array `sessions(id, scope)` produces, regardless of

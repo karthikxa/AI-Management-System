@@ -2,8 +2,8 @@ import { createInstallationToken } from '../src/projects/github';
 import { execSync } from 'node:child_process';
 
 const installId = process.env.MANAGED_GIT_GITHUB_INSTALL_ID!;
-const owner = 'kortixd';
-// pick a recent kortixd repo to test cloning with an APP install token
+const owner = 'zedd';
+// pick a recent zedd repo to test cloning with an APP install token
 const repo = process.argv[2] || 'test-new11-e6f47c9d-fc71-4330-9f60-e5f99c957a1c';
 console.log('installId:', installId, 'repo:', repo);
 try {

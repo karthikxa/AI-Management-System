@@ -1,4 +1,4 @@
-import type { Command } from '@kortix/sdk/react';
+import type { Command } from '@zed/sdk/react';
 
 /**
  * Detect if user message text matches a known command template.

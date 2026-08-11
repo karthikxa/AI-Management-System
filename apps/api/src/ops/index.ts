@@ -127,7 +127,7 @@ async function recentAuditEvents(): Promise<RecentAuditEvent[]> {
     occurred_at: Date | string;
   }>(await db.execute(sql`
     SELECT event_id, account_id, actor_user_id, action, resource_type, resource_id, occurred_at
-    FROM kortix.audit_events
+    FROM zed.audit_events
     ORDER BY occurred_at DESC
     LIMIT 10
   `));
@@ -159,7 +159,7 @@ async function usageLast24h(): Promise<UsageRow[]> {
       COALESCE(sum(output_tokens), 0)::int AS output_tokens,
       COALESCE(sum(cached_tokens), 0)::int AS cached_tokens,
       COALESCE(sum(cost_usd), 0)::text AS cost_usd
-    FROM kortix.usage_events
+    FROM zed.usage_events
     WHERE created_at >= now() - interval '24 hours'
     GROUP BY provider
     ORDER BY calls DESC
@@ -218,32 +218,32 @@ opsApp.openapi(
     // Each aggregation runs through a safe* wrapper so a single failing query
     // degrades to a null/{} sentinel instead of rejecting the whole
     // Promise.all and 500-ing the dashboard. See safeCount's doc comment.
-    safeCount('accounts', sql`SELECT count(*)::int AS count FROM kortix.accounts`),
-    safeCount('projects', sql`SELECT count(*)::int AS count FROM kortix.projects`),
+    safeCount('accounts', sql`SELECT count(*)::int AS count FROM zed.accounts`),
+    safeCount('projects', sql`SELECT count(*)::int AS count FROM zed.projects`),
     safeCount(
       'active_legacy_sandboxes',
       sql`
         SELECT count(*)::int AS count
-        FROM kortix.sandboxes
+        FROM zed.sandboxes
         WHERE status IN ('provisioning', 'active', 'stopped', 'error')
       `,
     ),
     safeGroup('sessions_by_status', sql`
       SELECT status AS key, count(*)::int AS count
-      FROM kortix.project_sessions
+      FROM zed.project_sessions
       GROUP BY status
     `),
     safeGroup('sandboxes_by_status', sql`
       SELECT status AS key, count(*)::int AS count
-      FROM kortix.session_sandboxes
+      FROM zed.session_sandboxes
       GROUP BY status
     `),
     safeGroup('sandboxes_by_provider', sql`
       SELECT provider AS key, count(*)::int AS count
-      FROM kortix.session_sandboxes
+      FROM zed.session_sandboxes
       GROUP BY provider
     `),
-    // Triggers are file-defined (kortix.yaml) now; the project_trigger_events
+    // Triggers are file-defined (zed.yaml) now; the project_trigger_events
     // table is gone and the git path doesn't persist events, so this is always
     // empty. Field kept for dashboard compatibility.
     Promise.resolve<Record<string, number>>({}),
@@ -251,13 +251,13 @@ opsApp.openapi(
       'audit_events_24h',
       sql`
         SELECT count(*)::int AS count
-        FROM kortix.audit_events
+        FROM zed.audit_events
         WHERE occurred_at >= now() - interval '24 hours'
       `,
     ),
     safeGroup('legacy_sandbox_migrations_by_status', sql`
       SELECT status AS key, count(*)::int AS count
-      FROM kortix.legacy_sandbox_migrations
+      FROM zed.legacy_sandbox_migrations
       GROUP BY status
     `),
     safeUsageLast24h(),
@@ -272,8 +272,8 @@ opsApp.openapi(
     generated_at: new Date().toISOString(),
     api: {
       status: 'ok',
-      env: config.INTERNAL_KORTIX_ENV,
-      billing_enabled: config.KORTIX_BILLING_INTERNAL_ENABLED,
+      env: config.INTERNAL_ZED_ENV,
+      billing_enabled: config.ZED_BILLING_INTERNAL_ENABLED,
       tunnel: getTunnelServiceStatus(),
     },
     totals: {

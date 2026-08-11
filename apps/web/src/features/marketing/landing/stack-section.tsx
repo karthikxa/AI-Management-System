@@ -79,7 +79,7 @@ export function StackSection() {
     <section id="stack" className="mx-auto max-w-7xl px-6 py-16 sm:py-24">
       <Reveal>
         <div className="max-w-3xl">
-          <Badge variant="kortix" className="rounded">
+          <Badge variant="zed" className="rounded">
             {stack.eyebrow}
           </Badge>
           <h2 className="text-foreground mt-6 text-3xl font-medium tracking-tight text-balance sm:text-4xl">
@@ -93,7 +93,7 @@ export function StackSection() {
         <div className="border-border mt-10 overflow-hidden rounded-sm border">
           {stack.layers.map((layer, i) => {
             const isOpen = layer.id === open;
-            const isLast = layer.id === 'kortix';
+            const isLast = layer.id === 'zed';
             return (
               <div key={layer.id} className={cn(i > 0 && 'border-border border-t')}>
                 <h3>

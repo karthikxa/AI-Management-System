@@ -36,9 +36,9 @@ export function getFrontendUrl(): string {
   // Fall back to environment-based defaults
   switch (ENV_MODE) {
     case EnvMode.PRODUCTION:
-      return 'https://kortix.com';
+      return 'https://zed.com';
     case EnvMode.STAGING:
-      return 'https://staging.kortix.com';
+      return 'https://staging.zed.com';
     case EnvMode.LOCAL:
     default:
       return 'http://localhost:3000';

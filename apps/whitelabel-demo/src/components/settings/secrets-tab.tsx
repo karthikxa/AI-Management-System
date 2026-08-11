@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Marker, MarkerContent, MarkerIcon } from '@/components/ui/marker';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { qk } from '@/lib/query-keys';
 import {
   collidingIdentifiers,
@@ -35,7 +35,7 @@ import {
   defaultIdentifier,
   secretWriteIntent,
 } from '@/lib/secret-upsert';
-import type { ProjectSecret } from '@kortix/sdk';
+import type { ProjectSecret } from '@zed/sdk';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, GitBranch, KeyRound, Plug, RotateCw, Trash2, UserCog } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
@@ -68,7 +68,7 @@ export function SecretsTab({ projectId }: { projectId: string }) {
 
   const secrets = useQuery({
     queryKey: key,
-    queryFn: () => kortix.project(projectId).secrets.list(),
+    queryFn: () => zed.project(projectId).secrets.list(),
   });
 
   const [name, setName] = useState('');
@@ -91,7 +91,7 @@ export function SecretsTab({ projectId }: { projectId: string }) {
   const collidesWith = pendingKeyCollision(items, draft);
 
   const upsert = useMutation({
-    mutationFn: () => kortix.project(projectId).secrets.upsert(buildSecretUpsertInput(draft)),
+    mutationFn: () => zed.project(projectId).secrets.upsert(buildSecretUpsertInput(draft)),
     onSuccess: () => {
       setName('');
       setIdentifier('');
@@ -106,7 +106,7 @@ export function SecretsTab({ projectId }: { projectId: string }) {
   const remove = useMutation({
     // By IDENTIFIER, not by env KEY — several identifiers can share one KEY, and
     // the delete route addresses the unique handle.
-    mutationFn: (id: string) => kortix.project(projectId).secrets.remove(id),
+    mutationFn: (id: string) => zed.project(projectId).secrets.remove(id),
     onSuccess: () => {
       refresh();
       toast.success('Secret removed');
@@ -116,7 +116,7 @@ export function SecretsTab({ projectId }: { projectId: string }) {
 
   const setGitCredential = useMutation({
     mutationFn: () =>
-      kortix.project(projectId).secrets.setGitCredential({ token: gitToken.trim() }),
+      zed.project(projectId).secrets.setGitCredential({ token: gitToken.trim() }),
     onSuccess: () => {
       setGitToken('');
       toast.success('Git credential saved');
@@ -337,7 +337,7 @@ function SecretRow({
 
   const rotate = useMutation({
     mutationFn: () =>
-      kortix.project(projectId).secrets.upsert(buildSecretRotateInput(secret, rotated)),
+      zed.project(projectId).secrets.upsert(buildSecretRotateInput(secret, rotated)),
     onSuccess: () => {
       setRotated('');
       onChanged();
@@ -349,7 +349,7 @@ function SecretRow({
   const setPersonalMut = useMutation({
     mutationFn: (input: { value?: string; active?: boolean }) =>
       // The personal-override route addresses the env KEY, not the identifier.
-      kortix.project(projectId).secrets.setPersonal(name, input),
+      zed.project(projectId).secrets.setPersonal(name, input),
     onSuccess: () => {
       setPersonal('');
       onChanged();
@@ -359,7 +359,7 @@ function SecretRow({
   });
 
   const removePersonalMut = useMutation({
-    mutationFn: () => kortix.project(projectId).secrets.removePersonal(name),
+    mutationFn: () => zed.project(projectId).secrets.removePersonal(name),
     onSuccess: () => {
       onChanged();
       toast.success('Override removed');

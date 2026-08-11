@@ -4,7 +4,7 @@ output "api_alb_dns_name" {
 }
 
 output "certificate_arn" {
-  description = "Validated us-east-2 ACM certificate for *.kortix.com."
+  description = "Validated us-east-2 ACM certificate for *.zed.com."
   value       = module.certificate.certificate_arn
 }
 

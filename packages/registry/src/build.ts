@@ -1,5 +1,5 @@
 /**
- * `buildRegistry` — turn a Kortix repo into a shadcn-format registry.json.
+ * `buildRegistry` — turn a Zed repo into a shadcn-format registry.json.
  *
  * Auto-detects the OpenCode primitives in the repo (skills, agents, commands,
  * tools) and emits one item per primitive, each with `files` carrying a
@@ -8,7 +8,7 @@
  *
  * Authors can publish *anything else* — arbitrary files, whole folders, even a
  * full-project bundle — by hand-writing a partial registry in
- * `kortix.registry.json` at the repo root; its items are merged in, and any
+ * `zed.registry.json` at the repo root; its items are merged in, and any
  * file `path` that points at a directory is expanded to the files beneath it.
  */
 
@@ -38,7 +38,7 @@ export interface BuildSource {
 }
 
 export interface BuildOptions {
-  /** Registry name. Defaults to the kortix.toml project name or "registry". */
+  /** Registry name. Defaults to the zed.toml project name or "registry". */
   name?: string;
   /** Public homepage of the registry. */
   homepage?: string;
@@ -106,7 +106,7 @@ export function buildRegistry(opts: BuildOptions = {}): BuildResult {
   const source = opts.source ?? nodeFsSource(root);
   const files = source.listFiles();
 
-  const manifestRaw = readOptional(source, 'kortix.toml');
+  const manifestRaw = readOptional(source, 'zed.toml');
   const configDir = resolveOpencodeDir(manifestRaw);
   const name = opts.name ?? projectNameFromManifest(manifestRaw) ?? 'registry';
 
@@ -176,7 +176,7 @@ export function buildRegistry(opts: BuildOptions = {}): BuildResult {
   }
 
   // --- author-declared extras (arbitrary files / folders / project bundles)
-  const extrasRaw = readOptional(source, 'kortix.registry.json');
+  const extrasRaw = readOptional(source, 'zed.registry.json');
   if (extrasRaw) {
     const extras = JSON.parse(extrasRaw) as RegistryJson;
     if (opts.homepage === undefined && extras.homepage) opts.homepage = extras.homepage;

@@ -57,8 +57,8 @@ import {
   restartProjectSession,
   stopProjectSession,
   type ProjectSession,
-} from '@kortix/sdk';
-import { contract, qk, useFeatureFlag } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk, useFeatureFlag } from '@zed/sdk/react';
 import {
   CalendarDotsIcon as CalendarClock,
   CaretRightIcon,
@@ -901,13 +901,13 @@ const STATUS_DOT_STYLE: Record<
   SessionDisplayStatus,
   { color: string; glyph: 'ring' | 'check'; fill: boolean }
 > = {
-  'needs-you': { color: 'var(--kortix-green)', glyph: 'ring', fill: true },
+  'needs-you': { color: 'var(--zed-green)', glyph: 'ring', fill: true },
   // `starting` renders <Loading /> instead and never reads glyph/fill.
-  starting: { color: 'var(--kortix-yellow)', glyph: 'ring', fill: false },
-  running: { color: 'var(--kortix-green)', glyph: 'ring', fill: true },
+  starting: { color: 'var(--zed-yellow)', glyph: 'ring', fill: false },
+  running: { color: 'var(--zed-green)', glyph: 'ring', fill: true },
   done: { color: 'var(--muted-foreground)', glyph: 'check', fill: false },
   stopped: { color: 'var(--muted-foreground)', glyph: 'ring', fill: false },
-  failed: { color: 'var(--kortix-red)', glyph: 'ring', fill: true },
+  failed: { color: 'var(--zed-red)', glyph: 'ring', fill: true },
   // `legacy` renders <ClockCounterClockwiseIcon /> instead and never reads
   // glyph/fill — a dormant migrated chat is neither done nor merely stopped;
   // the history glyph says "restorable" without spending any color.
@@ -934,7 +934,7 @@ function SessionStatusDot({
         {display === 'starting' ? (
           // Loading is the only spinner in this codebase. The previous
           // implementation spun an SVG with animate-spin, which the rule bans.
-          <Loading className="text-kortix-yellow size-3.5" />
+          <Loading className="text-zed-yellow size-3.5" />
         ) : display === 'legacy' ? (
           <ClockCounterClockwiseIcon
             className="size-3.5 shrink-0"

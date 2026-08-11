@@ -1,4 +1,4 @@
-import { GRANTABLE_KORTIX_CLI_ACTIONS } from '@kortix/manifest-schema';
+import { GRANTABLE_ZED_CLI_ACTIONS } from '@zed/manifest-schema';
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -7,7 +7,7 @@ import {
   AGENT_MODE_LABEL,
   AGENT_MODES,
   grantSummary,
-  KORTIX_CLI_CATALOG,
+  ZED_CLI_CATALOG,
   PERMISSION_ACTION_LABEL,
   PERMISSION_ACTION_ONLY_KEYS,
   PERMISSION_ACTIONS,
@@ -43,7 +43,7 @@ describe('agent environment editor', () => {
 });
 
 // The editor is grouped by the QUESTION each field answers, not by the file the
-// value lands in. The two storage-named headings ("Kortix" / "OpenCode") and
+// value lands in. The two storage-named headings ("Zed" / "OpenCode") and
 // the icons that decorated them are gone; these guards fail if either comes
 // back.
 describe('section structure — questions, not storage layers', () => {
@@ -62,7 +62,7 @@ describe('section structure — questions, not storage layers', () => {
   test('no layer heading, and no icon chrome, survives in the editor', () => {
     for (const source of allEditorSources) {
       expect(source).not.toContain('LayerHeader');
-      expect(source).not.toContain('tone="kortix"');
+      expect(source).not.toContain('tone="zed"');
       expect(source).not.toContain('label="OpenCode"');
     }
     // The primitives import no icon library at all — that is what stops an
@@ -190,17 +190,17 @@ describe('display-name maps — Select renders the value verbatim', () => {
   });
 });
 
-// KORTIX_CLI_CATALOG (the picker's grouped catalog) MUST expose exactly the
-// actions `GRANTABLE_KORTIX_CLI_ACTIONS` allows — imported from the real
-// @kortix/manifest-schema package (not a hand-copied array) so an action
+// ZED_CLI_CATALOG (the picker's grouped catalog) MUST expose exactly the
+// actions `GRANTABLE_ZED_CLI_ACTIONS` allows — imported from the real
+// @zed/manifest-schema package (not a hand-copied array) so an action
 // silently added or removed on either side of the mirror fails this test
 // immediately instead of only showing up as a UI gap someone notices later.
 // bun:test files aren't bundled for the browser, so importing the package
 // here carries none of the "not in the web bundle" bundle-size concern that
-// keeps KORTIX_CLI_CATALOG itself hand-authored — apps/api's
+// keeps ZED_CLI_CATALOG itself hand-authored — apps/api's
 // unit-agents-parse.test.ts does the same cross-package import.
-describe('KORTIX_CLI_CATALOG — grantable action mirror', () => {
-  const all = KORTIX_CLI_CATALOG.flatMap((g) => g.actions);
+describe('ZED_CLI_CATALOG — grantable action mirror', () => {
+  const all = ZED_CLI_CATALOG.flatMap((g) => g.actions);
 
   test('only project-scoped actions appear (account-scoped admin never grantable)', () => {
     for (const a of all) {
@@ -219,9 +219,9 @@ describe('KORTIX_CLI_CATALOG — grantable action mirror', () => {
     expect(all).toContain('project.gateway.keys.manage');
   });
 
-  test('full-array equality against the real GRANTABLE_KORTIX_CLI_ACTIONS (order-independent)', () => {
-    expect(all.length).toBe(GRANTABLE_KORTIX_CLI_ACTIONS.length);
-    expect([...all].sort()).toEqual([...GRANTABLE_KORTIX_CLI_ACTIONS].sort());
+  test('full-array equality against the real GRANTABLE_ZED_CLI_ACTIONS (order-independent)', () => {
+    expect(all.length).toBe(GRANTABLE_ZED_CLI_ACTIONS.length);
+    expect([...all].sort()).toEqual([...GRANTABLE_ZED_CLI_ACTIONS].sort());
   });
 
   test('has no duplicate actions across groups', () => {
@@ -279,7 +279,7 @@ describe('THEME_COLOR_SWATCH — the colour picker shows colour', () => {
       expect(swatch.startsWith('bg-')).toBe(true);
       // Brand + semantic tokens only. A raw palette class here would be the
       // one place in the editor that hardcodes a colour.
-      expect(swatch).toMatch(/^bg-(kortix-[a-z]+|foreground|muted-foreground)$/);
+      expect(swatch).toMatch(/^bg-(zed-[a-z]+|foreground|muted-foreground)$/);
     }
   });
 });

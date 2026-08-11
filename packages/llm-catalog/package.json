@@ -1,15 +1,15 @@
 {
-  "name": "@kortix/llm-catalog",
+  "name": "@zed/llm-catalog",
   "version": "1.0.0",
-  "description": "The Kortix LLM model catalog — the models the Kortix gateway supports and the managed-model set and defaults. Generated from models.dev; consumed across the Kortix platform and by the @kortix/sdk.",
+  "description": "The Zed LLM model catalog — the models the Zed gateway supports and the managed-model set and defaults. Generated from models.dev; consumed across the Zed platform and by the @zed/sdk.",
   "license": "Elastic-2.0",
-  "homepage": "https://github.com/kortix-ai/suna/tree/main/packages/llm-catalog",
+  "homepage": "https://github.com/zed-ai/suna/tree/main/packages/llm-catalog",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kortix-ai/suna.git",
+    "url": "git+https://github.com/zed-ai/suna.git",
     "directory": "packages/llm-catalog"
   },
-  "keywords": ["kortix", "llm-catalog", "models", "ai", "sdk"],
+  "keywords": ["zed", "llm-catalog", "models", "ai", "sdk"],
   "sideEffects": false,
   "main": "./src/index.ts",
   "types": "./src/index.ts",

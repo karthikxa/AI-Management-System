@@ -72,10 +72,10 @@ import {
   listGitHubRepositories,
   listProjectsForAccount,
   provisionProject,
-  type KortixAccount,
-  type KortixProject,
-} from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+  type ZedAccount,
+  type ZedProject,
+} from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 import {
   CubeIcon as Boxes,
   CheckCircleIcon as CheckCircleSolid,
@@ -125,8 +125,8 @@ type GitHubLinkFormValues = z.infer<typeof githubLinkSchema>;
 type RepositoryMode = 'github-create' | 'github-import' | 'managed';
 
 const REPOSITORY_MODE_DESCRIPTIONS: Record<RepositoryMode, string> = {
-  managed: 'Kortix creates and manages a private repository for this project.',
-  'github-create': 'Kortix creates a private repository in your GitHub account.',
+  managed: 'Zed creates and manages a private repository for this project.',
+  'github-create': 'Zed creates a private repository in your GitHub account.',
   'github-import': 'Select an existing repository from your GitHub account.',
 };
 
@@ -141,13 +141,13 @@ interface ProjectCreateModalProps {
 
 function rememberGitHubSetupReturn(path: string) {
   try {
-    window.localStorage.setItem('kortix:github_setup_return', path);
+    window.localStorage.setItem('zed:github_setup_return', path);
   } catch {
     // Non-critical: the setup page still falls back to the projects flow.
   }
 }
 
-function upsertProject(projects: KortixProject[] | undefined, project: KortixProject) {
+function upsertProject(projects: ZedProject[] | undefined, project: ZedProject) {
   const current = projects ?? [];
   const existingIndex = current.findIndex((item) => item.project_id === project.project_id);
   if (existingIndex === -1) return [project, ...current];
@@ -170,7 +170,7 @@ export const ProjectCreateModal = ({
   const [mode, setMode] = useState<'github-create' | 'github-import' | 'managed' | 'template'>(
     'managed',
   );
-  // Repository source (Kortix managed / create in GitHub / import from
+  // Repository source (Zed managed / create in GitHub / import from
   // GitHub) is an opt-in disclosure — collapsed by default so the modal's
   // default state is just a name field. Forced open below once the user has
   // actually picked a non-managed mode, or managed git isn't usable, so the
@@ -295,7 +295,7 @@ export const ProjectCreateModal = ({
     managedForm.setValue('name', '');
   }
 
-  async function finishCreatedProject(project: KortixProject) {
+  async function finishCreatedProject(project: ZedProject) {
     successToast('Project created');
     // Optimistic write goes ONLY into the account this project actually
     // belongs to — the one entry a merge here can never get wrong.
@@ -306,7 +306,7 @@ export const ProjectCreateModal = ({
     // into that slot could inject it into the wrong account's cached list.
     // The broad invalidate + active refetch below reaches that slot too,
     // correctly, via a real network fetch instead of a guess.
-    queryClient.setQueryData<KortixProject[]>(qk.projects.list(project.account_id), (projects) =>
+    queryClient.setQueryData<ZedProject[]>(qk.projects.list(project.account_id), (projects) =>
       upsertProject(projects, project),
     );
     // qk.projects.scope() is the shared prefix under which every
@@ -490,7 +490,7 @@ export const ProjectCreateModal = ({
       // slot is a different account's data (whatever the API resolves with
       // no account_id) and is refreshed via the broad invalidate below
       // instead of a hand-merge that could target the wrong account.
-      queryClient.setQueryData<KortixProject[]>(
+      queryClient.setQueryData<ZedProject[]>(
         qk.projects.list(result.project.account_id),
         (projects) => upsertProject(projects, result.project),
       );
@@ -583,7 +583,7 @@ export const ProjectCreateModal = ({
   const selectedRepository = repos.find((repo) => repo.full_name === selectedRepo);
   const repositoryLoading = githubReposQuery.isFetching || isDebouncingRepositorySearch;
   const repositoryMode: RepositoryMode = mode === 'template' ? 'managed' : mode;
-  // Stay open once the user has left the silent "Kortix managed" default —
+  // Stay open once the user has left the silent "Zed managed" default —
   // either by picking another source, or because managed git needs a fix —
   // so the switcher that got them there doesn't disappear underneath them.
   const repositoryOptionsOpen = advancedOpen || mode !== 'managed' || managedGitUnavailable;
@@ -738,8 +738,8 @@ export const ProjectCreateModal = ({
                           <ItemContent>
                             <ItemTitle>Connect GitHub to create projects</ItemTitle>
                             <ItemDescription>
-                              Install the Kortix GitHub App in your user account or organization.
-                              Kortix creates a private repository there.
+                              Install the Zed GitHub App in your user account or organization.
+                              Zed creates a private repository there.
                             </ItemDescription>
                           </ItemContent>
                           <ItemActions>
@@ -898,7 +898,7 @@ export const ProjectCreateModal = ({
                         <ItemContent>
                           <ItemTitle>Link a GitHub account</ItemTitle>
                           <ItemDescription>
-                            Select Configure in GitHub when the Kortix App is already installed.
+                            Select Configure in GitHub when the Zed App is already installed.
                           </ItemDescription>
                         </ItemContent>
                         <ItemActions>
@@ -1052,7 +1052,7 @@ export const ProjectCreateModal = ({
                             debouncedRepositorySearch
                               ? 'Try a different repository name.'
                               : tHardcodedUi.raw(
-                                  'componentsProjectsProjectCreateModal.line485JsxAttrDescriptionUpdateTheGithubAppInstallationToGrantKortix',
+                                  'componentsProjectsProjectCreateModal.line485JsxAttrDescriptionUpdateTheGithubAppInstallationToGrantZed',
                                 )
                           }
                           size="sm"
@@ -1175,8 +1175,8 @@ function CreateAccountField({
   disabled,
   onSelect,
 }: {
-  current: KortixAccount;
-  options: KortixAccount[];
+  current: ZedAccount;
+  options: ZedAccount[];
   disabled?: boolean;
   onSelect: (accountId: string) => void;
 }) {
@@ -1218,7 +1218,7 @@ function CreateAccountField({
                   <span className="min-w-0 flex-1 truncate text-sm leading-tight font-medium">
                     {itemLabel}
                   </span>
-                  {active && <CheckCircleSolid className="text-kortix-green size-3.5 shrink-0" />}
+                  {active && <CheckCircleSolid className="text-zed-green size-3.5 shrink-0" />}
                 </DropdownMenuItem>
               );
             })}
@@ -1229,7 +1229,7 @@ function CreateAccountField({
   );
 }
 
-/** Repository source (Kortix managed / Create in GitHub / Import from
+/** Repository source (Zed managed / Create in GitHub / Import from
  *  GitHub) as a progressive-disclosure control. Rendered at the bottom of
  *  each mode's form body, right above the footer — never above the project
  *  name field, so the 95% path (name → Create) is what a user reads first.
@@ -1297,7 +1297,7 @@ function RepositoryOptions({
           <Tabs value={repositoryMode} onValueChange={onModeChange}>
             <TabsList className="w-full" aria-label="Repository source">
               <TabsTrigger value="managed" size="sm">
-                Kortix managed
+                Zed managed
               </TabsTrigger>
               <TabsTrigger value="github-create" size="sm">
                 Create in GitHub
@@ -1343,7 +1343,7 @@ function TemplatePicker({
               icon={Boxes}
               size="sm"
               title="No templates yet"
-              description="Ready-to-clone Kortix projects will show up here."
+              description="Ready-to-clone Zed projects will show up here."
             />
           ) : (
             templates.map((item) => (

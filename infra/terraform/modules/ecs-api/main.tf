@@ -1,4 +1,4 @@
-# Reusable ECS Fargate service for the Kortix API, fronted by an ALB and
+# Reusable ECS Fargate service for the Zed API, fronted by an ALB and
 # horizontally autoscaled (target-tracking on CPU + memory). Identical module
 # for dev and prod — only sizing/counts differ via variables, so prod is just
 # "the same thing with bigger numbers and min_capacity >= 2".
@@ -101,7 +101,7 @@ resource "aws_iam_role" "execution" {
     ManagedBy   = "terraform"
     Name        = "${local.name}-exec"
     Environment = lookup(var.tags, "Environment", "managed")
-    Project     = lookup(var.tags, "Project", "kortix")
+    Project     = lookup(var.tags, "Project", "zed")
     Service     = lookup(var.tags, "Service", local.name)
   }
 }
@@ -145,7 +145,7 @@ resource "aws_iam_role" "task" {
     ManagedBy   = "terraform"
     Name        = "${local.name}-task"
     Environment = lookup(var.tags, "Environment", "managed")
-    Project     = lookup(var.tags, "Project", "kortix")
+    Project     = lookup(var.tags, "Project", "zed")
     Service     = lookup(var.tags, "Service", local.name)
   }
 }
@@ -167,7 +167,7 @@ resource "aws_security_group" "alb" {
     ManagedBy   = "terraform"
     Name        = "${local.name}-alb"
     Environment = lookup(var.tags, "Environment", "managed")
-    Project     = lookup(var.tags, "Project", "kortix")
+    Project     = lookup(var.tags, "Project", "zed")
     Service     = lookup(var.tags, "Service", local.name)
   }
 }
@@ -203,7 +203,7 @@ resource "aws_security_group" "service" {
     ManagedBy   = "terraform"
     Name        = "${local.name}-svc"
     Environment = lookup(var.tags, "Environment", "managed")
-    Project     = lookup(var.tags, "Project", "kortix")
+    Project     = lookup(var.tags, "Project", "zed")
     Service     = lookup(var.tags, "Service", local.name)
   }
 }
@@ -317,7 +317,7 @@ resource "aws_s3_bucket_policy" "alb_logs" {
 
 #trivy:ignore:AVD-AWS-0053 This public API origin must accept Cloudflare traffic; the ALB security group restricts ingress to var.alb_ingress_cidrs.
 resource "aws_lb" "this" {
-  #checkov:skip=CKV2_AWS_28:The compliance-monitoring stack associates every account ALB with the regional kortix-alb-waf ACL.
+  #checkov:skip=CKV2_AWS_28:The compliance-monitoring stack associates every account ALB with the regional zed-alb-waf ACL.
   name               = "${local.name}-alb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
@@ -339,7 +339,7 @@ resource "aws_lb" "this" {
     ManagedBy   = "terraform"
     Name        = "${local.name}-alb"
     Environment = lookup(var.tags, "Environment", "managed")
-    Project     = lookup(var.tags, "Project", "kortix")
+    Project     = lookup(var.tags, "Project", "zed")
     Service     = lookup(var.tags, "Service", local.name)
   }
 
@@ -390,7 +390,7 @@ resource "aws_ecs_cluster" "this" {
     ManagedBy   = "terraform"
     Name        = local.name
     Environment = lookup(var.tags, "Environment", "managed")
-    Project     = lookup(var.tags, "Project", "kortix")
+    Project     = lookup(var.tags, "Project", "zed")
     Service     = lookup(var.tags, "Service", local.name)
   }
 }
@@ -425,7 +425,7 @@ resource "aws_ecs_task_definition" "this" {
     }]
     environment = [for k, v in local.environment : { name = k, value = v }]
     secrets = var.secrets_blob_arn != "" ? [
-      { name = "KORTIX_ENV_JSON", valueFrom = var.secrets_blob_arn }
+      { name = "ZED_ENV_JSON", valueFrom = var.secrets_blob_arn }
     ] : [for k, v in var.secrets : { name = k, valueFrom = v }]
     logConfiguration = {
       logDriver = "awslogs"
@@ -456,7 +456,7 @@ resource "aws_ecs_task_definition" "this" {
     ManagedBy   = "terraform"
     Name        = local.name
     Environment = lookup(var.tags, "Environment", "managed")
-    Project     = lookup(var.tags, "Project", "kortix")
+    Project     = lookup(var.tags, "Project", "zed")
     Service     = lookup(var.tags, "Service", local.name)
   }
 }
@@ -507,7 +507,7 @@ resource "aws_ecs_service" "this" {
     ManagedBy   = "terraform"
     Name        = local.name
     Environment = lookup(var.tags, "Environment", "managed")
-    Project     = lookup(var.tags, "Project", "kortix")
+    Project     = lookup(var.tags, "Project", "zed")
     Service     = lookup(var.tags, "Service", local.name)
   }
 }

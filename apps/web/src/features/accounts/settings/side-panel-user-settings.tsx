@@ -20,8 +20,8 @@ import {
   type SettingsTabId,
 } from '@/lib/menu-registry';
 import { cn } from '@/lib/utils';
-import { listSandboxes, type SandboxInfo } from '@kortix/sdk';
-import { getCurrentInstanceIdFromPathname } from '@kortix/sdk/instance-routes';
+import { listSandboxes, type SandboxInfo } from '@zed/sdk';
+import { getCurrentInstanceIdFromPathname } from '@zed/sdk/instance-routes';
 import { KeyIcon as KeyRound, ShieldCheckIcon as ShieldCheck } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
@@ -46,7 +46,7 @@ const TAB_DESCRIPTIONS: Partial<Record<TabId, string>> = {
   sounds: 'Choose sound packs and preview notification sounds.',
   notifications: 'Control browser notifications and delivery preferences.',
   shortcuts: 'View keyboard shortcuts available across the app.',
-  tokens: 'Create and manage API keys for the Kortix SDK, CLI, and API.',
+  tokens: 'Create and manage API keys for the Zed SDK, CLI, and API.',
   'instance-members': 'Manage who has access to this instance.',
 };
 

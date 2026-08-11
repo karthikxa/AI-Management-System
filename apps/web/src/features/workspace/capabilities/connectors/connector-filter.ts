@@ -1,4 +1,4 @@
-import type { AdminConnector } from '@kortix/sdk';
+import type { AdminConnector } from '@zed/sdk';
 
 /**
  * The three tabs.

@@ -1,5 +1,5 @@
 variable "zone_id" {
-  description = "Cloudflare zone ID the records live in (e.g. the kortix.com zone)."
+  description = "Cloudflare zone ID the records live in (e.g. the zed.com zone)."
   type        = string
 }
 

@@ -8,7 +8,7 @@
 
 **Architecture:** `deadline_at` stays the single stop authority. We add *control-plane-attested* observations for the three states that currently earn nothing (waiting on a human, LLM-silent tool work, a reopened session being read), make every park record *why*, and make `/start` own the wake so a parallel health 503 is never read as terminal failure.
 
-**Tech stack:** Bun + Hono + Drizzle (`apps/api`), node-pg-migrate (`packages/db`), React + `@kortix/sdk` (`packages/sdk`, `apps/web`).
+**Tech stack:** Bun + Hono + Drizzle (`apps/api`), node-pg-migrate (`packages/db`), React + `@zed/sdk` (`packages/sdk`, `apps/web`).
 
 **Baseline:** branch `sandbox-mid-dead`, HEAD `f7e5601a5a`.
 
@@ -19,8 +19,8 @@
 Every task inherits these. They come from Spec §8 and are non-negotiable.
 
 1. `deadline_at` remains the **only** stop authority for a running box.
-2. A **sandbox-authored** signal may only ever SHORTEN a box's life. Gate every new extend with `isSandboxAuthored(c.get('apiKeyType'), callerKortixSessionId(c))` — and take the session id from `callerKortixSessionId`, never the raw `c.get('sessionId')` (that is the Supabase auth session under `supabaseAuth` and reads every browser user as the sandbox).
-3. Session-data ports (8000 / 4096) stay **non-waking on GET** and **non-extending for passive traffic**. Never make `GET /kortix/health` wake-capable.
+2. A **sandbox-authored** signal may only ever SHORTEN a box's life. Gate every new extend with `isSandboxAuthored(c.get('apiKeyType'), callerZedSessionId(c))` — and take the session id from `callerZedSessionId`, never the raw `c.get('sessionId')` (that is the Supabase auth session under `supabaseAuth` and reads every browser user as the sandbox).
+3. Session-data ports (8000 / 4096) stay **non-waking on GET** and **non-extending for passive traffic**. Never make `GET /zed/health` wake-capable.
 4. `ABSOLUTE_RUN_CAP_MS` (24h) still clamps every new grant. New grants go inside the existing `LEAST(active_since + CAP, GREATEST(...))` statement — do not add a second SQL writer for `deadline_at`.
 5. Do **not** reintroduce the deleted execution lease or any in-box busy probe as a stop authority.
 6. **TDD is mandatory** (repo `testing` skill; `packages/sdk/AGENTS.md` for SDK work). Failing test first, watch it fail, then implement.
@@ -119,8 +119,8 @@ describe('mockConfigModule', () => {
   });
 
   test('applies overrides onto the config object without dropping siblings', () => {
-    const mocked = mockConfigModule({ KORTIX_SANDBOX_AUTOSTOP_MINUTES: 15 });
-    expect((mocked.config as Record<string, unknown>).KORTIX_SANDBOX_AUTOSTOP_MINUTES).toBe(15);
+    const mocked = mockConfigModule({ ZED_SANDBOX_AUTOSTOP_MINUTES: 15 });
+    expect((mocked.config as Record<string, unknown>).ZED_SANDBOX_AUTOSTOP_MINUTES).toBe(15);
     expect(mocked).toHaveProperty('SANDBOX_VERSION');
   });
 });
@@ -153,7 +153,7 @@ export function mockConfigModule(
 ): Record<string, unknown> {
   return {
     config: {
-      KORTIX_SANDBOX_AUTOSTOP_MINUTES: 15,
+      ZED_SANDBOX_AUTOSTOP_MINUTES: 15,
       ALLOWED_SANDBOX_PROVIDERS: ['daytona'],
       ...overrides,
     },
@@ -174,7 +174,7 @@ Expected: PASS, 2 tests.
 In each of the five files, replace the inline factory. For `sandbox-state-sync.test.ts:28`:
 
 ```ts
-// was: mock.module('../../config', () => ({ config: { KORTIX_SANDBOX_AUTOSTOP_MINUTES: 15 } }));
+// was: mock.module('../../config', () => ({ config: { ZED_SANDBOX_AUTOSTOP_MINUTES: 15 } }));
 import { mockConfigModule } from './test-support/mock-config';
 mock.module('../../config', () => mockConfigModule());
 ```
@@ -462,11 +462,11 @@ SELECT
     WHEN s.metadata->>'stopReason' = 'manual'             THEN 'manual'
     WHEN s.deadline_at - s.active_since <= interval '21 minutes' THEN 'A-prime'
     WHEN EXISTS (
-      SELECT 1 FROM kortix.session_pending_questions q
+      SELECT 1 FROM zed.session_pending_questions q
        WHERE q.session_id = s.session_id AND q.answered_at IS NULL
     ) THEN 'B-waiting'
     WHEN NOT EXISTS (
-      SELECT 1 FROM kortix.usage_events u
+      SELECT 1 FROM zed.usage_events u
        WHERE u.session_id = s.session_id
          AND u.created_at > s.updated_at - interval '4 hours'
     ) THEN 'B-silent-tools'
@@ -474,14 +474,14 @@ SELECT
   END AS path,
   count(*) AS stops,
   round(avg(extract(epoch FROM (s.deadline_at - s.active_since)) / 60)::numeric, 1) AS avg_life_min
-FROM kortix.session_sandboxes s
+FROM zed.session_sandboxes s
 WHERE s.status = 'stopped'
   AND s.updated_at > now() - :'window'::interval
 GROUP BY 1, 2
 ORDER BY stops DESC;
 ```
 
-> Table and columns verified against `packages/db/src/schema/kortix.ts:2803-2843`: the table is `session_pending_questions`, and "still open" is `answered_at IS NULL` (which is also the partial-index predicate, so the subquery is cheap).
+> Table and columns verified against `packages/db/src/schema/zed.ts:2803-2843`: the table is `session_pending_questions`, and "still open" is `answered_at IS NULL` (which is also the partial-index predicate, so the subquery is cheap).
 
 - [ ] **Step 2: Run it against dev**
 
@@ -498,7 +498,7 @@ For the highest-count path and for `sbx_01KZ75J3983X1RQF9Q9GEV2SF5`, assemble: `
 Replace Spec §6.1's "NOT GATHERED" with the measured table, then record the decision explicitly:
 
 - Path A′ dominant → Task 6 ships first, and its grant is sized from `avg_life_min`.
-- Path B-waiting dominant → Task 4 ships first; set `KORTIX_SANDBOX_WAITING_GRANT_MINUTES` from the observed answer latency, not from a guess.
+- Path B-waiting dominant → Task 4 ships first; set `ZED_SANDBOX_WAITING_GRANT_MINUTES` from the observed answer latency, not from a guess.
 - Path B-silent-tools dominant → Task 5's spike is justified; otherwise **defer Task 5**, since it is the one task whose safe seam may not exist.
 - `(unrecorded)` still dominant → Task 2 has not reached the environment you queried. Stop and fix that first.
 
@@ -542,21 +542,21 @@ describe('the waiting-on-human grant', () => {
   });
 
   test('is env-tunable like every other grant', () => {
-    process.env.KORTIX_SANDBOX_WAITING_GRANT_MINUTES = '120';
+    process.env.ZED_SANDBOX_WAITING_GRANT_MINUTES = '120';
     expect(waitingGrantMs()).toBe(120 * 60_000);
   });
 
   // The whole point of the bound: a wedged box with nobody watching must still
   // die. The grant is a floor, not a renewal, so it can never out-run the cap.
   test('never exceeds the absolute run cap', () => {
-    process.env.KORTIX_SANDBOX_WAITING_GRANT_MINUTES = '100000';
+    process.env.ZED_SANDBOX_WAITING_GRANT_MINUTES = '100000';
     expect(waitingGrantMs()).toBeGreaterThan(0);
     expect(Math.min(waitingGrantMs(), ABSOLUTE_RUN_CAP_MS)).toBe(ABSOLUTE_RUN_CAP_MS);
   });
 });
 ```
 
-Add `'KORTIX_SANDBOX_WAITING_GRANT_MINUTES'` to the `KNOBS` array at line 29 so `afterEach` cleans it up.
+Add `'ZED_SANDBOX_WAITING_GRANT_MINUTES'` to the `KNOBS` array at line 29 so `afterEach` cleans it up.
 
 - [ ] **Step 2: Run it and watch it fail**
 
@@ -586,7 +586,7 @@ Add to `sandbox-deadline-policy.ts`:
  * ABSOLUTE_RUN_CAP_MS like everything else.
  */
 export function waitingGrantMs(): number {
-  return positiveEnvInt('KORTIX_SANDBOX_WAITING_GRANT_MINUTES', 90) * 60_000;
+  return positiveEnvInt('ZED_SANDBOX_WAITING_GRANT_MINUTES', 90) * 60_000;
 }
 ```
 
@@ -785,7 +785,7 @@ describe('isTranscriptReadObservation', () => {
   });
 
   test('a health poll does not count — it is not evidence a human is present', () => {
-    expect(isTranscriptReadObservation({ ...base, path: '/kortix/health' })).toBe(false);
+    expect(isTranscriptReadObservation({ ...base, path: '/zed/health' })).toBe(false);
   });
 
   test('a share-link forward does not count — no attributable human', () => {
@@ -940,7 +940,7 @@ describe('derivePhase', () => {
 
 - [ ] **Step 2: Run it and watch it fail**
 
-Run: `pnpm --filter @kortix/sdk test src/react/use-session-phase.test.ts`
+Run: `pnpm --filter @zed/sdk test src/react/use-session-phase.test.ts`
 Expected: FAIL — `Cannot find module './use-session-phase'`.
 
 - [ ] **Step 3: Implement the rule**
@@ -980,7 +980,7 @@ export function derivePhase(input: {
 
 - [ ] **Step 4: Run it and watch it pass**
 
-Run: `pnpm --filter @kortix/sdk test src/react/use-session-phase.test.ts`
+Run: `pnpm --filter @zed/sdk test src/react/use-session-phase.test.ts`
 Expected: PASS, 5 tests.
 
 - [ ] **Step 5: Use it in the hook**
@@ -1015,9 +1015,9 @@ test('a removed runtime stays an error — it can never wake, so never show waki
 - [ ] **Step 7: Run the SDK gates and paste the output**
 
 ```bash
-pnpm --filter @kortix/sdk typecheck
-pnpm --filter @kortix/sdk test
-pnpm --filter @kortix/sdk run smoke:install
+pnpm --filter @zed/sdk typecheck
+pnpm --filter @zed/sdk test
+pnpm --filter @zed/sdk run smoke:install
 ```
 
 Check the test count against the 1069 baseline. State **shippable: YES / NO / NOT YET**.
@@ -1062,7 +1062,7 @@ test('a genuine config error keeps its own title', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail** — `pnpm --filter @kortix/sdk test src/core/http/opencode-errors.test.ts`
+- [ ] **Step 2: Run it and watch it fail** — `pnpm --filter @zed/sdk test src/core/http/opencode-errors.test.ts`
 
 - [ ] **Step 3: Add the dormancy branch before the catch-all**
 
@@ -1083,7 +1083,7 @@ test('a genuine config error keeps its own title', () => {
 - [ ] **Step 4: Run the gates and commit**
 
 ```bash
-pnpm --filter @kortix/sdk typecheck && pnpm --filter @kortix/sdk test
+pnpm --filter @zed/sdk typecheck && pnpm --filter @zed/sdk test
 git add packages/sdk/src/core/http apps/web/src/app
 git commit -m "fix(sdk): render an intentional park as dormancy, not a crash"
 ```
@@ -1103,7 +1103,7 @@ Boot the stack, open a session, send one prompt, let it finish, then leave the t
 > **Corrected 2026-08-09.** This step originally said to expect `idle_grace`. That is unsatisfiable: `idle_grace` and `boot_floor_expired` are declared in `STOP_REASONS` but deliberately **not emitted** (see `STOP_REASONS_NOT_YET_EMITTED` in `apps/api/src/projects/stop-reason.ts`). The deadline writers only move `deadline_at`; they never record *which* grant moved it, so at stop time an idle-tail deadline is byte-identical to a boot-floor one. Every deadline park therefore takes `stopExpiredBox`'s `deadline_expired` default. Distinguishing them needs the writer to record the grant that set the deadline — a real change, not a stop-site heuristic. **Treat a zero count for those two reasons in the Task 3 query as "not implemented", never as "measured zero".**
 
 ```bash
-psql "$LOCAL_DATABASE_URL" -c "select status, metadata->>'stopReason', deadline_at from kortix.session_sandboxes where session_id = '<sid>';"
+psql "$LOCAL_DATABASE_URL" -c "select status, metadata->>'stopReason', deadline_at from zed.session_sandboxes where session_id = '<sid>';"
 ```
 
 - [ ] **Step 2: Local — Path A′ (Task 6)**
@@ -1112,7 +1112,7 @@ Reopen the parked session. Read the transcript for 25+ minutes without prompting
 
 - [ ] **Step 3: Local — waiting on a question (Task 4)**
 
-Drive a turn that calls the `question` tool. Leave it unanswered past the old 4-hour boundary — or set `KORTIX_SANDBOX_TURN_GRANT_MINUTES=2` to compress the window. Assert no mid-turn 503 and that the ask is restored on return.
+Drive a turn that calls the `question` tool. Leave it unanswered past the old 4-hour boundary — or set `ZED_SANDBOX_TURN_GRANT_MINUTES=2` to compress the window. Assert no mid-turn 503 and that the ask is restored on return.
 
 - [ ] **Step 4: Local — a wedged box still dies**
 
@@ -1120,7 +1120,7 @@ Same as Step 3, but never answer and close the tab. Assert the box parks after t
 
 - [ ] **Step 5: dev-api — reopen shows no panic card (Task 7)**
 
-Against `https://dev.kortix.com`, open a session parked ≥ 20 minutes. Assert in the network panel that a health request returns 503 **and** that the UI shows the boot loader, never "OpenCode failed to load".
+Against `https://dev.zed.com`, open a session parked ≥ 20 minutes. Assert in the network panel that a health request returns 503 **and** that the UI shows the boot loader, never "OpenCode failed to load".
 
 - [ ] **Step 6: dev-api — a removed runtime still shows a real error (Path D2)**
 
@@ -1142,7 +1142,7 @@ Post the PR, the merge SHA, the Deploy Dev run, the deployed SHA, and every comm
 
 **Four assumptions were wrong in the first draft and are now corrected against the code.** Recorded because each would have shipped a task that looked done and did nothing:
 
-1. Task 3's SQL named `kortix.pending_questions` / `resolved_at`. Real: `kortix.session_pending_questions`, open predicate `answered_at IS NULL` (`packages/db/src/schema/kortix.ts:2803-2843`).
+1. Task 3's SQL named `zed.pending_questions` / `resolved_at`. Real: `zed.session_pending_questions`, open predicate `answered_at IS NULL` (`packages/db/src/schema/zed.ts:2803-2843`).
 2. Task 4's one-shot floor keyed on a non-existent `isNew`. `recordPendingQuestion` is an `onConflictDoUpdate` upsert and always returns a row, so a **retried relay would have renewed the deadline forever** — the exact self-renewal this design deleted. Now discriminated with `RETURNING (xmax = 0)`, with a DB-backed test.
 3. Task 6 targeted `{ sandboxId }`. `forwardToSandbox`'s `sandboxId` parameter carries the **external** id, so the extend would silently never land.
 4. Task 7 named the `/start` query `startQuery`. It is `start` (`use-session.ts:557`).
@@ -1151,4 +1151,4 @@ Post the PR, the merge SHA, the Deploy Dev run, the deployed SHA, and every comm
 - Task 5 may produce no code. That is a permitted outcome, not a failure.
 - Task 6 chooses shape (a) on my recommendation; Step 1 requires the implementer to record the decision rather than inherit it silently.
 - Task 4 Step 7 leaves the answer-route extend **ungated**, relying on that route's existing agent-token denial. The pinning test in Step 7 is what keeps that dependency honest — do not drop it.
-- Task 9's Step 3 suggests compressing the window with `KORTIX_SANDBOX_TURN_GRANT_MINUTES=2`. Confirm that knob is read per-call (`turnGrantMs()` is a function, so it is) and not cached at boot in the environment you test against.
+- Task 9's Step 3 suggests compressing the window with `ZED_SANDBOX_TURN_GRANT_MINUTES=2`. Confirm that knob is read per-call (`turnGrantMs()` is a function, so it is) and not cached at boot in the environment you test against.

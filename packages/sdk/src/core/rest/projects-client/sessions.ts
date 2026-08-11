@@ -54,7 +54,7 @@ export interface ProjectSession {
   visibility?: 'private' | 'project' | 'restricted';
   /** How the session was started — a policy class derived from the caller's
    *  token kind, not the surface. A backend (PAT/service-account) create is
-   *  'backend'; a human web session is 'user'. See Kortix-as-a-Backend. */
+   *  'backend'; a human web session is 'user'. See Zed-as-a-Backend. */
   origin?: 'user' | 'trigger' | 'schedule' | 'backend' | 'system';
   /** The per-session secrets allowlist that was applied (identifiers); null = none. */
   secrets_allowlist?: string[] | null;
@@ -112,7 +112,7 @@ export interface CreateProjectSessionInput {
   provider?: 'daytona' | 'platinum' | 'e2b';
   branch_already_created?: boolean;
   metadata?: Record<string, unknown>;
-  /** Persisted and injected as one non-secret KORTIX_SESSION_CONTEXT JSON envelope. */
+  /** Persisted and injected as one non-secret ZED_SESSION_CONTEXT JSON envelope. */
   runtime_context?: SessionRuntimeContext;
   /** Logical connector alias -> active authorization available to the caller. */
   connector_bindings?: SessionConnectorBindingsInput;
@@ -128,7 +128,7 @@ export interface CreateProjectSessionInput {
    */
   require_connectors?: string[];
   /**
-   * Kortix-as-a-Backend (backend-origin callers only). Narrow which project
+   * Zed-as-a-Backend (backend-origin callers only). Narrow which project
    * secrets (by identifier) this session's sandbox receives, from the agent's
    * default set down to this list. `[]` = inject zero project secrets. Pure
    * narrowing — can't widen beyond the agent's grant. Non-backend caller → 403.
@@ -455,9 +455,9 @@ export async function getSessionTranscript(
   );
 }
 
-/** One line of a session's voice-call transcript (`kortix.voice_call_turns`).
+/** One line of a session's voice-call transcript (`zed.voice_call_turns`).
  *  'user'/'agent' are either side of the spoken conversation; 'tool' is a
- *  record of an `ask_kortix`/`run_command` call the voice-agent worker made
+ *  record of an `ask_zed`/`run_command` call the voice-agent worker made
  *  through the voice MCP (see apps/api/src/channels/voice/mcp.ts) — not
  *  spoken, but part of "what did the voice agent DO" during the call. */
 export interface VoiceTranscriptTurn {
@@ -480,7 +480,7 @@ export interface VoiceTranscript {
 }
 
 /** A session's live voice-call transcript — every spoken turn plus every
- *  ask_kortix/run_command the worker issued, in one monotonic feed (a call's
+ *  ask_zed/run_command the worker issued, in one monotonic feed (a call's
  *  `callId` IS its `sessionId`, so there is nothing else to key this by).
  *  Visible to anyone who can see the session (same gate as `/audit`,
  *  `/transcript`). Returns `{ turns: [] }` for a session that never made a
@@ -561,7 +561,7 @@ export interface SessionConfigState {
    *
    * `null` means "could not tell", NEVER "up to date": the sandbox is
    * unreachable, or the project has no compiled config at all (a v1
-   * `kortix.toml` project). Branch on `=== true` and `=== false`; `!stale`
+   * `zed.toml` project). Branch on `=== true` and `=== false`; `!stale`
    * silently reports an unaskable session as current, which is the exact
    * failure this field exists to prevent.
    */

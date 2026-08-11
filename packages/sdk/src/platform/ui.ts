@@ -2,7 +2,7 @@ import { platformConfig } from '../core/http/config';
 
 /**
  * UI side-effect sink. The SDK fires these during event handling; the host wires
- * them to its real toast / OS-notification surfaces via `configureKortix`. No
+ * them to its real toast / OS-notification surfaces via `configureZed`. No
  * UI components live in the SDK — these just forward to injected callbacks.
  */
 

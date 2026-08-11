@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Working directory for all commands: `apps/web` (repo: `/Users/jay/root/kortix/suna-react-doctor`).
+- Working directory for all commands: `apps/web` (repo: `/Users/jay/root/zed/suna-react-doctor`).
 - Verification gate for EVERY task (run all three, all must pass before the task's commit):
   1. `npx tsc --noEmit`
   2. `bun test --isolate`
@@ -85,7 +85,7 @@ git commit -m "chore(web): remove 13 unused dependencies (framer-motion, three s
 
 ### Task 2: Delete dead code (~224 unreachable files)
 
-`deslop/unused-file` flagged 226 files. The analyzer does transitive reachability from App Router entry points; a 13-file spot-check across directories found only 2 false positives (both build/test infra, excluded in Global Constraints) and **zero** false positives among React components/hooks/features. Confirmed-dead clusters include the entire `src/components/tabs/` subsystem and the 23 `src/components/pages/**/page.tsx` files it dynamically imports, dead admin analytics (incl. the 2,529-line `arr-simulator`), `src/features/marketing/**`, `src/hooks/kortix/**`, `src/hooks/legacy/**`.
+`deslop/unused-file` flagged 226 files. The analyzer does transitive reachability from App Router entry points; a 13-file spot-check across directories found only 2 false positives (both build/test infra, excluded in Global Constraints) and **zero** false positives among React components/hooks/features. Confirmed-dead clusters include the entire `src/components/tabs/` subsystem and the 23 `src/components/pages/**/page.tsx` files it dynamically imports, dead admin analytics (incl. the 2,529-line `arr-simulator`), `src/features/marketing/**`, `src/hooks/zed/**`, `src/hooks/legacy/**`.
 
 **Files:**
 - Delete: the files listed by the report extraction below (~224 files under `src/`, `playground/`), in batches.
@@ -129,7 +129,7 @@ Batch order (per-directory counts from the audit: components 140, features 32, h
 
 ```bash
 cd apps/web
-for prefix in src/components/tabs src/components/pages src/components/ui src/components/kortix src/components/home src/components/admin src/components/sidebar src/components features src/hooks src/lib src/stores src/app src/types playground; do
+for prefix in src/components/tabs src/components/pages src/components/ui src/components/zed src/components/home src/components/admin src/components/sidebar src/components features src/hooks src/lib src/stores src/app src/types playground; do
   grep "^$prefix" /tmp/dead-files.txt | xargs -r git rm -q
   # after EACH batch:
   npx tsc --noEmit || { echo "BATCH $prefix broke typecheck — investigate before continuing"; break; }
@@ -159,7 +159,7 @@ git commit -m "chore(web): delete ~224 dead files unreachable from app-router en
 
 ### Task 3: Stop per-token re-renders of the session chat input subtree
 
-**The single highest-leverage perf fix.** `SessionChat` (`src/features/session/session-chat.tsx`, 5,381 lines) re-renders on every streaming token. It renders `<SessionChatInput>` (2,483 lines, NOT memoized) with inline-created props — a fresh `onSend` async closure, a fresh `prefill` object, fresh `onAgentChange`/`onModelChange`/`modelDefaultControls` — so the entire input subtree re-renders per token. Additionally `SessionChat` subscribes to the whole `useKortixComputerStore` (line 3423) and five tool renderers subscribe to the whole `useFilePreviewStore`, causing re-renders on unrelated store changes.
+**The single highest-leverage perf fix.** `SessionChat` (`src/features/session/session-chat.tsx`, 5,381 lines) re-renders on every streaming token. It renders `<SessionChatInput>` (2,483 lines, NOT memoized) with inline-created props — a fresh `onSend` async closure, a fresh `prefill` object, fresh `onAgentChange`/`onModelChange`/`modelDefaultControls` — so the entire input subtree re-renders per token. Additionally `SessionChat` subscribes to the whole `useZedComputerStore` (line 3423) and five tool renderers subscribe to the whole `useFilePreviewStore`, causing re-renders on unrelated store changes.
 
 **Files:**
 - Modify: `apps/web/src/features/session/session-chat.tsx:3423` (store selector), `:5261` area (SessionChatInput props)
@@ -175,15 +175,15 @@ git commit -m "chore(web): delete ~224 dead files unreachable from app-router en
 Current code at `src/features/session/session-chat.tsx:3423`:
 
 ```tsx
-const { isSidePanelOpen, setIsSidePanelOpen, openFileInComputer } = useKortixComputerStore();
+const { isSidePanelOpen, setIsSidePanelOpen, openFileInComputer } = useZedComputerStore();
 ```
 
 Replace with per-field selectors (the very next line already models this correctly with `useFilePreviewStore((s) => s.openPreview)`):
 
 ```tsx
-const isSidePanelOpen = useKortixComputerStore((s) => s.isSidePanelOpen);
-const setIsSidePanelOpen = useKortixComputerStore((s) => s.setIsSidePanelOpen);
-const openFileInComputer = useKortixComputerStore((s) => s.openFileInComputer);
+const isSidePanelOpen = useZedComputerStore((s) => s.isSidePanelOpen);
+const setIsSidePanelOpen = useZedComputerStore((s) => s.setIsSidePanelOpen);
+const openFileInComputer = useZedComputerStore((s) => s.openFileInComputer);
 ```
 
 - [ ] **Step 2: Replace the five whole-store subscriptions in tool-renderers.tsx**
@@ -466,7 +466,7 @@ Two error-severity correctness sweeps with mechanical, canonical fixes.
 - Modify: `src/features/layout/user-menu.tsx:115,120,228,233`, `src/features/layout/account-switcher.tsx:223`, `src/components/changelog/version-history-panel.tsx:246`, `src/features/auth/phone-verification/otp-verification.tsx:50`, `src/components/ui/extend/pdf-viewer.tsx:1954`
 
 **Files (B — effect cleanup):**
-- Modify: `src/app/(app)/checkout/page.tsx:55`, `src/app/(auth)/auth/github-connect/page.tsx:21`, `src/app/(auth)/auth/github-popup/page.tsx:24`, `src/app/(public)/(marketing)/support/page.tsx:42`, `src/app/(public)/templates/[shareId]/page.tsx:132`, `src/components/kortix/markdown-field.tsx:93`, `src/components/kortix/new-task-dialog.tsx:79`, `src/components/kortix/new-ticket-dialog.tsx:367,505`, `src/components/kortix/project-about.tsx:71`, `src/components/kortix/ticket-detail-drawer.tsx:340`, `src/components/onboarding/boot-overlay.tsx:58`, `src/components/ui/animated-bg.tsx:304`, `src/components/ui/globe.tsx:98`, `src/components/ui/mermaid-renderer.tsx:296`, `src/hooks/platform/use-sandbox-poller.ts:352` (EventSource), `src/hooks/tunnel/use-tunnel-realtime.ts:18`, `src/hooks/use-debounced-busy-sessions.ts:46`
+- Modify: `src/app/(app)/checkout/page.tsx:55`, `src/app/(auth)/auth/github-connect/page.tsx:21`, `src/app/(auth)/auth/github-popup/page.tsx:24`, `src/app/(public)/(marketing)/support/page.tsx:42`, `src/app/(public)/templates/[shareId]/page.tsx:132`, `src/components/zed/markdown-field.tsx:93`, `src/components/zed/new-task-dialog.tsx:79`, `src/components/zed/new-ticket-dialog.tsx:367,505`, `src/components/zed/project-about.tsx:71`, `src/components/zed/ticket-detail-drawer.tsx:340`, `src/components/onboarding/boot-overlay.tsx:58`, `src/components/ui/animated-bg.tsx:304`, `src/components/ui/globe.tsx:98`, `src/components/ui/mermaid-renderer.tsx:296`, `src/hooks/platform/use-sandbox-poller.ts:352` (EventSource), `src/hooks/tunnel/use-tunnel-realtime.ts:18`, `src/hooks/use-debounced-busy-sessions.ts:46`
 
 **Do NOT touch (vetted false positives):** `sandbox-url-detector.tsx:123`, `session-chat.tsx:4160`, `file-content-renderer.tsx:407` (all have working cleanups the matcher missed); `session-starting-loader.tsx:109-110` (sanctioned prev-value render pattern). Skip `src/components/tabs/*-tab-content.tsx` — deleted in Task 2.
 
@@ -745,10 +745,10 @@ Run: `bun test src/lib/utils/date.test.ts` → Expected: FAIL (module not found)
 
 - [ ] **Step 2: Create `src/lib/utils/date.ts`**
 
-`relativeTime`/`fullDate` already exist in `src/lib/kortix/task-meta.ts:110/123` — re-export them as the canonical import path and add the two missing wrappers:
+`relativeTime`/`fullDate` already exist in `src/lib/zed/task-meta.ts:110/123` — re-export them as the canonical import path and add the two missing wrappers:
 
 ```ts
-export { fullDate, relativeTime } from '@/lib/kortix/task-meta';
+export { fullDate, relativeTime } from '@/lib/zed/task-meta';
 
 export function formatDate(t?: string | number | Date | null): string {
   if (!t) return '';
@@ -771,7 +771,7 @@ Run: `bun test src/lib/utils/date.test.ts` → Expected: PASS (timezone note: if
 
 - [ ] **Step 3: Migrate the date call sites**
 
-Relative-time locals to delete + replace with `import { relativeTime } from '@/lib/utils/date'`: `src/components/iam/scim-card.tsx:49`, `src/components/iam/service-accounts-card.tsx:393`, `src/components/iam/session-controls-card.tsx:349`, `src/features/session/session-audit-shared.tsx:171`, `src/components/projects/schedule-view.tsx:178`, `src/components/scheduled-tasks/scheduled-tasks-page.tsx:91`, `src/components/kortix/triggers-tab.tsx:53`, `src/components/kortix/ticket-board.tsx:99`, `src/features/accounts/settings/cli-tokens-tab.tsx:38`, `src/app/admin/accounts/page.tsx:1494`.
+Relative-time locals to delete + replace with `import { relativeTime } from '@/lib/utils/date'`: `src/components/iam/scim-card.tsx:49`, `src/components/iam/service-accounts-card.tsx:393`, `src/components/iam/session-controls-card.tsx:349`, `src/features/session/session-audit-shared.tsx:171`, `src/components/projects/schedule-view.tsx:178`, `src/components/scheduled-tasks/scheduled-tasks-page.tsx:91`, `src/components/zed/triggers-tab.tsx:53`, `src/components/zed/ticket-board.tsx:99`, `src/features/accounts/settings/cli-tokens-tab.tsx:38`, `src/app/admin/accounts/page.tsx:1494`.
 
 `formatDate`-family locals to delete + replace with the matching `formatDate`/`formatDateTime` import: `src/features/billing/billing-history.tsx:38`, `src/components/admin/admin-user-table.tsx:64`, `src/components/admin/admin-user-details-dialog.tsx:100`, `src/components/admin/admin-feedback-table.tsx:38`, `src/components/admin/admin-dashboard-sections.tsx:117`, `src/app/(app)/accounts/[id]/page.tsx:198`, `src/app/(app)/accounts/[id]/members/[userId]/page.tsx:48`, `src/app/admin/ops/page.tsx:298`, `src/app/admin/accounts/page.tsx:196`, `src/features/billing/credit-transactions.tsx:42`, `src/features/accounts/settings/general-tab.tsx:208`.
 

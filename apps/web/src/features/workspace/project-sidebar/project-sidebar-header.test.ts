@@ -6,7 +6,7 @@ import { join } from 'node:path';
  * The sidebar header row: the merged brand/switcher control, search, and the
  * panel's own collapse toggle.
  *
- * The Kortix mark used to be its own button next to the switcher. Both answered
+ * The Zed mark used to be its own button next to the switcher. Both answered
  * "which project am I in / where do I go", looked nothing alike, and left dead
  * space between them. They are one segmented control now, owned by
  * ProjectSwitcher — the mark keeps its link to the project's home.
@@ -26,8 +26,8 @@ describe('project sidebar header', () => {
 
   // The whole point of the merge: one control, not a mark button parked beside
   // a switcher. The mark now lives inside ProjectSwitcher.
-  test('no standalone Kortix mark button is left beside it', () => {
-    expect(header).not.toContain('<Icon.Kortix');
+  test('no standalone Zed mark button is left beside it', () => {
+    expect(header).not.toContain('<Icon.Zed');
   });
 
   // A `w-fit` trigger inside a full-width wrapper left an inert strip between

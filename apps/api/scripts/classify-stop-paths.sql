@@ -1,4 +1,4 @@
--- Stop-path classification for kortix.session_sandboxes.
+-- Stop-path classification for zed.session_sandboxes.
 --
 -- Groups every park by `metadata->>'stopReason'` (apps/api/src/projects/
 -- stop-reason.ts) so someone can measure which kill path dominates when a
@@ -63,7 +63,7 @@
 --    paths fires often, not that the query is broken.
 -- ============================================================================
 --
--- Column/table names verified against packages/db/src/schema/kortix.ts:
+-- Column/table names verified against packages/db/src/schema/zed.ts:
 --   session_sandboxes    (~line 1614): status, metadata, active_since,
 --                         deadline_at, updated_at, session_id.
 --   session_pending_questions (~line 2803): session_id, answered_at — "still
@@ -102,11 +102,11 @@ SELECT
     -- past it, so active_since to deadline_at is <= ~21 minutes.
     WHEN s.deadline_at - s.active_since <= interval '21 minutes' THEN 'A-prime (inferred)'
     WHEN EXISTS (
-      SELECT 1 FROM kortix.session_pending_questions q
+      SELECT 1 FROM zed.session_pending_questions q
        WHERE q.session_id = s.session_id AND q.answered_at IS NULL
     ) THEN 'B-waiting (inferred)'
     WHEN NOT EXISTS (
-      SELECT 1 FROM kortix.usage_events u
+      SELECT 1 FROM zed.usage_events u
        WHERE u.session_id = s.session_id
          AND u.created_at > s.updated_at - interval '4 hours'
     ) THEN 'B-silent-tools (inferred)'
@@ -114,7 +114,7 @@ SELECT
   END AS path,
   count(*) AS stops,
   round(avg(extract(epoch FROM (s.deadline_at - s.active_since)) / 60)::numeric, 1) AS avg_life_min
-FROM kortix.session_sandboxes s
+FROM zed.session_sandboxes s
 WHERE s.status = 'stopped'
   AND s.updated_at > now() - :'window'::interval
 GROUP BY 1, 2

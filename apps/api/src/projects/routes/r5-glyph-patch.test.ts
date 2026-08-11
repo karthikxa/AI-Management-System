@@ -65,7 +65,7 @@ function projectRow(over: Record<string, unknown> = {}) {
     name: 'glyph-patch-test',
     repoUrl: 'https://github.com/acme/glyph-patch-test.git',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     status: 'active',
     metadata: { icon: '🚀' },
     lastOpenedAt: null,
@@ -161,7 +161,7 @@ describe('PATCH /:projectId — glyph set', () => {
     expect(res.status).toBe(200);
     const { sql, params } = metadataQuery();
     // The `- $n` is the invariant. Without it a project could hold both.
-    expect(sql).toBe(`(coalesce("kortix"."projects"."metadata", '{}'::jsonb) - $1) || $2::jsonb`);
+    expect(sql).toBe(`(coalesce("zed"."projects"."metadata", '{}'::jsonb) - $1) || $2::jsonb`);
     expect(params).toEqual(['icon', '{"icon_glyph":{"name":"Rocket","color":"blue"}}']);
   });
 
@@ -289,7 +289,7 @@ describe('PATCH /:projectId — both keys explicitly null clears both', () => {
     expect(res.status).toBe(200);
     const { sql, params } = metadataQuery();
     expect(sql).toBe(
-      `((coalesce("kortix"."projects"."metadata", '{}'::jsonb) - $1) - $2) || $3::jsonb`,
+      `((coalesce("zed"."projects"."metadata", '{}'::jsonb) - $1) - $2) || $3::jsonb`,
     );
     expect(params).toEqual(['icon_glyph', 'icon', '{}']);
   });

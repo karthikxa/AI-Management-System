@@ -1,13 +1,13 @@
 /**
- * The single source of truth for "what URL does OpenCode's in-sandbox `kortix`
- * LLM provider hit" (KORTIX_LLM_BASE_URL). Takes the ORIGIN a sandbox should
- * use to reach kortix-api and applies the proxy-mode suffix rule.
+ * The single source of truth for "what URL does OpenCode's in-sandbox `zed`
+ * LLM provider hit" (ZED_LLM_BASE_URL). Takes the ORIGIN a sandbox should
+ * use to reach zed-api and applies the proxy-mode suffix rule.
  *
  * Deliberately a tiny, dependency-free module (only `../config`) rather than
  * living inline in session-sandbox.ts or sandbox-env-sync.ts: BOTH of those
  * need it —
- *   - session-sandbox.ts computes it once at sandbox boot (KORTIX_LLM_BASE_URL
- *     injected into the container's env), using `config.KORTIX_URL` as the origin.
+ *   - session-sandbox.ts computes it once at sandbox boot (ZED_LLM_BASE_URL
+ *     injected into the container's env), using `config.ZED_URL` as the origin.
  *   - projects/lib/sandbox-env-sync.ts recomputes it on every prompt / gateway-
  *     mode toggle (the hot env-push path posts it to the running daemon).
  * One implementation keeps boot and hot environment pushes synchronized.

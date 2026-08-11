@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import type { Message, Part, Todo } from '../runtime/client';
-import { type KortixChatEvent, heartbeatGapEvent, narrowChatEvent } from './chat-events';
+import { type ZedChatEvent, heartbeatGapEvent, narrowChatEvent } from './chat-events';
 import type { OpenCodeEvent } from './event-stream';
 
 function ev(type: string, properties: unknown): OpenCodeEvent {
@@ -143,7 +143,7 @@ describe('narrowChatEvent', () => {
 
 describe('heartbeatGapEvent', () => {
   test('builds a synthetic heartbeat-gap chat event', () => {
-    const event: KortixChatEvent = heartbeatGapEvent(7000);
+    const event: ZedChatEvent = heartbeatGapEvent(7000);
     expect(event).toEqual({ type: 'heartbeat-gap', gapMs: 7000 });
   });
 });

@@ -10,7 +10,7 @@ const helperPath = join(
   "..",
   "templates",
   "base",
-  ".kortix",
+  ".zed",
   "opencode",
   "tools",
   "lib",
@@ -20,9 +20,9 @@ const helperPath = join(
 let tempDir: string | null = null;
 
 afterEach(() => {
-  delete process.env.KORTIX_AGENT_ENV_FILE;
-  delete process.env.KORTIX_API_URL;
-  delete process.env.KORTIX_TOKEN;
+  delete process.env.ZED_AGENT_ENV_FILE;
+  delete process.env.ZED_API_URL;
+  delete process.env.ZED_TOKEN;
   if (tempDir) rmSync(tempDir, { recursive: true, force: true });
   tempDir = null;
 });
@@ -32,29 +32,29 @@ async function importFreshHelper() {
 }
 
 describe("opencode tool env helper", () => {
-  test("reads Kortix router env from the live agent env file", async () => {
+  test("reads Zed router env from the live agent env file", async () => {
     // mkdtemp gives an unpredictable, race-free dir (vs a guessable /tmp path).
-    tempDir = mkdtempSync(join(tmpdir(), "kortix-tool-env-"));
+    tempDir = mkdtempSync(join(tmpdir(), "zed-tool-env-"));
     const envFile = join(tempDir, "agent-env.sh");
     writeFileSync(
       envFile,
       [
         "# generated shell env",
-        "export KORTIX_API_URL='https://staging-api.kortix.com/v1'",
-        "export KORTIX_TOKEN='kortix_sb_test'",
+        "export ZED_API_URL='https://staging-api.zed.com/v1'",
+        "export ZED_TOKEN='zed_sb_test'",
         "",
       ].join("\n"),
     );
-    delete process.env.KORTIX_API_URL;
-    delete process.env.KORTIX_TOKEN;
-    process.env.KORTIX_AGENT_ENV_FILE = envFile;
+    delete process.env.ZED_API_URL;
+    delete process.env.ZED_TOKEN;
+    process.env.ZED_AGENT_ENV_FILE = envFile;
 
-    const { getEnv, getKortixRouterBase } = await importFreshHelper();
+    const { getEnv, getZedRouterBase } = await importFreshHelper();
 
-    expect(getEnv("KORTIX_API_URL")).toBe("https://staging-api.kortix.com/v1");
-    expect(getEnv("KORTIX_TOKEN")).toBe("kortix_sb_test");
-    expect(getKortixRouterBase("tavily")).toBe(
-      "https://staging-api.kortix.com/v1/router/tavily",
+    expect(getEnv("ZED_API_URL")).toBe("https://staging-api.zed.com/v1");
+    expect(getEnv("ZED_TOKEN")).toBe("zed_sb_test");
+    expect(getZedRouterBase("tavily")).toBe(
+      "https://staging-api.zed.com/v1/router/tavily",
     );
   });
 });

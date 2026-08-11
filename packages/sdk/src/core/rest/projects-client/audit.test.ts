@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { exportAccountAudit, listAccountAudit, listProjectAudit } from './audit';
 import { listAuditEvents } from './iam';
 
@@ -7,7 +7,7 @@ let calls: Array<{ url: string; method: string }> = [];
 
 beforeEach(() => {
   calls = [];
-  configureKortix({
+  configureZed({
     backendUrl: 'http://test.local',
     getToken: async () => 'tok',
   });

@@ -24,8 +24,8 @@ describe('mockConfigModule', () => {
   });
 
   test('applies overrides onto the config object without dropping siblings', () => {
-    const mocked = mockConfigModule({ KORTIX_SANDBOX_AUTOSTOP_MINUTES: 15 });
-    expect((mocked.config as Record<string, unknown>).KORTIX_SANDBOX_AUTOSTOP_MINUTES).toBe(15);
+    const mocked = mockConfigModule({ ZED_SANDBOX_AUTOSTOP_MINUTES: 15 });
+    expect((mocked.config as Record<string, unknown>).ZED_SANDBOX_AUTOSTOP_MINUTES).toBe(15);
     expect(mocked).toHaveProperty('SANDBOX_VERSION');
   });
 });

@@ -5,14 +5,14 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { KortixLogo } from '@/components/ui/kortix-logo';
+import { ZedLogo } from '@/components/ui/zed-logo';
 import Loading from '@/components/ui/loading';
 import { ErrorStrip } from '@/features/auth/auth-primitives';
 import { createClient } from '@/lib/supabase/client';
 import { useAppHome } from '@/lib/onboarding/use-app-home';
 
 // sessionStorage-based singleton guard — prevents multiple OAuth flows across re-mounts AND HMR
-const GITHUB_POPUP_GUARD_KEY = 'kortix-github-popup-in-flight';
+const GITHUB_POPUP_GUARD_KEY = 'zed-github-popup-in-flight';
 
 function isGithubPopupInFlight(): boolean {
   try {
@@ -205,7 +205,7 @@ export default function GitHubOAuthPopup() {
   return (
     <main className="bg-background flex min-h-svh flex-col items-center justify-center px-6">
       <div className="w-full max-w-[320px]">
-        <KortixLogo variant="icon" size={22} className="text-foreground" />
+        <ZedLogo variant="icon" size={22} className="text-foreground" />
         <h1 className="text-foreground mt-6 text-2xl font-medium tracking-tight">
           {tHardcodedUi.raw('appAuthGithubPopupPage.line194JsxTextGithubSignIn')}
         </h1>

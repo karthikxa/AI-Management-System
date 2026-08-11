@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { ProjectSession, ProjectSessionStatus } from '@kortix/sdk';
+import type { ProjectSession, ProjectSessionStatus } from '@zed/sdk';
 import {
   isLegacyMigratedSession,
   matchesSourceFilters,

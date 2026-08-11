@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test';
-import { GatewayResolutionError } from '@kortix/llm-gateway';
+import { GatewayResolutionError } from '@zed/llm-gateway';
 
 // resolveCandidates is the only internal-routes dep whose behavior matters
 // here; mock it (and the logger) so the route loads in isolation without

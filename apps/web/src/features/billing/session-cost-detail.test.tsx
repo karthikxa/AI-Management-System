@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import type { SessionCostDetail } from '@kortix/sdk';
+import type { SessionCostDetail } from '@zed/sdk';
 
 import { SessionCostDetailContent } from './session-cost-detail';
 

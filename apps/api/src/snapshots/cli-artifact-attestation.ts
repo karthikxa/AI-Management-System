@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import {
   buildCliConnectorSourceDigest,
   buildFileSha256,
-} from '@kortix/shared/sandbox-runtime-artifact';
+} from '@zed/shared/sandbox-runtime-artifact';
 
 const SHA256_HEX = /^[0-9a-f]{64}$/;
 const LINUX_BUN_TARGET = /^bun-linux-(x64|arm64)$/;

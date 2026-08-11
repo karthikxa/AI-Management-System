@@ -15,13 +15,13 @@ import { beforeEach, describe, expect, mock, test } from 'bun:test';
 import { mockIamEngineAllowAll, mockIamMembershipSyncNoop } from './helpers/iam-mocks';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import { accountMembers, projectMembers, projects } from '@kortix/db';
+import { accountMembers, projectMembers, projects } from '@zed/db';
 
 const USER_ID = '00000000-0000-4000-a000-000000000001';
 const ACCOUNT_ID = '00000000-0000-4000-a000-000000000101';
 const PROJECT_ID = '00000000-0000-4000-a000-000000000201';
-const REPO_OWNER = 'kortix-managed';
-const TEST_AUTH_KEY = '__KORTIX_E2E_AUTH__';
+const REPO_OWNER = 'zed-managed';
+const TEST_AUTH_KEY = '__ZED_E2E_AUTH__';
 
 // ─── Per-test knobs ───────────────────────────────────────────────────────────
 let projectLimit = 1; // what maxProjectsForAccount returns for the account
@@ -145,9 +145,9 @@ mock.module('../projects/git', () => ({
 }));
 
 mock.module('../snapshots/builder', () => ({
-  ensureSandboxImage: async () => ({ snapshotName: 'kortix-default-test', slug: 'default', contentHash: 'a'.repeat(64), built: false, isDefault: true }),
-  ensureMetaSandboxImage: async () => ({ snapshotName: 'kortix-meta-test', slug: 'meta', contentHash: 'b'.repeat(64), built: false, isDefault: false }),
-  deleteSandboxImage: async () => ({ deleted: false, snapshotName: 'kortix-default-test', slug: 'default' }),
+  ensureSandboxImage: async () => ({ snapshotName: 'zed-default-test', slug: 'default', contentHash: 'a'.repeat(64), built: false, isDefault: true }),
+  ensureMetaSandboxImage: async () => ({ snapshotName: 'zed-meta-test', slug: 'meta', contentHash: 'b'.repeat(64), built: false, isDefault: false }),
+  deleteSandboxImage: async () => ({ deleted: false, snapshotName: 'zed-default-test', slug: 'default' }),
   listSnapshotBuilds: async () => [],
   listSandboxTemplates: async () => [],
   resolveTemplate: async () => ({ slug: 'default', spec: {}, isDefault: true }),
@@ -158,10 +158,10 @@ mock.module('../snapshots/builder', () => ({
   kickStartupPreBuild: () => {},
   reconcileProjectTemplates: async () => ({ checked: 0, updated: 0 }),
   reconcileStaleBuilds: async () => ({ checked: 0, updated: 0 }),
-  ensurePlatformDefaultImage: async () => ({ snapshotName: 'kortix-default-test', slug: 'default', contentHash: 'a'.repeat(64), built: false, isDefault: true }),
+  ensurePlatformDefaultImage: async () => ({ snapshotName: 'zed-default-test', slug: 'default', contentHash: 'a'.repeat(64), built: false, isDefault: true }),
   resolveCommitSha: async () => 'a'.repeat(40),
   ensurePerProjectWarmImage: async () => ({
-    snapshotName: 'kortix-ppwarm-test',
+    snapshotName: 'zed-ppwarm-test',
     tip: 'a'.repeat(40),
     built: false,
     provider: 'daytona',

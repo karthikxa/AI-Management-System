@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { Slider } from '@/components/ui/slider';
 import { usePreviewFit } from '@/features/file-viewer/preview-fit';
 import { cn } from '@/lib/utils';
@@ -228,7 +228,7 @@ export function VideoRenderer({
       >
         {isLoading && (
           <div className="bg-muted/50 absolute inset-0 flex items-center justify-center">
-            <KortixLoader size="medium" />
+            <ZedLoader size="medium" />
           </div>
         )}
         {hasError ? (
@@ -292,7 +292,7 @@ export function VideoRenderer({
       {/* Loading state */}
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
-          <KortixLoader size="large" variant="white" />
+          <ZedLoader size="large" variant="white" />
         </div>
       )}
 

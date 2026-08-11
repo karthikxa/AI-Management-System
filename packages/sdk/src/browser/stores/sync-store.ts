@@ -491,9 +491,9 @@ function dropSessionData(state: SyncData, sessionIDs: readonly string[]): SyncDa
  * the rest needs the reference declared before the data is read — either the
  * host retaining child ids when it parses the parent's transcript, or
  * `useOpenCodeMessages` reading the disk cache the way `useSessionSync` does.
- * The second needs the child's `kortixSessionScope` plumbed through from the
+ * The second needs the child's `zedSessionScope` plumbed through from the
  * host: entries written for an opened session are keyed
- * `…:kortix-session:<scope>`, so a scopeless read looks up a different key and
+ * `…:zed-session:<scope>`, so a scopeless read looks up a different key and
  * misses (idb-sync-cache-key.ts:6-9).
  */
 function pruneDetachedSessions(messages: Record<string, Message[]>): string[] {

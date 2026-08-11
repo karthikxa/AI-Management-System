@@ -16,7 +16,7 @@ research back onto the HubSpot record. Nothing reaches a lead until a human
 reviews the draft in {{approval_channel}} and sends it.
 
 Fresh session per sweep — state lives on the HubSpot lead record itself (a
-`kortix_followup_drafted` property + timestamp marks a lead handled), not in a
+`zed_followup_drafted` property + timestamp marks a lead handled), not in a
 local ledger file. A single sweep can find several new leads at once; handle
 each one as an independent unit — a research or drafting failure on one lead
 is logged and skipped, and never blocks or corrupts the follow-up for any
@@ -42,11 +42,11 @@ carry the drafted marker:
 GET /crm/v3/objects/contacts/search
   filterGroups: [
     { propertyName: "lifecyclestage", operator: "EQ", value: "{{hubspot_lifecycle_stage}}" },
-    { propertyName: "kortix_followup_drafted", operator: "NOT_HAS_PROPERTY" }
+    { propertyName: "zed_followup_drafted", operator: "NOT_HAS_PROPERTY" }
   ]
 ```
 
-Anything already carrying `kortix_followup_drafted` was handled by a prior
+Anything already carrying `zed_followup_drafted` was handled by a prior
 run — skip it, even if it hasn't been sent yet. Sending is a human decision,
 not a signal to re-draft.
 
@@ -86,7 +86,7 @@ goes out or if a human edits the draft first.
 ## Step 6 — Hold for approval
 
 Place the drafted follow-up in {{approval_channel}} as a draft only. Do not
-send it. Set `kortix_followup_drafted = true` (with a timestamp) on the
+send it. Set `zed_followup_drafted = true` (with a timestamp) on the
 HubSpot record so the next sweep skips this lead.
 
 </workflow>
@@ -97,9 +97,9 @@ HubSpot record so the next sweep skips this lead.
 - **Calendar is read-only.** Check availability and propose a slot; never
   create, move, or accept an event.
 - **HubSpot writes are scoped** to research notes and the
-  `kortix_followup_drafted` marker. Never change deal stage, pipeline, or
+  `zed_followup_drafted` marker. Never change deal stage, pipeline, or
   lifecycle stage.
-- **No duplicate drafts.** Always check the `kortix_followup_drafted` marker
+- **No duplicate drafts.** Always check the `zed_followup_drafted` marker
   before researching or writing — a lead handled once is never re-drafted,
   even across many sweeps.
 - **Scoped secrets.** HubSpot and Google Calendar credentials are injected by

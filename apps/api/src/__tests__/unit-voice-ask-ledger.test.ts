@@ -17,7 +17,7 @@ import {
  *
  * The call this exists for: a stray transcription artifact led the voice model
  * to assert something false about the project; the claim then sat in its own
- * history as fact, so every correct answer Kortix sent back contradicted it, and
+ * history as fact, so every correct answer Zed sent back contradicted it, and
  * it asked again to resolve the contradiction — indefinitely, at $0.02-$0.03 a
  * turn, until a human hung up. Overlapping asks are what made the answers
  * contradict each other in the first place: each one spawns its own answer
@@ -220,7 +220,7 @@ describe('the rate ceiling — the containment that already shipped, kept', () =
 
 describe('the refusal is written to be spoken, not to be logged', () => {
   test('it tells the model what is happening, what to do, and what not to conclude', () => {
-    expect(IN_FLIGHT_MESSAGE).toContain('already handed a request to Kortix');
+    expect(IN_FLIGHT_MESSAGE).toContain('already handed a request to Zed');
     expect(IN_FLIGHT_MESSAGE).toContain('Do not send this');
     expect(IN_FLIGHT_MESSAGE).toContain('still waiting');
     // Pre-empts the exact rationalisation that drove the real loop: that asking

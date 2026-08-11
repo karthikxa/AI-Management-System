@@ -88,7 +88,7 @@ describe('dbModeOf', () => {
 
 describe('rewriteConfigToml', () => {
   const toml = [
-    'project_id = "kortix-local"',
+    'project_id = "zed-local"',
     '[api]',
     'port = 54321',
     '[db]',
@@ -101,8 +101,8 @@ describe('rewriteConfigToml', () => {
 
   test('rewrites project_id + per-section ports + host:port references', () => {
     const ports = computePorts(2);
-    const out = rewriteConfigToml(toml, 'kortix-fe', ports);
-    expect(out).toContain('project_id = "kortix-fe"');
+    const out = rewriteConfigToml(toml, 'zed-fe', ports);
+    expect(out).toContain('project_id = "zed-fe"');
     expect(out).toContain(`port = ${ports.sbApi}`); // [api]
     expect(out).toContain(`port = ${ports.sbDb}`); // [db]
     expect(out).toContain(`port = ${ports.sbStudio}`); // [studio]
@@ -123,9 +123,9 @@ describe('launch envs', () => {
     expect(env.LLM_GATEWAY_ENABLED).toBe('true');
     expect(env.LLM_GATEWAY_PROXY_PORT).toBe(String(ports.gateway));
     expect(env.GATEWAY_INTERNAL_TOKEN).toBe(DEV_GATEWAY_INTERNAL_TOKEN);
-    expect(env.KORTIX_BILLING_INTERNAL_ENABLED).toBe('false');
-    expect(env.KORTIX_APPS_LOCAL).toBe('true');
-    expect(env.KORTIX_APPS_LOCAL_PORT).toBe(String(ports.api));
+    expect(env.ZED_BILLING_INTERNAL_ENABLED).toBe('false');
+    expect(env.ZED_APPS_LOCAL).toBe('true');
+    expect(env.ZED_APPS_LOCAL_PORT).toBe(String(ports.api));
   });
 
   test('worktrees do not pin a sandbox provider over dotenv or shell configuration', () => {
@@ -135,7 +135,7 @@ describe('launch envs', () => {
 
   test('--stripe turns billing on and injects the webhook secret', () => {
     const env = apiLaunchEnv(ports, creds, { stripeWebhookSecret: 'whsec_x' });
-    expect(env.KORTIX_BILLING_INTERNAL_ENABLED).toBe('true');
+    expect(env.ZED_BILLING_INTERNAL_ENABLED).toBe('true');
     expect(env.STRIPE_WEBHOOK_SECRET).toBe('whsec_x');
   });
 
@@ -144,13 +144,13 @@ describe('launch envs', () => {
     const gw = gatewayLaunchEnv(ports);
     expect(gw.GATEWAY_INTERNAL_TOKEN).toBe(api.GATEWAY_INTERNAL_TOKEN);
     expect(gw.PORT).toBe(String(ports.gateway));
-    expect(gw.KORTIX_API_URL).toBe(`http://localhost:${ports.api}`);
+    expect(gw.ZED_API_URL).toBe(`http://localhost:${ports.api}`);
   });
 
   test('web proxies to the worktree api, not the shared 8008', () => {
     const env = webLaunchEnv(ports, creds);
     expect(env.WEB_PORT).toBe(String(ports.web));
-    expect(env.KORTIX_API_PROXY_TARGET).toBe(`http://localhost:${ports.api}`);
+    expect(env.ZED_API_PROXY_TARGET).toBe(`http://localhost:${ports.api}`);
   });
 
   test('web server actions use the worktree Supabase instance', () => {

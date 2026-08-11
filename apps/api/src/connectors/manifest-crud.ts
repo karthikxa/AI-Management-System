@@ -1,7 +1,7 @@
-import type { UpdateConnectionCredentialInput } from '@kortix/api-contract';
-import { connectors, projects, projectSessionConnectorBindings } from '@kortix/db';
+import type { UpdateConnectionCredentialInput } from '@zed/api-contract';
+import { connectors, projects, projectSessionConnectorBindings } from '@zed/db';
 /**
- * Connector CRUD that round-trips `kortix.yaml` — the web UI "Add connector"
+ * Connector CRUD that round-trips `zed.yaml` — the web UI "Add connector"
  * flow (mirrors triggers). The manifest holds the connector definition.
  * Credential MODE is always `shared` (`per_user` — each member brings their
  * own — was removed 2026-07-05, docs/specs/2026-07-05-agent-first-config-
@@ -77,7 +77,7 @@ export interface ConnectorDraft {
   };
   /** Static request headers sent on every call — an ordered map of header name
    *  → value (`{ Accept: 'application/json', 'X-Tenant-Id': 'acme' }`).
-   *  NOT secrets: they are committed to kortix.yaml in plaintext, exactly like
+   *  NOT secrets: they are committed to zed.yaml in plaintext, exactly like
    *  `baseUrl`. Names must be RFC 7230 tokens and values may not contain CR/LF;
    *  a header that collides with the auth header never overrides it. */
   headers?: Record<string, string>;
@@ -165,7 +165,7 @@ async function connectorIdFor(projectId: string, slug: string): Promise<string |
   return row?.connectorId ?? null;
 }
 
-/** Create/update a connector in kortix.yaml, then materialize it. */
+/** Create/update a connector in zed.yaml, then materialize it. */
 export async function upsertConnectorInManifest(
   projectId: string,
   accountId: string,
@@ -184,8 +184,8 @@ export async function upsertConnectorInManifest(
     return {
       ok: false,
       error:
-        draft.slug === 'slack' || draft.slug === 'kortix_slack'
-          ? `"${draft.slug}" is the built-in Slack channel — run \`kortix channels connect\` for a one-click install link instead of adding a connector. Once installed it appears here as \`kortix_slack\` automatically.`
+        draft.slug === 'slack' || draft.slug === 'zed_slack'
+          ? `"${draft.slug}" is the built-in Slack channel — run \`zed channels connect\` for a one-click install link instead of adding a connector. Once installed it appears here as \`zed_slack\` automatically.`
           : `"${draft.slug}" is reserved for a built-in channel connection. Pick a different slug.`,
       status: 400,
     };
@@ -362,7 +362,7 @@ export async function setConnectorCredentialShared(
  * `shared` is now the only credential mode (`per_user` removed 2026-07-05,
  * docs/specs/2026-07-05-agent-first-config-unification.md §2.5). This entry
  * point is kept, restricted to a `shared`-only no-op: it strips a lingering
- * legacy `credential: per_user` key from kortix.yaml (if present) and
+ * legacy `credential: per_user` key from zed.yaml (if present) and
  * re-syncs, but never writes a mode back. Callers asking for anything other
  * than `shared` are rejected by the router before this is called.
  */
@@ -425,7 +425,7 @@ export async function setConnectorAuthorizationStrategyInManifest(
 }
 
 /**
- * Toggle a connector's `sensitive` flag in kortix.yaml, commit, re-sync. A
+ * Toggle a connector's `sensitive` flag in zed.yaml, commit, re-sync. A
  * sensitive connector gates its reads too (every action defaults to
  * require_approval unless an explicit policy opens it) — for email/files/
  * secrets-bearing connectors where reading is itself an exfiltration surface.
@@ -461,7 +461,7 @@ export async function setConnectorSensitiveInManifest(
   );
 }
 
-/** Rename a connector — patches the kortix.yaml entry's `name` (display label) + re-syncs. */
+/** Rename a connector — patches the zed.yaml entry's `name` (display label) + re-syncs. */
 export async function setConnectorNameInManifest(
   projectId: string,
   accountId: string,
@@ -531,7 +531,7 @@ export interface ConnectorConfigView {
 }
 
 /**
- * Read a single connector's definition from kortix.yaml (source of truth) in the
+ * Read a single connector's definition from zed.yaml (source of truth) in the
  * same shape the dashboard edits. Parsed via extractConnectors so it round-trips
  * exactly with the upsert path. Returns null if the connector doesn't exist.
  */
@@ -577,7 +577,7 @@ const CONNECTOR_POLICY_ACTIONS: readonly ConnectorPolicyAction[] = [
   'block',
 ];
 
-/** Read a single connector's `policies:` list from kortix.yaml (source of truth). */
+/** Read a single connector's `policies:` list from zed.yaml (source of truth). */
 export async function getConnectorPoliciesFromManifest(
   projectId: string,
   slug: string,
@@ -599,7 +599,7 @@ export async function getConnectorPoliciesFromManifest(
 }
 
 /**
- * Replace a connector's `policies:` list in kortix.yaml, commit, re-sync
+ * Replace a connector's `policies:` list in zed.yaml, commit, re-sync
  * (→ connector_policies, which the gateway enforces). Matches are glob
  * or `/regex/` — validated here so a bad regex can't be persisted.
  */
@@ -659,7 +659,7 @@ export interface ProjectPoliciesView {
   errors: Array<{ path: string; error: string }>;
 }
 
-/** Read the project's `policies:` list + `policy:` block (kortix.yaml = source of truth). */
+/** Read the project's `policies:` list + `policy:` block (zed.yaml = source of truth). */
 export async function getProjectPoliciesFromManifest(
   projectId: string,
 ): Promise<ProjectPoliciesView | null> {
@@ -676,7 +676,7 @@ export async function getProjectPoliciesFromManifest(
 }
 
 /**
- * Replace the WHOLE `policies:` list + `policy.default_mode` in kortix.yaml,
+ * Replace the WHOLE `policies:` list + `policy.default_mode` in zed.yaml,
  * commit, and re-sync so the runtime tables reflect the new posture. The UI is
  * an ordered list; "save" PUTs the whole list back. Per-rule add/edit/delete
  * remain client-side until commit.
@@ -700,7 +700,7 @@ export async function setProjectPoliciesInManifest(
       };
     }
     // Also checked at the route, re-checked here because this is the function
-    // that WRITES kortix.yaml — a bad condition committed to the manifest would
+    // that WRITES zed.yaml — a bad condition committed to the manifest would
     // come back on every sync, and an unevaluable rule silently loses its
     // restriction rather than failing loudly.
     if (p.conditions !== undefined && p.conditions !== null && !areValidConditions(p.conditions)) {

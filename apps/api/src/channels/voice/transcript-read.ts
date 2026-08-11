@@ -1,6 +1,6 @@
-import { voiceCallReadCursors } from '@kortix/db';
+import { voiceCallReadCursors } from '@zed/db';
 /**
- * `read_transcript` — the Kortix agent reading a live call, cheaply.
+ * `read_transcript` — the Zed agent reading a live call, cheaply.
  *
  * THE PROBLEM THIS SOLVES. The transcript was always cursor-paged, so the read
  * was already incremental — but only for an agent that threaded the returned
@@ -12,7 +12,7 @@ import { voiceCallReadCursors } from '@kortix/db';
  *
  * So the position moves to the server. A bare `read_transcript {}` now means
  * "only what I have not been shown", the agent carries nothing, and the cheap
- * behaviour is the one you get by doing nothing. `kortix.voice_call_read_cursors`
+ * behaviour is the one you get by doing nothing. `zed.voice_call_read_cursors`
  * holds it — one row per call, keyed by call id, which is also the session id.
  * See that migration for why it is its own table and not a column on
  * project_sessions.

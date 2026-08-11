@@ -6,7 +6,7 @@
  * normalizes to null before it can reach a React tree.
  */
 import { describe, expect, test } from 'bun:test';
-import { PROJECT_GLYPH_COLORS } from '@kortix/shared';
+import { PROJECT_GLYPH_COLORS } from '@zed/shared';
 import { normalizeProjectGlyph } from './project-glyph';
 
 describe('normalizeProjectGlyph — accepts', () => {

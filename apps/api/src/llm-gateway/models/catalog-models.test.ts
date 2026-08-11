@@ -9,8 +9,8 @@ import { catalogModelForWireModel, gatewayModelCatalog } from './catalog-models'
 describe('gatewayModelCatalog — served catalog', () => {
   const full = gatewayModelCatalog('proj');
 
-  test('brands managed DeepSeek V4 Flash with the Kortix provider', () => {
-    expect(full['deepseek-v4-flash']?.provider).toBe('kortix');
+  test('brands managed DeepSeek V4 Flash with the Zed provider', () => {
+    expect(full['deepseek-v4-flash']?.provider).toBe('zed');
   });
 
   test('serves Aster GLM pricing instead of a models.dev provider price', () => {
@@ -68,16 +68,16 @@ describe('gatewayModelCatalog — served catalog', () => {
     expect(anthropic?.release_date).toBe(anthropic?.released);
   });
 
-  // Regression coverage for the "every provider shows as Kortix" picker bug:
+  // Regression coverage for the "every provider shows as Zed" picker bug:
   // every served model MUST carry the REAL upstream provider id explicitly,
   // never leaving the client to string-split the wire model id (fragile —
   // see model-selector.tsx's pickerGroupId / use-model-store.ts's subProviderOf).
   test('every served model carries an explicit `provider` field', () => {
     // BYOK catalog entries brand as their real upstream provider.
     expect(full['anthropic/claude-opus-4-8']?.provider).toBe('anthropic');
-    // Managed models brand as `kortix`.
-    expect(full['claude-opus-4.8']?.provider).toBe('kortix');
-    expect(full['glm-5.2']?.provider).toBe('kortix');
+    // Managed models brand as `zed`.
+    expect(full['claude-opus-4.8']?.provider).toBe('zed');
+    expect(full['glm-5.2']?.provider).toBe('zed');
     // Codex (ChatGPT subscription) models brand as their own `codex` provider,
     // distinct from the raw `openai` BYOK provider.
     expect(full['codex/gpt-5.6-sol']?.provider).toBe('codex');
@@ -138,7 +138,7 @@ describe('gatewayModelCatalog — served catalog', () => {
 describe('gatewayModelCatalog — free-tier visibility', () => {
   const freeFull = gatewayModelCatalog('proj', { freeManagedOnly: true });
 
-  test('free tier sees no managed Kortix models', () => {
+  test('free tier sees no managed Zed models', () => {
     expect(freeFull.auto).toBeUndefined();
     for (const id of ['claude-opus-4.8', 'claude-sonnet-4.6', 'glm-5.2', 'kimi-k3', 'deepseek-v4-flash']) {
       expect(freeFull[id], id).toBeUndefined();
@@ -200,7 +200,7 @@ describe('catalogModelForWireModel — generation-controls capability lookup', (
 
   test('does not resolve stale synthetic auto model ids', () => {
     expect(catalogModelForWireModel('auto')).toBeUndefined();
-    expect(catalogModelForWireModel('kortix/auto')).toBeUndefined();
+    expect(catalogModelForWireModel('zed/auto')).toBeUndefined();
   });
 
   test('returns undefined for a completely unknown wire model', () => {

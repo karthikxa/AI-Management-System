@@ -1,4 +1,4 @@
-/** E2B Cloud implementation of Kortix's unified sandbox runtime contract. */
+/** E2B Cloud implementation of Zed's unified sandbox runtime contract. */
 
 import { Sandbox, SandboxNotFoundError, type Sandbox as E2BSandbox } from 'e2b';
 import { config, SANDBOX_VERSION } from '../../config';
@@ -20,31 +20,31 @@ import type {
 import { assertWorkloadCredential, sandboxWorkloadType } from './index';
 
 // One hour is the maximum accepted by every E2B plan (Pro permits 24 hours).
-// Kortix's own idle reaper normally pauses much sooner; this is the provider
+// Zed's own idle reaper normally pauses much sooner; this is the provider
 // backstop and must not make sandbox creation plan-dependent.
 const E2B_RUNTIME_BACKSTOP_MS = 60 * 60 * 1000;
-const KORTIX_ENTRYPOINT = '/usr/local/bin/kortix-entrypoint';
-const KORTIX_ENTRYPOINT_COMMAND =
-  `exec flock -n /run/kortix-entrypoint.lock ${KORTIX_ENTRYPOINT}`;
-const RUNTIME_ENV_PATH = '/etc/kortix/runtime-env.json';
-const KORTIX_HEALTH_WAIT =
+const ZED_ENTRYPOINT = '/usr/local/bin/zed-entrypoint';
+const ZED_ENTRYPOINT_COMMAND =
+  `exec flock -n /run/zed-entrypoint.lock ${ZED_ENTRYPOINT}`;
+const RUNTIME_ENV_PATH = '/etc/zed/runtime-env.json';
+const ZED_HEALTH_WAIT =
   'for attempt in $(seq 1 180); do ' +
-  'if curl --fail --silent --show-error --max-time 2 http://127.0.0.1:8000/kortix/health >/dev/null; then exit 0; fi; ' +
+  'if curl --fail --silent --show-error --max-time 2 http://127.0.0.1:8000/zed/health >/dev/null; then exit 0; fi; ' +
   'sleep 1; done; exit 1';
-const KORTIX_APPD = '/kortix/bin/kortix-appd';
-const KORTIX_APPD_COMMAND = `exec flock -n /run/kortix-appd.lock ${KORTIX_APPD}`;
-const KORTIX_APPD_HEALTH_WAIT =
+const ZED_APPD = '/zed/bin/zed-appd';
+const ZED_APPD_COMMAND = `exec flock -n /run/zed-appd.lock ${ZED_APPD}`;
+const ZED_APPD_HEALTH_WAIT =
   'for attempt in $(seq 1 180); do ' +
   'if curl --fail --silent --show-error --max-time 2 ' +
-  '-H "Authorization: Bearer $KORTIX_APPD_TOKEN" ' +
+  '-H "Authorization: Bearer $ZED_APPD_TOKEN" ' +
   'http://127.0.0.1:7331/v1/health >/dev/null; then exit 0; fi; ' +
   'sleep 1; done; exit 1';
-const MANAGED_METADATA = 'kortix_managed';
-const ENV_METADATA = 'kortix_env';
+const MANAGED_METADATA = 'zed_managed';
+const ENV_METADATA = 'zed_env';
 // The E2B SDK accepts requestTimeoutMs, but a live kill call remained pending
 // after that budget. This outer timer bounds all permanent-removal call sites.
 const E2B_REMOVE_TIMEOUT_MS = configuredTimeoutMs(
-  'KORTIX_E2B_REMOVE_TIMEOUT_MS',
+  'ZED_E2B_REMOVE_TIMEOUT_MS',
   25_000,
   1_000,
 );
@@ -79,8 +79,8 @@ function validateRuntimeEnv(value: unknown, externalId: string): Record<string, 
     }
     envs[key] = item;
   }
-  const workloadType = envs.KORTIX_WORKLOAD_TYPE === 'app' ? 'app' : 'session';
-  const required = workloadType === 'app' ? 'KORTIX_APPD_TOKEN' : 'KORTIX_SANDBOX_TOKEN';
+  const workloadType = envs.ZED_WORKLOAD_TYPE === 'app' ? 'app' : 'session';
+  const required = workloadType === 'app' ? 'ZED_APPD_TOKEN' : 'ZED_SANDBOX_TOKEN';
   if (!envs[required]) {
     throw new Error(`[e2b] sandbox ${externalId} persisted runtime environment has no ${required}`);
   }
@@ -124,30 +124,30 @@ function requirePrivateTrafficToken(sandbox: E2BSandbox): string {
   return sandbox.trafficAccessToken;
 }
 
-async function ensureKortixEntrypoint(
+async function ensureZedEntrypoint(
   sandbox: E2BSandbox,
   envs?: Record<string, string>,
 ): Promise<void> {
   const processes = await sandbox.commands.list({ requestTimeoutMs: 10_000 });
   const alreadyRunning = processes.some(
-    (process) => `${process.cmd} ${process.args.join(' ')}`.includes(KORTIX_ENTRYPOINT),
+    (process) => `${process.cmd} ${process.args.join(' ')}`.includes(ZED_ENTRYPOINT),
   );
   if (!alreadyRunning) {
     // The guest lock is the cross-process/cross-replica authority. Two API
     // replicas can both miss commands.list() during the first few milliseconds
     // of a cold boot; only one is allowed to own the long-lived daemon.
-    await sandbox.commands.run(KORTIX_ENTRYPOINT_COMMAND, {
+    await sandbox.commands.run(ZED_ENTRYPOINT_COMMAND, {
       background: true,
       user: 'root',
       ...(envs ? { envs } : {}),
       // E2B applies timeoutMs to the total lifetime of a background command;
       // its default is 60s and our former 20s value deterministically killed
-      // the Kortix daemon after boot. Zero is the SDK's documented no-timeout
+      // the Zed daemon after boot. Zero is the SDK's documented no-timeout
       // value. The sandbox lifecycle/reaper remains the authority that stops it.
       timeoutMs: 0,
     });
   }
-  await sandbox.commands.run(KORTIX_HEALTH_WAIT, {
+  await sandbox.commands.run(ZED_HEALTH_WAIT, {
     user: 'root',
     ...(envs ? { envs } : {}),
     timeoutMs: 190_000,
@@ -160,17 +160,17 @@ async function ensureAppEntrypoint(
 ): Promise<void> {
   const processes = await sandbox.commands.list({ requestTimeoutMs: 10_000 });
   const alreadyRunning = processes.some(
-    (process) => `${process.cmd} ${process.args.join(' ')}`.includes(KORTIX_APPD),
+    (process) => `${process.cmd} ${process.args.join(' ')}`.includes(ZED_APPD),
   );
   if (!alreadyRunning) {
-    await sandbox.commands.run(KORTIX_APPD_COMMAND, {
+    await sandbox.commands.run(ZED_APPD_COMMAND, {
       background: true,
       user: 'root',
       envs,
       timeoutMs: 0,
     });
   }
-  await sandbox.commands.run(KORTIX_APPD_HEALTH_WAIT, {
+  await sandbox.commands.run(ZED_APPD_HEALTH_WAIT, {
     user: 'root',
     envs,
     timeoutMs: 190_000,
@@ -200,14 +200,14 @@ export class E2BProvider implements SandboxProvider {
       );
     }
 
-    const sandboxApiBase = config.KORTIX_URL
+    const sandboxApiBase = config.ZED_URL
       .replace(/\/+$/, '')
       .replace(/\/v1\/router$/, '')
       .replace(/\/v1$/, '');
     const envVars: Record<string, string> = {
-      KORTIX_API_URL: `${sandboxApiBase}/v1`,
-      KORTIX_FRONTEND_URL: sandboxFrontendBaseUrl(),
-      ...(workloadType === 'app' ? { KORTIX_WORKLOAD_TYPE: workloadType } : {}),
+      ZED_API_URL: `${sandboxApiBase}/v1`,
+      ZED_FRONTEND_URL: sandboxFrontendBaseUrl(),
+      ...(workloadType === 'app' ? { ZED_WORKLOAD_TYPE: workloadType } : {}),
       ...opts.envVars,
     };
     assertWorkloadCredential(this.name, opts, envVars);
@@ -217,10 +217,10 @@ export class E2BProvider implements SandboxProvider {
       envs: envVars,
       metadata: {
         [MANAGED_METADATA]: 'true',
-        [ENV_METADATA]: config.INTERNAL_KORTIX_ENV,
-        kortix_account_id: opts.accountId,
-        kortix_created_by: opts.userId,
-        ...(workloadType === 'app' ? { kortix_workload: workloadType } : {}),
+        [ENV_METADATA]: config.INTERNAL_ZED_ENV,
+        zed_account_id: opts.accountId,
+        zed_created_by: opts.userId,
+        ...(workloadType === 'app' ? { zed_workload: workloadType } : {}),
       },
       timeoutMs: E2B_RUNTIME_BACKSTOP_MS,
       secure: true,
@@ -248,14 +248,14 @@ export class E2BProvider implements SandboxProvider {
       // keepMemory:false pause. Persist the complete per-session environment on
       // the private rootfs so a cold resume (including after an API restart)
       // can relaunch the authenticated daemon. Never put these secrets in E2B
-      // metadata or Kortix DB metadata.
+      // metadata or Zed DB metadata.
       await persistRuntimeEnv(sandbox, envVars);
       if (workloadType === 'app') await ensureAppEntrypoint(sandbox, envVars);
-      else await ensureKortixEntrypoint(sandbox, envVars);
+      else await ensureZedEntrypoint(sandbox, envVars);
     } catch (error) {
       connectedSandboxes.delete(sandbox.sandboxId);
       await sandbox.kill({ requestTimeoutMs: 20_000 }).catch(() => false);
-      throw new Error(`[e2b] failed to launch Kortix entrypoint: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`[e2b] failed to launch Zed entrypoint: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     const externalId = sandbox.sandboxId;
@@ -283,10 +283,10 @@ export class E2BProvider implements SandboxProvider {
       connectedSandboxes.set(externalId, sandbox);
       // A filesystem-only pause cold-boots on connect. E2B normally runs the
       // template start command during that boot; this explicit check makes the
-      // Kortix runtime invariant independent of provider startup behavior.
+      // Zed runtime invariant independent of provider startup behavior.
       const envVars = await loadRuntimeEnv(sandbox);
-      if (envVars.KORTIX_WORKLOAD_TYPE === 'app') await ensureAppEntrypoint(sandbox, envVars);
-      else await ensureKortixEntrypoint(sandbox, envVars);
+      if (envVars.ZED_WORKLOAD_TYPE === 'app') await ensureAppEntrypoint(sandbox, envVars);
+      else await ensureZedEntrypoint(sandbox, envVars);
     } catch (error) {
       connectedSandboxes.delete(externalId);
       throw error;
@@ -390,7 +390,7 @@ export class E2BProvider implements SandboxProvider {
       ...apiOpts(),
       limit: 100,
       query: {
-        metadata: { [MANAGED_METADATA]: 'true', [ENV_METADATA]: config.INTERNAL_KORTIX_ENV },
+        metadata: { [MANAGED_METADATA]: 'true', [ENV_METADATA]: config.INTERNAL_ZED_ENV },
         state: ['running'],
       },
     });

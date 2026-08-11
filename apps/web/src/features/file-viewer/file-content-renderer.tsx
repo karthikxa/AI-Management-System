@@ -17,12 +17,12 @@ import {
 } from '@/hooks/use-authenticated-preview-url';
 import { useHeicBlob } from '@/hooks/use-heic-url';
 import { getAuthToken } from '@/lib/auth-token';
-import { getActiveStaticFileHealthUrl, getActiveStaticFilePreviewUrl } from '@kortix/sdk/react';
+import { getActiveStaticFileHealthUrl, getActiveStaticFilePreviewUrl } from '@zed/sdk/react';
 import { getIframeSandbox } from '@/lib/security/iframe-sandbox';
 import { cn } from '@/lib/utils';
 import { isHeicFile } from '@/lib/utils/heic-convert';
 import { findDiagnosticsForFile, useDiagnosticsStore } from '@/stores/diagnostics-store';
-import { toSandboxAbsolutePath } from '@kortix/sdk';
+import { toSandboxAbsolutePath } from '@zed/sdk';
 import {
   WarningIcon as AlertTriangle,
   BracketsCurlyIcon as Braces,

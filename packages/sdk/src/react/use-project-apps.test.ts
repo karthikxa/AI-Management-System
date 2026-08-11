@@ -18,7 +18,7 @@ beforeEach(() => {
   invalidated = [];
 });
 
-describe('Kortix Apps React Query bindings', () => {
+describe('Zed Apps React Query bindings', () => {
   test('uses stable project and App scoped query keys', () => {
     expect((useProjectApps('project-1') as any).queryKey).toEqual(projectAppsKey('project-1'));
     expect((useProjectApps(null) as any).enabled).toBe(false);

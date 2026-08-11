@@ -81,11 +81,11 @@ export async function respondViaUrl(url: string | undefined, body: unknown): Pro
 }
 
 /** Dashboard base URL (no trailing slash) for building project/session links. */
-export function dashboardBase(kortixUrl?: string): string {
-  return (kortixUrl || 'https://kortix.com').replace(/\/$/, '');
+export function dashboardBase(zedUrl?: string): string {
+  return (zedUrl || 'https://zed.com').replace(/\/$/, '');
 }
 
-/** Web URL for a Kortix session. */
-export function sessionWebUrl(kortixUrl: string | undefined, projectId: string, sessionId: string): string {
-  return `${dashboardBase(kortixUrl)}/projects/${projectId}/sessions/${sessionId}`;
+/** Web URL for a Zed session. */
+export function sessionWebUrl(zedUrl: string | undefined, projectId: string, sessionId: string): string {
+  return `${dashboardBase(zedUrl)}/projects/${projectId}/sessions/${sessionId}`;
 }

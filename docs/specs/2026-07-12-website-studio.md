@@ -1,13 +1,13 @@
 # Website Studio — an email-first, self-running web agency (spec)
 
 > **Runtime scope.** The shipped marketplace template uses
-> `kortix_version: 2` and an OpenCode-native `studio` agent.
+> `zed_version: 2` and an OpenCode-native `studio` agent.
 
 **Status:** draft · **Date:** 2026-07-12 · **Owner:** Marko
 
 ## The idea
 
-A Kortix project that operates a web design studio end-to-end, over email, with
+A Zed project that operates a web design studio end-to-end, over email, with
 almost no human in the loop. A prospect or client emails an address; the agent
 figures out what they need, **designs and deploys a real website**, replies with
 a live preview link and a **Stripe subscription** to activate it, and then makes
@@ -23,7 +23,7 @@ It ships as a one-click **`registry:project`** in the marketplace
 (`packages/starter/templates/marketplace-projects/web-studio`) — clone it, connect
 email + Stripe + a deploy provider, and it runs.
 
-## Why this is a good Kortix demo
+## Why this is a good Zed demo
 
 It exercises the whole platform in one loop: **triggers** (inbound-email webhook
 + heartbeat cron), **connectors/secrets** (email, Stripe, Vercel, a registrar),
@@ -58,9 +58,9 @@ sites). It's a believable autonomous business, not a toy.
 
 ## Components
 
-- **Agent `studio`** (`.kortix/opencode/agents/studio.md`) — the persona +
+- **Agent `studio`** (`.zed/opencode/agents/studio.md`) — the persona +
   workflow + guardrails.
-- **Triggers** (in `kortix.yaml`, both disabled by default):
+- **Triggers** (in `zed.yaml`, both disabled by default):
   - `inbound-email` (webhook) — every client message fires a session. Wired to
     an inbound address or an email channel pointed at `studio`.
   - `heartbeat` (cron, every 4h) — housekeeping only; never contacts new people
@@ -106,7 +106,7 @@ initiates — is fully autonomous.
    asking (domains, paid APIs, ads).
 3. Never auto-charge a card — payment links only, client-initiated.
 4. Reply only to people who emailed you, unless an outbound list was approved.
-5. Keep the client ledger in `.kortix/memory/` (clients, sites, domains,
+5. Keep the client ledger in `.zed/memory/` (clients, sites, domains,
    subscription status, open changes, opt-outs); read it every session + heartbeat.
 
 ## Open questions / follow-ups
@@ -114,6 +114,6 @@ initiates — is fully autonomous.
 - Email wiring: ship with a concrete inbound provider recipe (channel vs. raw
   webhook + signature) rather than leaving it to the operator.
 - A tiny `payments` reference skill (Stripe payment-link + subscription recipes)
-  would sharpen step 2; today it's the Stripe connector via `kortix-connectors`.
+  would sharpen step 2; today it's the Stripe connector via `zed-connectors`.
 - Deploy provider is assumed Vercel; document the connector contract.
 - Domain purchase flow via a registrar connector (propose → buy within budget).

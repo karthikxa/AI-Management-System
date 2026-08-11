@@ -1,4 +1,4 @@
-import { accountMembers } from '@kortix/db';
+import { accountMembers } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { db } from '../../shared/db';
 import { ensureAgentServiceAccount } from '../../repositories/service-accounts';

@@ -120,7 +120,7 @@ export function useTelegramConnect() {
 
       // Try sandbox setup endpoint first (matches web)
       try {
-        const res = await fetch(`${sandboxUrl}/kortix/channels/setup/telegram`, {
+        const res = await fetch(`${sandboxUrl}/zed/channels/setup/telegram`, {
           method: 'POST',
           headers,
           body: JSON.stringify({ botToken, publicUrl: '', defaultAgent, defaultModel }),
@@ -247,7 +247,7 @@ export function useSlackGenerateManifest() {
     }): Promise<GenerateManifestResult> => {
       if (!sandboxUrl) throw new Error('No sandbox URL');
       const token = await getAuthToken();
-      const res = await fetch(`${sandboxUrl}/kortix/channels/slack-manifest`, {
+      const res = await fetch(`${sandboxUrl}/zed/channels/slack-manifest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -301,7 +301,7 @@ export function useSlackConnect() {
 
       // Try sandbox setup endpoint first (matches web)
       try {
-        const res = await fetch(`${sandboxUrl}/kortix/channels/setup/slack`, {
+        const res = await fetch(`${sandboxUrl}/zed/channels/setup/slack`, {
           method: 'POST',
           headers,
           body: JSON.stringify({

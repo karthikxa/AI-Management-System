@@ -29,7 +29,7 @@ router.openapi(
   (c) => {
     return c.json({
       status: 'ok',
-      service: 'kortix-router',
+      service: 'zed-router',
       timestamp: new Date().toISOString(),
     });
   },

@@ -1,7 +1,7 @@
 {
-  "name": "Kortix – The AI Command Center for Your Company",
-  "short_name": "Kortix",
-  "description": "Kortix is the open-source AI command center for your company — one place to build, run, and govern AI agents that connect 3,000+ tools and deliver real work, not just chat.",
+  "name": "Zed – The AI Command Center for Your Company",
+  "short_name": "Zed",
+  "description": "Zed is the open-source AI command center for your company — one place to build, run, and govern AI agents that connect 3,000+ tools and deliver real work, not just chat.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
@@ -34,12 +34,12 @@
   "related_applications": [
     {
       "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=com.kortix.app",
-      "id": "com.kortix.app"
+      "url": "https://play.google.com/store/apps/details?id=com.zed.app",
+      "id": "com.zed.app"
     },
     {
       "platform": "itunes",
-      "url": "https://apps.apple.com/ie/app/kortix/id6754448524"
+      "url": "https://apps.apple.com/ie/app/zed/id6754448524"
     }
   ],
   "prefer_related_applications": true

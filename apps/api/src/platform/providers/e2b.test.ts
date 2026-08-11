@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, mock, test } from 'bun:test';
 
 process.env.ALLOWED_SANDBOX_PROVIDERS = 'e2b';
 process.env.E2B_API_KEY = 'e2b_test_key';
-process.env.E2B_TEMPLATE = 'kortix-test';
-process.env.KORTIX_URL = 'https://api.example.com';
-process.env.INTERNAL_KORTIX_ENV = 'dev';
+process.env.E2B_TEMPLATE = 'zed-test';
+process.env.ZED_URL = 'https://api.example.com';
+process.env.INTERNAL_ZED_ENV = 'dev';
 process.env.DATABASE_URL ??= 'postgres://x';
 process.env.SUPABASE_URL = 'http://supabase.test';
 process.env.FRONTEND_URL = 'https://app.example.com';
@@ -33,7 +33,7 @@ function fakeSandbox(sandboxId: string, trafficAccessToken = `traffic-${sandboxI
   const runs: Array<{ command: string; opts: Record<string, unknown> }> = [];
   const fileWrites: Array<{ path: string; data: string; opts: Record<string, unknown> }> = [];
   const files = new Map<string, string>([
-    ['/etc/kortix/runtime-env.json', JSON.stringify({ KORTIX_SANDBOX_TOKEN: 'persisted-token' })],
+    ['/etc/zed/runtime-env.json', JSON.stringify({ ZED_SANDBOX_TOKEN: 'persisted-token' })],
   ]);
   const sandbox = {
     sandboxId,
@@ -158,7 +158,7 @@ describe('E2B provider admission and registry', () => {
 });
 
 describe('E2B provider lifecycle', () => {
-  test('create is private, filesystem-persistent, explicit-resume-only, and launches Kortix', async () => {
+  test('create is private, filesystem-persistent, explicit-resume-only, and launches Zed', async () => {
     const sandbox = fakeSandbox('sb-secure', 'traffic-secret');
     createFactory = () => sandbox;
     const provider = new E2BProvider();
@@ -167,11 +167,11 @@ describe('E2B provider lifecycle', () => {
       accountId: 'acc-1',
       userId: 'usr-1',
       name: 'session-1',
-      snapshot: 'kortix-template-1',
-      envVars: { KORTIX_SANDBOX_TOKEN: 'sandbox-token' },
+      snapshot: 'zed-template-1',
+      envVars: { ZED_SANDBOX_TOKEN: 'sandbox-token' },
     });
 
-    expect(createdTemplate).toBe('kortix-template-1');
+    expect(createdTemplate).toBe('zed-template-1');
     expect(createdOpts).toMatchObject({
       timeoutMs: 3_600_000,
       secure: true,
@@ -182,32 +182,32 @@ describe('E2B provider lifecycle', () => {
         autoResume: false,
       },
       metadata: {
-        kortix_managed: 'true',
-        kortix_env: 'dev',
-        kortix_account_id: 'acc-1',
-        kortix_created_by: 'usr-1',
+        zed_managed: 'true',
+        zed_env: 'dev',
+        zed_account_id: 'acc-1',
+        zed_created_by: 'usr-1',
       },
     });
     expect(sandbox.fileWrites).toHaveLength(1);
     expect(sandbox.fileWrites[0]).toMatchObject({
-      path: '/etc/kortix/runtime-env.json',
+      path: '/etc/zed/runtime-env.json',
       opts: { user: 'root' },
     });
     expect(JSON.parse(sandbox.fileWrites[0].data)).toMatchObject({
-      KORTIX_SANDBOX_TOKEN: 'sandbox-token',
-      KORTIX_API_URL: 'https://api.example.com/v1',
+      ZED_SANDBOX_TOKEN: 'sandbox-token',
+      ZED_API_URL: 'https://api.example.com/v1',
     });
     expect(sandbox.runs).toHaveLength(3);
-    expect(sandbox.runs[0].command).toBe('chmod 600 /etc/kortix/runtime-env.json');
+    expect(sandbox.runs[0].command).toBe('chmod 600 /etc/zed/runtime-env.json');
     expect(sandbox.runs[1]).toMatchObject({
-      command: expect.stringContaining('flock -n /run/kortix-entrypoint.lock /usr/local/bin/kortix-entrypoint'),
+      command: expect.stringContaining('flock -n /run/zed-entrypoint.lock /usr/local/bin/zed-entrypoint'),
       opts: {
         background: true,
         timeoutMs: 0,
-        envs: expect.objectContaining({ KORTIX_SANDBOX_TOKEN: 'sandbox-token' }),
+        envs: expect.objectContaining({ ZED_SANDBOX_TOKEN: 'sandbox-token' }),
       },
     });
-    expect(sandbox.runs[2].command).toContain('http://127.0.0.1:8000/kortix/health');
+    expect(sandbox.runs[2].command).toContain('http://127.0.0.1:8000/zed/health');
     expect(result).toMatchObject({
       externalId: 'sb-secure',
       metadata: { lifecycle: 'pause-filesystem-explicit-resume' },
@@ -223,7 +223,7 @@ describe('E2B provider lifecycle', () => {
       userId: 'usr-1',
       name: 'session-1',
       snapshot: 'tpl',
-      envVars: { KORTIX_SANDBOX_TOKEN: 'sandbox-token' },
+      envVars: { ZED_SANDBOX_TOKEN: 'sandbox-token' },
     })).rejects.toThrow('private traffic access token');
 
     expect(killed).toEqual(['sb-tokenless']);
@@ -240,57 +240,57 @@ describe('E2B provider lifecycle', () => {
       name: 'app-1',
       snapshot: 'app-template-1',
       workloadType: 'app',
-      envVars: { KORTIX_APPD_TOKEN: 'appd-token' },
+      envVars: { ZED_APPD_TOKEN: 'appd-token' },
       publishedPorts: [7331, 8080],
     });
 
     expect(result.baseUrl).toBe('https://api.example.com/v1/p/app-secure/8080');
     expect(createdOpts).toMatchObject({
-      metadata: { kortix_workload: 'app' },
-      envs: { KORTIX_WORKLOAD_TYPE: 'app', KORTIX_APPD_TOKEN: 'appd-token' },
+      metadata: { zed_workload: 'app' },
+      envs: { ZED_WORKLOAD_TYPE: 'app', ZED_APPD_TOKEN: 'appd-token' },
     });
     expect(sandbox.runs.map((run) => run.command)).toEqual([
-      'chmod 600 /etc/kortix/runtime-env.json',
-      expect.stringContaining('/kortix/bin/kortix-appd'),
+      'chmod 600 /etc/zed/runtime-env.json',
+      expect.stringContaining('/zed/bin/zed-appd'),
       expect.stringContaining('http://127.0.0.1:7331/v1/health'),
     ]);
     expect(sandbox.runs.map((run) => run.command).join('\n')).not.toContain(
-      '/usr/local/bin/kortix-entrypoint',
+      '/usr/local/bin/zed-entrypoint',
     );
     expect(JSON.parse(sandbox.fileWrites[0]!.data)).toMatchObject({
-      KORTIX_WORKLOAD_TYPE: 'app',
-      KORTIX_APPD_TOKEN: 'appd-token',
+      ZED_WORKLOAD_TYPE: 'app',
+      ZED_APPD_TOKEN: 'appd-token',
     });
   });
 
   test('App cold resume relaunches appd and skips the session entrypoint', async () => {
     const resumed = fakeSandbox('app-resume');
-    resumed.persistedFiles.set('/etc/kortix/runtime-env.json', JSON.stringify({
-      KORTIX_WORKLOAD_TYPE: 'app',
-      KORTIX_APPD_TOKEN: 'persisted-appd-token',
+    resumed.persistedFiles.set('/etc/zed/runtime-env.json', JSON.stringify({
+      ZED_WORKLOAD_TYPE: 'app',
+      ZED_APPD_TOKEN: 'persisted-appd-token',
     }));
     connectFactory = () => resumed;
 
     await new E2BProvider().start('app-resume');
 
     expect(resumed.runs.map((run) => run.command)).toEqual([
-      expect.stringContaining('/kortix/bin/kortix-appd'),
+      expect.stringContaining('/zed/bin/zed-appd'),
       expect.stringContaining('http://127.0.0.1:7331/v1/health'),
     ]);
     expect(resumed.runs.map((run) => run.command).join('\n')).not.toContain(
-      '/usr/local/bin/kortix-entrypoint',
+      '/usr/local/bin/zed-entrypoint',
     );
   });
 
-  test('rejects an App workload without KORTIX_APPD_TOKEN', async () => {
+  test('rejects an App workload without ZED_APPD_TOKEN', async () => {
     await expect(new E2BProvider().create({
       accountId: 'acc-1',
       userId: 'usr-1',
       name: 'app-1',
       snapshot: 'app-template-1',
       workloadType: 'app',
-      envVars: { KORTIX_SANDBOX_TOKEN: 'session-token-is-not-valid-for-apps' },
-    })).rejects.toThrow(/KORTIX_APPD_TOKEN/);
+      envVars: { ZED_SANDBOX_TOKEN: 'session-token-is-not-valid-for-apps' },
+    })).rejects.toThrow(/ZED_APPD_TOKEN/);
   });
 
   test('stop drops RAM but preserves disk, and start explicitly reconnects the same identity', async () => {
@@ -299,7 +299,7 @@ describe('E2B provider lifecycle', () => {
     const provider = new E2BProvider();
     await provider.create({
       accountId: 'acc-1', userId: 'usr-1', name: 'session-1', snapshot: 'tpl',
-      envVars: { KORTIX_SANDBOX_TOKEN: 'sandbox-token' },
+      envVars: { ZED_SANDBOX_TOKEN: 'sandbox-token' },
     });
 
     await provider.stop('sb-lifecycle');
@@ -312,7 +312,7 @@ describe('E2B provider lifecycle', () => {
     expect(connected[0]).toMatchObject({ sandboxId: 'sb-lifecycle' });
   });
 
-  test('cold resume verifies the Kortix entrypoint on the same sandbox identity', async () => {
+  test('cold resume verifies the Zed entrypoint on the same sandbox identity', async () => {
     const resumed = fakeSandbox('sb-cold-resume');
     connectFactory = () => resumed;
     const provider = new E2BProvider();
@@ -322,15 +322,15 @@ describe('E2B provider lifecycle', () => {
     expect(connected.map((call) => call.sandboxId)).toEqual(['sb-cold-resume']);
     expect(resumed.runs).toEqual([
       expect.objectContaining({
-        command: expect.stringContaining('flock -n /run/kortix-entrypoint.lock /usr/local/bin/kortix-entrypoint'),
+        command: expect.stringContaining('flock -n /run/zed-entrypoint.lock /usr/local/bin/zed-entrypoint'),
         opts: expect.objectContaining({
           background: true,
           timeoutMs: 0,
-          envs: expect.objectContaining({ KORTIX_SANDBOX_TOKEN: 'persisted-token' }),
+          envs: expect.objectContaining({ ZED_SANDBOX_TOKEN: 'persisted-token' }),
         }),
       }),
       expect.objectContaining({
-        command: expect.stringContaining('http://127.0.0.1:8000/kortix/health'),
+        command: expect.stringContaining('http://127.0.0.1:8000/zed/health'),
       }),
     ]);
   });
@@ -352,20 +352,20 @@ describe('E2B provider lifecycle', () => {
     expect(connected.map((call) => call.sandboxId)).toEqual(['sb-concurrent-resume']);
     releaseConnect();
     await Promise.all([first, second]);
-    expect(resumed.runs.filter((run) => run.command.includes('/usr/local/bin/kortix-entrypoint'))).toHaveLength(1);
+    expect(resumed.runs.filter((run) => run.command.includes('/usr/local/bin/zed-entrypoint'))).toHaveLength(1);
   });
 
   test.each([
     ['missing', undefined, 'missing file'],
     ['malformed', '{not-json', 'JSON'],
-    ['non-string', JSON.stringify({ KORTIX_SANDBOX_TOKEN: 42 }), 'non-string'],
-    ['tokenless', JSON.stringify({ KORTIX_API_URL: 'https://api.example.com/v1' }), 'no KORTIX_SANDBOX_TOKEN'],
+    ['non-string', JSON.stringify({ ZED_SANDBOX_TOKEN: 42 }), 'non-string'],
+    ['tokenless', JSON.stringify({ ZED_API_URL: 'https://api.example.com/v1' }), 'no ZED_SANDBOX_TOKEN'],
   ] as const)(
     'cold resume fails closed for a %s persisted runtime environment',
     async (_case, persisted, expectedMessage) => {
       const resumed = fakeSandbox(`sb-cold-${_case}`);
-      if (persisted === undefined) resumed.persistedFiles.delete('/etc/kortix/runtime-env.json');
-      else resumed.persistedFiles.set('/etc/kortix/runtime-env.json', persisted);
+      if (persisted === undefined) resumed.persistedFiles.delete('/etc/zed/runtime-env.json');
+      else resumed.persistedFiles.set('/etc/zed/runtime-env.json', persisted);
       connectFactory = () => resumed;
       const provider = new E2BProvider();
 
@@ -431,7 +431,7 @@ describe('E2B provider lifecycle', () => {
     expect(performance.now() - startedAt).toBeLessThan(500);
   });
 
-  test('the orphan reaper list is scoped to Kortix and the current environment', async () => {
+  test('the orphan reaper list is scoped to Zed and the current environment', async () => {
     listed = [
       { sandboxId: 'sb-1', startedAt: new Date('2026-07-13T12:00:00Z') },
       { sandboxId: 'sb-2', startedAt: null },
@@ -444,7 +444,7 @@ describe('E2B provider lifecycle', () => {
     ]);
     expect(listOpts).toMatchObject({
       query: {
-        metadata: { kortix_managed: 'true', kortix_env: 'dev' },
+        metadata: { zed_managed: 'true', zed_env: 'dev' },
         state: ['running'],
       },
     });

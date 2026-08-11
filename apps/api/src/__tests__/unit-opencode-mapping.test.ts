@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test';
 
-import { projectSessions } from '@kortix/db';
+import { projectSessions } from '@zed/db';
 import * as realPreviewOwnership from '../shared/preview-ownership';
 
 const dbUpdates: Array<Record<string, unknown>> = [];

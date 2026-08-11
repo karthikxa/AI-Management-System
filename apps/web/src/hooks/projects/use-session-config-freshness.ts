@@ -6,7 +6,7 @@
  * A session's agent behaviour is compiled from git ONCE, at provision, and
  * frozen into its sandbox environment. Merge a change to an agent and every
  * session already open keeps running the old one, silently and indefinitely.
- * Until now the only way to find out was `kortix sessions reload <id> --status`
+ * Until now the only way to find out was `zed sessions reload <id> --status`
  * in a terminal, which means most people never found out at all.
  *
  * The whole design turns on ONE thing: `stale` is tri-state. `true` behind,
@@ -26,8 +26,8 @@ import {
   type SessionConfigState,
   type SessionReloadResult,
   sessionStartKey,
-} from '@kortix/sdk';
-import { clearRuntimeEnsureGuard, qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { clearRuntimeEnsureGuard, qk } from '@zed/sdk/react';
 
 /**
  * How long a freshness answer is trusted before a window-focus refetch will

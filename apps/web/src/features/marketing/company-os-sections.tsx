@@ -33,7 +33,7 @@ export function ProblemSection() {
     <section className={sectionShell}>
       <Reveal>
         <div className="max-w-3xl space-y-4">
-          <Badge variant="kortix" className="rounded">
+          <Badge variant="zed" className="rounded">
             {tHome('problemEyebrow')}
           </Badge>
           <h2 className="text-foreground text-3xl font-medium tracking-tight text-balance sm:text-4xl">
@@ -81,7 +81,7 @@ export function ProblemSection() {
 type RepoFile = { lang: 'toml' | 'md'; lines: string[] };
 
 const FILES: Record<string, RepoFile> = {
-  'kortix.yaml': {
+  'zed.yaml': {
     lang: 'toml',
     lines: [
       'project:',
@@ -360,7 +360,7 @@ type TreeNode = {
 };
 
 const TREE: TreeNode[] = [
-  { label: 'kortix.yaml', depth: 0, kind: 'file', fileId: 'kortix.yaml' },
+  { label: 'zed.yaml', depth: 0, kind: 'file', fileId: 'zed.yaml' },
   { label: 'AGENTS.md', depth: 0, kind: 'file', fileId: 'AGENTS.md' },
   { label: 'sales', depth: 0, kind: 'folder' },
   { label: 'prospecting/SKILL.md', depth: 1, kind: 'file', fileId: 'sales/prospecting/SKILL.md' },
@@ -435,7 +435,7 @@ function CodeBody({ file }: { file: RepoFile }) {
 
 function RepoExplorer() {
   const tHome = useTranslations('hardcodedUi.appHomePage');
-  const [activeId, setActiveId] = useState<keyof typeof FILES>('kortix.yaml');
+  const [activeId, setActiveId] = useState<keyof typeof FILES>('zed.yaml');
   const active = FILES[activeId];
 
   return (
@@ -515,7 +515,7 @@ export function CompanyAsCodeSection() {
     <section className={sectionShell}>
       <Reveal>
         <div className="mb-12 max-w-2xl space-y-3">
-          <Badge variant="kortix" className="rounded">
+          <Badge variant="zed" className="rounded">
             {tHome('codeEyebrow')}
           </Badge>
           <h2 className="text-foreground text-3xl font-medium tracking-tight sm:text-4xl">
@@ -572,7 +572,7 @@ export function HowItRunsSection() {
     <section className={sectionShell}>
       <Reveal>
         <div className="mb-12 max-w-2xl space-y-3">
-          <Badge variant="kortix" className="rounded">
+          <Badge variant="zed" className="rounded">
             {tHome('runsEyebrow')}
           </Badge>
           <h2 className="text-foreground text-3xl font-medium tracking-tight text-balance sm:text-4xl">

@@ -2,7 +2,7 @@
 
 Consumer-driven contract testing with [Pact](https://docs.pact.io/) — the OSS
 standard for verifying that a consumer (e.g. the dashboard) and a provider (the
-Kortix API) agree on a contract, without spinning up both sides together.
+Zed API) agree on a contract, without spinning up both sides together.
 
 Two halves:
 
@@ -35,7 +35,7 @@ bun test contract/health.consumer.pact.test.ts
 
 The consumer test never touches a real API. It declares interactions against an
 in-process mock server and, on pass, writes
-`pacts/kortix-dashboard-kortix-api.json`. Commit that file (or publish it to a
+`pacts/zed-dashboard-zed-api.json`. Commit that file (or publish it to a
 broker — see below). For CI JUnit:
 
 ```bash
@@ -55,7 +55,7 @@ cd tests
 bun contract/verify-provider.ts
 
 # against another environment
-PROVIDER_BASE_URL=https://dev-api.kortix.com bun contract/verify-provider.ts
+PROVIDER_BASE_URL=https://dev-api.zed.com bun contract/verify-provider.ts
 ```
 
 The verifier reads every `pacts/*.json` file, replays each interaction against

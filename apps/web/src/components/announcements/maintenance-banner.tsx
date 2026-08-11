@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAdminRole } from '@/hooks/admin/use-admin-role';
 import type { MaintenanceConfig, MaintenanceLevel } from '@/lib/maintenance-store';
 import { cn } from '@/lib/utils';
-import { normalizeAppPathname } from '@kortix/sdk/instance-routes';
+import { normalizeAppPathname } from '@zed/sdk/instance-routes';
 import {
   WarningCircleIcon as AlertCircle,
   WarningIcon as AlertTriangle,
@@ -23,7 +23,7 @@ interface MaintenanceBannerProps {
   config: MaintenanceConfig;
 }
 
-// Per-level styling — brand tokens only (kortix-*), mirroring the InfoBanner tone
+// Per-level styling — brand tokens only (zed-*), mirroring the InfoBanner tone
 // scale so a system banner reads the same as every other alert in the app. The
 // card border is tinted to the level so severity is legible before you read a word.
 const levelConfig: Record<
@@ -40,22 +40,22 @@ const levelConfig: Record<
 > = {
   info: {
     icon: Info,
-    tile: 'bg-kortix-blue/10 text-kortix-blue',
-    border: 'border-kortix-blue/25',
+    tile: 'bg-zed-blue/10 text-zed-blue',
+    border: 'border-zed-blue/25',
     dismissible: true,
     defaultTitle: 'Notice',
   },
   warning: {
     icon: AlertTriangle,
-    tile: 'bg-kortix-orange/10 text-kortix-orange',
-    border: 'border-kortix-orange/25',
+    tile: 'bg-zed-orange/10 text-zed-orange',
+    border: 'border-zed-orange/25',
     dismissible: true,
     defaultTitle: 'Scheduled maintenance',
   },
   critical: {
     icon: AlertCircle,
-    tile: 'bg-kortix-red/10 text-kortix-red',
-    border: 'border-kortix-red/25',
+    tile: 'bg-zed-red/10 text-zed-red',
+    border: 'border-zed-red/25',
     dismissible: false,
     defaultTitle: 'Service disruption',
   },
@@ -196,7 +196,7 @@ export function MaintenanceBanner({ config }: MaintenanceBannerProps) {
                 </p>
               )}
               {countdown && (
-                <div className="text-kortix-orange mt-2 flex items-center gap-1.5 text-xs font-medium tabular-nums">
+                <div className="text-zed-orange mt-2 flex items-center gap-1.5 text-xs font-medium tabular-nums">
                   <Clock className="size-3 shrink-0" />
                   <span>{countdown}</span>
                 </div>

@@ -22,7 +22,7 @@
  * TIMEZONE: every bucket is a UTC calendar day. See analytics-series.ts.
  */
 import { createRoute, z } from '@hono/zod-openapi';
-import { accounts, creditLedger, projectSessions, projects } from '@kortix/db';
+import { accounts, creditLedger, projectSessions, projects } from '@zed/db';
 import { and, gte, lt, sql } from 'drizzle-orm';
 
 import { classifyLedgerKind } from '../billing/services/usage-breakdown';

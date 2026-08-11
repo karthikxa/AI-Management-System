@@ -3,8 +3,8 @@ import * as realAuth from '../../http/auth';
 
 // This file must be hermetic against process-wide `mock.module('../platform/auth', ...)`
 // (equivalently `'../auth'` from here) registrations made by OTHER test files (see the
-// identical comment in opencode/client.test.ts and opencode/kortix-master.test.ts —
-// files/client.test.ts, react/use-kortix-master.test.ts, and session/session.test.ts
+// identical comment in opencode/client.test.ts and opencode/zed-master.test.ts —
+// files/client.test.ts, react/use-zed-master.test.ts, and session/session.test.ts
 // each register one too, and bun's `mock.module` is process-wide/permanent for the
 // whole `bun test` sweep). This file registers its OWN mock for `../auth` — a thin
 // passthrough to `globalThis.fetch` this file fully controls — instead of depending on
@@ -16,12 +16,12 @@ mock.module('../../http/auth', () => ({
 }));
 
 const { platformFetch } = await import('./shared');
-const { configureKortix } = await import('../../http/config');
+const { configureZed } = await import('../../http/config');
 const { ApiError, BillingError } = await import('../../http/api/errors');
 
 beforeEach(() => {
   delete process.env.BACKEND_URL;
-  configureKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok' });
 });
 
 function mockFetch(status: number, body: unknown) {

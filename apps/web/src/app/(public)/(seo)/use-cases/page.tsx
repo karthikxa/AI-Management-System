@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { Reveal } from '@/components/home/reveal';
 import { Badge } from '@/components/ui/badge';
-import { KortixLetterField } from '@/components/ui/marketing/kortix-letter-field';
+import { ZedLetterField } from '@/components/ui/marketing/zed-letter-field';
 import { UseCasesBrowser } from '@/components/use-cases/use-cases-browser';
 import { UseCasesCta } from '@/components/use-cases/use-cases-cta';
 import { getAllUseCases } from '@/lib/use-cases';
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   keywords: [
-    'Kortix use cases',
+    'Zed use cases',
     'AI agent case studies',
     'AI command center',
     'AI workforce',
@@ -29,15 +29,15 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     type: 'website',
-    title: `Kortix ${TITLE}`,
+    title: `Zed ${TITLE}`,
     description: DESCRIPTION,
     url: URL,
-    siteName: 'Kortix',
+    siteName: 'Zed',
     images: [{ url: `${siteMetadata.url}/banner.png` }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: `Kortix ${TITLE}`,
+    title: `Zed ${TITLE}`,
     description: DESCRIPTION,
     images: [`${siteMetadata.url}/banner.png`],
   },
@@ -53,12 +53,12 @@ export default function UseCasesIndexPage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: 'Kortix Use Cases',
+    name: 'Zed Use Cases',
     description: DESCRIPTION,
     url: URL,
     publisher: {
       '@type': 'Organization',
-      name: 'Kortix',
+      name: 'Zed',
       logo: { '@type': 'ImageObject', url: `${siteMetadata.url}/favicon.png` },
     },
     mainEntity: {
@@ -82,11 +82,11 @@ export default function UseCasesIndexPage() {
       {/* Hero — animated letter field backdrop, like the marketing pages. */}
       <section className="relative overflow-hidden px-5 pt-32 pb-12 sm:pt-36">
         <div className="absolute inset-0 z-0 mask-y-to-95%">
-          <KortixLetterField seed={7412} />
+          <ZedLetterField seed={7412} />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl">
           <Reveal>
-            <Badge variant="kortix" className="rounded">
+            <Badge variant="zed" className="rounded">
               {EYEBROW}
             </Badge>
             <h1 className="text-foreground mt-5 max-w-4xl text-4xl leading-[1.1] font-medium tracking-tight md:text-5xl">

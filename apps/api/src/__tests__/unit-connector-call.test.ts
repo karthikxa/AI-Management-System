@@ -246,7 +246,7 @@ describe('Postman execution request shape', () => {
         kind: 'postman',
         method: 'POST',
         url: 'https://api.example.com/contacts/{{contactId}}?archived={{archived}}',
-        headers: { 'X-Client': 'kortix', 'X-Trace': '{{traceId}}' },
+        headers: { 'X-Client': 'zed', 'X-Trace': '{{traceId}}' },
         bodyMode: 'json',
       },
       auth: BEARER,
@@ -266,7 +266,7 @@ describe('Postman execution request shape', () => {
     expect(calls[0]!.headers).toMatchObject({
       Authorization: 'Bearer hubspot-token',
       'Content-Type': 'application/json',
-      'X-Client': 'kortix',
+      'X-Client': 'zed',
       'X-Trace': 'trace-1',
     });
     expect(JSON.parse(calls[0]!.body!)).toEqual({ properties: { email: 'person@example.com' } });

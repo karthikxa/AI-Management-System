@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
  * Account·You menu, not here). Rendered in two places via `variant`:
  *  - `header`  — a compact pill in the top-bar breadcrumb.
  *  - `sidebar` — the merged brand/switcher control at the top of the project
- *    sidebar: one shell, two segments. The Kortix mark navigates to the
+ *    sidebar: one shell, two segments. The Zed mark navigates to the
  *    project's home; the name opens this menu. They used to be two unrelated
  *    controls sitting next to each other — same subject ("where am I, where do
  *    I go"), mismatched heights, radii and weights, with dead unclickable space
@@ -40,14 +40,14 @@ import { Input } from '@/components/ui/input';
 import Loading from '@/components/ui/loading';
 import { SidebarContext } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Kortix } from '@/features/icon/icons/kortix';
+import { Zed } from '@/features/icon/icons/zed';
 import { resolveSwitcherLabel } from '@/features/workspace/project-sidebar/project-switcher-label';
 import { cn } from '@/lib/utils';
 import { useCurrentAccountStore } from '@/stores/current-account-store';
 import { useIsSwitchingProject, useProjectSwitchStore } from '@/stores/project-switch-store';
-import { listAccounts, listProjectsForAccount, type KortixProject } from '@kortix/sdk';
-import { contract, qk, useProjectName } from '@kortix/sdk/react';
-import { formatRelative } from '@kortix/shared';
+import { listAccounts, listProjectsForAccount, type ZedProject } from '@zed/sdk';
+import { contract, qk, useProjectName } from '@zed/sdk/react';
+import { formatRelative } from '@zed/shared';
 import { CaretUpDownIcon, CheckCircleIcon as CheckCircleSolid } from '@phosphor-icons/react';
 
 export type ProjectSwitcherVariant = 'header' | 'sidebar';
@@ -159,14 +159,14 @@ export function ProjectSwitcher({
   }, [allProjectsSorted, query]);
 
   const close = () => setMenuOpen(false);
-  const switchProject = (project: KortixProject) => {
+  const switchProject = (project: ZedProject) => {
     if (project.project_id === activeProjectId) return close();
     beginSwitch(project.project_id);
     close();
     router.push(`/projects/${project.project_id}`);
   };
 
-  // Header variant only. The sidebar variant leads with the Kortix mark
+  // Header variant only. The sidebar variant leads with the Zed mark
   // instead — see the merged control below.
   const tile = labelPending ? (
     // Placeholder, not a guess: the initial tile is derived from the name, so
@@ -211,7 +211,7 @@ export function ProjectSwitcher({
           aria-label={homeLabel}
           className="text-foreground hover:bg-sidebar-accent focus-visible:ring-primary/30 flex h-full shrink-0 items-center justify-center rounded-s-sm px-2 transition-colors duration-150 ease-out outline-none focus-visible:rounded-sm focus-visible:ring-[0.6px]"
         >
-          <Kortix className="size-4" />
+          <Zed className="size-4" />
         </Link>
         {!labelPending ? (
           <>
@@ -310,7 +310,7 @@ export function ProjectSwitcher({
                     ) : active ? (
                       <CheckCircleSolid
                         weight="fill"
-                        className="text-kortix-green size-3.5 shrink-0"
+                        className="text-zed-green size-3.5 shrink-0"
                       />
                     ) : null}
                   </DropdownMenuItem>

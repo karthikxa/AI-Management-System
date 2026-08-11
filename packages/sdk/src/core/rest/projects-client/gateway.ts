@@ -172,7 +172,7 @@ export interface GatewayRoutingRule {
 /** Per-model generation-parameter defaults (reasoning effort, temperature,
  *  top_p, max output tokens) — a generic blob, extensible without a schema
  *  change. Every field is capability-gated per model on the server; see
- *  `@kortix/llm-catalog`'s `generationControlCapabilities`/
+ *  `@zed/llm-catalog`'s `generationControlCapabilities`/
  *  `clampGenerationConfig`, the single source of truth the generation-
  *  controls panel derives its show/hide + valid-range rules from. */
 export interface GatewayModelGenerationConfig {

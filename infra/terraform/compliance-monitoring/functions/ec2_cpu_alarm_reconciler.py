@@ -48,7 +48,7 @@ def _alarm_configuration(instance_id: str, topic_arn: str) -> dict[str, Any]:
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "TreatMissingData": "notBreaching",
         "Tags": [
-            {"Key": "ManagedBy", "Value": "kortix-compliance"},
+            {"Key": "ManagedBy", "Value": "zed-compliance"},
             {"Key": "Control", "Value": "DCF-86"},
         ],
     }

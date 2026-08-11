@@ -1,18 +1,18 @@
-import { platformUserRoles } from '@kortix/db';
+import { platformUserRoles } from '@zed/db';
 import { eq, sql } from 'drizzle-orm';
 import { db, hasDatabase } from './db';
 
 export type PlatformRole = 'user' | 'admin' | 'super_admin';
 
 /**
- * Self-host operator allowlist. KORTIX_PLATFORM_ADMIN_EMAILS (comma-separated)
+ * Self-host operator allowlist. ZED_PLATFORM_ADMIN_EMAILS (comma-separated)
  * grants platform admin to those emails without any DB seeding — the way a
  * self-host operator becomes admin so they can configure server-wide settings
  * (e.g. the managed GitHub App) in-app. Unset on cloud, so it is inert there;
  * cloud continues to grant admin through platform_user_roles rows.
  */
 function adminEmailAllowlist(): string[] {
-  return (process.env.KORTIX_PLATFORM_ADMIN_EMAILS || '')
+  return (process.env.ZED_PLATFORM_ADMIN_EMAILS || '')
     .split(',')
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntimeStore } from '@kortix/sdk/react';
+import { useRuntimeStore } from '@zed/sdk/react';
 import { readFileAsBlob } from '../api/runtime-files';
 import { fileReadRetryDelayMs, shouldRetryFileRead } from './file-read-retry';
 

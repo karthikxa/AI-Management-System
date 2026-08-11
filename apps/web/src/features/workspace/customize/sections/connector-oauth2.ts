@@ -4,7 +4,7 @@ import type {
   OAuth2ApplicationInput,
   OAuth2ClientCredentials,
   OAuth2TokenEndpointAuthMethod,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 import { connectorSyncErrorForSlug, createOnlyConnectorDraft } from './connector-connection-form';
 
@@ -166,7 +166,7 @@ export async function createConnectorWithOptionalOAuth2(
     createConnector: (
       projectId: string,
       draft: ConnectorDraftInput,
-    ) => Promise<Awaited<ReturnType<typeof import('@kortix/sdk').createConnector>>>;
+    ) => Promise<Awaited<ReturnType<typeof import('@zed/sdk').createConnector>>>;
     deleteConnector: (projectId: string, slug: string) => Promise<unknown>;
     setConnectorCredential: (
       projectId: string,

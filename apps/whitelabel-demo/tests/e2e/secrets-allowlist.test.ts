@@ -1,4 +1,4 @@
-import type { ProjectSecret } from '@kortix/sdk';
+import type { ProjectSecret } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 import { collidingIdentifiers, keyCollisionGroups } from '../../src/lib/secret-collisions';
 import { secretScope, selectAllowlistableSecrets } from '../../src/lib/secret-scope';
@@ -51,7 +51,7 @@ describe('selectAllowlistableSecrets', () => {
   });
 
   test('never offers a platform-managed row', () => {
-    expect(selectAllowlistableSecrets([secret('KORTIX_TOKEN', 'KORTIX_TOKEN')])).toHaveLength(0);
+    expect(selectAllowlistableSecrets([secret('ZED_TOKEN', 'ZED_TOKEN')])).toHaveLength(0);
     expect(
       selectAllowlistableSecrets([secret('LEGACY', 'LEGACY_KEY', { system: true })]),
     ).toHaveLength(0);

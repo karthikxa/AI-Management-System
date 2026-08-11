@@ -25,11 +25,11 @@ import { cn } from '@/lib/utils';
 import { PhoneIcon as TelephoneSolid } from '@phosphor-icons/react';
 import Link from 'next/link';
 
-const MARKO_CAL_LINK = 'team/kortix/demo';
-const MARKO_CAL_NAMESPACE = 'kortix-onboarding';
-const MARKO_EMAIL = 'marko@kortix.ai';
+const MARKO_CAL_LINK = 'team/zed/demo';
+const MARKO_CAL_NAMESPACE = 'zed-onboarding';
+const MARKO_EMAIL = 'marko@zed.ai';
 const MARKO_WHATSAPP = '17372940835';
-const STORAGE_KEY = 'kortix:marko-welcome-dismissed';
+const STORAGE_KEY = 'zed:marko-welcome-dismissed';
 
 export function PersonalOnboardingWelcome({ projectId }: { projectId?: string } = {}) {
   const tI18nHardcoded = useTranslations('hardcodedUi');
@@ -102,7 +102,7 @@ export function PersonalOnboardingWelcome({ projectId }: { projectId?: string } 
               </CardTitle>
               <CardDescription>
                 {tI18nHardcoded.raw(
-                  'autoComponentsProjectsPersonalOnboardingWelcomeJsxTextFounderCEOKortix4be58c34',
+                  'autoComponentsProjectsPersonalOnboardingWelcomeJsxTextFounderCEOZed4be58c34',
                 )}
               </CardDescription>
             </div>

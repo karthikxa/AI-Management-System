@@ -1,16 +1,16 @@
 import type { ChangeRequest } from '@/features/project-files/api/change-requests';
-import type { ProjectCommit } from '@kortix/sdk';
+import type { ProjectCommit } from '@zed/sdk';
 
-export const KORTIX_AGENT_EMAIL = 'agent@kortix.ai';
+export const ZED_AGENT_EMAIL = 'agent@zed.ai';
 
 export function commitTime(c: ProjectCommit): number {
   return Number(new Date(c.committed_at || c.authored_at).getTime()) || Date.now();
 }
 
-export function isKortixAgent(c: ProjectCommit): boolean {
-  if (c.author_email?.trim().toLowerCase() === KORTIX_AGENT_EMAIL) return true;
+export function isZedAgent(c: ProjectCommit): boolean {
+  if (c.author_email?.trim().toLowerCase() === ZED_AGENT_EMAIL) return true;
   const name = c.author_name?.trim().toLowerCase();
-  return name === 'kortix agent' || name === 'cortex agent';
+  return name === 'zed agent' || name === 'cortex agent';
 }
 
 export function crTime(cr: ChangeRequest): number {

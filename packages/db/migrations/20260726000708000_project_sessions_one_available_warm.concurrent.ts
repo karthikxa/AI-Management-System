@@ -11,7 +11,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create unique index concurrently if not exists idx_project_sessions_one_available_warm
-      on kortix.project_sessions (project_id, created_by)
+      on zed.project_sessions (project_id, created_by)
       where created_by is not null
         and metadata->'warm_session'->>'state' = 'available'
         and coalesce(metadata->>'deletedAt', '') = ''

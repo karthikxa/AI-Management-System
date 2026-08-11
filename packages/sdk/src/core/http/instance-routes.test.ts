@@ -21,7 +21,7 @@ import {
 // degrade to a safe no-op/null instead of throwing ReferenceError.
 
 test('ACTIVE_INSTANCE_COOKIE is the stable cookie name', () => {
-  expect(ACTIVE_INSTANCE_COOKIE).toBe('kortix-active-instance');
+  expect(ACTIVE_INSTANCE_COOKIE).toBe('zed-active-instance');
 });
 
 // ── isInstanceScopedAppPath ────────────────────────────────────────────────

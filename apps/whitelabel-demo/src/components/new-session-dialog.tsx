@@ -39,7 +39,7 @@ import {
   type ConnectorRequirement,
   connectorRequirement,
 } from '@/lib/connector-required';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { invalidateSessions, qk } from '@/lib/query-keys';
 import { sessionCreateFailure } from '@/lib/session-create-failure';
 import {
@@ -47,8 +47,8 @@ import {
   type SessionOverrides,
   buildSessionCreateInput,
 } from '@/lib/session-overrides';
-import { generateSessionId } from '@kortix/sdk';
-import { useProjectConfig, useVisibleAgents } from '@kortix/sdk/react';
+import { generateSessionId } from '@zed/sdk';
+import { useProjectConfig, useVisibleAgents } from '@zed/sdk/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -121,7 +121,7 @@ function NewSessionForm({
   const connectors = useConnectorBindingChoices(projectId);
   const secrets = useQuery({
     queryKey: qk.secrets(projectId),
-    queryFn: () => kortix.project(projectId).secrets.list(),
+    queryFn: () => zed.project(projectId).secrets.list(),
     retry: false,
   });
 
@@ -156,7 +156,7 @@ function NewSessionForm({
   const start = useMutation({
     mutationFn: async () => {
       const sessionId = generateSessionId();
-      await kortix.project(projectId).sessions.create(
+      await zed.project(projectId).sessions.create(
         buildSessionCreateInput(overrides, {
           sessionId,
         }),

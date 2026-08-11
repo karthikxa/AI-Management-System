@@ -1,8 +1,8 @@
-# Local OpenCode / Kortix runtime state — never commit.
-.kortix/state/
-.kortix/opencode/sessions/
-.kortix/opencode/log/
-.kortix/opencode/cache/
+# Local OpenCode / Zed runtime state — never commit.
+.zed/state/
+.zed/opencode/sessions/
+.zed/opencode/log/
+.zed/opencode/cache/
 node_modules/
 .env
 .env.local

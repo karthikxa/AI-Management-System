@@ -1,4 +1,4 @@
-import type { ProjectSecret } from '@kortix/sdk';
+import type { ProjectSecret } from '@zed/sdk';
 
 /**
  * Which of a project's secret rows a session allowlist may actually name.
@@ -58,12 +58,12 @@ export type SecretScope =
   | 'runtime'
   /** Credentials for an installed chat channel, resolved server-side. */
   | 'channel_install'
-  /** Reserved `KORTIX_*` row the platform manages. */
+  /** Reserved `ZED_*` row the platform manages. */
   | 'platform';
 
 export function secretScope(secret: Pick<ProjectSecret, 'name' | 'system'>): SecretScope {
   const key = secret.name.toUpperCase();
-  if (secret.system || key.startsWith('KORTIX_')) return 'platform';
+  if (secret.system || key.startsWith('ZED_')) return 'platform';
   if (CHANNEL_INSTALL_KEYS.includes(key)) return 'channel_install';
   if (
     CHANNEL_INSTALL_KEY_PREFIXES.some(
@@ -93,7 +93,7 @@ export function scopeExplanation(scope: SecretScope): string | null {
     return 'Written by a channel install and resolved server-side — it is never injected into a sandbox, so a session allowlist cannot name it.';
   }
   if (scope === 'platform') {
-    return 'Managed by Kortix. It is not a project secret you can grant, rotate, or remove.';
+    return 'Managed by Zed. It is not a project secret you can grant, rotate, or remove.';
   }
   return null;
 }

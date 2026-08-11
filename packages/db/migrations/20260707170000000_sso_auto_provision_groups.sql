@@ -10,7 +10,7 @@
 --
 -- ADD VALUE (not used in this migration) is transaction-safe on PG 12+.
 
-ALTER TYPE "kortix"."account_group_source" ADD VALUE IF NOT EXISTS 'sso';
+ALTER TYPE "zed"."account_group_source" ADD VALUE IF NOT EXISTS 'sso';
 
-ALTER TABLE "kortix"."account_sso_providers"
+ALTER TABLE "zed"."account_sso_providers"
   ADD COLUMN IF NOT EXISTS "auto_provision_groups" boolean NOT NULL DEFAULT false;

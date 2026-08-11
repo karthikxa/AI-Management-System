@@ -3,7 +3,7 @@
 import { HandshakeIcon as Handshake } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import {
   Modal,
   ModalBody,
@@ -43,7 +43,7 @@ export function ReferralModal({
         <ModalBody className="max-h-[85vh] overflow-y-auto pt-5 lg:max-h-none">
           <div className="mb-3 flex flex-col items-center text-center sm:mb-5">
             <div className="mb-6">
-              <KortixLogo size={24} variant="symbol" />
+              <ZedLogo size={24} variant="symbol" />
             </div>
             <ModalTitle className="text-base font-semibold sm:text-xl">{t('title')}</ModalTitle>
             <ModalDescription className="mt-1 px-2 text-xs sm:mt-2 sm:text-sm">

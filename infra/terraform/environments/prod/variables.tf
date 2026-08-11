@@ -5,9 +5,9 @@ variable "aws_region" {
 }
 
 variable "cloudflare_zone_id" {
-  description = "Cloudflare zone ID for kortix.com. Supply via TF_VAR_cloudflare_zone_id."
+  description = "Cloudflare zone ID for zed.com. Supply via TF_VAR_cloudflare_zone_id."
   type        = string
-  # The kortix.com zone id. Not a secret — it is already exposed as the
+  # The zed.com zone id. Not a secret — it is already exposed as the
   # CLOUDFLARE_ZONE_ID repo variable and appears in every Cloudflare API URL.
   # It defaults here because an empty value resolves zone_id to null on every
   # cloudflare_record, and zone_id forces replacement: a plan run without the
@@ -19,23 +19,23 @@ variable "extra_api_hostnames" {
   description = <<-EOT
     Additional public API hostnames to expose the ALB under (proxied CNAMEs),
     also added as ACM SANs so Cloudflare Full-strict works. Use to serve the new
-    stack under an unlocked name (e.g. ["api-prod.kortix.com"]) while the
-    canonical api.kortix.com record stays tunnel-locked on the old box.
+    stack under an unlocked name (e.g. ["api-prod.zed.com"]) while the
+    canonical api.zed.com record stays tunnel-locked on the old box.
   EOT
   type        = list(string)
-  # This is a live SAN on the certificate currently serving api.kortix.com, so
+  # This is a live SAN on the certificate currently serving api.zed.com, so
   # it belongs in version control rather than only in a gitignored tfvars. With
   # the old default of [], any plan run without that local file — CI, or a
   # second machine — proposed REPLACING the production certificate, because
   # subject_alternative_names forces replacement.
-  default = ["api-ecs-fargate.kortix.com"]
+  default = ["api-ecs-fargate.zed.com"]
 }
 
 variable "manage_dns" {
   description = <<-EOT
-    Whether terraform creates the public api.kortix.com CNAME. Keep false during
+    Whether terraform creates the public api.zed.com CNAME. Keep false during
     bring-up so the live record (pointing at the old prod box) is untouched —
-    the stack builds + validates first. The cutover repoints api.kortix.com at
+    the stack builds + validates first. The cutover repoints api.zed.com at
     this ALB out-of-band (reversible). ACM validation records are always created.
   EOT
   type        = bool
@@ -44,15 +44,15 @@ variable "manage_dns" {
 
 variable "api_domain" {
   description = <<-EOT
-    Public FQDN for the prod API. Defaults to the final api.kortix.com, but the
-    stack is first brought up under new-api.kortix.com (set api_domain =
-    "new-api.kortix.com" in tfvars) so it runs in parallel with the live
-    production API without touching api.kortix.com. At go-live, change this back
-    to "api.kortix.com" and re-apply — the ALB/ECS/cert all just re-point, no
+    Public FQDN for the prod API. Defaults to the final api.zed.com, but the
+    stack is first brought up under new-api.zed.com (set api_domain =
+    "new-api.zed.com" in tfvars) so it runs in parallel with the live
+    production API without touching api.zed.com. At go-live, change this back
+    to "api.zed.com" and re-apply — the ALB/ECS/cert all just re-point, no
     rebuild. The Cloudflare record name + ACM SAN derive from this.
   EOT
   type        = string
-  default     = "api.kortix.com"
+  default     = "api.zed.com"
 }
 
 variable "cloudflare_api_token" {
@@ -78,7 +78,7 @@ variable "cloudflare_api_key" {
 variable "api_image" {
   description = "Container image for the API (pin to a release tag/sha in prod)."
   type        = string
-  default     = "ghcr.io/kortix-ai/kortix-api:latest"
+  default     = "ghcr.io/zed-ai/zed-api:latest"
 }
 
 variable "container_port" {
@@ -102,17 +102,17 @@ variable "api_secrets" {
 variable "gateway_image" {
   description = "Container image for the gateway (LLM proxy). CI rolls new revisions; Terraform seeds the initial task-def."
   type        = string
-  default     = "kortix/kortix-gateway:latest"
+  default     = "zed/zed-gateway:latest"
 }
 
 variable "gateway_environment" {
-  description = "Non-secret env vars for the gateway container (besides PORT and KORTIX_API_URL, set by the module/env)."
+  description = "Non-secret env vars for the gateway container (besides PORT and ZED_API_URL, set by the module/env)."
   type        = map(string)
   default     = {}
 }
 
 variable "gateway_domain" {
-  description = "FQDN for the gateway ECS origin (the Worker's ecs-fargate backend). Gets its own ACM cert. gateway.kortix.com itself stays the Worker's hostname."
+  description = "FQDN for the gateway ECS origin (the Worker's ecs-fargate backend). Gets its own ACM cert. gateway.zed.com itself stays the Worker's hostname."
   type        = string
-  default     = "gateway-ecs-fargate.kortix.com"
+  default     = "gateway-ecs-fargate.zed.com"
 }

@@ -14,7 +14,7 @@
  * empty list cannot distinguish "never shared" from "revoked it yesterday".
  */
 
-import type { SessionPublicShare } from '@kortix/sdk';
+import type { SessionPublicShare } from '@zed/sdk';
 import {
   CheckIcon as Check,
   FileTextIcon as FileText,
@@ -90,15 +90,15 @@ function ShareRow({
       <span
         className={cn(
           'flex size-9 shrink-0 items-center justify-center rounded-sm',
-          live ? 'bg-kortix-green/15' : 'bg-muted',
+          live ? 'bg-zed-green/15' : 'bg-muted',
         )}
       >
         {isFile ? (
           <FileText
-            className={cn('size-5', live ? 'text-kortix-green' : 'text-muted-foreground')}
+            className={cn('size-5', live ? 'text-zed-green' : 'text-muted-foreground')}
           />
         ) : (
-          <Globe className={cn('size-5', live ? 'text-kortix-green' : 'text-muted-foreground')} />
+          <Globe className={cn('size-5', live ? 'text-zed-green' : 'text-muted-foreground')} />
         )}
       </span>
 
@@ -128,7 +128,7 @@ function ShareRow({
               className="size-8 active:scale-[0.96]"
             >
               {copied ? (
-                <Check className="text-kortix-green size-4" />
+                <Check className="text-zed-green size-4" />
               ) : (
                 <Link2 className="size-4" />
               )}

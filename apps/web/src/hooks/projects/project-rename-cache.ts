@@ -4,7 +4,7 @@ import {
   restoreProjectName,
   writeProjectNameOptimistically,
   type ProjectNameSnapshot,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 
 /**
  * The `onMutate`/`onError`/`onSettled` trio both project-rename mutations

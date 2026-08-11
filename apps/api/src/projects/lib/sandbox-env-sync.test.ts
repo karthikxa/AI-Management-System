@@ -1,7 +1,7 @@
 // Every hot environment push must use the same LLM gateway URL formula as boot.
 import { beforeEach, describe, expect, test } from 'bun:test';
 
-process.env.KORTIX_URL = 'https://api.example.com';
+process.env.ZED_URL = 'https://api.example.com';
 process.env.FRONTEND_URL = 'https://app.example.com';
 delete process.env.LLM_GATEWAY_BASE_URL;
 delete process.env.LLM_GATEWAY_PROXY_PORT;
@@ -17,7 +17,7 @@ describe('llmGatewayBaseUrlForProvider', () => {
     config.LLM_GATEWAY_PROXY_TARGET = '';
   });
 
-  test('uses the public config.KORTIX_URL for every provider', () => {
+  test('uses the public config.ZED_URL for every provider', () => {
     expect(llmGatewayBaseUrlForProvider('daytona')).toBe('https://api.example.com/v1/llm');
     expect(llmGatewayBaseUrlForProvider('e2b')).toBe('https://api.example.com/v1/llm');
     expect(llmGatewayBaseUrlForProvider('platinum')).toBe('https://api.example.com/v1/llm');

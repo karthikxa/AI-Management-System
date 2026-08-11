@@ -16,7 +16,7 @@ import {
   projectSecrets,
   projects,
   serviceAccounts,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { deleteAgentMailInstall, saveAgentMailInstall } from '../channels/install-store';
 import {
@@ -95,7 +95,7 @@ beforeAll(async () => {
     accountId: ACCOUNT_A,
     name: `connection-test-service-account-${SERVICE_ACCOUNT}`,
     secretHash: `connection-test-${SERVICE_ACCOUNT}`,
-    publicPrefix: 'kortix_sa_connection_test',
+    publicPrefix: 'zed_sa_connection_test',
     createdBy: USER,
   });
   await db.insert(connectors).values([
@@ -122,7 +122,7 @@ beforeAll(async () => {
       connectorId: EMAIL_CONNECTOR,
       accountId: ACCOUNT_A,
       projectId: PROJECT_A,
-      slug: 'kortix_email',
+      slug: 'zed_email',
       name: 'Email',
       providerType: 'channel',
       config: { platform: 'email' },
@@ -349,7 +349,7 @@ beforeAll(async () => {
       sessionId: SESSION_AUTO_EMAIL,
       accountId: ACCOUNT_A,
       projectId: PROJECT_A,
-      connectorAlias: 'kortix_email',
+      connectorAlias: 'zed_email',
       connectorId: EMAIL_CONNECTOR,
       connectionId: EMAIL_CONNECTION_DEFAULT,
       source: 'default',
@@ -407,7 +407,7 @@ beforeAll(async () => {
   });
   await saveAgentMailInstall({
     projectId: PROJECT_A,
-    connectionSlug: 'kortix_email',
+    connectionSlug: 'zed_email',
     inboxId: 'connection-test-default-inbox',
     email: 'default@example.test',
     displayName: 'Default inbox',
@@ -416,7 +416,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await deleteAgentMailInstall(PROJECT_A, 'kortix_email');
+  await deleteAgentMailInstall(PROJECT_A, 'zed_email');
   await db.delete(connectionCredentials).where(eq(connectionCredentials.connectorId, CONNECTOR_A));
   await db.delete(projectSessions).where(eq(projectSessions.projectId, PROJECT_A));
   await db
@@ -460,7 +460,7 @@ describe('session connector isolation', () => {
       projectId: PROJECT_A,
       sessionId,
       subject: { userId, groupIds: [] },
-      agentGrant: { agent: 'veyris', connectors: ['veyris'] as string[], kortixCli: [] },
+      agentGrant: { agent: 'veyris', connectors: ['veyris'] as string[], zedCli: [] },
     });
     const depsA = makeDbGatewayDeps(principal(SESSION_A, USER));
     const depsB = makeDbGatewayDeps(principal(SESSION_B, OTHER_USER));
@@ -486,7 +486,7 @@ describe('session connector isolation', () => {
       projectId: PROJECT_A,
       sessionId: SESSION_DEFAULT,
       subject: { userId: USER, groupIds: [] },
-      agentGrant: { agent: 'secret-agent', connectors: ['secret_backed'], kortixCli: [] },
+      agentGrant: { agent: 'secret-agent', connectors: ['secret_backed'], zedCli: [] },
     });
     const connector = await deps.loadConnectorBySlug(PROJECT_A, 'secret_backed');
     if (!connector) throw new Error('Expected secret-backed connector');
@@ -590,7 +590,7 @@ describe('session connector isolation', () => {
       accountId: ACCOUNT_A,
       projectId: PROJECT_A,
       sessionId: SESSION_A,
-      alias: 'kortix_email',
+      alias: 'zed_email',
     });
     expect(boundSessionEmail).toBeNull();
 
@@ -598,7 +598,7 @@ describe('session connector isolation', () => {
       accountId: ACCOUNT_A,
       projectId: PROJECT_A,
       sessionId: SESSION_DEFAULT,
-      alias: 'kortix_email',
+      alias: 'zed_email',
     });
     expect(legacySessionEmail).toMatchObject({
       connectionId: EMAIL_CONNECTION_DEFAULT,
@@ -610,7 +610,7 @@ describe('session connector isolation', () => {
   test('inherit_unbound keeps the project-default fallback for unbound aliases while the explicit binding still wins', async () => {
     // SESSION_INHERIT_UNBOUND binds veyris (source: request) AND was created with
     // connector_bindings_inherit_unbound = true. The explicit veyris binding must
-    // still win, but an UNBOUND alias (kortix_email) must fall through to the
+    // still win, but an UNBOUND alias (zed_email) must fall through to the
     // project default instead of failing closed the way SESSION_A does above.
     const boundVeyris = await resolveSessionConnectorConnection({
       accountId: ACCOUNT_A,
@@ -624,7 +624,7 @@ describe('session connector isolation', () => {
       accountId: ACCOUNT_A,
       projectId: PROJECT_A,
       sessionId: SESSION_INHERIT_UNBOUND,
-      alias: 'kortix_email',
+      alias: 'zed_email',
     });
     expect(unboundEmail).toMatchObject({
       connectionId: EMAIL_CONNECTION_DEFAULT,
@@ -641,7 +641,7 @@ describe('session connector isolation', () => {
       accountId: ACCOUNT_A,
       projectId: PROJECT_A,
       sessionId: SESSION_AUTO_EMAIL,
-      alias: 'kortix_email',
+      alias: 'zed_email',
     });
     expect(email).toMatchObject({ connectionId: EMAIL_CONNECTION_DEFAULT });
 
@@ -679,7 +679,7 @@ describe('session connector isolation', () => {
       projectId: PROJECT_A,
       sessionId: SESSION_DEFAULT,
       subject: { userId: USER, groupIds: [] },
-      agentGrant: { agent: 'veyris', connectors: ['kortix_email'], kortixCli: [] },
+      agentGrant: { agent: 'veyris', connectors: ['zed_email'], zedCli: [] },
     });
     expect(await deps.loadEmailSessionContext?.(PROJECT_A, SESSION_DEFAULT)).toBeNull();
   });
@@ -1227,7 +1227,7 @@ describe('session connector isolation', () => {
     const sharedInbox = 'shared-inbox-hijack-test';
     await saveAgentMailInstall({
       projectId: PROJECT_A,
-      connectionSlug: 'kortix_email',
+      connectionSlug: 'zed_email',
       inboxId: sharedInbox,
       email: 'shared-a@example.test',
       displayName: 'A',
@@ -1236,7 +1236,7 @@ describe('session connector isolation', () => {
     // PROJECT_B claims the same inbox. This must NOT remove PROJECT_A's row.
     await saveAgentMailInstall({
       projectId: PROJECT_B,
-      connectionSlug: 'kortix_email',
+      connectionSlug: 'zed_email',
       inboxId: sharedInbox,
       email: 'shared-b@example.test',
       displayName: 'B',
@@ -1251,8 +1251,8 @@ describe('session connector isolation', () => {
     expect(ownerIds).toEqual([PROJECT_A, PROJECT_B].sort());
 
     // Cleanup so the row does not leak into other tests.
-    await deleteAgentMailInstall(PROJECT_A, 'kortix_email');
-    await deleteAgentMailInstall(PROJECT_B, 'kortix_email');
+    await deleteAgentMailInstall(PROJECT_A, 'zed_email');
+    await deleteAgentMailInstall(PROJECT_B, 'zed_email');
   });
 });
 

@@ -3,10 +3,10 @@ import { CliError } from './cli';
 const TIMEOUT_MS = 30_000;
 
 function apiBase(): string {
-  const url = process.env.KORTIX_API_URL?.trim();
+  const url = process.env.ZED_API_URL?.trim();
   if (!url) {
     throw new CliError(
-      'KORTIX_API_URL not set — apps/api is unreachable from this sandbox.',
+      'ZED_API_URL not set — apps/api is unreachable from this sandbox.',
       'MISSING_ENV',
     );
   }
@@ -14,10 +14,10 @@ function apiBase(): string {
 }
 
 function authHeaders(): Record<string, string> {
-  const token = (process.env.KORTIX_CLI_TOKEN || '').trim();
+  const token = (process.env.ZED_CLI_TOKEN || '').trim();
   if (!token) {
     throw new CliError(
-      'KORTIX_CLI_TOKEN not set — cannot authenticate to apps/api.',
+      'ZED_CLI_TOKEN not set — cannot authenticate to apps/api.',
       'MISSING_ENV',
     );
   }
@@ -37,7 +37,7 @@ function buildUrl(path: string, params?: Record<string, string>): string {
   return url.toString();
 }
 
-export async function kortixGet<T>(
+export async function zedGet<T>(
   path: string,
   params?: Record<string, string>,
 ): Promise<T> {
@@ -48,7 +48,7 @@ export async function kortixGet<T>(
   return parseResponse<T>(res);
 }
 
-export async function kortixPost<T>(path: string, body?: unknown): Promise<T> {
+export async function zedPost<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(buildUrl(path), {
     method: 'POST',
     headers: authHeaders(),
@@ -58,7 +58,7 @@ export async function kortixPost<T>(path: string, body?: unknown): Promise<T> {
   return parseResponse<T>(res);
 }
 
-export async function kortixDelete<T = unknown>(path: string): Promise<T> {
+export async function zedDelete<T = unknown>(path: string): Promise<T> {
   const res = await fetch(buildUrl(path), {
     method: 'DELETE',
     headers: authHeaders(),
@@ -68,15 +68,15 @@ export async function kortixDelete<T = unknown>(path: string): Promise<T> {
 }
 
 /**
- * Run one connector action through the compiled Kortix CLI. The CLI owns the
- * `@kortix/sdk` client and token seam. Runtime shims do not carry SDK source or
+ * Run one connector action through the compiled Zed CLI. The CLI owns the
+ * `@zed/sdk` client and token seam. Runtime shims do not carry SDK source or
  * a second gateway client.
  */
-export async function kortixConnectorCall<T = unknown>(
+export async function zedConnectorCall<T = unknown>(
   tool: string,
   args: Record<string, unknown> = {},
 ): Promise<T> {
-  const executable = process.env.KORTIX_CLI_BIN?.trim() || 'kortix';
+  const executable = process.env.ZED_CLI_BIN?.trim() || 'zed';
   const command = executable.endsWith('.ts')
     ? [process.execPath, executable, 'connectors', 'call', tool, JSON.stringify(args)]
     : [executable, 'connectors', 'call', tool, JSON.stringify(args)];
@@ -103,7 +103,7 @@ export async function kortixConnectorCall<T = unknown>(
     const message =
       body && typeof body === 'object' && typeof (body as { error?: unknown }).error === 'string'
         ? (body as { error: string }).error
-        : stderr.trim() || stdout.trim() || `kortix connectors call exited ${exitCode}`;
+        : stderr.trim() || stdout.trim() || `zed connectors call exited ${exitCode}`;
     throw new CliError(message, 'CONNECTOR_ERROR', exitCode || 1);
   }
   return body as T;

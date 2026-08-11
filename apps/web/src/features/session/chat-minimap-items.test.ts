@@ -57,11 +57,11 @@ describe('extractUserText', () => {
     expect(extractUserText(turn)).toBe('first second');
   });
 
-  test('strips kortix system tags and html tags', () => {
+  test('strips zed system tags and html tags', () => {
     const turn = turnWithParts([
       {
         type: 'text',
-        text: '<kortix_system type="context">internal</kortix_system> ask <b>me</b>',
+        text: '<zed_system type="context">internal</zed_system> ask <b>me</b>',
       },
     ]);
     expect(extractUserText(turn)).toBe('ask me');

@@ -17,8 +17,8 @@ describe('LiveKit voice metadata boundaries', () => {
     )?.[0];
 
     expect(roomMetadataInterface).toBeDefined();
-    expect(roomMetadataInterface).not.toContain('kortix_api_token');
-    expect(workerMetadataInterface).toContain('kortix_api_token');
+    expect(roomMetadataInterface).not.toContain('zed_api_token');
+    expect(workerMetadataInterface).toContain('zed_api_token');
   });
 
   test('passes separate public room and private dispatch metadata', () => {

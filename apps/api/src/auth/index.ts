@@ -13,7 +13,7 @@
 
 import { createRoute, z } from '@hono/zod-openapi';
 import { and, eq, sql } from 'drizzle-orm';
-import { accountSessionActivity } from '@kortix/db';
+import { accountSessionActivity } from '@zed/db';
 import { db } from '../shared/db';
 import { supabaseAuth } from '../middleware/auth';
 import type { AppEnv } from '../types';

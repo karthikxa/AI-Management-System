@@ -4,12 +4,12 @@
  * Presentation building blocks — a 1:1 mirror of the marketing homepage idiom
  * (apps/web home sections). Same vocabulary everywhere: mono-uppercase eyebrows,
  * `text-3xl/4xl font-medium tracking-tight` titles, `rounded-sm` thin-border
- * panels on `bg-card`, `font-medium` body weight, `KortixAsterisk` bullets, and
+ * panels on `bg-card`, `font-medium` body weight, `ZedAsterisk` bullets, and
  * the marketing `Button`/`Badge`. Slides are responsive full-viewport sections
  * (like a homepage section), theme-following — never a forced palette.
  */
 
-import { KortixAsterisk } from '@/components/ui/kortix-asterisk';
+import { ZedAsterisk } from '@/components/ui/zed-asterisk';
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 
@@ -92,7 +92,7 @@ export function Lead({ children, className }: { children: ReactNode; className?:
   );
 }
 
-/** Mono inline token, e.g. kortix.yaml */
+/** Mono inline token, e.g. zed.yaml */
 export function Mono({ children, className }: { children: ReactNode; className?: string }) {
   return <span className={cn('font-mono', className)}>{children}</span>;
 }
@@ -149,7 +149,7 @@ export function Pill({ children, className }: { children: ReactNode; className?:
   );
 }
 
-/* ── Bulleted list with the KortixAsterisk glyph (home idiom) ──────────── */
+/* ── Bulleted list with the ZedAsterisk glyph (home idiom) ──────────── */
 
 export function Bullets({
   items,
@@ -164,7 +164,7 @@ export function Bullets({
     <ul className={cn('text-muted-foreground space-y-2 text-[15px] leading-relaxed', className)}>
       {items.map((it, i) => (
         <li key={i} className="flex gap-2">
-          <KortixAsterisk index={index + i} />
+          <ZedAsterisk index={index + i} />
           <span>{it}</span>
         </li>
       ))}
@@ -177,7 +177,7 @@ export function Bullets({
 export function Shot({
   src,
   alt,
-  url = 'kortix.com',
+  url = 'zed.com',
   chrome = true,
   className,
 }: {

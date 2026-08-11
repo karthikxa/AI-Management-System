@@ -13,7 +13,7 @@
  * because an empty finish screen would punish them twice for skipping.
  */
 
-import type { OnboardingUseCase } from '@kortix/sdk';
+import type { OnboardingUseCase } from '@zed/sdk';
 import {
   ArrowRightIcon as ArrowRight,
   CalendarBlankIcon as Calendar,
@@ -48,8 +48,8 @@ export function DoneStep({
       {/* The one celebratory beat in the flow, and it happens exactly once.
           Springs from 0.6 — never 0, because nothing appears out of nothing —
           with a trace of bounce that would be wrong anywhere else in the UI. */}
-      <span className="bg-kortix-green/12 flex size-16 items-center justify-center rounded-lg">
-        <CheckCircle className="text-kortix-green size-10" weight="fill" />
+      <span className="bg-zed-green/12 flex size-16 items-center justify-center rounded-lg">
+        <CheckCircle className="text-zed-green size-10" weight="fill" />
       </span>
 
       <StepShell

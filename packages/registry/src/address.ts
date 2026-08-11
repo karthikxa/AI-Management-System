@@ -3,17 +3,17 @@
  * developer commands.
  *
  * Registry addresses (point at a whole registry):
- *   kortix-ai/skills                      GitHub repo (registry.json at root)
- *   github:kortix-ai/skills               explicit github: scheme
- *   kortix-ai/skills@v1                   pinned to a git ref
- *   @kortix                               a namespace (resolved via a map)
+ *   zed-ai/skills                      GitHub repo (registry.json at root)
+ *   github:zed-ai/skills               explicit github: scheme
+ *   zed-ai/skills@v1                   pinned to a git ref
+ *   @zed                               a namespace (resolved via a map)
  *   https://host/r/registry.json          a registry served over HTTP
  *   ./path/to/registry.json | ./dir       a local registry (dir or file)
  *
  * Item addresses (point at a single item inside a registry):
- *   kortix-ai/skills/pdf                  item "pdf" in GitHub repo
- *   github:kortix-ai/skills@v1/pdf        pinned ref + item
- *   @kortix/pdf                           item "pdf" in the @kortix namespace
+ *   zed-ai/skills/pdf                  item "pdf" in GitHub repo
+ *   github:zed-ai/skills@v1/pdf        pinned ref + item
+ *   @zed/pdf                           item "pdf" in the @zed namespace
  *   https://host/r/pdf.json               a direct item URL
  *   ./dir#pdf | ./registry.json#pdf       item "pdf" in a local registry
  *   pdf                                   bare item (needs a default registry)
@@ -43,7 +43,7 @@ export interface LocalRegistryRef {
 
 export interface NamespaceRegistryRef {
   kind: 'namespace';
-  /** Includes the leading `@`, e.g. "@kortix". */
+  /** Includes the leading `@`, e.g. "@zed". */
   namespace: string;
 }
 
@@ -142,7 +142,7 @@ export function parseItemAddress(raw: string): ItemAddress {
     };
   }
 
-  // Namespace: @kortix/pdf
+  // Namespace: @zed/pdf
   if (trimmed.startsWith('@')) {
     const slash = trimmed.indexOf('/');
     if (slash === -1) throw new Error(`"${raw}" is missing an item (use @namespace/item)`);

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { ProviderListResponse } from '@kortix/sdk/react';
+import type { ProviderListResponse } from '@zed/sdk/react';
 
 import { buildModelsDevPricingMap, createModelPricingLookup } from './model-pricing';
 
@@ -45,8 +45,8 @@ describe('createModelPricingLookup', () => {
       default: {},
       all: [
         {
-          id: 'kortix',
-          name: 'Kortix',
+          id: 'zed',
+          name: 'Zed',
           models: {
             'claude-opus-4.8': {
               name: 'Claude Opus 4.8',
@@ -55,11 +55,11 @@ describe('createModelPricingLookup', () => {
           },
         },
       ],
-      connected: ['kortix'],
+      connected: ['zed'],
     } as unknown as ProviderListResponse;
 
     const lookup = createModelPricingLookup(providers);
-    expect(lookup('kortix', 'claude-opus-4.8')).toEqual({
+    expect(lookup('zed', 'claude-opus-4.8')).toEqual({
       inputPer1M: 3,
       outputPer1M: 15,
       cacheReadPer1M: undefined,
@@ -82,8 +82,8 @@ describe('createModelPricingLookup', () => {
       default: {},
       all: [
         {
-          id: 'kortix',
-          name: 'Kortix',
+          id: 'zed',
+          name: 'Zed',
           models: {
             'glm-5.2': {
               name: 'GLM 5.2',
@@ -92,11 +92,11 @@ describe('createModelPricingLookup', () => {
           },
         },
       ],
-      connected: ['kortix'],
+      connected: ['zed'],
     } as unknown as ProviderListResponse;
 
     const lookup = createModelPricingLookup(providers, cached);
-    expect(lookup('kortix', 'glm-5.2')).toEqual({
+    expect(lookup('zed', 'glm-5.2')).toEqual({
       inputPer1M: 1,
       outputPer1M: 4,
       cacheReadPer1M: 0.2,
@@ -117,12 +117,12 @@ describe('createModelPricingLookup', () => {
     });
 
     const lookup = createModelPricingLookup(undefined, cached);
-    expect(lookup('kortix', 'glm-5.2')).toBeNull();
+    expect(lookup('zed', 'glm-5.2')).toBeNull();
   });
 
   test('returns null when no provider or cached pricing matches', () => {
     const lookup = createModelPricingLookup(undefined, new Map());
-    expect(lookup('kortix', 'unknown-model')).toBeNull();
+    expect(lookup('zed', 'unknown-model')).toBeNull();
   });
 
   test('resolves provider slash model ids from cached models.dev rates', () => {
@@ -147,7 +147,7 @@ describe('createModelPricingLookup', () => {
 
   test('keeps managed pricing unavailable until the managed catalog loads', () => {
     const emptyLookup = createModelPricingLookup(undefined, new Map());
-    expect(emptyLookup('kortix', 'glm-5.2')).toBeNull();
+    expect(emptyLookup('zed', 'glm-5.2')).toBeNull();
 
     const cached = buildModelsDevPricingMap({
       'z-ai': {
@@ -161,6 +161,6 @@ describe('createModelPricingLookup', () => {
     });
 
     const loadedLookup = createModelPricingLookup(undefined, cached);
-    expect(loadedLookup('kortix', 'glm-5.2')).toBeNull();
+    expect(loadedLookup('zed', 'glm-5.2')).toBeNull();
   });
 });

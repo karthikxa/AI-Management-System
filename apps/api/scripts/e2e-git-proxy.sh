@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Live end-to-end proof that the Kortix git smart-HTTP proxy
+# Live end-to-end proof that the Zed git smart-HTTP proxy
 # (/v1/git/:projectId(.git)/{info/refs,git-upload-pack,git-receive-pack}) lets a
-# client clone AND push a real project repo using ONLY a Kortix token — never a
+# client clone AND push a real project repo using ONLY a Zed token — never a
 # real host (GitHub) credential. The proxy resolves the project's
 # backend + mints the upstream credential server-side.
 #
@@ -9,11 +9,11 @@
 # NOT provision anything; point it at a project you already have.
 #
 # Required env:
-#   KORTIX_URL     API base, e.g. http://localhost:8008   (default)
+#   ZED_URL     API base, e.g. http://localhost:8008   (default)
 #   PROJECT_ID     a git-backed project UUID
-#   KORTIX_TOKEN   a Kortix token scoped to that project:
-#                    - a sandbox token (kortix_sb_…) for one of its sandboxes, OR
-#                    - an account API key (kortix_…) / CLI PAT (kortix_pat_…)
+#   ZED_TOKEN   a Zed token scoped to that project:
+#                    - a sandbox token (zed_sb_…) for one of its sandboxes, OR
+#                    - an account API key (zed_…) / CLI PAT (zed_pat_…)
 #                      owning the project
 # Optional:
 #   BRANCH         base branch to read (default: the repo's HEAD)
@@ -26,13 +26,13 @@
 #          (info/refs?service=git-receive-pack + receive-pack, write scope)
 set -euo pipefail
 
-KORTIX_URL="${KORTIX_URL:-http://localhost:8008}"
+ZED_URL="${ZED_URL:-http://localhost:8008}"
 : "${PROJECT_ID:?set PROJECT_ID}"
-: "${KORTIX_TOKEN:?set KORTIX_TOKEN}"
+: "${ZED_TOKEN:?set ZED_TOKEN}"
 
-KORTIX_URL="${KORTIX_URL%/}"
-PROXY_URL="${KORTIX_URL}/v1/git/${PROJECT_ID}.git"
-AUTH_B64="$(printf 'x-access-token:%s' "$KORTIX_TOKEN" | base64 | tr -d '\n')"
+ZED_URL="${ZED_URL%/}"
+PROXY_URL="${ZED_URL}/v1/git/${PROJECT_ID}.git"
+AUTH_B64="$(printf 'x-access-token:%s' "$ZED_TOKEN" | base64 | tr -d '\n')"
 HDR="http.extraHeader=AUTHORIZATION: basic ${AUTH_B64}"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
@@ -72,11 +72,11 @@ pass "CLONE blobless clone succeeded"
 # ── PUSH (opt-in): write scope through receive-pack ──────────────────────────
 if [ "${PUSH:-0}" = "1" ]; then
   cd "$WORK/clone"
-  TMP_BRANCH="kortix-e2e-proxy-$$-$RANDOM"
+  TMP_BRANCH="zed-e2e-proxy-$$-$RANDOM"
   git checkout -q -b "$TMP_BRANCH"
-  echo "git-proxy e2e $(date -u +%FT%TZ)" > ".kortix-git-proxy-e2e"
-  git -c user.email=noreply@kortix.ai -c user.name=Kortix add -A
-  git -c user.email=noreply@kortix.ai -c user.name=Kortix commit -q -m "chore: git-proxy e2e probe"
+  echo "git-proxy e2e $(date -u +%FT%TZ)" > ".zed-git-proxy-e2e"
+  git -c user.email=noreply@zed.ai -c user.name=Zed add -A
+  git -c user.email=noreply@zed.ai -c user.name=Zed commit -q -m "chore: git-proxy e2e probe"
   git -c "$HDR" push -q origin "$TMP_BRANCH" \
     >"$WORK/push.log" 2>&1 || { cat "$WORK/push.log"; fail "push through proxy (write scope)"; }
   pass "PUSH  pushed throwaway branch ${TMP_BRANCH}"

@@ -19,7 +19,7 @@ const projectHomeSource = readFileSync(
 describe('session navigation loading boundaries', () => {
   test('runtime-not-ready retries never render the full-page ASCII logo', () => {
     expect(boundarySource).toContain('return null;');
-    expect(boundarySource).not.toContain('KortixHyperLogo');
+    expect(boundarySource).not.toContain('ZedHyperLogo');
     expect(boundarySource).not.toContain('min-h-[50vh]');
   });
 

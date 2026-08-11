@@ -4,7 +4,7 @@ import { MIGRATE_TO_V2_PROMPT } from './migration-prompt';
 
 describe('MIGRATE_TO_V2_PROMPT — the core migration artifact', () => {
   test('names the target file format', () => {
-    expect(MIGRATE_TO_V2_PROMPT).toContain('kortix.yaml');
+    expect(MIGRATE_TO_V2_PROMPT).toContain('zed.yaml');
   });
 
   test('requires default_agent', () => {
@@ -36,13 +36,13 @@ describe('MIGRATE_TO_V2_PROMPT — the core migration artifact', () => {
   });
 
   test('requires validation before finishing', () => {
-    expect(MIGRATE_TO_V2_PROMPT).toContain('kortix validate');
+    expect(MIGRATE_TO_V2_PROMPT).toContain('zed validate');
   });
 
   test('lands as a change request and explicitly forbids merging it', () => {
-    expect(MIGRATE_TO_V2_PROMPT).toContain('kortix cr open');
+    expect(MIGRATE_TO_V2_PROMPT).toContain('zed cr open');
     expect(MIGRATE_TO_V2_PROMPT.toLowerCase()).toContain('never merge');
-    expect(MIGRATE_TO_V2_PROMPT).toMatch(/not\*\*.{0,10}run.{0,10}`kortix cr merge`/);
+    expect(MIGRATE_TO_V2_PROMPT).toMatch(/not\*\*.{0,10}run.{0,10}`zed cr merge`/);
   });
 
   test('calls out channels removal and the deny-by-default grant change', () => {
@@ -55,8 +55,8 @@ describe('MIGRATE_TO_V2_PROMPT — the core migration artifact', () => {
   });
 
   test('points at the canonical schema — CLI command and published URL', () => {
-    expect(MIGRATE_TO_V2_PROMPT).toContain('kortix schema --version 2');
-    expect(MIGRATE_TO_V2_PROMPT).toContain('https://kortix.com/schema/kortix.v2.schema.json');
+    expect(MIGRATE_TO_V2_PROMPT).toContain('zed schema --version 2');
+    expect(MIGRATE_TO_V2_PROMPT).toContain('https://zed.com/schema/zed.v2.schema.json');
   });
 
   test('lists every v2 clean-break the validator hard-errors on', () => {
@@ -75,8 +75,8 @@ describe('MIGRATE_TO_V2_PROMPT — the core migration artifact', () => {
     const tomlStart = MIGRATE_TO_V2_PROMPT.indexOf('```toml');
     const yamlAfter = MIGRATE_TO_V2_PROMPT.indexOf('```yaml', tomlStart);
     expect(yamlAfter).toBeGreaterThan(tomlStart);
-    expect(MIGRATE_TO_V2_PROMPT).toContain('kortix_version = 1');
-    expect(MIGRATE_TO_V2_PROMPT).toContain('kortix_version: 2');
+    expect(MIGRATE_TO_V2_PROMPT).toContain('zed_version = 1');
+    expect(MIGRATE_TO_V2_PROMPT).toContain('zed_version: 2');
   });
 
   test('the worked v2 example authors none of the removed keys (comments may mention them)', () => {
@@ -100,20 +100,20 @@ describe('MIGRATE_TO_V2_PROMPT — the core migration artifact', () => {
   test('pushes the branch before opening the CR — an unpushed commit leaves the CR empty', () => {
     expect(MIGRATE_TO_V2_PROMPT).toContain('git push origin HEAD');
     const push = MIGRATE_TO_V2_PROMPT.indexOf('git push origin HEAD');
-    const open = MIGRATE_TO_V2_PROMPT.indexOf('kortix cr open');
+    const open = MIGRATE_TO_V2_PROMPT.indexOf('zed cr open');
     expect(push).toBeGreaterThan(-1);
     expect(open).toBeGreaterThan(push);
   });
 
   test('verifies the opened CR is non-empty instead of opening a duplicate', () => {
-    expect(MIGRATE_TO_V2_PROMPT).toContain('kortix cr diff');
+    expect(MIGRATE_TO_V2_PROMPT).toContain('zed cr diff');
     expect(MIGRATE_TO_V2_PROMPT.toLowerCase()).toContain('do not open a second one');
   });
 
   test('refreshes the marketplace baseline before touching the manifest', () => {
-    expect(MIGRATE_TO_V2_PROMPT).toContain('kortix marketplace updates');
-    expect(MIGRATE_TO_V2_PROMPT).toContain('kortix marketplace update --all');
-    const refresh = MIGRATE_TO_V2_PROMPT.indexOf('kortix marketplace update --all');
+    expect(MIGRATE_TO_V2_PROMPT).toContain('zed marketplace updates');
+    expect(MIGRATE_TO_V2_PROMPT).toContain('zed marketplace update --all');
+    const refresh = MIGRATE_TO_V2_PROMPT.indexOf('zed marketplace update --all');
     const shape = MIGRATE_TO_V2_PROMPT.indexOf('The v2 shape');
     expect(refresh).toBeGreaterThan(-1);
     expect(shape).toBeGreaterThan(refresh);

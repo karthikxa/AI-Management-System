@@ -8,7 +8,7 @@
  * ── Why the old pressure gate could never fire ──────────────────────────────
  * The Daytona quota (100) counts EVERY snapshot in the org: our templates, our
  * per-project warm images, and Daytona's own stock/bench images. The old gate
- * counted only `kortix-default-` / `kortix-tpl-` / `kortix-wproj-`. Measured live
+ * counted only `zed-default-` / `zed-tpl-` / `zed-wproj-`. Measured live
  * (2026-07-08): 120 snapshots tripped the cap while that namespace held 98 — and
  * after a manual reclaim, 68 total against a GC-visible 15. With ~46 ppwarm + 22
  * stock images uncounted, the namespace would have to reach 60 before GC woke up,
@@ -17,7 +17,7 @@
  *
  * ── Why defaults can't use an idle gate ─────────────────────────────────────
  * The platform default is resolved dynamically from the runtime fingerprint; it is
- * NOT stored in `sandbox_templates.provider_snapshot_name` (only custom `kortix-tpl-`
+ * NOT stored in `sandbox_templates.provider_snapshot_name` (only custom `zed-tpl-`
  * rows and dev's default are). So "referenced" never protects it, and a *superseded*
  * default keeps a fresh `lastUsedAt` — it was the live default until minutes ago.
  * A 7-day idle rule makes zero defaults eligible while ~4.5/day accrue. Freshness
@@ -34,7 +34,7 @@
  * ppwarm tip belonging to nobody-we-know is reclaimed.
  *
  * ── Why ppwarm needs an LRU budget, not just a liveness rule ────────────────
- * `kortix-ppwarm-<proj8>-<hash>` is minted unconditionally on session-start of the
+ * `zed-ppwarm-<proj8>-<hash>` is minted unconditionally on session-start of the
  * shared default (builder.ts), one live tip per project. So the cache's floor is the
  * number of projects that have ever started a session. Measured 2026-07-08: 69 tips
  * for 69 distinct, non-archived projects — 69 of the org's 100 slots, before a single
@@ -51,8 +51,8 @@
  * gating the warm bake; GC can only buy time.
  *
  * ── Template scoping (ppwarm-names.ts FORMAT MIGRATION) ─────────────────────
- * A ppwarm name is scoped to (project, template): `kortix-ppwarm-<proj8>-<tpl8>-
- * <hash12>` for names minted after that migration, `kortix-ppwarm-<proj8>-
+ * A ppwarm name is scoped to (project, template): `zed-ppwarm-<proj8>-<tpl8>-
+ * <hash12>` for names minted after that migration, `zed-ppwarm-<proj8>-
  * <hash12>` (no tpl8) for names minted before it. `ppwarmProj8` matches both
  * shapes (every rule below that only needs "is this a ppwarm tip" is unaffected);
  * `ppwarmTpl8` distinguishes them for the one rule that groups tips against each
@@ -102,13 +102,13 @@ export const QUOTA_GC_PPWARM_FRESH_PROTECT_MS = 45 * 60 * 1000;
 /** Max deletions per sweep pass — keeps each pass cheap and observable. */
 export const QUOTA_GC_MAX_PER_PASS = 15;
 
-export const DEFAULT_PREFIX = 'kortix-default-';
-export const PPWARM_PREFIX = 'kortix-ppwarm-';
+export const DEFAULT_PREFIX = 'zed-default-';
+export const PPWARM_PREFIX = 'zed-ppwarm-';
 /** Namespaces we own and may reap. Anything else (stock/bench images) is untouched. */
 export const MANAGED_PREFIXES = [
   DEFAULT_PREFIX,
-  'kortix-tpl-',
-  'kortix-wproj-',
+  'zed-tpl-',
+  'zed-wproj-',
   PPWARM_PREFIX,
 ] as const;
 
@@ -172,8 +172,8 @@ export function isManaged(name: string): boolean {
 
 /**
  * proj8 scope key of a ppwarm name. Matches BOTH shapes — old
- * `kortix-ppwarm-<proj8>-<hash12>` and new (template-scoped)
- * `kortix-ppwarm-<proj8>-<tpl8>-<hash12>` — proj8 is always the first segment
+ * `zed-ppwarm-<proj8>-<hash12>` and new (template-scoped)
+ * `zed-ppwarm-<proj8>-<tpl8>-<hash12>` — proj8 is always the first segment
  * regardless of format, so every rule keyed only on "is this project's ppwarm
  * cache" (idle sweep, LRU budget) is unaffected by the format migration.
  */
@@ -314,7 +314,7 @@ export function selectSnapshotsToReap(input: SelectInput): SelectResult {
     claim(s, 'superseded default (beyond freshest N)');
   }
 
-  // 5. Everything else we own (user templates `kortix-tpl-`, legacy `kortix-wproj-`):
+  // 5. Everything else we own (user templates `zed-tpl-`, legacy `zed-wproj-`):
   //    conservative idle gate. These can encode real user intent, so they get the
   //    benefit of the doubt that a content-addressed default does not.
   for (const s of pool) {

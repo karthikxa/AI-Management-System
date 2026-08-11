@@ -13,7 +13,7 @@ import { extractProjectPolicies } from '../projects/policies';
 import { KNOWN_SCHEMA_VERSION, parseManifestString } from '../projects/triggers';
 
 function specFrom(body: string) {
-  const m = parseManifestString(`kortix_version = ${KNOWN_SCHEMA_VERSION}\n[project]\nname="t"\n${body}`);
+  const m = parseManifestString(`zed_version = ${KNOWN_SCHEMA_VERSION}\n[project]\nname="t"\n${body}`);
   return extractConnectors(m).specs[0]!;
 }
 
@@ -139,7 +139,7 @@ spec = "https://x/y.json"
 
 describe('toProjectPolicyRows', () => {
   test('top-level [[policies]] preserves order as position', () => {
-    const m = parseManifestString(`kortix_version = ${KNOWN_SCHEMA_VERSION}
+    const m = parseManifestString(`zed_version = ${KNOWN_SCHEMA_VERSION}
 [project]
 name="t"
 

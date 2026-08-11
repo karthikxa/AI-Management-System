@@ -19,7 +19,7 @@ async function fixture(): Promise<{
   appd: string;
   caddy: string;
 }> {
-  const root = await mkdtemp(join(tmpdir(), 'kortix-app-runtime-digest-'));
+  const root = await mkdtemp(join(tmpdir(), 'zed-app-runtime-digest-'));
   cleanup.push(root);
   const appd = join(root, 'custom', 'appd');
   const caddy = join(root, 'custom', 'caddy');
@@ -32,18 +32,18 @@ async function fixture(): Promise<{
 describe('appRuntimeArtifactDigest', () => {
   test('honors explicit runtime binary environment paths', async () => {
     const files = await fixture();
-    const previousAppd = process.env.KORTIX_APPD_BIN_PATH;
-    const previousCaddy = process.env.KORTIX_APP_CADDY_BIN_PATH;
-    process.env.KORTIX_APPD_BIN_PATH = files.appd;
-    process.env.KORTIX_APP_CADDY_BIN_PATH = files.caddy;
+    const previousAppd = process.env.ZED_APPD_BIN_PATH;
+    const previousCaddy = process.env.ZED_APP_CADDY_BIN_PATH;
+    process.env.ZED_APPD_BIN_PATH = files.appd;
+    process.env.ZED_APP_CADDY_BIN_PATH = files.caddy;
     try {
       expect(appdBinaryPath()).toBe(files.appd);
       expect(appCaddyBinaryPath()).toBe(files.caddy);
     } finally {
-      if (previousAppd === undefined) delete process.env.KORTIX_APPD_BIN_PATH;
-      else process.env.KORTIX_APPD_BIN_PATH = previousAppd;
-      if (previousCaddy === undefined) delete process.env.KORTIX_APP_CADDY_BIN_PATH;
-      else process.env.KORTIX_APP_CADDY_BIN_PATH = previousCaddy;
+      if (previousAppd === undefined) delete process.env.ZED_APPD_BIN_PATH;
+      else process.env.ZED_APPD_BIN_PATH = previousAppd;
+      if (previousCaddy === undefined) delete process.env.ZED_APP_CADDY_BIN_PATH;
+      else process.env.ZED_APP_CADDY_BIN_PATH = previousCaddy;
     }
   });
 
@@ -84,11 +84,11 @@ describe('appRuntimeArtifactDigest', () => {
   test('falls back to runtime source when one binary is missing', async () => {
     const files = await fixture();
     const sourceFiles = [
-      'apps/kortix-app-runtime/main.go',
-      'apps/kortix-app-runtime/go.mod',
-      'apps/kortix-app-runtime/caddy/main.go',
-      'apps/kortix-app-runtime/caddy/go.mod',
-      'apps/kortix-app-runtime/caddy/go.sum',
+      'apps/zed-app-runtime/main.go',
+      'apps/zed-app-runtime/go.mod',
+      'apps/zed-app-runtime/caddy/main.go',
+      'apps/zed-app-runtime/caddy/go.mod',
+      'apps/zed-app-runtime/caddy/go.sum',
     ];
     for (const relative of sourceFiles) {
       const path = join(files.root, relative);

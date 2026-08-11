@@ -1,5 +1,5 @@
 /**
- * Platform API Client for Kortix Computer Mobile
+ * Platform API Client for Zed Computer Mobile
  *
  * Communicates with the Computer backend to manage sandbox lifecycle
  * and provides the sandbox URL for OpenCode session operations.
@@ -22,9 +22,9 @@ import {
 // (mobile didn't have a "pause in place" caller before this file); pull it
 // straight from the SDK's public `projects-client` subpath instead of adding
 // an export mobile itself doesn't otherwise need.
-import { stopProjectSession } from '@kortix/sdk/projects-client';
-// The SDK's kortix-master service wrappers are public via the
-// `@kortix/sdk/opencode-client` subpath (client.ts re-exports the module).
+import { stopProjectSession } from '@zed/sdk/projects-client';
+// The SDK's zed-master service wrappers are public via the
+// `@zed/sdk/opencode-client` subpath (client.ts re-exports the module).
 // Mobile's service fns delegate transport to them but keep soft-fail
 // semantics (null/false/[] on any error) — the SDK wrappers throw, and
 // mobile's callers treat failures as quiet degradation, not exceptions.
@@ -36,26 +36,26 @@ import {
   listServices as sdkListServices,
   reconcileServices as sdkReconcileServices,
   serviceAction as sdkServiceAction,
-} from '@kortix/sdk/opencode-client';
+} from '@zed/sdk/opencode-client';
 import {
   getProviders as sdkGetProviders,
   type ProvidersInfo,
   type SandboxProviderName,
-} from '@kortix/sdk/platform-client';
+} from '@zed/sdk/platform-client';
 
 // ─── Port Constants ──────────────────────────────────────────────────────────
 
 export const SANDBOX_PORTS = {
   DESKTOP: '6080',
   DESKTOP_HTTPS: '6081',
-  KORTIX_MASTER: '8000',
+  ZED_MASTER: '8000',
   BROWSER_STREAM: '9223',
   SSH: '22',
 } as const;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type { SandboxProviderName } from '@kortix/sdk/platform-client';
+export type { SandboxProviderName } from '@zed/sdk/platform-client';
 
 export interface SandboxInfo {
   sandbox_id: string;
@@ -114,7 +114,7 @@ interface ProjectSessionSandbox {
  * Pattern: {BACKEND_URL}/p/{externalId}/8000
  */
 export function getSandboxUrl(sandboxExternalId: string): string {
-  return `${API_URL}/p/${sandboxExternalId}/${SANDBOX_PORTS.KORTIX_MASTER}`;
+  return `${API_URL}/p/${sandboxExternalId}/${SANDBOX_PORTS.ZED_MASTER}`;
 }
 
 /**
@@ -167,12 +167,12 @@ function toSandboxInfo(
 
 // The three helpers below used to hand-roll their own `fetch` + auth-header +
 // JSON-parse boilerplate (a private `apiFetch`, now removed) duplicating what
-// `@kortix/sdk`'s `backendApi` already does. They now go through
+// `@zed/sdk`'s `backendApi` already does. They now go through
 // `lib/projects/projects-client.ts`, which itself re-exports
-// `@kortix/sdk/projects-client` — same endpoints, same responses, just no
+// `@zed/sdk/projects-client` — same endpoints, same responses, just no
 // second hand-rolled REST client. Return values are narrowed to this file's
 // local `ProjectSummary`/`ProjectSessionSummary`/`ProjectSessionSandbox` view
-// types, which are structural subsets of the SDK's richer `KortixProject` /
+// types, which are structural subsets of the SDK's richer `ZedProject` /
 // `ProjectSession` / `ProjectSessionSandbox` shapes.
 
 async function listProjects(): Promise<ProjectSummary[]> {
@@ -374,7 +374,7 @@ export async function checkInstanceHealth(url: string): Promise<string | null> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch(`${url}/kortix/health`, { signal: controller.signal });
+    const res = await fetch(`${url}/zed/health`, { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) return null;
     const data = await res.json();
@@ -655,7 +655,7 @@ export async function sandboxRuntimeReload(
   sandboxUrl: string,
   mode: 'dispose-only' | 'full'
 ): Promise<boolean> {
-  const data = await serviceRequest(sandboxUrl, `/kortix/services/system/reload`, {
+  const data = await serviceRequest(sandboxUrl, `/zed/services/system/reload`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ mode }),

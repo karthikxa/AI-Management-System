@@ -81,7 +81,7 @@ const HUE_BY_EMOJI: ReadonlyMap<string, EmojiHue> = new Map(
 
 /**
  * FNV-1a-ish, over CODE POINTS rather than UTF-16 units — the same shape
- * `chalkColors` in @kortix/shared uses for entity tiles, kept local because
+ * `chalkColors` in @zed/shared uses for entity tiles, kept local because
  * that package exports the colours and not the hash.
  */
 function hash(seed: string): number {

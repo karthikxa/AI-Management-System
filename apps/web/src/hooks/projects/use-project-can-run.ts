@@ -7,8 +7,8 @@ import {
   resolveBillingState,
 } from '@/lib/billing/billing-gate-state';
 import { isBillingEnabled } from '@/lib/config';
-import { getProjectDetail } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+import { getProjectDetail } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import { useQuery } from '@tanstack/react-query';
 
 export function useProjectCanRun(projectId: string | undefined) {

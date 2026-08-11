@@ -1,7 +1,7 @@
 import {
-  createKortixPty,
-  getKortixPtyWebSocketUrl,
-  removeKortixPty,
+  createZedPty,
+  getZedPtyWebSocketUrl,
+  removeZedPty,
 } from '../core/runtime/pty';
 import { getActiveOpenCodeUrl } from '../browser/stores/server-store';
 
@@ -10,12 +10,12 @@ export async function runPtyCommand(
   options?: { timeoutMs?: number; title?: string },
 ): Promise<string> {
   const baseUrl = getActiveOpenCodeUrl();
-  const pty = await createKortixPty(baseUrl, {
+  const pty = await createZedPty(baseUrl, {
     command: '/bin/sh',
     args: ['-c', command],
     title: options?.title ?? '__sdk-command__',
   });
-  const connectUrl = await getKortixPtyWebSocketUrl(pty.id, baseUrl);
+  const connectUrl = await getZedPtyWebSocketUrl(pty.id, baseUrl);
   const timeoutMs = options?.timeoutMs ?? 15_000;
 
   try {
@@ -45,6 +45,6 @@ export async function runPtyCommand(
       socket.onerror = finish;
     });
   } finally {
-    void removeKortixPty(baseUrl, pty.id).catch(() => {});
+    void removeZedPty(baseUrl, pty.id).catch(() => {});
   }
 }

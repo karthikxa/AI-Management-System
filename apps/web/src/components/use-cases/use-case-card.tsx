@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { PostByline } from '@/components/blog/post-byline';
-import { KortixAsterisk } from '@/components/ui/kortix-asterisk';
+import { ZedAsterisk } from '@/components/ui/zed-asterisk';
 import type { Post } from '@/lib/blog';
 import { cn } from '@/lib/utils';
 import { USE_CASE_COVERS } from './covers';
@@ -46,13 +46,13 @@ export function UseCaseCover({
   return (
     <div
       className={cn(
-        'from-muted/60 via-background to-kortix-base/[0.08] relative overflow-hidden bg-gradient-to-br',
+        'from-muted/60 via-background to-zed-base/[0.08] relative overflow-hidden bg-gradient-to-br',
         className,
       )}
     >
       <div className="absolute inset-0 bg-[url('/grain-texture.png')] bg-repeat opacity-[0.12]" />
       <div className="absolute inset-0 flex items-center justify-center">
-        <KortixAsterisk index={0} parentClass="size-10" />
+        <ZedAsterisk index={0} parentClass="size-10" />
       </div>
     </div>
   );
@@ -80,7 +80,7 @@ export function UseCaseCard({ post, featured = false }: { post: Post; featured?:
       <div className={cn('flex flex-1 flex-col p-6', featured && 'md:justify-center md:p-10')}>
         {archetype && (
           <div className="text-muted-foreground mb-4 flex items-center gap-2 font-mono text-xs tracking-wider uppercase">
-            <KortixAsterisk index={0} parentClass="size-3.5" variant="solid" />
+            <ZedAsterisk index={0} parentClass="size-3.5" variant="solid" />
             {archetype}
           </div>
         )}

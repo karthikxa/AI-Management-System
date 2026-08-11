@@ -2,7 +2,7 @@
 # an instance replacement untouched. cloud-init (templates/user-data.sh.tftpl)
 # formats it once (if empty), mounts it at var.data_mount_path, points
 # Docker's own data-root at it (images, containers, the updater/Caddy named
-# volumes), AND points the kortix CLI's KORTIX_SELF_HOST_CONFIG_DIR at it —
+# volumes), AND points the zed CLI's ZED_SELF_HOST_CONFIG_DIR at it —
 # the latter matters because the CLI persists Postgres and Supabase Storage as
 # bind mounts under its instance directory
 # (<config-dir>/<instance>/volumes/db/data, .../volumes/storage), NOT as
@@ -16,9 +16,9 @@ locals {
   data_volume_device_name = "/dev/sdf"
 
   # Where the data volume is mounted on the box. Docker's data-root lives at
-  # "<data_mount_path>/docker"; the kortix CLI's KORTIX_SELF_HOST_CONFIG_DIR at
-  # "<data_mount_path>/kortix-self-host".
-  data_mount_path = "/mnt/kortix-data"
+  # "<data_mount_path>/docker"; the zed CLI's ZED_SELF_HOST_CONFIG_DIR at
+  # "<data_mount_path>/zed-self-host".
+  data_mount_path = "/mnt/zed-data"
 }
 
 resource "aws_ebs_volume" "data" {
@@ -89,8 +89,8 @@ resource "aws_iam_role" "dlm" {
     Name           = "${local.name}-dlm"
     Module         = "selfhost-ec2"
     Environment    = lookup(var.tags, "Environment", "managed")
-    Project        = lookup(var.tags, "Project", "kortix")
-    KortixInstance = lookup(var.tags, "KortixInstance", local.name)
+    Project        = lookup(var.tags, "Project", "zed")
+    ZedInstance = lookup(var.tags, "ZedInstance", local.name)
   }
 }
 
@@ -114,7 +114,7 @@ resource "aws_dlm_lifecycle_policy" "data" {
     }
 
     schedule {
-      name = "kortix-backup"
+      name = "zed-backup"
 
       create_rule {
         interval = var.backup_interval_hours

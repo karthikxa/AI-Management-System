@@ -6,11 +6,11 @@ pipeline uses). Output is JUnit XML in `test-results/migration/`.
 
 ## What it checks
 
-1. **Apply up** — `pnpm --filter @kortix/db migrate` builds the schema from
+1. **Apply up** — `pnpm --filter @zed/db migrate` builds the schema from
    scratch in a `postgres:16-alpine` container (each migration transactional,
-   advisory-locked). Tracking lives in `kortix_migrations.pgmigrations`.
+   advisory-locked). Tracking lives in `zed_migrations.pgmigrations`.
 2. **Schema is non-empty / key tables exist** — `schema.test.sh` asserts the
-   `kortix` schema has tables, that a list of business-critical tables exist,
+   `zed` schema has tables, that a list of business-critical tables exist,
    that enum types are present, and that the Supabase grant roles can see them.
 3. **Idempotency** — `idempotency.test.sh` re-runs migrate and asserts it exits
    0, applies nothing, and reports "No migrations to run".
@@ -59,9 +59,9 @@ bash tests/migration/scripts/db-down.sh    # stop + remove container/volume
 
 | Var | Default | Meaning |
 |-----|---------|---------|
-| `TEST_DB_USER` | `kortix_test` | Postgres user |
-| `TEST_DB_PASSWORD` | `kortix_test` | Postgres password |
-| `TEST_DB_NAME` | `kortix_test` | Database name |
+| `TEST_DB_USER` | `zed_test` | Postgres user |
+| `TEST_DB_PASSWORD` | `zed_test` | Postgres password |
+| `TEST_DB_NAME` | `zed_test` | Database name |
 | `TEST_DB_PORT` | `55432` | Host port mapping |
 | `RESULTS_DIR` | `test-results/migration` | JUnit output dir |
 
@@ -69,7 +69,7 @@ These match `tests/docker-compose.test.yml`.
 
 ## How to add a check
 
-- **A new key table**: add `"kortix.<table>"` to `KEY_TABLES` in
+- **A new key table**: add `"zed.<table>"` to `KEY_TABLES` in
   `tests/schema.test.sh`.
 - **An arbitrary assertion**: in any `tests/*.test.sh`, run
   `psql_query "<SQL returning '1' on success>"` and wrap the result in a
@@ -84,11 +84,11 @@ These match `tests/docker-compose.test.yml`.
 
 `run.sh` validates the migrate flow directly (`psql` prereqs + `pnpm migrate`).
 `worktree-migrate.test.ts` validates the worktree's own wrapper — it drives the
-real `runMigrate()` + `hasKortixSchema()` from `scripts/worktree/lib` against a
-throwaway Postgres and asserts the `kortix` schema builds (≥80 tables) and a
+real `runMigrate()` + `hasZedSchema()` from `scripts/worktree/lib` against a
+throwaway Postgres and asserts the `zed` schema builds (≥80 tables) and a
 second run is a no-op. It manages its OWN container because the worktree always
 uses `postgres:postgres@/postgres` (a fresh Supabase-local), not the
-`kortix_test` creds above. Needs Node 22 (the worktree's engine floor) and
+`zed_test` creds above. Needs Node 22 (the worktree's engine floor) and
 docker; skips cleanly when docker is absent.
 
 ```bash

@@ -1,8 +1,8 @@
 /**
  * Tiny, dependency-free readers shared by build + install:
  *   - resolveOpencodeDir: the `opencode.config_dir` from the manifest
- *     (kortix.yaml, or the `[opencode] config_dir` TOML table in legacy
- *     kortix.toml)
+ *     (zed.yaml, or the `[opencode] config_dir` TOML table in legacy
+ *     zed.toml)
  *   - parseFrontmatter:   YAML-ish frontmatter from a SKILL.md / agent .md
  *
  * These intentionally mirror apps/api/src/projects/git/config.ts so the CLI
@@ -10,7 +10,7 @@
  * where things live and how their metadata is read.
  */
 
-export const DEFAULT_OPENCODE_CONFIG_DIR = '.kortix/opencode';
+export const DEFAULT_OPENCODE_CONFIG_DIR = '.zed/opencode';
 
 /**
  * Read a scalar `key` out of a top-level `[section]` (TOML) or `section:` (YAML)

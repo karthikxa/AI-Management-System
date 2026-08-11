@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, mock, test } from "bun:test";
-import { configureKortix } from "../../http/config";
+import { configureZed } from "../../http/config";
 import { clearSessionFresh, markSessionFresh } from "../../http/fresh-sessions";
 import { clearSessionRuntime, getSessionRuntime,
 } from "../../session/session-runtime-registry";
@@ -37,7 +37,7 @@ afterEach(() => {
   clearSessionFresh(SESSION);
 });
 
-configureKortix({ backendUrl: "http://test.local/v1", getToken: async () => "tok",
+configureZed({ backendUrl: "http://test.local/v1", getToken: async () => "tok",
 });
 const last = () => calls[calls.length - 1];
 

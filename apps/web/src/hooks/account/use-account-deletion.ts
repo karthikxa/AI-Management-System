@@ -5,7 +5,7 @@ import {
   deleteAccountImmediately,
   getAccountDeletionStatus,
   requestAccountDeletion,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 export interface AccountDeletionStatus {
   has_pending_deletion: boolean;

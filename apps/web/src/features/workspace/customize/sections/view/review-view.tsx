@@ -4,7 +4,7 @@ import { ProjectFilesProvider } from '@/features/project-files';
 import { ReviewCenterConnected } from '@/features/review-center/review-center-connected';
 import { PROJECT_ACTIONS } from '@/lib/project-actions';
 import { useProjectCan } from '@/lib/use-project-can';
-import { useProjectName } from '@kortix/sdk/react';
+import { useProjectName } from '@zed/sdk/react';
 
 /**
  * Review Center customize section — the per-project human-in-the-loop inbox wired

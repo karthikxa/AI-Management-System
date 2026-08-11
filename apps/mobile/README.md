@@ -1,19 +1,19 @@
-# Kortix Mobile App
+# Zed Mobile App
 
 > ## ⚠️ Stale — work in progress, not currently maintained
 >
 > **This app is knowingly behind the rest of the monorepo and is not part of the
 > current release path.** Treat it as parked. It will be reconsolidated in a
-> future pass; until then, do not assume anything here reflects how Kortix works.
+> future pass; until then, do not assume anything here reflects how Zed works.
 >
 > ### Why it is stale
 >
-> `@kortix/sdk` is the only way any host may reach the Kortix API. This app
+> `@zed/sdk` is the only way any host may reach the Zed API. This app
 > predates that rule:
 >
 > - **~2,800 LOC of hand-rolled OpenCode REST client** under
 >   `apps/mobile/lib/opencode/`, rather than consuming the SDK.
-> - It groups models by `providerName`, which is always `"Kortix"` under the
+> - It groups models by `providerName`, which is always `"Zed"` under the
 >   gateway, so its model list disagrees with the web app's.
 >
 > It was not broken by a recent change — it was never migrated.
@@ -22,8 +22,8 @@
 >
 > Do not patch around the above. The work is:
 >
-> 1. Delete `apps/mobile/lib/opencode/` and consume `@kortix/sdk` instead — one
->    client via `createKortix({ backendUrl, getToken })`, per the repo rule that
+> 1. Delete `apps/mobile/lib/opencode/` and consume `@zed/sdk` instead — one
+>    client via `createZed({ backendUrl, getToken })`, per the repo rule that
 >    the SDK is the single source of truth for anything that talks to the API.
 > 2. Mount session screens on the SDK's transport-correct session identity
 >    rather than the REST pin.

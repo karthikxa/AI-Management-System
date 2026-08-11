@@ -3,14 +3,14 @@ import { createRoute, z } from '@hono/zod-openapi';
 import {
   gatewayBudgets,
   gatewayRequestLogs,
-} from '@kortix/db';
+} from '@zed/db';
 import {
   calculateCost,
   callUpstream,
   GatewayResolutionError,
   type AuthedPrincipal,
-} from '@kortix/llm-gateway';
-import { type GenerationConfig, clampGenerationConfig } from '@kortix/llm-catalog';
+} from '@zed/llm-gateway';
+import { type GenerationConfig, clampGenerationConfig } from '@zed/llm-catalog';
 import { resolveCandidates } from '../../llm-gateway/resolution/resolve-candidates';
 import { catalogModelForWireModel } from '../../llm-gateway/models/catalog-models';
 import { platformDefaultModelId } from '../../llm-gateway/models/served-managed-models';

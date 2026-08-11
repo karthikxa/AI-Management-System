@@ -32,7 +32,7 @@ done
 load_local_env() {
   # pnpm --filter runs each package from its own directory, where Bun/Next may
   # auto-load package .env files. Be explicit here: use the app env files for
-  # Supabase/auth (cloud dev has Google enabled), but force only the Kortix API
+  # Supabase/auth (cloud dev has Google enabled), but force only the Zed API
   # endpoint back to localhost and mark the process as local-dev so cloud
   # provision pollers do not sweep shared remote rows.
   # apps/api/.env and apps/web/.env are dotenvx-ENCRYPTED and committed to git.
@@ -53,23 +53,23 @@ load_local_env() {
     echo "[dev] ⚠️  dotenvx not installed (run 'pnpm install') — env not loaded" >&2
   fi
 
-  export KORTIX_LOCAL_DEV=1
+  export ZED_LOCAL_DEV=1
   export ENV_MODE=local
   # Default only — the shared .env (decrypted above) or a personal .env.local
   # (below) decides the real provider order (e.g. "platinum,daytona").
   export ALLOWED_SANDBOX_PROVIDERS="${ALLOWED_SANDBOX_PROVIDERS:-daytona}"
   # Warm SNAPSHOT baking OFF for local dev. The [warm-bake] builder (gated by
-  # warmSnapshotsEnabled() = KORTIX_WARM_SNAPSHOT_ENABLED + DAYTONA_WARM_TARGET)
-  # keeps trying to bake a `kortix-warm-runtime-*` base on Daytona's experimental
+  # warmSnapshotsEnabled() = ZED_WARM_SNAPSHOT_ENABLED + DAYTONA_WARM_TARGET)
+  # keeps trying to bake a `zed-warm-runtime-*` base on Daytona's experimental
   # region, which flakes locally with "internal error" and spams the logs.
-  export KORTIX_WARM_SNAPSHOT_ENABLED=false
-  # KORTIX_URL is resolved by ensure_dev_tunnel() below. Cloud (Daytona)
+  export ZED_WARM_SNAPSHOT_ENABLED=false
+  # ZED_URL is resolved by ensure_dev_tunnel() below. Cloud (Daytona)
   # sandboxes call BACK to it (LLM router, web search, RPC) and cannot reach
   # this machine's localhost — so they need a public tunnel URL. The dashboard
   # keeps talking to the API on localhost via NEXT_PUBLIC_BACKEND_URL, so only
   # the sandbox -> API direction goes through the tunnel.
   export NEXT_PUBLIC_BACKEND_URL="http://localhost:8008/v1"
-  export KORTIX_PUBLIC_BACKEND_URL="http://localhost:8008/v1"
+  export ZED_PUBLIC_BACKEND_URL="http://localhost:8008/v1"
   export BACKEND_URL="http://localhost:8008/v1"
 
   # Route sandbox model calls through the local standalone gateway. Proxy mode
@@ -77,7 +77,7 @@ load_local_env() {
   # Sandbox OpenAI clients use /v1/llm-gateway/v1 as their base URL because the
   # standalone gateway owns /v1/chat/completions. Exported AFTER the .env
   # decrypt so they override whatever the committed apps/api/.env carries.
-  if [[ "${KORTIX_DEV_GATEWAY:-auto}" != "0" ]]; then
+  if [[ "${ZED_DEV_GATEWAY:-auto}" != "0" ]]; then
     export LLM_GATEWAY_ENABLED=true
     export LLM_GATEWAY_BASE_URL=""
     export LLM_GATEWAY_PROXY_PORT="$GATEWAY_PORT"
@@ -97,51 +97,51 @@ load_local_env() {
 }
 
 # Front the local API with a public Cloudflare quick tunnel so cloud Daytona
-# sandboxes can reach it as $KORTIX_URL. No-op when KORTIX_DEV_TUNNEL=0 or the
+# sandboxes can reach it as $ZED_URL. No-op when ZED_DEV_TUNNEL=0 or the
 # default provider isn't cloud-based.
 ensure_dev_tunnel() {
   local api_port="${PORT:-8008}"
   local api_origin="http://localhost:${api_port}"
   local default_provider="${ALLOWED_SANDBOX_PROVIDERS%%,*}"
 
-  # Respect an explicit public KORTIX_URL (named tunnel, staging API, …) — but
+  # Respect an explicit public ZED_URL (named tunnel, staging API, …) — but
   # only if it actually ANSWERS. FAA: a stale/bogus value (e.g. a dead quick-
   # tunnel URL or a leftover like https://api.trycloudflare.com baked into .env)
   # used to be trusted blindly, so no tunnel started and every sandbox got a 404
   # callback URL — sessions reach 'running' in ~2s but the UI panel loads a dead
-  # URL → infinite spinner that looks like "kortix is broken". Probe it first;
+  # URL → infinite spinner that looks like "zed is broken". Probe it first;
   # fall through to a fresh quick tunnel if it's unreachable.
-  if [[ -n "${KORTIX_URL:-}" && "$KORTIX_URL" != http://localhost:* && "$KORTIX_URL" != http://127.0.0.1:* ]]; then
-    if curl -fsS -m 6 "${KORTIX_URL%/}/health" >/dev/null 2>&1; then
-      echo "[dev] Using KORTIX_URL from environment: $KORTIX_URL"
+  if [[ -n "${ZED_URL:-}" && "$ZED_URL" != http://localhost:* && "$ZED_URL" != http://127.0.0.1:* ]]; then
+    if curl -fsS -m 6 "${ZED_URL%/}/health" >/dev/null 2>&1; then
+      echo "[dev] Using ZED_URL from environment: $ZED_URL"
       return 0
     fi
-    echo "[dev] ⚠️  KORTIX_URL=$KORTIX_URL is set but UNREACHABLE (sandboxes would get a dead callback URL → blank session UI) — ignoring it and starting a fresh tunnel."
-    unset KORTIX_URL
+    echo "[dev] ⚠️  ZED_URL=$ZED_URL is set but UNREACHABLE (sandboxes would get a dead callback URL → blank session UI) — ignoring it and starting a fresh tunnel."
+    unset ZED_URL
   fi
 
   # Non-cloud providers run on this machine — no public callback needed.
   # Honor an explicit opt-out too.
-  if [[ "${KORTIX_DEV_TUNNEL:-auto}" == "0" || ( "$default_provider" != "daytona" && "$default_provider" != "platinum" ) ]]; then
-    export KORTIX_URL="$api_origin"
-    echo "[dev] Tunnel skipped — KORTIX_URL=$KORTIX_URL"
+  if [[ "${ZED_DEV_TUNNEL:-auto}" == "0" || ( "$default_provider" != "daytona" && "$default_provider" != "platinum" ) ]]; then
+    export ZED_URL="$api_origin"
+    echo "[dev] Tunnel skipped — ZED_URL=$ZED_URL"
     if [[ "$default_provider" == "daytona" ]]; then
       echo "[dev] ⚠️  Default sandbox provider is Daytona (cloud) but the tunnel is off —"
       echo "[dev]     sessions will fail with 'OpenCode runtime is not ready' because the"
-      echo "[dev]     sandbox cannot reach $api_origin. Unset KORTIX_DEV_TUNNEL to enable it."
+      echo "[dev]     sandbox cannot reach $api_origin. Unset ZED_DEV_TUNNEL to enable it."
     fi
     return 0
   fi
 
   if ! command -v cloudflared >/dev/null 2>&1; then
     echo "[dev] ERROR: cloudflared is required for cloud (Daytona) sandboxes but was not found."
-    echo "[dev]        Cloud sandboxes can't reach localhost; they need a public KORTIX_URL."
+    echo "[dev]        Cloud sandboxes can't reach localhost; they need a public ZED_URL."
     echo "[dev]        Install:  brew install cloudflared"
-    echo "[dev]        Or:       KORTIX_DEV_TUNNEL=0 pnpm dev   (skips the tunnel — cloud sandboxes won't reach localhost)"
+    echo "[dev]        Or:       ZED_DEV_TUNNEL=0 pnpm dev   (skips the tunnel — cloud sandboxes won't reach localhost)"
     exit 1
   fi
 
-  TUNNEL_LOG="$(mktemp -t kortix-tunnel.XXXXXX)"
+  TUNNEL_LOG="$(mktemp -t zed-tunnel.XXXXXX)"
   echo "[dev] Starting Cloudflare quick tunnel → $api_origin ..."
   cloudflared tunnel --no-autoupdate --url "$api_origin" >"$TUNNEL_LOG" 2>&1 &
   TUNNEL_PID=$!
@@ -165,18 +165,18 @@ ensure_dev_tunnel() {
     exit 1
   fi
 
-  export KORTIX_URL="$url"
-  TUNNEL_URL_FILE="${TUNNEL_URL_FILE:-$(mktemp -t kortix-tunnel-url.XXXXXX)}"
+  export ZED_URL="$url"
+  TUNNEL_URL_FILE="${TUNNEL_URL_FILE:-$(mktemp -t zed-tunnel-url.XXXXXX)}"
   printf '%s' "$url" > "$TUNNEL_URL_FILE"
-  echo "[dev] ✅ Cloud sandbox callback ready: KORTIX_URL=$KORTIX_URL"
+  echo "[dev] ✅ Cloud sandbox callback ready: ZED_URL=$ZED_URL"
 }
 
 # Quick tunnels rot silently every few hours (the URL dies while cloudflared
-# keeps running) — every death looks like "kortix is broken" until someone
+# keeps running) — every death looks like "zed is broken" until someone
 # restarts the stack by hand. This watchdog probes the tunnel URL each minute;
 # two consecutive failures WHILE the local API is healthy means the tunnel is
 # dead: rotate cloudflared, write the fresh URL, and bounce the supervised API
-# (its KORTIX_URL is baked at spawn). Sessions created on the old URL can't be
+# (its ZED_URL is baked at spawn). Sessions created on the old URL can't be
 # saved (their baked env is gone with it) — but everything new just works.
 start_tunnel_watchdog() {
   (
@@ -189,7 +189,7 @@ start_tunnel_watchdog() {
       # FAA: healthy = url present AND cloudflared alive AND the url answers.
       # The old `cat … || continue` skipped a MISSING url-file forever, and it
       # never checked whether cloudflared itself had died — so a silently-rotted
-      # tunnel left every new session stuck on a dead/empty KORTIX_URL with no
+      # tunnel left every new session stuck on a dead/empty ZED_URL with no
       # recovery. Now any of {missing url, dead cloudflared, dead url} triggers
       # a (re)establish, so the stack self-heals within ~1 min instead of needing
       # a hand restart.
@@ -201,7 +201,7 @@ start_tunnel_watchdog() {
       echo "[dev] ⚠️  tunnel ${url:-<none>} DEAD/MISSING (cloudflared $(pgrep -fc 'cloudflared tunnel' 2>/dev/null || echo 0) procs) — (re)establishing + restarting API..."
       [[ -n "${TUNNEL_PID:-}" ]] && kill "$TUNNEL_PID" 2>/dev/null || true
       pkill -f 'cloudflared tunnel --no-autoupdate' 2>/dev/null || true
-      TUNNEL_LOG="$(mktemp -t kortix-tunnel.XXXXXX)"
+      TUNNEL_LOG="$(mktemp -t zed-tunnel.XXXXXX)"
       cloudflared tunnel --no-autoupdate --url "http://localhost:${PORT:-8008}" >"$TUNNEL_LOG" 2>&1 &
       TUNNEL_PID=$!
       newurl=""
@@ -216,7 +216,7 @@ start_tunnel_watchdog() {
       fi
       printf '%s' "$newurl" > "$TUNNEL_URL_FILE"
       touch "$TUNNEL_URL_FILE.rotated"
-      echo "[dev] ✅ tunnel rotated: KORTIX_URL=$newurl (API restarting)"
+      echo "[dev] ✅ tunnel rotated: ZED_URL=$newurl (API restarting)"
       pkill -f 'bun run --hot src/index.ts' 2>/dev/null || true
     done
   ) &
@@ -235,10 +235,10 @@ start_tunnel_watchdog() {
 # must equal STRIPE_WEBHOOK_SECRET in apps/api/.env or the API rejects events.
 #
 # No-ops (with a hint) when the Stripe CLI is missing, billing is off, or no key
-# is set. Opt out explicitly with KORTIX_STRIPE_LISTEN=0.
+# is set. Opt out explicitly with ZED_STRIPE_LISTEN=0.
 ensure_stripe_listen() {
-  [[ "${KORTIX_STRIPE_LISTEN:-auto}" == "0" ]] && return 0
-  [[ "${KORTIX_BILLING_INTERNAL_ENABLED:-}" == "true" ]] || return 0
+  [[ "${ZED_STRIPE_LISTEN:-auto}" == "0" ]] && return 0
+  [[ "${ZED_BILLING_INTERNAL_ENABLED:-}" == "true" ]] || return 0
 
   if ! command -v stripe >/dev/null 2>&1; then
     echo "[dev] ⚠️  stripe CLI not found — webhooks won't forward (brew install stripe-cli). Skipping."
@@ -260,56 +260,56 @@ ensure_stripe_listen() {
 # Start the standalone LLM gateway (apps/llm-gateway) so the API routes sandbox
 # model calls through it (proxy mode, wired in load_local_env) instead of
 # falling back to the in-API /v1/llm OpenRouter passthrough. Background process,
-# cleaned up on exit. Opt out with KORTIX_DEV_GATEWAY=0.
+# cleaned up on exit. Opt out with ZED_DEV_GATEWAY=0.
 ensure_dev_gateway() {
-  [[ "${KORTIX_DEV_GATEWAY:-auto}" == "0" ]] && return 0
+  [[ "${ZED_DEV_GATEWAY:-auto}" == "0" ]] && return 0
   local api_port="${PORT:-8008}"
   echo "[dev] Starting LLM gateway → :${GATEWAY_PORT} (API at http://localhost:${api_port})"
   (
     cd "$ROOT_DIR"
     PORT="$GATEWAY_PORT" \
-      KORTIX_API_URL="http://localhost:${api_port}" \
+      ZED_API_URL="http://localhost:${api_port}" \
       GATEWAY_INTERNAL_TOKEN="$DEV_GATEWAY_INTERNAL_TOKEN" \
       GATEWAY_API_TOKEN="$DEV_GATEWAY_INTERNAL_TOKEN" \
-      pnpm --filter @kortix/llm-gateway-server dev 2>&1 | sed 's/^/[gateway] /'
+      pnpm --filter @zed/llm-gateway-server dev 2>&1 | sed 's/^/[gateway] /'
   ) &
   GATEWAY_PID=$!
 }
 
-# Cross-compile the in-sandbox daemon (kortix-agent, Linux x64) so a fresh
+# Cross-compile the in-sandbox daemon (zed-agent, Linux x64) so a fresh
 # `pnpm dev` always bakes the latest daemon into new snapshots. Lazy: only
 # rebuilds when a source file is newer than the existing binary (or it's
 # missing), so API-only restarts pay nothing. A build failure warns but does
 # not abort dev — the previous binary stays in place.
 ensure_agent_binary() {
-  local dir="$ROOT_DIR/apps/kortix-sandbox-agent-server"
-  local bin="$dir/dist/kortix-agent"
+  local dir="$ROOT_DIR/apps/zed-sandbox-agent-server"
+  local bin="$dir/dist/zed-agent"
 
   if [[ -f "$bin" ]]; then
     local newer
     newer="$(find "$dir/src" "$dir/scripts" "$dir/package.json" -type f -newer "$bin" -print -quit 2>/dev/null || true)"
     if [[ -z "$newer" ]]; then
-      echo "[dev] kortix-agent up to date — skipping daemon build"
+      echo "[dev] zed-agent up to date — skipping daemon build"
       return 0
     fi
-    echo "[dev] kortix-agent stale (changed: ${newer#"$dir"/}) — rebuilding…"
+    echo "[dev] zed-agent stale (changed: ${newer#"$dir"/}) — rebuilding…"
   else
-    echo "[dev] kortix-agent missing — building…"
+    echo "[dev] zed-agent missing — building…"
   fi
 
   if (cd "$dir" && bun run build); then
-    echo "[dev] ✅ kortix-agent (Linux x64) rebuilt — new snapshots will bake it"
+    echo "[dev] ✅ zed-agent (Linux x64) rebuilt — new snapshots will bake it"
   else
-    echo "[dev] ⚠️  kortix-agent build failed — new snapshots may bake a stale daemon"
+    echo "[dev] ⚠️  zed-agent build failed — new snapshots may bake a stale daemon"
   fi
 }
 
-# Same idea for the `kortix` CLI binary the layered snapshot builder bakes into
-# every sandbox (apps/cli/dist/kortix → KORTIX_SNAPSHOT_CLI_BIN_PATH). Without
+# Same idea for the `zed` CLI binary the layered snapshot builder bakes into
+# every sandbox (apps/cli/dist/zed → ZED_SNAPSHOT_CLI_BIN_PATH). Without
 # it, Daytona snapshot builds fail the required-artifact check.
 ensure_cli_binary() {
   local dir="$ROOT_DIR/apps/cli"
-  local bin="$dir/dist/kortix"
+  local bin="$dir/dist/zed"
 
   if [[ -f "$bin" ]]; then
     local newer
@@ -317,18 +317,18 @@ ensure_cli_binary() {
       "$ROOT_DIR/packages/manifest-schema/src" "$ROOT_DIR/packages/starter/src" \
       -type f -newer "$bin" -print -quit 2>/dev/null || true)"
     if [[ -z "$newer" ]]; then
-      echo "[dev] kortix CLI up to date — skipping CLI build"
+      echo "[dev] zed CLI up to date — skipping CLI build"
       return 0
     fi
-    echo "[dev] kortix CLI stale — rebuilding…"
+    echo "[dev] zed CLI stale — rebuilding…"
   else
-    echo "[dev] kortix CLI missing — building…"
+    echo "[dev] zed CLI missing — building…"
   fi
 
   if (cd "$dir" && bun run build); then
-    echo "[dev] ✅ kortix CLI (Linux x64) rebuilt — new snapshots will bake it"
+    echo "[dev] ✅ zed CLI (Linux x64) rebuilt — new snapshots will bake it"
   else
-    echo "[dev] ⚠️  kortix CLI build failed — new snapshots may lack the CLI"
+    echo "[dev] ⚠️  zed CLI build failed — new snapshots may lack the CLI"
   fi
 }
 
@@ -437,16 +437,16 @@ cleanup() {
 }
 
 # ── Sandbox mode ───────────────────────────────────────────────────────────
-# When `pnpm dev` runs INSIDE a Kortix sandbox (the runtime layer lives at
-# /opt/kortix), bring the whole stack up self-contained — Supabase + API + web
+# When `pnpm dev` runs INSIDE a Zed sandbox (the runtime layer lives at
+# /opt/zed), bring the whole stack up self-contained — Supabase + API + web
 # — and skip the laptop-only steps (cloudflared tunnel + daemon/CLI snapshot
 # bake). The frontend is built once and served (`build` + `start`): `next dev`
 # compiles every route on demand and OOMs on a big app, whereas build+start has
 # a flat, light runtime and is prod-accurate. The agent just runs `pnpm dev`.
 run_sandbox_dev() {
-  echo "[dev] Kortix sandbox detected → full local stack (Supabase + API + web), self-contained."
+  echo "[dev] Zed sandbox detected → full local stack (Supabase + API + web), self-contained."
   export PATH="/opt/supabase:/usr/local/bin:$PATH"
-  export KORTIX_LOCAL_DEV=1 ENV_MODE=local
+  export ZED_LOCAL_DEV=1 ENV_MODE=local
 
   # Docker daemon — Supabase runs as containers. Start it if boot didn't.
   if ! docker info >/dev/null 2>&1; then
@@ -468,8 +468,8 @@ run_sandbox_dev() {
 
   # Materialize the per-app env files. The local Supabase trio comes from the
   # running stack; infra/LLM secrets come from the project secrets the platform
-  # injected into this sandbox's env (set them in the Kortix dashboard). Reserved
-  # names (PORT/KORTIX_*) are never injected, so the runtime-local ones are set
+  # injected into this sandbox's env (set them in the Zed dashboard). Reserved
+  # names (PORT/ZED_*) are never injected, so the runtime-local ones are set
   # explicitly here.
   #
   # NB: write to apps/api/.env.LOCAL, never apps/api/.env. The committed .env is
@@ -479,10 +479,10 @@ run_sandbox_dev() {
   # precedence than .env (the API below starts with --env-file=.env.local).
   cat > "$ROOT_DIR/apps/api/.env.local" <<EOF
 ENV_MODE=local
-INTERNAL_KORTIX_ENV=dev
+INTERNAL_ZED_ENV=dev
 PORT=8008
-KORTIX_URL=http://localhost:8008
-KORTIX_SKIP_ENSURE_SCHEMA=1
+ZED_URL=http://localhost:8008
+ZED_SKIP_ENSURE_SCHEMA=1
 ALLOWED_SANDBOX_PROVIDERS=daytona
 DATABASE_URL=${SB_DB_URL}
 SUPABASE_URL=${SB_API_URL}
@@ -490,7 +490,7 @@ SUPABASE_SERVICE_ROLE_KEY=${SB_SERVICE_ROLE_KEY}
 DAYTONA_API_KEY=${DAYTONA_API_KEY:-}
 DAYTONA_SERVER_URL=${DAYTONA_SERVER_URL:-}
 DAYTONA_TARGET=${DAYTONA_TARGET:-us}
-KORTIX_WARM_SNAPSHOT_ENABLED=${KORTIX_WARM_SNAPSHOT_ENABLED:-false}
+ZED_WARM_SNAPSHOT_ENABLED=${ZED_WARM_SNAPSHOT_ENABLED:-false}
 DAYTONA_WARM_TARGET=${DAYTONA_WARM_TARGET:-}
 TUNNEL_SIGNING_SECRET=${TUNNEL_SIGNING_SECRET:-dev-local-tunnel-signing-secret-32chars}
 API_KEY_SECRET=${API_KEY_SECRET:-dev-local-api-key-secret-please-32chars}
@@ -500,7 +500,7 @@ OPENAI_API_KEY=${OPENAI_API_KEY:-}
 SCHEDULER_ENABLED=false
 EOF
   # NEXT_PUBLIC_BACKEND_URL is RELATIVE (/v1) so the browser hits the SAME
-  # origin it's served from (whichever preview proxy — Daytona or Kortix
+  # origin it's served from (whichever preview proxy — Daytona or Zed
   # subdomain) and Next's built-in rewrite (next.config.ts: /v1/* ->
   # http://localhost:8008/v1/*) proxies it to the in-sandbox API. That makes a
   # single preview URL function as a full proxy (frontend + API), no CORS, no
@@ -513,7 +513,7 @@ EOF
   # proxy (a dynamic origin like p3000-<sandbox>.localhost:8008) and 127.0.0.1:54321
   # is the sandbox loopback — unreachable from the user's browser. So the browser
   # hits the SAME origin (/supabase) and next.config.ts's env-gated rewrite
-  # (/supabase/* -> ${SB_API_URL}/*, active via KORTIX_SUPABASE_PROXY_TARGET below)
+  # (/supabase/* -> ${SB_API_URL}/*, active via ZED_SUPABASE_PROXY_TARGET below)
   # proxies it to the in-sandbox Supabase. SUPABASE_URL stays ABSOLUTE so the
   # server-side Supabase clients (supabase/server.ts, middleware.ts) reach
   # 127.0.0.1:54321 directly. Mirrors the /v1 BACKEND_URL split.
@@ -526,7 +526,7 @@ NEXT_PUBLIC_BACKEND_URL=/v1
 BACKEND_URL=http://localhost:8008/v1
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_URL=http://localhost:3000
-NEXT_PUBLIC_KORTIX_PERSONAL_CONTACT=false
+NEXT_PUBLIC_ZED_PERSONAL_CONTACT=false
 EDGE_CONFIG=
 EOF
 
@@ -534,7 +534,7 @@ EOF
   # so it ONLY exists in the sandbox: forwards the browser's same-origin
   # /supabase/* to the in-sandbox Supabase. Exported (not just in .env.local) so
   # both `next dev` and `next build`/`next start` see it.
-  export KORTIX_SUPABASE_PROXY_TARGET="${SB_API_URL}"
+  export ZED_SUPABASE_PROXY_TARGET="${SB_API_URL}"
 
   # Export the SANDBOX-generated web env into THIS process so both the
   # production (build + start) and the dev (`next dev`) paths see the right
@@ -565,9 +565,9 @@ EOF
   if [[ "$BUILD_MODE" == "1" ]]; then
     # `pnpm preview` → production parity: full build then `next start`.
     echo "[dev] Building frontend (pnpm build)…"
-    if pnpm --filter Kortix-Computer-Frontend build; then
+    if pnpm --filter Zed-Computer-Frontend build; then
       echo "[dev] Frontend built — serving (pnpm start) on :3000"
-      pnpm --filter Kortix-Computer-Frontend start &
+      pnpm --filter Zed-Computer-Frontend start &
       FRONTEND_PID=$!
     else
       echo "[dev] ⚠️  Frontend build failed — continuing with API only"
@@ -588,12 +588,12 @@ EOF
   # Sandbox mode reads the generated plaintext apps/api/.env.local (no dotenvx
   # decryption key here); dev:envfile starts Bun with --env-file=.env.local so
   # the encrypted, committed apps/api/.env is not auto-loaded.
-  KORTIX_SKIP_ENSURE_SCHEMA=1 pnpm --filter kortix-api dev:envfile
+  ZED_SKIP_ENSURE_SCHEMA=1 pnpm --filter zed-api dev:envfile
 }
 
 trap cleanup EXIT INT TERM
 
-if [[ -d /opt/kortix || -n "${KORTIX_SESSION_ID:-}" ]]; then
+if [[ -d /opt/zed || -n "${ZED_SESSION_ID:-}" ]]; then
   run_sandbox_dev
   exit $?
 fi
@@ -680,26 +680,26 @@ if [[ "$BUILD_MODE" == "1" ]]; then
   # come up on :8008 while the (multi-minute) frontend build runs — overlapping
   # the two instead of paying them back-to-back. cleanup() kills API_PID on exit.
   echo "[dev] Starting API (production runtime, no --hot) on :8008…"
-  ( cd "$ROOT_DIR" && KORTIX_SKIP_ENSURE_SCHEMA=1 pnpm --filter kortix-api start ) &
+  ( cd "$ROOT_DIR" && ZED_SKIP_ENSURE_SCHEMA=1 pnpm --filter zed-api start ) &
   API_PID=$!
 
 
   # Production build of the web app on :3000. NEXT_PUBLIC_* values are inlined at
   # BUILD time, so the build must run with the env load_local_env() exported (it
-  # has). KORTIX_PREVIEW_BUILD trims prod-only build work for speed — skips the
+  # has). ZED_PREVIEW_BUILD trims prod-only build work for speed — skips the
   # `standalone` file-tracing pass and ESLint (see apps/web/next.config.ts); it
   # never affects prod/CI/Vercel builds, which don't set it. `set -e` aborts here
   # if the build fails — we never serve a broken bundle.
-  export KORTIX_PREVIEW_BUILD=1
-  if [[ "${KORTIX_PREVIEW_TURBO:-1}" != "0" ]]; then
+  export ZED_PREVIEW_BUILD=1
+  if [[ "${ZED_PREVIEW_TURBO:-1}" != "0" ]]; then
     # Turbopack: much faster than the webpack build (and the same engine `pnpm
     # dev` already uses). It can differ subtly from the webpack prod build, so
-    # if a build issue ever bites, fall back with `KORTIX_PREVIEW_TURBO=0`.
+    # if a build issue ever bites, fall back with `ZED_PREVIEW_TURBO=0`.
     echo "[dev] Building frontend (next build --turbopack)…"
-    pnpm --filter Kortix-Computer-Frontend exec next build --turbopack
+    pnpm --filter Zed-Computer-Frontend exec next build --turbopack
   else
     echo "[dev] Building frontend (next build, webpack)…"
-    pnpm --filter Kortix-Computer-Frontend build
+    pnpm --filter Zed-Computer-Frontend build
   fi
 
   # Pin the web port explicitly. `next start` honors $PORT, and load_local_env
@@ -708,10 +708,10 @@ if [[ "$BUILD_MODE" == "1" ]]; then
   # whose web command hardcodes `--port ${WEB_PORT:-3000}` for the same reason.
   echo "[dev] Build done → serving (next start, production) on :${WEB_PORT:-3000}…"
   cd "$ROOT_DIR"
-  pnpm --filter Kortix-Computer-Frontend exec next start --port "${WEB_PORT:-3000}"
+  pnpm --filter Zed-Computer-Frontend exec next start --port "${WEB_PORT:-3000}"
 else
   echo "[dev] Starting frontend..."
-  pnpm --filter Kortix-Computer-Frontend dev &
+  pnpm --filter Zed-Computer-Frontend dev &
   FRONTEND_PID=$!
 
   # Pre-compile the heavy routes so the FIRST human navigation doesn't pay
@@ -740,10 +740,10 @@ else
         if [[ -n "$_ht" ]]; then
           _anon="${SUPABASE_ANON_KEY:-${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}}"
           curl -s -m 5 "http://127.0.0.1:54321/auth/v1/verify" -H "apikey: $_anon" \
-            -H 'content-type: application/json' -d "{\"type\":\"magiclink\",\"token_hash\":\"$_ht\"}" > /tmp/kortix-warm-session.json 2>/dev/null || true
+            -H 'content-type: application/json' -d "{\"type\":\"magiclink\",\"token_hash\":\"$_ht\"}" > /tmp/zed-warm-session.json 2>/dev/null || true
           WARM_COOKIE="$(python3 - <<'PYC' 2>/dev/null || true
 import json, base64
-d = json.load(open('/tmp/kortix-warm-session.json'))
+d = json.load(open('/tmp/zed-warm-session.json'))
 if 'access_token' in d:
     s = {"access_token": d["access_token"], "token_type": "bearer", "expires_in": d.get("expires_in", 3600),
          "expires_at": d.get("expires_at", 9999999999), "refresh_token": d["refresh_token"], "user": d.get("user", {})}
@@ -751,12 +751,12 @@ if 'access_token' in d:
     print('base64-' + base64.urlsafe_b64encode(raw.encode()).decode().rstrip('='))
 PYC
 )"
-          rm -f /tmp/kortix-warm-session.json
+          rm -f /tmp/zed-warm-session.json
         fi
       fi
     fi
     _hdr=()
-    [[ -n "$WARM_COOKIE" ]] && _hdr=(-H "Cookie: sb-kortix-auth-token-${WEB_PORT:-3000}=$WARM_COOKIE")
+    [[ -n "$WARM_COOKIE" ]] && _hdr=(-H "Cookie: sb-zed-auth-token-${WEB_PORT:-3000}=$WARM_COOKIE")
     for p in "/projects" "/projects/warmup-id" "/projects/warmup-id/sessions/warmup-id" "/projects/warmup-id/files"; do
       curl -s -o /dev/null -m 120 "${_hdr[@]}" "http://localhost:${WEB_PORT:-3000}$p" || true
     done
@@ -772,11 +772,11 @@ PYC
   echo "[dev] Starting API (supervised — auto-restarts on tunnel rotation)..."
   cd "$ROOT_DIR"
   while :; do
-    KORTIX_SKIP_ENSURE_SCHEMA=1 KORTIX_URL="$(cat "$TUNNEL_URL_FILE")" pnpm --filter kortix-api dev || true
+    ZED_SKIP_ENSURE_SCHEMA=1 ZED_URL="$(cat "$TUNNEL_URL_FILE")" pnpm --filter zed-api dev || true
     # Restart only when the watchdog rotated the tunnel; a plain exit (ctrl-C,
     # crash without rotation) leaves the loop so the script terminates normally.
     [[ -f "$TUNNEL_URL_FILE.rotated" ]] || break
     rm -f "$TUNNEL_URL_FILE.rotated"
-    echo "[dev] ♻️  API restarting with rotated KORTIX_URL=$(cat "$TUNNEL_URL_FILE")"
+    echo "[dev] ♻️  API restarting with rotated ZED_URL=$(cat "$TUNNEL_URL_FILE")"
   done
 fi

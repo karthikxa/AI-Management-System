@@ -1,6 +1,6 @@
 /**
  * Lightweight structural validation for registry.json / registry-item.json.
- * Mirrors the ergonomics of `@kortix/manifest-schema` (a list of typed issues
+ * Mirrors the ergonomics of `@zed/manifest-schema` (a list of typed issues
  * with severities) so the CLI can render a consistent report.
  */
 

@@ -2,7 +2,7 @@
 
 > This analysis measures the v2 OpenCode REST boot path.
 
-> Goal §1: *Performance: Kortix minimal harness + session boot optimization —
+> Goal §1: *Performance: Zed minimal harness + session boot optimization —
 > **1-second threshold**.* This doc is the grounded scoping step before any
 > code: where are we today, what's the 1s target, and what's the attack
 > sequence to close the gap.
@@ -11,9 +11,9 @@
 
 ## Current boot path — instrumented stages
 
-The sandbox-agent-server (`apps/kortix-sandbox-agent-server/src/main.ts`)
+The sandbox-agent-server (`apps/zed-sandbox-agent-server/src/main.ts`)
 records a `BootMark[]` timeline (ms since process start) on every boot,
-exposed via the `/health` route (`apps/kortix-sandbox-agent-server/src/routes/health.ts`).
+exposed via the `/health` route (`apps/zed-sandbox-agent-server/src/routes/health.ts`).
 The stages, in order:
 
 | # | Stage label | What happens | Cold vs warm |
@@ -21,9 +21,9 @@ The stages, in order:
 | 1 | `static-web` | Static web server bound | Always |
 | 2 | `git-identity` | Git identity configured for repo materialization | Always |
 | 3 | `repo-materialized` | Project repo cloned/seeded into the sandbox | Cold: full clone; warm: snapshot restore |
-| 4 | `config-deps` | OpenCode config deps installed (`/opt/kortix/opencode-config-deps`) | Cold: install; warm: pre-installed |
+| 4 | `config-deps` | OpenCode config deps installed (`/opt/zed/opencode-config-deps`) | Cold: install; warm: pre-installed |
 | 5 | `opencode-spawned` | OpenCode process spawned | Always (spawn cost) |
-| 6 | `proxy-up` | Kortix proxy server (LLM + connector) up | Always |
+| 6 | `proxy-up` | Zed proxy server (LLM + connector) up | Always |
 | 7 | `opencode-ready` | OpenCode reports ready (config loaded, providers initialized) | Always (OpenCode's own boot) |
 | 8 | `opencode-session-created` | First OpenCode conversation created (UI-usable) | If `initialOpenCodeSessionRequired` |
 
@@ -81,14 +81,14 @@ that can plausibly hit 1s.
    the **dominant cost** in the warm path (hundreds of ms to seconds).
    **Unknown: actual OpenCode boot time on a warm snapshot.** Second thing to
    measure.
-3. **Proxy up** (stage 6) — Kortix's own LLM + connector proxy. Should be fast
+3. **Proxy up** (stage 6) — Zed's own LLM + connector proxy. Should be fast
    (in-process Hono server) but has startup work (gateway catalog refresh,
    connector proxy bind). **Likely <100ms** but unmeasured.
 4. **Repo materialization** (stage 3) — in warm mode this is a snapshot
    restore (fast); in cold mode it's a full `git clone` (slow, seconds). The
    warm path sidesteps this.
 5. **Network round-trips** — the API → sandbox provider → sandbox → API
-   callback chain. Each hop is latency. Platinum (Kortix's own microVM) may
+   callback chain. Each hop is latency. Platinum (Zed's own microVM) may
    have lower latency than Daytona (external).
 
 ### What we DON'T know (and must measure before optimizing)
@@ -154,8 +154,8 @@ mechanical. Block PRs that regress it.
 
 ## Scope of this doc
 
-Grounded entirely in the current codebase: `apps/kortix-sandbox-agent-server/src/main.ts`
-(boot path + stages), `apps/kortix-sandbox-agent-server/src/routes/health.ts`
+Grounded entirely in the current codebase: `apps/zed-sandbox-agent-server/src/main.ts`
+(boot path + stages), `apps/zed-sandbox-agent-server/src/routes/health.ts`
 (`BootMark` type), `apps/api/scripts/bench-session-boot.ts` (live boot
 benchmark), `apps/api/src/snapshots/` (builder + templates + ppwarm),
 `apps/api/src/projects/session-lifecycle/` (engine + await-stage). No

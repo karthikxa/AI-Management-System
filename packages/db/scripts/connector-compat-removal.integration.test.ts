@@ -29,7 +29,7 @@ describe.skipIf(!databaseUrl)('connector compatibility removal — migrated Post
         `SELECT c.relname
          FROM pg_class c
          JOIN pg_namespace n ON n.oid = c.relnamespace
-         WHERE n.nspname = 'kortix' AND c.relname = ANY($1::text[])
+         WHERE n.nspname = 'zed' AND c.relname = ANY($1::text[])
          ORDER BY c.relname`,
         [LEGACY_RELATIONS],
       );
@@ -46,7 +46,7 @@ describe.skipIf(!databaseUrl)('connector compatibility removal — migrated Post
       const columns = await client.query<{ column_name: string; is_nullable: 'YES' | 'NO' }>(
         `SELECT column_name, is_nullable
          FROM information_schema.columns
-         WHERE table_schema = 'kortix'
+         WHERE table_schema = 'zed'
            AND table_name = 'project_session_connector_bindings'
            AND column_name IN ('connection_id', 'profile_id')
          ORDER BY column_name`,
@@ -58,7 +58,7 @@ describe.skipIf(!databaseUrl)('connector compatibility removal — migrated Post
          FROM pg_trigger t
          JOIN pg_class c ON c.oid = t.tgrelid
          JOIN pg_namespace n ON n.oid = c.relnamespace
-         WHERE n.nspname = 'kortix'
+         WHERE n.nspname = 'zed'
            AND c.relname = 'project_session_connector_bindings'
            AND t.tgname = 'sync_session_connector_binding_connection_ids'
            AND NOT t.tgisinternal`,
@@ -69,7 +69,7 @@ describe.skipIf(!databaseUrl)('connector compatibility removal — migrated Post
         `SELECT 1
          FROM pg_proc p
          JOIN pg_namespace n ON n.oid = p.pronamespace
-         WHERE n.nspname = 'kortix'
+         WHERE n.nspname = 'zed'
            AND p.proname = 'sync_session_connector_binding_connection_ids'`,
       );
       expect(fn.rowCount).toBe(0);
@@ -87,7 +87,7 @@ describe.skipIf(!databaseUrl)('connector compatibility removal — migrated Post
          FROM pg_enum e
          JOIN pg_type t ON t.oid = e.enumtypid
          JOIN pg_namespace n ON n.oid = t.typnamespace
-         WHERE n.nspname = 'kortix' AND t.typname = 'project_secret_consumer'
+         WHERE n.nspname = 'zed' AND t.typname = 'project_secret_consumer'
          ORDER BY e.enumsortorder`,
       );
       expect(values.rows.map((row) => row.enumlabel)).toEqual([
@@ -100,7 +100,7 @@ describe.skipIf(!databaseUrl)('connector compatibility removal — migrated Post
       ]);
 
       const legacyRows = await client.query(
-        `SELECT 1 FROM kortix.project_secrets WHERE consumer::text = 'executor' LIMIT 1`,
+        `SELECT 1 FROM zed.project_secrets WHERE consumer::text = 'executor' LIMIT 1`,
       );
       expect(legacyRows.rowCount).toBe(0);
     } finally {

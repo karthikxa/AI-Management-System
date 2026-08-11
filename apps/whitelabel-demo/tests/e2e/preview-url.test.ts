@@ -10,7 +10,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import {
   APP_SETUP_TIMEOUT_MS,
   type AppInstance,
-  createTestKortix,
+  createTestZed,
   loginUser,
   resetUsersStore,
   startApp,
@@ -28,7 +28,7 @@ describe('/api/preview-url', () => {
   beforeAll(async () => {
     resetUsersStore();
     mock = createMockUpstream(WRAPPER_KEY);
-    app = await startApp(wrapperEnv({ KORTIX_UPSTREAM: `${mock.url}/v1` }));
+    app = await startApp(wrapperEnv({ ZED_UPSTREAM: `${mock.url}/v1` }));
   }, APP_SETUP_TIMEOUT_MS);
 
   afterAll(async () => {
@@ -92,7 +92,7 @@ describe('/api/preview-url', () => {
     const email = uniqueEmail('preview-owned');
     const token = await loginUser(app, email, DEMO_PASSWORD);
 
-    const project = await createTestKortix(app, token).projects.provision({
+    const project = await createTestZed(app, token).projects.provision({
       name: 'Preview Owned',
     });
 
@@ -122,7 +122,7 @@ describe('/api/preview-url', () => {
     expect(previewUrl.port).toBe(new URL(mock.url).port);
     expect(previewUrl.pathname).toBe('/docs');
     expect(previewUrl.searchParams.get('section')).toBe('setup');
-    expect(previewUrl.searchParams.get('token')).toContain(`kortix_pat_test_${project.project_id}`);
+    expect(previewUrl.searchParams.get('token')).toContain(`zed_pat_test_${project.project_id}`);
     expect(typeof data.tokenId).toBe('string');
     expect(data.token).toBeUndefined();
     expect(data.upstream).toBeUndefined();
@@ -145,7 +145,7 @@ describe('/api/preview-url', () => {
     const email = uniqueEmail('preview-localhost');
     const token = await loginUser(app, email, DEMO_PASSWORD);
 
-    const project = await createTestKortix(app, token).projects.provision({
+    const project = await createTestZed(app, token).projects.provision({
       name: 'Preview Localhost',
     });
 
@@ -170,14 +170,14 @@ describe('/api/preview-url', () => {
     expect(previewUrl.port).toBe(new URL(mock.url).port);
     expect(previewUrl.pathname).toBe('/demo');
     expect(previewUrl.searchParams.get('tab')).toBe('activity');
-    expect(previewUrl.searchParams.get('token')).toContain(`kortix_pat_test_${project.project_id}`);
+    expect(previewUrl.searchParams.get('token')).toContain(`zed_pat_test_${project.project_id}`);
   });
 
   test('a malformed token response is a 502, never a URL without authentication', async () => {
     const email = uniqueEmail('preview-malformed');
     const token = await loginUser(app, email, DEMO_PASSWORD);
 
-    const project = await createTestKortix(app, token).projects.provision({
+    const project = await createTestZed(app, token).projects.provision({
       name: 'Preview Malformed',
     });
     mock.malformCliTokenFor(project.project_id);
@@ -202,16 +202,16 @@ describe('/api/preview-url', () => {
 });
 
 describe('/api/preview-url in direct mode', () => {
-  const directKey = 'kortix_pat_direct_test';
+  const directKey = 'zed_pat_direct_test';
   let mock: MockUpstream;
   let app: AppInstance;
 
   beforeAll(async () => {
     mock = createMockUpstream(directKey);
     app = await startApp({
-      KORTIX_API_KEY: undefined,
+      ZED_API_KEY: undefined,
       SESSION_SECRET: undefined,
-      KORTIX_UPSTREAM: `${mock.url}/v1`,
+      ZED_UPSTREAM: `${mock.url}/v1`,
     });
   }, APP_SETUP_TIMEOUT_MS);
 
@@ -246,7 +246,7 @@ describe('/api/preview-url in direct mode', () => {
     const previewUrl = new URL(data.url);
     expect(previewUrl.hostname).toBe(`p8080-session-${sessionId}.localhost`);
     expect(previewUrl.pathname).toBe('/health');
-    expect(previewUrl.searchParams.get('token')).toContain(`kortix_pat_test_${projectId}`);
+    expect(previewUrl.searchParams.get('token')).toContain(`zed_pat_test_${projectId}`);
     expect(typeof data.tokenId).toBe('string');
     expect(data.token).toBeUndefined();
     expect(data.upstream).toBeUndefined();

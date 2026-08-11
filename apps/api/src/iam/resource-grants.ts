@@ -42,7 +42,7 @@
  * NOT engine-v2; engine-v2 imports this. No cycle.
  */
 import { and, eq, gt, isNull, or, sql } from 'drizzle-orm';
-import { iamResourceGrants } from '@kortix/db';
+import { iamResourceGrants } from '@zed/db';
 import { db } from '../shared/db';
 import { ttlMemo } from '../shared/ttl-memo';
 import {

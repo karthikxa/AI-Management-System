@@ -16,7 +16,7 @@ describe('getShowFileCategory', () => {
   });
 
   it('leaves plain text formats as generic files', () => {
-    expect(getShowFileCategory('/w/kortix.yaml')).toBe('file');
+    expect(getShowFileCategory('/w/zed.yaml')).toBe('file');
     expect(getShowFileCategory('/w/notes.md')).toBe('file');
     expect(getShowFileCategory('/w/main.py')).toBe('file');
   });
@@ -31,7 +31,7 @@ describe('resolveShowType', () => {
 
   it('leaves a non-rich extension on its declared type', () => {
     expect(resolveShowType('markdown', '/w/notes.md')).toBe('markdown');
-    expect(resolveShowType('code', '/w/kortix.yaml')).toBe('code');
+    expect(resolveShowType('code', '/w/zed.yaml')).toBe('code');
   });
 
   it('never overrides an explicit non-textual declaration', () => {
@@ -47,13 +47,13 @@ describe('resolveShowType', () => {
 
 describe('shouldRenderFromSandboxFile', () => {
   it('reads from disk whenever there is a path and no inline content', () => {
-    expect(shouldRenderFromSandboxFile('/workspace/kortix.yaml', '')).toBe(true);
+    expect(shouldRenderFromSandboxFile('/workspace/zed.yaml', '')).toBe(true);
     expect(shouldRenderFromSandboxFile('/workspace/asana-projects.md', '')).toBe(true);
     expect(shouldRenderFromSandboxFile('/workspace/main.py', '')).toBe(true);
   });
 
   it('prefers inline content when the payload carried it', () => {
-    expect(shouldRenderFromSandboxFile('/workspace/kortix.yaml', 'a: 1')).toBe(false);
+    expect(shouldRenderFromSandboxFile('/workspace/zed.yaml', 'a: 1')).toBe(false);
   });
 
   it('has nothing to read without a sandbox path', () => {

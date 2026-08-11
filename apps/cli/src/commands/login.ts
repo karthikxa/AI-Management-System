@@ -22,19 +22,19 @@ import { C, help, status } from '../style.ts';
 import { selectFromList } from '../tui-select.ts';
 import { webDashboardUrl } from '../web-url.ts';
 
-const HELP = help`Usage: kortix login [options]
+const HELP = help`Usage: zed login [options]
 
-Authenticate the CLI against the Kortix cloud. Browser opens to the
+Authenticate the CLI against the Zed cloud. Browser opens to the
 dashboard, one click authorizes this CLI, the token is sent back to a
 local callback — no copy/paste.
 
-Shortcut for the active host — same as \`kortix hosts login\`. Use
-\`kortix hosts login <name>\` to sign in to a different instance.
+Shortcut for the active host — same as \`zed hosts login\`. Use
+\`zed hosts login <name>\` to sign in to a different instance.
 
 Options:
   --host <name>     Save under a specific named host (default: active or
                     "${DEFAULT_HOST_NAME}"). Use this to add a second
-                    instance: \`kortix login --host local --api …\`.
+                    instance: \`zed login --host local --api …\`.
   --api <url>       API base URL the host points at (default: stored
                     host URL or ${DEFAULT_API_BASE}).
   --token <pat>     Skip the browser flow and authenticate directly
@@ -48,9 +48,9 @@ A fresh login walks the hierarchy DOWN: host ✓ → account (auto when you
 belong to one, otherwise a prompt) → default project (prompt).
 
 Examples:
-  kortix login
-  kortix login --host local --api http://localhost:8008
-  kortix login --token kortix_pat_... --account acme
+  zed login
+  zed login --host local --api http://localhost:8008
+  zed login --token zed_pat_... --account acme
 `;
 
 interface LoginFlags {
@@ -135,8 +135,8 @@ export interface PerformLoginOptions {
 }
 
 /**
- * Shared login implementation used by both the top-level `kortix login`
- * alias and the `kortix hosts login` subcommand. The caller resolves the
+ * Shared login implementation used by both the top-level `zed login`
+ * alias and the `zed hosts login` subcommand. The caller resolves the
  * target host name; everything else — API base resolution, the already
  * logged-in short-circuit, the browser/PAT flow, token verification,
  * persistence, and the default-project binding — lives here so the two
@@ -152,9 +152,9 @@ export async function performLogin(opts: PerformLoginOptions): Promise<number> {
   }
 
   // Pick the API base URL with this priority:
-  //   --api flag → existing host's URL → KORTIX_API_URL env → default
+  //   --api flag → existing host's URL → ZED_API_URL env → default
   const existing = getHost(hostName);
-  const apiBase = opts.api ?? existing?.url ?? process.env.KORTIX_API_URL ?? DEFAULT_API_BASE;
+  const apiBase = opts.api ?? existing?.url ?? process.env.ZED_API_URL ?? DEFAULT_API_BASE;
 
   // If this host already has a working token + caller didn't pass
   // --token or --api, treat that as a no-op login.
@@ -163,7 +163,7 @@ export async function performLogin(opts: PerformLoginOptions): Promise<number> {
       `${status.info(`Already logged in to host ${C.bold}${hostName}${C.reset} as ${C.bold}${existing.user_email || existing.user_id}${C.reset}`)}\n`,
     );
     process.stdout.write(
-      `${C.dim}  Run \`kortix logout --host ${hostName}\` first to switch accounts.${C.reset}\n`,
+      `${C.dim}  Run \`zed logout --host ${hostName}\` first to switch accounts.${C.reset}\n`,
     );
     return 0;
   }
@@ -171,9 +171,9 @@ export async function performLogin(opts: PerformLoginOptions): Promise<number> {
   const token = opts.token ?? (await browserLogin(apiBase, existing?.dashboard_url));
   if (!token) return 1;
 
-  if (!token.startsWith('kortix_pat_')) {
+  if (!token.startsWith('zed_pat_')) {
     process.stderr.write(
-      `${status.err('Invalid API key format — expected `kortix_pat_...` prefix.')}\n`,
+      `${status.err('Invalid API key format — expected `zed_pat_...` prefix.')}\n`,
     );
     return 1;
   }
@@ -280,7 +280,7 @@ async function resolveLoginAccount(
   const interactive = process.stdin.isTTY === true && process.stdout.isTTY === true;
   if (!interactive) {
     process.stdout.write(
-      `${C.dim}  ${accounts.length} accounts — kept ${accounts[0]!.name}. Switch with ${C.reset}${C.cyan}kortix accounts use <slug>${C.reset}${C.dim} (or pass \`--account\`).${C.reset}\n`,
+      `${C.dim}  ${accounts.length} accounts — kept ${accounts[0]!.name}. Switch with ${C.reset}${C.cyan}zed accounts use <slug>${C.reset}${C.dim} (or pass \`--account\`).${C.reset}\n`,
     );
     return accounts[0]!;
   }
@@ -322,7 +322,7 @@ async function browserLogin(apiBase: string, dashboardUrl?: string): Promise<str
     `&state=${session.state}` +
     `&label=${deviceLabel}`;
 
-  process.stdout.write(`\n  ${C.bold}Authorize Kortix CLI${C.reset}\n`);
+  process.stdout.write(`\n  ${C.bold}Authorize Zed CLI${C.reset}\n`);
   process.stdout.write(`  ${C.dim}Opening your browser at:${C.reset}\n`);
   process.stdout.write(`  ${C.cyan}${url}${C.reset}\n\n`);
   process.stdout.write(`  ${C.dim}Waiting for approval (Ctrl+C to cancel)…${C.reset}\n`);

@@ -34,8 +34,8 @@ between 40 ms and 115 ms. This comparison isolates the dev region mismatch.
 - The sandbox calls execution-lease discovery during idle startup.
 - The sandbox calls discovery after each OpenCode event reconnect.
 - A busy sandbox sends a heartbeat every 20 seconds.
-- The sandbox touches `/kortix/health` directly before the heartbeat.
-- The API resolves the provider and touches `/kortix/health` again.
+- The sandbox touches `/zed/health` directly before the heartbeat.
+- The API resolves the provider and touches `/zed/health` again.
 - The legacy route performs repeated sandbox and session ownership reads.
 
 Generic project authorization also triggers speculative session resumes.
@@ -107,7 +107,7 @@ The route returns JSON. It is not a stream.
 - `release` clears the lease with one conditional database update.
 - The update predicates include `sandbox_id`, `session_id`, `project_id`,
   `account_id`, and an allowed sandbox status.
-- The API does not call provider `/kortix/health`.
+- The API does not call provider `/zed/health`.
 
 Keep the legacy `turn-stream` execution kinds during image rotation.
 

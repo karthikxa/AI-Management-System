@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 SOURCE_PROJECT_REF="${SOURCE_PROJECT_REF:-jbriwassebxdwoieikga}"
 TARGET_PROJECT_REF="${TARGET_PROJECT_REF:-uhrwvisbqjfxhxjvoofd}"
-CUSTOM_HOSTNAME="${CUSTOM_HOSTNAME:-supa.kortix.com}"
+CUSTOM_HOSTNAME="${CUSTOM_HOSTNAME:-supa.zed.com}"
 
 require_command() {
   command -v "$1" >/dev/null 2>&1 || {

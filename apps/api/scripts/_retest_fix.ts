@@ -1,10 +1,10 @@
-// Retest the kortix flow from the kortix API after the 3 fixes (S3 CAS GC,
+// Retest the zed flow from the zed API after the 3 fixes (S3 CAS GC,
 // zstd CAS, opencode idle-poll). Drives the EXACT product path: POST /sessions
-// (provider=platinum) → warm restore_clone of the fixed kortix-default template
+// (provider=platinum) → warm restore_clone of the fixed zed-default template
 // → poll runtimeReady → measure opencode idle CPU (the fix: ~2% not ~55%).
 import { createAccountToken } from '../src/repositories/account-tokens';
 import { db } from '../src/shared/db';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { readFileSync } from 'fs';
 
@@ -30,7 +30,7 @@ async function ptExec(ext: string, cmd: string): Promise<string> {
   } catch (e: any) { return 'EXECERR:' + String(e?.message ?? e).slice(0, 80); }
 }
 async function guestReady(ext: string): Promise<{ ready: boolean; body: string }> {
-  const out = await ptExec(ext, 'curl -s -m3 http://127.0.0.1:8000/kortix/health');
+  const out = await ptExec(ext, 'curl -s -m3 http://127.0.0.1:8000/zed/health');
   let p: any = {}; try { p = JSON.parse(out); } catch {}
   return { ready: p?.runtimeReady === true, body: out.slice(0, 120) };
 }
@@ -69,7 +69,7 @@ if (probe) {
   console.log(`\n[cpu] measuring opencode + daemon idle CPU on ${probe} (FIX expects opencode ~0.02-0.05 cores, was ~0.55)…`);
   const m = await ptExec(probe, [
     `g(){ awk '{print $14+$15}' /proc/$1/stat 2>/dev/null; }`,
-    `oc=$(pgrep -f opencode | head -1); ka=$(pgrep -fl kortix-agent | grep -v pgrep | awk '{print $1}' | head -1)`,
+    `oc=$(pgrep -f opencode | head -1); ka=$(pgrep -fl zed-agent | grep -v pgrep | awk '{print $1}' | head -1)`,
     `o0=$(g $oc); k0=$(g $ka); sleep 5; o1=$(g $oc); k1=$(g $ka)`,
     `awk -v o0="$o0" -v o1="$o1" -v k0="$k0" -v k1="$k1" 'BEGIN{printf "opencode_cores=%.3f daemon_cores=%.3f (5s sample, HZ=100)\\n",(o1-o0)/500.0,(k1-k0)/500.0}'`,
   ].join('\n'));

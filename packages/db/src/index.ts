@@ -5,7 +5,7 @@ export * as schema from './schema';
 // Re-export frequently used schemas and types for convenience
 export {
   // Schema namespace
-  kortixSchema,
+  zedSchema,
   // Enums
   sandboxStatusEnum,
   projectStatusEnum,
@@ -16,7 +16,7 @@ export {
   apiKeyStatusEnum,
   apiKeyTypeEnum,
   connectorAuthorizationStrategyEnum,
-  // Kortix tables — accounts
+  // Zed tables — accounts
   accounts,
   accountMembers,
   accountInvitations,
@@ -32,7 +32,7 @@ export {
   gatewayRequestLogs,
   gatewayApiKeys,
   gatewayBudgets,
-  // Kortix tables
+  // Zed tables
   projects,
   projectGitConnections,
   projectGitCredentials,
@@ -81,7 +81,7 @@ export {
   sandboxInvites,
   legacySandboxMigrations,
   sunaAccountMigrations,
-  kortixApiKeys,
+  zedApiKeys,
   accountTokens,
   workerLeaderLease,
   // Relations
@@ -95,8 +95,8 @@ export {
   sandboxesRelations,
   sandboxMembersRelations,
   sandboxInvitesRelations,
-  kortixApiKeysRelations,
-  // Billing / Credits (moved from public → kortix schema)
+  zedApiKeysRelations,
+  // Billing / Credits (moved from public → zed schema)
   billingCustomers,
   creditAccounts,
   creditLedger,
@@ -209,9 +209,9 @@ export {
   connectorPoliciesRelations,
   connectorProjectPoliciesRelations,
   connectorProjectSettingsRelations,
-} from './schema/kortix';
-export type { AgentGrant } from './schema/kortix';
-export type { SecretEgressPolicy, SecretEgressRule, SecretInjectionSlot } from './schema/kortix';
+} from './schema/zed';
+export type { AgentGrant } from './schema/zed';
+export type { SecretEgressPolicy, SecretEgressRule, SecretInjectionSlot } from './schema/zed';
 
 export type {
   TunnelMachineInfo,
@@ -219,7 +219,7 @@ export type {
   TunnelShellScope,
   TunnelNetworkScope,
   TunnelPermissionScope,
-} from './schema/kortix';
+} from './schema/zed';
 
 // Public tables
 export { apiKeys } from './schema/public';
@@ -253,8 +253,8 @@ export type {
   CreditAccount,
   NewApiKey,
   SandboxSelect,
-  KortixApiKey,
-  NewKortixApiKey,
+  ZedApiKey,
+  NewZedApiKey,
   TunnelConnection,
   NewTunnelConnection,
   TunnelPermission,

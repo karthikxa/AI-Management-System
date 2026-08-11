@@ -10,7 +10,7 @@
 import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { getAuthToken } from '@/api/config';
-import { COST_MARKUP } from '@kortix/sdk/turns';
+import { COST_MARKUP } from '@zed/sdk/turns';
 import type { MessageWithParts } from '@/lib/opencode/types';
 
 export type SessionStats = {
@@ -98,7 +98,7 @@ export function useProjectSessionStats(
 ) {
   const queries = useQueries({
     queries: sessionIds.map((id) => ({
-      queryKey: ['kortix-session-stats', sandboxUrl, id],
+      queryKey: ['zed-session-stats', sandboxUrl, id],
       queryFn: () => fetchSessionStats(sandboxUrl as string, id),
       enabled: enabled && !!sandboxUrl && !!id,
       staleTime: 30_000,

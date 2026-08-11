@@ -1,5 +1,5 @@
 import { lt } from 'drizzle-orm';
-import { chatEventDedup } from '@kortix/db';
+import { chatEventDedup } from '@zed/db';
 import { db } from '../../shared/db';
 import { config } from '../../config';
 import { projectFeatureFlagEnabled } from '../../feature-flags/for-project';
@@ -56,7 +56,7 @@ export async function handleTeamsConversationUpdate(activity: TeamsActivity): Pr
   if (!projectId) return;
   if (!(await projectFeatureFlagEnabled(projectId, 'teams'))) return;
 
-  const projectUrl = `${(config.FRONTEND_URL || 'https://kortix.com').replace(/\/+$/, '')}/projects/${projectId}`;
+  const projectUrl = `${(config.FRONTEND_URL || 'https://zed.com').replace(/\/+$/, '')}/projects/${projectId}`;
   await sendCard(
     {
       serviceUrl: activity.serviceUrl,

@@ -36,7 +36,7 @@ export type SessionOverrideField =
  *  2. An IN-SESSION token — one operating from inside a running session, i.e.
  *     bound to a session or carrying an agent grant (`inSession`) — is always
  *     `user`. This is the SECURITY-CRITICAL exclusion: the connector PAT
- *     injected into every sandbox (KORTIX_CLI_TOKEN, minted with
+ *     injected into every sandbox (ZED_CLI_TOKEN, minted with
  *     sessionId=sandboxId; its agent grant is NULL for a v1/default agent or an
  *     ungoverned project) must never resolve `backend`.
  *     Keyed on session-binding, NOT on the agent grant alone — a null grant is
@@ -48,7 +48,7 @@ export type SessionOverrideField =
  *     backend-only overrides.
  *  4. Everything else — a human web/SAML session (`supabase`) and, critically,
  *     the INTERNAL sandbox key (`apiKey` + apiKeyType `sandbox`, injected as
- *     KORTIX_TOKEN) — is `user`. The sandbox exclusion uses the POSITIVE
+ *     ZED_TOKEN) — is `user`. The sandbox exclusion uses the POSITIVE
  *     apiKeyType==='user' test on purpose: a missing/unknown apiKeyType must
  *     never be promoted to backend.
  */
@@ -71,8 +71,8 @@ export function resolveSessionOrigin(input: {
   if (input.inSession) return 'user';
   if (input.authType === 'service_account') return 'backend';
   if (input.authType === 'pat') return 'backend';
-  // Forward-looking: no session-create surface authenticates a `kortix_` 'user'
-  // API key today (supabaseAuth only admits sandbox-type kortix tokens, on four
+  // Forward-looking: no session-create surface authenticates a `zed_` 'user'
+  // API key today (supabaseAuth only admits sandbox-type zed tokens, on four
   // non-create paths); this branch goes live when a combinedAuth-mounted backend
   // create route (or a 'user' key issuance path) lands. Harmless until then.
   if (input.authType === 'apiKey' && input.apiKeyType === 'user') return 'backend';

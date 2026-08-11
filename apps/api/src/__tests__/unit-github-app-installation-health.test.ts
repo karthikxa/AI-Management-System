@@ -45,9 +45,9 @@ const { checkManagedGithubAppInstallationHealthy, resetManagedGithubAppInstallat
 // Same `.env`-leak concern as unit-github-owner-type-routing.test.ts: clear
 // the env fallbacks so only the mocked DB config drives `createGitHubAppJwt`.
 const ENV_KEYS = [
-  'KORTIX_GITHUB_APP_ID',
+  'ZED_GITHUB_APP_ID',
   'GITHUB_APP_ID',
-  'KORTIX_GITHUB_APP_PRIVATE_KEY',
+  'ZED_GITHUB_APP_PRIVATE_KEY',
   'GITHUB_APP_PRIVATE_KEY',
 ] as const;
 const savedEnv: Record<string, string | undefined> = {};
@@ -85,7 +85,7 @@ function mockInstallationLookup(behavior: 'found' | 'not_found') {
     if (href.endsWith('/app/installations/501')) {
       fetchCallCount += 1;
       return behavior === 'found'
-        ? json({ id: 501, account: { login: 'kortix-managed', type: 'Organization' } })
+        ? json({ id: 501, account: { login: 'zed-managed', type: 'Organization' } })
         : json({ message: 'Not Found' }, 404);
     }
     return json({ message: 'not found' }, 404);

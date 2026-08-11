@@ -5,7 +5,7 @@ flow('GW-1', { domain: 'llm-gateway', tags: ['smoke'], routes: ['GET /health'] }
   const gw = new Client(ctx.env.gatewayUrl);
   await ctx.step('gateway /health is public', async () => {
     const r = await gw.get('/health');
-    r.status(200).body().has('$.status', 'healthy').has('$.service', 'kortix-llm-gateway');
+    r.status(200).body().has('$.status', 'healthy').has('$.service', 'zed-llm-gateway');
   });
 });
 
@@ -19,7 +19,7 @@ flow('GW-1b', { domain: 'llm-gateway', tags: ['smoke'], routes: ['GET /v1/llm/he
     r.status(200)
       .body()
       .has('$.status', 'ok')
-      .has('$.service', 'kortix-llm-gateway')
+      .has('$.service', 'zed-llm-gateway')
       .has('$.mode', 'in-process');
   });
 });
@@ -71,7 +71,7 @@ flow(
         if (!models || typeof models !== 'object' || Object.keys(models).length === 0) {
           throw new Error(`${path} returned an empty model catalog`);
         }
-        if ('auto' in models || 'kortix/auto' in models) {
+        if ('auto' in models || 'zed/auto' in models) {
           throw new Error(`${path} returned the removed Auto model`);
         }
       });

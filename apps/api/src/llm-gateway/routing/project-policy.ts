@@ -8,7 +8,7 @@ export const PROJECT_ROUTING_MAX_RULES = 20;
 export const PROJECT_ROUTING_MAX_GENERATION_CONFIG_MODELS = 100;
 
 const modelId = z.string().trim().min(1).max(128).refine(
-  (value) => value !== "auto" && value !== "kortix/auto",
+  (value) => value !== "auto" && value !== "zed/auto",
   "fallback policies require concrete model ids",
 );
 const fallbackOn = z.enum(["transient", "any-error"]);
@@ -26,12 +26,12 @@ const rule = z.object({
 
 // Generic per-model generation-parameter defaults — deliberately loose
 // (every field optional, no cross-field validation) so a new control added
-// later to `@kortix/llm-catalog`'s `GenerationConfig` only needs a shape
+// later to `@zed/llm-catalog`'s `GenerationConfig` only needs a shape
 // change here, never a migration. Capability gating/clamping (never store a
 // temperature for a temperature:false model, clamp reasoning_effort to the
 // model's own reasoning_options, clamp maxOutputTokens to limit.output)
 // happens at the WRITE handler (gateway.ts's routing-policy PUT), which runs
-// every entry through `@kortix/llm-catalog`'s `clampGenerationConfig` before
+// every entry through `@zed/llm-catalog`'s `clampGenerationConfig` before
 // it ever reaches this schema's caller — this schema only enforces shape and
 // basic bounds, not model-aware semantics (this module doesn't have catalog
 // access, and shouldn't: see project-policy.test.ts for the split).

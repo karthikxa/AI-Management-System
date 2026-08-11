@@ -29,23 +29,23 @@ describe('isValidGitProxyProjectId', () => {
 
 describe('extractToken', () => {
   test('Bearer', () => {
-    expect(extractToken('Bearer kortix_abc')).toBe('kortix_abc');
-    expect(extractToken('bearer kortix_abc')).toBe('kortix_abc');
+    expect(extractToken('Bearer zed_abc')).toBe('zed_abc');
+    expect(extractToken('bearer zed_abc')).toBe('zed_abc');
   });
 
   test('Basic — token in the password slot (x-access-token username)', () => {
-    const header = `Basic ${Buffer.from('x-access-token:kortix_sb_xyz').toString('base64')}`;
-    expect(extractToken(header)).toBe('kortix_sb_xyz');
+    const header = `Basic ${Buffer.from('x-access-token:zed_sb_xyz').toString('base64')}`;
+    expect(extractToken(header)).toBe('zed_sb_xyz');
   });
 
   test('Basic — any username is accepted, password is the token', () => {
-    const header = `Basic ${Buffer.from('git:kortix_pat_9').toString('base64')}`;
-    expect(extractToken(header)).toBe('kortix_pat_9');
+    const header = `Basic ${Buffer.from('git:zed_pat_9').toString('base64')}`;
+    expect(extractToken(header)).toBe('zed_pat_9');
   });
 
   test('Basic — password-only (no colon)', () => {
-    const header = `Basic ${Buffer.from('kortix_only').toString('base64')}`;
-    expect(extractToken(header)).toBe('kortix_only');
+    const header = `Basic ${Buffer.from('zed_only').toString('base64')}`;
+    expect(extractToken(header)).toBe('zed_only');
   });
 
   test('missing / malformed', () => {

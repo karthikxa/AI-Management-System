@@ -6,7 +6,7 @@
  * Run (from packages/sdk):  bun run playground/session-extras/35-shares.ts
  */
 import {
-  makeKortix,
+  makeZed,
   pickOrCreateSessionId,
   pickProjectId,
   retryUntilReady,
@@ -14,14 +14,14 @@ import {
 } from "../_shared";
 
 run("shares", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed);
   const sessionId = await pickOrCreateSessionId(
-    kortix,
+    zed,
     projectId,
     "sdk shares test",
   );
-  const session = kortix.session(projectId, sessionId);
+  const session = zed.session(projectId, sessionId);
 
   console.log("readying session…");
   const { sandboxId } = await retryUntilReady(() => session.ensureReady());
@@ -53,7 +53,7 @@ run("shares", async () => {
   }
 
   try {
-    const sandboxShares = await kortix.sandboxShares.list(sandboxId);
+    const sandboxShares = await zed.sandboxShares.list(sandboxId);
     console.log(
       `✓ sandboxShares.list(${sandboxId.slice(0, 8)}…): ${JSON.stringify(sandboxShares).slice(0, 200)}`,
     );

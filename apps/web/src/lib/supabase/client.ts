@@ -1,6 +1,6 @@
 import { createBrowserClient } from '@supabase/ssr'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import { KORTIX_SUPABASE_AUTH_COOKIE } from './constants'
+import { ZED_SUPABASE_AUTH_COOKIE } from './constants'
 import { getEnv } from '@/lib/env-config'
 
 /**
@@ -53,7 +53,7 @@ export function createClient() {
 
     return createBrowserClient('https://placeholder.invalid', 'placeholder-anon-key', {
       cookieOptions: {
-        name: KORTIX_SUPABASE_AUTH_COOKIE,
+        name: ZED_SUPABASE_AUTH_COOKIE,
         path: '/',
         sameSite: 'lax',
       },
@@ -62,7 +62,7 @@ export function createClient() {
 
   return createBrowserClient(url, key, {
     cookieOptions: {
-      name: KORTIX_SUPABASE_AUTH_COOKIE,
+      name: ZED_SUPABASE_AUTH_COOKIE,
       path: '/',
       sameSite: 'lax',
     },
@@ -81,7 +81,7 @@ export function createEphemeralOAuthClient() {
   return createSupabaseClient(url, key, {
     auth: {
       storage: window.sessionStorage,
-      storageKey: 'kortix-github-proof',
+      storageKey: 'zed-github-proof',
       persistSession: true,
       detectSessionInUrl: true,
       flowType: 'pkce',

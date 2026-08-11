@@ -3,7 +3,7 @@ import { HTTPException } from 'hono/http-exception';
 import { validateSecretKey } from '../repositories/api-keys';
 import { validateAccountToken } from '../repositories/account-tokens';
 import { validateServiceAccountToken } from '../repositories/service-accounts';
-import { isKortixToken, isAccountToken, isServiceAccountToken } from '../shared/crypto';
+import { isZedToken, isAccountToken, isServiceAccountToken } from '../shared/crypto';
 import { canAccessPreviewSandbox, resolveSandboxProjectId } from '../shared/preview-ownership';
 import { getSupabase } from '../shared/supabase';
 import { decodeSupabaseJwtPayload, verifySupabaseJwt } from '../shared/jwt-verify';
@@ -16,14 +16,14 @@ import { bootstrapPersonalAccount } from '../accounts/core/bootstrap-personal-ac
 const PREVIEW_SESSION_COOKIE = '__preview_session';
 
 // ─── Local Dev Auth Bypass ───────────────────────────────────────────────────
-// When KORTIX_LOCAL_DEV=1, accept the special token "kortix-local-dev" and map
+// When ZED_LOCAL_DEV=1, accept the special token "zed-local-dev" and map
 // it to a fixed synthetic user. This lets the web app skip Supabase login
-// entirely for local development. NEVER active in prod (KORTIX_LOCAL_DEV is
+// entirely for local development. NEVER active in prod (ZED_LOCAL_DEV is
 // never set outside .env.local files which are .gitignored).
-const LOCAL_DEV_ENABLED = process.env.KORTIX_LOCAL_DEV === '1';
-const LOCAL_DEV_TOKEN = 'kortix-local-dev';
+const LOCAL_DEV_ENABLED = process.env.ZED_LOCAL_DEV === '1';
+const LOCAL_DEV_TOKEN = 'zed-local-dev';
 const LOCAL_DEV_USER_ID = '00000000-0000-0000-0000-000000000001';
-const LOCAL_DEV_EMAIL = 'dev@kortix.local';
+const LOCAL_DEV_EMAIL = 'dev@zed.local';
 
 let devAccountBootstrapped = false;
 
@@ -80,9 +80,9 @@ async function jitSyncSso(
 // ═══════════════════════════════════════════════════════════════════════════════
 // Auth Middleware (3 middlewares — one per auth strategy)
 //
-//   1. apiKeyAuth      — Kortix API keys only (header)
+//   1. apiKeyAuth      — Zed API keys only (header)
 //   2. supabaseAuth    — Supabase JWT only (header)
-//   3. combinedAuth    — Kortix OR Supabase (header + cookie fallback)
+//   3. combinedAuth    — Zed OR Supabase (header + cookie fallback)
 //
 // Token is read from query parameters ONLY as a last resort for preview proxy
 // routes (/v1/p/*) — browser WebSocket API can't set custom headers, so PTY
@@ -92,7 +92,7 @@ async function jitSyncSso(
 
 /**
  * API key auth for search, LLM, and router routes.
- * Always validates Kortix tokens (kortix_, kortix_sb_) via validateSecretKey()
+ * Always validates Zed tokens (zed_, zed_sb_) via validateSecretKey()
  * against the api_keys table.
  */
 export async function apiKeyAuth(c: Context, next: Next) {
@@ -114,10 +114,10 @@ export async function apiKeyAuth(c: Context, next: Next) {
     });
   }
 
-  if (!isKortixToken(token)) {
+  if (!isZedToken(token)) {
     auditLoginFail({ c, reason: 'bad_token_format', authType: 'apiKey' });
     throw new HTTPException(401, {
-      message: 'Invalid token format — expected kortix_ prefix',
+      message: 'Invalid token format — expected zed_ prefix',
     });
   }
 
@@ -158,13 +158,13 @@ export async function apiKeyAuth(c: Context, next: Next) {
  * Supabase JWT auth (for billing, platform, admin routes).
  * Header-only — sets userId and userEmail in context on success.
  *
- * Also accepts CLI Personal Access Tokens (kortix_pat_...) — these carry
+ * Also accepts CLI Personal Access Tokens (zed_pat_...) — these carry
  * a real user_id from the account_tokens table, so the rest of the
  * pipeline (resolveAccountId, project access checks, etc.) works
  * unchanged.
  *
  * The one sandbox-token exception is the runtime clone-credential endpoint:
- * a session sandbox calls it with its sandbox-scoped KORTIX_TOKEN so it does
+ * a session sandbox calls it with its sandbox-scoped ZED_TOKEN so it does
  * not need a second project PAT or raw Git token in env.
  */
 export async function supabaseAuth(c: Context, next: Next) {
@@ -235,7 +235,7 @@ export async function supabaseAuth(c: Context, next: Next) {
     if (result.sessionId) c.set('sessionId', result.sessionId);
     if (result.tokenId) c.set('iamTokenId', result.tokenId);
     // Per-agent authorization grant (non-null only for agent-session tokens).
-    // Read by requireScope() to gate Kortix CLI/API actions on top of the
+    // Read by requireScope() to gate Zed CLI/API actions on top of the
     // user's own role — net effect = userRole ∩ agentGrant.
     c.set('agentGrant', result.agentGrant ?? null);
     setSentryUser({ id: result.userId, accountId: result.accountId });
@@ -270,10 +270,10 @@ export async function supabaseAuth(c: Context, next: Next) {
     // The runtime relay sends redacted OpenCode lifecycle events for its own
     // session. The handler re-checks sandbox, account, project, and session.
     path.endsWith('/audit/events');
-  if (isKortixToken(token) && sandboxTokenPathAllowed) {
+  if (isZedToken(token) && sandboxTokenPathAllowed) {
     const result = await validateSecretKey(token);
     if (!result.isValid) {
-      throw new HTTPException(401, { message: result.error || 'Invalid Kortix token' });
+      throw new HTTPException(401, { message: result.error || 'Invalid Zed token' });
     }
     if (result.type !== 'sandbox' || !result.sandboxId) {
       throw new HTTPException(403, { message: 'This route requires a sandbox token' });
@@ -393,7 +393,7 @@ export async function supabaseAuth(c: Context, next: Next) {
 }
 
 /**
- * Combined auth — accepts Kortix tokens OR Supabase JWTs.
+ * Combined auth — accepts Zed tokens OR Supabase JWTs.
  *
  * Token resolution order:
  *   1. Authorization: Bearer <token> header
@@ -419,17 +419,17 @@ export async function combinedAuth(c: Context, next: Next) {
 
   const previewSandboxId = extractPreviewSandboxId(c.req.path);
 
-  // Extract token: header → X-Kortix-Token (preview only) → cookie → query param
+  // Extract token: header → X-Zed-Token (preview only) → cookie → query param
   const authHeader = c.req.header('Authorization');
-  const kortixTokenHeader = previewSandboxId ? c.req.header('X-Kortix-Token') : undefined;
+  const zedTokenHeader = previewSandboxId ? c.req.header('X-Zed-Token') : undefined;
   let token: string | undefined;
 
   if (authHeader?.startsWith('Bearer ')) {
     token = authHeader.slice(7);
   }
 
-  if (!token && kortixTokenHeader && isKortixToken(kortixTokenHeader)) {
-    token = kortixTokenHeader;
+  if (!token && zedTokenHeader && isZedToken(zedTokenHeader)) {
+    token = zedTokenHeader;
   }
 
   if (!token) {
@@ -463,8 +463,8 @@ export async function combinedAuth(c: Context, next: Next) {
   const isPreviewRoute = c.req.path.startsWith('/v1/p/') || c.req.path === '/v1/p';
 
   // 0. Service-account bearer (non-human IAM principal) — mirrors the
-  // supabaseAuth branch. MUST run before the generic Kortix-token branch:
-  // `kortix_sa_` also matches the `kortix_` prefix, so without this check the
+  // supabaseAuth branch. MUST run before the generic Zed-token branch:
+  // `zed_sa_` also matches the `zed_` prefix, so without this check the
   // token falls into validateSecretKey and every combinedAuth-mounted route
   // (preview proxy, cron, secrets, providers, SSE) rejects service accounts
   // that supabaseAuth-mounted routes accept.
@@ -545,16 +545,16 @@ export async function combinedAuth(c: Context, next: Next) {
     return;
   }
 
-  // 2. Try Kortix token (kortix_ or kortix_sb_) — used by agents inside the sandbox
-  if (isKortixToken(token)) {
+  // 2. Try Zed token (zed_ or zed_sb_) — used by agents inside the sandbox
+  if (isZedToken(token)) {
     const result = await validateSecretKey(token);
     if (!result.isValid) {
       auditLoginFail({
         c,
-        reason: result.error ?? 'invalid_kortix_token',
+        reason: result.error ?? 'invalid_zed_token',
         authType: 'apiKey',
       });
-      throw new HTTPException(401, { message: result.error || 'Invalid Kortix token' });
+      throw new HTTPException(401, { message: result.error || 'Invalid Zed token' });
     }
     if (
       previewSandboxId &&
@@ -754,14 +754,14 @@ async function enforceTokenProjectScope(c: Context, tokenProjectId: string): Pro
   // "what project/session/agent am I bound to?".
   if (path === '/v1/accounts/me') return;
 
-  // `/v1/skills` — the kortix-managed system skills (how Kortix itself works).
-  // This function is default-deny, and the in-sandbox `KORTIX_CLI_TOKEN` is
+  // `/v1/skills` — the zed-managed system skills (how Zed itself works).
+  // This function is default-deny, and the in-sandbox `ZED_CLI_TOKEN` is
   // exactly a project+session-scoped PAT, so without this branch the ONE caller
-  // these routes exist for gets a 403: every baked sandbox seeds a kortix-system
-  // skill telling the agent to run `kortix skills get <name>`.
+  // these routes exist for gets a 403: every baked sandbox seeds a zed-system
+  // skill telling the agent to run `zed skills get <name>`.
   // Safe to allow — the content is static template text that is byte-identical
   // for every caller, carries no account or project data, and is served from the
-  // shipped @kortix/starter package rather than any per-tenant store. There is
+  // shipped @zed/starter package rather than any per-tenant store. There is
   // no scope to enforce here; the token gate is authentication, not
   // authorization.
   if (path === '/v1/skills' || path.startsWith('/v1/skills/')) return;

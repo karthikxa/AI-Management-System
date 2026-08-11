@@ -17,7 +17,7 @@ export interface ModelRouteInput {
  * chat/completions body field its transports (buildAiSdkArgs) already read.
  * The gateway never validates these against model capability — a host that
  * sets a field the resolved model doesn't support is a host bug; see
- * `@kortix/llm-catalog`'s `clampGenerationConfig`, which every host-side
+ * `@zed/llm-catalog`'s `clampGenerationConfig`, which every host-side
  * writer of this field (apps/api's routing/resolve-route.ts) MUST run
  * values through first.
  */

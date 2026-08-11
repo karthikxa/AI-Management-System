@@ -1,34 +1,34 @@
 /**
- * `kortix schema` — print the canonical, public JSON Schema for
- * `kortix.toml` / `kortix.yaml`.
+ * `zed schema` — print the canonical, public JSON Schema for
+ * `zed.toml` / `zed.yaml`.
  *
  * ONE validator reference, three surfaces:
  *
- *   1. `https://kortix.com/schema/kortix{,.v1,.v2}.schema.json` — the same
+ *   1. `https://zed.com/schema/zed{,.v1,.v2}.schema.json` — the same
  *      documents published at `apps/web/public/schema/` for editor
  *      `$schema` integration.
  *   2. This command — the CLI-local copy, for scripting / offline use /
  *      piping into `ajv` or another validator.
- *   3. `@kortix/manifest-schema`'s `manifestJsonSchema()` — what both of the
+ *   3. `@zed/manifest-schema`'s `manifestJsonSchema()` — what both of the
  *      above are generated from.
  *
  * All three read the exact same in-code export, so there is no drift
  * between "the schema the CLI prints" and "the schema the URL serves."
  */
-import { KORTIX_SCHEMA_BASE_URL, manifestJsonSchema } from '@kortix/manifest-schema';
+import { ZED_SCHEMA_BASE_URL, manifestJsonSchema } from '@zed/manifest-schema';
 import { C, help, status } from '../style.ts';
 
-const HELP = help`Usage: kortix schema [options]
+const HELP = help`Usage: zed schema [options]
 
-Print the canonical JSON Schema for kortix.toml / kortix.yaml — the same
-document served at ${KORTIX_SCHEMA_BASE_URL}/kortix.v2.schema.json (and the
+Print the canonical JSON Schema for zed.toml / zed.yaml — the same
+document served at ${ZED_SCHEMA_BASE_URL}/zed.v2.schema.json (and the
 v1 / combined variants). Point an editor's "$schema" at that URL for live
 validation + autocomplete, or pipe this command's output into ajv or any
 other JSON Schema validator.
 
 Options:
   --version <1|2>   Print only that schema version (default: the combined
-                     document, which dispatches on kortix_version).
+                     document, which dispatches on zed_version).
   --url             Print the canonical URL for the selected version instead
                      of the schema body.
   -h, --help        Show this help.
@@ -62,9 +62,9 @@ function parseFlags(argv: string[]): Flags {
 }
 
 function schemaFilename(version?: 1 | 2): string {
-  if (version === 1) return 'kortix.v1.schema.json';
-  if (version === 2) return 'kortix.v2.schema.json';
-  return 'kortix.schema.json';
+  if (version === 1) return 'zed.v1.schema.json';
+  if (version === 2) return 'zed.v2.schema.json';
+  return 'zed.schema.json';
 }
 
 export function runSchema(argv: string[]): number {
@@ -80,7 +80,7 @@ export function runSchema(argv: string[]): number {
     return 0;
   }
 
-  const url = `${KORTIX_SCHEMA_BASE_URL}/${schemaFilename(flags.version)}`;
+  const url = `${ZED_SCHEMA_BASE_URL}/${schemaFilename(flags.version)}`;
   if (flags.url) {
     process.stdout.write(`${url}\n`);
     return 0;

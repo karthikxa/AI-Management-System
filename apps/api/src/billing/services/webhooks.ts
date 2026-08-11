@@ -29,7 +29,7 @@ import { isPayingSubscriptionStatus } from './billing-state';
 import { grantMachineBonusOnce, getStripeMachineBonusKey } from './machine-bonus';
 import { cancelFreeSubscriptionForUpgrade } from './subscriptions';
 import { calculateNextCreditGrant } from './credit-grant-schedule';
-import { AUTO_TOPUP_DEFAULT_AMOUNT, AUTO_TOPUP_DEFAULT_THRESHOLD } from '@kortix/shared';
+import { AUTO_TOPUP_DEFAULT_AMOUNT, AUTO_TOPUP_DEFAULT_THRESHOLD } from '@zed/shared';
 import { resolveAccountId } from '../../shared/resolve-account';
 
 export async function processStripeWebhook(rawBody: string, signature: string) {

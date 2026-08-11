@@ -1,5 +1,5 @@
 /**
- * Parser-level tests for `connectors:` in kortix.yaml.
+ * Parser-level tests for `connectors:` in zed.yaml.
  * Exercises every provider, every auth shape, connector-scoped policies,
  * the round-trip (spec → manifest entry → re-parse), and the rejection paths.
  */
@@ -21,11 +21,11 @@ const MIN_PROJECT = `project:
 `;
 
 function manifestWith(body: string): string {
-  return [`kortix_version: ${KNOWN_SCHEMA_VERSION}`, MIN_PROJECT, body].join('\n');
+  return [`zed_version: ${KNOWN_SCHEMA_VERSION}`, MIN_PROJECT, body].join('\n');
 }
 
 function parseAndExtract(body: string) {
-  return extractConnectors(parseManifestString(manifestWith(body), 'yaml', 'kortix.yaml'));
+  return extractConnectors(parseManifestString(manifestWith(body), 'yaml', 'zed.yaml'));
 }
 
 describe('connectors: — happy paths per provider', () => {
@@ -49,7 +49,7 @@ connectors:
       auth: { type: 'none' },
       policies: [],
     });
-    expect(specs[0]!.path).toBe('kortix.yaml#connectors.gmail-work');
+    expect(specs[0]!.path).toBe('zed.yaml#connectors.gmail-work');
   });
 
   test('pipedream — account defaults to slug', () => {
@@ -89,11 +89,11 @@ connectors:
 connectors:
   - slug: internal-rest
     provider: openapi
-    spec: .kortix/connectors/internal.openapi.json
+    spec: .zed/connectors/internal.openapi.json
 `);
     expect(errors).toEqual([]);
     expect(specs[0]).toMatchObject({
-      spec: '.kortix/connectors/internal.openapi.json', authAuto: true, auth: { type: 'none' },
+      spec: '.zed/connectors/internal.openapi.json', authAuto: true, auth: { type: 'none' },
     });
   });
 
@@ -200,7 +200,7 @@ connectors:
   - slug: internal-http
     provider: http
     base_url: https://api.internal
-    spec: .kortix/connectors/internal.http.toml
+    spec: .zed/connectors/internal.http.toml
     auth:
       type: custom
       in: query
@@ -212,7 +212,7 @@ connectors:
     expect(specs[0]).toMatchObject({
       provider: 'http',
       baseUrl: 'https://api.internal',
-      spec: '.kortix/connectors/internal.http.toml',
+      spec: '.zed/connectors/internal.http.toml',
       auth: { type: 'custom', in: 'query', name: 'api_key', prefix: 'tok_', secret: 'INTERNAL_API_TOKEN' },
     });
   });
@@ -606,10 +606,10 @@ connectors:
 
 describe('connectors: — round-trip', () => {
   function roundTrip(spec: ConnectorSpec): ConnectorSpec {
-    const manifest = parseManifestString(manifestWith(''), 'yaml', 'kortix.yaml');
+    const manifest = parseManifestString(manifestWith(''), 'yaml', 'zed.yaml');
     manifest.raw.connectors = [connectorSpecToTomlEntry(spec)];
     const yamlText = serializeManifest(manifest);
-    const { specs, errors } = extractConnectors(parseManifestString(yamlText, 'yaml', 'kortix.yaml'));
+    const { specs, errors } = extractConnectors(parseManifestString(yamlText, 'yaml', 'zed.yaml'));
     expect(errors).toEqual([]);
     expect(specs).toHaveLength(1);
     return specs[0]!;
@@ -655,12 +655,12 @@ connectors:
     headers:
       Accept: application/json
       X-Tenant-Id: acme
-      user-agent: kortix/1.0
+      user-agent: zed/1.0
 `).specs[0]!;
     expect(original.headers).toEqual({
       Accept: 'application/json',
       'X-Tenant-Id': 'acme',
-      'user-agent': 'kortix/1.0',
+      'user-agent': 'zed/1.0',
     });
     expect(roundTrip(original)).toEqual(original);
   });
@@ -840,14 +840,14 @@ connectors:
 
 /**
  * Drift guard: the runtime parser (this module) and the canonical schema gate
- * (@kortix/manifest-schema, run on CR-merge) must agree on which providers a
- * kortix.yaml may declare. They drifted once — `channel` was added here and to
+ * (@zed/manifest-schema, run on CR-merge) must agree on which providers a
+ * zed.yaml may declare. They drifted once — `channel` was added here and to
  * channel-manifest.ts (which WRITES it into the manifest) but not to the schema,
  * so the merge gate rejected manifests the platform itself produced. Keep them
  * locked together: a provider one side accepts the other must not reject.
  */
 describe('connectors: — runtime parser ⇄ schema gate provider agreement', () => {
-  const { validateManifest } = require('@kortix/manifest-schema') as typeof import('@kortix/manifest-schema');
+  const { validateManifest } = require('@zed/manifest-schema') as typeof import('@zed/manifest-schema');
 
   function schemaConnectorErrors(body: string): string[] {
     return validateManifest(manifestWith(body), 'yaml')
@@ -862,7 +862,7 @@ describe('connectors: — runtime parser ⇄ schema gate provider agreement', ()
     { name: 'postman', accept: true, body: `connectors:\n  - slug: c\n    provider: postman\n    spec: https://github.com/acme/apis` },
     { name: 'graphql', accept: true, body: `connectors:\n  - slug: c\n    provider: graphql\n    endpoint: https://e.com/graphql` },
     { name: 'http', accept: true, body: `connectors:\n  - slug: c\n    provider: http\n    base_url: https://e.com` },
-    { name: 'channel', accept: true, body: `connectors:\n  - slug: kortix_slack\n    provider: channel\n    platform: slack` },
+    { name: 'channel', accept: true, body: `connectors:\n  - slug: zed_slack\n    provider: channel\n    platform: slack` },
     { name: 'computer (synth-only)', accept: false, body: `connectors:\n  - slug: computer\n    provider: computer` },
     { name: 'unknown provider', accept: false, body: `connectors:\n  - slug: c\n    provider: made-up` },
   ];
@@ -878,17 +878,17 @@ describe('connectors: — runtime parser ⇄ schema gate provider agreement', ()
 
   // Table-tests below iterate the SCHEMA package's own exported constants
   // (rather than a hand-copied list here) so a platform/reserved-slug added
-  // to `@kortix/manifest-schema` — or to this module's own `RESERVED_SLUG_PROVIDERS`
+  // to `@zed/manifest-schema` — or to this module's own `RESERVED_SLUG_PROVIDERS`
   // — is automatically covered without anyone remembering to add a case.
   const {
     CHANNEL_PLATFORMS: SCHEMA_CHANNEL_PLATFORMS,
     RESERVED_SLUG_PROVIDERS: SCHEMA_RESERVED_SLUG_PROVIDERS,
-  } = require('@kortix/manifest-schema') as typeof import('@kortix/manifest-schema');
+  } = require('@zed/manifest-schema') as typeof import('@zed/manifest-schema');
 
   describe('every CHANNEL_PLATFORMS value materializes a valid `channel` connector on both sides', () => {
     for (const platform of SCHEMA_CHANNEL_PLATFORMS) {
       test(`platform="${platform}"`, () => {
-        const body = `connectors:\n  - slug: kortix_${platform}\n    provider: channel\n    platform: ${platform}`;
+        const body = `connectors:\n  - slug: zed_${platform}\n    provider: channel\n    platform: ${platform}`;
         expect(parseAndExtract(body).errors).toEqual([]);
         expect(schemaConnectorErrors(body)).toEqual([]);
       });

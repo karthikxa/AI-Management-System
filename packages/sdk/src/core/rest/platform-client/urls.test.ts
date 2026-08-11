@@ -1,5 +1,5 @@
 import { test, expect, beforeEach } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { getSandboxPortUrl, getSandboxUrl } from './urls';
 import type { SandboxInfo } from './types';
 
@@ -19,10 +19,10 @@ function sandbox(overrides: Partial<SandboxInfo> = {}): SandboxInfo {
 
 beforeEach(() => {
   delete process.env.BACKEND_URL;
-  configureKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok' });
 });
 
-test('getSandboxUrl builds the proxy url on port 8000 (KORTIX_MASTER) from external_id', () => {
+test('getSandboxUrl builds the proxy url on port 8000 (ZED_MASTER) from external_id', () => {
   expect(getSandboxUrl(sandbox({ external_id: 'ext-abc' }))).toBe('http://backend.local/v1/p/ext-abc/8000');
 });
 
@@ -43,7 +43,7 @@ test('getSandboxUrl prefers process.env.BACKEND_URL over the configured platform
 });
 
 test('getSandboxUrl falls back to the local-dev default when no backend url is configured at all', () => {
-  configureKortix({ backendUrl: '', getToken: async () => 'tok' });
+  configureZed({ backendUrl: '', getToken: async () => 'tok' });
   expect(getSandboxUrl(sandbox({ external_id: 'ext-1' }))).toBe('http://localhost:8008/v1/p/ext-1/8000');
 });
 

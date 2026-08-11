@@ -1,9 +1,9 @@
 import { CANONICAL_ORIGIN } from '@/lib/site-metadata';
 
-const CANONICAL_HOSTS = new Set(['kortix.com', 'www.kortix.com']);
+const CANONICAL_HOSTS = new Set(['zed.com', 'www.zed.com']);
 
 // Local dev serves the production robots policy so the local crawl-verification
-// harness exercises exactly what kortix.com ships.
+// harness exercises exactly what zed.com ships.
 function isLocalHost(hostname: string): boolean {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
 }
@@ -14,11 +14,11 @@ export function isCanonicalRobotsHost(host: string | null): boolean {
   return CANONICAL_HOSTS.has(hostname) || isLocalHost(hostname);
 }
 
-// The production policy served on kortix.com (and localhost). Any other host —
-// dev.kortix.com, staging.kortix.com, Vercel previews, self-hosted deployments
+// The production policy served on zed.com (and localhost). Any other host —
+// dev.zed.com, staging.zed.com, Vercel previews, self-hosted deployments
 // — gets a blanket Disallow so non-canonical copies of the site never enter a
 // search index alongside the canonical one.
-const CANONICAL_ROBOTS = `# Kortix Robots.txt
+const CANONICAL_ROBOTS = `# Zed Robots.txt
 User-agent: *
 Allow: /
 Allow: /api/ai

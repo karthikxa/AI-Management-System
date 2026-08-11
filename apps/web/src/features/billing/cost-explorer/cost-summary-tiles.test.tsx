@@ -77,7 +77,7 @@ describe('CostSummaryTiles', () => {
 
     // Scoped to the delta paragraph's own class attribute — a global
     // `not.toContain('data-slot="badge"')` alone would still pass if the
-    // delta were colour-coded directly (e.g. `text-kortix-red` on the <p>)
+    // delta were colour-coded directly (e.g. `text-zed-red` on the <p>)
     // without ever introducing a Badge. Extract that paragraph's className
     // and assert no direction-coded colour landed on it specifically.
     // The delta reads just "+23%" now — "vs prior period" moved to the
@@ -87,12 +87,12 @@ describe('CostSummaryTiles', () => {
       /<p class="([^"]*)" aria-label="\+23% versus the prior period">\+23%<\/p>/,
     );
     expect(deltaParagraph).not.toBeNull();
-    expect(deltaParagraph![1]).not.toMatch(/text-kortix-(green|red)/);
+    expect(deltaParagraph![1]).not.toMatch(/text-zed-(green|red)/);
 
     // The sparkline IS colour-coded, deliberately — the guard above is about
     // the number, not the line. Assert the tint landed on the <svg>, so this
     // test cannot start passing because the colour vanished everywhere.
-    expect(html).toMatch(/<svg[^>]*text-kortix-(green|red)/);
+    expect(html).toMatch(/<svg[^>]*text-zed-(green|red)/);
   });
 
   test('the trailing row sits on the tile bottom so every sparkline shares one baseline', () => {

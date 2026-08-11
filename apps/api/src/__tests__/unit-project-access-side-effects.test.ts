@@ -7,6 +7,6 @@ const accessSource = await Bun.file(
 describe('project authorization side effects', () => {
   it('does not resume a sandbox during generic project authorization', () => {
     expect(accessSource).not.toContain('preResumeRecentStoppedSessions');
-    expect(accessSource).not.toContain('KORTIX_PRERESUME');
+    expect(accessSource).not.toContain('ZED_PRERESUME');
   });
 });

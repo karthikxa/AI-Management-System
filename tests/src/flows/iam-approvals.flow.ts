@@ -362,7 +362,7 @@ flow(
   },
   async (ctx) => {
     // The happy path (scoping a REAL declared agents: entry) needs a
-    // project whose kortix.yaml already declares an agent — out of reach for
+    // project whose zed.yaml already declares an agent — out of reach for
     // a bare provisioned repo here. This flow pins the manifest-edit
     // validation + manager-only gate, which is what regresses first.
     const team = await ctx.fixtures.team();

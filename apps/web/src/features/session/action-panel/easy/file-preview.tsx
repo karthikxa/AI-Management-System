@@ -32,10 +32,10 @@ import { useIsMobile } from '@/hooks/utils';
 import { track } from '@/lib/track';
 import {
   useIsExpanded,
-  useKortixComputerStore,
+  useZedComputerStore,
   useToggleExpanded,
-} from '@/stores/kortix-computer-store';
-import { useRuntimeConnectionStore } from '@kortix/sdk/react';
+} from '@/stores/zed-computer-store';
+import { useRuntimeConnectionStore } from '@zed/sdk/react';
 import {
   CheckIcon as Check,
   CopyIcon as Copy,
@@ -363,7 +363,7 @@ export function FilePreview({
   // `resolveSideSize`). Only the branches that actually SHOW a document report:
   // the loading, error, and text branches keep today's width, because a spinner
   // and a paragraph have no shape of their own to honor.
-  const setPanelAspect = useKortixComputerStore((s) => s.setPanelAspect);
+  const setPanelAspect = useZedComputerStore((s) => s.setPanelAspect);
 
   const sandboxAlive = useSyncExternalStore(
     useRuntimeConnectionStore.subscribe,

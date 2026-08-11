@@ -1,5 +1,5 @@
 /**
- * `kortix ship` / `kortix cr` CLI flows (spec §14 SHIP-1..9 + §11 CR-9).
+ * `zed ship` / `zed cr` CLI flows (spec §14 SHIP-1..9 + §11 CR-9).
  *
  * Driven through the hermetic CLI subprocess fixture (fixtures/cli.ts).
  *
@@ -7,7 +7,7 @@
  *   - SHIP-7  `ship -n/--dry-run`  → prints would-be calls, NO side effects.
  *             (Logged in; the managed first-ship dry-run resolves the account via
  *             GET /accounts/me then prints the plan and returns before any write.)
- *   - SHIP-8  guards: not a Kortix dir → error; not logged in → "run kortix login".
+ *   - SHIP-8  guards: not a Zed dir → error; not logged in → "run zed login".
  *             (Both are checked before any API call → pure-local, exit 1.)
  *   - ship --help → exit 0 (pure local).
  *
@@ -15,7 +15,7 @@
  * managed-GitHub backend; CR-9 additionally needs a real session, so it
  * is gated on `funded`):
  *   - SHIP-1  first ship, no origin → managed: POST /projects/provision, set
- *             origin, commit, token-header push, write .kortix/link.json.
+ *             origin, commit, token-header push, write .zed/link.json.
  *   - SHIP-2  first ship, existing origin → BYO: POST /projects {repo_url,name};
  *             origin never modified.
  *   - SHIP-3  first ship --origin <git-url> → BYO explicit; rewrites origin.
@@ -28,7 +28,7 @@
  *             POST /projects/:id/git-token then commit + push.
  *   - SHIP-9  --no-commit with a dirty tree → error (reached after provision, so
  *             gated); clean tree + HEAD → skip commit, push only.
- *   - CR-9    CLI mirror: kortix cr ls|show|open|merge|close|reopen.
+ *   - CR-9    CLI mirror: zed cr ls|show|open|merge|close|reopen.
  *
  * Why gate rather than mock: ke2e is black-box against a LIVE API with real
  * services. The managed-git push + provision + CR lifecycle only exist on a
@@ -56,7 +56,7 @@ function checkExit(
   });
 }
 
-/** Init a Kortix project in the sandbox cwd (with git) so ship has something to push. */
+/** Init a Zed project in the sandbox cwd (with git) so ship has something to push. */
 async function initProject(sb: CliSandbox): Promise<void> {
   const projectName = 'ship-fixture';
   const r = await sb.run(['init', projectName, '-y']);
@@ -91,10 +91,10 @@ flow('SHIP-7', { domain: 'cli', routes: ['GET /v1/accounts/me'] }, async (ctx) =
         );
         // No side effects: no link.json written, no origin remote added.
         check(
-          'no .kortix/link.json written',
-          !sb.exists('.kortix/link.json'),
+          'no .zed/link.json written',
+          !sb.exists('.zed/link.json'),
           true,
-          sb.exists('.kortix/link.json'),
+          sb.exists('.zed/link.json'),
         );
         const remote = Bun.spawnSync(['git', '-C', sb.cwd, 'remote']);
         check(
@@ -113,15 +113,15 @@ flow('SHIP-7', { domain: 'cli', routes: ['GET /v1/accounts/me'] }, async (ctx) =
 // ─────────────────────── SHIP-8 — guards (runnable now) ──────────────────────
 
 flow('SHIP-8', { domain: 'cli', routes: [] }, async (ctx) => {
-  await ctx.step('ship outside a Kortix dir → error, exit 1 (pure-local guard)', async () => {
+  await ctx.step('ship outside a Zed dir → error, exit 1 (pure-local guard)', async () => {
     const sb = new CliSandbox('ship8-nonk');
     ctx.track('cli-sandbox', sb.cwd);
     try {
       const r = await sb.run(['ship']);
       check('exit 1', r.exitCode === 1, 1, r.exitCode);
       check(
-        'says not a Kortix project',
-        /not a kortix project/i.test(r.all),
+        'says not a Zed project',
+        /not a zed project/i.test(r.all),
         true,
         r.stderr.slice(0, 200),
       );
@@ -131,7 +131,7 @@ flow('SHIP-8', { domain: 'cli', routes: [] }, async (ctx) => {
   });
 
   await ctx.step(
-    "ship in a Kortix dir but not logged in → 'run kortix login', exit 1",
+    "ship in a Zed dir but not logged in → 'run zed login', exit 1",
     async () => {
       const sb = new CliSandbox('ship8-nologin');
       ctx.track('cli-sandbox', sb.cwd);
@@ -143,7 +143,7 @@ flow('SHIP-8', { domain: 'cli', routes: [] }, async (ctx) => {
         checkExit('exit 1', r, 1);
         check(
           'tells the user to log in',
-          /not logged in|kortix login/i.test(r.all),
+          /not logged in|zed login/i.test(r.all),
           true,
           r.stderr.slice(0, 200),
         );
@@ -159,7 +159,7 @@ flow('SHIP-8', { domain: 'cli', routes: [] }, async (ctx) => {
     try {
       const r = await sb.run(['ship', '--help']);
       check('exit 0', r.exitCode === 0, 0, r.exitCode);
-      check('prints usage', /Usage: kortix ship/.test(r.stdout), true, r.stdout.slice(0, 80));
+      check('prints usage', /Usage: zed ship/.test(r.stdout), true, r.stdout.slice(0, 80));
     } finally {
       sb.dispose();
     }
@@ -196,12 +196,12 @@ flow(
           const r = await sb.run(['ship', '-y'], { timeoutMs: 120_000 });
           checkExit('exit 0', r, 0);
           check(
-            'wrote .kortix/link.json',
-            sb.exists('.kortix/link.json'),
+            'wrote .zed/link.json',
+            sb.exists('.zed/link.json'),
             true,
-            sb.exists('.kortix/link.json'),
+            sb.exists('.zed/link.json'),
           );
-          const link = JSON.parse(sb.readFile('.kortix/link.json'));
+          const link = JSON.parse(sb.readFile('.zed/link.json'));
           check(
             'link.json carries project_id',
             typeof link.project_id === 'string' && link.project_id.length > 0,
@@ -264,9 +264,9 @@ flow(
           );
           check(
             'no link.json written on failure',
-            sb.exists('.kortix/link.json') === false,
+            sb.exists('.zed/link.json') === false,
             true,
-            sb.exists('.kortix/link.json'),
+            sb.exists('.zed/link.json'),
           );
           const remote = Bun.spawnSync(['git', '-C', sb.cwd, 'remote', 'get-url', 'origin']);
           check(
@@ -322,9 +322,9 @@ flow(
           );
           check(
             'no link.json written on failure',
-            sb.exists('.kortix/link.json') === false,
+            sb.exists('.zed/link.json') === false,
             true,
-            sb.exists('.kortix/link.json'),
+            sb.exists('.zed/link.json'),
           );
         },
       );
@@ -379,12 +379,12 @@ flow(
           checkExit('exit 0', r, 0);
           check(
             'link.json written (managed)',
-            sb.exists('.kortix/link.json'),
+            sb.exists('.zed/link.json'),
             true,
-            sb.exists('.kortix/link.json'),
+            sb.exists('.zed/link.json'),
           );
-          if (sb.exists('.kortix/link.json')) {
-            const link = JSON.parse(sb.readFile('.kortix/link.json'));
+          if (sb.exists('.zed/link.json')) {
+            const link = JSON.parse(sb.readFile('.zed/link.json'));
             if (link.project_id) ctx.track('project', link.project_id);
           }
           const remote = Bun.spawnSync(['git', '-C', sb.cwd, 'remote', 'get-url', 'origin']);
@@ -432,9 +432,9 @@ flow('SHIP-5', { domain: 'cli', routes: ['GET /v1/accounts/me'] }, async (ctx) =
         );
         check(
           'no project created (no link.json)',
-          !sb.exists('.kortix/link.json'),
+          !sb.exists('.zed/link.json'),
           true,
-          sb.exists('.kortix/link.json'),
+          sb.exists('.zed/link.json'),
         );
       },
     );
@@ -473,12 +473,12 @@ flow(
       checkExit('first ship exit 0', first, 0);
       check(
         'link.json written',
-        sb.exists('.kortix/link.json'),
+        sb.exists('.zed/link.json'),
         true,
-        sb.exists('.kortix/link.json'),
+        sb.exists('.zed/link.json'),
       );
-      if (sb.exists('.kortix/link.json')) {
-        const link = JSON.parse(sb.readFile('.kortix/link.json'));
+      if (sb.exists('.zed/link.json')) {
+        const link = JSON.parse(sb.readFile('.zed/link.json'));
         if (link.project_id) ctx.track('project', link.project_id);
       }
 
@@ -533,8 +533,8 @@ flow(
       // Establish the link via a first managed ship (clean push of the scaffold).
       const first = await sb.run(['ship', '-y'], { timeoutMs: 120_000 });
       checkExit('first ship exit 0', first, 0);
-      if (sb.exists('.kortix/link.json')) {
-        const link = JSON.parse(sb.readFile('.kortix/link.json'));
+      if (sb.exists('.zed/link.json')) {
+        const link = JSON.parse(sb.readFile('.zed/link.json'));
         if (link.project_id) ctx.track('project', link.project_id);
       }
 
@@ -605,7 +605,7 @@ flow(
   async (ctx) => {
     // A CR needs a real project with a pushed base + a head branch (a session
     // branch). We provision the project via the API fixture (managed git), then
-    // drive the CLI cr subcommands against it with KORTIX_PROJECT_ID + a
+    // drive the CLI cr subcommands against it with ZED_PROJECT_ID + a
     // project-scoped token in the env (the in-sandbox contract the CLI reads).
     const pat = await ctx.fixtures.pat({ name: ctx.fixtures.name('cli-cr9') });
     const project = await ctx.fixtures.project({
@@ -670,11 +670,11 @@ flow(
     const sb = new CliSandbox('cr9');
     ctx.track('cli-sandbox', sb.cwd);
     // The CLI resolves project + auth from the env inside a sandbox:
-    //   KORTIX_CLI_TOKEN (project-scoped PAT) + KORTIX_PROJECT_ID.
+    //   ZED_CLI_TOKEN (project-scoped PAT) + ZED_PROJECT_ID.
     const crEnv = {
-      KORTIX_CLI_TOKEN: pat,
-      KORTIX_PROJECT_ID: project.id,
-      KORTIX_API_URL: ctx.env.apiUrl,
+      ZED_CLI_TOKEN: pat,
+      ZED_PROJECT_ID: project.id,
+      ZED_API_URL: ctx.env.apiUrl,
     };
     try {
       await ctx.step('cr ls (empty) → exit 0', async () => {

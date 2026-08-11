@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import {
   cancelAccountDeletion,
   convertPresentationToGoogleSlides,
@@ -29,7 +29,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 
 test('account lifecycle and admin role methods own their REST paths', async () => {
   await getAccountDeletionStatus();

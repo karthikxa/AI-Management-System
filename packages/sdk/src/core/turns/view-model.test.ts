@@ -34,13 +34,13 @@ describe('toolViewModel — web-search / image-search', () => {
   test('successful web_search maps results with title/url/snippet', () => {
     const tool = classifyToolPart('web_search', {
       status: 'completed',
-      input: { query: 'kortix ai' },
+      input: { query: 'zed ai' },
       output: JSON.stringify({
-        query: 'kortix ai',
+        query: 'zed ai',
         success: true,
-        answer: 'Kortix is an open AI command center.',
+        answer: 'Zed is an open AI command center.',
         results: [
-          { title: 'Kortix', url: 'https://kortix.ai', snippet: 'The open AI command center.' },
+          { title: 'Zed', url: 'https://zed.ai', snippet: 'The open AI command center.' },
         ],
       }),
       title: 'Web Search',
@@ -50,11 +50,11 @@ describe('toolViewModel — web-search / image-search', () => {
     const vm = toolViewModel(tool);
     expect(vm).toEqual({
       kind: 'web-search',
-      query: 'kortix ai',
+      query: 'zed ai',
       results: [
-        { title: 'Kortix', url: 'https://kortix.ai', snippet: 'The open AI command center.' },
+        { title: 'Zed', url: 'https://zed.ai', snippet: 'The open AI command center.' },
       ],
-      answer: 'Kortix is an open AI command center.',
+      answer: 'Zed is an open AI command center.',
     });
   });
 

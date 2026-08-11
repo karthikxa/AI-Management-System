@@ -7,14 +7,14 @@
 -- staging/prod, but it DID run on local dev DBs, which are left holding two
 -- CHECK constraints that reject `manager` on `project_members` and
 -- `project_group_grants`. Drop them so `manager` is writable again — the
--- `manager` value itself was never removed from the `kortix.project_role`
+-- `manager` value itself was never removed from the `zed.project_role`
 -- enum (Postgres can't drop an enum value), so no enum change is needed here,
 -- only these two constraints.
 
-ALTER TABLE "kortix"."project_members"
+ALTER TABLE "zed"."project_members"
   DROP CONSTRAINT IF EXISTS "project_members_project_role_no_manager";
 
-ALTER TABLE "kortix"."project_group_grants"
+ALTER TABLE "zed"."project_group_grants"
   DROP CONSTRAINT IF EXISTS "project_group_grants_role_no_manager";
 
 -- Down Migration
@@ -22,10 +22,10 @@ ALTER TABLE "kortix"."project_group_grants"
 -- Re-adds the CHECK constraints. Not reversible in the "restore any rows the
 -- forward migration flipped to editor" sense — the collapse migration that
 -- did that row rewrite is gone; this only restores the guard rails.
-ALTER TABLE "kortix"."project_members"
+ALTER TABLE "zed"."project_members"
   ADD CONSTRAINT "project_members_project_role_no_manager"
   CHECK (project_role != 'manager');
 
-ALTER TABLE "kortix"."project_group_grants"
+ALTER TABLE "zed"."project_group_grants"
   ADD CONSTRAINT "project_group_grants_role_no_manager"
   CHECK (role != 'manager');

@@ -70,4 +70,4 @@ export const hasErrorInput = [
 ];
 
 // Import truncateString directly from shared utils to avoid pulling in React hooks
-export { truncateString } from '@kortix/shared/utils';
+export { truncateString } from '@zed/shared/utils';

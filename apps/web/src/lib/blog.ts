@@ -23,17 +23,17 @@ export const AUTHORS: Record<string, Author> = {
   marko: {
     name: 'Marko Kraemer',
     role: 'Co-founder',
-    email: 'marko@kortix.ai',
+    email: 'marko@zed.ai',
   },
   team: {
-    name: 'The Kortix Team',
-    role: 'Kortix',
-    email: 'team@kortix.ai',
+    name: 'The Zed Team',
+    role: 'Zed',
+    email: 'team@zed.ai',
   },
 };
 
 export function resolveAuthor(key: string): Author {
-  return AUTHORS[key] ?? { name: key, role: '', email: `${key}@kortix.ai` };
+  return AUTHORS[key] ?? { name: key, role: '', email: `${key}@zed.ai` };
 }
 
 export interface PostFrontmatter {
@@ -44,7 +44,7 @@ export interface PostFrontmatter {
   tags: string[];
   cover?: string;
   coverLogos?: CoverLogo[];
-  coverKortix?: boolean;
+  coverZed?: boolean;
   draft: boolean;
   /** Catalog id of an installable template this post maps to (use cases only). */
   template?: string;
@@ -70,7 +70,7 @@ function toPost(entry: BlogPostEntry): Post {
       tags: entry.tags,
       cover: entry.cover,
       coverLogos: entry.coverLogos,
-      coverKortix: entry.coverKortix,
+      coverZed: entry.coverZed,
       draft: entry.draft ?? false,
     },
     author: resolveAuthor(entry.author),

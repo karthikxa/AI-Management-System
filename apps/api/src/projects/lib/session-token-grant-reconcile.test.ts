@@ -1,17 +1,17 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import type { AgentGrant } from '@kortix/db';
+import type { AgentGrant } from '@zed/db';
 import * as realSecretGrant from './secret-grant';
 
 const storedGrant: AgentGrant = {
-  agent: 'kortix',
+  agent: 'zed',
   connectors: ['slack'],
-  kortixCli: 'all',
+  zedCli: 'all',
   env: 'all',
 };
 const currentGrant: AgentGrant = {
-  agent: 'kortix',
+  agent: 'zed',
   connectors: ['slack', 'google_workspace'],
-  kortixCli: 'all',
+  zedCli: 'all',
   env: 'all',
 };
 
@@ -32,7 +32,7 @@ mock.module('../../shared/db', () => ({
               {
                 repoUrl: 'https://example.test/acme/repo.git',
                 defaultBranch: 'main',
-                manifestPath: 'kortix.yaml',
+                manifestPath: 'zed.yaml',
               },
             ];
           },
@@ -78,7 +78,7 @@ test('reconciles a same-agent connector change for an existing session token', a
     sessionId: 'session-1',
   });
 
-  expect(resolvedAgent).toBe('kortix');
+  expect(resolvedAgent).toBe('zed');
   expect(forceRefresh).toBe(true);
   expect(writtenGrant).toEqual(currentGrant);
   expect(grant).toEqual(currentGrant);
@@ -88,11 +88,11 @@ test('reconciles manifest grant changes on the next prompt without an agent swit
   const decision = await remintGrantForAgentSwitch({
     projectId: 'project-1',
     sessionId: 'session-1',
-    sessionAgent: 'kortix',
+    sessionAgent: 'zed',
     requestedAgent: null,
   });
 
-  expect(resolvedAgent).toBe('kortix');
+  expect(resolvedAgent).toBe('zed');
   expect(forceRefresh).toBe(true);
   expect(writtenGrant).toEqual(currentGrant);
   expect(decision).toEqual({ action: 'write', grant: currentGrant });

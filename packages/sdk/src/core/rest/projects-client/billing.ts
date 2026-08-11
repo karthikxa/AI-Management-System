@@ -2,7 +2,7 @@
 // subscription, models, and limits; drives `accountHasAppAccess` and the
 // app-access redirect on login) PLUS the checkout/subscription/credits
 // mutation surface (Stripe-backed). Wraps a deliberately curated subset of
-// apps/api/src/billing/routes — the ones a "Kortix as a Backend" host needs to
+// apps/api/src/billing/routes — the ones a "Zed as a Backend" host needs to
 // drive billing itself; Stripe-webhook-only routes and legacy/per-seat-claim
 // internals stay unwired.
 
@@ -470,7 +470,7 @@ export interface FetchAccountStateWithTokenOptions extends ServerTokenOptions {
  * Server-side / explicit-token variant of {@link getAccountState}, for
  * Next.js server actions and route handlers (login redirect, auth callback)
  * that already resolved the caller's Supabase access token and run before
- * (or without relying on) the SDK's ambient `configureKortix()` seam. Returns
+ * (or without relying on) the SDK's ambient `configureZed()` seam. Returns
  * `null` on any failure — callers treat that as "can't tell yet" and fall
  * through to their default destination.
  */

@@ -1,6 +1,6 @@
 /**
  * Update notifier + the per-release snooze that backs the interactive
- * "update now?" prompt on bare `kortix`.
+ * "update now?" prompt on bare `zed`.
  *
  * The rules that matter: never interrupt a non-terminal (scripts, CI, pipes),
  * never ask twice about a release the user already declined, and never let a
@@ -25,17 +25,17 @@ const originalEnv = { ...process.env };
 const originalFetch = globalThis.fetch;
 let served: string | null = 'v9.9.9';
 
-/** The cache lives next to the config file, so pointing KORTIX_CONFIG_FILE at a
- *  temp dir isolates both from the developer's real ~/.config/kortix. */
+/** The cache lives next to the config file, so pointing ZED_CONFIG_FILE at a
+ *  temp dir isolates both from the developer's real ~/.config/zed. */
 function cacheFile(): string {
   return join(dir, 'update-check.json');
 }
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), 'kortix-update-'));
-  process.env.KORTIX_CONFIG_FILE = join(dir, 'config.json');
-  delete process.env.KORTIX_NO_UPDATE_CHECK;
-  delete process.env.KORTIX_SKIP_UPDATE_CHECK;
+  dir = mkdtempSync(join(tmpdir(), 'zed-update-'));
+  process.env.ZED_CONFIG_FILE = join(dir, 'config.json');
+  delete process.env.ZED_NO_UPDATE_CHECK;
+  delete process.env.ZED_SKIP_UPDATE_CHECK;
   delete process.env.CI;
   // isDisabled() bails on a non-TTY stdout, which is exactly what `bun test`
   // gives us — force it on so the resolution logic is reachable.
@@ -77,7 +77,7 @@ describe('resolveUpdateStatus', () => {
     process.env.CI = '1';
     expect(await resolveUpdateStatus('0.1.0', { allowFetch: true })).toBeNull();
     delete process.env.CI;
-    process.env.KORTIX_NO_UPDATE_CHECK = '1';
+    process.env.ZED_NO_UPDATE_CHECK = '1';
     expect(await resolveUpdateStatus('0.1.0', { allowFetch: true })).toBeNull();
   });
 
@@ -142,15 +142,15 @@ describe('update snooze', () => {
 });
 
 describe('rendering', () => {
-  test('the interactive box drops the "run kortix update" advice it is replacing', async () => {
+  test('the interactive box drops the "run zed update" advice it is replacing', async () => {
     const status = await resolveUpdateStatus('0.10.15', { allowFetch: true });
     if (!status) throw new Error('expected an available update');
 
     const passive = renderUpdateBox(status, false);
     const interactive = renderUpdateBox(status, true);
 
-    expect(passive).toContain('kortix update');
-    expect(interactive).not.toContain('kortix update');
+    expect(passive).toContain('zed update');
+    expect(interactive).not.toContain('zed update');
     // Both still say what you're on and what you'd get.
     for (const box of [passive, interactive]) {
       expect(box).toContain('0.10.15');
@@ -160,7 +160,7 @@ describe('rendering', () => {
 
   test('the subcommand nudge stays a single line and still points at the command', async () => {
     const line = await getUpdateNotice('0.10.15', { allowFetch: true, style: 'line' });
-    expect(line).toContain('kortix update');
+    expect(line).toContain('zed update');
     expect(line?.includes('\n')).toBe(false);
   });
 });

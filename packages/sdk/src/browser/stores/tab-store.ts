@@ -430,7 +430,7 @@ export const useTabStore = create<TabState>()(
       },
     }),
     {
-      name: 'kortix-tabs',
+      name: 'zed-tabs',
       // Never let a full quota crash the app — the storage wrapper evicts the
       // disposable per-server cache and retries instead of throwing.
       storage: createJSONStorage(() => safeTabStorage),

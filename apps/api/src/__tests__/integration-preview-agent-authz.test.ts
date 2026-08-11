@@ -12,7 +12,7 @@
  * Only the sandbox/transport collaborators are stubbed: there is no box here.
  */
 import { afterAll, beforeAll, beforeEach, expect, mock, test } from 'bun:test';
-import { accountMembers, accounts, projectMembers, projects } from '@kortix/db';
+import { accountMembers, accounts, projectMembers, projects } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import * as realRequestContext from '../lib/request-context';
 import * as realConnectorPreflight from '../projects/lib/prompt-connector-preflight';

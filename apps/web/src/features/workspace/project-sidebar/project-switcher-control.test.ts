@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * The sidebar variant of the project switcher is a merged control: the Kortix
+ * The sidebar variant of the project switcher is a merged control: the Zed
  * mark and the project name in one shell, two hit areas.
  *
  * They shipped as two separate controls — a mark button beside a switcher —
@@ -26,7 +26,7 @@ describe('merged brand/switcher control', () => {
   // The mark's whole job before the merge. Losing it would make the merge a
   // deletion dressed up as a redesign.
   test('the mark keeps its link to the project home', () => {
-    expect(control).toContain('<Kortix');
+    expect(control).toContain('<Zed');
     expect(control).toContain('href={homeHref}');
     expect(source).toContain("activeProjectId ? `/projects/${activeProjectId}` : '/projects'");
   });
@@ -57,7 +57,7 @@ describe('merged brand/switcher control', () => {
     expect(control).not.toContain('group-hover/switcher:bg-border ');
   });
 
-  // kortix-design-system: @phosphor-icons/react is the only icon source in
+  // zed-design-system: @phosphor-icons/react is the only icon source in
   // apps/web. A hand-pasted caret bypasses DEFAULT_ICON_WEIGHT entirely.
   test('the caret is a Phosphor icon, not pasted markup', () => {
     expect(control).toContain('<CaretUpDownIcon');

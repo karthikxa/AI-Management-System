@@ -1,7 +1,7 @@
 /**
  * Create ONE managed repo and push the assembled Suna bundle to it:
  *   <bundle>/legacy/<slug>/…   (his content)         + one synthesized root
- *   kortix.yaml / Dockerfile / .kortix/opencode       config (buildStarterFiles).
+ *   zed.yaml / Dockerfile / .zed/opencode       config (buildStarterFiles).
  *
  * The opencode.db is NOT a repo file — it's chat storage, shipped into the
  * sandbox separately (rehydrate). We move it out of the tree before pushing.
@@ -95,7 +95,7 @@ export async function pushBundleAsRepo(accountId: string, bundleDir: string): Pr
   };
   strip(bundleDir);
   if (dropped.length) {
-    const reportPath = join(bundleDir, '.kortix-skipped-large-files.txt');
+    const reportPath = join(bundleDir, '.zed-skipped-large-files.txt');
     // Exclusive create (O_EXCL, 0600) into the predictable /tmp bundle dir; a
     // retry that re-enters this step just re-uses the existing report (EEXIST).
     try {
@@ -109,8 +109,8 @@ export async function pushBundleAsRepo(accountId: string, bundleDir: string): Pr
 
   rmSync(join(bundleDir, '.git'), { recursive: true, force: true });
   git(['init', '-b', repo.defaultBranch], bundleDir);
-  git(['config', 'user.email', 'migration@kortix.com'], bundleDir);
-  git(['config', 'user.name', 'Kortix Migration'], bundleDir);
+  git(['config', 'user.email', 'migration@zed.com'], bundleDir);
+  git(['config', 'user.name', 'Zed Migration'], bundleDir);
   git(['add', '-A'], bundleDir);
   git(['commit', '-m', 'Import Suna legacy projects (chats restored as sessions; files under legacy/)'], bundleDir);
   git(['push', pushUrl, `HEAD:${repo.defaultBranch}`], bundleDir, true);

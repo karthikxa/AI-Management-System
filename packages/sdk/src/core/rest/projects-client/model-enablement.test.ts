@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { setProjectModelEnablement } from './model-enablement';
 
 let calls: { url: string; method: string; body: unknown }[] = [];
@@ -21,7 +21,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 const last = () => calls[calls.length - 1];
 
 test('PUTs the override map to the project model-enablement endpoint', async () => {

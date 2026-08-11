@@ -85,10 +85,10 @@ function CompactCommitDiff({ filePath, commitHash }: { filePath: string; commitH
     );
 
   const statusIcon = {
-    added: <FilePlus2 className="text-kortix-green size-3" />,
-    modified: <FileEdit className="text-kortix-blue size-3" />,
-    deleted: <FileX2 className="text-kortix-red size-3" />,
-    renamed: <FileSymlink className="text-kortix-orange size-3" />,
+    added: <FilePlus2 className="text-zed-green size-3" />,
+    modified: <FileEdit className="text-zed-blue size-3" />,
+    deleted: <FileX2 className="text-zed-red size-3" />,
+    renamed: <FileSymlink className="text-zed-orange size-3" />,
   }[diff.status];
 
   const patchContent =
@@ -103,8 +103,8 @@ function CompactCommitDiff({ filePath, commitHash }: { filePath: string; commitH
         {statusIcon}
         <span className="text-muted-foreground text-xs font-medium capitalize">{diff.status}</span>
         <div className="ml-auto flex items-center gap-1 text-xs tabular-nums">
-          {diff.additions > 0 && <span className="text-kortix-green">+{diff.additions}</span>}
-          {diff.deletions > 0 && <span className="text-kortix-red">-{diff.deletions}</span>}
+          {diff.additions > 0 && <span className="text-zed-green">+{diff.additions}</span>}
+          {diff.deletions > 0 && <span className="text-zed-red">-{diff.deletions}</span>}
         </div>
       </div>
       {patchContent ? (
@@ -194,7 +194,7 @@ function CompactCommitRow({ commit, filePath }: { commit: GitCommit; filePath: s
           )}
         >
           {copied ? (
-            <Check className="text-kortix-green size-2.5" />
+            <Check className="text-zed-green size-2.5" />
           ) : (
             <Copy className="size-2.5" />
           )}

@@ -52,7 +52,7 @@ import {
   listAccountMembers,
   listProjectSessions,
   listProjectsForAccount,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import {
   type AuditActionDescription,
   type HumanizedAuditAction,
@@ -143,15 +143,15 @@ const SOURCES = [
 const PHASES = ['pending', 'queued', 'running', 'completed', 'succeeded', 'failed', 'denied'];
 
 const KIND_DOT_TOKEN: Record<HumanizedAuditAction['kind'], string> = {
-  create: 'bg-kortix-green',
-  update: 'bg-kortix-yellow',
-  delete: 'bg-kortix-red',
-  grant: 'bg-kortix-green',
-  revoke: 'bg-kortix-red',
-  attach: 'bg-kortix-blue',
+  create: 'bg-zed-green',
+  update: 'bg-zed-yellow',
+  delete: 'bg-zed-red',
+  grant: 'bg-zed-green',
+  revoke: 'bg-zed-red',
+  attach: 'bg-zed-blue',
   detach: 'bg-muted-foreground/40',
   read: 'bg-muted-foreground/30',
-  export: 'bg-kortix-blue',
+  export: 'bg-zed-blue',
   other: 'bg-muted-foreground/30',
 };
 

@@ -15,11 +15,11 @@ const CLI_ROOT = resolve(import.meta.dir, '..', '..');
 const CLI_ENTRY = join(CLI_ROOT, 'src', 'index.ts');
 const ORIGINAL_ENV = { ...process.env };
 const SANDBOX_ENV_OVERRIDES = [
-  'KORTIX_API_URL',
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_FRONTEND_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_TOKEN',
+  'ZED_API_URL',
+  'ZED_CLI_TOKEN',
+  'ZED_FRONTEND_URL',
+  'ZED_PROJECT_ID',
+  'ZED_TOKEN',
   'BASH_ENV',
 ] as const;
 
@@ -59,10 +59,10 @@ function writeConfig(apiBase: string, defaultProject = false): string {
 async function runCli(args: string[], cwd = tmp, extraEnv: Record<string, string> = {}) {
   const env: Record<string, string | undefined> = {
     ...process.env,
-    KORTIX_NO_UPDATE_CHECK: '1',
+    ZED_NO_UPDATE_CHECK: '1',
     NO_COLOR: '1',
     FORCE_COLOR: '0',
-    KORTIX_DISABLE_SANDBOX_ENV_FILE: '1',
+    ZED_DISABLE_SANDBOX_ENV_FILE: '1',
     ...extraEnv,
   };
   for (const key of SANDBOX_ENV_OVERRIDES) delete env[key];
@@ -100,8 +100,8 @@ function startMarketplaceServer() {
       if (url.pathname === '/v1/marketplace/items') {
         return Response.json({
           items: [{
-            id: 'kortix-starter:pdf',
-            registry: 'kortix-starter',
+            id: 'zed-starter:pdf',
+            registry: 'zed-starter',
             name: 'pdf',
             type: 'registry:skill',
             title: 'PDF',
@@ -111,8 +111,8 @@ function startMarketplaceServer() {
             dependencies: [],
             fileCount: 1,
             external: false,
-            marketplaceId: 'kortix',
-            marketplaceLabel: 'Kortix',
+            marketplaceId: 'zed',
+            marketplaceLabel: 'Zed',
           }],
         });
       }
@@ -122,10 +122,10 @@ function startMarketplaceServer() {
   return `http://127.0.0.1:${server.port}`;
 }
 
-// `GET /v1/skills` — the kortix-managed system floor. Nothing else is served, so
+// `GET /v1/skills` — the zed-managed system floor. Nothing else is served, so
 // any fallback to the marketplace catalog shows up as a 404 rather than passing.
 function startSystemSkillsServer() {
-  const body = '---\nname: kortix-system\n---\n\n<skill name="kortix-system">how Kortix works</skill>\n';
+  const body = '---\nname: zed-system\n---\n\n<skill name="zed-system">how Zed works</skill>\n';
   server = Bun.serve({
     port: 0,
     fetch: async (req) => {
@@ -139,8 +139,8 @@ function startSystemSkillsServer() {
         return Response.json({
           skills: [
             {
-              name: 'kortix-system',
-              description: 'How Kortix works. Load whenever the user asks about the platform.',
+              name: 'zed-system',
+              description: 'How Zed works. Load whenever the user asks about the platform.',
               referenceCount: 0,
               bytes: body.length,
             },
@@ -148,10 +148,10 @@ function startSystemSkillsServer() {
           count: 1,
         });
       }
-      if (url.pathname === '/v1/skills/kortix-system') {
+      if (url.pathname === '/v1/skills/zed-system') {
         return Response.json({
-          name: 'kortix-system',
-          description: 'How Kortix works.',
+          name: 'zed-system',
+          description: 'How Zed works.',
           body,
           references: [],
         });
@@ -183,7 +183,7 @@ function startAppsServer(appsEnabled = true, serverGate = false) {
     project_id: 'proj_e2e',
     slug: 'demo',
     name: 'Demo',
-    url: 'https://dev-demo-route.apps.kortix.com',
+    url: 'https://dev-demo-route.apps.zed.com',
     access_mode: appAccessMode,
     access_revision: appAccessRevision,
     desired_state: 'running',
@@ -250,7 +250,7 @@ function startAppsServer(appsEnabled = true, serverGate = false) {
       }
       if (url.pathname === '/v1/projects/proj_e2e/apps/app_1/access-session' && req.method === 'POST') {
         return Response.json({
-          url: 'https://dev-demo-route.apps.kortix.com/?__kortix_access=signed-test-token',
+          url: 'https://dev-demo-route.apps.zed.com/?__zed_access=signed-test-token',
           expires_at: '2026-08-07T01:00:00.000Z',
         });
       }
@@ -261,7 +261,7 @@ function startAppsServer(appsEnabled = true, serverGate = false) {
             project_id: 'proj_e2e',
             kind: 'oci_image',
             status: 'ready',
-            image_reference: 'ghcr.io/kortix/demo:1',
+            image_reference: 'ghcr.io/zed/demo:1',
             sha256: null,
             size_bytes: null,
             media_type: null,
@@ -304,35 +304,35 @@ function projectSummary(overrides: Partial<Record<string, unknown>> = {}) {
     project_id: 'proj_e2e',
     account_id: 'account_1',
     name: 'E2E Project',
-    repo_url: 'https://github.com/kortix/e2e-project',
-    git_origin_url: 'https://git.kortix.test/proj_e2e',
+    repo_url: 'https://github.com/zed/e2e-project',
+    git_origin_url: 'https://git.zed.test/proj_e2e',
     default_branch: 'main',
-    manifest_path: 'kortix.yaml',
+    manifest_path: 'zed.yaml',
     status: 'active',
     metadata: {},
     last_opened_at: null,
     created_at: '2026-01-01T00:00:00.000Z',
     updated_at: '2026-01-02T00:00:00.000Z',
-    dashboard_url: 'https://kortix.test/projects/proj_e2e',
+    dashboard_url: 'https://zed.test/projects/proj_e2e',
     ...overrides,
   };
 }
 
 function catalogItem(name: string) {
   return {
-    id: `kortix-starter:${name}`,
-    registry: 'kortix-starter',
+    id: `zed-starter:${name}`,
+    registry: 'zed-starter',
     name,
     type: 'registry:skill',
     title: name === 'agent-browser' ? 'Agent Browser' : name,
     description: `${name} marketplace item`,
-    categories: ['kortix-runtime'],
+    categories: ['zed-runtime'],
     capabilities: { secrets: [], connectors: [], tools: [name], network: [] },
     dependencies: [],
     fileCount: 1,
     external: false,
-    marketplaceId: 'kortix',
-    marketplaceLabel: 'Kortix',
+    marketplaceId: 'zed',
+    marketplaceLabel: 'Zed',
   };
 }
 
@@ -440,7 +440,7 @@ function startCliE2eServer() {
       if (url.pathname === '/v1/marketplace/items' && req.method === 'GET') {
         const query = url.searchParams.get('query') ?? '';
         const items = ['agent-browser']
-          .filter((name) => !query || name.includes(query) || query === `kortix-starter:${name}`)
+          .filter((name) => !query || name.includes(query) || query === `zed-starter:${name}`)
           .map(catalogItem);
         return Response.json({ items });
       }
@@ -460,9 +460,9 @@ function startCliE2eServer() {
   return `http://127.0.0.1:${server.port}`;
 }
 
-describe('kortix CLI black-box behavior', () => {
+describe('zed CLI black-box behavior', () => {
   beforeEach(() => {
-    tmp = mkdtempSync(join(tmpdir(), 'kortix-cli-blackbox-'));
+    tmp = mkdtempSync(join(tmpdir(), 'zed-cli-blackbox-'));
     requests = [];
     process.env = { ...ORIGINAL_ENV };
     for (const key of SANDBOX_ENV_OVERRIDES) delete process.env[key];
@@ -480,21 +480,21 @@ describe('kortix CLI black-box behavior', () => {
     const configFile = writeConfig(apiBase);
 
     const result = await runCli(
-      ['marketplace', 'search', 'pdf', '--source', 'kortix', '--json'],
+      ['marketplace', 'search', 'pdf', '--source', 'zed', '--json'],
       tmp,
-      { KORTIX_CONFIG_FILE: configFile },
+      { ZED_CONFIG_FILE: configFile },
     );
 
     expect(result.code).toBe(0);
     expect(JSON.parse(result.stdout).items[0]).toMatchObject({
-      id: 'kortix-starter:pdf',
+      id: 'zed-starter:pdf',
       name: 'pdf',
-      marketplaceLabel: 'Kortix',
+      marketplaceLabel: 'Zed',
     });
     expect(result.stderr).toContain('host test');
     expect(requests).toEqual([{
       method: 'GET',
-      path: '/v1/marketplace/items?query=pdf&source=kortix',
+      path: '/v1/marketplace/items?query=pdf&source=zed',
       authorization: 'Bearer tok_blackbox',
     }]);
   }, 15_000);
@@ -517,26 +517,26 @@ describe('kortix CLI black-box behavior', () => {
     expect(help.code).toBe(0);
     expect(help.stdout).toContain('Start here');
     expect(help.stdout).toContain('system-skills');
-    expect(help.stdout).toContain('Learn how to drive Kortix');
+    expect(help.stdout).toContain('Learn how to drive Zed');
 
     const apiBase = startSystemSkillsServer();
     const configFile = writeConfig(apiBase);
 
-    const listed = await runCli(['system-skills', '--json'], tmp, { KORTIX_CONFIG_FILE: configFile });
+    const listed = await runCli(['system-skills', '--json'], tmp, { ZED_CONFIG_FILE: configFile });
     expect(listed.code).toBe(0);
     const parsed = JSON.parse(listed.stdout);
     expect(parsed.count).toBe(1);
-    expect(parsed.skills[0].name).toBe('kortix-system');
+    expect(parsed.skills[0].name).toBe('zed-system');
 
-    const read = await runCli(['system-skills', 'get', 'kortix-system'], tmp, {
-      KORTIX_CONFIG_FILE: configFile,
+    const read = await runCli(['system-skills', 'get', 'zed-system'], tmp, {
+      ZED_CONFIG_FILE: configFile,
     });
     expect(read.code).toBe(0);
-    expect(read.stdout).toContain('how Kortix works');
+    expect(read.stdout).toContain('how Zed works');
 
     // Served live from the host, never from the marketplace catalog and never
     // from a local clone.
-    expect(requests.map((r) => r.path)).toEqual(['/v1/skills', '/v1/skills/kortix-system']);
+    expect(requests.map((r) => r.path)).toEqual(['/v1/skills', '/v1/skills/zed-system']);
     expect(requests.every((r) => r.authorization === 'Bearer tok_blackbox')).toBe(true);
   }, 20_000);
 
@@ -544,10 +544,10 @@ describe('kortix CLI black-box behavior', () => {
     const apiBase = startSystemSkillsServer();
     const configFile = writeConfig(apiBase);
 
-    const result = await runCli(['skills', '--json'], tmp, { KORTIX_CONFIG_FILE: configFile });
+    const result = await runCli(['skills', '--json'], tmp, { ZED_CONFIG_FILE: configFile });
 
     expect(result.code).toBe(0);
-    expect(JSON.parse(result.stdout).skills[0].name).toBe('kortix-system');
+    expect(JSON.parse(result.stdout).skills[0].name).toBe('zed-system');
     expect(requests.map((r) => r.path)).toEqual(['/v1/skills']);
   }, 15_000);
 
@@ -617,11 +617,11 @@ describe('kortix CLI black-box behavior', () => {
     const apiBase = startAppsServer();
     const configFile = writeConfig(apiBase, true);
 
-    const help = await runCli(['--help'], tmp, { KORTIX_CONFIG_FILE: configFile });
+    const help = await runCli(['--help'], tmp, { ZED_CONFIG_FILE: configFile });
     expect(help.stdout).toContain('apps <subcommand>');
 
     const listed = await runCli(['apps', 'list', '--project', 'proj_e2e', '--json'], tmp, {
-      KORTIX_CONFIG_FILE: configFile,
+      ZED_CONFIG_FILE: configFile,
     });
     expect(listed.code).toBe(0);
     expect(JSON.parse(listed.stdout).apps[0]).toMatchObject({ app_id: 'app_1', slug: 'demo' });
@@ -632,7 +632,7 @@ describe('kortix CLI black-box behavior', () => {
       '--app',
       'demo',
       '--image',
-      'ghcr.io/kortix/demo:1',
+      'ghcr.io/zed/demo:1',
       '--command',
       '["node","server.js"]',
       '--port',
@@ -647,7 +647,7 @@ describe('kortix CLI black-box behavior', () => {
       '--project',
       'proj_e2e',
       '--json',
-    ], tmp, { KORTIX_CONFIG_FILE: configFile });
+    ], tmp, { ZED_CONFIG_FILE: configFile });
 
     expect(deployed.code).toBe(0);
     expect(JSON.parse(deployed.stdout)).toMatchObject({
@@ -665,12 +665,12 @@ describe('kortix CLI black-box behavior', () => {
       ['POST', '/v1/projects/proj_e2e/apps/app_1/deployments'],
     ]);
     expect(requests[4]?.body).toEqual({ mode: 'password', password: 'test-password-123' });
-    expect(requests[6]?.body).toEqual({ kind: 'oci_image', image: 'ghcr.io/kortix/demo:1' });
+    expect(requests[6]?.body).toEqual({ kind: 'oci_image', image: 'ghcr.io/zed/demo:1' });
     expect(requests[7]?.body).toEqual({
       artifact_id: 'artifact_1',
       source: {
         kind: 'oci_image',
-        image: 'ghcr.io/kortix/demo:1',
+        image: 'ghcr.io/zed/demo:1',
         command: ['node', 'server.js'],
         port: 3000,
       },
@@ -684,7 +684,7 @@ describe('kortix CLI black-box behavior', () => {
       '--app',
       'demo',
       '--image',
-      'ghcr.io/kortix/demo:1',
+      'ghcr.io/zed/demo:1',
       '--command',
       '["node","server.js"]',
       '--port',
@@ -694,7 +694,7 @@ describe('kortix CLI black-box behavior', () => {
       '--no-wait',
       '--project',
       'proj_e2e',
-    ], tmp, { KORTIX_CONFIG_FILE: configFile });
+    ], tmp, { ZED_CONFIG_FILE: configFile });
     expect(retiredProvider.code).toBe(1);
     expect(retiredProvider.stderr).toContain('--provider must be daytona, platinum, or e2b');
 
@@ -711,7 +711,7 @@ describe('kortix CLI black-box behavior', () => {
       '--project',
       'proj_e2e',
       '--json',
-    ], tmp, { KORTIX_CONFIG_FILE: configFile });
+    ], tmp, { ZED_CONFIG_FILE: configFile });
     expect(access.code).toBe(0);
     expect(JSON.parse(access.stdout).access).toMatchObject({
       mode: 'restricted',
@@ -744,12 +744,12 @@ describe('kortix CLI black-box behavior', () => {
       '--project',
       'proj_e2e',
       '--json',
-    ], tmp, { KORTIX_CONFIG_FILE: configFile });
+    ], tmp, { ZED_CONFIG_FILE: configFile });
     expect(accessLink.code).toBe(0);
     expect(JSON.parse(accessLink.stdout)).toEqual({
       app: expect.objectContaining({ app_id: 'app_1', slug: 'demo' }),
       access_session: {
-        url: 'https://dev-demo-route.apps.kortix.com/?__kortix_access=signed-test-token',
+        url: 'https://dev-demo-route.apps.zed.com/?__zed_access=signed-test-token',
         expires_at: '2026-08-07T01:00:00.000Z',
       },
     });
@@ -766,7 +766,7 @@ describe('kortix CLI black-box behavior', () => {
   test('Apps help stays discoverable but operations reject a project with Apps disabled', async () => {
     const apiBase = startAppsServer(false);
     const configFile = writeConfig(apiBase, true);
-    const env = { KORTIX_CONFIG_FILE: configFile };
+    const env = { ZED_CONFIG_FILE: configFile };
 
     const landing = await runCli(['--help'], tmp, env);
     expect(landing.code).toBe(0);
@@ -775,7 +775,7 @@ describe('kortix CLI black-box behavior', () => {
 
     const help = await runCli(['apps', '--help', '--project', 'proj_e2e'], tmp, env);
     expect(help.code).toBe(0);
-    expect(help.stdout).toContain('Usage: kortix apps');
+    expect(help.stdout).toContain('Usage: zed apps');
     expect(help.stdout).toContain('private (default), project, restricted, public, or password');
 
     const listed = await runCli(['apps', 'list', '--project', 'proj_e2e'], tmp, env);
@@ -795,7 +795,7 @@ describe('kortix CLI black-box behavior', () => {
     // so this exercises `surfaceApiError`, not the client-side pre-check.
     const apiBase = startAppsServer(true, true);
     const configFile = writeConfig(apiBase, true);
-    const env = { KORTIX_CONFIG_FILE: configFile };
+    const env = { ZED_CONFIG_FILE: configFile };
 
     const listed = await runCli(['apps', 'list', '--project', 'proj_e2e'], tmp, env);
 
@@ -828,7 +828,7 @@ describe('kortix CLI black-box behavior', () => {
 
     expect(result.code).toBe(2);
     expect(result.stderr).toContain('unknown command `use`');
-    expect(result.stderr).toContain('kortix init <name>');
+    expect(result.stderr).toContain('zed init <name>');
     expect(result.stdout).not.toContain('Scaffolded');
     expect(existsSync(join(tmp, 'use'))).toBe(false);
   });
@@ -839,7 +839,7 @@ describe('kortix CLI black-box behavior', () => {
     expect(result.code).toBe(2);
     expect(result.stderr).toContain('unknown command `inti`');
     expect(result.stderr).toContain('Did you mean');
-    expect(result.stderr).toContain('kortix init');
+    expect(result.stderr).toContain('zed init');
     expect(existsSync(join(tmp, 'inti'))).toBe(false);
   });
 
@@ -852,20 +852,20 @@ describe('kortix CLI black-box behavior', () => {
   test('schema --version 2 prints the v2 JSON Schema, not the CLI version banner', async () => {
     // Regression guard: `main()` used to scan the ENTIRE argv for a bare
     // `--version`/`-v` and print the CLI's own version banner before any
-    // subcommand ever saw its args — which made `kortix schema --version 2`
-    // (and `kortix self-host update --version <tag>`) unreachable.
+    // subcommand ever saw its args — which made `zed schema --version 2`
+    // (and `zed self-host update --version <tag>`) unreachable.
     const result = await runCli(['schema', '--version', '2']);
 
     expect(result.code).toBe(0);
     const schema = JSON.parse(result.stdout);
-    expect(schema.$id).toBe('https://kortix.com/schema/kortix.v2.schema.json');
+    expect(schema.$id).toBe('https://zed.com/schema/zed.v2.schema.json');
   });
 
   test('the bare --version flag still prints the CLI version banner', async () => {
     const result = await runCli(['--version']);
 
     expect(result.code).toBe(0);
-    expect(result.stdout).toContain('Kortix CLI');
+    expect(result.stdout).toContain('Zed CLI');
   });
 
   test('add is not a top-level command', async () => {
@@ -875,7 +875,7 @@ describe('kortix CLI black-box behavior', () => {
     const result = await runCli(
       ['add', 'pdf', '--project', 'proj_1', '--dry-run'],
       tmp,
-      { KORTIX_CONFIG_FILE: configFile },
+      { ZED_CONFIG_FILE: configFile },
     );
 
     expect(result.code).toBe(2);
@@ -900,18 +900,18 @@ describe('kortix CLI black-box behavior', () => {
     expect(existsSync(join(root, '.claude', 'CLAUDE.md'))).toBe(false);
     expect(existsSync(join(root, '.codex', 'AGENTS.md'))).toBe(false);
     expect(existsSync(join(root, '.pi', 'README.md'))).toBe(false);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'skills', 'kortix-cli', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'skills', 'zed-cli', 'SKILL.md'))).toBe(true);
     // Managed / served-live skills still aren't committed into the repo.
-    expect(existsSync(join(root, '.kortix', 'opencode', 'skills', 'kortix-computer', 'SKILL.md'))).toBe(false);
+    expect(existsSync(join(root, '.zed', 'opencode', 'skills', 'zed-computer', 'SKILL.md'))).toBe(false);
     // `agent-browser` IS scaffolded now — driving a browser is a floor capability.
-    expect(existsSync(join(root, '.kortix', 'opencode', 'skills', 'agent-browser', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'plugins', 'pty.ts'))).toBe(true);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'tools', 'memory.ts'))).toBe(true);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'tools', 'web_search.ts'))).toBe(true);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'tools', 'scrape_webpage.ts'))).toBe(true);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'tools', 'image_search.ts'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'skills', 'agent-browser', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'plugins', 'pty.ts'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'tools', 'memory.ts'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'tools', 'web_search.ts'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'tools', 'scrape_webpage.ts'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'tools', 'image_search.ts'))).toBe(true);
     // The full kit is the default now, so domain skills like pdf ARE present.
-    expect(existsSync(join(root, '.kortix', 'opencode', 'skills', 'pdf', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'skills', 'pdf', 'SKILL.md'))).toBe(true);
   });
 
   test('init help exposes one starter and hides compatibility template choices', async () => {
@@ -937,8 +937,8 @@ describe('kortix CLI black-box behavior', () => {
 
     expect(result.code).toBe(0);
     const root = join(tmp, 'gkw-project');
-    expect(existsSync(join(root, '.kortix', 'opencode', 'skills', 'kortix-cli', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'skills', 'pdf', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'skills', 'zed-cli', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'skills', 'pdf', 'SKILL.md'))).toBe(true);
   });
 
   test('E2E: CLI project setup plus marketplace discovery, then unlink/relink/archive', async () => {
@@ -948,62 +948,62 @@ describe('kortix CLI black-box behavior', () => {
     const init = await runCli(['init', 'full-e2e', '--yes', '--no-git']);
     expect(init.code).toBe(0);
     const root = join(tmp, 'full-e2e');
-    expect(existsSync(join(root, 'kortix.yaml'))).toBe(true);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'tools', 'show.ts'))).toBe(true);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'skills', 'kortix-cli', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'skills', 'agent-browser', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'plugins', 'pty.ts'))).toBe(true);
-    expect(existsSync(join(root, '.kortix', 'opencode', 'tools', 'web_search.ts'))).toBe(true);
+    expect(existsSync(join(root, 'zed.yaml'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'tools', 'show.ts'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'skills', 'zed-cli', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'skills', 'agent-browser', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'plugins', 'pty.ts'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'opencode', 'tools', 'web_search.ts'))).toBe(true);
 
-    const listBeforeLink = await runCli(['projects', 'ls', '--json'], root, { KORTIX_CONFIG_FILE: configFile });
+    const listBeforeLink = await runCli(['projects', 'ls', '--json'], root, { ZED_CONFIG_FILE: configFile });
     expect(listBeforeLink.code).toBe(0);
     expect(JSON.parse(listBeforeLink.stdout)).toEqual([expect.objectContaining({ project_id: 'proj_e2e', name: 'E2E Project' })]);
 
-    const link = await runCli(['projects', 'link', 'proj_e2e'], root, { KORTIX_CONFIG_FILE: configFile });
+    const link = await runCli(['projects', 'link', 'proj_e2e'], root, { ZED_CONFIG_FILE: configFile });
     expect(link.code).toBe(0);
     expect(link.stdout).toContain('Linked');
-    const linked = JSON.parse(readFileSync(join(root, '.kortix', 'link.json'), 'utf8'));
+    const linked = JSON.parse(readFileSync(join(root, '.zed', 'link.json'), 'utf8'));
     expect(linked).toMatchObject({ project_id: 'proj_e2e', account_id: 'account_1', host: 'test', host_url: apiBase });
 
-    const info = await runCli(['projects', 'info', '--json'], root, { KORTIX_CONFIG_FILE: configFile });
+    const info = await runCli(['projects', 'info', '--json'], root, { ZED_CONFIG_FILE: configFile });
     expect(info.code).toBe(0);
     expect(JSON.parse(info.stdout)).toMatchObject({ project_id: 'proj_e2e', default_branch: 'main' });
 
-    const search = await runCli(['marketplace', 'search', 'agent-browser', '--source', 'kortix', '--json'], root, { KORTIX_CONFIG_FILE: configFile });
+    const search = await runCli(['marketplace', 'search', 'agent-browser', '--source', 'zed', '--json'], root, { ZED_CONFIG_FILE: configFile });
     expect(search.code).toBe(0);
     expect(JSON.parse(search.stdout).items).toEqual([
       expect.objectContaining({
-        id: 'kortix-starter:agent-browser',
+        id: 'zed-starter:agent-browser',
         name: 'agent-browser',
         type: 'registry:skill',
         capabilities: expect.objectContaining({ tools: ['agent-browser'] }),
       }),
     ]);
 
-    const show = await runCli(['marketplace', 'show', 'agent-browser', '--json'], root, { KORTIX_CONFIG_FILE: configFile });
+    const show = await runCli(['marketplace', 'show', 'agent-browser', '--json'], root, { ZED_CONFIG_FILE: configFile });
     expect(show.code).toBe(0);
-    expect(JSON.parse(show.stdout)).toMatchObject({ id: 'kortix-starter:agent-browser', name: 'agent-browser', type: 'registry:skill' });
+    expect(JSON.parse(show.stdout)).toMatchObject({ id: 'zed-starter:agent-browser', name: 'agent-browser', type: 'registry:skill' });
 
-    const unlink = await runCli(['projects', 'unlink'], root, { KORTIX_CONFIG_FILE: configFile });
+    const unlink = await runCli(['projects', 'unlink'], root, { ZED_CONFIG_FILE: configFile });
     expect(unlink.code).toBe(0);
-    expect(existsSync(join(root, '.kortix', 'link.json'))).toBe(false);
+    expect(existsSync(join(root, '.zed', 'link.json'))).toBe(false);
 
-    const relink = await runCli(['projects', 'link', 'proj_e2e'], root, { KORTIX_CONFIG_FILE: configFile });
+    const relink = await runCli(['projects', 'link', 'proj_e2e'], root, { ZED_CONFIG_FILE: configFile });
     expect(relink.code).toBe(0);
-    expect(existsSync(join(root, '.kortix', 'link.json'))).toBe(true);
+    expect(existsSync(join(root, '.zed', 'link.json'))).toBe(true);
 
-    const removeProject = await runCli(['projects', 'rm', 'proj_e2e', '--purge', '--yes'], root, { KORTIX_CONFIG_FILE: configFile });
+    const removeProject = await runCli(['projects', 'rm', 'proj_e2e', '--purge', '--yes'], root, { ZED_CONFIG_FILE: configFile });
     expect(removeProject.code).toBe(0);
     expect(removeProject.stdout).toContain('Archived');
     expect(removeProject.stdout).toContain('managed git repo deleted');
-    expect(existsSync(join(root, '.kortix', 'link.json'))).toBe(false);
+    expect(existsSync(join(root, '.zed', 'link.json'))).toBe(false);
 
     expect(requests.map((r) => [r.method, r.path, r.body ?? null])).toEqual([
       // `projects ls` is scoped to the active account; by-id routes are not.
       ['GET', '/v1/projects?account_id=account_1', null],
       ['GET', '/v1/projects/proj_e2e', null],
       ['GET', '/v1/projects/proj_e2e', null],
-      ['GET', '/v1/marketplace/items?query=agent-browser&source=kortix', null],
+      ['GET', '/v1/marketplace/items?query=agent-browser&source=zed', null],
       ['GET', '/v1/marketplace/items/agent-browser', null],
       ['GET', '/v1/projects/proj_e2e', null],
       ['GET', '/v1/projects/proj_e2e', null],
@@ -1016,7 +1016,7 @@ describe('kortix CLI black-box behavior', () => {
     const apiBase = startCliE2eServer();
     const configFile = writeConfig(apiBase);
 
-    const noAuth = await runCli(['marketplace', 'search', 'pty', '--json'], tmp, { KORTIX_CONFIG_FILE: join(tmp, 'missing-config.json') });
+    const noAuth = await runCli(['marketplace', 'search', 'pty', '--json'], tmp, { ZED_CONFIG_FILE: join(tmp, 'missing-config.json') });
     expect(noAuth.code).toBe(1);
     expect(noAuth.stderr).toContain('Not logged in');
 
@@ -1024,15 +1024,15 @@ describe('kortix CLI black-box behavior', () => {
     expect(init.code).toBe(0);
     const root = join(tmp, 'edge-e2e');
 
-    const missingProject = await runCli(['projects', 'link', 'missing'], root, { KORTIX_CONFIG_FILE: configFile });
+    const missingProject = await runCli(['projects', 'link', 'missing'], root, { ZED_CONFIG_FILE: configFile });
     expect(missingProject.code).toBe(1);
     expect(missingProject.stderr).toContain('Not found');
 
-    const unknownShow = await runCli(['marketplace', 'show', 'does-not-exist'], root, { KORTIX_CONFIG_FILE: configFile });
+    const unknownShow = await runCli(['marketplace', 'show', 'does-not-exist'], root, { ZED_CONFIG_FILE: configFile });
     expect(unknownShow.code).toBe(1);
     expect(unknownShow.stderr).toContain('No marketplace item matches');
 
-    const add = await runCli(['add', 'pty', '--project', 'proj_e2e'], root, { KORTIX_CONFIG_FILE: configFile });
+    const add = await runCli(['add', 'pty', '--project', 'proj_e2e'], root, { ZED_CONFIG_FILE: configFile });
     expect(add.code).toBe(2);
     expect(add.stderr).toContain('unknown command `add`');
 

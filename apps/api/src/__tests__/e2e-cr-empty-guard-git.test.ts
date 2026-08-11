@@ -30,7 +30,7 @@ function bunEval(script: string): string {
     env: {
       ...process.env,
       GIT_TERMINAL_PROMPT: '0',
-      KORTIX_GIT_CACHE_DIR: join(root, 'git-cache'),
+      ZED_GIT_CACHE_DIR: join(root, 'git-cache'),
     },
   }).trim();
 }
@@ -49,8 +49,8 @@ function makeFixture() {
   const origin = join(root, `origin-${projectCounter}.git`);
   mkdirSync(source, { recursive: true });
   git(['init', '-b', 'main'], source);
-  git(['config', 'user.email', 'e2e@kortix.test'], source);
-  git(['config', 'user.name', 'Kortix E2E'], source);
+  git(['config', 'user.email', 'e2e@zed.test'], source);
+  git(['config', 'user.name', 'Zed E2E'], source);
   writeFileSync(join(source, 'README.md'), '# test repo\n', 'utf8');
   git(['add', 'README.md'], source);
   git(['commit', '-m', 'initial'], source);
@@ -64,7 +64,7 @@ function makeFixture() {
     projectId: `00000000-0000-4000-a000-${String(projectCounter).padStart(12, '0')}`,
     repoUrl: origin,
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     // A present token makes ensureMirrorAuthToken return early instead of
     // dynamic-importing ../lib/git (which drags in the full env-validated
     // config and process.exits outside a configured environment). Local
@@ -94,7 +94,7 @@ function commitOnSessionBranch(source: string, name: string) {
 
 describe('resolveBranchAheadState — the empty-CR guard', () => {
   beforeEach(async () => {
-    root = await mkdtemp(join(tmpdir(), 'kortix-cr-empty-guard-'));
+    root = await mkdtemp(join(tmpdir(), 'zed-cr-empty-guard-'));
   });
 
   afterEach(async () => {
@@ -120,7 +120,7 @@ describe('resolveBranchAheadState — the empty-CR guard', () => {
     const { source, origin, project } = makeFixture();
     // One process: warm the mirror with the branch empty, push from a second
     // clone while the in-process refresh marker is fresh, resolve again —
-    // exactly an agent's `git push && kortix cr open` against a warm mirror.
+    // exactly an agent's `git push && zed cr open` against a warm mirror.
     const result = JSON.parse(
       bunEval(`
         const { execFileSync } = await import('node:child_process');

@@ -10,7 +10,7 @@ import { useGitStatus } from '@/features/files/hooks/use-git-status';
 import { cn } from '@/lib/utils';
 import { useChatSendStore } from '@/stores/chat-send-store';
 import { useFilePreviewStore } from '@/stores/file-preview-store';
-import { useProjectSession } from '@kortix/sdk/react';
+import { useProjectSession } from '@zed/sdk/react';
 
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/loading';
@@ -33,7 +33,7 @@ const STATUS_BADGE: Record<string, { letter: string; cls: string; label: string 
  *
  *   1. what changed in this session (git status), and
  *   2. the one way to persist it: ask the agent to open a change request, which
- *      it commits + opens via `kortix cr open` for the user to review & merge.
+ *      it commits + opens via `zed cr open` for the user to review & merge.
  */
 export function SessionFilesPanel({
   /**
@@ -71,13 +71,13 @@ export function SessionFilesPanel({
   const [asking, setAsking] = useState(false);
 
   // Send the agent a ready-made instruction to commit this session's work and
-  // open a change request — it runs `kortix cr open` for the user to review &
+  // open a change request — it runs `zed cr open` for the user to review &
   // merge. We send it straight through the chat's own send path (same as typing
   // it), so there's no copy/paste step. If no chat is mounted (e.g. the
   // standalone debug harness) we fall back to copying the prompt.
   const askAgentToOpenChangeRequest = async () => {
     if (asking) return;
-    const prompt = `Load the kortix-system skill and read about Versions & Change Requests. Then review the changes in this session, commit them, and open a change request to merge into \`${baseRef}\`. Give it a clear title and a description of what changed and why.`;
+    const prompt = `Load the zed-system skill and read about Versions & Change Requests. Then review the changes in this session, commit them, and open a change request to merge into \`${baseRef}\`. Give it a clear title and a description of what changed and why.`;
 
     if (!chatSessionId) {
       try {

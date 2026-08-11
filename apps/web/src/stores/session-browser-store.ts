@@ -1,7 +1,7 @@
 'use client';
 
 import { createSafeJSONStorage } from '@/lib/storage/managed-storage';
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import { useUserPreferencesStore } from '@/stores/user-preferences-store';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -10,7 +10,7 @@ import { persist } from 'zustand/middleware';
  * Per-session state for the right-side panel hosted by `session-layout.tsx`.
  *
  * The right panel has three views:
- *   - `actions` — KortixComputer (tool calls, the original "Actions" pane)
+ *   - `actions` — ZedComputer (tool calls, the original "Actions" pane)
  *   - `browser` — internal browser (BrowserPanel iframe + address bar)
  *   - `files`   — files CRUD'd in this session's sandbox (SessionFilesPanel),
  *                 with merge-to-main / open-change-request actions
@@ -90,7 +90,7 @@ interface SessionBrowserState {
   /**
    * The panel-store key of the session whose layout is currently visible —
    * i.e. the OpenCode `chatSessionId` the {@link SessionLayout} keys its panel
-   * by. NOT the Kortix session id in the URL (those differ). Registered by the
+   * by. NOT the Zed session id in the URL (those differ). Registered by the
    * active SessionLayout; read by chat click handlers so a localhost-link or
    * file-path click routes into the right session's panel. Transient.
    */
@@ -149,7 +149,7 @@ export const useSessionBrowserStore = create<SessionBrowserState>()(
         })),
     }),
     {
-      name: 'kortix-session-browser',
+      name: 'zed-session-browser',
       storage: createSafeJSONStorage(),
       // Persist stable per-session UI choices; file-open requests are transient.
       partialize: (state) => ({
@@ -167,10 +167,10 @@ export function sessionPreviewTabId(sessionId: string): string {
 
 /**
  * The panel-store key (OpenCode `chatSessionId`) of the active session layout,
- * or null when no session is visible. Use THIS — not the URL's Kortix session
+ * or null when no session is visible. Use THIS — not the URL's Zed session
  * id — as the key for `setView` / `requestFileOpen` / `sessionPreviewTabId`,
  * since {@link SessionLayout} keys its panel by `chatSessionId`, which differs
- * from the Kortix session id in the URL.
+ * from the Zed session id in the URL.
  */
 export function getActivePanelSessionId(): string | null {
   return useSessionBrowserStore.getState().activeSessionId;
@@ -197,5 +197,5 @@ export function openFileInSessionPanel(sessionId: string, path: string, line?: n
     useSessionBrowserStore.getState().requestFileOpenSilently(sessionId, path, line);
   }
 
-  useKortixComputerStore.getState().setIsSidePanelOpen(true);
+  useZedComputerStore.getState().setIsSidePanelOpen(true);
 }

@@ -1,4 +1,4 @@
-import type { ConnectorPolicyAction, ConnectorPolicyRule } from '@kortix/sdk';
+import type { ConnectorPolicyAction, ConnectorPolicyRule } from '@zed/sdk';
 
 import { orderPolicyRules } from './tool-policy';
 

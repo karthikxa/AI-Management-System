@@ -11,7 +11,7 @@ import type { ToolProps } from '@/features/session/tool/shared/types';
 import { FolderIcon as Folder } from '@phosphor-icons/react';
 import { useMemo } from 'react';
 
-import { type ProjectEntry, parseProjectListOutput } from '@/lib/utils/kortix-tool-output';
+import { type ProjectEntry, parseProjectListOutput } from '@/lib/utils/zed-tool-output';
 
 export function ProjectListTool({ part, defaultOpen, forceOpen }: ToolProps) {
   const output = partOutput(part);

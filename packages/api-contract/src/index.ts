@@ -1,5 +1,5 @@
 /**
- * @kortix/api-contract — the shared wire contract for the Kortix platform API.
+ * @zed/api-contract — the shared wire contract for the Zed platform API.
  *
  * Zod schemas + inferred TS types describing EXACTLY what apps/api serializes
  * onto the wire today. The API serializers
@@ -186,9 +186,9 @@ export const SessionVisibilitySchema = z.enum(SESSION_VISIBILITIES);
 export type SessionVisibility = z.infer<typeof SessionVisibilitySchema>;
 
 /**
- * Non-secret, wrapper-supplied context attached durably to one Kortix session.
+ * Non-secret, wrapper-supplied context attached durably to one Zed session.
  * This is not an environment-variable map: the server serializes the whole
- * object into one server-owned `KORTIX_SESSION_CONTEXT` JSON envelope.
+ * object into one server-owned `ZED_SESSION_CONTEXT` JSON envelope.
  */
 export const SESSION_RUNTIME_CONTEXT_MAX_KEYS = 64;
 export const SESSION_RUNTIME_CONTEXT_MAX_BYTES = 16 * 1024;
@@ -981,7 +981,7 @@ export const SecretInjectionSlotSchema = z.discriminatedUnion('kind', [
 ]);
 
 export const SecretEgressPolicySchema = z.object({
-  backend: z.enum(['llm_gateway', 'connector', 'git_proxy', 'kortix_fetch']).optional(),
+  backend: z.enum(['llm_gateway', 'connector', 'git_proxy', 'zed_fetch']).optional(),
   base_url_env: z.string().optional(),
   rules: z.array(
     z.object({

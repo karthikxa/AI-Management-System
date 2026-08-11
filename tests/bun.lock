@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "@kortix/tests",
+      "name": "@zed/tests",
       "devDependencies": {
         "@axe-core/playwright": "^4.11.3",
         "@pact-foundation/pact": "^15.0.1",

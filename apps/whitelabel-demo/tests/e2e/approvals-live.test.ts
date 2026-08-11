@@ -10,7 +10,7 @@
  * What this proves is the DEMO's behaviour — that the wrapper reads approvals
  * from the one route that cannot leak across end-users, resolves them at the
  * right path, and renders the human-only refusal as itself. The platform's own
- * enforcement of that refusal is tested upstream, in kortix-api.
+ * enforcement of that refusal is tested upstream, in zed-api.
  */
 
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
@@ -22,7 +22,7 @@ import { DEMO_PASSWORD, WRAPPER_KEY, wrapperEnv } from './env';
 import {
   APP_SETUP_TIMEOUT_MS,
   type AppInstance,
-  createTestKortix,
+  createTestZed,
   loginUser,
   resetUsersStore,
   startApp,
@@ -47,7 +47,7 @@ interface Recorded {
   body: unknown;
 }
 
-/** A Kortix upstream that serves exactly the approval surface this slice uses. */
+/** A Zed upstream that serves exactly the approval surface this slice uses. */
 function createApprovalUpstream() {
   const requests: Recorded[] = [];
 
@@ -81,9 +81,9 @@ function createApprovalUpstream() {
             project_id: PROJECT_ID,
             account_id: 'acct_test',
             name: 'Approvals project',
-            repo_url: `https://git.kortix.test/${PROJECT_ID}`,
+            repo_url: `https://git.zed.test/${PROJECT_ID}`,
             default_branch: 'main',
-            manifest_path: 'kortix.yaml',
+            manifest_path: 'zed.yaml',
             status: 'active',
             metadata: {},
             created_at: now,
@@ -177,18 +177,18 @@ describe('approvals + wrapper project access', () => {
   let upstream: ReturnType<typeof createApprovalUpstream>;
   let app: AppInstance;
   let email: string;
-  let kortix: ReturnType<typeof createTestKortix>;
+  let zed: ReturnType<typeof createTestZed>;
 
   beforeAll(async () => {
     resetUsersStore();
     upstream = createApprovalUpstream();
-    app = await startApp(wrapperEnv({ KORTIX_UPSTREAM: `${upstream.url}/v1` }));
+    app = await startApp(wrapperEnv({ ZED_UPSTREAM: `${upstream.url}/v1` }));
     email = uniqueEmail('approvals');
-    kortix = createTestKortix(app, await loginUser(app, email, DEMO_PASSWORD));
+    zed = createTestZed(app, await loginUser(app, email, DEMO_PASSWORD));
     // Ownership is recorded on provision, and the policy refuses every
     // `projects/{id}/…` call for an id the caller doesn't own — so nothing
     // below is reachable until this runs.
-    await kortix.projects.provision({ name: 'Approvals project' });
+    await zed.projects.provision({ name: 'Approvals project' });
   }, APP_SETUP_TIMEOUT_MS);
 
   afterAll(async () => {
@@ -201,7 +201,7 @@ describe('approvals + wrapper project access', () => {
     upstream.reset();
 
     const view = sessionApprovalsView(
-      await kortix.session(PROJECT_ID, SESSION_ID).audit(50),
+      await zed.session(PROJECT_ID, SESSION_ID).audit(50),
     );
 
     expect(view.pending).toHaveLength(1);
@@ -227,7 +227,7 @@ describe('approvals + wrapper project access', () => {
   test('approving posts the decision to the approval route for that execution', async () => {
     upstream.reset();
 
-    await kortix.project(PROJECT_ID).approvals.resolve(PENDING_EXECUTION, 'approve');
+    await zed.project(PROJECT_ID).approvals.resolve(PENDING_EXECUTION, 'approve');
 
     expect(upstream.requests).toHaveLength(1);
     const posted = upstream.requests[0]!;
@@ -240,7 +240,7 @@ describe('approvals + wrapper project access', () => {
   test('denying carries the deny decision, not an absent one', async () => {
     upstream.reset();
 
-    await kortix
+    await zed
       .project(PROJECT_ID)
       .approvals.resolve(PENDING_EXECUTION, 'deny');
 
@@ -256,7 +256,7 @@ describe('approvals + wrapper project access', () => {
   test('a decision can never carry a scope that widens it', async () => {
     upstream.reset();
 
-    await kortix.project(PROJECT_ID).approvals.resolve(PENDING_EXECUTION, 'approve');
+    await zed.project(PROJECT_ID).approvals.resolve(PENDING_EXECUTION, 'approve');
 
     const body = upstream.requests[0]!.body as Record<string, unknown>;
     expect(body).toEqual({ decision: 'approve' });
@@ -264,7 +264,7 @@ describe('approvals + wrapper project access', () => {
   });
 
   test('403 APPROVAL_REQUIRES_HUMAN survives the proxy and keeps its own meaning', async () => {
-    const err = await kortix
+    const err = await zed
       .project(PROJECT_ID)
       .approvals.resolve(SELF_APPROVAL_EXECUTION, 'approve')
       .then(
@@ -298,7 +298,7 @@ describe('approvals + wrapper project access', () => {
   test('the session list is forwarded without an attribution filter', async () => {
     upstream.reset();
 
-    await kortix.project(PROJECT_ID).sessions.list();
+    await zed.project(PROJECT_ID).sessions.list();
 
     expect(upstream.requests).toHaveLength(1);
     const listed = new URL(upstream.requests[0]!.path, 'http://upstream.test');

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { accountStateKeys } from './use-account-state';
-import { getBillingTierConfigurations } from '@kortix/sdk';
+import { getBillingTierConfigurations } from '@zed/sdk';
 
 export interface TierConfiguration {
   tier_key: string;

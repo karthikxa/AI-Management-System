@@ -2,8 +2,8 @@ import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { ProjectSession } from '@kortix/sdk';
-import { projectSessionStartSeed } from '@kortix/sdk';
+import type { ProjectSession } from '@zed/sdk';
+import { projectSessionStartSeed } from '@zed/sdk';
 
 // Regression for Better Stack pattern e6d0e044 —
 // `TypeError: Cannot read properties of null (reading 'slice')` thrown on the
@@ -30,7 +30,7 @@ function runningSession(overrides: Partial<ProjectSession> = {}): ProjectSession
     base_ref: 'main',
     sandbox_provider: 'daytona',
     sandbox_id: 'sbx-db-1',
-    sandbox_url: 'https://api.kortix.com/v1/p/ext-1/8000',
+    sandbox_url: 'https://api.zed.com/v1/p/ext-1/8000',
     opencode_session_id: 'oc-1',
     name: null,
     custom_name: null,

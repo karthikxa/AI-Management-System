@@ -25,7 +25,7 @@ import {
   IconInvite,
   IconMore,
   IconUsers,
-} from '@/components/ui/kortix-icons';
+} from '@/components/ui/zed-icons';
 import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/loading';
 import { UserAvatar } from '@/components/ui/user-avatar';
@@ -42,7 +42,7 @@ import {
   type SandboxMember,
   type SandboxMemberRole,
   type SandboxPendingInvite,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { WarningCircleIcon as AlertCircle, UserIcon as User } from '@phosphor-icons/react';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -615,7 +615,7 @@ function InviteDialog({
           <div className="border-border/60 bg-muted/20 flex items-center justify-between gap-2 border-t px-6 py-3.5">
             <p className="text-muted-foreground/70 text-xs">
               {tHardcodedUi.raw(
-                'componentsInstancesInstanceMembersPanel.line601JsxTextIfTheyDonTHaveKortixYetWe',
+                'componentsInstancesInstanceMembersPanel.line601JsxTextIfTheyDonTHaveZedYetWe',
               )}
             </p>
             <div className="flex items-center gap-2">

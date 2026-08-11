@@ -1,6 +1,6 @@
 # compliance-monitoring
 
-Regional, discovery-based SOC 2 monitoring for the Kortix AWS account. This
+Regional, discovery-based SOC 2 monitoring for the Zed AWS account. This
 stack has its own state so it cannot accidentally adopt or mutate the legacy
 `security-baseline` stack.
 
@@ -59,9 +59,9 @@ functions and compare every running instance ID with the alarm dimensions:
 
 ```bash
 aws lambda invoke --region us-west-2 \
-  --function-name kortix-ec2-cpu-alarm-reconciler /tmp/usw2.json
+  --function-name zed-ec2-cpu-alarm-reconciler /tmp/usw2.json
 aws lambda invoke --region eu-west-2 \
-  --function-name kortix-ec2-cpu-alarm-reconciler /tmp/euw2.json
+  --function-name zed-ec2-cpu-alarm-reconciler /tmp/euw2.json
 ```
 
 Both payloads must report `covered_instances == running_instances` and an empty
@@ -76,7 +76,7 @@ invocation must report `covered_alarms == load_balancers * 3` and an empty
 ```bash
 for region in us-west-2 eu-west-2 us-east-2; do
   aws lambda invoke --region "$region" \
-    --function-name kortix-alb-alarm-reconciler \
+    --function-name zed-alb-alarm-reconciler \
     "/tmp/${region}-alb-reconciler.json"
 done
 ```
@@ -89,11 +89,11 @@ default network ACL and default security group contain no allow rules.
 ```bash
 aws wafv2 list-resources-for-web-acl --region us-east-2 \
   --web-acl-arn "$(aws wafv2 list-web-acls --region us-east-2 \
-    --scope REGIONAL --query 'WebACLs[?Name==`kortix-alb-waf`].ARN|[0]' \
+    --scope REGIONAL --query 'WebACLs[?Name==`zed-alb-waf`].ARN|[0]' \
     --output text)" --resource-type APPLICATION_LOAD_BALANCER
 
 aws cloudwatch describe-alarms --region us-east-2 \
-  --alarm-name-prefix kortix-alb-
+  --alarm-name-prefix zed-alb-
 
 aws ec2 describe-flow-logs --region us-east-2 \
   --filter Name=resource-id,Values=vpc-03371e6a60dafbd25
@@ -110,5 +110,5 @@ false positive. Its only finding is the read-only policy in
 `../security-baseline/iam-gha-nacl-audit.tf`. The policy grants
 `ec2:DescribeRegions` and `ec2:DescribeNetworkAcls` on `Resource = "*"` because
 AWS does not support resource-level permissions for either action. The role's
-GitHub OIDC trust is scoped to the `kortix-ai/suna` repository. The policy
+GitHub OIDC trust is scoped to the `zed-ai/suna` repository. The policy
 grants no write action.

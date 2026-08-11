@@ -28,7 +28,7 @@
  * single I/O entry point both call sites use.
  */
 
-import type { AgentGrant } from '@kortix/db';
+import type { AgentGrant } from '@zed/db';
 import {
   DEFAULT_AGENT_SENTINEL,
   type LoadedAgents,
@@ -120,7 +120,7 @@ export function secretGrantEnvDiffers(
 }
 
 /**
- * The same collapse for a grant's `connectors` / `kortixCli` lists.
+ * The same collapse for a grant's `connectors` / `zedCli` lists.
  *
  * Deliberately NOT case-folded, unlike `grantEnvKey`. Each list is compared by
  * its own gate with an exact `includes()` (`agentMayUseConnector`,
@@ -135,7 +135,7 @@ function grantListKey(list: string[] | 'all' | undefined): string {
 
 /**
  * True when running `requestedAgent` instead of `sessionAgent` would change ANY
- * part of the authorization grant — secrets, connectors, or Kortix CLI actions.
+ * part of the authorization grant — secrets, connectors, or Zed CLI actions.
  *
  * This is the RE-MINT predicate, not a refusal. A session's `agentGrant` is
  * written onto its token row ONCE, at mint (`account_tokens.agent_grant`), from
@@ -170,7 +170,7 @@ export function agentGrantDiffers(
   return (
     secretGrantEnvDiffers(sessionGrant?.env, requestedGrant?.env) ||
     grantListKey(sessionGrant?.connectors) !== grantListKey(requestedGrant?.connectors) ||
-    grantListKey(sessionGrant?.kortixCli) !== grantListKey(requestedGrant?.kortixCli)
+    grantListKey(sessionGrant?.zedCli) !== grantListKey(requestedGrant?.zedCli)
   );
 }
 
@@ -237,7 +237,7 @@ export async function resolveSessionSecretGrant(
 
 /**
  * The FULL grant of the agent a prompt will actually run — secrets, connectors
- * and Kortix CLI actions.
+ * and Zed CLI actions.
  *
  * Same resolution, same failure modes, same refusal as
  * `resolveSessionSecretGrant` (which is this function's `env` leg): callers get
@@ -272,7 +272,7 @@ async function loadGrantForRunningAgent(
         projectId: input.projectId,
         repoUrl: input.repoUrl,
         defaultBranch: input.defaultBranch,
-        manifestPath: input.manifestPath ?? 'kortix.yaml',
+        manifestPath: input.manifestPath ?? 'zed.yaml',
         gitAuthToken: null,
       },
       { rethrowReadErrors: true, forceRefresh: input.forceRefresh },

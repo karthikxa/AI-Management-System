@@ -1,13 +1,13 @@
 /**
  * TerminalPage — Full terminal emulator for the mobile app.
  *
- * Uses Kortix's own PTY implementation (same protocol shape as the frontend
- * PtyTerminal, both now backed by `/kortix/pty` in the sandbox daemon —
+ * Uses Zed's own PTY implementation (same protocol shape as the frontend
+ * PtyTerminal, both now backed by `/zed/pty` in the sandbox daemon —
  * independent of whatever agent runtime is running):
- * 1. POST {sandboxUrl}/kortix/pty — create a new PTY session
- * 2. WebSocket at wss://{sandboxUrl}/kortix/pty/{ptyId}/connect?token={jwt} — raw data
- * 3. PATCH {sandboxUrl}/kortix/pty/{ptyId} — resize notifications
- * 4. DELETE {sandboxUrl}/kortix/pty/{ptyId} — cleanup on unmount
+ * 1. POST {sandboxUrl}/zed/pty — create a new PTY session
+ * 2. WebSocket at wss://{sandboxUrl}/zed/pty/{ptyId}/connect?token={jwt} — raw data
+ * 3. PATCH {sandboxUrl}/zed/pty/{ptyId} — resize notifications
+ * 4. DELETE {sandboxUrl}/zed/pty/{ptyId} — cleanup on unmount
  *
  * The WebView uses a small local terminal surface. It intentionally avoids
  * third-party scripts because the WebSocket URL contains a short-lived bearer
@@ -61,7 +61,7 @@ interface PtyInfo {
 
 async function createPty(sandboxUrl: string): Promise<PtyInfo> {
   const token = await getAuthToken();
-  const res = await fetch(`${sandboxUrl}/kortix/pty`, {
+  const res = await fetch(`${sandboxUrl}/zed/pty`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ async function createPty(sandboxUrl: string): Promise<PtyInfo> {
 
 async function removePty(sandboxUrl: string, ptyId: string): Promise<void> {
   const token = await getAuthToken();
-  await fetch(`${sandboxUrl}/kortix/pty/${ptyId}`, {
+  await fetch(`${sandboxUrl}/zed/pty/${ptyId}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ async function resizePty(
   rows: number,
 ): Promise<void> {
   const token = await getAuthToken();
-  await fetch(`${sandboxUrl}/kortix/pty/${ptyId}`, {
+  await fetch(`${sandboxUrl}/zed/pty/${ptyId}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ function getPtyWsUrl(sandboxUrl: string, ptyId: string, token: string): string {
   } catch {
     wsUrl = sandboxUrl.replace('https://', 'wss://').replace('http://', 'ws://');
   }
-  return `${wsUrl}/kortix/pty/${ptyId}/connect?token=${encodeURIComponent(token)}`;
+  return `${wsUrl}/zed/pty/${ptyId}/connect?token=${encodeURIComponent(token)}`;
 }
 
 // ─── Terminal HTML builder ───────────────────────────────────────────────────

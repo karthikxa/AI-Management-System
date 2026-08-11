@@ -3,7 +3,7 @@ import type { SlotCreds } from './supabase';
 
 export interface ApiLaunchOpts {
   /** Public origin cloud sandboxes call back to (the cloudflared tunnel URL). */
-  kortixUrl?: string;
+  zedUrl?: string;
   /** `whsec_…` from `stripe listen`. When set, billing is turned ON for this
    *  worktree (STRIPE_SECRET_KEY must come from the decrypted local .env). */
   stripeWebhookSecret?: string;
@@ -12,23 +12,23 @@ export interface ApiLaunchOpts {
 export function apiLaunchEnv(ports: Ports, c: SlotCreds, opts: ApiLaunchOpts = {}): Record<string, string> {
   const billing = !!opts.stripeWebhookSecret;
   return {
-    ENV_MODE: 'local', KORTIX_LOCAL_DEV: '1',
+    ENV_MODE: 'local', ZED_LOCAL_DEV: '1',
     PORT: String(ports.api),
-    KORTIX_APPS_LOCAL: 'true',
-    KORTIX_APPS_LOCAL_PORT: String(ports.api),
-    KORTIX_URL: opts.kortixUrl || `http://localhost:${ports.api}`,
+    ZED_APPS_LOCAL: 'true',
+    ZED_APPS_LOCAL_PORT: String(ports.api),
+    ZED_URL: opts.zedUrl || `http://localhost:${ports.api}`,
     NEXT_PUBLIC_BACKEND_URL: `http://localhost:${ports.api}/v1`,
-    KORTIX_PUBLIC_BACKEND_URL: `http://localhost:${ports.api}/v1`,
+    ZED_PUBLIC_BACKEND_URL: `http://localhost:${ports.api}/v1`,
     BACKEND_URL: `http://localhost:${ports.api}/v1`,
     FRONTEND_URL: `http://localhost:${ports.web}`,
-    KORTIX_SKIP_ENSURE_SCHEMA: '1',
+    ZED_SKIP_ENSURE_SCHEMA: '1',
     DATABASE_URL: c.dbUrl,
     SUPABASE_URL: c.supabaseUrl,
     ...(c.serviceRoleKey ? { SUPABASE_SERVICE_ROLE_KEY: c.serviceRoleKey } : {}),
     SCHEDULER_ENABLED: 'false',
     // Billing off by default; --stripe flips it on and injects the webhook
     // secret. STRIPE_SECRET_KEY (test mode) is inherited from the local .env.
-    KORTIX_BILLING_INTERNAL_ENABLED: billing ? 'true' : 'false',
+    ZED_BILLING_INTERNAL_ENABLED: billing ? 'true' : 'false',
     ...(billing ? { STRIPE_WEBHOOK_SECRET: opts.stripeWebhookSecret! } : {}),
     CORS_ALLOWED_ORIGINS: `http://localhost:${ports.web}`,
     // Route sandbox model calls through the local standalone gateway. Proxy mode
@@ -39,7 +39,7 @@ export function apiLaunchEnv(ports: Ports, c: SlotCreds, opts: ApiLaunchOpts = {
     LLM_GATEWAY_BASE_URL: '',
     LLM_GATEWAY_PROXY_PORT: String(ports.gateway),
     GATEWAY_INTERNAL_TOKEN: DEV_GATEWAY_INTERNAL_TOKEN,
-    // Managed ("kortix/*") models route to AWS Bedrock; the API builds the
+    // Managed ("zed/*") models route to AWS Bedrock; the API builds the
     // descriptor with these and ships it to the standalone gateway. Region
     // always set; the API key passes through from the parent shell when present
     // (else it comes from the dotenvx-decrypted apps/api/.env).
@@ -55,7 +55,7 @@ export function apiLaunchEnv(ports: Ports, c: SlotCreds, opts: ApiLaunchOpts = {
 export function gatewayLaunchEnv(ports: Ports): Record<string, string> {
   return {
     PORT: String(ports.gateway),
-    KORTIX_API_URL: `http://localhost:${ports.api}`,
+    ZED_API_URL: `http://localhost:${ports.api}`,
     GATEWAY_INTERNAL_TOKEN: DEV_GATEWAY_INTERNAL_TOKEN,
     GATEWAY_API_TOKEN: DEV_GATEWAY_INTERNAL_TOKEN,
   };
@@ -64,9 +64,9 @@ export function gatewayLaunchEnv(ports: Ports): Record<string, string> {
 export function webLaunchEnv(ports: Ports, c: SlotCreds, opts: { billing?: boolean } = {}): Record<string, string> {
   return {
     WEB_PORT: String(ports.web),
-    KORTIX_API_PROXY_TARGET: `http://localhost:${ports.api}`,
+    ZED_API_PROXY_TARGET: `http://localhost:${ports.api}`,
     NEXT_PUBLIC_BACKEND_URL: `http://localhost:${ports.api}/v1`,
-    KORTIX_PUBLIC_BACKEND_URL: `http://localhost:${ports.api}/v1`,
+    ZED_PUBLIC_BACKEND_URL: `http://localhost:${ports.api}/v1`,
     BACKEND_URL: `http://localhost:${ports.api}/v1`,
     SUPABASE_URL: c.supabaseUrl,
     NEXT_PUBLIC_SUPABASE_URL: c.supabaseUrl,

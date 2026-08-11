@@ -1,4 +1,4 @@
-import { chalkColors } from '@kortix/shared';
+import { chalkColors } from '@zed/shared';
 
 interface DriveFolderIconProps {
   /** Folder name — drives a stable per-folder color via chalkColors. */

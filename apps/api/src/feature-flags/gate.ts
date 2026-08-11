@@ -9,10 +9,10 @@
  * Every gated route rejects identically: 403 with the machine-readable
  * `feature_disabled` code and the flag key. Clients (SDK error surface, CLI
  * message, web gate screens) key off `code`, never off prose.
- * Wire shape: @kortix/api-contract FeatureDisabledErrorSchema.
+ * Wire shape: @zed/api-contract FeatureDisabledErrorSchema.
  */
 import type { Context } from 'hono';
-import type { FeatureFlagKey } from '@kortix/api-contract';
+import type { FeatureFlagKey } from '@zed/api-contract';
 import { featureFlagDef, resolveFeatureFlag } from './registry';
 
 export const FEATURE_DISABLED_CODE = 'feature_disabled' as const;

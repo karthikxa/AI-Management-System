@@ -12,8 +12,8 @@ import {
   removeArrayBlock,
   setTableScalar,
 } from '../manifest-edit.ts';
-import { setConnectorSecretBinding } from '@kortix/sdk';
-import { withKortixScope } from '../api/sdk.ts';
+import { setConnectorSecretBinding } from '@zed/sdk';
+import { withZedScope } from '../api/sdk.ts';
 import { C, help, pad, status } from '../style.ts';
 import { runConnector } from './connector-gateway.ts';
 
@@ -59,16 +59,16 @@ interface Connection {
 
 const PROVIDERS: readonly Provider[] = ['pipedream', 'mcp', 'openapi', 'postman', 'graphql', 'http'];
 
-const HELP = help`Usage: kortix connectors <subcommand> [options]
+const HELP = help`Usage: zed connectors <subcommand> [options]
 
 Manage the project's connectors — the external systems agents call as tools
 (Pipedream apps, MCP servers, OpenAPI/Postman/GraphQL/HTTP endpoints). Mirrors the
 dashboard's Customize → Connectors. Connectors are project-wide visible; the
-only access gate is which AGENTS may call one (\`kortix agents scope\` /
-\`[[agents]].connectors\` in kortix.yaml) — see \`kortix grants\`.
+only access gate is which AGENTS may call one (\`zed agents scope\` /
+\`[[agents]].connectors\` in zed.yaml) — see \`zed grants\`.
 
-Config lives in kortix.yaml (the source of truth): \`add\`/\`rm\`/\`policy set\`
-edit your LOCAL file — run \`kortix ship\` to apply, then \`sync\` to reconcile.
+Config lives in zed.yaml (the source of truth): \`add\`/\`rm\`/\`policy set\`
+edit your LOCAL file — run \`zed ship\` to apply, then \`sync\` to reconcile.
 Only credentials, OAuth, and reads talk to the cloud.
 
 Subcommands:
@@ -77,15 +77,15 @@ Subcommands:
   discover <intent> [--json]        Search session tools by intent.
   call <slug> <action> [json]       Invoke one connector action.
   connections <subcommand>          Manage configured connector connections.
-  add <slug> --provider <p> [...]   Add a [[connectors]] block to kortix.yaml.
+  add <slug> --provider <p> [...]   Add a [[connectors]] block to zed.yaml.
                                     Add --apply to skip ship/CR and apply it
                                     instantly on the cloud project (commit to
                                     main + sync, like the dashboard).
-  rm <slug> [--apply]               Remove a [[connectors]] block from kortix.yaml
+  rm <slug> [--apply]               Remove a [[connectors]] block from zed.yaml
                                     (or --apply to remove on the cloud now).
   rename <slug> <name…>             Set a connector's display name (applies now).
   mode <slug> shared                 Set the connection mode (applies now + re-syncs; shared is the only mode).
-  sync                              Reconcile the catalog from the shipped kortix.yaml.
+  sync                              Reconcile the catalog from the shipped zed.yaml.
   credential <slug> [value]         Set a connector's credential (prompts if
                                     no value; reads stdin with \`-\`).
   secret <slug> <identifier>        Use a project secret as this connector's
@@ -117,11 +117,11 @@ Add options (provider-specific):
 
 Global:
   --project <id>     Operate on this project id (default: linked).
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   -h, --help         Show this help.
 `;
 
-const CONNECTIONS_HELP = help`Usage: kortix connectors connections <subcommand> [options]
+const CONNECTIONS_HELP = help`Usage: zed connectors connections <subcommand> [options]
 
 Manage connections — configured authorizations for project connectors.
 
@@ -148,7 +148,7 @@ Pipedream options:
 
 Global:
   --project <id>       Operate on this project id (default: linked).
-  --host <name>        Operate against a non-default Kortix host.
+  --host <name>        Operate against a non-default Zed host.
   --json               Emit the API response as JSON.
   -h, --help           Show this help.
 `;
@@ -220,11 +220,11 @@ export async function runConnectors(argv: string[]): Promise<number> {
   }
   const positional = rest.filter((a) => !a.startsWith('-'));
 
-  // ── Config mutations edit the LOCAL kortix.yaml (the source of truth). No
-  //    cloud call, no auth — you `kortix ship` to apply. Only credentials,
+  // ── Config mutations edit the LOCAL zed.yaml (the source of truth). No
+  //    cloud call, no auth — you `zed ship` to apply. Only credentials,
   //    OAuth, reconcile + reads talk to the cloud. ───────────────────
   //    `--apply` skips the local-edit + ship/CR flow and applies the change
-  //    instantly on the cloud project (commit to kortix.yaml on main + sync,
+  //    instantly on the cloud project (commit to zed.yaml on main + sync,
   //    exactly like the dashboard) — handled in the switch below.
   if ((sub === 'add' || sub === 'create') && !applyRemote) return connectorAddLocal(positional[0], f);
   if ((sub === 'rm' || sub === 'remove' || sub === 'delete') && !applyRemote) return connectorRmLocal(positional[0]);
@@ -250,7 +250,7 @@ export async function runConnectors(argv: string[]): Promise<number> {
     }
     switch (sub) {
       // `--apply` paths: mutate the cloud project directly (commit to
-      // kortix.yaml on main + sync, like the dashboard) — no local edit, no CR.
+      // zed.yaml on main + sync, like the dashboard) — no local edit, no CR.
       case 'add':
       case 'create': {
         const slug = positional[0];
@@ -276,11 +276,11 @@ export async function runConnectors(argv: string[]): Promise<number> {
         }>(`${ex}/connectors`, draft);
         if (json) { emitJson(resp); return 0; }
         process.stdout.write(
-          `${status.ok(`${C.bold}${slug}${C.reset} live on the project`)} ${C.dim}(committed to kortix.yaml on main + synced)${C.reset}\n` +
+          `${status.ok(`${C.bold}${slug}${C.reset} live on the project`)} ${C.dim}(committed to zed.yaml on main + synced)${C.reset}\n` +
             (resp.authDiscovery?.recommended?.type
               ? `  ${C.dim}Authentication: ${C.reset}${resp.authDiscovery.recommended.type}${C.dim} (auto-detected; set the credential next)${C.reset}\n`
               : '') +
-            `  ${C.dim}Next: ${C.reset}${C.cyan}kortix connectors credential ${slug}${C.reset}\n`,
+            `  ${C.dim}Next: ${C.reset}${C.cyan}zed connectors credential ${slug}${C.reset}\n`,
         );
         return 0;
       }
@@ -290,7 +290,7 @@ export async function runConnectors(argv: string[]): Promise<number> {
         const slug = positional[0];
         if (!slug) return missing('a connector slug');
         await ctx.client.delete(`${ex}/connectors/${encodeURIComponent(slug)}`);
-        process.stdout.write(`${status.ok(`Removed ${C.bold}${slug}${C.reset}`)} ${C.dim}(kortix.yaml on main + catalog)${C.reset}\n`);
+        process.stdout.write(`${status.ok(`Removed ${C.bold}${slug}${C.reset}`)} ${C.dim}(zed.yaml on main + catalog)${C.reset}\n`);
         return 0;
       }
       case 'ls':
@@ -302,7 +302,7 @@ export async function runConnectors(argv: string[]): Promise<number> {
         }
         if (connectors.length === 0) {
           process.stdout.write(
-            `  ${C.dim}No connectors. Add one: ${C.reset}${C.cyan}kortix connectors add <slug> --provider mcp --url …${C.reset}\n`,
+            `  ${C.dim}No connectors. Add one: ${C.reset}${C.cyan}zed connectors add <slug> --provider mcp --url …${C.reset}\n`,
           );
           return 0;
         }
@@ -338,7 +338,7 @@ export async function runConnectors(argv: string[]): Promise<number> {
           const message =
             c.provider === 'http' && !c.actions.length
               ? 'No tools are available. Add --spec to define HTTP actions.'
-              : 'No tools materialized yet — run `kortix connectors sync`.';
+              : 'No tools materialized yet — run `zed connectors sync`.';
           process.stdout.write(`  ${C.dim}${message}${C.reset}\n\n`);
           return 0;
         }
@@ -379,7 +379,7 @@ export async function runConnectors(argv: string[]): Promise<number> {
       case 'secret': {
         const input = connectorSecretBindingInput(positional, clearSecretBinding);
         if ('error' in input) return missing(input.error);
-        await withKortixScope(ctx.auth, () =>
+        await withZedScope(ctx.auth, () =>
           setConnectorSecretBinding(ctx.projectId, input.slug, input.secretIdentifier),
         );
         process.stdout.write(
@@ -747,7 +747,7 @@ function connectionActionPastTense(action: 'revoke' | 'activate' | 'default'): s
   return 'Set as default';
 }
 
-// ── Local kortix.yaml config edits (source of truth; no cloud round-trip) ────
+// ── Local zed.yaml config edits (source of truth; no cloud round-trip) ────
 
 function connectorAddLocal(slug: string | undefined, f: Record<string, string | undefined>): number {
   if (!slug) return missing('a connector slug');
@@ -758,7 +758,7 @@ function connectorAddLocal(slug: string | undefined, f: Record<string, string | 
   }
   try {
     if (arrayEntryExists('connectors', 'slug', slug)) {
-      process.stderr.write(`${status.err(`A connector "${slug}" already exists in kortix.yaml.`)}\n`);
+      process.stderr.write(`${status.err(`A connector "${slug}" already exists in zed.yaml.`)}\n`);
       return 1;
     }
     // Insertion order = field order in the block.
@@ -775,9 +775,9 @@ function connectorAddLocal(slug: string | undefined, f: Record<string, string | 
     if (f.authType) fields.auth = { type: f.authType };
     appendArrayBlock('connectors', fields);
     process.stdout.write(
-      `${status.ok(`Added [[connectors]] ${C.bold}${slug}${C.reset} to kortix.yaml`)}\n` +
-        `  ${C.dim}Apply it with ${C.reset}${C.cyan}kortix ship${C.reset}${C.dim}; authentication will be detected from the source unless --auth-type overrides it.${C.reset}\n` +
-        `  ${C.dim}Then set the credential with ${C.reset}${C.cyan}kortix connectors credential ${slug}${C.reset}\n`,
+      `${status.ok(`Added [[connectors]] ${C.bold}${slug}${C.reset} to zed.yaml`)}\n` +
+        `  ${C.dim}Apply it with ${C.reset}${C.cyan}zed ship${C.reset}${C.dim}; authentication will be detected from the source unless --auth-type overrides it.${C.reset}\n` +
+        `  ${C.dim}Then set the credential with ${C.reset}${C.cyan}zed connectors credential ${slug}${C.reset}\n`,
     );
     return 0;
   } catch (err) {
@@ -791,11 +791,11 @@ function connectorRmLocal(slug: string | undefined): number {
   try {
     const removed = removeArrayBlock('connectors', 'slug', slug);
     if (!removed) {
-      process.stderr.write(`${status.err(`No [[connectors]] "${slug}" in kortix.yaml.`)}\n`);
+      process.stderr.write(`${status.err(`No [[connectors]] "${slug}" in zed.yaml.`)}\n`);
       return 1;
     }
     process.stdout.write(
-      `${status.ok(`Removed ${C.bold}${slug}${C.reset} from kortix.yaml`)} ${C.dim}— \`kortix ship\` to apply.${C.reset}\n`,
+      `${status.ok(`Removed ${C.bold}${slug}${C.reset} from zed.yaml`)} ${C.dim}— \`zed ship\` to apply.${C.reset}\n`,
     );
     return 0;
   } catch (err) {
@@ -809,7 +809,7 @@ function policySetLocal(mode: string | undefined): number {
   try {
     setTableScalar('policy', 'default_mode', mode);
     process.stdout.write(
-      `${status.ok(`[policy] default_mode → ${mode}`)} ${C.dim}— \`kortix ship\` to apply.${C.reset}\n`,
+      `${status.ok(`[policy] default_mode → ${mode}`)} ${C.dim}— \`zed ship\` to apply.${C.reset}\n`,
     );
     return 0;
   } catch (err) {

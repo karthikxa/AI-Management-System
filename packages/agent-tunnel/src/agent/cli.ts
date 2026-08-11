@@ -108,7 +108,7 @@ async function printStartup(config: { tunnelId: string; apiUrl: string }, capabi
     .map(name => `${c.green}●${c.reset} ${c.white}${name}${c.reset}`)
     .join('   ');
 
-  const brand = 'created by kortix';
+  const brand = 'created by zed';
   const brandFill = W - brand.length - 3;
 
   console.log('');
@@ -121,7 +121,7 @@ async function printStartup(config: { tunnelId: string; apiUrl: string }, capabi
   row(`   ${c.dim}relay${c.reset}     ${c.white}${apiDisplay}${c.reset}`);
   row(`   ${c.dim}machine${c.reset}   ${c.white}${machineDisplay}${c.reset} ${c.dim}(${plat})${c.reset}`);
   blank();
-  console.log(`  ${c.gray}╰${'─'.repeat(brandFill)} ${c.dim}created by ${c.cyan}kortix${c.reset} ${c.gray}─╯${c.reset}`);
+  console.log(`  ${c.gray}╰${'─'.repeat(brandFill)} ${c.dim}created by ${c.cyan}zed${c.reset} ${c.gray}─╯${c.reset}`);
   console.log('');
 }
 
@@ -186,7 +186,7 @@ const CONFIG_DIR = join(homedir(), '.agent-tunnel');
 const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
 
 function isSetupTunnelToken(token: string): boolean {
-  return token.startsWith('kortix_tnl_') || token.startsWith('tnl_');
+  return token.startsWith('zed_tnl_') || token.startsWith('tnl_');
 }
 
 function isTruthyFlag(value: string | undefined): boolean {
@@ -241,7 +241,7 @@ async function chooseConnectMode(flags: Record<string, string>): Promise<Connect
 
   console.log('');
   console.log(`  ${c.yellow}!${c.reset} ${c.bold}Security note${c.reset}`);
-  console.log(`  ${c.dim}Always-online keeps this computer reachable by approved Kortix agents after this terminal closes.${c.reset}`);
+  console.log(`  ${c.dim}Always-online keeps this computer reachable by approved Zed agents after this terminal closes.${c.reset}`);
   console.log(`  ${c.dim}Keep-awake is separate: it also asks the OS to avoid sleep while the tunnel service runs.${c.reset}`);
   console.log('');
 
@@ -547,7 +547,7 @@ function showHelp(): void {
   console.log('');
   console.log(`  ${c.dim}Secure bridge between AI agents & local machines${c.reset}`);
   console.log('');
-  console.log(`  ${c.bold}Usage${c.reset}   ${c.dim}npx --yes @kortix/agent-tunnel@latest <command> [options]${c.reset}`);
+  console.log(`  ${c.bold}Usage${c.reset}   ${c.dim}npx --yes @zed/agent-tunnel@latest <command> [options]${c.reset}`);
   console.log('');
   console.log(`${c.gray}  ── Commands ────────────────────────────────────────${c.reset}`);
   console.log(`  ${c.cyan}connect${c.reset}       Connect via device auth; interactively choose foreground/background`);
@@ -571,7 +571,7 @@ function showHelp(): void {
   console.log(`  ${c.white}--keep-awake${c.reset}         With service: also ask OS to avoid sleep while tunnel runs`);
   console.log('');
   console.log(`  ${c.dim}Config: ~/.agent-tunnel/config.json${c.reset}`);
-  console.log(`  ${c.dim}powered by ${c.cyan}kortix${c.reset}`);
+  console.log(`  ${c.dim}powered by ${c.cyan}zed${c.reset}`);
   console.log('');
 }
 

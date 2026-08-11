@@ -10,8 +10,8 @@ async function runCli(args: string[]) {
     cwd: CLI_ROOT,
     env: {
       ...process.env,
-      KORTIX_NO_UPDATE_CHECK: '1',
-      KORTIX_DISABLE_SANDBOX_ENV_FILE: '1',
+      ZED_NO_UPDATE_CHECK: '1',
+      ZED_DISABLE_SANDBOX_ENV_FILE: '1',
       NO_COLOR: '1',
       FORCE_COLOR: '0',
     },

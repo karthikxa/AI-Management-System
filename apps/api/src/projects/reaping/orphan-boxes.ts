@@ -22,7 +22,7 @@
  */
 
 import { and, gt, inArray, isNotNull, or } from 'drizzle-orm';
-import { appRuntimes, sessionSandboxes } from '@kortix/db';
+import { appRuntimes, sessionSandboxes } from '@zed/db';
 import { config } from '../../config';
 import { db } from '../../shared/db';
 import { getProvider, type ProviderName } from '../../platform/providers';
@@ -42,7 +42,7 @@ export interface OrphanReapResult {
 
 export async function reapOrphanProviderBoxes(now = new Date()): Promise<OrphanReapResult> {
   const zero: OrphanReapResult = { listed: 0, orphans: 0, stopped: 0, errors: 0 };
-  if (process.env.KORTIX_ORPHAN_BOX_REAP_ENABLED === 'false') return zero;
+  if (process.env.ZED_ORPHAN_BOX_REAP_ENABLED === 'false') return zero;
   const boxes: Array<{
     provider: ProviderName;
     externalId: string;

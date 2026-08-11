@@ -10,7 +10,7 @@
  */
 
 /**
- * Hero variants. The product pitch — what Kortix IS — not a use-case pitch.
+ * Hero variants. The product pitch — what Zed IS — not a use-case pitch.
  * Anchored on the README's opening: "The open-source AI Management System".
  *
  * Append `?hero=1` (or 2, 3, 4) to the URL to preview an alternative; the
@@ -75,7 +75,7 @@ export const trust = {
     'them with it is the work.',
   ],
   sub: 'Every session runs on its own isolated machine, with credentials it never sees, and lands nothing without a person approving it.',
-  ctaLabel: 'How Kortix is secured',
+  ctaLabel: 'How Zed is secured',
   ctaHref: '/enterprise',
   /** Exactly three. No HIPAA, no ISO — we do not hold them. */
   badges: [
@@ -87,7 +87,7 @@ export const trust = {
     {
       id: 'approve',
       title: 'Merging is a separate power',
-      body: 'Agents open change requests. Merge is default-deny for an agent and granted explicitly in kortix.yaml — so an agent cannot widen its own reach without a change someone else approves.',
+      body: 'Agents open change requests. Merge is default-deny for an agent and granted explicitly in zed.yaml — so an agent cannot widen its own reach without a change someone else approves.',
     },
     {
       id: 'keys',
@@ -97,10 +97,10 @@ export const trust = {
     {
       id: 'deploy',
       title: 'Yours, down to the metal',
-      // ACCURACY: never restore "air-gapped". `kortix self-host start` pulls
+      // ACCURACY: never restore "air-gapped". `zed self-host start` pulls
       // images from docker.io and reaches a sandbox provider over egress, so a
       // fully disconnected install is not a shipped capability.
-      body: 'Kortix Cloud, your own VPC, or your own on-prem network. It is open source, so you can read every line of what you are trusting.',
+      body: 'Zed Cloud, your own VPC, or your own on-prem network. It is open source, so you can read every line of what you are trusting.',
     },
   ],
 } as const;
@@ -123,7 +123,7 @@ export type SheetRow = {
 
 /**
  * The work product a card shows. It is rendered as markup, never as an image of
- * a screen — a card must never imply a Kortix UI that does not exist. What is
+ * a screen — a card must never imply a Zed UI that does not exist. What is
  * mocked is the ARTIFACT (a sheet, a diff, an outreach draft), which is a sample
  * of the agent's output, not a picture of the product. Each `kind` is formatted
  * like the file type it claims to be, not as prose in a box.
@@ -222,8 +222,8 @@ export type UseCase = {
  *  - CHANNELS ARE A CLOSED ENUM. Slack is live. Do not name another.
  *  - COUNTERPARTIES ARE FICTIONAL: Acme, Northwind, Globex, Initech, Umbrella,
  *    Vandelay. People are numbers, never names.
- *  - NO CLAIM ABOUT KORTIX ITSELF. Numbers inside an artifact are a fictional
- *    company's sample data and are fine. A number that reads as a Kortix
+ *  - NO CLAIM ABOUT ZED ITSELF. Numbers inside an artifact are a fictional
+ *    company's sample data and are fine. A number that reads as a Zed
  *    metric, ranking or certification is not. That is why the SEO artifact
  *    ranks a fictional company's pages, never ours.
  *  - NEVER A FAKE SCREENSHOT. Artifacts are markup. Do not swap one for an
@@ -400,7 +400,7 @@ export const useCases = {
 } as const;
 
 export type StackLayerId =
-  'models' | 'harness' | 'computer' | 'context' | 'control' | 'security' | 'kortix';
+  'models' | 'harness' | 'computer' | 'context' | 'control' | 'security' | 'zed';
 
 /**
  * Every icon module `stack.layers[].logos` is allowed to name. Narrowed (not
@@ -432,12 +432,12 @@ export type StackLayer = {
 export const stack = {
   eyebrow: 'One platform',
   title: 'Every layer an AI workforce needs — unified.',
-  sub: 'Most tools hand you one layer and rent you the rest. Kortix is all of them, open source, running wherever you put it.',
+  sub: 'Most tools hand you one layer and rent you the rest. Zed is all of them, open source, running wherever you put it.',
   layers: [
     {
       id: 'models',
       name: 'Large Language Models',
-      body: 'Run any frontier model and switch between them as they improve. Bring your own API keys, the subscription you already pay for, or your own models running on your hardware. Kortix stays model-agnostic, so every agent uses the best model for the job.',
+      body: 'Run any frontier model and switch between them as they improve. Bring your own API keys, the subscription you already pay for, or your own models running on your hardware. Zed stays model-agnostic, so every agent uses the best model for the job.',
       logos: ['Claude', 'OpenAI', 'Gemini'],
       chips: ['Bedrock', 'OpenRouter', 'Your own, on-prem'],
     },
@@ -472,9 +472,9 @@ export const stack = {
       chips: ['SSO', 'RBAC', 'Secrets vault', 'Audit trail', 'SOC 2 Type II in progress'],
     },
     {
-      id: 'kortix',
-      name: 'Kortix',
-      body: 'Every layer above brought together in one platform your team owns, deploys and scales end to end — from the model to the finished work. That’s Kortix.',
+      id: 'zed',
+      name: 'Zed',
+      body: 'Every layer above brought together in one platform your team owns, deploys and scales end to end — from the model to the finished work. That’s Zed.',
       chips: ['Open source', 'Self-hostable', 'Yours down to the metal'],
     },
   ] satisfies readonly StackLayer[],

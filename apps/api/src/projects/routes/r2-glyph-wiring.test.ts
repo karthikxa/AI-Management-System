@@ -60,7 +60,7 @@ function fakeProjectRow(over: Record<string, unknown> = {}) {
     name: 'glyph-wiring-test',
     repoUrl: 'https://github.com/acme/glyph-wiring-test.git',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     status: 'active',
     metadata: {},
     lastOpenedAt: null,

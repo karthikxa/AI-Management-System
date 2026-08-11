@@ -1,6 +1,6 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
 
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import {
   type GitHubRepositoriesResponse,
   type GitHubRepositoryBranchesResponse,
@@ -125,7 +125,7 @@ test('lists only linkable GitHub App installations through the authenticated API
       account_id: 'account 1',
       github_login: 'markokraemer',
       configured: true,
-      install_url: 'https://github.com/apps/kortix/installations/new?state=signed',
+      install_url: 'https://github.com/apps/zed/installations/new?state=signed',
       installations: [
         {
           installation_id: '84',
@@ -187,7 +187,7 @@ test('links a selected verified GitHub App installation without callback state',
   });
 });
 
-configureKortix({
+configureZed({
   backendUrl: 'http://test.local/v1',
   getToken: async () => 'token',
 });
@@ -212,7 +212,7 @@ test('passes bounded repository search options through the typed GitHub surface'
     return Response.json({
       account_id: 'account 1',
       installation_id: 'pat',
-      owner_login: 'managed-kortix',
+      owner_login: 'managed-zed',
       repositories: [],
     } satisfies GitHubRepositoriesResponse);
   }) as unknown as typeof fetch;

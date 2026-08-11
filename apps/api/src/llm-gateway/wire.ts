@@ -1,5 +1,5 @@
 import { type OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { createGateway } from '@kortix/llm-gateway';
+import { createGateway } from '@zed/llm-gateway';
 import { config } from '../config';
 import { auth, errors, json, makeOpenApiApp } from '../openapi';
 import { createInProcessGatewayHooks } from './hooks';
@@ -30,9 +30,9 @@ import { createInternalGatewayRoutes } from './internal-routes';
 const GATEWAY_INFERENCE_TAG = 'gateway-inference';
 
 const AUTH_DESCRIPTION =
-  'Bearer token: a project gateway key (`kortix_gw_…`, created via ' +
-  'POST /v1/projects/{projectId}/gateway/keys) or a Kortix account token ' +
-  '(PAT `kortix_pat_…`, API key, or sandbox key). Unlike most of the API, the ' +
+  'Bearer token: a project gateway key (`zed_gw_…`, created via ' +
+  'POST /v1/projects/{projectId}/gateway/keys) or a Zed account token ' +
+  '(PAT `zed_pat_…`, API key, or sandbox key). Unlike most of the API, the ' +
   'raw Supabase user JWT is NOT accepted here — mint a gateway key or PAT first.';
 
 const ChatMessageSchema = z
@@ -129,7 +129,7 @@ function chatCompletionsRoute(path: string) {
     path,
     tags: [GATEWAY_INFERENCE_TAG],
     summary: `POST ${fullPath}`,
-    description: `OpenAI-compatible chat completions, proxied through the Kortix LLM gateway (model routing/failover, budgets, usage billing, and request tracing all apply). The body is forwarded close to verbatim to the resolved upstream provider.\n\nAuth: ${AUTH_DESCRIPTION}\n\n\`\`\`\ncurl -sS $KORTIX_API_URL${fullPath} \\\n  -H "Authorization: Bearer $KORTIX_GATEWAY_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"model":"claude-sonnet-4-5","messages":[{"role":"user","content":"Say hello in one word."}]}\'\n\`\`\``,
+    description: `OpenAI-compatible chat completions, proxied through the Zed LLM gateway (model routing/failover, budgets, usage billing, and request tracing all apply). The body is forwarded close to verbatim to the resolved upstream provider.\n\nAuth: ${AUTH_DESCRIPTION}\n\n\`\`\`\ncurl -sS $ZED_API_URL${fullPath} \\\n  -H "Authorization: Bearer $ZED_GATEWAY_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"model":"claude-sonnet-4-5","messages":[{"role":"user","content":"Say hello in one word."}]}\'\n\`\`\``,
     ...auth,
     request: {
       body: {
@@ -225,7 +225,7 @@ function messagesRoute(path: string) {
     path,
     tags: [GATEWAY_INFERENCE_TAG],
     summary: `POST ${fullPath}`,
-    description: `Anthropic-Messages-compatible ingress. Translated at the edges only — the request is converted to the gateway\'s internal chat.completions shape, driven through the SAME auth/billing/routing/failover/trace pipeline as chat completions, then the response (or SSE stream) is translated back to the Anthropic Messages wire format.\n\nAuth: ${AUTH_DESCRIPTION}\n\n\`\`\`\ncurl -sS $KORTIX_API_URL${fullPath} \\\n  -H "Authorization: Bearer $KORTIX_GATEWAY_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"model":"claude-sonnet-4-5","max_tokens":1024,"messages":[{"role":"user","content":"Say hello in one word."}]}\'\n\`\`\``,
+    description: `Anthropic-Messages-compatible ingress. Translated at the edges only — the request is converted to the gateway\'s internal chat.completions shape, driven through the SAME auth/billing/routing/failover/trace pipeline as chat completions, then the response (or SSE stream) is translated back to the Anthropic Messages wire format.\n\nAuth: ${AUTH_DESCRIPTION}\n\n\`\`\`\ncurl -sS $ZED_API_URL${fullPath} \\\n  -H "Authorization: Bearer $ZED_GATEWAY_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"model":"claude-sonnet-4-5","max_tokens":1024,"messages":[{"role":"user","content":"Say hello in one word."}]}\'\n\`\`\``,
     ...auth,
     request: {
       body: {
@@ -238,7 +238,7 @@ function messagesRoute(path: string) {
 }
 
 // The reasoning_options entry shape — three real forms models.dev emits
-// (effort/toggle/budget_tokens; see @kortix/llm-catalog's
+// (effort/toggle/budget_tokens; see @zed/llm-catalog's
 // CatalogReasoningOption for the full field-by-field rationale). All fields
 // but `type` optional so one schema covers all three without a oneOf.
 const GatewayModelReasoningOptionSchema = z
@@ -289,8 +289,8 @@ const GatewayModelSchema = z
     release_date: z.string().nullable().optional(),
     family: z.string().optional(),
     // The REAL upstream provider this model resolves against ('anthropic',
-    // 'openai', 'codex', 'kortix', ...) — every gateway model is registered
-    // under the single synthetic `kortix` opencode provider, so this is the
+    // 'openai', 'codex', 'zed', ...) — every gateway model is registered
+    // under the single synthetic `zed` opencode provider, so this is the
     // field a client groups/labels by instead of parsing the wire model id.
     provider: z.string().optional(),
     reasoning: z.boolean().optional(),
@@ -342,7 +342,7 @@ function modelsRoute(path: string) {
     path,
     tags: [GATEWAY_INFERENCE_TAG],
     summary: `GET ${fullPath}`,
-    description: `Servable model catalog for the caller\'s account/project — a keyed object (NOT the OpenAI \`{object:"list",data:[...]}\` array shape) mapping model id → capabilities.\n\nAuth: ${AUTH_DESCRIPTION}\n\n\`\`\`\ncurl -sS $KORTIX_API_URL${fullPath} -H "Authorization: Bearer $KORTIX_GATEWAY_KEY"\n\`\`\``,
+    description: `Servable model catalog for the caller\'s account/project — a keyed object (NOT the OpenAI \`{object:"list",data:[...]}\` array shape) mapping model id → capabilities.\n\nAuth: ${AUTH_DESCRIPTION}\n\n\`\`\`\ncurl -sS $ZED_API_URL${fullPath} -H "Authorization: Bearer $ZED_GATEWAY_KEY"\n\`\`\``,
     ...auth,
     responses: { 200: json(ModelsResponseSchema, 'Servable model catalog'), ...errors(401, 502) },
   });
@@ -372,7 +372,7 @@ export function mountLlmGateway(app: OpenAPIHono): void {
     // for the gateway MANAGEMENT ops in projects/routes/gateway.ts.
     const llm = makeOpenApiApp();
     llm.get('/health', (c) =>
-      c.json({ status: 'ok', service: 'kortix-llm-gateway', mode: 'in-process' }),
+      c.json({ status: 'ok', service: 'zed-llm-gateway', mode: 'in-process' }),
     );
     const chat = async (c: import('hono').Context) =>
       gateway.chatCompletions({
@@ -398,7 +398,7 @@ export function mountLlmGateway(app: OpenAPIHono): void {
     // stream}`) hits the same in-process pipeline as `/chat/completions` —
     // `gateway.messages` translates request/response/SSE at the edges only.
     llm.post('/messages', messages);
-    // OpenAI-style clients (opencode's `kortix` provider among them) treat the
+    // OpenAI-style clients (opencode's `zed` provider among them) treat the
     // base URL as an OpenAI ORIGIN and append `/v1/chat/completions` — so the
     // in-process mount must also serve the `/v1/...`-prefixed shape, exactly
     // like the standalone gateway pod does. Without this, a self-host whose

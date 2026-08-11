@@ -25,7 +25,7 @@ retries. A returned route is de-duplicated and bounded again by the gateway.
 
 ## Persistence
 
-Add `kortix.project_llm_routing_policies`, keyed by `project_id` with cascade
+Add `zed.project_llm_routing_policies`, keyed by `project_id` with cascade
 deletion. It stores:
 
 - nullable `vision_model`;
@@ -78,7 +78,7 @@ project default and deletes the project routing row. `POST .../preview` accepts
 availability from the real project upstream resolver.
 
 The additive SDK surface is available both as direct functions and as
-`kortix.project(id).gateway.routing.{get,set,reset,preview}`. A React Query hook
+`zed.project(id).gateway.routing.{get,set,reset,preview}`. A React Query hook
 owns caching and invalidation for the web host.
 
 ## Resolution precedence
@@ -103,7 +103,7 @@ treat all model identifiers as opaque strings.
 
 ## UX
 
-Add a `Routing` tab to Customize -> LLM Gateway using existing Kortix
+Add a `Routing` tab to Customize -> LLM Gateway using existing Zed
 primitives. It contains:
 
 - Defaults: project default and vision model selectors, each with explicit

@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import Hint from '@/components/ui/hint';
-import { IconMic, IconMicOff, IconPhoneOff } from '@/components/ui/kortix-icons';
+import { IconMic, IconMicOff, IconPhoneOff } from '@/components/ui/zed-icons';
 import { cn } from '@/lib/utils';
 
 /** Bottom control bar — real, obvious call controls, sized well past the

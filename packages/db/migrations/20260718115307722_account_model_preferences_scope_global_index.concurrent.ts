@@ -31,7 +31,7 @@
 export const shorthands = undefined;
 
 // Expand step 3/5 of the agent-model-pin project-scoping fix (see the doc
-// comment on accountModelPreferences in packages/db/src/schema/kortix.ts).
+// comment on accountModelPreferences in packages/db/src/schema/zed.ts).
 // Purely additive: this partial unique index will replace
 // idx_account_model_preferences_scope for every row that still has
 // project_id IS NULL (account scope, project scope, and legacy/global agent
@@ -51,7 +51,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create unique index concurrently if not exists idx_account_model_preferences_scope_global
-      on kortix.account_model_preferences (account_id, scope, scope_key)
+      on zed.account_model_preferences (account_id, scope, scope_key)
       where project_id is null
   `);
 };

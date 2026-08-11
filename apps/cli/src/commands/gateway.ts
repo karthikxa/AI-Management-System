@@ -17,12 +17,12 @@ import { C, help, pad, status } from '../style.ts';
 // Every handler wraps one `/projects/:id/gateway/*` route 1:1, so the CLI
 // stays a thin, faithful client (see apps/api/src/projects/routes/gateway.ts).
 
-const HELP = help`Usage: kortix gateway <subcommand> [options]
+const HELP = help`Usage: zed gateway <subcommand> [options]
 
-Configure and inspect the LLM gateway for the linked Kortix project — the
+Configure and inspect the LLM gateway for the linked Zed project — the
 layer that routes every model request, meters spend, and exposes an
 OpenAI-compatible endpoint. (Connect provider credentials with
-\`kortix providers\`; pick per-agent models with \`kortix agents\`.)
+\`zed providers\`; pick per-agent models with \`zed agents\`.)
 
 Routing:
   routing [get]                     Show the effective default model, fallback
@@ -58,8 +58,8 @@ Observability:
   test <model…> [--prompt <text>]   Run a prompt through one or more models.
 
 Global options:
-  --project <id>     Operate on this project id (default: linked or \$KORTIX_PROJECT_ID).
-  --host <name>      Operate against a non-default Kortix host.
+  --project <id>     Operate on this project id (default: linked or \$ZED_PROJECT_ID).
+  --host <name>      Operate against a non-default Zed host.
   --json             Machine-readable output (read subcommands).
   -h, --help         Show this help.
 `;
@@ -371,7 +371,7 @@ export async function gatewayKeys(rest: string[], opts: CtxOpts, json: boolean):
       process.stdout.write(`\n  ${C.dim}Gateway URL: ${data.gateway_url}${C.reset}\n\n`);
       if (!data.keys?.length) {
         process.stdout.write(
-          `  ${C.dim}No gateway keys. Create one: kortix gateway keys new <name>${C.reset}\n\n`,
+          `  ${C.dim}No gateway keys. Create one: zed gateway keys new <name>${C.reset}\n\n`,
         );
         return 0;
       }

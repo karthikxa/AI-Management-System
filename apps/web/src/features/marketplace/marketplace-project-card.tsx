@@ -77,7 +77,7 @@ export function MarketplaceProjectCard({
               {skillCount > 0 ? ` · ${skillCount} ${skillCount === 1 ? 'skill' : 'skills'}` : ''}
             </span>
           </span>
-          <span className="text-foreground group-hover:text-kortix-blue inline-flex shrink-0 items-center gap-1 text-sm font-medium transition-colors">
+          <span className="text-foreground group-hover:text-zed-blue inline-flex shrink-0 items-center gap-1 text-sm font-medium transition-colors">
             Install
             <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
           </span>

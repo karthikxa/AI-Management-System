@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { PLATFORM_DEFAULT_USER_DOCKERFILE } from '@kortix/shared/sandbox';
+import { PLATFORM_DEFAULT_USER_DOCKERFILE } from '@zed/shared/sandbox';
 
 import { lintDockerfile } from '../dockerfile-lint.ts';
 
@@ -9,13 +9,13 @@ const lint = (text: string) => lintDockerfile(text, { path: 'Dockerfile' });
 describe('lintDockerfile — COPY/ADD from the build context', () => {
   test('a COPY of a repo file is an error naming the file (the real incident)', () => {
     // Verbatim from the incident: the cloud build died with
-    // "Path does not exist: /tmp/kortix-snap-XXXX/requirements-kortix.txt".
-    const issues = lint('FROM ubuntu:24.04\nCOPY requirements-kortix.txt .\n');
+    // "Path does not exist: /tmp/zed-snap-XXXX/requirements-zed.txt".
+    const issues = lint('FROM ubuntu:24.04\nCOPY requirements-zed.txt .\n');
     expect(issues).toHaveLength(1);
     expect(issues[0]!.severity).toBe('error');
     expect(issues[0]!.line).toBe(2);
     expect(issues[0]!.path).toBe('Dockerfile');
-    expect(issues[0]!.message).toContain('requirements-kortix.txt');
+    expect(issues[0]!.message).toContain('requirements-zed.txt');
     // It must say WHY, not just "no".
     expect(issues[0]!.message).toContain('/workspace');
   });
@@ -91,7 +91,7 @@ describe('lintDockerfile — non-Debian base', () => {
   });
 
   test('an alpine BUILDER stage is fine when the final base is Debian', () => {
-    // The Kortix layer is appended to the END, so only the last stage's base
+    // The Zed layer is appended to the END, so only the last stage's base
     // has to carry apt.
     expect(lint('FROM alpine:3 AS builder\nRUN echo build\n\nFROM ubuntu:24.04\n')).toEqual([]);
   });
@@ -108,7 +108,7 @@ describe('lintDockerfile — non-Debian base', () => {
 });
 
 describe('lintDockerfile — the platform default text', () => {
-  test('the Dockerfile Kortix itself ships is clean', () => {
+  test('the Dockerfile Zed itself ships is clean', () => {
     // If our own default tripped these checks, the checks would be wrong.
     expect(lint(PLATFORM_DEFAULT_USER_DOCKERFILE)).toEqual([]);
   });

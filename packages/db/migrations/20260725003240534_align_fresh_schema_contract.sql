@@ -9,19 +9,19 @@ set statement_timeout = '30s';
 
 -- The production schema already enforces these constraints. The original
 -- node-pg-migrate baseline omitted them, so an empty fresh project diverges
--- from packages/db/src/schema/kortix.ts. Apply the NOT NULL changes only while
+-- from packages/db/src/schema/zed.ts. Apply the NOT NULL changes only while
 -- the tables are empty. This avoids a blocking validation scan on any existing
 -- environment. Production contains zero conflicting NULL values as of
 -- 2026-07-25.
-ALTER TABLE kortix.credit_accounts
+ALTER TABLE zed.credit_accounts
   ALTER COLUMN auto_topup_enabled SET DEFAULT false,
   ALTER COLUMN auto_topup_threshold SET DEFAULT 5,
   ALTER COLUMN auto_topup_amount SET DEFAULT 20;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM kortix.credit_accounts LIMIT 1) THEN
-    ALTER TABLE kortix.credit_accounts
+  IF NOT EXISTS (SELECT 1 FROM zed.credit_accounts LIMIT 1) THEN
+    ALTER TABLE zed.credit_accounts
       ALTER COLUMN auto_topup_enabled SET NOT NULL,
       ALTER COLUMN auto_topup_threshold SET NOT NULL,
       ALTER COLUMN auto_topup_amount SET NOT NULL;
@@ -31,8 +31,8 @@ $$;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM kortix.sandboxes LIMIT 1) THEN
-    ALTER TABLE kortix.sandboxes
+  IF NOT EXISTS (SELECT 1 FROM zed.sandboxes LIMIT 1) THEN
+    ALTER TABLE zed.sandboxes
       ALTER COLUMN is_included SET NOT NULL;
   END IF;
 END
@@ -40,8 +40,8 @@ $$;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM kortix.account_deletion_requests LIMIT 1) THEN
-    ALTER TABLE kortix.account_deletion_requests
+  IF NOT EXISTS (SELECT 1 FROM zed.account_deletion_requests LIMIT 1) THEN
+    ALTER TABLE zed.account_deletion_requests
       ALTER COLUMN scheduled_for SET NOT NULL;
   END IF;
 END

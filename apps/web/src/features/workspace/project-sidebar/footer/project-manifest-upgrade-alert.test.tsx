@@ -36,8 +36,8 @@ describe('ProjectManifestUpgradeAlertView — v1/v2 visibility', () => {
   test('expanded body explains the v1→v2 migration and offers the action', () => {
     const html = render({ visible: true, pending: false, onMigrate: () => {}, defaultOpen: true });
     expect(html).toContain('Migrate to v2');
-    expect(html).toContain('kortix.toml');
-    expect(html).toContain('kortix.yaml');
+    expect(html).toContain('zed.toml');
+    expect(html).toContain('zed.yaml');
   });
 
   test('disables the migrate action while the session is being created', () => {

@@ -42,7 +42,7 @@ contracts. Browser verification covers Connectors to Skills to Commands to
 Skills, visible content during stale refresh, and request counts.
 
 The change ships through a scoped PR, Deploy Dev, and repeated DOM and network
-assertions on `dev.kortix.com`.
+assertions on `dev.zed.com`.
 
 ## Non-Goals
 

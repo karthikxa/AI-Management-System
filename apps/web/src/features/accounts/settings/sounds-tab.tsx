@@ -21,7 +21,7 @@ export function SoundsTab() {
   const packs: { id: SoundPack; label: string; description: string }[] = [
     { id: 'off', label: 'Off', description: 'All sounds disabled' },
     { id: 'opencode', label: 'Default', description: 'Default sound pack' },
-    { id: 'kortix', label: 'Seshion Pack', description: 'Whistlin' },
+    { id: 'zed', label: 'Seshion Pack', description: 'Whistlin' },
   ];
 
   const events: { id: SoundEvent; label: string; description: string }[] = [

@@ -24,7 +24,7 @@
  */
 
 import { eq } from 'drizzle-orm';
-import { projectSessions } from '@kortix/db';
+import { projectSessions } from '@zed/db';
 import { db } from './db';
 import { isPlaceholderOpencodeTitle } from '../projects/lib/opencode-title';
 import { sandboxOpencodeEndpoint, listSandboxOpencodeSessions, resolveRootSessionId } from '../projects/opencode-mapping';

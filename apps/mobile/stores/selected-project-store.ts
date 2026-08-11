@@ -1,5 +1,5 @@
 /**
- * Tracks which Kortix project a fresh mobile session will be created in.
+ * Tracks which Zed project a fresh mobile session will be created in.
  * `null` means "use the current default directory" (no override). Persisted
  * via AsyncStorage so the choice survives app restarts.
  *

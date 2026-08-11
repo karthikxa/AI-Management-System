@@ -4,7 +4,7 @@ import { config } from '../../config';
 import { PROJECT_ACTIONS, authorize } from '../../iam';
 import { getTraceHeaders, setContextField } from '../../lib/request-context';
 import type { ProviderName } from '../../platform/providers';
-import { callerKortixSessionId } from '../../projects/lib/caller-session';
+import { callerZedSessionId } from '../../projects/lib/caller-session';
 import {
   PromptConnectorPreflightUnresolved,
   type PromptConnectorVerdict,
@@ -37,9 +37,9 @@ import {
   generateSessionTitleFromFirstPrompt,
 } from '../../projects/session-title-generate';
 import {
-  KORTIX_SERVICE_CALL_HEADER,
-  KORTIX_USER_CONTEXT_HEADER,
-} from '../../shared/kortix-user-context';
+  ZED_SERVICE_CALL_HEADER,
+  ZED_USER_CONTEXT_HEADER,
+} from '../../shared/zed-user-context';
 import { canAccessPreviewSandbox, canAccessSandboxSession } from '../../shared/preview-ownership';
 import {
   buildSandboxUpstreamHeaders,
@@ -77,7 +77,7 @@ const preview = new Hono<{
 // Accept-Encoding is forced to identity (raw byte passthrough).
 // Cookies may contain the caller's raw __preview_session credential and must
 // never reach arbitrary user-controlled apps running inside the sandbox.
-// `x-kortix-service-call` marks a DIRECT platform→daemon call. The daemon gates
+// `x-zed-service-call` marks a DIRECT platform→daemon call. The daemon gates
 // its destructive branch reset on it precisely because it cannot appear here:
 // we authenticate every forwarded request with the sandbox's own service key, so
 // the daemon cannot tell a user's request from ours by the bearer alone. Strip
@@ -91,7 +91,7 @@ export const STRIP_FORWARD_HEADERS = new Set([
   'x-request-id',
   'accept-encoding',
   'content-length',
-  KORTIX_SERVICE_CALL_HEADER.toLowerCase(),
+  ZED_SERVICE_CALL_HEADER.toLowerCase(),
 ]);
 
 function jsonProxyError(body: Record<string, unknown>, status: number, origin?: string): Response {
@@ -117,7 +117,7 @@ function errorMessage(error: unknown, fallback: string): string {
 const previewUseThrottle = createExtendThrottle(60_000);
 
 /**
- * Bind the provider-facing sandbox identifier to its canonical Kortix scope.
+ * Bind the provider-facing sandbox identifier to its canonical Zed scope.
  * The request audit middleware runs after the proxy handler returns and reads
  * this request-local context. Without this binding, `/v1/p/...` activity is
  * present only in the account log and disappears from project/session history.
@@ -156,7 +156,7 @@ function stripFrameAncestors(csp: string): string | null {
 
 // Build the response headers we send back to the browser: clone the upstream
 // headers, neutralize framing restrictions, and apply CORS. Previews are
-// embedded in the Kortix session UI via an <iframe>, so any app that ships
+// embedded in the Zed session UI via an <iframe>, so any app that ships
 // `X-Frame-Options` or a CSP `frame-ancestors` (Next.js, and most frameworks,
 // default to these) would otherwise refuse to load in the panel. Stripping them
 // at the proxy makes embedding work for ANY project without per-app config —
@@ -212,7 +212,7 @@ function portUnreachableHtml(port: number): string {
     --foreground: oklch(0 0 0);
     --secondary: oklch(0.9431 0 0);
     --muted-foreground: oklch(0.5103 0 0);
-    --kortix-yellow: oklch(0.732 0.15 90.688);
+    --zed-yellow: oklch(0.732 0.15 90.688);
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -233,7 +233,7 @@ function portUnreachableHtml(port: number): string {
   .card { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;  }
   h1 { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; margin: 0; }
   .dot {
-    width: 8px; height: 8px; border-radius: 999px; background: var(--kortix-yellow);
+    width: 8px; height: 8px; border-radius: 999px; background: var(--zed-yellow);
     animation: pulse 1.4s ease-in-out infinite;
   }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
@@ -256,7 +256,7 @@ function portUnreachableHtml(port: number): string {
   </div>
   <script>
     (function () {
-      var KEY = 'kortix-preview-retries-${port}';
+      var KEY = 'zed-preview-retries-${port}';
       var MAX = 5, DELAY = 4000;
       var n = parseInt(sessionStorage.getItem(KEY) || '0', 10) || 0;
       var statusEl = document.getElementById('status');
@@ -451,11 +451,11 @@ async function agentSwitchRefusal(
 ): Promise<Response | null> {
   const sessionAgent = record.agentName ?? DEFAULT_AGENT_SENTINEL;
   // Agent-lock enforcement is OFF by default — in-session agent switching is
-  // allowed. The 409 only fires when KORTIX_ENFORCE_SESSION_AGENT_LOCK is
+  // allowed. The 409 only fires when ZED_ENFORCE_SESSION_AGENT_LOCK is
   // explicitly enabled.
   if (
     requestedAgent &&
-    config.KORTIX_ENFORCE_SESSION_AGENT_LOCK &&
+    config.ZED_ENFORCE_SESSION_AGENT_LOCK &&
     isProhibitedAgentSwitch(requestedAgent, sessionAgent)
   ) {
     return agentSwitchConflictResponse(sessionAgent, requestedAgent, origin);
@@ -631,10 +631,10 @@ export function secretGrantErrorResponse(err: unknown, origin?: string): Respons
 // The sentinel name a session carries when it isn't bound to a *concrete* agent.
 // `project_sessions.agent_name` defaults to this, and no agent is literally named
 // "default" — the runtime resolves it to OpenCode's configured `default_agent`
-// (conventionally `kortix`). It is therefore non-binding: a "default" session's
+// (conventionally `zed`). It is therefore non-binding: a "default" session's
 // connector token carries the least-privileged grant (null = full for ungoverned
 // projects, deny for governed ones — see `grantFromLoadedAgents`), so a prompt
-// can never use it to escalate into another agent's connector / Kortix-CLI grant.
+// can never use it to escalate into another agent's connector / Zed-CLI grant.
 const DEFAULT_AGENT_SENTINEL = 'default';
 
 // A prompt's explicit `agent` only constitutes a prohibited switch when it would
@@ -646,7 +646,7 @@ const DEFAULT_AGENT_SENTINEL = 'default';
 // "this session's own default agent".
 //
 // Without this, the client's perfectly ordinary behaviour read as a bogus switch:
-// it resolves "the default" to a concrete name (e.g. `kortix`) for display and
+// it resolves "the default" to a concrete name (e.g. `zed`) for display and
 // echoes it back on follow-up turns — and a first-turn race can send that name
 // before the session's bound agent has even loaded. Comparing the concrete echo
 // against the stored sentinel 409'd every "start a new session, send a second
@@ -693,7 +693,7 @@ export type PreviewProxyAccess =
       kind: 'principal';
       userId: string;
       /** The caller's own session when the credential is bound to one (a sandbox
-       *  token). Kortix-as-a-Backend shares ONE userId across every end-user, so
+       *  token). Zed-as-a-Backend shares ONE userId across every end-user, so
        *  this is what separates them. Null means a non-session-bound principal.
        *  REQUIRED so a new entry point cannot silently omit it and fail open. */
       callerSessionId: string | null;
@@ -713,12 +713,12 @@ function principalUserId(access: PreviewProxyAccess): string {
 // opencode's HTTP/SSE + PTY server binds 127.0.0.1:4096 (loopback-only). Daytona
 // (a container) reaches it directly; Platinum (a microVM) has its edge dial the
 // guest's eth0 IP, so :4096 is unreachable → 502 ("upstream-unreachable"). This
-// is what breaks `kortix sessions connect` / `opencode attach` on Platinum.
+// is what breaks `zed sessions connect` / `opencode attach` on Platinum.
 //
 // The sandbox agent on :8000 (binds 0.0.0.0, reachable) already reverse-proxies
 // every path to opencode's localhost:4096 in-box. So for Platinum we route
 // opencode(4096) traffic through :8000 — the same bridge the /pty/ WebSocket
-// already uses. The 8000-keyed guards below (session-visibility gate, /kortix/env
+// already uses. The 8000-keyed guards below (session-visibility gate, /zed/env
 // block) key on the EFFECTIVE upstream port so rerouted opencode traffic is
 // subject to the SAME protection as a direct :8000 request — the reroute changes
 // reachability, never the auth/control surface.
@@ -764,13 +764,13 @@ export function shouldAutoResumeStoppedSandbox(
 /**
  * Is this a proxied attempt at the daemon's DESTRUCTIVE branch reset?
  *
- * `/kortix/refresh?base=1` runs `git checkout -B <branch> <sha>` in the box, and
+ * `/zed/refresh?base=1` runs `git checkout -B <branch> <sha>` in the box, and
  * the branch IS the session id — so it discards every commit the session made
  * and deletes the files they added. Its one legitimate caller is the
  * warm-session workspace refresh at session create, which calls the daemon
  * directly and never comes through here.
  *
- * The PATH stays open on purpose: a plain `/kortix/refresh` is the SDK's
+ * The PATH stays open on purpose: a plain `/zed/refresh` is the SDK's
  * `restart` mode and users legitimately reach it. Only the flag is refused.
  *
  * Pure + exported so the gate is unit-tested without provisioning a box — the
@@ -785,7 +785,7 @@ export function isProxiedBaseReset(
   // Strip the in-box `/proxy/{port}` prefix, as the connector gate does — a
   // request that reaches the daemon that way is the same request.
   const path = remainingPath.replace(/^\/proxy\/\d+(?=\/)/, '');
-  if (!/^\/kortix\/refresh(?:$|[/?#])/.test(path)) return false;
+  if (!/^\/zed\/refresh(?:$|[/?#])/.test(path)) return false;
   return new URLSearchParams(queryString).get('base') === '1';
 }
 
@@ -831,7 +831,7 @@ export async function forwardToSandbox(
     });
   }
   // Effective upstream port: Platinum opencode(4096) → the in-box agent on 8000.
-  // The AUTH/CONTROL guards below (session-visibility gate + /kortix/env block)
+  // The AUTH/CONTROL guards below (session-visibility gate + /zed/env block)
   // key on THIS via carriesSessionData(), which covers BOTH 8000 and opencode's
   // 4096 — Platinum reroutes 4096→8000, Daytona does not, and gating on 8000
   // alone left the direct-:4096 Daytona path ungated. NOTE:
@@ -871,19 +871,19 @@ export async function forwardToSandbox(
       message: 'Not authorized to access this session',
     });
   }
-  // /kortix/env is a platform-only control endpoint that writes the sandbox's
+  // /zed/env is a platform-only control endpoint that writes the sandbox's
   // live secret env. The API reaches it server-to-server (postEnvToDaemon),
   // never through this user-facing proxy — block it so an account member can't
-  // inject arbitrary env into a sandbox by POSTing /v1/p/<id>/8000/kortix/env.
-  if (carriesSessionData(upstreamPort) && /^\/kortix\/env(?:$|[/?#])/.test(remainingPath)) {
+  // inject arbitrary env into a sandbox by POSTing /v1/p/<id>/8000/zed/env.
+  if (carriesSessionData(upstreamPort) && /^\/zed\/env(?:$|[/?#])/.test(remainingPath)) {
     return jsonProxyError({ error: 'not found' }, 404, origin);
   }
-  // `/kortix/refresh?base=1` force-resets the session's branch onto the base tip
+  // `/zed/refresh?base=1` force-resets the session's branch onto the base tip
   // — `git checkout -B <branch> <sha>`, where the branch IS the session id — so
   // it discards every commit the session made and deletes the files they added.
   //
   // The path itself must stay open: the SDK's `restart` mode is a plain
-  // `/kortix/refresh`, and users legitimately reach it. Only the destructive
+  // `/zed/refresh`, and users legitimately reach it. Only the destructive
   // flag is refused, and refused HERE because this is the layer that knows the
   // request came from a user at all. Its one legitimate caller is the
   // warm-session workspace refresh at session create, which calls the daemon
@@ -1092,7 +1092,7 @@ export async function forwardToSandbox(
           requestBody = bodyWithoutPromptAgent(requestBody, incomingHeaders);
         }
         // A prompt is the one moment this sandbox is guaranteed awake, so off
-        // it we (1) generate the Kortix-owned session title from this first
+        // it we (1) generate the Zed-owned session title from this first
         // prompt, using the model the user picked, and (2) refresh the
         // opencode_sessions snapshot the conversation list reads. Both are
         // fire-and-forget and never block the prompt.
@@ -1597,7 +1597,7 @@ export async function resolvePreviewWsUpstream(opts: {
 
   const upstreamUrl = new URL(wsBase + remainingPath + queryString);
   if (ingress.websocket?.userContextQueryParam) {
-    const signedContext = headers[KORTIX_USER_CONTEXT_HEADER];
+    const signedContext = headers[ZED_USER_CONTEXT_HEADER];
     if (signedContext) {
       upstreamUrl.searchParams.set(ingress.websocket.userContextQueryParam, signedContext);
     }
@@ -1655,14 +1655,14 @@ preview.all('/:sandboxId/:port/*', async (c) => {
       kind: 'principal',
       userId,
       callerSessionId: c.get('sessionId') ?? null,
-      // `callerKortixSessionId`, NEVER the raw context var. `combinedAuth`'s
+      // `callerZedSessionId`, NEVER the raw context var. `combinedAuth`'s
       // local JWT fast path leaves `sessionId` unset for a browser, but its
       // NETWORK-FALLBACK branch (taken whenever JWKS has not warmed, and
       // permanently if JWKS resolution is broken) sets it to the SUPABASE AUTH
       // SESSION id. Reading it raw made every human in that window look
       // sandbox-authored: no turn-start extend, no preview-use extend, and no
       // auto-resume of a parked box from the UI.
-      sandboxAuthored: isSandboxAuthored(c.get('apiKeyType'), callerKortixSessionId(c)),
+      sandboxAuthored: isSandboxAuthored(c.get('apiKeyType'), callerZedSessionId(c)),
     },
     method,
     remainingPath,

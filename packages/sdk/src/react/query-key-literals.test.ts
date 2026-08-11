@@ -12,7 +12,7 @@ import { join } from 'node:path';
  * config and no lint script, so that rule structurally cannot see this
  * package. This test is the substitute guard: it runs inside the existing
  * `bun test` gate (`packages/sdk`'s CI + the TDD workflow's mandatory
- * `pnpm --filter @kortix/sdk test`), which every change here already has to
+ * `pnpm --filter @zed/sdk test`), which every change here already has to
  * pass, so a reintroduced literal fails the SAME gate a broken type or a
  * failing unit test would.
  *
@@ -86,10 +86,10 @@ const ALLOWED_SUFFIXES = [
   // `provider-refresh.ts`, `use-model-defaults.ts`, `use-model-enablement.ts`),
   // never part of the `qk` project-entity migration and with no `qk` member.
   'providers',
-  // The Kortix-native PR layer — `use-change-requests.ts`'s
+  // The Zed-native PR layer — `use-change-requests.ts`'s
   // `changeRequestsKey`. Shares a NAME with `apps/web`'s
   // `project-files`-rooted `changeRequestKeys`, and they are different
-  // features (Kortix change requests vs. the Git file browser's branch/commit
+  // features (Zed change requests vs. the Git file browser's branch/commit
   // views). Never part of the `qk` migration.
   'change-requests',
   // NOT a query key. `new Set(['project-manager'])` — the agent-name

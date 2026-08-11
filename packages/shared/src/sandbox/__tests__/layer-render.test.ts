@@ -34,24 +34,24 @@ import {
 } from '../../runtime-versions';
 import {
   type BuildLayeredDockerfileOpts,
-  KORTIX_USER_PATH_DIRS,
+  ZED_USER_PATH_DIRS,
   PLATFORM_DEFAULT_USER_DOCKERFILE,
   buildLayeredDockerfile,
   buildPerProjectWarmFromBaseDockerfile,
-  kortixToolchainLayer,
+  zedToolchainLayer,
 } from '../dockerfile-layer';
 
 const COMMON = {
   opencodeVersion: OPENCODE_VERSION,
   agentBrowserVersion: AGENT_BROWSER_VERSION,
-  agentBinaryPath: 'kortix-agent.gz',
-  cliBinaryPath: 'kortix.gz',
-  entrypointScriptPath: 'kortix-entrypoint',
+  agentBinaryPath: 'zed-agent.gz',
+  cliBinaryPath: 'zed.gz',
+  entrypointScriptPath: 'zed-entrypoint',
   machineDocPath: 'MACHINE.md',
-  slackCliPath: 'kortix-slack-cli',
-  opencodeConfigPath: 'kortix-opencode-config',
-  opencodeWarmupScriptPath: 'kortix-opencode-warmup',
-  catalogPath: 'kortix-llm-catalog.json',
+  slackCliPath: 'zed-slack-cli',
+  opencodeConfigPath: 'zed-opencode-config',
+  opencodeWarmupScriptPath: 'zed-opencode-warmup',
+  catalogPath: 'zed-llm-catalog.json',
 };
 
 /**
@@ -84,8 +84,8 @@ const CASES: Array<{ label: string; opts: BuildLayeredDockerfileOpts }> = [
       userDockerfile: PLATFORM_DEFAULT_USER_DOCKERFILE,
       ...COMMON,
       warmRepo: {
-        stagedPath: 'kortix-warm-repo',
-        stagedGitPath: 'kortix-warm-repo-git.tar',
+        stagedPath: 'zed-warm-repo',
+        stagedGitPath: 'zed-warm-repo-git.tar',
         branch: 'main',
       },
     },
@@ -101,7 +101,7 @@ describe('rendered layer (golden)', () => {
 });
 
 describe('runtime artifact integrity', () => {
-  const rendered = kortixToolchainLayer(COMMON);
+  const rendered = zedToolchainLayer(COMMON);
 
   test('verifies both supported architectures against repository-controlled SHA-256 digests', () => {
     for (const digest of [
@@ -127,13 +127,13 @@ describe('runtime artifact integrity', () => {
 });
 
 describe('the Python runtime is managed by uv', () => {
-  const toolchain = kortixToolchainLayer({ opencodeVersion: OPENCODE_VERSION });
+  const toolchain = zedToolchainLayer({ opencodeVersion: OPENCODE_VERSION });
 
   test('does not install or mutate the distro Python', () => {
     expect(toolchain).not.toContain('python3 python3-dev python3-pip python3-venv');
     expect(toolchain.match(/uv pip install/g)).toHaveLength(1);
     expect(toolchain).toContain(
-      'uv pip install --python /home/kortix/.local/bin/python3 --break-system-packages',
+      'uv pip install --python /home/zed/.local/bin/python3 --break-system-packages',
     );
     expect(toolchain).not.toContain('uv pip install --system');
   });
@@ -174,8 +174,8 @@ describe('the Python runtime is managed by uv', () => {
     // Verified against BuildKit AND buildah's classic imagebuilder: both expand
     // $PATH in ENV from the base image config. A hardcoded absolute PATH here
     // would silently drop a user's cargo/nvm/conda entries.
-    expect(toolchain).toContain('/home/kortix/.local/bin');
-    expect(toolchain).not.toContain('/home/kortix/.venv/bin');
+    expect(toolchain).toContain('/home/zed/.local/bin');
+    expect(toolchain).not.toContain('/home/zed/.venv/bin');
   });
 
   test('sets DEBIAN_FRONTEND itself instead of inheriting it by luck', () => {
@@ -195,14 +195,14 @@ describe('Chromium sits on deterministic parents (cache order is load-bearing)',
   // stay directly on the deterministic apt + pip floors, ABOVE all of them.
   const chromiumAt = (t: string) => t.indexOf('pnpm dlx playwright@');
   const opencodeInstallAt = (t: string) => t.indexOf('"opencode-ai@');
-  const migrationBakeAt = (t: string) => t.indexOf('kortix-opencode-warmup migration');
+  const migrationBakeAt = (t: string) => t.indexOf('zed-opencode-warmup migration');
 
   test('the base default image installs Chromium before opencode + the migration-bake', () => {
-    const base = kortixToolchainLayer({
+    const base = zedToolchainLayer({
       opencodeVersion: OPENCODE_VERSION,
       agentBrowserVersion: AGENT_BROWSER_VERSION,
-      opencodeConfigPath: 'kortix-opencode-config',
-      opencodeWarmupScriptPath: 'kortix-opencode-warmup',
+      opencodeConfigPath: 'zed-opencode-config',
+      opencodeWarmupScriptPath: 'zed-opencode-warmup',
       isSharedDefault: true,
     });
     const chromium = chromiumAt(base);
@@ -212,14 +212,14 @@ describe('Chromium sits on deterministic parents (cache order is load-bearing)',
   });
 
   test('a per-project warm bake installs Chromium before the warm-repo COPY', () => {
-    const warm = kortixToolchainLayer({
+    const warm = zedToolchainLayer({
       opencodeVersion: OPENCODE_VERSION,
       agentBrowserVersion: AGENT_BROWSER_VERSION,
-      opencodeConfigPath: 'kortix-opencode-config',
-      opencodeWarmupScriptPath: 'kortix-opencode-warmup',
+      opencodeConfigPath: 'zed-opencode-config',
+      opencodeWarmupScriptPath: 'zed-opencode-warmup',
       warmRepo: {
-        stagedPath: 'kortix-warm-repo',
-        stagedGitPath: 'kortix-warm-repo-git.tar',
+        stagedPath: 'zed-warm-repo',
+        stagedGitPath: 'zed-warm-repo-git.tar',
         branch: 'main',
       },
     });
@@ -227,7 +227,7 @@ describe('Chromium sits on deterministic parents (cache order is load-bearing)',
     expect(chromium).toBeGreaterThan(-1);
     // the warm-repo COPY must come strictly after Chromium (non-deterministic
     // parents bust the content-addressed cache for everything chained below).
-    expect(chromium).toBeLessThan(warm.indexOf('COPY --chown=kortix:kortix kortix-warm-repo/'));
+    expect(chromium).toBeLessThan(warm.indexOf('COPY --chown=zed:zed zed-warm-repo/'));
   });
 });
 
@@ -243,8 +243,8 @@ describe('PHASE 1: no git credential is ever rendered into the Dockerfile', () =
       userDockerfile: PLATFORM_DEFAULT_USER_DOCKERFILE,
       ...COMMON,
       warmRepo: {
-        stagedPath: 'kortix-warm-repo',
-        stagedGitPath: 'kortix-warm-repo-git.tar',
+        stagedPath: 'zed-warm-repo',
+        stagedGitPath: 'zed-warm-repo-git.tar',
         branch: 'main',
       },
     });
@@ -252,9 +252,9 @@ describe('PHASE 1: no git credential is ever rendered into the Dockerfile', () =
     expect(warm).not.toContain('Authorization');
     // The build-time clone is gone entirely — the image only COPYs staged bytes.
     expect(warm).not.toContain('git clone');
-    expect(warm).toContain('COPY --chown=kortix:kortix kortix-warm-repo/ /workspace/');
+    expect(warm).toContain('COPY --chown=zed:zed zed-warm-repo/ /workspace/');
     expect(warm).toContain(
-      'COPY kortix-warm-repo-git.tar /tmp/kortix-warm-repo-git.tar',
+      'COPY zed-warm-repo-git.tar /tmp/zed-warm-repo-git.tar',
     );
   });
 
@@ -266,8 +266,8 @@ describe('PHASE 1: no git credential is ever rendered into the Dockerfile', () =
       userDockerfile: PLATFORM_DEFAULT_USER_DOCKERFILE,
       ...COMMON,
       warmRepo: {
-        stagedPath: 'kortix-warm-repo',
-        stagedGitPath: 'kortix-warm-repo-git.tar',
+        stagedPath: 'zed-warm-repo',
+        stagedGitPath: 'zed-warm-repo-git.tar',
         branch: evil,
       },
     });
@@ -280,7 +280,7 @@ describe('PHASE 1: no git credential is ever rendered into the Dockerfile', () =
 });
 
 describe('the /workspace cleanup is scoped to the shared default image', () => {
-  const WIPE = 'kortix-opencode-warmup instance wipe';
+  const WIPE = 'zed-opencode-warmup instance wipe';
 
   test('the shared default wipes (it owns /workspace)', () => {
     const shared = buildLayeredDockerfile({
@@ -299,13 +299,13 @@ describe('the /workspace cleanup is scoped to the shared default image', () => {
     expect(custom).not.toContain(WIPE);
     // It still cleans up after ITSELF — only the config it staged, and only if it
     // was the one that staged it.
-    expect(custom).toContain('kortix-opencode-warmup instance targeted');
+    expect(custom).toContain('zed-opencode-warmup instance targeted');
   });
 
   test('a per-project warm keeps the baked checkout (unchanged)', () => {
     const warm = buildLayeredDockerfile(CASES[2]!.opts);
     expect(warm).not.toContain(WIPE);
-    expect(warm).toContain('kortix-opencode-warmup instance keep');
+    expect(warm).toContain('zed-opencode-warmup instance keep');
   });
 
   test('warmRepo outranks isSharedDefault — a baked checkout is never wiped', () => {
@@ -322,24 +322,24 @@ describe('the entrypoint survives providers that discard image USER/ENV', () => 
   );
 
   test('stages one script and wires it as the entrypoint', () => {
-    expect(rendered).toContain('COPY kortix-entrypoint /usr/local/bin/kortix-entrypoint');
-    expect(rendered).not.toContain('kortix-entrypoint-real');
-    expect(rendered).toContain('ENTRYPOINT ["/usr/local/bin/kortix-entrypoint"]');
+    expect(rendered).toContain('COPY zed-entrypoint /usr/local/bin/zed-entrypoint');
+    expect(rendered).not.toContain('zed-entrypoint-real');
+    expect(rendered).toContain('ENTRYPOINT ["/usr/local/bin/zed-entrypoint"]');
   });
 
-  test('restores the kortix PATH dirs and drops root to kortix with HOME restored', () => {
-    expect(entrypoint).toContain(`KORTIX_PATH="${KORTIX_USER_PATH_DIRS}"`);
-    expect(entrypoint).toContain('export HOME=/home/kortix USER=kortix LOGNAME=kortix');
-    expect(entrypoint).toContain('setpriv --reuid kortix --regid kortix --init-groups');
-    expect(entrypoint).toContain('sudo -u kortix --');
+  test('restores the zed PATH dirs and drops root to zed with HOME restored', () => {
+    expect(entrypoint).toContain(`ZED_PATH="${ZED_USER_PATH_DIRS}"`);
+    expect(entrypoint).toContain('export HOME=/home/zed USER=zed LOGNAME=zed');
+    expect(entrypoint).toContain('setpriv --reuid zed --regid zed --init-groups');
+    expect(entrypoint).toContain('sudo -u zed --');
   });
 
   test('entrypoint PATH dirs cannot drift from the toolchain ENV PATH', () => {
-    expect(rendered).toContain(`PATH=${KORTIX_USER_PATH_DIRS}:$PATH`);
+    expect(rendered).toContain(`PATH=${ZED_USER_PATH_DIRS}:$PATH`);
   });
 
   test('carries ONLY the two temporary Platinum mitigations, before the privilege drop, each best-effort', () => {
-    const dropAt = entrypoint.indexOf('setpriv --reuid kortix');
+    const dropAt = entrypoint.indexOf('setpriv --reuid zed');
     const mitigations = [
       'mount -t tmpfs -o mode=1777,nosuid,nodev tmpfs /dev/shm',
       'ulimit -Hn 1048576',
@@ -365,18 +365,18 @@ describe('the entrypoint survives providers that discard image USER/ENV', () => 
   });
 
   test('build verifies entrypoint syntax before wiring it as the entrypoint', () => {
-    expect(rendered).toContain('&& bash -n /usr/local/bin/kortix-entrypoint');
+    expect(rendered).toContain('&& bash -n /usr/local/bin/zed-entrypoint');
   });
 });
 
 describe('buildPerProjectWarmFromBaseDockerfile (FROM-base fast path)', () => {
   const FROM_BASE_OPTS = {
-    baseImageRef: 'registry.daytona.internal/kortix-default-abc123:latest',
-    opencodeConfigPath: 'kortix-opencode-config',
-    opencodeWarmupScriptPath: 'kortix-opencode-warmup',
+    baseImageRef: 'registry.daytona.internal/zed-default-abc123:latest',
+    opencodeConfigPath: 'zed-opencode-config',
+    opencodeWarmupScriptPath: 'zed-opencode-warmup',
     warmRepo: {
-      stagedPath: 'kortix-warm-repo',
-      stagedGitPath: 'kortix-warm-repo-git.tar',
+      stagedPath: 'zed-warm-repo',
+      stagedGitPath: 'zed-warm-repo-git.tar',
       branch: 'main',
     },
   };
@@ -405,19 +405,19 @@ describe('buildPerProjectWarmFromBaseDockerfile (FROM-base fast path)', () => {
     const rendered = buildPerProjectWarmFromBaseDockerfile(FROM_BASE_OPTS);
     expect(rendered).toContain('Per-project COLD warm: bake repo checkout into /workspace');
     // MY credential-free COPY of the sanitized staged checkout …
-    expect(rendered).toContain('COPY --chown=kortix:kortix kortix-warm-repo/ /workspace/');
+    expect(rendered).toContain('COPY --chown=zed:zed zed-warm-repo/ /workspace/');
     // Provider uploaders transfer the visible archive as one context object.
     expect(rendered).toContain(
-      'COPY kortix-warm-repo-git.tar /tmp/kortix-warm-repo-git.tar',
+      'COPY zed-warm-repo-git.tar /tmp/zed-warm-repo-git.tar',
     );
     expect(rendered).toContain(
-      'tar -xf /tmp/kortix-warm-repo-git.tar -C /workspace/.git --strip-components=1',
+      'tar -xf /tmp/zed-warm-repo-git.tar -C /workspace/.git --strip-components=1',
     );
-    expect(rendered).not.toContain('rm -f /tmp/kortix-warm-repo-git.tar');
+    expect(rendered).not.toContain('rm -f /tmp/zed-warm-repo-git.tar');
     // … and MAIN's opencode instance re-warm via the cache-only warm-up script,
     // which for a per-project warm keeps the baked /workspace checkout.
     expect(rendered).toContain(
-      'RUN bash /tmp/kortix-opencode-warmup instance keep; rm -f /tmp/kortix-opencode-warmup',
+      'RUN bash /tmp/zed-opencode-warmup instance keep; rm -f /tmp/zed-opencode-warmup',
     );
   });
 
@@ -435,8 +435,8 @@ describe('buildPerProjectWarmFromBaseDockerfile (FROM-base fast path)', () => {
       warmRepo: FROM_BASE_OPTS.warmRepo,
     });
     const fromBase = buildPerProjectWarmFromBaseDockerfile(FROM_BASE_OPTS);
-    const startMarker = 'COPY --chown=kortix:kortix kortix-warm-repo/ /workspace/';
-    const endMarker = 'rm -f /tmp/kortix-opencode-warmup';
+    const startMarker = 'COPY --chown=zed:zed zed-warm-repo/ /workspace/';
+    const endMarker = 'rm -f /tmp/zed-opencode-warmup';
     const slice = (text: string) =>
       text.slice(text.indexOf(startMarker), text.lastIndexOf(endMarker) + endMarker.length);
     expect(slice(fromBase)).toBe(slice(monolithic));
@@ -444,8 +444,8 @@ describe('buildPerProjectWarmFromBaseDockerfile (FROM-base fast path)', () => {
 
   test('does not COPY or reference any staged artifact paths — everything is inherited', () => {
     const rendered = buildPerProjectWarmFromBaseDockerfile(FROM_BASE_OPTS);
-    expect(rendered).not.toContain('COPY kortix-agent.gz');
-    expect(rendered).not.toContain('COPY kortix.gz');
+    expect(rendered).not.toContain('COPY zed-agent.gz');
+    expect(rendered).not.toContain('COPY zed.gz');
     expect(rendered).not.toContain('scaffold.git');
     expect(rendered).not.toContain('ENTRYPOINT');
   });
@@ -457,8 +457,8 @@ describe('buildPerProjectWarmFromBaseDockerfile (FROM-base fast path)', () => {
     });
     // The only COPY is the credential-free warm-repo checkout (no artifact tail,
     // no opencode-config COPY since none was provided).
-    expect(rendered).toContain('COPY --chown=kortix:kortix kortix-warm-repo/ /workspace/');
-    expect(rendered).not.toContain('COPY kortix-opencode-config');
+    expect(rendered).toContain('COPY --chown=zed:zed zed-warm-repo/ /workspace/');
+    expect(rendered).not.toContain('COPY zed-opencode-config');
     expect(rendered).toContain('Per-project COLD warm: bake repo checkout into /workspace');
   });
 

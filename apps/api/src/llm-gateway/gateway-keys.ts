@@ -1,11 +1,11 @@
 import { and, desc, eq } from 'drizzle-orm';
-import { gatewayApiKeys } from '@kortix/db';
+import { gatewayApiKeys } from '@zed/db';
 import { db } from '../shared/db';
 import { generateGatewayKeyPair, hashSecretKey } from '../shared/crypto';
 
 /**
  * Name of the short-lived key session-title generation mints for each internal
- * gateway call. It is Kortix's own plumbing rather than a customer key, so it is
+ * gateway call. It is Zed's own plumbing rather than a customer key, so it is
  * DELETED (see deleteGatewayKey) the moment the call finishes instead of being
  * soft-revoked — one row per prompt, kept forever, would both bloat the table
  * and clutter the project's key list. The name is only for forensics on the
@@ -62,7 +62,7 @@ export async function listGatewayKeys(projectId: string) {
 }
 
 /**
- * Hard-delete a key. Only for keys KORTIX itself minted for a single internal
+ * Hard-delete a key. Only for keys ZED itself minted for a single internal
  * call — a customer key is soft-revoked (revokeGatewayKey) so the audit trail
  * survives. Deliberately NOT reachable from any route: a name-based exclusion
  * from `listGatewayKeys` would have let anyone who can create a key mint a

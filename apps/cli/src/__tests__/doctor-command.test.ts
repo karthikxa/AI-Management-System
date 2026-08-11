@@ -7,9 +7,9 @@ async function runCli(args: string[]): Promise<{ code: number; stdout: string; s
   const proc = Bun.spawn([process.execPath, 'run', CLI_ENTRY, ...args], {
     env: {
       ...process.env,
-      KORTIX_NO_UPDATE_CHECK: '1',
-      KORTIX_DISABLE_SANDBOX_ENV_FILE: '1',
-      KORTIX_CONFIG_FILE: join(import.meta.dir, 'no-such-config.json'),
+      ZED_NO_UPDATE_CHECK: '1',
+      ZED_DISABLE_SANDBOX_ENV_FILE: '1',
+      ZED_CONFIG_FILE: join(import.meta.dir, 'no-such-config.json'),
     },
     stdout: 'pipe',
     stderr: 'pipe',
@@ -22,7 +22,7 @@ async function runCli(args: string[]): Promise<{ code: number; stdout: string; s
   return { code, stdout, stderr };
 }
 
-describe('kortix doctor is a reachable command', () => {
+describe('zed doctor is a reachable command', () => {
   test('is not reported as an unknown command', async () => {
     const { stdout, stderr } = await runCli(['doctor', '--help']);
     expect(`${stdout}${stderr}`).not.toContain('unknown command');
@@ -31,7 +31,7 @@ describe('kortix doctor is a reachable command', () => {
   test('prints its own help', async () => {
     const { code, stdout } = await runCli(['doctor', '--help']);
     expect(code).toBe(0);
-    expect(stdout).toContain('kortix doctor');
+    expect(stdout).toContain('zed doctor');
     expect(stdout).toContain('--no-session');
   });
 

@@ -1,4 +1,4 @@
-import { getRuntimeCacheKey } from '@kortix/sdk/react';
+import { getRuntimeCacheKey } from '@zed/sdk/react';
 import { findFiles, listFiles } from '../api/runtime-files';
 import type { FileNode } from '@/features/file-browser/types';
 import {

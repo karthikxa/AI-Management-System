@@ -1,7 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { timingSafeEqual } from 'node:crypto';
 import { eq } from 'drizzle-orm';
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import { db } from '../shared/db';
 import {
   createSession,

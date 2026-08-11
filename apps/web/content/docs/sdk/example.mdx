@@ -10,27 +10,27 @@ and needs no build step beyond TypeScript. Use
 ## The complete script
 
 ```ts
-import { ApiError, classifyTurn, createKortix, narrowChatEvent } from '@kortix/sdk';
-import type { MessageWithParts } from '@kortix/sdk';
+import { ApiError, classifyTurn, createZed, narrowChatEvent } from '@zed/sdk';
+import type { MessageWithParts } from '@zed/sdk';
 
 async function main() {
   // 1. One client, one auth seam. getToken returns your API key
-  //    (kortix_pat_…) or a logged-in user's Supabase JWT — nothing else.
-  const kortix = createKortix({
-    backendUrl: 'https://api.kortix.com/v1',
-    getToken: async () => process.env.KORTIX_API_KEY!,
+  //    (zed_pat_…) or a logged-in user's Supabase JWT — nothing else.
+  const zed = createZed({
+    backendUrl: 'https://api.zed.com/v1',
+    getToken: async () => process.env.ZED_API_KEY!,
   });
 
   // 2. Platform REST: list projects, pick one (or provision your first).
-  const projects = await kortix.projects.list();
-  const project = projects[0] ?? (await kortix.projects.provision({ name: 'sdk-quickstart' }));
+  const projects = await zed.projects.list();
+  const project = projects[0] ?? (await zed.projects.provision({ name: 'sdk-quickstart' }));
   console.log(`using project ${project.name} (${project.project_id})`);
 
   // 3. Create a session — a cheap platform call. No sandbox exists yet.
-  const created = await kortix.projects.createSession(project.project_id, {
+  const created = await zed.projects.createSession(project.project_id, {
     name: 'sdk full example',
   });
-  const session = kortix.session(project.project_id, created.session_id);
+  const session = zed.session(project.project_id, created.session_id);
 
   // 4. Ready the session. This provisions (or resumes) the real cloud
   //    sandbox. ensureReady() polls /start (each call long-polls up to 30s)
@@ -62,7 +62,7 @@ async function main() {
   //    prompt only (ids come from projects.modelPicker() and
   //    projects.detail().config.agents).
   await session.send('What files are in this repo?', {
-    model: { providerID: 'kortix', modelID: 'claude-sonnet-4.6' },
+    model: { providerID: 'zed', modelID: 'claude-sonnet-4.6' },
   });
 
   // 7. Wait for the turn to finish — the session.idle event, not a sleep.
@@ -105,7 +105,7 @@ main().catch((error) => {
 Run it with Node 18 or later, Bun, or `tsx`:
 
 ```sh
-KORTIX_API_KEY=kortix_pat_... npx tsx full-example.ts
+ZED_API_KEY=zed_pat_... npx tsx full-example.ts
 ```
 
 The first `ensureReady()` call on a fresh session provisions a real cloud sandbox, so the ready
@@ -127,7 +127,7 @@ step takes a while on the first run. Later runs resume the same sandbox and fini
 The same client reaches the rest of the platform through one facade.
 
 ```ts
-const project = kortix.project(projectId);
+const project = zed.project(projectId);
 
 // Workspace files inside the session's live sandbox
 const tree = await session.files.list('/workspace');
@@ -141,7 +141,7 @@ await project.secrets.upsert({
   consumer: 'sandbox',
 });
 
-// Managed provider credentials stay on the Kortix LLM gateway.
+// Managed provider credentials stay on the Zed LLM gateway.
 await project.secrets.upsert({
   identifier: 'anthropic-primary',
   name: 'ANTHROPIC_API_KEY',
@@ -151,7 +151,7 @@ await project.secrets.upsert({
 });
 
 // The project's agents and skills (config files in the repo)
-const { config } = await kortix.projects.detail(projectId);
+const { config } = await zed.projects.detail(projectId);
 console.log(
   config.agents.map((a) => a.name),
   config.skills.length,
@@ -164,5 +164,5 @@ const routing = await project.gateway.routing.get();
 
 The package ships runnable examples that cover each of these steps, in
 `packages/sdk/examples/`. They include a minimal client, streaming, a server
-wrapper, a Kortix-as-a-Backend multi-tenant wrapper, transcript rendering, and
+wrapper, a Zed-as-a-Backend multi-tenant wrapper, transcript rendering, and
 files and secrets.

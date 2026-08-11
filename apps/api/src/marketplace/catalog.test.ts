@@ -8,8 +8,8 @@ import {
 } from './catalog';
 
 // Default fixtures use a neutral external registry ('acme') so generic
-// filter/pagination behavior is tested independent of the `kortix-starter`
-// fold rule (those skills live inside the "Kortix Starter" project now and are
+// filter/pagination behavior is tested independent of the `zed-starter`
+// fold rule (those skills live inside the "Zed Starter" project now and are
 // covered by their own test below).
 function item(overrides: Partial<CatalogItem> = {}): CatalogItem {
   return {
@@ -32,22 +32,22 @@ function item(overrides: Partial<CatalogItem> = {}): CatalogItem {
 
 function synthetic(count: number, overrides: (i: number) => Partial<CatalogItem> = () => ({})): CatalogItem[] {
   return Array.from({ length: count }, (_, i) =>
-    item({ id: `kortix:item-${i}`, name: `item-${i}`, ...overrides(i) }),
+    item({ id: `zed:item-${i}`, name: `item-${i}`, ...overrides(i) }),
   );
 }
 
 describe('template + agent resolution (decoupled from browse)', () => {
   test('use-case templates + their agents are NOT surfaced in the browse list', () => {
     const mix = [
-      item({ type: 'registry:template', name: 't', id: 'kortix-starter:t' }),
-      item({ type: 'registry:agent', name: 'a', id: 'kortix-starter:a' }),
-      item({ type: 'registry:skill', name: 's', id: 'kortix-starter:s' }),
+      item({ type: 'registry:template', name: 't', id: 'zed-starter:t' }),
+      item({ type: 'registry:agent', name: 'a', id: 'zed-starter:a' }),
+      item({ type: 'registry:skill', name: 's', id: 'zed-starter:s' }),
     ];
     expect(pageCatalogItems(mix, {}).items.map((i) => i.type)).toEqual(['registry:skill']);
   });
 
   test('but a template resolves by id and detail carries its full declaration', async () => {
-    const detail = await getCatalogItemDetail('kortix-starter:customer-support');
+    const detail = await getCatalogItemDetail('zed-starter:customer-support');
     expect(detail).not.toBeNull();
     expect(detail!.type).toBe('registry:template');
     expect((detail!.inputs as Array<{ key: string }>).map((i) => i.key)).toContain('cadence');
@@ -57,7 +57,7 @@ describe('template + agent resolution (decoupled from browse)', () => {
   });
 
   test('and the agent a template installs resolves by id too (for the install-session fetch)', async () => {
-    const agent = await getCatalogItemDetail('kortix-starter:support-agent');
+    const agent = await getCatalogItemDetail('zed-starter:support-agent');
     expect(agent).not.toBeNull();
     expect(agent!.type).toBe('registry:agent');
   });
@@ -66,10 +66,10 @@ describe('template + agent resolution (decoupled from browse)', () => {
 describe('selectTemplateItems', () => {
   test('keeps registry:template items only, and drops hidden ones', () => {
     const items = [
-      item({ id: 'kortix:ar-chaser', name: 'ar-chaser', type: 'registry:template' }),
-      item({ id: 'kortix:a-skill', name: 'a-skill', type: 'registry:skill' }),
-      item({ id: 'kortix:a-bundle', name: 'a-bundle', type: 'registry:bundle' }),
-      item({ id: 'kortix:hidden', name: 'hidden', type: 'registry:template', hidden: true }),
+      item({ id: 'zed:ar-chaser', name: 'ar-chaser', type: 'registry:template' }),
+      item({ id: 'zed:a-skill', name: 'a-skill', type: 'registry:skill' }),
+      item({ id: 'zed:a-bundle', name: 'a-bundle', type: 'registry:bundle' }),
+      item({ id: 'zed:hidden', name: 'hidden', type: 'registry:template', hidden: true }),
     ];
     expect(selectTemplateItems(items).map((i) => i.name)).toEqual(['ar-chaser']);
   });
@@ -131,35 +131,35 @@ describe('pageCatalogItems', () => {
   });
 
   test('query/type/source filters compose with paging and the visible-type filter stays intact', () => {
-    // 'kortix-projects' is a browseable Kortix registry (maps to source 'kortix');
-    // 'kortix-starter' items are folded away, so we use projects here.
+    // 'zed-projects' is a browseable Zed registry (maps to source 'zed');
+    // 'zed-starter' items are folded away, so we use projects here.
     const items = [
-      ...synthetic(3, (i) => ({ name: `alpha-${i}`, title: `Alpha ${i}`, type: 'registry:skill', registry: 'kortix-projects', marketplaceId: 'kortix' })),
+      ...synthetic(3, (i) => ({ name: `alpha-${i}`, title: `Alpha ${i}`, type: 'registry:skill', registry: 'zed-projects', marketplaceId: 'zed' })),
       ...synthetic(3, (i) => ({ name: `beta-${i}`, title: `Beta ${i}`, type: 'registry:skill', registry: 'other-registry' })),
-      item({ id: 'hidden-tool', name: 'hidden-tool', title: 'Hidden Tool', type: 'registry:tool', registry: 'kortix-projects' }),
+      item({ id: 'hidden-tool', name: 'hidden-tool', title: 'Hidden Tool', type: 'registry:tool', registry: 'zed-projects' }),
     ];
-    const result = pageCatalogItems(items, { query: 'alpha', source: 'kortix', limit: 2, offset: 0 });
+    const result = pageCatalogItems(items, { query: 'alpha', source: 'zed', limit: 2, offset: 0 });
     expect(result.total).toBe(3);
     expect(result.items.length).toBe(2);
     expect(result.items.every((it) => it.name.startsWith('alpha'))).toBe(true);
   });
 
-  test('surfaces kortix-starter skills in the browse list alongside the Kortix Starter project', () => {
+  test('surfaces zed-starter skills in the browse list alongside the Zed Starter project', () => {
     const items = [
       item({
-        id: 'kortix-starter:pdf',
+        id: 'zed-starter:pdf',
         name: 'pdf',
         type: 'registry:skill',
-        registry: 'kortix-starter',
-        partOfProject: { id: 'kortix-projects:starter', title: 'Kortix Starter' },
+        registry: 'zed-starter',
+        partOfProject: { id: 'zed-projects:starter', title: 'Zed Starter' },
       }),
-      item({ id: 'kortix-projects:starter', name: 'starter', type: 'registry:project', registry: 'kortix-projects' }),
+      item({ id: 'zed-projects:starter', name: 'starter', type: 'registry:project', registry: 'zed-projects' }),
     ];
     const result = pageCatalogItems(items, {});
     expect(result.items.map((it) => it.name).sort()).toEqual(['pdf', 'starter']);
     expect(result.total).toBe(2);
     const pdf = result.items.find((it) => it.name === 'pdf')!;
-    expect(pdf.partOfProject).toEqual({ id: 'kortix-projects:starter', title: 'Kortix Starter' });
+    expect(pdf.partOfProject).toEqual({ id: 'zed-projects:starter', title: 'Zed Starter' });
   });
 
   test('surfaces skills and projects as browseable; hides agents/commands/bundles/support types', () => {

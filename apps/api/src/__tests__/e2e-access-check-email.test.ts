@@ -8,7 +8,7 @@ let ssoProvidersByDomain = new Map<string, { enforceSso: boolean }>();
 mock.module('../config', () => ({
   config: {
     DATABASE_URL: 'postgresql://mocked',
-    KORTIX_CHECK_EMAIL_REQS_PER_MIN: 1000,
+    ZED_CHECK_EMAIL_REQS_PER_MIN: 1000,
   },
 }));
 

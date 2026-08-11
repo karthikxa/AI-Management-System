@@ -1,4 +1,4 @@
-import type { SessionScope, SessionScopeInput } from "@kortix/sdk";
+import type { SessionScope, SessionScopeInput } from "@zed/sdk";
 
 import {
   emitJson,
@@ -8,10 +8,10 @@ import {
   takeFlagValue,
   takeFlagValues,
 } from "../command-helpers.ts";
-import { kortixFromAuth } from "../api/sdk.ts";
+import { zedFromAuth } from "../api/sdk.ts";
 import { C, help, status } from "../style.ts";
 
-const HELP = help`Usage: kortix sessions scope <session-id> [options]
+const HELP = help`Usage: zed sessions scope <session-id> [options]
 
 Read or replace a session's secret and connector access. Changes apply to the
 next prompt. Omitted categories remain unchanged. Repeated values form the full
@@ -193,11 +193,11 @@ export async function runSessionsScope(argv: string[]): Promise<number> {
   const located = await locateSessionAnywhere(
     command.sessionId,
     { projectArg: command.project, hostArg: command.host },
-    (host) => `kortix sessions scope ${command.sessionId} --host ${host}`,
+    (host) => `zed sessions scope ${command.sessionId} --host ${host}`,
   );
   if (!located) return 1;
   const { auth, projectId, session: sessionRow } = located.located;
-  const session = kortixFromAuth(auth).session(projectId, sessionRow.session_id);
+  const session = zedFromAuth(auth).session(projectId, sessionRow.session_id);
 
   let scope: SessionScope;
   try {

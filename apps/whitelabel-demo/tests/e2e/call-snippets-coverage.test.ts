@@ -9,7 +9,7 @@
  *
  * WHAT KEEPS THIS HONEST, exactly: the list of actions is NOT hand-written.
  * `callSignatures()` below reads the app's own source and extracts every
- * `@kortix/sdk` call it makes, normalised to `kortix.project().secrets.remove()`
+ * `@zed/sdk` call it makes, normalised to `zed.project().secrets.remove()`
  * form. The hand-maintained part is only the VERDICT on each one — a snippet id,
  * or a reason it needs none — and a call the source contains that the table does
  * not mention fails the run. So adding a new SDK call to this app turns this
@@ -21,8 +21,8 @@
  *  - `src/lib/call-snippets.ts` is EXCLUDED from the scan. It quotes SDK calls
  *    in its snippet text, and scanning it would let a snippet prove the app
  *    makes a call by being the only thing that mentions it.
- *  - the scanner only sees calls written as `kortix.…`. Actions that go through
- *    `@kortix/sdk/react` hooks or a hand-built request never appear, so those
+ *  - the scanner only sees calls written as `zed.…`. Actions that go through
+ *    `@zed/sdk/react` hooks or a hand-built request never appear, so those
  *    are declared in `OFF_CHAIN_ACTIONS` with a source marker that must still
  *    exist — an entry cannot survive the code it describes.
  *
@@ -125,7 +125,7 @@ function chainFrom(
   return { sig, end: i };
 }
 
-/** `const x = kortix.session(a, b)` — so what is called on `x` later counts too. */
+/** `const x = zed.session(a, b)` — so what is called on `x` later counts too. */
 const HANDLE_ASSIGNMENT =
   /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::\s*[^=]+)?=\s*(?:useMemo\(\s*\([^)]*\)\s*=>\s*)?$/;
 
@@ -133,25 +133,25 @@ const HANDLE_ASSIGNMENT =
 const PROMISE_TAIL = /(?:\.(?:then|catch|finally)\(\))+$/;
 
 /**
- * Every `@kortix/sdk` call one file makes, as `kortix.a.b()` signatures.
+ * Every `@zed/sdk` call one file makes, as `zed.a.b()` signatures.
  *
- * Handles bound to a variable are followed, because `const s = kortix.session(…)`
+ * Handles bound to a variable are followed, because `const s = zed.session(…)`
  * then `s.delete()` is the same action as calling it inline — and a coverage
  * check that missed it would be trivially defeated by ordinary refactoring.
  */
 export function callSignatures(source: string): string[] {
-  // `ctx.kortix` is the same client, passed through a server route's context.
-  const src = source.replace(/\bctx\.kortix\b/g, 'kortix');
+  // `ctx.zed` is the same client, passed through a server route's context.
+  const src = source.replace(/\bctx\.zed\b/g, 'zed');
   const signatures: string[] = [];
   const handles = new Map<string, string>();
 
-  const anchor = /(?<![\w$.])kortix(?![\w$])/g;
+  const anchor = /(?<![\w$.])zed(?![\w$])/g;
   let match: RegExpExecArray | null;
   while ((match = anchor.exec(src))) {
     const { sig, end } = chainFrom(
       src,
-      match.index + 'kortix'.length,
-      'kortix',
+      match.index + 'zed'.length,
+      'zed',
     );
     signatures.push(sig);
     const assignment = HANDLE_ASSIGNMENT.exec(
@@ -174,7 +174,7 @@ export function callSignatures(source: string): string[] {
   return (
     signatures
       .map((sig) => sig.replace(PROMISE_TAIL, ''))
-      // Only actual calls: a bare `kortix.project().git` is a doc comment or a
+      // Only actual calls: a bare `zed.project().git` is a doc comment or a
       // property read, not a request.
       .filter((sig) => sig.endsWith('()'))
   );
@@ -206,7 +206,7 @@ const REASONS = {
   'account-admin':
     'Account administration. `src/server/policy.ts` denies every `/accounts*` route but `accounts/me` in wrapper mode, so this is direct-mode UI a wrapper end user cannot reach at all.',
   'dashboard-parity':
-    'Not a KaaB action: Lumen mirrors the Kortix dashboard here (project settings, workspace files, git, change requests, previews, and the reads that back those screens). Ownership-gated like everything under `projects/{id}`, but the proxy neither narrows the request nor stamps a field on it, so a wrapper author writes the same call an operator does.',
+    'Not a KaaB action: Lumen mirrors the Zed dashboard here (project settings, workspace files, git, change requests, previews, and the reads that back those screens). Ownership-gated like everything under `projects/{id}`, but the proxy neither narrows the request nor stamps a field on it, so a wrapper author writes the same call an operator does.',
   'sdk-handle':
     'Builds an SDK handle or resolves the session runtime rather than issuing a REST request a wrapper author writes themselves — `session.prompt` is where that transport is explained.',
 } as const;
@@ -222,7 +222,7 @@ function snippetIds(
 }
 
 /**
- * Every `@kortix/sdk` call this app makes, and what the panel does about it.
+ * Every `@zed/sdk` call this app makes, and what the panel does about it.
  *
  * Keys are exactly what `callSignatures()` produces. A key here that the source
  * no longer contains fails, and a call in the source that is missing here fails
@@ -231,113 +231,113 @@ function snippetIds(
  */
 const ACTIONS: Record<string, CallSnippetId | CallSnippetId[] | Reason> = {
   // ── Shown, with the control that performs it ───────────────────────────────
-  'kortix.projects.provision()': 'project.provision',
-  'kortix.projects.list()': 'project.provision',
-  'kortix.project().connectors.connections.list()': 'connections.list',
-  'kortix.project().sessions.create()': 'session.create',
-  'kortix.session().changeModel()': 'session.model',
-  'kortix.session().scope()': 'session.rescope',
-  'kortix.session().rescope()': 'session.rescope',
-  'kortix.project().sessions.list()': 'sessions.list',
-  'kortix.session().restart()': 'session.delete',
-  'kortix.session().delete()': 'session.delete',
-  'kortix.billing.sessionCosts.list()': 'session.costs',
-  'kortix.project().approvals.resolve()': 'approval.resolve',
-  'kortix.project().secrets.upsert()': 'secret.upsert',
-  'kortix.project().secrets.remove()': 'secret.delete',
-  'kortix.project().setupLinks.requestConnector()': 'connector.connect-link',
+  'zed.projects.provision()': 'project.provision',
+  'zed.projects.list()': 'project.provision',
+  'zed.project().connectors.connections.list()': 'connections.list',
+  'zed.project().sessions.create()': 'session.create',
+  'zed.session().changeModel()': 'session.model',
+  'zed.session().scope()': 'session.rescope',
+  'zed.session().rescope()': 'session.rescope',
+  'zed.project().sessions.list()': 'sessions.list',
+  'zed.session().restart()': 'session.delete',
+  'zed.session().delete()': 'session.delete',
+  'zed.billing.sessionCosts.list()': 'session.costs',
+  'zed.project().approvals.resolve()': 'approval.resolve',
+  'zed.project().secrets.upsert()': 'secret.upsert',
+  'zed.project().secrets.remove()': 'secret.delete',
+  'zed.project().setupLinks.requestConnector()': 'connector.connect-link',
 
   // ── Account administration ────────────────────────────────────────────────
-  'kortix.accounts.create()': 'account-admin',
-  'kortix.accounts.get()': 'account-admin',
-  'kortix.accounts.invite()': 'account-admin',
-  'kortix.accounts.invites()': 'account-admin',
-  'kortix.accounts.leave()': 'account-admin',
-  'kortix.accounts.list()': 'account-admin',
-  'kortix.accounts.members()': 'account-admin',
-  'kortix.accounts.removeMember()': 'account-admin',
-  'kortix.accounts.updateMemberRole()': 'account-admin',
-  'kortix.accounts.updateName()': 'account-admin',
-  'kortix.projects.listForAccount()': 'account-admin',
+  'zed.accounts.create()': 'account-admin',
+  'zed.accounts.get()': 'account-admin',
+  'zed.accounts.invite()': 'account-admin',
+  'zed.accounts.invites()': 'account-admin',
+  'zed.accounts.leave()': 'account-admin',
+  'zed.accounts.list()': 'account-admin',
+  'zed.accounts.members()': 'account-admin',
+  'zed.accounts.removeMember()': 'account-admin',
+  'zed.accounts.updateMemberRole()': 'account-admin',
+  'zed.accounts.updateName()': 'account-admin',
+  'zed.projects.listForAccount()': 'account-admin',
 
   // ── Project administration + workspace (dashboard parity) ─────────────────
-  'kortix.project().access.approveRequest()': 'dashboard-parity',
-  'kortix.project().access.groupGrants()': 'dashboard-parity',
-  'kortix.project().access.invite()': 'dashboard-parity',
-  'kortix.project().access.list()': 'dashboard-parity',
-  'kortix.project().access.pendingInvites()': 'dashboard-parity',
-  'kortix.project().access.rejectRequest()': 'dashboard-parity',
-  'kortix.project().access.requests()': 'dashboard-parity',
-  'kortix.project().access.resendInvite()': 'dashboard-parity',
-  'kortix.project().access.revoke()': 'dashboard-parity',
-  'kortix.project().access.revokeInvite()': 'dashboard-parity',
-  'kortix.project().access.update()': 'dashboard-parity',
-  'kortix.project().archive()': 'dashboard-parity',
-  'kortix.project().changeRequests.close()': 'dashboard-parity',
-  'kortix.project().changeRequests.diff()': 'dashboard-parity',
-  'kortix.project().changeRequests.get()': 'dashboard-parity',
-  'kortix.project().changeRequests.list()': 'dashboard-parity',
-  'kortix.project().changeRequests.merge()': 'dashboard-parity',
-  'kortix.project().changeRequests.mergePreview()': 'dashboard-parity',
-  'kortix.project().changeRequests.open()': 'dashboard-parity',
-  'kortix.project().changeRequests.reopen()': 'dashboard-parity',
-  'kortix.project().connectors.config()': 'dashboard-parity',
-  'kortix.project().connectors.create()': 'dashboard-parity',
-  'kortix.project().connectors.list()': 'dashboard-parity',
-  'kortix.project().connectors.remove()': 'dashboard-parity',
-  'kortix.project().connectors.sync()': 'dashboard-parity',
-  'kortix.project().detail()': 'dashboard-parity',
-  'kortix.project().files.archive()': 'dashboard-parity',
-  'kortix.project().files.history()': 'dashboard-parity',
-  'kortix.project().files.list()': 'dashboard-parity',
-  'kortix.project().files.read()': 'dashboard-parity',
-  'kortix.project().files.search()': 'dashboard-parity',
-  'kortix.project().get()': 'dashboard-parity',
-  'kortix.project().git.branches()': 'dashboard-parity',
-  'kortix.project().git.commit()': 'dashboard-parity',
-  'kortix.project().git.commitDiff()': 'dashboard-parity',
-  'kortix.project().git.commits()': 'dashboard-parity',
-  'kortix.project().git.versionDiff()': 'dashboard-parity',
-  'kortix.project().llmCatalog()': 'dashboard-parity',
-  'kortix.project().onboardingComplete()': 'dashboard-parity',
-  'kortix.project().policies.list()': 'dashboard-parity',
-  'kortix.project().policies.set()': 'dashboard-parity',
-  'kortix.project().sandboxHealth()': 'dashboard-parity',
-  'kortix.project().secrets.list()': 'dashboard-parity',
-  'kortix.project().secrets.removePersonal()': 'dashboard-parity',
-  'kortix.project().secrets.setGitCredential()': 'dashboard-parity',
-  'kortix.project().secrets.setPersonal()': 'dashboard-parity',
-  'kortix.project().tokens.create()': 'dashboard-parity',
-  'kortix.project().triggers.create()': 'dashboard-parity',
-  'kortix.project().triggers.fire()': 'dashboard-parity',
-  'kortix.project().triggers.list()': 'dashboard-parity',
-  'kortix.project().triggers.remove()': 'dashboard-parity',
-  'kortix.project().triggers.setActivation()': 'dashboard-parity',
-  'kortix.project().triggers.update()': 'dashboard-parity',
-  'kortix.project().update()': 'dashboard-parity',
-  'kortix.project().updateExperimentalFeature()': 'dashboard-parity',
-  'kortix.projects.sandboxTemplates()': 'dashboard-parity',
-  'kortix.session().audit()': 'dashboard-parity',
-  'kortix.session().commit()': 'dashboard-parity',
-  'kortix.session().get()': 'dashboard-parity',
-  'kortix.session().health()': 'dashboard-parity',
-  'kortix.session().previews()': 'dashboard-parity',
-  'kortix.session().publicShares.create()': 'dashboard-parity',
-  'kortix.session().publicShares.list()': 'dashboard-parity',
-  'kortix.session().publicShares.revoke()': 'dashboard-parity',
-  'kortix.session().setSharing()': 'dashboard-parity',
-  'kortix.session().update()': 'dashboard-parity',
+  'zed.project().access.approveRequest()': 'dashboard-parity',
+  'zed.project().access.groupGrants()': 'dashboard-parity',
+  'zed.project().access.invite()': 'dashboard-parity',
+  'zed.project().access.list()': 'dashboard-parity',
+  'zed.project().access.pendingInvites()': 'dashboard-parity',
+  'zed.project().access.rejectRequest()': 'dashboard-parity',
+  'zed.project().access.requests()': 'dashboard-parity',
+  'zed.project().access.resendInvite()': 'dashboard-parity',
+  'zed.project().access.revoke()': 'dashboard-parity',
+  'zed.project().access.revokeInvite()': 'dashboard-parity',
+  'zed.project().access.update()': 'dashboard-parity',
+  'zed.project().archive()': 'dashboard-parity',
+  'zed.project().changeRequests.close()': 'dashboard-parity',
+  'zed.project().changeRequests.diff()': 'dashboard-parity',
+  'zed.project().changeRequests.get()': 'dashboard-parity',
+  'zed.project().changeRequests.list()': 'dashboard-parity',
+  'zed.project().changeRequests.merge()': 'dashboard-parity',
+  'zed.project().changeRequests.mergePreview()': 'dashboard-parity',
+  'zed.project().changeRequests.open()': 'dashboard-parity',
+  'zed.project().changeRequests.reopen()': 'dashboard-parity',
+  'zed.project().connectors.config()': 'dashboard-parity',
+  'zed.project().connectors.create()': 'dashboard-parity',
+  'zed.project().connectors.list()': 'dashboard-parity',
+  'zed.project().connectors.remove()': 'dashboard-parity',
+  'zed.project().connectors.sync()': 'dashboard-parity',
+  'zed.project().detail()': 'dashboard-parity',
+  'zed.project().files.archive()': 'dashboard-parity',
+  'zed.project().files.history()': 'dashboard-parity',
+  'zed.project().files.list()': 'dashboard-parity',
+  'zed.project().files.read()': 'dashboard-parity',
+  'zed.project().files.search()': 'dashboard-parity',
+  'zed.project().get()': 'dashboard-parity',
+  'zed.project().git.branches()': 'dashboard-parity',
+  'zed.project().git.commit()': 'dashboard-parity',
+  'zed.project().git.commitDiff()': 'dashboard-parity',
+  'zed.project().git.commits()': 'dashboard-parity',
+  'zed.project().git.versionDiff()': 'dashboard-parity',
+  'zed.project().llmCatalog()': 'dashboard-parity',
+  'zed.project().onboardingComplete()': 'dashboard-parity',
+  'zed.project().policies.list()': 'dashboard-parity',
+  'zed.project().policies.set()': 'dashboard-parity',
+  'zed.project().sandboxHealth()': 'dashboard-parity',
+  'zed.project().secrets.list()': 'dashboard-parity',
+  'zed.project().secrets.removePersonal()': 'dashboard-parity',
+  'zed.project().secrets.setGitCredential()': 'dashboard-parity',
+  'zed.project().secrets.setPersonal()': 'dashboard-parity',
+  'zed.project().tokens.create()': 'dashboard-parity',
+  'zed.project().triggers.create()': 'dashboard-parity',
+  'zed.project().triggers.fire()': 'dashboard-parity',
+  'zed.project().triggers.list()': 'dashboard-parity',
+  'zed.project().triggers.remove()': 'dashboard-parity',
+  'zed.project().triggers.setActivation()': 'dashboard-parity',
+  'zed.project().triggers.update()': 'dashboard-parity',
+  'zed.project().update()': 'dashboard-parity',
+  'zed.project().updateExperimentalFeature()': 'dashboard-parity',
+  'zed.projects.sandboxTemplates()': 'dashboard-parity',
+  'zed.session().audit()': 'dashboard-parity',
+  'zed.session().commit()': 'dashboard-parity',
+  'zed.session().get()': 'dashboard-parity',
+  'zed.session().health()': 'dashboard-parity',
+  'zed.session().previews()': 'dashboard-parity',
+  'zed.session().publicShares.create()': 'dashboard-parity',
+  'zed.session().publicShares.list()': 'dashboard-parity',
+  'zed.session().publicShares.revoke()': 'dashboard-parity',
+  'zed.session().setSharing()': 'dashboard-parity',
+  'zed.session().update()': 'dashboard-parity',
 
   // ── Handles and runtime resolution ────────────────────────────────────────
-  'kortix.session()': 'sdk-handle',
-  'kortix.session().ensureReady()': 'sdk-handle',
-  'kortix.session().previewUrl()': 'sdk-handle',
-  'kortix.session().proxyUrl()': 'sdk-handle',
+  'zed.session()': 'sdk-handle',
+  'zed.session().ensureReady()': 'sdk-handle',
+  'zed.session().previewUrl()': 'sdk-handle',
+  'zed.session().proxyUrl()': 'sdk-handle',
 };
 
 /**
  * The actions the scanner cannot see, because they are not written as
- * `kortix.…` calls at all. Each carries a marker that must still be in the
+ * `zed.…` calls at all. Each carries a marker that must still be in the
  * source, so an entry cannot outlive the thing it claims the app does.
  */
 const OFF_CHAIN_ACTIONS: {
@@ -464,7 +464,7 @@ describe('the new coverage does not weaken the two rules', () => {
     })
       .map((s) => `${s.sdk}\n${renderHttp(s.http)}\n${s.notes.join('\n')}`)
       .join('\n');
-    expect(text.match(/Bearer (?!\$KORTIX_API_KEY)\S+/)).toBeNull();
+    expect(text.match(/Bearer (?!\$ZED_API_KEY)\S+/)).toBeNull();
   });
 
   test('no snippet renders upstream customer attribution fields', () => {

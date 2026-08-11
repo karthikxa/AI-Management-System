@@ -15,14 +15,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { relativeTime } from '@/lib/utils';
 import type {
   PendingProjectInvite,
   ProjectAccessMember,
   ProjectAccessRequest,
   ProjectGroupGrant,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Mail, Send, Trash2, Users, X } from 'lucide-react';
 import { useState } from 'react';
@@ -41,26 +41,26 @@ export function MembersTab({ projectId }: { projectId: string }) {
 
   const access = useQuery({
     queryKey: membersKey,
-    queryFn: () => kortix.project(projectId).access.list(),
+    queryFn: () => zed.project(projectId).access.list(),
   });
   const requests = useQuery({
     queryKey: requestsKey,
-    queryFn: () => kortix.project(projectId).access.requests(),
+    queryFn: () => zed.project(projectId).access.requests(),
   });
   const pending = useQuery({
     queryKey: pendingKey,
-    queryFn: () => kortix.project(projectId).access.pendingInvites(),
+    queryFn: () => zed.project(projectId).access.pendingInvites(),
   });
   const grants = useQuery({
     queryKey: grantsKey,
-    queryFn: () => kortix.project(projectId).access.groupGrants(),
+    queryFn: () => zed.project(projectId).access.groupGrants(),
   });
 
   const [email, setEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<Role>('member');
 
   const invite = useMutation({
-    mutationFn: () => kortix.project(projectId).access.invite(email.trim(), inviteRole),
+    mutationFn: () => zed.project(projectId).access.invite(email.trim(), inviteRole),
     onSuccess: () => {
       setEmail('');
       qc.invalidateQueries({ queryKey: membersKey });
@@ -72,7 +72,7 @@ export function MembersTab({ projectId }: { projectId: string }) {
 
   const updateRole = useMutation({
     mutationFn: (v: { userId: string; role: Role }) =>
-      kortix.project(projectId).access.update(v.userId, v.role),
+      zed.project(projectId).access.update(v.userId, v.role),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: membersKey });
       toast.success('Role updated');
@@ -81,7 +81,7 @@ export function MembersTab({ projectId }: { projectId: string }) {
   });
 
   const revoke = useMutation({
-    mutationFn: (userId: string) => kortix.project(projectId).access.revoke(userId),
+    mutationFn: (userId: string) => zed.project(projectId).access.revoke(userId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: membersKey });
       toast.success('Access revoked');
@@ -91,7 +91,7 @@ export function MembersTab({ projectId }: { projectId: string }) {
 
   const approve = useMutation({
     mutationFn: (requestId: string) =>
-      kortix.project(projectId).access.approveRequest(requestId, 'member'),
+      zed.project(projectId).access.approveRequest(requestId, 'member'),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: requestsKey });
       qc.invalidateQueries({ queryKey: membersKey });
@@ -101,7 +101,7 @@ export function MembersTab({ projectId }: { projectId: string }) {
   });
 
   const reject = useMutation({
-    mutationFn: (requestId: string) => kortix.project(projectId).access.rejectRequest(requestId),
+    mutationFn: (requestId: string) => zed.project(projectId).access.rejectRequest(requestId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: requestsKey });
       toast.success('Request rejected');
@@ -110,7 +110,7 @@ export function MembersTab({ projectId }: { projectId: string }) {
   });
 
   const resendInvite = useMutation({
-    mutationFn: (inviteId: string) => kortix.project(projectId).access.resendInvite(inviteId),
+    mutationFn: (inviteId: string) => zed.project(projectId).access.resendInvite(inviteId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: pendingKey });
       toast.success('Invite resent');
@@ -119,7 +119,7 @@ export function MembersTab({ projectId }: { projectId: string }) {
   });
 
   const revokeInvite = useMutation({
-    mutationFn: (inviteId: string) => kortix.project(projectId).access.revokeInvite(inviteId),
+    mutationFn: (inviteId: string) => zed.project(projectId).access.revokeInvite(inviteId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: pendingKey });
       toast.success('Invite revoked');

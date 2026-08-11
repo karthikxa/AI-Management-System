@@ -1,5 +1,5 @@
 import { createRoute, z } from '@hono/zod-openapi';
-import { changeRequests } from '@kortix/db';
+import { changeRequests } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { PROJECT_ACTIONS } from '../../iam';
 import { assertAgentScope } from '../../iam/agent-scope';
@@ -68,13 +68,13 @@ projectsApp.openapi(
 
     // Manifest gate: a CR cannot merge if the would-be-merged manifest doesn't
     // validate against the canonical schema. We read the manifest from the HEAD
-    // branch (what's about to be merged), preferring kortix.yaml over kortix.toml.
+    // branch (what's about to be merged), preferring zed.yaml over zed.toml.
     // If the head doesn't have a manifest, that's fine — projects with a
-    // `.kortix/`-only layout still merge. The same validator runs in the CLI's
-    // `kortix ship` pre-flight, so CLI users see the same diagnostic before push.
+    // `.zed/`-only layout still merge. The same validator runs in the CLI's
+    // `zed ship` pre-flight, so CLI users see the same diagnostic before push.
     try {
       const { validateManifest, manifestFormatForPath, manifestCandidatePaths } = await import(
-        '@kortix/manifest-schema'
+        '@zed/manifest-schema'
       );
       const found = await readManifestFromRepo(
         projectForGit,
@@ -107,8 +107,8 @@ projectsApp.openapi(
     try {
       result = await mergeBranches(projectForGit, cr.baseRef, cr.headRef, {
         message: customMessage ?? `Merge CR #${cr.number}: ${cr.title}`,
-        authorName: 'Kortix',
-        authorEmail: 'noreply@kortix.ai',
+        authorName: 'Zed',
+        authorEmail: 'noreply@zed.ai',
       });
     } catch (error) {
       if (error instanceof MergeConflictError) {
@@ -160,7 +160,7 @@ projectsApp.openapi(
       source: 'cr-merge',
     });
 
-    // A merged CR may have edited kortix.yaml's `connectors:` list. The connector DB
+    // A merged CR may have edited zed.yaml's `connectors:` list. The connector DB
     // cache (what the gateway + dashboard read) is derived from the manifest, so
     // reconcile it from the new tip — best-effort, never blocks the merge
     // response. The manifest in git stays the source of truth either way; the

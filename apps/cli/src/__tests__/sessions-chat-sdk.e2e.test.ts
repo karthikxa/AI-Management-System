@@ -10,15 +10,15 @@ const ACCOUNT_ID = '00000000-0000-4000-a000-00000000c222';
 const SESSION_ID = '00000000-0000-4000-a000-00000000c333';
 const OPENCODE_SESSION_ID = 'ses_cli_sdk';
 const EXTERNAL_ID = 'external-cli-sdk';
-const TOKEN = 'kortix_pat_cli_sdk';
+const TOKEN = 'zed_pat_cli_sdk';
 
 const ENV_KEYS = [
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CONFIG_FILE',
+  'ZED_CLI_TOKEN',
+  'ZED_TOKEN',
+  'ZED_API_URL',
+  'ZED_PROJECT_ID',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
 ] as const;
 
 const savedEnv: Record<string, string | undefined> = {};
@@ -92,9 +92,9 @@ describe('sessions chat uses the session-scoped SDK runtime', () => {
   beforeEach(() => {
     for (const key of ENV_KEYS) savedEnv[key] = process.env[key];
     for (const key of ENV_KEYS) delete process.env[key];
-    process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+    process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
 
-    directory = mkdtempSync(join(tmpdir(), 'kortix-cli-sdk-chat-'));
+    directory = mkdtempSync(join(tmpdir(), 'zed-cli-sdk-chat-'));
     stdout = '';
     stderr = '';
     promptBody = null;
@@ -145,7 +145,7 @@ describe('sessions chat uses the session-scoped SDK runtime', () => {
     });
 
     const configPath = join(directory, 'config.json');
-    process.env.KORTIX_CONFIG_FILE = configPath;
+    process.env.ZED_CONFIG_FILE = configPath;
     writeFileSync(
       configPath,
       JSON.stringify({

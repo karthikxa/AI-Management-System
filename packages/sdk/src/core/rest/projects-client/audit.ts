@@ -1,5 +1,5 @@
 // Account audit log — the Enterprise reconstruction trail, backed by
-// `kortix.audit_events`. The API middleware records authenticated requests.
+// `zed.audit_events`. The API middleware records authenticated requests.
 // Domain writers add semantic session, connector, approval, and computer events.
 // Per-account webhooks mirror the same stream to a SIEM. Reads are gated on
 // `audit.read` + the account's `auditAccess` entitlement server-side.

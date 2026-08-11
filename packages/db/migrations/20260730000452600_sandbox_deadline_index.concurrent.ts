@@ -50,7 +50,7 @@ export const up = (pgm) => {
   // a seq scan as session_sandboxes grows.
   pgm.sql(`
     create index concurrently if not exists idx_session_sandboxes_deadline_active
-      on kortix.session_sandboxes (deadline_at)
+      on zed.session_sandboxes (deadline_at)
       where status = 'active'
   `);
   // Validating the NOT VALID cap from the companion .sql migration takes only a
@@ -60,7 +60,7 @@ export const up = (pgm) => {
   // on every new write from the moment it was added; this only proves the
   // pre-existing rows conform.
   pgm.sql(`
-    alter table kortix.session_sandboxes
+    alter table zed.session_sandboxes
       validate constraint session_sandboxes_deadline_within_cap
   `);
 };

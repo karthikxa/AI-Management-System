@@ -3,9 +3,9 @@
 import { emojiTint } from '@/components/ui/emoji-tint';
 import { glyphComponent } from '@/components/ui/glyph-registry';
 import { glyphForeground, glyphTint } from '@/components/ui/glyph-tint';
-import type { Icon } from '@/components/ui/kortix-icons';
+import type { Icon } from '@/components/ui/zed-icons';
 import { cn } from '@/lib/utils';
-import { chalkColors } from '@kortix/shared';
+import { chalkColors } from '@zed/shared';
 import { type Icon as IconType } from '@phosphor-icons/react';
 
 /**
@@ -74,7 +74,7 @@ export interface EntityAvatarProps {
    * own icon. Beaten by `glyph`; takes precedence over `icon` and over the
    * label's initial.
    *
-   * Typed `| null` so it takes `KortixProject.icon` (server-validated to one
+   * Typed `| null` so it takes `ZedProject.icon` (server-validated to one
    * emoji, or null) with no coercion at the call site. Anything falsy — null,
    * undefined, '' — is "no emoji" and falls through to the existing behaviour,
    * which is what keeps all ~30 emoji-less call sites byte-identical.

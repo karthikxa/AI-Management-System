@@ -2,7 +2,7 @@
 
 Status: working document
 Date: 2026-07-26
-Owner: Kortix product
+Owner: Zed product
 Related: `docs/specs/2026-07-24-agi-system.md` (identity, authorization, session
 execution — assumed, not restated), `docs/specs/2026-07-14-trigger-session-strategy.md`
 
@@ -41,9 +41,9 @@ Five nouns. No more.
 |---|---|---|
 | **Workspace** | The company. One linked cloud project. The unit of ownership. | existing |
 | **AGI** | The single agent you talk to. Platform-owned, present in every workspace. | platform |
-| **Goal** | A durable objective with written completion criteria. Authored. Few. | `kortix.yaml` |
+| **Goal** | A durable objective with written completion criteria. Authored. Few. | `zed.yaml` |
 | **Task** | A unit of work. Generated, claimed, contended. Many. | DB |
-| **Trigger** | The only thing that starts work without a human. | `kortix.yaml` (existing) |
+| **Trigger** | The only thing that starts work without a human. | `zed.yaml` (existing) |
 
 R-1 — There MUST NOT be a sixth noun. Projects, spaces, milestones, epics, org
 charts, and roles are deferred indefinitely; §7 explains what replaces them.
@@ -88,11 +88,11 @@ tasks are not in git, and it is sufficient.
 
 A goal is the durable object. Tasks are disposable; the goal persists.
 
-R-6 — Goals MUST be declared in `kortix.yaml` and applied by `kortix ship`,
+R-6 — Goals MUST be declared in `zed.yaml` and applied by `zed ship`,
 using the manifest's existing review and change-control path.
 
 ```yaml
-kortix_version: 2
+zed_version: 2
 
 goals:
   - slug: oil-desk
@@ -107,7 +107,7 @@ goals:
 
 R-7 — A goal MUST carry `done_when`: prose completion criteria a session can
 evaluate against evidence. A goal without `done_when` is a wish and MUST be
-rejected by `kortix validate`.
+rejected by `zed validate`.
 
 R-8 — `push` MUST desugar to exactly one cron trigger in the existing trigger
 subsystem. It is sugar, not a second scheduler (R-7.8, 2026-07-24 spec).
@@ -151,7 +151,7 @@ R-12c — A session records one with a single CLI verb, so that any agent, any
 trigger, and any webhook handler all use the same path:
 
 ```
-kortix goals observe <goal-slug> --metric <name> --value <number>
+zed goals observe <goal-slug> --metric <name> --value <number>
 ```
 
 R-12d — `done_when` MAY be a **held** condition rather than a finish line
@@ -174,7 +174,7 @@ access grant, a decision — MUST deliver that request to a surface a human will
 see: a channel message, a notification, or a pending item attached to the task.
 Writing it into the session log is NOT delivery.
 
-Rationale: the interactive path is already correct (`kortix secrets request`
+Rationale: the interactive path is already correct (`zed secrets request`
 mints a link; the agent never sees the value). The unattended path is not. A
 07:00 push that discovers it needs an access grant currently mints the URL and
 writes it where only that session can see it, then stalls silently. For a fresh
@@ -245,7 +245,7 @@ scheduler, or any second path.
 
 This is the central design decision and the largest departure from Paperclip,
 which has ~40 derived wake sources feeding a dedicated `agent_wakeup_requests`
-table. Kortix already has cron, one-off `runAt`, signed webhooks, payload
+table. Zed already has cron, one-off `runAt`, signed webhooks, payload
 filters, and `session_strategy: fresh|reuse|pinned|keyed`. That is the engine.
 
 ### 6.1 A recurring task is a trigger
@@ -291,7 +291,7 @@ to need it. `tasks.project` reserves the column so the eventual grouping — a
 space, a tag, or a sub-workspace — lands without a migration.
 
 R-27 — There MUST NOT be an org chart, a role hierarchy, or a chain of command.
-Kortix already resolves capability through agent grants; a second authority
+Zed already resolves capability through agent grants; a second authority
 model that disagrees with grants is a security defect, not a feature.
 
 ---
@@ -357,14 +357,14 @@ list.
 R-38 — The AGI works by spawning sessions and managing goals and tasks. It
 SHOULD NOT do the work itself when a session can.
 
-R-38a — The AGI's own writes are limited to authored state: `kortix.yaml`
+R-38a — The AGI's own writes are limited to authored state: `zed.yaml`
 (goals, triggers, agent pins) and documents it authored itself. Everything a
 task produces — code, and the skills and docs of R-4/R-9.5 — is written by the
 session that did the work, which already has a checkout.
 
 R-38b — When the AGI writes, it clones on demand (never at boot — R-36), works
 on a branch, pushes, and opens a change request (R-9.6). It MUST NOT push to the
-default branch, MUST NOT use `kortix ship` (which pushes the branch it is
+default branch, MUST NOT use `zed ship` (which pushes the branch it is
 standing on, i.e. the default branch of a fresh clone), and MUST NOT merge its
 own change request even though its grant permits it.
 
@@ -383,16 +383,16 @@ refused entirely rather than partially applied. Denial is a git-native
 `report-status` document, not an HTTP 403, so `git push` prints
 `! [remote rejected] … (protected: agents land work through a change request…)`
 and exits 1. Human principals are never parsed, so `git push` from a laptop and
-`kortix ship` from a laptop are byte-identical to before. An agent push whose
+`zed ship` from a laptop are byte-identical to before. An agent push whose
 command list cannot be read fails CLOSED — the asymmetry is that failing open
 costs the entire control while failing closed cannot touch a human flow.
-Kill switch: `KORTIX_GIT_PROXY_DEFAULT_BRANCH_PROTECTION`
+Kill switch: `ZED_GIT_PROXY_DEFAULT_BRANCH_PROTECTION`
 (`enforce` default | `observe` | `off`). See `apps/api/src/git-proxy/`.
 
 R-38b.2 — The "MUST NOT merge its own change request" half remains UNENFORCED
 and is carried only by the AGI's behavior file. CR merge runs server-side from
 the API's bare mirror straight to the upstream and never traverses the git
-proxy, so no ref-level control can see it; the AGI's grant (`kortixCli: 'all'`)
+proxy, so no ref-level control can see it; the AGI's grant (`zedCli: 'all'`)
 satisfies `assertAgentScope(c, 'project.cr.merge')`. R-9.6 is therefore only
 HALF enforced today. Closing it is a separate change in the grant/CR layer —
 either drop `project.cr.merge`/`project.gitops.merge` from `agiAgentGrant()`, or
@@ -408,19 +408,19 @@ more. It MUST NOT be able to grant itself capability the launching user lacks.
 
 ### 10.1 CLI
 
-R-40 — Bare `kortix` MUST present an agent picker for the linked workspace with
+R-40 — Bare `zed` MUST present an agent picker for the linked workspace with
 the AGI elevated and preselected, and MUST start a session with the chosen
-agent. The current help banner moves to `kortix --help`.
+agent. The current help banner moves to `zed --help`.
 
 R-41 — The single-workspace binding this depends on is specified and delivered
-separately. Until it lands, bare `kortix` uses the currently linked project.
+separately. Until it lands, bare `zed` uses the currently linked project.
 
 R-42 — Goals and tasks MUST be fully operable from the CLI, since that is how
 agents operate them:
 
 ```
-kortix goals ls|show|push
-kortix tasks ls|show|new|claim|done|block
+zed goals ls|show|push
+zed tasks ls|show|new|claim|done|block
 ```
 
 R-43 — Every capability here MUST be reachable from CLI, API, and SDK. A
@@ -465,13 +465,13 @@ commands, no UI, no manifest keys.
 Each step is independently shippable and independently useful.
 
 1. **Experimental key `agi`** — gate exists, everything below hangs off it.
-2. **Tasks** — table, claim semantics, `kortix tasks` CLI, API routes. Usable by
+2. **Tasks** — table, claim semantics, `zed tasks` CLI, API routes. Usable by
    existing agents immediately, with no AGI and no goals.
-3. **Goals** — `kortix.yaml` block, `validate` enforcement, `push` desugaring to
-   a trigger, `kortix goals` CLI.
+3. **Goals** — `zed.yaml` block, `validate` enforcement, `push` desugaring to
+   a trigger, `zed goals` CLI.
 4. **AGI agent** — platform-owned resolution path, cloud boot with workspace
    context by env, prompt teaching §4.1, §5, §8.
-5. **Elevation** — bare `kortix` picker; AGI elevated in web UI.
+5. **Elevation** — bare `zed` picker; AGI elevated in web UI.
 6. **Liveness** — no-progress detection (R-33) and bounded escalation (R-32).
 
 Step 2 is the first thing that changes how a session behaves. Step 6 is what

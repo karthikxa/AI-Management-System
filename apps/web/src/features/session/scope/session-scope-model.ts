@@ -4,7 +4,7 @@ import type {
   ProjectSecret,
   SessionScope,
   SessionScopeInput,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 export interface SessionScopeDraft {
   secrets?: string[] | null;

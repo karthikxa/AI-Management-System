@@ -30,7 +30,7 @@ import {
   projects,
   serviceAccounts,
   type AgentGrant,
-} from '@kortix/db';
+} from '@zed/db';
 import { db } from '../shared/db';
 import { retryTransientDatabaseRead } from '../shared/database-errors';
 import { ttlMemo } from '../shared/ttl-memo';
@@ -456,7 +456,7 @@ export function computeTokenScope(
 // A project action that an agent grant SHOULD gate. The coarse membership
 // actions (read/write, what loadProjectForUser maps onto) are exempt: a route
 // that does loadProjectForUser('write') is just checking membership tier, and a
-// leaf-scoped agent (e.g. kortixCli=['project.gitops.push']) must still pass it —
+// leaf-scoped agent (e.g. zedCli=['project.gitops.push']) must still pass it —
 // the route's own leaf assertAuthorized is what the grant gates. Every OTHER
 // project action (gitops.*, secret.*, trigger.*, deploy, members.manage, …) is a
 // specific capability the agent must hold in its grant.
@@ -619,7 +619,7 @@ export async function authorizeV2(
   }
 
   // (standingRole|userRole) ∩ agentGrant — the central enforcement. A scoped
-  // agent session token can never exceed its kortix.yaml kortixCli on a specific
+  // agent session token can never exceed its zed.yaml zedCli on a specific
   // capability, EVEN when the resolved role (the agent's standing SA role, or the
   // launching user) would allow it. This is the per-task narrowing on top of the
   // standing identity. Enforced here (not per-route) so it can't be forgotten on

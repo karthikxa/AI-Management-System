@@ -25,7 +25,7 @@ export const SHARED_AUTH_DEFAULTS: Record<string, string> = {
   ENABLE_PHONE_AUTOCONFIRM: 'false',
   // Sign-in UI method order. Password-first so no email is required out of the
   // box; add 'magic' after SMTP is configured.
-  KORTIX_PUBLIC_AUTH_METHODS: 'password',
+  ZED_PUBLIC_AUTH_METHODS: 'password',
 };
 
 /** Agent code-execution sandbox provider (Daytona SaaS by default). */
@@ -39,41 +39,41 @@ export const SHARED_SANDBOX_DEFAULTS: Record<string, string> = {
  * Configuration feature flags: landing-page disable, enterprise license, and
  * billing. A fresh self-host runs on the free-tier entitlement set and has
  * billing disabled (no Stripe keys to configure). The marketing/landing site
- * is DEACTIVATED by default (KORTIX_PUBLIC_DISABLE_LANDING_PAGE='true') — a
+ * is DEACTIVATED by default (ZED_PUBLIC_DISABLE_LANDING_PAGE='true') — a
  * self-host is an app deployment, not a marketing site, so every marketing
- * route auto-redirects to the app (see apps/web middleware). `kortix self-host
+ * route auto-redirects to the app (see apps/web middleware). `zed self-host
  * configure` / the init wizard / --landing, --no-landing, --enterprise-license
  * flip these; they are ordinary runtime env, so they survive
- * `kortix self-host update` unchanged (only the image tags move) and are
+ * `zed self-host update` unchanged (only the image tags move) and are
  * explicit in .env instead of only hard-coded into the compose template.
  */
 export const SHARED_FEATURE_FLAG_DEFAULTS: Record<string, string> = {
   // Marketing site off by default on self-host — redirect straight to the app.
-  KORTIX_PUBLIC_DISABLE_LANDING_PAGE: 'true',
+  ZED_PUBLIC_DISABLE_LANDING_PAGE: 'true',
   ENTERPRISE_LICENSE_AVAILABLE: 'false',
-  KORTIX_BILLING_INTERNAL_ENABLED: 'false',
-  KORTIX_PUBLIC_BILLING_ENABLED: 'false',
+  ZED_BILLING_INTERNAL_ENABLED: 'false',
+  ZED_PUBLIC_BILLING_ENABLED: 'false',
   // Pipedream-backed connector UI (the "Connect your tools" onboarding step,
   // the "Easy connect" app catalogue) off by default — a fresh self-host has
   // no PIPEDREAM_CLIENT_ID/SECRET/PROJECT_ID configured, and those surfaces
-  // would otherwise dead-end in a 501. `kortix self-host configure` flips
+  // would otherwise dead-end in a 501. `zed self-host configure` flips
   // this to 'true' once Pipedream credentials are set (see selfHostConfigure
   // in commands/self-host.ts). Custom connectors (OpenAPI/GraphQL/MCP/HTTP)
   // and Slack/email channels are unaffected — they don't depend on Pipedream.
-  KORTIX_PUBLIC_CONNECTORS_ENABLED: 'false',
+  ZED_PUBLIC_CONNECTORS_ENABLED: 'false',
   // Account-creation restriction: DEFAULT ON for self-host — a VPS operator
   // usually wants to be the only one who can spin up new organizations on
   // their own instance. Signups, existing teams, and SSO/JIT membership are
   // entirely unaffected; only POST /v1/accounts (creating an ADDITIONAL/org
-  // account) is gated to platform admins (KORTIX_PLATFORM_ADMIN_EMAILS) — see
+  // account) is gated to platform admins (ZED_PLATFORM_ADMIN_EMAILS) — see
   // registerAccountRoutes() in apps/api/src/accounts/core/accounts.ts.
-  // KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION mirrors it on the frontend to
-  // hide "New account" UI for non-admins. `kortix self-host init/configure`'s
+  // ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION mirrors it on the frontend to
+  // hide "New account" UI for non-admins. `zed self-host init/configure`'s
   // deployment-shape question (promptFeatureFlags) flips both; disable via
-  // `env set KORTIX_RESTRICT_ACCOUNT_CREATION=false
-  // KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION=false` or `--no-restrict-account-creation`.
-  KORTIX_RESTRICT_ACCOUNT_CREATION: 'true',
-  KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION: 'true',
+  // `env set ZED_RESTRICT_ACCOUNT_CREATION=false
+  // ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION=false` or `--no-restrict-account-creation`.
+  ZED_RESTRICT_ACCOUNT_CREATION: 'true',
+  ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION: 'true',
 };
 
 /** Every target-agnostic default in one object, for a single spread. */

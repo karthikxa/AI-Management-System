@@ -28,7 +28,7 @@ import { reasoningEffort as explicitReasoningEffort } from '../transports/route-
  * temperature:false model, always clamp `reasoning_effort` to the model's
  * own `reasoning_options` values, always clamp `max_output_tokens` to
  * `limit.output`) happen BEFORE this, PER CANDIDATE — see
- * `@kortix/llm-catalog`'s `clampGenerationConfig`, run by the host each time
+ * `@zed/llm-catalog`'s `clampGenerationConfig`, run by the host each time
  * it builds a candidate's defaults (apps/api's routing/resolve-route.ts's
  * `generationDefaultsFor`, invoked once per failover candidate via
  * `generationDefaultsForModel`). This function trusts its input.

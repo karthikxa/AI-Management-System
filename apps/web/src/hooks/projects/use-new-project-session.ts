@@ -26,9 +26,9 @@ import {
   type PendingSessionPrompt,
   type SessionConnectorBindingsInput,
   setProjectSessionScope,
-} from '@kortix/sdk';
-import { markSessionFresh } from '@kortix/sdk/fresh-sessions';
-import { prefetchSessionStart, qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { markSessionFresh } from '@zed/sdk/fresh-sessions';
+import { prefetchSessionStart, qk } from '@zed/sdk/react';
 
 /**
  * The shared project-session entry path. Calls without options only open the

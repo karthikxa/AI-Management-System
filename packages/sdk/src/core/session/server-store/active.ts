@@ -8,7 +8,7 @@ import { getBackendUrl, getDefaultSandboxUrl } from './url-helpers';
 
 /**
  * Active-runtime resolution, framework-free. These are the read helpers the
- * isomorphic core (`createKortix`, the opencode client factory) resolves the
+ * isomorphic core (`createZed`, the opencode client factory) resolves the
  * runtime through; the zustand read surface in `../server-store` layers on top
  * for React hosts.
  */
@@ -70,7 +70,7 @@ export function getBackendPort(): number {
  * through the same backend preview proxy; the `apiBaseUrl` field lets
  * `rewriteLocalhostUrl` take the path-based branch on VPS/cloud deployments
  * where *.localhost DNS isn't available. The sandbox id comes from the active
- * runtime (no legacy 'kortix-sandbox' default — it masked the real cloud sandbox
+ * runtime (no legacy 'zed-sandbox' default — it masked the real cloud sandbox
  * and 403'd the preview proxy).
  */
 export function deriveSubdomainOpts(): {

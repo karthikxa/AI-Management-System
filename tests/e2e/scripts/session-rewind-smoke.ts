@@ -2,7 +2,7 @@
 
 import { randomUUID } from 'node:crypto';
 
-import { createScopedKortix } from '@kortix/sdk/server';
+import { createScopedZed } from '@zed/sdk/server';
 
 import { createApiJsonClient } from '../helpers/http';
 import {
@@ -18,7 +18,7 @@ const supabaseUrl = process.env.E2E_SUPABASE_URL || 'http://127.0.0.1:54321';
 const password = 'SessionRewind123!';
 const api = createApiJsonClient(apiBase);
 const keepFixture = process.env.E2E_KEEP_SESSION_REWIND_FIXTURE === '1';
-const model = 'kortix/claude-sonnet-4.6';
+const model = 'zed/claude-sonnet-4.6';
 
 let user: AuthUser | null = null;
 let auth: AuthSession | null = null;
@@ -123,8 +123,8 @@ async function main(): Promise<void> {
   });
   const agentConfig = await api<{
     block: Record<string, any>;
-  }>(token, 'GET', `/projects/${projectId}/agents/kortix/config`);
-  await api(token, 'PUT', `/projects/${projectId}/agents/kortix/config`, {
+  }>(token, 'GET', `/projects/${projectId}/agents/zed/config`);
+  await api(token, 'PUT', `/projects/${projectId}/agents/zed/config`, {
     ...agentConfig.block,
     opencode: {
       ...agentConfig.block.opencode,
@@ -163,11 +163,11 @@ async function main(): Promise<void> {
   const canonicalSessionId = restReady.opencode_session_id;
   const runtimeUrl = `${apiBase}/p/${restReady.sandbox.external_id}/8000`;
 
-  const kortix = createScopedKortix({
+  const zed = createScopedZed({
     backendUrl: apiBase,
     getToken: () => token,
   });
-  const handle = kortix.session(projectId, sessionId);
+  const handle = zed.session(projectId, sessionId);
   const readFile = async (path: string) => (await handle.files.read(path)).content.trim();
   const waitForFile = (path: string, expected: string) =>
     waitFor(
@@ -176,7 +176,7 @@ async function main(): Promise<void> {
       `${path}=${expected}`,
     );
 
-  handle.setModel({ providerID: 'kortix', modelID: 'claude-sonnet-4.6' });
+  handle.setModel({ providerID: 'zed', modelID: 'claude-sonnet-4.6' });
 
   const restOne = 'REST_REWIND_ONE';
   const restTwo = 'REST_REWIND_TWO';

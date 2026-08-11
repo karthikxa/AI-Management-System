@@ -8,7 +8,7 @@ import {
 } from './file-availability';
 
 // Injected, never `mock.module`: the mock registry in this workspace is
-// process-wide, so faking `@kortix/sdk/react` here would break every sibling
+// process-wide, so faking `@zed/sdk/react` here would break every sibling
 // suite that imports a key the fake happens to omit.
 const reads: string[] = [];
 

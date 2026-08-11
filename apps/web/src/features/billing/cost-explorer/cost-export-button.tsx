@@ -7,11 +7,11 @@ import {
   type CostExportResult,
   type ProjectCostExportOptions,
   type SessionCostExportOptions,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 import { Button } from '@/components/ui/button';
 import type { CostRange } from '@/components/ui/date-range-picker';
-import { IconDownload } from '@/components/ui/kortix-icons';
+import { IconDownload } from '@/components/ui/zed-icons';
 import Loading from '@/components/ui/loading';
 import { errorToast, warningToast } from '@/components/ui/toast';
 import { useBillingAccountId } from '@/stores/billing-account-context';
@@ -37,7 +37,7 @@ export type CostExportKind = 'projects' | 'sessions';
  * for that same window. Do not "fix" this back to the raw `to`.
  */
 export function buildExportFilename(kind: CostExportKind, range: CostRange): string {
-  if (range.preset !== 'custom') return `kortix-${kind}-last-${range.preset}.csv`;
+  if (range.preset !== 'custom') return `zed-${kind}-last-${range.preset}.csv`;
 
   const from = utcDay(range.from, 'start');
   const to = utcDay(range.to, 'end');
@@ -45,10 +45,10 @@ export function buildExportFilename(kind: CostExportKind, range: CostRange): str
   // straight from the URL without validating them, so an edited or truncated
   // link can reach here with a string `Date` cannot parse. Reading calendar
   // parts off an Invalid Date yields NaN, which would name the file
-  // `kortix-sessions-NaN-NaN-NaN…` — an undated filename is the smaller loss.
-  if (from === null || to === null) return `kortix-${kind}-export.csv`;
+  // `zed-sessions-NaN-NaN-NaN…` — an undated filename is the smaller loss.
+  if (from === null || to === null) return `zed-${kind}-export.csv`;
 
-  return `kortix-${kind}-${from}-to-${to}.csv`;
+  return `zed-${kind}-${from}-to-${to}.csv`;
 }
 
 /**
@@ -149,7 +149,7 @@ export function countCsvDataRows(body: string): number {
  * The truncation warning for an export, or `null` when it was complete.
  *
  * `rowCap` is the CAP VALUE the route reports on every response
- * (`x-kortix-row-cap` = `CSV_ROW_CAP`), not a truncation flag: a 3-row export
+ * (`x-zed-row-cap` = `CSV_ROW_CAP`), not a truncation flag: a 3-row export
  * and a capped one carry the identical header. Truncation is only knowable by
  * comparing the rows actually present against that cap, which is why this
  * takes both.

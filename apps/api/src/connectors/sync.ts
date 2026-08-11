@@ -7,9 +7,9 @@ import {
   connectorProjectSettings,
   projectSessionConnectorBindings,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 /**
- * Connector materialization sweep — read `connectors:` from kortix.yaml,
+ * Connector materialization sweep — read `connectors:` from zed.yaml,
  * fetch + normalize each connector's catalog, and upsert into the DB
  * (connectors / _actions / _policies). Definitions live in git
  * (manifest = source of truth, like triggers); this populates the runtime view
@@ -99,11 +99,11 @@ export async function setMaterializedComputerConnectorPolicies(
 }
 
 function connectorAuthTimeoutMs(): number {
-  return configuredTimeoutMs('KORTIX_CONNECTOR_AUTH_TIMEOUT_MS', 15_000, 1_000);
+  return configuredTimeoutMs('ZED_CONNECTOR_AUTH_TIMEOUT_MS', 15_000, 1_000);
 }
 
 function connectorManifestTimeoutMs(): number {
-  return configuredTimeoutMs('KORTIX_CONNECTOR_MANIFEST_TIMEOUT_MS', 30_000, 1_000);
+  return configuredTimeoutMs('ZED_CONNECTOR_MANIFEST_TIMEOUT_MS', 30_000, 1_000);
 }
 
 const EMPTY_AUTH_DISCOVERY: ConnectorAuthDiscovery = {
@@ -219,9 +219,9 @@ async function discoverConnectorAuthFromSource(
 /**
  * Best-effort re-materialization after a channel platform install changes
  * (connect / disconnect). Persists the channel connector as a first-class
- * kortix.yaml connection (or removes it on disconnect), then runs the normal sweep
+ * zed.yaml connection (or removes it on disconnect), then runs the normal sweep
  * so it (dis)appears immediately — "connect Slack → the Slack connector shows
- * up". The kortix.yaml write is best-effort: synthesizeChannelConnectors still
+ * up". The zed.yaml write is best-effort: synthesizeChannelConnectors still
  * materializes the connector from the install, so a read-only / unreachable repo
  * keeps working. Never throws: a hiccup must not fail the install/uninstall.
  */
@@ -311,7 +311,7 @@ interface ResolvedCatalog {
 
 /**
  * Materialize a project's connectors from its manifest. Loads the project +
- * git auth (so private repos resolve), reads kortix.yaml, then upserts.
+ * git auth (so private repos resolve), reads zed.yaml, then upserts.
  */
 export async function syncProjectConnectors(
   projectId: string,
@@ -356,8 +356,8 @@ export async function syncProjectConnectors(
   }
 
   // Manifest-declared connectors + project policies are only reconciled when the
-  // kortix.yaml is actually readable. A NULL manifest can mean "no repo / no
-  // kortix.yaml" OR a transient git error — either way we must not treat it as
+  // zed.yaml is actually readable. A NULL manifest can mean "no repo / no
+  // zed.yaml" OR a transient git error — either way we must not treat it as
   // "zero declared connectors" and delete the project's real ones below.
   let declaredSpecs: ConnectorSpec[] = [];
   if (manifest) {
@@ -379,7 +379,7 @@ export async function syncProjectConnectors(
 
   // Channel connectors (e.g. Slack) are INSTALL-driven, not manifest-driven:
   // connecting the platform IS the registration. So they materialize even when
-  // the project has no readable kortix.yaml — "connect Slack → the `slack`
+  // the project has no readable zed.yaml — "connect Slack → the `slack`
   // connector just appears" must hold for any project. Synthetic specs are
   // materialized like any other connector but never written back to git.
   const channelSpecs = await synthesizeChannelConnectors(projectId, declaredSpecs);
@@ -394,7 +394,7 @@ export async function syncProjectConnectors(
   if (!manifest && channelSpecs.length === 0 && computerSpecs.length === 0) {
     return {
       synced: 0,
-      errors: [{ slug: '(manifest)', error: 'kortix.yaml not found or unreadable' }],
+      errors: [{ slug: '(manifest)', error: 'zed.yaml not found or unreadable' }],
     };
   }
 
@@ -652,7 +652,7 @@ async function upsertConnector(
     // `sensitive` lives inside `config` but is a CHEAP field: it isn't part of
     // manifestHashForConnector (deliberately — flipping it must not force a
     // catalog re-fetch), so on a hash-match reconcile we still patch that one
-    // key in place. Without this, the Sensitive toggle commits to kortix.yaml
+    // key in place. Without this, the Sensitive toggle commits to zed.yaml
     // but the DB config (what the gateway + admin UI read) never updates.
     const sensitivePatch = spec.sensitive
       ? sql`coalesce(${connectors.config}, '{}'::jsonb) || '{"sensitive": true}'::jsonb`
@@ -729,7 +729,7 @@ async function upsertConnector(
   }
 }
 
-/** Materialize one platform-managed Computers profile without writing kortix.yaml. */
+/** Materialize one platform-managed Computers profile without writing zed.yaml. */
 export async function materializeComputerConnectorProfile(input: {
   projectId: string;
   accountId: string;
@@ -882,7 +882,7 @@ async function resolveGithubDefaultBranch(owner: string, repo: string): Promise<
   const response = await safeEgressFetch(url, {
     headers: {
       Accept: 'application/vnd.github+json',
-      'User-Agent': 'Kortix-Postman-Importer',
+      'User-Agent': 'Zed-Postman-Importer',
     },
   });
   if (!response.ok) throw new Error(`failed to inspect GitHub repository: HTTP ${response.status}`);
@@ -1018,7 +1018,7 @@ async function introspectGraphql(endpoint: string): Promise<any> {
 
 /**
  * Replace the project's `policies:` list + `policy.default_mode` with what
- * kortix.yaml currently declares. Delete-then-insert (the manifest is the
+ * zed.yaml currently declares. Delete-then-insert (the manifest is the
  * source of truth, so we don't preserve DB-only edits). Cheap — runs every
  * sync, no network call.
  */

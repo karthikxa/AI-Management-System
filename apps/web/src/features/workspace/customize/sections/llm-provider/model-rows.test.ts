@@ -5,8 +5,8 @@ import { buildModelGroups } from './model-rows';
 
 function model(modelID: string, over: Partial<FlatModel> = {}): FlatModel {
   return {
-    providerID: 'kortix',
-    providerName: 'Kortix',
+    providerID: 'zed',
+    providerName: 'Zed',
     modelID,
     modelName: modelID,
     ...over,
@@ -14,7 +14,7 @@ function model(modelID: string, over: Partial<FlatModel> = {}): FlatModel {
 }
 
 describe('buildModelGroups', () => {
-  test('groups by the real upstream provider, not the synthetic kortix id', () => {
+  test('groups by the real upstream provider, not the synthetic zed id', () => {
     const groups = buildModelGroups([
       model('anthropic/claude-sonnet-5', { provider: 'anthropic' }),
       model('openai/gpt-5.5', { provider: 'openai' }),

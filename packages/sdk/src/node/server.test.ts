@@ -1,5 +1,5 @@
 import { test, expect, beforeEach } from 'bun:test';
-import { runWithKortix, createScopedKortix, forwardKortixRequest } from './server';
+import { runWithZed, createScopedZed, forwardZedRequest } from './server';
 import { backendApi } from '../core/http/api-client';
 
 // Importing `./server` pulls in `./platform/config-node`, which registers the
@@ -42,13 +42,13 @@ function deferredFetch() {
   };
 }
 
-test('runWithKortix isolates two concurrent, interleaved requests with different tokens', async () => {
+test('runWithZed isolates two concurrent, interleaved requests with different tokens', async () => {
   const { fetch: fetchImpl, release } = deferredFetch();
   globalThis.fetch = fetchImpl;
 
   const results: string[] = [];
 
-  const p1 = runWithKortix(
+  const p1 = runWithZed(
     { backendUrl: 'http://backend.local/v1', getToken: async () => 'token-ONE' },
     async () => {
       const res = await backendApi.get('/projects');
@@ -56,7 +56,7 @@ test('runWithKortix isolates two concurrent, interleaved requests with different
     },
   );
 
-  const p2 = runWithKortix(
+  const p2 = runWithZed(
     { backendUrl: 'http://backend.local/v1', getToken: async () => 'token-TWO' },
     async () => {
       const res = await backendApi.get('/projects');
@@ -80,7 +80,7 @@ test('runWithKortix isolates two concurrent, interleaved requests with different
   expect(requests[1].auth).toBe('Bearer token-TWO');
 });
 
-test('createScopedKortix never writes to the process-global config — two scoped clients stay isolated', async () => {
+test('createScopedZed never writes to the process-global config — two scoped clients stay isolated', async () => {
   globalThis.fetch = (async (input: unknown, init?: RequestInit) => {
     const req = input as Request;
     const auth = init?.headers ? new Headers(init.headers).get('Authorization') : req.headers?.get?.('Authorization') ?? null;
@@ -91,39 +91,39 @@ test('createScopedKortix never writes to the process-global config — two scope
     });
   }) as unknown as typeof fetch;
 
-  const kortixA = createScopedKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok-A' });
-  const kortixB = createScopedKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok-B' });
+  const zedA = createScopedZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok-A' });
+  const zedB = createScopedZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok-B' });
 
-  await Promise.all([kortixA.projects.list(), kortixB.projects.list()]);
+  await Promise.all([zedA.projects.list(), zedB.projects.list()]);
 
   expect(requests.some((r) => r.auth === 'Bearer tok-A')).toBe(true);
   expect(requests.some((r) => r.auth === 'Bearer tok-B')).toBe(true);
 });
 
-test('createScopedKortix neutralizes the ambient top-level runtime() — no process-global cross-tenant sandbox bleed', () => {
+test('createScopedZed neutralizes the ambient top-level runtime() — no process-global cross-tenant sandbox bleed', () => {
   // The top-level runtime() resolves the PROCESS-GLOBAL "active" runtime (whatever
   // session most recently called ensureReady()). In a multi-tenant server that is
   // a DIFFERENT request's/end-user's sandbox — a cross-tenant leak. On a scoped
   // client it must throw and steer to the session-scoped handle, never silently
   // hand back a foreign sandbox's client.
-  const kortix = createScopedKortix({
+  const zed = createScopedZed({
     backendUrl: 'http://backend.local/v1',
     getToken: async () => 'tok',
   });
-  expect(() => kortix.runtime()).toThrow(/session\(/);
+  expect(() => zed.runtime()).toThrow(/session\(/);
 });
 
-test('createScopedKortix leaves the rest of the facade intact (only top-level runtime() is neutralized)', () => {
-  const kortix = createScopedKortix({
+test('createScopedZed leaves the rest of the facade intact (only top-level runtime() is neutralized)', () => {
+  const zed = createScopedZed({
     backendUrl: 'http://backend.local/v1',
     getToken: async () => 'tok',
   });
-  expect(typeof kortix.session).toBe('function');
-  expect(typeof kortix.project).toBe('function');
-  expect(typeof kortix.projects.list).toBe('function');
+  expect(typeof zed.session).toBe('function');
+  expect(typeof zed.project).toBe('function');
+  expect(typeof zed.projects.list).toBe('function');
 });
 
-test('createScopedKortix scopes calls reached through id-bound handles minted at call time (project(id), session(pid, sid))', async () => {
+test('createScopedZed scopes calls reached through id-bound handles minted at call time (project(id), session(pid, sid))', async () => {
   globalThis.fetch = (async (input: unknown, init?: RequestInit) => {
     const req = input as Request;
     const auth = init?.headers ? new Headers(init.headers).get('Authorization') : req.headers?.get?.('Authorization') ?? null;
@@ -134,14 +134,14 @@ test('createScopedKortix scopes calls reached through id-bound handles minted at
     });
   }) as unknown as typeof fetch;
 
-  const kortix = createScopedKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'scoped-tok' });
-  await kortix.project('PID1').secrets.list();
+  const zed = createScopedZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'scoped-tok' });
+  await zed.project('PID1').secrets.list();
 
   expect(requests[0].url).toContain('/projects/PID1/secrets');
   expect(requests[0].auth).toBe('Bearer scoped-tok');
 });
 
-test('forwardKortixRequest owns wrapper authentication, body buffering, and response sanitization', async () => {
+test('forwardZedRequest owns wrapper authentication, body buffering, and response sanitization', async () => {
   let forwardedRequest: Request | undefined;
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     forwardedRequest = new Request(input, init);
@@ -157,7 +157,7 @@ test('forwardKortixRequest owns wrapper authentication, body buffering, and resp
     });
   }) as typeof fetch;
 
-  const request = new Request('https://wrapper.local/api/kortix/p/runtime-1/8000/message', {
+  const request = new Request('https://wrapper.local/api/zed/p/runtime-1/8000/message', {
     method: 'POST',
     headers: {
       authorization: 'Bearer wrapper-user-token',
@@ -167,14 +167,14 @@ test('forwardKortixRequest owns wrapper authentication, body buffering, and resp
     body: '{"hello":"world"}',
   });
 
-  const response = await forwardKortixRequest({
+  const response = await forwardZedRequest({
     request,
-    upstreamUrl: 'https://api.kortix.test/v1/p/runtime-1/8000/message',
-    token: 'kortix-operator-token',
+    upstreamUrl: 'https://api.zed.test/v1/p/runtime-1/8000/message',
+    token: 'zed-operator-token',
   });
 
   expect(forwardedRequest).toBeDefined();
-  expect(forwardedRequest!.headers.get('authorization')).toBe('Bearer kortix-operator-token');
+  expect(forwardedRequest!.headers.get('authorization')).toBe('Bearer zed-operator-token');
   expect(forwardedRequest!.headers.get('cookie')).toBeNull();
   expect(forwardedRequest!.headers.get('accept-encoding')).toBe('identity');
   expect(forwardedRequest!.headers.get('content-length')).toBe('17');

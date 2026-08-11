@@ -4,7 +4,7 @@ import {
   projectGitConnections,
   projectMembers,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 
 import {
   collectConditionValues,
@@ -62,9 +62,9 @@ export function projectRow(overrides: Partial<ProjectRow> = {}): ProjectRow {
     projectId: '00000000-0000-4000-a000-000000000201',
     accountId: '00000000-0000-4000-a000-000000000101',
     name: 'Existing Project',
-    repoUrl: 'https://github.com/kortix/existing-project.git',
+    repoUrl: 'https://github.com/zed/existing-project.git',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     status: 'active',
     metadata: {},
     lastOpenedAt: null,
@@ -134,7 +134,7 @@ function insertProject(state: ProjectsContractDbState, values: any) {
     name: values.name,
     repoUrl: values.repoUrl,
     defaultBranch: values.defaultBranch ?? 'main',
-    manifestPath: values.manifestPath ?? 'kortix.yaml',
+    manifestPath: values.manifestPath ?? 'zed.yaml',
     status: values.status ?? 'active',
     metadata: values.metadata ?? {},
     lastOpenedAt: null,

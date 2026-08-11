@@ -289,7 +289,7 @@ export function FileTreeItem({
           gitStatus && gitStatusTextColor[gitStatus],
           !gitStatus &&
             node.name.startsWith('.') &&
-            node.name !== '.kortix' &&
+            node.name !== '.zed' &&
             node.name !== '.opencode' &&
             'opacity-50',
         )}

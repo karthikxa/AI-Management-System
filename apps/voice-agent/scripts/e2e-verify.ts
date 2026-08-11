@@ -59,7 +59,7 @@ import {
 // ── apps/api internals, imported straight from source ──────────────────────
 // Relative imports resolve against the FILE that declares them, not this
 // script's own workspace — once runtime.ts/livekit.ts are loaded, THEIR bare
-// imports (drizzle-orm, @kortix/db, livekit-server-sdk, ...) resolve against
+// imports (drizzle-orm, @zed/db, livekit-server-sdk, ...) resolve against
 // apps/api's own node_modules chain. Same pattern already proven out by
 // scripts/voice-full-flow.ts (see that file's header for the full story).
 // readTurns is a plain DB query — no per-process registry involved — so it's

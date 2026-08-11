@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { projectSessions, sessionSandboxes } from '@kortix/db';
+import { projectSessions, sessionSandboxes } from '@zed/db';
 import * as realComputeMetering from '../../../billing/services/compute-metering';
 import * as realProviders from '../../../platform/providers';
 

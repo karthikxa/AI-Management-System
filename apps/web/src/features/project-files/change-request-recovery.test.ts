@@ -18,7 +18,7 @@ describe('change request recovery', () => {
   test('builds an actionable merge-conflict prompt from the blocked change', () => {
     const blocker = {
       kind: 'merge_conflict' as const,
-      conflicts: ['.kortix/memory/plain-support-log.md', 'README.md'],
+      conflicts: ['.zed/memory/plain-support-log.md', 'README.md'],
       baseSha: 'base-sha',
       headSha: 'head-sha',
     };
@@ -30,14 +30,14 @@ describe('change request recovery', () => {
     expect(prompt).toContain('git diff --name-only --diff-filter=U');
     expect(prompt).toContain('Open a replacement change request into the inspected target branch');
     expect(prompt).toContain('Apply the replacement change request');
-    expect(prompt).not.toContain('.kortix/memory/plain-support-log.md');
+    expect(prompt).not.toContain('.zed/memory/plain-support-log.md');
     expect(prompt).not.toContain('session-branch');
   });
 
   test('keeps manifest recovery on the same session-start contract', () => {
     const blocker = {
       kind: 'manifest_invalid' as const,
-      manifestFilename: 'kortix.yaml',
+      manifestFilename: 'zed.yaml',
       issues: [
         {
           path: 'agents.support.model',

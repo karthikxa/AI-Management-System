@@ -2,17 +2,17 @@
 // docs/specs/2026-07-05-agent-first-config-unification.md §2.2, redirected
 // 2026-07-05: "one home per concern").
 //
-// TWO homes, ONE wire contract: kortix.yaml carries governance ONLY
-// (connectors/secrets/skills/kortix_cli/workspace/enabled); the agent's own
-// native `.kortix/opencode/agents/<name>.md` frontmatter + body carries every
+// TWO homes, ONE wire contract: zed.yaml carries governance ONLY
+// (connectors/secrets/skills/zed_cli/workspace/enabled); the agent's own
+// native `.zed/opencode/agents/<name>.md` frontmatter + body carries every
 // OpenCode-behavioral field (mode/model/temperature/top_p/steps/variant/
 // color/hidden/permission) plus the prompt itself. This route is the ONE
 // place that merges them into a single wire shape (`block.opencode = {...}`)
 // so the dashboard editor's data binding never has to know two files exist —
-// see agent-editor.tsx. GET reads both; PUT writes governance to kortix.yaml
+// see agent-editor.tsx. GET reads both; PUT writes governance to zed.yaml
 // and behavior to the `.md` in ONE atomic commit (commitMultipleFilesToBranch)
 // after validating BOTH halves, so a bad request never partially lands and a
-// mid-write failure can never strand kortix.yaml and the `.md` out of sync.
+// mid-write failure can never strand zed.yaml and the `.md` out of sync.
 //
 // Distinct from ./agent-scope.ts, which writes ONLY the grant subset
 // (secrets/connectors) into a v1 `[[agents]]` entry.
@@ -28,13 +28,13 @@
 // assertProjectCapability so the agent-grant fold fires.
 
 import { createRoute, z } from '@hono/zod-openapi';
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import {
   type AgentBlockV2,
   type ManifestIssue,
   SLUG_RE,
   validateAgentMdFrontmatter,
-} from '@kortix/manifest-schema';
+} from '@zed/manifest-schema';
 import { eq } from 'drizzle-orm';
 import { PROJECT_ACTIONS } from '../../iam/actions';
 import { auth, errors, json } from '../../openapi';
@@ -67,7 +67,7 @@ import { loadManifestForEdit } from '../lib/triggers';
 import { MANIFEST_FILENAME, serializeManifest } from '../triggers';
 
 // A grant set on the wire: an allowlist, or the "all"/"none" sentinels. The
-// deep per-entry validation (grantable kortix_cli actions, etc.) happens in
+// deep per-entry validation (grantable zed_cli actions, etc.) happens in
 // validateManifest via applyAgentBlockV2 — this schema only guards the shape.
 const GrantSetSchema = z.union([
   z.literal('all'),
@@ -75,11 +75,11 @@ const GrantSetSchema = z.union([
   z.array(z.string().min(1).max(200)).max(500),
 ]);
 
-// The KORTIX layer — governance only (spec §2.2 redirect). No model, no
+// The ZED layer — governance only (spec §2.2 redirect). No model, no
 // description, no behavior: those all moved into `opencode` (defined in
 // ../lib/compile-agent-config alongside its canonical KNOWN_BEHAVIOR_KEYS —
 // see that module for why), which this route writes to the `.md`, never to
-// kortix.yaml.
+// zed.yaml.
 const AgentBlockSchema = z
   .object({
     enabled: z.boolean().optional(),
@@ -90,7 +90,7 @@ const AgentBlockSchema = z
     connectors_personal: z.array(z.string().min(1).max(200)).max(500).optional(),
     secrets: GrantSetSchema.optional(),
     skills: GrantSetSchema.optional(),
-    kortix_cli: GrantSetSchema.optional(),
+    zed_cli: GrantSetSchema.optional(),
     workspace: z.enum(['runtime', 'read', 'branch']).optional(),
     opencode: OpencodeAgentConfigSchema.optional(),
   })
@@ -148,7 +148,7 @@ function pickBehaviorFields(frontmatter: Record<string, unknown>): Record<string
 }
 
 // GET /v1/projects/:projectId/agents/:agentName/config
-// The agent's full merged block for editing — governance from kortix.yaml,
+// The agent's full merged block for editing — governance from zed.yaml,
 // behavior from the agent's `.md` frontmatter+body. schemaVersion tells the
 // UI whether the full editor applies (2) or it should degrade to the limited
 // scope editor (1).
@@ -206,7 +206,7 @@ projectsApp.openapi(
 );
 
 // PUT /v1/projects/:projectId/default-agent
-// `kortix.yaml.default_agent` is durable truth; project.metadata.default_agent
+// `zed.yaml.default_agent` is durable truth; project.metadata.default_agent
 // is the read-optimized mirror used by session creation and channel surfaces.
 projectsApp.openapi(
   createRoute({
@@ -306,7 +306,7 @@ projectsApp.openapi(
 );
 
 // PUT /v1/projects/:projectId/agents/:agentName/config
-// Replace the agent's full block: governance → kortix.yaml (validated via
+// Replace the agent's full block: governance → zed.yaml (validated via
 // the manifest-schema validator), behavior → the agent's `.md` frontmatter +
 // body (validated via `validateAgentMdFrontmatter`). Both halves are
 // validated before EITHER commits.
@@ -442,7 +442,7 @@ projectsApp.openapi(
 
     // ONE atomic commit for both homes. Two sequential single-file commits
     // (governance then behavior) would let a bad `.md` write fail AFTER the
-    // governance write already landed, stranding kortix.yaml and the agent's
+    // governance write already landed, stranding zed.yaml and the agent's
     // `.md` out of sync — commitMultipleFilesToBranch (git/branches.ts) commits
     // every file in one tree/commit, same helper the marketplace install/
     // uninstall paths use for their own atomic multi-file writes (r10.ts).

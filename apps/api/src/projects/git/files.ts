@@ -154,7 +154,7 @@ export function isRepoFileNotFoundError(err: unknown): err is RepoFileNotFoundEr
 
 /**
  * Resolve + read the project's manifest, preferring the first candidate path
- * that exists (the dual-format rule: kortix.yaml over kortix.toml). ONE ls-tree
+ * that exists (the dual-format rule: zed.yaml over zed.toml). ONE ls-tree
  * finds which candidates exist at the ref, then a single `show` reads the
  * highest-priority present one — refreshing the mirror once, unlike probing each
  * path via readRepoFile (which would refresh + spawn a process per candidate).

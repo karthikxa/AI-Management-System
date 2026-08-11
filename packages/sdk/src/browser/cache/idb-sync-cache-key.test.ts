@@ -7,7 +7,7 @@ describe('buildSessionCacheKey', () => {
     expect(buildSessionCacheKey('user:account-1', 'ses_1')).toBe('user:account-1:session:ses_1');
   });
 
-  test('separates equal OpenCode ids owned by different Kortix sessions', () => {
+  test('separates equal OpenCode ids owned by different Zed sessions', () => {
     const first = buildSessionCacheKey(
       'user:account-1',
       'ses_from_snapshot',
@@ -22,7 +22,7 @@ describe('buildSessionCacheKey', () => {
     expect(first).not.toBe(second);
   });
 
-  test('keeps one Kortix session cache across an authoritative root change', () => {
+  test('keeps one Zed session cache across an authoritative root change', () => {
     const before = buildSessionCacheKey('user:account-1', 'ses_stale', 'project-a/session-a');
     const after = buildSessionCacheKey(
       'user:account-1',

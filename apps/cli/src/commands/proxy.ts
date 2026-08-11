@@ -9,7 +9,7 @@ import { ApiError } from '../api/client.ts';
 import { C, help, status } from '../style.ts';
 import type { ProjectSession } from '../api/types.ts';
 
-const HELP = help`Usage: kortix proxy <subcommand> [options]
+const HELP = help`Usage: zed proxy <subcommand> [options]
 
 Manage shareable public URLs for ports inside a session sandbox. Use
 this to expose a dev server (port 3000, 8080, …) running inside a
@@ -24,7 +24,7 @@ Subcommands:
 
 Global options:
   --project <id>     Operate on this project id (default: linked).
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   -h, --help         Show this help.
 `;
 
@@ -177,7 +177,7 @@ async function proxyLs(sessionId: string | undefined, opts: CtxOpts, json = fals
 
   if (!items || items.length === 0) {
     process.stdout.write(
-      `  ${C.dim}No active share links. Create one with \`kortix proxy share ${sessionId} --port 3000\`.${C.reset}\n`,
+      `  ${C.dim}No active share links. Create one with \`zed proxy share ${sessionId} --port 3000\`.${C.reset}\n`,
     );
     return 0;
   }

@@ -58,7 +58,7 @@ async function resolveLiveOpencodePort(sandboxId: string): Promise<number> {
       port: AGENT_PORT,
       transport: 'http',
     });
-    const res = await fetch(`${url.replace(/\/$/, '')}/kortix/health`, {
+    const res = await fetch(`${url.replace(/\/$/, '')}/zed/health`, {
       headers,
       signal: AbortSignal.timeout(2_000),
     });

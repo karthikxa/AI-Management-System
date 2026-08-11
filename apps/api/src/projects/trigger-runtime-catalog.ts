@@ -1,4 +1,4 @@
-import { projectTriggerRuntime } from '@kortix/db';
+import { projectTriggerRuntime } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { db } from '../shared/db';
 import {

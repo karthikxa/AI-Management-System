@@ -4,7 +4,7 @@
  * every managed-git repo create/list 404 on `/orgs/{owner}/repos`, because
  * `managedAdminAuth()` (projects/git-backends/github.ts) used to hardcode
  * `ownerType: 'Organization'` for the App-installation path (and gated the
- * PAT path's live detection behind `INTERNAL_KORTIX_ENV !== 'prod'`, which is
+ * PAT path's live detection behind `INTERNAL_ZED_ENV !== 'prod'`, which is
  * also wrong — a self-host box runs the "prod" build but is not the hosted
  * multi-tenant SaaS, so "prod always means org" never held there).
  *
@@ -44,15 +44,15 @@ mock.module('../platform/services/managed-github-app', () => ({
 const { githubBackend } = await import('../projects/git-backends/github');
 
 // This repo's local `.env` (loaded automatically by `bun test`) sets real
-// MANAGED_GIT_GITHUB_*/KORTIX_GITHUB_APP_* values for interactive dev use —
+// MANAGED_GIT_GITHUB_*/ZED_GITHUB_APP_* values for interactive dev use —
 // left in place, they silently win over the DB-mocked config below (env is
 // the documented fallback), making every case here exercise the env path
 // instead of the DB-config path under test. Clear them for the duration of
 // this file, same convention as unit-github-app-isconfigured.test.ts.
 const ENV_KEYS = [
-  'KORTIX_GITHUB_APP_ID',
+  'ZED_GITHUB_APP_ID',
   'GITHUB_APP_ID',
-  'KORTIX_GITHUB_APP_PRIVATE_KEY',
+  'ZED_GITHUB_APP_PRIVATE_KEY',
   'GITHUB_APP_PRIVATE_KEY',
   'MANAGED_GIT_GITHUB_OWNER',
   'MANAGED_GIT_GITHUB_INSTALL_ID',
@@ -131,7 +131,7 @@ describe('managed GitHub App createRepo — owner-type routing', () => {
     dbConfig = {
       appId: '12345',
       privateKey: TEST_APP_PRIVATE_KEY,
-      owner: 'agent-kortix',
+      owner: 'agent-zed',
       ownerType: 'User',
       installationId: '501',
     };
@@ -149,14 +149,14 @@ describe('managed GitHub App createRepo — owner-type routing', () => {
     // returning a fixed clone_url, independent of the configured owner.
     expect(repo.upstreamUrl).toBe('https://github.com/whoever/demo.git');
     expect(findRequest('/user/repos')).toBeTruthy();
-    expect(findRequest('/orgs/agent-kortix/repos')).toBeUndefined();
+    expect(findRequest('/orgs/agent-zed/repos')).toBeUndefined();
   });
 
   test('stored ownerType "Organization" -> POST /orgs/{owner}/repos (regression guard)', async () => {
     dbConfig = {
       appId: '12345',
       privateKey: TEST_APP_PRIVATE_KEY,
-      owner: 'kortix-managed',
+      owner: 'zed-managed',
       ownerType: 'Organization',
       installationId: '501',
     };
@@ -169,8 +169,8 @@ describe('managed GitHub App createRepo — owner-type routing', () => {
       isPrivate: true,
     });
 
-    expect(repo.upstreamUrl).toBe('https://github.com/kortix-managed/demo.git');
-    expect(findRequest('/orgs/kortix-managed/repos')).toBeTruthy();
+    expect(repo.upstreamUrl).toBe('https://github.com/zed-managed/demo.git');
+    expect(findRequest('/orgs/zed-managed/repos')).toBeTruthy();
     expect(findRequest('/user/repos')).toBeUndefined();
   });
 

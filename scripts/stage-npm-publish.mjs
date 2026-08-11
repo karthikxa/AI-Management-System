@@ -38,7 +38,7 @@ pkg.version = version;
 //    `browser`/`unpkg`/`jsdelivr` are promoted the same way, if present: npm,
 //    unpkg, and jsDelivr all read these from the TOP-LEVEL manifest only —
 //    nothing consults `publishConfig` for them. A package with no CDN bundle
-//    (e.g. @kortix/llm-catalog) simply has none of these keys in publishConfig,
+//    (e.g. @zed/llm-catalog) simply has none of these keys in publishConfig,
 //    so the promotion is a no-op for it — if-present, never assumed.
 const pc = pkg.publishConfig ?? {};
 for (const field of ['type', 'main', 'types', 'exports', 'files', 'bin', 'browser', 'unpkg', 'jsdelivr']) {

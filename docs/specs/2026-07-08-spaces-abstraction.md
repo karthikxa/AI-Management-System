@@ -32,7 +32,7 @@ same tables. See §4.
 
 ## 2. Motivation
 
-Two problems compound inside a Kortix project as it grows past a handful of people:
+Two problems compound inside a Zed project as it grows past a handful of people:
 
 **Organization.** A project accumulates sessions from many contributors and many purposes —
 scheduled jobs, Slack threads, one-off explorations, a long-running initiative. A flat sidebar
@@ -63,7 +63,7 @@ Space
  └─ membership/grants — who can see it, and what they inherit by being in it
 ```
 
-A Space still belongs to exactly one Kortix project — it is not a peer of a project, it's a
+A Space still belongs to exactly one Zed project — it is not a peer of a project, it's a
 sub-context inside one. A project can have many Spaces; a Space does not span projects. This
 keeps the mental model simple: **project = tenant/workspace boundary, Space = organizing +
 access boundary within it.**
@@ -87,9 +87,9 @@ onto the Space model with additive changes only:
 
 | Folder concept today | Space concept tomorrow |
 |---|---|
-| `kortix.session_folders` (`folder_id`, `project_id`, `account_id`, `name`, `visibility`, `position`, `created_by`) | Same table, renamed/extended — `name`, `visibility`, `position` carry over unchanged |
+| `zed.session_folders` (`folder_id`, `project_id`, `account_id`, `name`, `visibility`, `position`, `created_by`) | Same table, renamed/extended — `name`, `visibility`, `position` carry over unchanged |
 | `project_sessions.folder_id` | Same FK, renamed `space_id` (or kept as-is with a Space = folder alias) |
-| `kortix.session_folder_grants` (`folder_id`, `principal_type`, `principal_id`) | Same shape — becomes the Space membership/grant table; principal stays member\|group |
+| `zed.session_folder_grants` (`folder_id`, `principal_type`, `principal_id`) | Same shape — becomes the Space membership/grant table; principal stays member\|group |
 | `visibility: private \| project \| restricted` (`apps/api/src/projects/lib/session-folders.ts`) | Same three tiers; `restricted` grants are what a group-authorization Space uses |
 | `isFolderVisibleTo` / `inheritedFolderIdsFor` / `canManageFolder` (same file) | Same functions, same semantics — "session inside a shared folder inherits the folder's audience" *is* already the authorization-by-membership idea, today scoped to visibility only |
 | No tabs, no agent attachment | New, additive: a `space_tabs` (or similar) table keyed by `space_id`; an `space_agents` join table or reuse of `iam_resource_grants` scoping |

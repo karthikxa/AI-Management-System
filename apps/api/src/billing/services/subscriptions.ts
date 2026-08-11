@@ -13,7 +13,7 @@ import { countActiveMembers } from './seat-management';
 import { grantCredits, resetExpiringCredits } from './credits';
 import { isPlatformAdmin } from '../../shared/platform-roles';
 import Stripe from 'stripe';
-import { AUTO_TOPUP_DEFAULT_AMOUNT, AUTO_TOPUP_DEFAULT_THRESHOLD } from '@kortix/shared';
+import { AUTO_TOPUP_DEFAULT_AMOUNT, AUTO_TOPUP_DEFAULT_THRESHOLD } from '@zed/shared';
 
 /** True for Stripe's "No such customer" (resource_missing). */
 function isStripeNoSuchCustomer(err: unknown): boolean {
@@ -235,7 +235,7 @@ export async function createCheckoutSession(params: {
   }
 
   // Fallback: hosted Checkout for first purchase / no saved card / SCA-required payment.
-  // Uses inline product_data so the checkout page shows "Kortix Computer" with
+  // Uses inline product_data so the checkout page shows "Zed Computer" with
   // actual machine specs — no provider names, regions, or internal tier keys.
   let unitAmount: number;
   let interval: Stripe.Price.Recurring.Interval = 'month';
@@ -257,7 +257,7 @@ export async function createCheckoutSession(params: {
     unit_amount: unitAmount,
     recurring: { interval },
     product_data: {
-      name: 'Kortix Computer',
+      name: 'Zed Computer',
       description: computeDesc ?? 'Cloud computer + LLM credits',
     },
   };

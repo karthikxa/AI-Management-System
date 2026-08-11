@@ -126,7 +126,7 @@ flow(
     await ctx.step("Slack slash-commands webhook, bad sig → 503 | 401", async () => {
       const r = await ctx.client
         .as(ctx.P.ANON)
-        .post("/v1/webhooks/slack/commands", "command=%2Fkortix&text=hi", {
+        .post("/v1/webhooks/slack/commands", "command=%2Fzed&text=hi", {
           raw: true,
           headers: { ...badSlackSig, "content-type": "application/x-www-form-urlencoded" },
         });

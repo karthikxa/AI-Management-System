@@ -29,9 +29,9 @@ export function parseTodos(value: unknown): TodoItem[] {
 export function TodoStatusIcon({ status }: { status: TodoItem['status'] }) {
   switch (status) {
     case 'completed':
-      return <CheckCircleSolid weight="fill" className="text-kortix-green size-4 shrink-0" />;
+      return <CheckCircleSolid weight="fill" className="text-zed-green size-4 shrink-0" />;
     case 'in_progress':
-      return <Loading className="text-kortix-orange size-4 shrink-0" />;
+      return <Loading className="text-zed-orange size-4 shrink-0" />;
     case 'cancelled':
       return <BanSolid weight="fill" className="text-muted-foreground/40 size-4 shrink-0" />;
     case 'pending':

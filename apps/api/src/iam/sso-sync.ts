@@ -1,6 +1,6 @@
 // SAML JIT (just-in-time) provisioning. Called from the auth middleware
 // once per request, but no-ops cheaply unless the JWT carries a SAML
-// sso_provider_id and that id is mapped to a kortix account.
+// sso_provider_id and that id is mapped to a zed account.
 //
 // Responsibilities:
 //   1. Ensure the user has an account_members row in that account.
@@ -15,7 +15,7 @@
 // next sign-in stomping it.
 
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
-import { accountGroupMembers, accountGroups, accountInvitations, accountMembers } from '@kortix/db';
+import { accountGroupMembers, accountGroups, accountInvitations, accountMembers } from '@zed/db';
 import { db } from '../shared/db';
 import { invalidateIamCacheForUser } from './cache-invalidation';
 import {
@@ -116,7 +116,7 @@ export function extractGroupClaims(
 }
 
 /**
- * Resolve which Kortix group ids a set of IdP claim values map to. Pure —
+ * Resolve which Zed group ids a set of IdP claim values map to. Pure —
  * exported for unit tests.
  *
  * Matching is CASE- and whitespace-INSENSITIVE: Azure AD / Entra emits group

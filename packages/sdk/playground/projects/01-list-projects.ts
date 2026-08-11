@@ -4,11 +4,11 @@
  *
  * Run (from packages/sdk):  bun run playground/projects/01-list-projects.ts
  */
-import { makeKortix, run } from "../_shared";
+import { makeZed, run } from "../_shared";
 
 run("list-projects", async () => {
-  const kortix = makeKortix();
-  const projects = await kortix.projects.list();
+  const zed = makeZed();
+  const projects = await zed.projects.list();
 
   console.log(`✓ projects.list() returned ${projects.length} project(s):\n`);
   for (const p of projects) {
@@ -19,6 +19,6 @@ run("list-projects", async () => {
 
   if (projects.length > 0) {
     console.log("pin one for the other scripts:");
-    console.log(`  export KORTIX_PROJECT_ID=${projects[0]!.project_id}`);
+    console.log(`  export ZED_PROJECT_ID=${projects[0]!.project_id}`);
   }
 });

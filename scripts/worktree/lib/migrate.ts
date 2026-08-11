@@ -16,8 +16,8 @@ export async function runMigrate(worktreePath: string, ports: Ports): Promise<nu
     if (pre !== 0) return pre;
   }
   // node-pg-migrate (the same `pnpm migrate` the deploy pipeline runs) builds the
-  // schema from packages/db/migrations/*.sql, tracked in kortix_migrations.pgmigrations.
-  return run(['pnpm', '--filter', '@kortix/db', 'migrate'], {
+  // schema from packages/db/migrations/*.sql, tracked in zed_migrations.pgmigrations.
+  return run(['pnpm', '--filter', '@zed/db', 'migrate'], {
     cwd: worktreePath,
     env: { DATABASE_URL: url },
   });

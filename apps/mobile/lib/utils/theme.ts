@@ -1,13 +1,13 @@
 import { DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
 
 /**
- * Theme values aligned with global.css Kortix brand palette.
+ * Theme values aligned with global.css Zed brand palette.
  * These drive React Navigation chrome (headers, tab bars, etc.).
  */
 export const THEME = {
   light: {
-    background: 'hsl(0 0% 96%)',            // #F5F5F5 – Kortix light bg
-    foreground: 'hsl(218 12% 7%)',           // #121215 – Kortix Black
+    background: 'hsl(0 0% 96%)',            // #F5F5F5 – Zed light bg
+    foreground: 'hsl(218 12% 7%)',           // #121215 – Zed Black
     card: 'hsl(210 20% 98%)',                // #F9FAFB
     cardForeground: 'hsl(218 12% 7%)',       // #121215
     popover: 'hsl(0 0% 100%)',               // #FFFFFF
@@ -27,8 +27,8 @@ export const THEME = {
     radius: '0.625rem',
   },
   dark: {
-    background: 'hsl(240 8% 8%)',            // #121215 – Kortix Black
-    foreground: 'hsl(240 11% 97%)',          // #F8F8F8 – Kortix White
+    background: 'hsl(240 8% 8%)',            // #121215 – Zed Black
+    foreground: 'hsl(240 11% 97%)',          // #F8F8F8 – Zed White
     card: 'hsl(240 4% 9%)',                  // #161618
     cardForeground: 'hsl(240 11% 97%)',      // #F8F8F8
     popover: 'hsl(220 6% 9%)',               // #161618

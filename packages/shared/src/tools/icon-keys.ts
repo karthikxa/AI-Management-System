@@ -270,7 +270,7 @@ export function getToolIconKey(toolName: string | undefined): ToolIconKey {
     case 'get-paper-references':
       return 'book-open';
 
-    // Trigger tools (Kortix trigger management)
+    // Trigger tools (Zed trigger management)
     case 'triggers':
     case 'trigger_create':
     case 'trigger-create':

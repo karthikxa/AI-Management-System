@@ -5,7 +5,7 @@ import type { DateRange } from 'react-day-picker';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { IconCalendar, IconChevronDown } from '@/components/ui/kortix-icons';
+import { IconCalendar, IconChevronDown } from '@/components/ui/zed-icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 

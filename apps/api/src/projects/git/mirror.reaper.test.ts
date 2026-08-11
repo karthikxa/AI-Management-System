@@ -22,13 +22,13 @@ async function makeMirror(name: string, bytes: number, ageMinutes: number): Prom
 
 beforeEach(async () => {
   cacheDir = await mkdtemp(join(tmpdir(), 'reaper-test-'));
-  previousEnv = process.env.KORTIX_GIT_CACHE_DIR;
-  process.env.KORTIX_GIT_CACHE_DIR = cacheDir;
+  previousEnv = process.env.ZED_GIT_CACHE_DIR;
+  process.env.ZED_GIT_CACHE_DIR = cacheDir;
 });
 
 afterEach(async () => {
-  if (previousEnv === undefined) delete process.env.KORTIX_GIT_CACHE_DIR;
-  else process.env.KORTIX_GIT_CACHE_DIR = previousEnv;
+  if (previousEnv === undefined) delete process.env.ZED_GIT_CACHE_DIR;
+  else process.env.ZED_GIT_CACHE_DIR = previousEnv;
   await rm(cacheDir, { recursive: true, force: true });
 });
 
@@ -82,7 +82,7 @@ describe('reapGitCacheOverBudget', () => {
   });
 
   test('missing cache root is a no-op', async () => {
-    process.env.KORTIX_GIT_CACHE_DIR = join(cacheDir, 'does-not-exist');
+    process.env.ZED_GIT_CACHE_DIR = join(cacheDir, 'does-not-exist');
     const result = await reapGitCacheOverBudget(1 * MB);
     expect(result).toEqual({ totalBytes: 0, deleted: 0, freedBytes: 0 });
   });

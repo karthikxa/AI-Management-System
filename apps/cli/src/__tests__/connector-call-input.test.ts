@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { parseConnectorCallInput } from '../commands/connector-gateway';
 
-describe('kortix connectors call input', () => {
+describe('zed connectors call input', () => {
   test('accepts the dotted tool reference returned by discovery', () => {
     expect(parseConnectorCallInput(['google_drive.list_files', '{"pageSize":10}'], {})).toEqual({
       slug: 'google_drive',

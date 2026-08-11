@@ -8,7 +8,7 @@ import {
   createDb,
   type Database,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import type { AppHostingProvider, AppdStatus } from './hosting';
 import { ensureAppRuntimeRunning, loadPublicApp } from './public-proxy';
@@ -17,8 +17,8 @@ import { APP_RUNTIME_VERSION, enqueueCurrentAppRuntime } from './deployment-work
 const CONFIRMATION = 'I_UNDERSTAND_THIS_DELETES_TEST_DATA';
 const HAS_CONFIRMED_TEST_DB = Boolean(
   process.env.TEST_DATABASE_URL &&
-    process.env.KORTIX_TEST_DB_CONFIRM === CONFIRMATION &&
-    process.env.INTERNAL_KORTIX_ENV !== 'prod',
+    process.env.ZED_TEST_DB_CONFIRM === CONFIRMATION &&
+    process.env.INTERNAL_ZED_ENV !== 'prod',
 );
 const describeWithDb = HAS_CONFIRMED_TEST_DB ? describe : describe.skip;
 
@@ -263,8 +263,8 @@ describeWithDb('App wake lifecycle races — real PostgreSQL', () => {
 
   test('concurrent cold starts queue one current-daemon deployment and preserve immutable provenance', async () => {
     const loaded = await seedStoppedRuntime();
-    const previousWorkerEnabled = process.env.KORTIX_APPS_WORKER_ENABLED;
-    process.env.KORTIX_APPS_WORKER_ENABLED = 'false';
+    const previousWorkerEnabled = process.env.ZED_APPS_WORKER_ENABLED;
+    process.env.ZED_APPS_WORKER_ENABLED = 'false';
     let queued: boolean[];
     try {
       queued = await Promise.all([
@@ -273,8 +273,8 @@ describeWithDb('App wake lifecycle races — real PostgreSQL', () => {
         enqueueCurrentAppRuntime(loaded.app, loaded.deployment),
       ]);
     } finally {
-      if (previousWorkerEnabled === undefined) delete process.env.KORTIX_APPS_WORKER_ENABLED;
-      else process.env.KORTIX_APPS_WORKER_ENABLED = previousWorkerEnabled;
+      if (previousWorkerEnabled === undefined) delete process.env.ZED_APPS_WORKER_ENABLED;
+      else process.env.ZED_APPS_WORKER_ENABLED = previousWorkerEnabled;
     }
 
     expect(queued.filter(Boolean)).toHaveLength(1);

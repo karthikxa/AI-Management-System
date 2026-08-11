@@ -12,7 +12,7 @@
  * table again.
  */
 
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { and, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import type { ProviderName } from '../../platform/providers';
 import { db } from '../../shared/db';

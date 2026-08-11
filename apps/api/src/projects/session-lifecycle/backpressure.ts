@@ -3,7 +3,7 @@ import { resolveAccountSessionLimit } from '../../shared/account-limits';
 import { countActiveProjectSessions, countProvisioningProjectSessions } from '../lib/sessions';
 
 export function triggerBackpressureLimit() {
-  const configured = Number((config as any).KORTIX_TRIGGER_MAX_PROVISIONING_SESSIONS_PER_PROJECT);
+  const configured = Number((config as any).ZED_TRIGGER_MAX_PROVISIONING_SESSIONS_PER_PROJECT);
   return Number.isFinite(configured) && configured > 0 ? Math.floor(configured) : 3;
 }
 

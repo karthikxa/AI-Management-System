@@ -1,4 +1,4 @@
-# Test Architecture — Kortix Platform
+# Test Architecture — Zed Platform
 
 **Status:** Adopted (Phase 2 of the test-suite hardening initiative)
 **Audience:** Engineers, QA, security, and enterprise technical due-diligence reviewers.
@@ -72,7 +72,7 @@ The pyramid is deliberately bottom-heavy. The audit's biggest correction is to *
 | DAST | **OWASP ZAP + Schemathesis** | ZAP baseline + schema-fuzz against the OpenAPI spec. |
 | Mutation | **Stryker** | The OSS standard; retargeted at product code (see §6). |
 | Lint + format | **Biome** | One fast Rust binary for lint **and** format across the whole TS monorepo — replaces the absent ESLint/Prettier sprawl with a single blocking gate and a single config. |
-| Reporting | **Allure 3** | Trend history, epic/story grouping, single-file output; published to `qa.kortix.com` via S3 + Argo. JUnit XML + lcov feed it. |
+| Reporting | **Allure 3** | Trend history, epic/story grouping, single-file output; published to `qa.zed.com` via S3 + Argo. JUnit XML + lcov feed it. |
 | Orchestration | **Make + pnpm workspaces + GitHub Actions** | Make targets map 1:1 to CI lanes; pnpm `-r` fans tests across packages; Actions tiered cadence. |
 
 **Why Biome over ESLint+Prettier:** the repo had *no* root lint/format config and `make lint` was non-blocking. Introducing ESLint flat config + Prettier + plugins is heavy and slow on a monorepo this size. Biome is a single dependency, formats and lints in one pass, is fast enough to run in pre-push and PR, and gives us one blocking `lint` gate immediately. App-local ESLint (`apps/web`) is retained where Next.js-specific rules are needed.
@@ -87,7 +87,7 @@ The repo uses **two complementary locations** by design:
 <repo root>
 ├── apps/<app>/src/**/*.test.ts        ← co-located unit tests (bun:test), next to the code they cover
 ├── packages/<pkg>/src/**/*.test.ts    ← co-located unit tests (bun:test)
-└── tests/                             ← cross-cutting & black-box suites (one home, run via @kortix/tests)
+└── tests/                             ← cross-cutting & black-box suites (one home, run via @zed/tests)
     ├── src/            ke2e flow framework: core/, fixtures/, flows/*.flow.ts   (API/contract/smoke)
     ├── unit/           cross-cutting Vitest unit + mutation host
     ├── integration/    Vitest + Testcontainers (service boundaries)
@@ -113,7 +113,7 @@ The repo uses **two complementary locations** by design:
 - A test that exercises one module in isolation → **co-located** `*.test.ts` next to the source.
 - A test that crosses package/service boundaries, drives a browser, or is cross-cutting (perf/security/chaos/migration) → **`tests/`**.
 
-**Unified entrypoint (the audit's F-3 fix):** every package declares `"test": "bun test"`; the root exposes `pnpm test` → `pnpm -r --if-present test` plus `pnpm test:unit`, `test:integration`, `test:e2e`, etc. that delegate into `@kortix/tests`. No test can be orphaned from a runnable command.
+**Unified entrypoint (the audit's F-3 fix):** every package declares `"test": "bun test"`; the root exposes `pnpm test` → `pnpm -r --if-present test` plus `pnpm test:unit`, `test:integration`, `test:e2e`, etc. that delegate into `@zed/tests`. No test can be orphaned from a runnable command.
 
 ---
 
@@ -121,7 +121,7 @@ The repo uses **two complementary locations** by design:
 
 - **Factories over fixtures over hardcoded objects.** `tests/_support/factories.ts` (`defineFactory`/`buildMany`, deterministic sequences, epoch-based timestamps) for Vitest; `tests/src/fixtures/` (`world.ts`, `principals.ts`, `provision.ts`, `gc.ts`) for ke2e seeded-world + teardown stack.
 - **Deterministic seeds.** No `Date.now()`/random in expected values; sequence counters and `new Date(0)` baselines so reruns are identical.
-- **Disposable infrastructure.** Integration tests provision Postgres via Testcontainers (per-suite, auto-torn-down) or a tmpfs compose DB; **every DB test wraps work in a transaction that rolls back** (or targets a throwaway/ephemeral DB) — never the real/shared `kortix` DB. This is a hard rule (see [memory: DB tests ephemeral only]).
+- **Disposable infrastructure.** Integration tests provision Postgres via Testcontainers (per-suite, auto-torn-down) or a tmpfs compose DB; **every DB test wraps work in a transaction that rolls back** (or targets a throwaway/ephemeral DB) — never the real/shared `zed` DB. This is a hard rule (see [memory: DB tests ephemeral only]).
 - **Garbage collection.** ke2e tracks created entities and reaps orphans (`fixtures/gc.ts`) so live-API runs leave no residue.
 - **No production data, ever.** All fixtures are synthetic. Sampled "secrets" are obvious test values (`whsec_test`, `sk_test_*`).
 
@@ -183,7 +183,7 @@ Tiers map to Make targets and GitHub Actions lanes:
 
 ## 10. Reporting & Observability
 
-- **Allure 3** is the single pane: epic/story grouping, trend history, single-file artifacts, published to `qa.kortix.com` (S3 bucket `kortix-qa-reports` + Argo-deployed nginx/IRSA pod).
+- **Allure 3** is the single pane: epic/story grouping, trend history, single-file artifacts, published to `qa.zed.com` (S3 bucket `zed-qa-reports` + Argo-deployed nginx/IRSA pod).
 - **JUnit XML** from every runner feeds `quality-gates.sh` and the Allure converter (`junit-to-allure.mjs`).
 - **Coverage** as lcov + json-summary (gate input) + HTML (human review).
 - **PR comments:** sticky Allure-link comment on `qa-pr`.

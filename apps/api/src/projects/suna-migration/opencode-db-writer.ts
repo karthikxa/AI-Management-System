@@ -213,8 +213,8 @@ function messageData(role: 'user' | 'assistant', atMs: number, parentId: string)
     role: 'user',
     time: { created: atMs },
     summary: { diffs: [] },
-    agent: 'kortix',
-    model: { providerID: 'kortix', modelID: 'unknown' },
+    agent: 'zed',
+    model: { providerID: 'zed', modelID: 'unknown' },
   };
   return {
     role: 'assistant',
@@ -222,7 +222,7 @@ function messageData(role: 'user' | 'assistant', atMs: number, parentId: string)
     // opencode requires parentID on assistant messages (the user message that
     // started the turn). Missing it 400s the whole thread on read.
     parentID: parentId,
-    modelID: 'unknown', providerID: 'unknown', mode: 'kortix', agent: 'kortix',
+    modelID: 'unknown', providerID: 'unknown', mode: 'zed', agent: 'zed',
     path: { cwd: WORKSPACE_DIR, root: WORKSPACE_DIR },
     cost: 0, tokens: { total: 0, input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } },
     finish: 'stop',

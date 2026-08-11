@@ -3,14 +3,14 @@
  *
  * Better Stack pattern c672fb5e8c4f366e2aecab35a4abf23c8bb3fa26f0eb1d8cafddf3cd3ca26e55
  * — an UNHANDLED `TimeoutError: The operation timed out.` from prod
- * (Kortix API, application_id 2346961), 3 occurrences, 0 users, last seen
+ * (Zed API, application_id 2346961), 3 occurrences, 0 users, last seen
  * 2026-07-14 19:34:39 UTC, first seen 2026-06-10. The raw Sentry event carried:
  *
  *   - mechanism: auto.node.onunhandledrejection (handled: false)
  *   - type: TimeoutError, value: "The operation timed out."
  *   - call_site_function / call_site_file: null  (NO JS stack)
  *   - runtime: bun 1.2.23, environment: prod
- *   - url: http://new-api.kortix.com/v1/router/tavily/search
+ *   - url: http://new-api.zed.com/v1/router/tavily/search
  *
  * Root cause: the /v1/router/tavily/* catch-all billed-upstream proxy returns
  * `new Response(upstream.body, …)` to the client (handlers.ts). When the Tavily
@@ -129,7 +129,7 @@ describe('Sentry ignoreErrors noise filter (BS c672fb5e)', () => {
   test('a real DB schema/SQL bug is NOT filtered (do not over-match PostgresError)', () => {
     // Guards against an over-broad filter: a genuine PostgresError (missing
     // relation, syntax error) must still page Sentry via the DB-error handler.
-    expect(isSentryIgnoredError('PostgresError', 'relation "kortix.foo" does not exist')).toBe(
+    expect(isSentryIgnoredError('PostgresError', 'relation "zed.foo" does not exist')).toBe(
       false,
     );
     expect(isSentryIgnoredError('PostgresError', 'syntax error at or near "SELECT"')).toBe(false);

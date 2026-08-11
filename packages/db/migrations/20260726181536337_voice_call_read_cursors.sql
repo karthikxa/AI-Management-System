@@ -4,7 +4,7 @@
 set lock_timeout = '2s';
 set statement_timeout = '30s';
 
--- Where the Kortix agent's transcript READ POSITION lives.
+-- Where the Zed agent's transcript READ POSITION lives.
 --
 -- `voice_call_turns.cursor` already made "what is new since X" a cheap indexed
 -- range scan, but X was the AGENT'S problem: `read_transcript` took a cursor and
@@ -26,7 +26,7 @@ set statement_timeout = '30s';
 --     read, nothing more. That is a very different durability class from the
 --     session row, and it should not be able to bloat or lock it.
 -- Keyed by call_id (which IS the session id) because there is exactly one
--- reader that advances it: the Kortix agent driving the call from the inside.
+-- reader that advances it: the Zed agent driving the call from the inside.
 -- The call PAGE's poll (r7.ts /voice-transcript, public-join-routes.ts) passes
 -- an explicit cursor and deliberately never touches this row -- a human
 -- scrolling the transcript must not consume the agent's unread.
@@ -44,7 +44,7 @@ set statement_timeout = '30s';
 --       pods never read or write this table; they keep passing explicit cursors,
 --       which still work unchanged.
 
-CREATE TABLE "kortix"."voice_call_read_cursors" (
+CREATE TABLE "zed"."voice_call_read_cursors" (
   -- The call, which is also the session. One agent-side reader per call.
   "call_id"    text PRIMARY KEY,
   "project_id" uuid NOT NULL,

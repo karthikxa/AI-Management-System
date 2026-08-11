@@ -2,7 +2,7 @@ import type {
   ConnectorEffectivePolicy,
   ConnectorPolicyAction,
   ConnectorPolicyRule,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 export type PolicyChoice = 'default' | ConnectorPolicyAction;
 
@@ -99,7 +99,7 @@ export function orderPolicyRules(rules: readonly ConnectorPolicyRule[]): Connect
  *
  * `effective` is the server resolving every scope through the same function
  * the call gate uses, so it is preferred whenever it covers the tool. It does
- * not always: a connector that exists only in kortix.yaml with no materialized
+ * not always: a connector that exists only in zed.yaml with no materialized
  * row comes back with `effective: []`
  * (apps/api/src/connectors/db-deps.ts:1151), and older servers omit the field
  * entirely. Falling back to the stored exact rule keeps the control live in

@@ -9,7 +9,7 @@ import {
 import { EntityAvatar } from '@/components/ui/entity-avatar';
 import { Plus } from '@/features/icon/icons/plus';
 import { cn } from '@/lib/utils';
-import { KortixAccount } from '@kortix/sdk';
+import { ZedAccount } from '@zed/sdk';
 import { useTranslations } from 'next-intl';
 
 const NewProjectControl = ({
@@ -23,7 +23,7 @@ const NewProjectControl = ({
   className,
 }: {
   viewAll: boolean;
-  creatableAccounts: KortixAccount[];
+  creatableAccounts: ZedAccount[];
   activeAccountId: string | null;
   canCreateActive: boolean;
   onPick: (accountId: string) => void;

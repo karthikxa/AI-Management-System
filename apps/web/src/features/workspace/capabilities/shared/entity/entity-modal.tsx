@@ -29,8 +29,8 @@ import {
 import { PROJECT_ACTIONS } from '@/lib/project-actions';
 import { useProjectCan } from '@/lib/use-project-can';
 import { cn } from '@/lib/utils';
-import { listProjectFiles, readProjectFile } from '@kortix/sdk';
-import { useProjectAccountId } from '@kortix/sdk/react';
+import { listProjectFiles, readProjectFile } from '@zed/sdk';
+import { useProjectAccountId } from '@zed/sdk/react';
 import { PencilSimpleIcon } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 
@@ -81,10 +81,10 @@ const WRITE_ACTION: Record<EntityKind, string> = {
 /**
  * Whether listing the entity's directory lists THAT ENTITY's files.
  *
- * A skill owns its directory — `.kortix/opencode/skills/<name>/SKILL.md` plus
+ * A skill owns its directory — `.zed/opencode/skills/<name>/SKILL.md` plus
  * its own scripts and templates — so the listing is exactly its file tree.
  * An agent is a single file in a SHARED directory
- * (`.kortix/opencode/agents/<name>.md`), so the same listing returns every
+ * (`.zed/opencode/agents/<name>.md`), so the same listing returns every
  * other agent in the project. Rendering that as "this agent's files" would let
  * a click swap the source pane to a different agent while the modal title,
  * the badges, and the configuration aside all still describe the first one.
@@ -216,8 +216,8 @@ function EntityModalBody({
 
   // The real repo path, with any manifest anchor stripped. Agents declared in
   // the manifest rather than as their own file carry one
-  // (`kortix.yaml#agents.<name>`), and reading that verbatim is a 404 — the
-  // source is `kortix.yaml` itself, which then renders as highlighted YAML
+  // (`zed.yaml#agents.<name>`), and reading that verbatim is a 404 — the
+  // source is `zed.yaml` itself, which then renders as highlighted YAML
   // because `isMarkdownPath` is false for it. Skills and commands do not carry
   // an anchor in practice. Every file read and the tree's own paths are
   // relative to this.
@@ -365,7 +365,7 @@ function EntityModalBody({
       {/* Name and its status chips share one line — the chips qualify the name,
           so stacking them read as a second, unlabeled row. The source path sits
           under it as data rather than as a chip: a file path is a value, and
-          putting one in a Badge was the "kortix.yaml" pill this replaces.
+          putting one in a Badge was the "zed.yaml" pill this replaces.
           `pr-10` clears the close button (absolute, top-3 right-3, size-8). */}
       <ModalHeader className="border-border/60 space-y-1 border-b pr-10 pb-4">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

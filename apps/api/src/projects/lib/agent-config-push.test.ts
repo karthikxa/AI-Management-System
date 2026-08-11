@@ -12,7 +12,7 @@ import * as realCompile from './compile-agent-config';
 import * as realSecrets from '../secrets';
 import * as realSecretGrant from './secret-grant';
 
-process.env.KORTIX_URL = 'https://api.example.com';
+process.env.ZED_URL = 'https://api.example.com';
 
 let compiled: string | null = '{"agent":{"support":{"prompt":"fresh"}}}';
 let compileThrows: Error | null = null;
@@ -33,7 +33,7 @@ const SESSION_ROW = {
   secretsAllowlist: null,
   repoUrl: 'https://example.test/acme/repo.git',
   defaultBranch: 'main',
-  manifestPath: 'kortix.yaml',
+  manifestPath: 'zed.yaml',
   accountId: 'acct-1',
 };
 let activeSandbox: { externalId: string; config: Record<string, unknown> } | null = SANDBOX_ROW;
@@ -130,7 +130,7 @@ const INPUT = {
   sessionId: 'sess-1',
   repoUrl: 'https://example.test/acme/repo.git',
   defaultBranch: 'main',
-  manifestPath: 'kortix.yaml',
+  manifestPath: 'zed.yaml',
 };
 
 afterAll(() => {
@@ -200,7 +200,7 @@ describe('pushSessionAgentConfigToSandbox', () => {
 
     expect(result).toMatchObject({ applied: true, opencodeReload: 'restarted' });
     expect(posted).toHaveLength(1);
-    expect(posted[0].opencodeEnv?.KORTIX_COMPILED_AGENT_CONFIG).toBe(compiled as string);
+    expect(posted[0].opencodeEnv?.ZED_COMPILED_AGENT_CONFIG).toBe(compiled as string);
     expect(posted[0].refreshModels).toBe(true);
   });
 

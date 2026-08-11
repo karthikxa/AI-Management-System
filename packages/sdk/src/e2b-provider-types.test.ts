@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test';
 import type {
   CreateProjectSessionInput,
-  KortixProject,
+  ZedProject,
   ProjectSessionSandbox,
   SandboxProviderName,
 } from './index';
@@ -11,8 +11,8 @@ test('E2B is accepted anywhere consumers select or observe a sandbox provider', 
   const platformProvider: SandboxProviderName = 'e2b';
   const runtimeProvider: ProjectSessionSandbox['provider'] = 'e2b';
   const createProvider: NonNullable<CreateProjectSessionInput['provider']> = 'e2b';
-  const projectProvider: NonNullable<KortixProject['default_sandbox_provider']> = 'e2b';
-  const availableProvider: NonNullable<KortixProject['available_sandbox_providers']>[number] = 'e2b';
+  const projectProvider: NonNullable<ZedProject['default_sandbox_provider']> = 'e2b';
+  const availableProvider: NonNullable<ZedProject['available_sandbox_providers']>[number] = 'e2b';
   const updateProvider: NonNullable<Parameters<typeof updateProjectSandboxProvider>[1]> = 'e2b';
 
   expect([
@@ -31,7 +31,7 @@ test('other retired providers remain rejected by every public provider contract'
   // @ts-expect-error justavps is not a sandbox provider
   const justavps: NonNullable<CreateProjectSessionInput['provider']> = 'justavps';
   // @ts-expect-error retired providers cannot be persisted as project pins
-  const retiredProjectPin: NonNullable<KortixProject['default_sandbox_provider']> = 'managed';
+  const retiredProjectPin: NonNullable<ZedProject['default_sandbox_provider']> = 'managed';
   // @ts-expect-error retired providers cannot be sent by the project pin mutation
   const retiredUpdate: NonNullable<Parameters<typeof updateProjectSandboxProvider>[1]> = 'managed';
 

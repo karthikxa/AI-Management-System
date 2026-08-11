@@ -18,7 +18,7 @@ that doesn't clearly resolve — missing data, no matching rule, a genuine tie
 assign.
 
 Fresh session per sweep — state lives on the HubSpot lead record itself (a
-`kortix_routing_status` property + timestamp + reason marks a lead handled),
+`zed_routing_status` property + timestamp + reason marks a lead handled),
 not in a local ledger file. The round-robin pool is stateless by design too:
 "whose turn is it" is answered by counting each rep's current lead load in
 HubSpot, not by a rotating pointer that would need to persist somewhere. A
@@ -47,11 +47,11 @@ carry the routing marker:
 GET /crm/v3/objects/contacts/search
   filterGroups: [
     { propertyName: "lifecyclestage", operator: "EQ", value: "{{hubspot_lifecycle_stage}}" },
-    { propertyName: "kortix_routing_status", operator: "NOT_HAS_PROPERTY" }
+    { propertyName: "zed_routing_status", operator: "NOT_HAS_PROPERTY" }
   ]
 ```
 
-Anything already carrying `kortix_routing_status` (whether `routed` or
+Anything already carrying `zed_routing_status` (whether `routed` or
 `flagged`) was handled by a prior run — skip it. A `flagged` lead stays
 skipped until a human resolves it directly in HubSpot (assigning an owner
 clears the need for another routing pass).
@@ -95,7 +95,7 @@ Step 5.
 
 If neither territory nor segment resolved, route within the general
 round-robin pool defined in memory. Count each pool rep's leads currently
-owned with a `kortix_routing_status` of `routed` and a creation date in the
+owned with a `zed_routing_status` of `routed` and a creation date in the
 current week; assign the new lead to whichever pool rep has the fewest. Ties
 break alphabetically by rep name — this keeps the pool stateless and
 reproducible without a rotating pointer to persist between sessions.
@@ -112,13 +112,13 @@ A lead escalates instead of being assigned when:
   memory.
 
 Post the lead to {{escalation_channel}} with what was checked and why it
-didn't resolve. Set `kortix_routing_status = flagged` (with a timestamp and
+didn't resolve. Set `zed_routing_status = flagged` (with a timestamp and
 reason) so it isn't re-flagged on the next sweep.
 
 ## Step 7 — Assign and write back
 
 For a lead that resolved in Step 3, 4, or 5: set the HubSpot owner to the
-matched rep, and write `kortix_routing_status = routed` with a timestamp and
+matched rep, and write `zed_routing_status = routed` with a timestamp and
 the reason (e.g. "territory: US-West", "segment: enterprise", "round-robin:
 fewest current leads"). These are the only fields this skill ever writes.
 
@@ -136,13 +136,13 @@ get their own post in {{escalation_channel}} instead, never a silent skip.
   merges two records, under any circumstance — that action is entirely out of
   scope regardless of how confident a match is.
 - **Writes are scoped to routing.** The only HubSpot writes are the owner
-  field and the `kortix_routing_status` property (with its reason and
+  field and the `zed_routing_status` property (with its reason and
   timestamp). No other field, no bulk update, ever.
 - **Ambiguous means escalate, never guess.** If territory, segment, and
   round-robin all fail to resolve cleanly, the lead goes to
   {{escalation_channel}} for a human — the agent never invents a fallback
   owner to close out the sweep.
-- **No duplicate routing.** Always check `kortix_routing_status` before
+- **No duplicate routing.** Always check `zed_routing_status` before
   scoring or routing — a lead handled once (routed or flagged) is never
   reprocessed, even across many sweeps.
 - **Round-robin is stateless.** "Whose turn it is" is computed fresh each

@@ -20,10 +20,10 @@ build_target() {
   chmod +x "$outfile"
 }
 
-# Point bundle/kortix at the requested platform's binary so callers can
-# always invoke `./bundle/kortix …` without remembering the suffix.
+# Point bundle/zed at the requested platform's binary so callers can
+# always invoke `./bundle/zed …` without remembering the suffix.
 link_host() {
   local outfile="$1"
-  ln -sf "$outfile" "$OUT_DIR/kortix"
-  echo "  ↻ bundle/kortix → ${outfile}"
+  ln -sf "$outfile" "$OUT_DIR/zed"
+  echo "  ↻ bundle/zed → ${outfile}"
 }

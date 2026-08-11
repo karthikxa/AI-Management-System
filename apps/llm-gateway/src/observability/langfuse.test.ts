@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import { traceToLangfuse } from './langfuse';
-import type { GatewayTrace } from '@kortix/llm-gateway';
+import type { GatewayTrace } from '@zed/llm-gateway';
 
 function trace(over: Partial<GatewayTrace> = {}): GatewayTrace {
   return {
@@ -11,7 +11,7 @@ function trace(over: Partial<GatewayTrace> = {}): GatewayTrace {
     actorUserId: '22222222-2222-2222-2222-222222222222',
     projectId: 'p1',
     keyId: 'k1',
-    requestedModel: 'kortix/x',
+    requestedModel: 'zed/x',
     resolvedModel: 'anthropic/x',
     provider: 'openrouter',
     billingMode: 'credits',

@@ -49,12 +49,12 @@ interface SnapshotBuild {
   finished_at: string | null;
 }
 
-const HELP = help`Usage: kortix sandboxes <subcommand> [options]
+const HELP = help`Usage: zed sandboxes <subcommand> [options]
 
 Manage the project's sandbox images — the same surface as the dashboard's
 Customize → Sandbox images. A template is a definition (image OR Dockerfile +
 resources); a build produces the actual snapshot the platform boots sessions
-from. Templates also come from \`[[sandbox.templates]]\` in kortix.yaml.
+from. Templates also come from \`[[sandbox.templates]]\` in zed.yaml.
 
 Subcommands:
   ls [--json]                       List templates + live provider state.
@@ -73,10 +73,10 @@ Subcommands:
                                     build log so an agent can repair it.
 
 Local build (build --local):
-  Renders your Dockerfile + the Kortix toolchain layer and builds it with an
+  Renders your Dockerfile + the Zed toolchain layer and builds it with an
   EMPTY context — the same repo-less constraint the cloud builds under. Needs
   no login and no linked project, just Docker. For the checks that need neither,
-  run \`kortix validate\` (it lints these Dockerfiles statically).
+  run \`zed validate\` (it lints these Dockerfiles statically).
 
   Slug: the positional, else \`sandbox.default\`, else your only template.
 
@@ -84,9 +84,9 @@ Local build (build --local):
   --platform <p>       Target platform (default: this host's). The cloud always
                        builds linux/amd64; matching it here is exact but slow
                        under emulation.
-  --tag <t>            Image tag (default: kortix-local/<slug>:latest).
+  --tag <t>            Image tag (default: zed-local/<slug>:latest).
   --no-cache           Pass --no-cache to docker build.
-  --no-layer           Build only your Dockerfile, without the Kortix layer.
+  --no-layer           Build only your Dockerfile, without the Zed layer.
   --print              Print the composed Dockerfile to stdout and exit.
 
 Options:
@@ -95,7 +95,7 @@ Options:
   --name <label>       Display name (default: slug).
   --cpu <n>            vCPUs.   --memory <n>  GiB RAM.   --disk <n>  GiB disk.
   --project <id>       Operate on this project id (default: linked).
-  --host <name>        Operate against a non-default Kortix host.
+  --host <name>        Operate against a non-default Zed host.
   -h, --help           Show this help.
 `;
 
@@ -127,13 +127,13 @@ export async function runSandboxes(argv: string[]): Promise<number> {
   }
   const positional = rest.filter((a) => !a.startsWith('-'));
 
-  // ── Template definitions live in kortix.yaml `[[sandbox.templates]]` (source of
-  //    truth). add/update/rm edit the LOCAL file — `kortix ship` applies +
+  // ── Template definitions live in zed.yaml `[[sandbox.templates]]` (source of
+  //    truth). add/update/rm edit the LOCAL file — `zed ship` applies +
   //    builds. Only build/rebuild/health/builds/fix are cloud actions. ────────
   if (sub === 'add' || sub === 'create') return sandboxAddLocal(positional[0], f);
   if (sub === 'update' || sub === 'edit') return sandboxUpdateLocal(positional[0], f);
   if (sub === 'rm' || sub === 'remove' || sub === 'delete') return sandboxRmLocal(positional[0]);
-  // `build --local` is the same kind of thing: it reads kortix.yaml + a
+  // `build --local` is the same kind of thing: it reads zed.yaml + a
   // Dockerfile and talks to the local Docker daemon. No token, no linked
   // project, no network — so it must route above resolveProjectContext, which
   // would otherwise dead-end a logged-out developer on a pre-push check.
@@ -239,7 +239,7 @@ export async function runSandboxes(argv: string[]): Promise<number> {
         const currentFailure = h.status ? h.status.current_failure : h.latest_failure;
         if (currentFailure) {
           process.stdout.write(`  ${C.red}current failure:${C.reset} ${trim(currentFailure.error?.split('\n')[0] ?? 'unknown', 80)}\n`);
-          process.stdout.write(`  ${C.dim}Repair it with ${C.reset}${C.cyan}kortix sandboxes fix${C.reset}\n`);
+          process.stdout.write(`  ${C.dim}Repair it with ${C.reset}${C.cyan}zed sandboxes fix${C.reset}\n`);
         }
         process.stdout.write('\n');
         return 0;
@@ -269,7 +269,7 @@ export async function runSandboxes(argv: string[]): Promise<number> {
       case 'fix': {
         const resp = await ctx.client.post<{ session_id: string }>(`${base}/snapshots/fix-with-agent`);
         process.stdout.write(`${status.ok(`Fix session started ${C.bold}${resp.session_id.split('-')[0]}${C.reset}`)}\n`);
-        process.stdout.write(`  ${C.dim}Chat with it: ${C.reset}${C.cyan}kortix chat ${resp.session_id}${C.reset}\n`);
+        process.stdout.write(`  ${C.dim}Chat with it: ${C.reset}${C.cyan}zed chat ${resp.session_id}${C.reset}\n`);
         return 0;
       }
       default:
@@ -281,7 +281,7 @@ export async function runSandboxes(argv: string[]): Promise<number> {
   }
 }
 
-// ── Local kortix.yaml `[[sandbox.templates]]` edits (source of truth) ────────────────
+// ── Local zed.yaml `[[sandbox.templates]]` edits (source of truth) ────────────────
 
 function sandboxAddLocal(slug: string | undefined, f: Record<string, string | undefined>): number {
   if (!slug) return missing('a template slug');
@@ -292,7 +292,7 @@ function sandboxAddLocal(slug: string | undefined, f: Record<string, string | un
   }
   try {
     if (arrayEntryExists('sandbox.templates', 'slug', slug)) {
-      process.stderr.write(`${status.err(`A [[sandbox.templates]] "${slug}" already exists in kortix.yaml.`)}\n`);
+      process.stderr.write(`${status.err(`A [[sandbox.templates]] "${slug}" already exists in zed.yaml.`)}\n`);
       return 1;
     }
     const fields: Record<string, unknown> = { slug };
@@ -304,7 +304,7 @@ function sandboxAddLocal(slug: string | undefined, f: Record<string, string | un
     if (f.disk) fields.disk = Number(f.disk);
     appendArrayBlock('sandbox.templates', fields);
     process.stdout.write(
-      `${status.ok(`Added [[sandbox.templates]] ${C.bold}${slug}${C.reset} to kortix.yaml`)} ${C.dim}— \`kortix ship\` builds it.${C.reset}\n`,
+      `${status.ok(`Added [[sandbox.templates]] ${C.bold}${slug}${C.reset} to zed.yaml`)} ${C.dim}— \`zed ship\` builds it.${C.reset}\n`,
     );
     return 0;
   } catch (err) {
@@ -317,7 +317,7 @@ function sandboxUpdateLocal(slug: string | undefined, f: Record<string, string |
   if (!slug) return missing('a template slug');
   try {
     if (!arrayEntryExists('sandbox.templates', 'slug', slug)) {
-      process.stderr.write(`${status.err(`No [[sandbox.templates]] "${slug}" in kortix.yaml (platform/UI templates aren't file-based).`)}\n`);
+      process.stderr.write(`${status.err(`No [[sandbox.templates]] "${slug}" in zed.yaml (platform/UI templates aren't file-based).`)}\n`);
       return 1;
     }
     const updates: Array<[string, string | number]> = [];
@@ -330,7 +330,7 @@ function sandboxUpdateLocal(slug: string | undefined, f: Record<string, string |
     if (updates.length === 0) return missing('at least one field to update');
     for (const [k, v] of updates) setScalarInArrayBlock('sandbox.templates', 'slug', slug, k, v);
     process.stdout.write(
-      `${status.ok(`Updated [[sandbox.templates]] ${C.bold}${slug}${C.reset}`)} ${C.dim}— \`kortix ship\` to apply.${C.reset}\n`,
+      `${status.ok(`Updated [[sandbox.templates]] ${C.bold}${slug}${C.reset}`)} ${C.dim}— \`zed ship\` to apply.${C.reset}\n`,
     );
     return 0;
   } catch (err) {
@@ -343,11 +343,11 @@ function sandboxRmLocal(slug: string | undefined): number {
   if (!slug) return missing('a template slug');
   try {
     if (!removeArrayBlock('sandbox.templates', 'slug', slug)) {
-      process.stderr.write(`${status.err(`No [[sandbox.templates]] "${slug}" in kortix.yaml.`)}\n`);
+      process.stderr.write(`${status.err(`No [[sandbox.templates]] "${slug}" in zed.yaml.`)}\n`);
       return 1;
     }
     process.stdout.write(
-      `${status.ok(`Removed [[sandbox.templates]] ${C.bold}${slug}${C.reset}`)} ${C.dim}— \`kortix ship\` to apply.${C.reset}\n`,
+      `${status.ok(`Removed [[sandbox.templates]] ${C.bold}${slug}${C.reset}`)} ${C.dim}— \`zed ship\` to apply.${C.reset}\n`,
     );
     return 0;
   } catch (err) {

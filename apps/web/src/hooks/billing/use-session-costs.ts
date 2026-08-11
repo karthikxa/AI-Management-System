@@ -3,12 +3,12 @@ import {
   listProjectsForAccount,
   listSessionCosts,
   type GetSessionCostRecordOptions,
-  type KortixProject,
+  type ZedProject,
   type ListSessionCostsOptions,
   type SessionCostDetail,
   type SessionCostSort,
   type SessionCostsPage,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { useQuery } from '@tanstack/react-query';
 
 import { useBillingAccountId } from '@/stores/billing-account-context';
@@ -19,7 +19,7 @@ const SESSION_COST_STALE_TIME_MS = 30_000;
 export interface SessionCostQuerySources {
   list(options?: ListSessionCostsOptions): Promise<SessionCostsPage>;
   get(sessionId: string, options?: GetSessionCostRecordOptions): Promise<SessionCostDetail>;
-  projects(accountId?: string): Promise<KortixProject[]>;
+  projects(accountId?: string): Promise<ZedProject[]>;
 }
 
 const sdkSources: SessionCostQuerySources = {

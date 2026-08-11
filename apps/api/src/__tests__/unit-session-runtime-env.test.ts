@@ -6,20 +6,20 @@ import { buildSessionRuntimeEnv } from '../projects/lib/session-runtime-env';
 const base = {
   projectId: 'proj-1',
   sessionId: 'sess-1',
-  repoUrl: 'https://github.com/kortix/project.git',
+  repoUrl: 'https://github.com/zed/project.git',
   baseRef: 'main',
   agentName: 'default',
-  apiUrl: 'https://api.kortix.test/v1',
+  apiUrl: 'https://api.zed.test/v1',
 };
 
 describe('buildSessionRuntimeEnv', () => {
   test('always asks the sandbox daemon to bootstrap the OpenCode root', () => {
     const env = buildSessionRuntimeEnv(base);
 
-    expect(env.KORTIX_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
-    expect(env.KORTIX_INITIAL_PROMPT).toBeUndefined();
-    expect(env.KORTIX_REPO_URL).toBe(base.repoUrl);
-    expect(env.KORTIX_BRANCH_NAME).toBe(base.sessionId);
+    expect(env.ZED_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
+    expect(env.ZED_INITIAL_PROMPT).toBeUndefined();
+    expect(env.ZED_REPO_URL).toBe(base.repoUrl);
+    expect(env.ZED_BRANCH_NAME).toBe(base.sessionId);
   });
 
   test('adds first-turn and model payload without changing root ownership', () => {
@@ -29,9 +29,9 @@ describe('buildSessionRuntimeEnv', () => {
       opencodeModel: 'anthropic/claude-sonnet-4-6',
     });
 
-    expect(env.KORTIX_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
-    expect(env.KORTIX_INITIAL_PROMPT).toBe('answer this Slack thread');
-    expect(env.KORTIX_OPENCODE_MODEL).toBe('anthropic/claude-sonnet-4-6');
+    expect(env.ZED_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
+    expect(env.ZED_INITIAL_PROMPT).toBe('answer this Slack thread');
+    expect(env.ZED_OPENCODE_MODEL).toBe('anthropic/claude-sonnet-4-6');
   });
   test('boots the platform meta agent through OpenCode REST', () => {
     const env = buildSessionRuntimeEnv({
@@ -40,7 +40,7 @@ describe('buildSessionRuntimeEnv', () => {
       compiledAgentConfig: buildPlatformMetaOpenCodeConfig(),
     });
 
-    expect(env.KORTIX_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
-    expect(env.KORTIX_COMPILED_AGENT_CONFIG).toBe(buildPlatformMetaOpenCodeConfig());
+    expect(env.ZED_BOOTSTRAP_OPENCODE_SESSION).toBe('1');
+    expect(env.ZED_COMPILED_AGENT_CONFIG).toBe(buildPlatformMetaOpenCodeConfig());
   });
 });

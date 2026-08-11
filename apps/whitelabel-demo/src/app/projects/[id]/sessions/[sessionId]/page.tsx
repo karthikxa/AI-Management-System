@@ -6,7 +6,7 @@ import { SessionApprovals } from '@/components/workbench/approvals-panel';
 import { BootScreen } from '@/components/workbench/boot-screen';
 import { SessionHeader } from '@/components/workbench/session-header';
 import { WorkbenchTabs } from '@/components/workbench/workbench-tabs';
-import { useSession } from '@kortix/sdk/react';
+import { useSession } from '@zed/sdk/react';
 import { useParams } from 'next/navigation';
 
 export default function SessionWorkbenchPage() {

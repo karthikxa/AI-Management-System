@@ -6,7 +6,7 @@
  * because the branching is id-space-sensitive and was already burned once:
  *
  * - Easy mode routes through `requestQuickView`, which resolves the active
- *   session from the kortix-computer-store's own `_activeSessionId` —
+ *   session from the zed-computer-store's own `_activeSessionId` —
  *   callers outside the panel have no reliable id of their own (the URL id
  *   is a DIFFERENT id space from the OpenCode `chatSessionId` panel state is
  *   keyed by; see `session-browser-store.ts`'s `getActivePanelSessionId`).
@@ -20,8 +20,8 @@ import { track } from '@/lib/track';
 import {
   type QuickView,
   type QuickViewTarget,
-  useKortixComputerStore,
-} from '@/stores/kortix-computer-store';
+  useZedComputerStore,
+} from '@/stores/zed-computer-store';
 
 /** Same cutoff as `useIsMobile`, readable outside a component. This is a
  *  plain function (palette handlers, header onClick), so it checks the
@@ -46,17 +46,17 @@ export function openSessionQuickView(
   // for behind the close button. The panel toggle still opens the panel;
   // this path is only the "show me this one tool" intent.
   if (isMobileViewport()) {
-    useKortixComputerStore.getState().openMobileTool(view);
+    useZedComputerStore.getState().openMobileTool(view);
     track('panel_opened', { source, surface: 'mobile-tool', view });
     return;
   }
 
-  const wasOpen = useKortixComputerStore.getState().isSidePanelOpen;
+  const wasOpen = useZedComputerStore.getState().isSidePanelOpen;
   const panelMode = useUserPreferencesStore.getState().preferences.panelMode ?? 'easy';
 
   // Resolved here for BOTH modes: session-browser-store's active panel
   // session is maintained on every route (tab dashboard AND the standalone
-  // session page), unlike kortix-computer-store's `_activeSessionId`, which
+  // session page), unlike zed-computer-store's `_activeSessionId`, which
   // is tab-gated — relying on the latter silently dropped the terminal open
   // on /projects/:id/sessions/:id.
   const activePanelSessionId = getActivePanelSessionId();
@@ -70,9 +70,9 @@ export function openSessionQuickView(
       const panelView = view === 'files' ? (target?.changes ? 'files' : 'explorer') : view;
       useSessionBrowserStore.getState().setView(activePanelSessionId, panelView);
     }
-    useKortixComputerStore.getState().openSidePanel();
+    useZedComputerStore.getState().openSidePanel();
   } else {
-    useKortixComputerStore
+    useZedComputerStore
       .getState()
       .requestQuickView(view, activePanelSessionId ?? undefined, target);
   }

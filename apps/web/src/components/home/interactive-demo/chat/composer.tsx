@@ -1,6 +1,6 @@
 'use client';
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { Claude } from '@/features/icon/icons/claude';
 import { cn } from '@/lib/utils';
 import {
@@ -17,7 +17,7 @@ import { SCENARIOS } from './scenarios';
 export const DEMO_PROMPTS = SCENARIOS.map((s) => s.prompt);
 
 export const HOME_PROMPT_MESSAGES = [
-  'Ask kortix to do anything across your company…',
+  'Ask zed to do anything across your company…',
   ...DEMO_PROMPTS,
 ] as const;
 
@@ -132,7 +132,7 @@ export function Composer({
               }
             }}
             placeholder={
-              variant === 'reply' ? 'Reply to kortix…' : 'Describe a task to start a session…'
+              variant === 'reply' ? 'Reply to zed…' : 'Describe a task to start a session…'
             }
             className="text-foreground placeholder:text-muted-foreground relative w-full resize-none bg-transparent text-sm outline-none"
           />
@@ -145,7 +145,7 @@ export function Composer({
             {variant === 'home' && (
               <>
                 <span className="text-foreground inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-xs">
-                  <KortixLogo size={12} /> kortix
+                  <ZedLogo size={12} /> zed
                 </span>
                 <span className="text-muted-foreground hidden h-7 items-center gap-1.5 rounded-full px-2.5 text-xs sm:inline-flex">
                   <Claude className="size-3.5" />

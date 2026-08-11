@@ -178,11 +178,11 @@ describe('classifyPart — exhaustive part model', () => {
 
   test('tool — completed web_search with real results stays done, exposes outputParsed', () => {
     const output = JSON.stringify({
-      query: 'kortix ai',
+      query: 'zed ai',
       success: true,
-      answer: 'Kortix is an open AI command center.',
+      answer: 'Zed is an open AI command center.',
       results: [
-        { title: 'Kortix', url: 'https://kortix.ai', snippet: 'The open AI command center.' },
+        { title: 'Zed', url: 'https://zed.ai', snippet: 'The open AI command center.' },
       ],
     });
     const part = {
@@ -192,7 +192,7 @@ describe('classifyPart — exhaustive part model', () => {
       type: 'tool',
       callID: 'c22',
       tool: 'web_search',
-      state: { status: 'completed', input: { query: 'kortix ai' }, output, title: 'Web Search', metadata: {}, time: { start: 0, end: 1 } },
+      state: { status: 'completed', input: { query: 'zed ai' }, output, title: 'Web Search', metadata: {}, time: { start: 0, end: 1 } },
     } as Part;
     const result = classifyPart(part) as Extract<ClassifiedPart, { kind: 'tool' }>;
     expect(result.tool.status).toBe('done');
@@ -364,9 +364,9 @@ describe('classifyPart — exhaustive part model', () => {
       sessionID: 's1',
       messageID: 'm1',
       type: 'agent',
-      name: 'kortix-worker',
+      name: 'zed-worker',
     } as Part;
-    expect(classifyPart(part)).toEqual({ kind: 'agent', id: 'p8', name: 'kortix-worker' });
+    expect(classifyPart(part)).toEqual({ kind: 'agent', id: 'p8', name: 'zed-worker' });
   });
 
   test('retry — unwraps the structured error into a flat message', () => {

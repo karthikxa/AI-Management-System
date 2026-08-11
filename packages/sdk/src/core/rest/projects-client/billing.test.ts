@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import type { UsageBreakdownItem, UsageQueryOptions } from './billing';
 import {
   cancelScheduledChange,
@@ -43,7 +43,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 const last = () => calls[calls.length - 1];
 
 type IsNever<T> = [T] extends [never] ? true : false;

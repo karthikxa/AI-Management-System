@@ -38,7 +38,7 @@ mock.module('../middleware/require-admin', () => ({
 }));
 
 mock.module('../config', () => ({
-  config: { KORTIX_BILLING_INTERNAL_ENABLED: false, INTERNAL_KORTIX_ENV: 'dev' },
+  config: { ZED_BILLING_INTERNAL_ENABLED: false, INTERNAL_ZED_ENV: 'dev' },
 }));
 
 mock.module('../tunnel', () => ({
@@ -147,7 +147,7 @@ describe('ops overview dashboard API', () => {
     // and, inside Promise.all, took the whole /ops/overview down with it.
     // Index 6 in the queue is the audit_events_24h count (see happyPathResults).
     const queue = happyPathResults();
-    queue[6] = { __throw: new Error('Failed query: SELECT count(*)::int AS count FROM kortix.audit_events WHERE occurred_at >= now() - interval \'24 hours\'') };
+    queue[6] = { __throw: new Error('Failed query: SELECT count(*)::int AS count FROM zed.audit_events WHERE occurred_at >= now() - interval \'24 hours\'') };
     executeResults = queue;
 
     const res = await app().request('/v1/ops/overview');

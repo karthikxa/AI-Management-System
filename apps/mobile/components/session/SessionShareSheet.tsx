@@ -84,7 +84,7 @@ export const SessionShareSheet = forwardRef<BottomSheetModal, SessionShareSheetP
     // Only fetch the member list while the sheet is open — this component is
     // permanently mounted on the project screen (web fetches on dialog open).
     const [open, setOpen] = useState(false);
-    // Pin the Kortix session id when the sheet opens so Save still works if the
+    // Pin the Zed session id when the sheet opens so Save still works if the
     // parent briefly clears activeProjectSession while this modal is up.
     const sessionIdRef = useRef<string | null>(null);
 

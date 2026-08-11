@@ -29,8 +29,8 @@ import {
   restartProjectSession,
   stopProjectSession,
   type ProjectSession,
-} from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import {
   ChatIcon,
   MagnifyingGlassIcon,

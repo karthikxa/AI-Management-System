@@ -85,7 +85,7 @@ export const SCENARIOS: DemoScenario[] = [
         kind: 'tool',
         tool: 'github.list_commits',
         icon: GitPullRequest,
-        title: 'kortix-ai/kortix · since Mon',
+        title: 'zed-ai/zed · since Mon',
         durationMs: 1500,
       },
       {
@@ -171,7 +171,7 @@ function genericToolStep(skills: string[]): DemoStep {
       title: 'Scanning recent repo activity',
       durationMs: 1400,
     },
-    'kortix-slack': {
+    'zed-slack': {
       id: 'gen-slack',
       kind: 'tool',
       tool: 'slack.conversations_history',
@@ -200,7 +200,7 @@ function genericToolStep(skills: string[]): DemoStep {
     bySkill[lead] ?? {
       id: 'gen-route',
       kind: 'tool',
-      tool: 'kortix.route',
+      tool: 'zed.route',
       icon: Blocks,
       title: 'Routing across connected tools',
       durationMs: 1200,

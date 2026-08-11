@@ -22,7 +22,7 @@ else
   junit_case "db-reset drops and re-applies cleanly" fail "$(printf '%s' "${out}" | tail -3 | tr '\n' ' ')"
 fi
 
-after="$(psql_query "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'kortix'")"
+after="$(psql_query "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'zed'")"
 if [ "${after:-0}" -gt 0 ]; then
   junit_case "schema present again after reset (${after} tables)" pass
 else

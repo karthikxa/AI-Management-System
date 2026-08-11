@@ -57,7 +57,7 @@ export function withTimeout<T>(
  * configured value gets clamped up to it.
  *
  * A silent `Math.max(floorMs, configured)` (the pattern this replaces) means
- * an operator who sets e.g. `KORTIX_DAYTONA_CALL_TIMEOUT_MS=200` during an
+ * an operator who sets e.g. `ZED_DAYTONA_CALL_TIMEOUT_MS=200` during an
  * incident — trying to fail faster — silently gets 1000ms instead with zero
  * indication their change had no effect. This logs once per process so that
  * mismatch is visible instead of a confusing "I set it to 200 but it's still

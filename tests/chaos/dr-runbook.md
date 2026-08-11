@@ -1,7 +1,7 @@
 # DR / Failover Runbook Test Stub
 
 > **Scope:** This is a *stub* describing disaster-recovery and failover checks
-> for a **deployed** Kortix environment (staging or prod-like). It mixes manual
+> for a **deployed** Zed environment (staging or prod-like). It mixes manual
 > steps with notes on how each could be automated. It is **not** a unit-CI test
 > and must never be run against a live production tenant without a maintenance
 > window and approval.

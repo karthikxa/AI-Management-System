@@ -10,7 +10,7 @@ import {
 import { ToolRegistry } from '@/features/session/tool/shared/registry';
 import type { ToolProps } from '@/features/session/tool/shared/types';
 import { ToolPartRenderer } from '@/features/session/tool/tool-part-renderer';
-import { useSessionStateStore } from '@kortix/sdk/react';
+import { useSessionStateStore } from '@zed/sdk/react';
 import {
   getChildSessionError,
   getRetryInfo,

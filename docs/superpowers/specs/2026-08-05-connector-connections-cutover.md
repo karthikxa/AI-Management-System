@@ -4,7 +4,7 @@
 
 ## Problem
 
-Kortix exposes two names for one product concept. The manifest and dashboard use
+Zed exposes two names for one product concept. The manifest and dashboard use
 `connector`. The CLI, API namespace, runtime package, database schema, and MCP
 server also expose the legacy `executor` name. Agents must learn overlapping
 command trees and different paths for the same operation.
@@ -19,10 +19,10 @@ provider creation.
 - A **connection** stores one usable authorization for a connector.
 - A **connector call** invokes one connector tool.
 - The server component is the **connector gateway**.
-- The public command tree is `kortix connectors`.
-- The published runtime client is `@kortix/sdk`.
-- The MCP server is `kortix-connectors`.
-- The in-sandbox command token is `KORTIX_CLI_TOKEN`.
+- The public command tree is `zed connectors`.
+- The published runtime client is `@zed/sdk`.
+- The MCP server is `zed-connectors`.
+- The in-sandbox command token is `ZED_CLI_TOKEN`.
 
 Do not introduce `executor`, `integrator`, `integration`, or `profile` as a second product noun.
 
@@ -34,7 +34,7 @@ skills, and tests.
 
 The cutover does not keep active aliases for the removed command, API namespace,
 npm package, MCP server, or environment variables. The user explicitly selected
-one vocabulary everywhere. The root `@kortix/sdk` keeps deprecated exported
+one vocabulary everywhere. The root `@zed/sdk` keeps deprecated exported
 aliases only where its published public-surface contract requires them.
 
 Historical database migration files remain immutable. A new forward migration
@@ -43,24 +43,24 @@ that predate this cutover.
 
 ## CLI contract
 
-`kortix connectors` is the only connector command tree.
+`zed connectors` is the only connector command tree.
 
 ```text
-kortix connectors [ls]
-kortix connectors ls [--session <session-id>] [--json]
-kortix connectors show <connector>[.<action>] [--json]
-kortix connectors discover <intent> [--json]
-kortix connectors call <connector> <action> [json]
-kortix connectors add <slug> --provider <provider> ... [--apply]
-kortix connectors rm <slug> [--apply]
-kortix connectors connect <slug> [--expires <minutes>]
-kortix connectors credential <slug> [value|-]
-kortix connectors rename <slug> <name>
-kortix connectors mode <slug> shared
-kortix connectors policy ...
-kortix connectors sync
-kortix connectors apps [query]
-kortix connectors mcp
+zed connectors [ls]
+zed connectors ls [--session <session-id>] [--json]
+zed connectors show <connector>[.<action>] [--json]
+zed connectors discover <intent> [--json]
+zed connectors call <connector> <action> [json]
+zed connectors add <slug> --provider <provider> ... [--apply]
+zed connectors rm <slug> [--apply]
+zed connectors connect <slug> [--expires <minutes>]
+zed connectors credential <slug> [value|-]
+zed connectors rename <slug> <name>
+zed connectors mode <slug> shared
+zed connectors policy ...
+zed connectors sync
+zed connectors apps [query]
+zed connectors mcp
 ```
 
 Every positional subcommand handles `--help` before validation or network I/O.

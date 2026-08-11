@@ -6,7 +6,7 @@
 
 ## Context
 
-The Kortix API needs a large bundle of runtime secrets (Supabase, Redis, Stripe,
+The Zed API needs a large bundle of runtime secrets (Supabase, Redis, Stripe,
 LLM providers, etc.) in every environment. Requirements:
 
 - **Zero plaintext secrets in git** — no Kubernetes `Secret` manifests, no
@@ -29,19 +29,19 @@ and **OIDC** for CI — with **no plaintext secrets committed to git**.
 `templates/externalsecret.yaml` defines a `SecretStore` (provider `aws`,
 `service: SecretsManager`) that authenticates via the app ServiceAccount's IRSA
 role, and an `ExternalSecret` that `dataFrom.extract`s the entire JSON bundle
-into one in-cluster `Secret` (`kortix-api-env`) consumed via `envFrom`. The
+into one in-cluster `Secret` (`zed-api-env`) consumed via `envFrom`. The
 secret bundle never leaves AWS except as the synced Secret. Per-environment
 bundles, regionally co-located:
 
 | Env | `secretName` | Region |
 |---|---|---|
-| prod (`kortix-prod`) | `kortix-prod-env` | eu-west-2 |
-| dev (`kortix-dev`) | `kortix-dev-env` | us-west-2 |
-| preview (`kortix-pr-*`) | `kortix-preview-env` | us-west-2 |
+| prod (`zed-prod`) | `zed-prod-env` | eu-west-2 |
+| dev (`zed-dev`) | `zed-dev-env` | us-west-2 |
+| preview (`zed-pr-*`) | `zed-preview-env` | us-west-2 |
 
 Prod's bundle is the **same** one ECS reads, so the two runtimes stay in sync
-during the dual-run. Previews share the dev data plane via `kortix-preview-env`,
-trusting any `kortix-pr-*/kortix-api` ServiceAccount to read it.
+during the dual-run. Previews share the dev data plane via `zed-preview-env`,
+trusting any `zed-pr-*/zed-api` ServiceAccount to read it.
 
 **Pod auth — IRSA.** Pods assume an IAM role through the ServiceAccount's
 OIDC-bound IRSA (provisioned in `modules/eks` / `irsa`); no static AWS keys live

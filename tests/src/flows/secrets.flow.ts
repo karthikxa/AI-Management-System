@@ -26,10 +26,10 @@ flow(
         .post("/v1/projects/:projectId/secrets", { name: "MY_SECRET", value: "v1" }, { params: { projectId: p.id } });
       r.status([200, 201]);
     });
-    await ctx.step("KORTIX_* reserved → 400", async () => {
+    await ctx.step("ZED_* reserved → 400", async () => {
       const r = await ctx.client
         .as(ctx.P.OWNER)
-        .post("/v1/projects/:projectId/secrets", { name: "KORTIX_HACK", value: "x" }, { params: { projectId: p.id } });
+        .post("/v1/projects/:projectId/secrets", { name: "ZED_HACK", value: "x" }, { params: { projectId: p.id } });
       r.status(400);
     });
     await ctx.step("invalid name format → 400", async () => {
@@ -56,10 +56,10 @@ flow(
       r.status(200);
     });
 
-    await ctx.step("system KORTIX_* secret cannot be deleted → 403", async () => {
+    await ctx.step("system ZED_* secret cannot be deleted → 403", async () => {
       const r = await ctx.client
         .as(ctx.P.OWNER)
-        .del("/v1/projects/:projectId/secrets/:name", { params: { projectId: p.id, name: "KORTIX_TOKEN" } });
+        .del("/v1/projects/:projectId/secrets/:name", { params: { projectId: p.id, name: "ZED_TOKEN" } });
       r.status(403);
     });
   },
@@ -207,7 +207,7 @@ flow(
 
     await ctx.step("generic HTTPS broker accepts a validated policy", async () => {
       const policy = {
-        backend: "kortix_fetch",
+        backend: "zed_fetch",
         rules: [{ host: "api.example.com", methods: ["POST"], path: "/v1/*" }],
         inject: { kind: "header", name: "authorization", template: "Bearer {{secret}}" },
       };
@@ -367,12 +367,12 @@ flow(
       if (!token) throw new Error(`could not extract token from mint url: ${url}`);
     });
 
-    await ctx.step("mint rejects a KORTIX_* reserved name → 400", async () => {
+    await ctx.step("mint rejects a ZED_* reserved name → 400", async () => {
       const r = await ctx.client
         .as(ctx.P.OWNER)
         .post(
           "/v1/projects/:projectId/secret-requests",
-          { names: ["KORTIX_HACK"] },
+          { names: ["ZED_HACK"] },
           { params: { projectId: p.id } },
         );
       r.status(400);

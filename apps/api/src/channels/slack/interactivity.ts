@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { chatChannelBindings, chatInstalls, chatThreads, projects } from '@kortix/db';
+import { chatChannelBindings, chatInstalls, chatThreads, projects } from '@zed/db';
 import { db } from '../../shared/db';
 import { config } from '../../config';
 import { loadSlackTokenForProject } from '../install-store';
@@ -154,7 +154,7 @@ async function handleReviewAction(
   const threadTs = payload.message?.thread_ts ?? messageTs;
   if (!teamId || !channelId || !slackUserId || !threadTs) return;
 
-  // 'view' is a link button (opens Kortix) — Slack still fires its block_action,
+  // 'view' is a link button (opens Zed) — Slack still fires its block_action,
   // but there's nothing to apply.
   const verdict = reviewVerbToVerdict(parsed.verb);
   if (!verdict) return;
@@ -164,7 +164,7 @@ async function handleReviewAction(
   if (isAdaptedId(parsed.id)) {
     await respondViaUrl(payload.response_url, {
       response_type: 'ephemeral',
-      text: 'Open this item in Kortix to act on it.',
+      text: 'Open this item in Zed to act on it.',
     });
     return;
   }
@@ -190,7 +190,7 @@ async function handleReviewAction(
     return;
   }
 
-  // The actor must be a linked Kortix user with write access to this project.
+  // The actor must be a linked Zed user with write access to this project.
   // Self-approve is allowed (launcher or any editor) — there's no separation-of-
   // duties gate. No live mapping → nudge to connect / request access.
   const actor = await resolveSlackActor(teamId, slackUserId, item.accountId, thread.projectId);
@@ -199,7 +199,7 @@ async function handleReviewAction(
       response_type: 'ephemeral',
       text:
         actor.reason === 'unlinked'
-          ? 'Connect your Kortix account first (`/kortix login`) to act on reviews.'
+          ? 'Connect your Zed account first (`/zed login`) to act on reviews.'
           : "You don't have access to act on this project's reviews.",
     });
     return;
@@ -299,7 +299,7 @@ async function handleSwitchProject(payload: SlackInteractionPayload, rawValue: s
   });
 }
 
-// Pick an agent/model from the `/kortix agents` or `/kortix models` picker.
+// Pick an agent/model from the `/zed agents` or `/zed models` picker.
 // The value carries the channel + selection ('' = clear → project default).
 async function handleSetSelection(
   payload: SlackInteractionPayload,
@@ -326,7 +326,7 @@ async function handleSetSelection(
       text: !result.ok
         ? result.reason === 'unknown_agent'
           ? `"${escapeMrkdwn(agentName ?? '')}" is not a declared agent in this project's manifest.`
-          : 'That channel is no longer bound to a project — run `/kortix switch` first.'
+          : 'That channel is no longer bound to a project — run `/zed switch` first.'
         : agentName
           ? `✓ Agent for this channel set to *${escapeMrkdwn(agentName)}*. New sessions will use it.`
           : '✓ Agent reset to the project default.',
@@ -342,7 +342,7 @@ async function handleSetSelection(
       replace_original: true,
       text: ok
         ? '✓ Model reset to the project default.'
-        : 'That channel is no longer connected to a project — run `/kortix` first.',
+        : 'That channel is no longer connected to a project — run `/zed` first.',
     });
     return;
   }
@@ -361,7 +361,7 @@ async function handleSetSelection(
       await respondViaUrl(payload.response_url, {
         response_type: 'ephemeral',
         replace_original: true,
-        text: `⚠️ \`${escapeMrkdwn(requested)}\` isn't available for this workspace. Pick another, or connect that provider's API key in Kortix.`,
+        text: `⚠️ \`${escapeMrkdwn(requested)}\` isn't available for this workspace. Pick another, or connect that provider's API key in Zed.`,
       });
       return;
     }
@@ -373,11 +373,11 @@ async function handleSetSelection(
     replace_original: true,
     text: ok
       ? `✓ Model for this channel set to *${escapeMrkdwn(labelForModelRef(stored))}* (\`${escapeMrkdwn(stored)}\`). New sessions will use it.`
-      : 'That channel is no longer connected to a project — run `/kortix` first.',
+      : 'That channel is no longer connected to a project — run `/zed` first.',
   });
 }
 
-// A `/kortix` panel "Change model/agent/project" button. Re-runs the matching
+// A `/zed` panel "Change model/agent/project" button. Re-runs the matching
 // slash subcommand for the channel and replaces the panel with that picker, so
 // the whole config flow lives behind one command + inline buttons.
 async function handleConfigOpen(
@@ -392,7 +392,7 @@ async function handleConfigOpen(
     teamId,
     channelId,
     slackUserId: payload.user?.id ?? '',
-    command: '/kortix',
+    command: '/zed',
     responseUrl: payload.response_url,
   };
   // `agents` defers internally (git) and posts the real picker via responseUrl;
@@ -401,8 +401,8 @@ async function handleConfigOpen(
   await respondViaUrl(payload.response_url, { ...resp, replace_original: true });
 }
 
-// Message shortcut ("Open in Kortix", callback_id `open_session`). Resolves the
-// thread the message lives in to its Kortix session and replies (ephemerally)
+// Message shortcut ("Open in Zed", callback_id `open_session`). Resolves the
+// thread the message lives in to its Zed session and replies (ephemerally)
 // with a link. Unlike a slash command, a message shortcut DOES carry the
 // message's thread_ts, so this can answer "which session is THIS thread".
 export async function handleMessageShortcut(payload: SlackInteractionPayload): Promise<void> {
@@ -430,7 +430,7 @@ export async function handleMessageShortcut(payload: SlackInteractionPayload): P
   if (!thread) {
     await respondViaUrl(payload.response_url, {
       response_type: 'ephemeral',
-      text: 'No Kortix session is attached to this thread yet. `@`-mention me to start one.',
+      text: 'No Zed session is attached to this thread yet. `@`-mention me to start one.',
     });
     return;
   }
@@ -439,7 +439,7 @@ export async function handleMessageShortcut(payload: SlackInteractionPayload): P
   await respondViaUrl(payload.response_url, {
     response_type: 'ephemeral',
     blocks: [
-      { type: 'section', text: { type: 'mrkdwn', text: '*This thread\'s Kortix session*' } },
+      { type: 'section', text: { type: 'mrkdwn', text: '*This thread\'s Zed session*' } },
       {
         type: 'actions',
         elements: [
@@ -479,7 +479,7 @@ async function handleRequestAccess(payload: SlackInteractionPayload, value: stri
         ? "You've already requested access — it's pending an admin's review."
         : result.status === 'already-member'
           ? 'You already have access — send your message again and I’ll get on it.'
-          : 'I couldn’t request access — connect your Kortix account first, then try again.';
+          : 'I couldn’t request access — connect your Zed account first, then try again.';
   await respondViaUrl(payload.response_url, { replace_original: true, text: message });
 
   if (result.status === 'created') {
@@ -586,15 +586,15 @@ async function handleSlackLoginConnect(
   await respondViaUrl(payload.response_url, {
     response_type: 'ephemeral',
     replace_original: true,
-    text: 'Opening Kortix to connect your account...',
+    text: 'Opening Zed to connect your account...',
     blocks: [
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
           text: login.url
-            ? `*Open Kortix to connect your account.*\n<${login.url}|Continue in Kortix>. This message will update when the connection is complete.`
-            : '*Open Kortix to connect your account.*\nRun `/kortix login` if this button expired.',
+            ? `*Open Zed to connect your account.*\n<${login.url}|Continue in Zed>. This message will update when the connection is complete.`
+            : '*Open Zed to connect your account.*\nRun `/zed login` if this button expired.',
         },
       },
       ...(login.url
@@ -602,7 +602,7 @@ async function handleSlackLoginConnect(
           type: 'actions',
           elements: [{
             type: 'button',
-            text: { type: 'plain_text', text: 'Open Kortix', emoji: true },
+            text: { type: 'plain_text', text: 'Open Zed', emoji: true },
             style: 'primary',
             url: login.url,
             action_id: 'slack_login_open',
@@ -639,7 +639,7 @@ export async function handleBlockAction(payload: SlackInteractionPayload): Promi
     return;
   }
 
-  // `/kortix` panel "Change …" buttons re-render the focused picker in place.
+  // `/zed` panel "Change …" buttons re-render the focused picker in place.
   if (
     action.action_id === 'cfg_open_models' ||
     action.action_id === 'cfg_open_agents' ||
@@ -662,7 +662,7 @@ export async function handleBlockAction(payload: SlackInteractionPayload): Promi
   // A plain "Open session ↗" link button carries a `url` and needs no handling.
   if (action.action_id === 'session_open') return;
 
-  // Identity / access nudges. "Connect" and "Review in Kortix" are URL buttons —
+  // Identity / access nudges. "Connect" and "Review in Zed" are URL buttons —
   // they open a link, so swallow their block_action so it doesn't fall through to
   // the agent-click catch-all below. "Request access" does real work.
   if (action.action_id === 'slack_login_connect') {

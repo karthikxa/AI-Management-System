@@ -3,4 +3,4 @@ export {
   buildPreviewAuthEndpoint,
   isSubdomainPreviewUrl,
   useAuthenticatedPreviewUrl,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';

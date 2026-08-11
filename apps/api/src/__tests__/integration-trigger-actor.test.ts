@@ -9,7 +9,7 @@
  */
 import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import { and, eq, sql } from 'drizzle-orm';
-import { projectTriggerRuntime } from '@kortix/db';
+import { projectTriggerRuntime } from '@zed/db';
 import { db } from '../shared/db';
 import { resolveTriggerActor } from '../projects/lib/triggers';
 import { resolveProjectAutomationActor } from '../projects/session-lifecycle';
@@ -21,7 +21,7 @@ const STALE_PICKED_HUMAN = crypto.randomUUID();
 
 beforeAll(async () => {
   const rows = (await db.execute(
-    sql`select project_id, account_id from kortix.projects limit 1`,
+    sql`select project_id, account_id from zed.projects limit 1`,
   )) as unknown as Array<{ project_id: string; account_id: string }>;
   if (!rows[0]) return;
   ctx = { projectId: rows[0].project_id, accountId: rows[0].account_id };

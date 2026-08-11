@@ -93,11 +93,11 @@ export function ApprovalRequest({
             'flex size-9 shrink-0 items-center justify-center rounded-sm',
             resolved
               ? positiveResolution
-                ? 'bg-kortix-green/15 text-kortix-green'
+                ? 'bg-zed-green/15 text-zed-green'
                 : resolutionTone === 'destructive'
-                  ? 'bg-kortix-red/15 text-kortix-red'
+                  ? 'bg-zed-red/15 text-zed-red'
                   : 'bg-muted text-muted-foreground'
-              : 'bg-kortix-orange/15 text-kortix-orange',
+              : 'bg-zed-orange/15 text-zed-orange',
           )}
         >
           {resolved ? (
@@ -174,8 +174,8 @@ export function ApprovalRequest({
       ) : null}
 
       {!reviewComplete ? (
-        <p className="text-kortix-orange border-border border-t px-4 py-3 text-xs text-pretty">
-          Kortix cannot approve this call because the complete parameters are not available. You can
+        <p className="text-zed-orange border-border border-t px-4 py-3 text-xs text-pretty">
+          Zed cannot approve this call because the complete parameters are not available. You can
           deny it.
         </p>
       ) : null}

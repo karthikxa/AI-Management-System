@@ -36,7 +36,7 @@ export function createTunnelTools(client: TunnelClient): TunnelToolDefinition[] 
         const connections = (await client.getConnections()) as Array<Record<string, unknown>>;
 
         if (connections.length === 0) {
-          return 'No tunnel connections found. Connect this computer from the Kortix desktop app or run the tunnel connect command on another computer.';
+          return 'No tunnel connections found. Connect this computer from the Zed desktop app or run the tunnel connect command on another computer.';
         }
 
         const sections: string[] = [];
@@ -62,7 +62,7 @@ export function createTunnelTools(client: TunnelClient): TunnelToolDefinition[] 
         }
 
         if (!hasOnline) {
-          sections.push('\nNo tunnel is currently online. Connect this computer from the Kortix desktop app or run the tunnel connect command on the target computer.');
+          sections.push('\nNo tunnel is currently online. Connect this computer from the Zed desktop app or run the tunnel connect command on the target computer.');
         }
 
         return sections.join('\n\n');

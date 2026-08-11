@@ -13,7 +13,7 @@
 
 import { createRoute, z } from '@hono/zod-openapi';
 import { eq, and, gt } from 'drizzle-orm';
-import { tunnelConnections, tunnelDeviceAuthRequests, tunnelPermissions } from '@kortix/db';
+import { tunnelConnections, tunnelDeviceAuthRequests, tunnelPermissions } from '@zed/db';
 import { db } from '../../shared/db';
 import {
   generateDeviceCode,

@@ -75,7 +75,7 @@ export function SessionConfigIndicator({
             <span className="relative inline-flex">
               <ArrowsClockwiseIcon className="text-foreground size-4" />
               <span
-                className="ring-background bg-kortix-orange absolute -top-1 -right-1 size-2 rounded-full ring-2"
+                className="ring-background bg-zed-orange absolute -top-1 -right-1 size-2 rounded-full ring-2"
                 aria-hidden
               />
             </span>
@@ -86,7 +86,7 @@ export function SessionConfigIndicator({
       <PopoverContent align="end" sideOffset={8} className="w-[320px] overflow-hidden p-0">
         <div className="border-border border-b px-4 pt-4 pb-3">
           <div className="flex items-center gap-2.5">
-            <span className="bg-kortix-orange/10 text-kortix-orange flex size-8 shrink-0 items-center justify-center rounded-md">
+            <span className="bg-zed-orange/10 text-zed-orange flex size-8 shrink-0 items-center justify-center rounded-md">
               <ArrowsClockwiseIcon className="size-4" />
             </span>
             <div className="min-w-0">

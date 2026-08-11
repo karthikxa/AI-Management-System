@@ -1,5 +1,5 @@
 import { and, eq, gt, lt } from 'drizzle-orm';
-import { chatPendingAuthMessages } from '@kortix/db';
+import { chatPendingAuthMessages } from '@zed/db';
 import { db } from '../../shared/db';
 import type { TeamsActivity } from './types';
 

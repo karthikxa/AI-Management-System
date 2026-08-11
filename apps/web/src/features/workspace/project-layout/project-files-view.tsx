@@ -16,8 +16,8 @@ import {
   ProjectFilesProvider,
   useSelectedVersion,
 } from '@/features/project-files';
-import { getProject } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+import { getProject } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import { useQuery } from '@tanstack/react-query';
 
 import { ProjectFilesSkeleton } from './project-files-skeleton';

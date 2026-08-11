@@ -1,6 +1,6 @@
 /**
  * Unit tests for the v2 agent-block GOVERNANCE read/write lib (the "agent
- * builder" backend's kortix.yaml half — spec docs/specs/2026-07-05-agent-
+ * builder" backend's zed.yaml half — spec docs/specs/2026-07-05-agent-
  * first-config-unification.md §2.2, redirected 2026-07-05: "one home per
  * concern"). Pure functions — no DB, no git — so they exercise the exact
  * read/mutate/validate contract the GET/PUT routes depend on:
@@ -13,7 +13,7 @@
  * Behavior (mode/model/temperature/permission/…) is NOT covered here — it
  * lives in the agent's `.md` frontmatter, exercised by
  * `../projects/lib/compile-agent-config.test.ts` and
- * `@kortix/manifest-schema`'s `validateAgentMdFrontmatter` tests instead.
+ * `@zed/manifest-schema`'s `validateAgentMdFrontmatter` tests instead.
  */
 import { describe, expect, test } from 'bun:test';
 import {
@@ -26,28 +26,28 @@ import { parseManifestString, synthesizeBlankManifest } from '../projects/trigge
 import { extractAgents } from '../projects/agents';
 
 const V2 = `
-kortix_version: 2
+zed_version: 2
 default_agent: support
 agents:
   support:
     connectors: [github]
     secrets: [STRIPE_KEY]
     skills: [pdf-export]
-    kortix_cli: [project.session.start]
+    zed_cli: [project.session.start]
     workspace: runtime
 `;
 
 const V1 = `
-kortix_version = 1
+zed_version = 1
 [project]
 name = "acme"
 [[agents]]
-name = "kortix"
+name = "zed"
 connectors = "all"
 `;
 
 function v2Manifest(body = V2) {
-  return parseManifestString(body, 'yaml', 'kortix.yaml');
+  return parseManifestString(body, 'yaml', 'zed.yaml');
 }
 
 describe('readAgentBlockV2', () => {
@@ -61,7 +61,7 @@ describe('readAgentBlockV2', () => {
       connectors: ['github'],
       secrets: ['STRIPE_KEY'],
       skills: ['pdf-export'],
-      kortix_cli: ['project.session.start'],
+      zed_cli: ['project.session.start'],
       workspace: 'runtime',
     });
     expect(read.block).not.toHaveProperty('opencode');
@@ -78,7 +78,7 @@ describe('readAgentBlockV2', () => {
   });
 
   test('reports schemaVersion 1 + null block for a v1 manifest (the UI degrade signal)', () => {
-    const read = readAgentBlockV2(parseManifestString(V1, 'toml', 'kortix.toml'), 'kortix');
+    const read = readAgentBlockV2(parseManifestString(V1, 'toml', 'zed.toml'), 'zed');
     expect(read.ok).toBe(true);
     if (!read.ok) return;
     expect(read.schemaVersion).toBe(1);
@@ -88,7 +88,7 @@ describe('readAgentBlockV2', () => {
   test('normalizes the deprecated input alias in the response block', () => {
     const read = readAgentBlockV2(
       v2Manifest(`
-kortix_version: 2
+zed_version: 2
 default_agent: support
 agents:
   support:
@@ -106,7 +106,7 @@ agents:
   test('rejects conflicting aliases instead of returning an ambiguous block', () => {
     const read = readAgentBlockV2(
       v2Manifest(`
-kortix_version: 2
+zed_version: 2
 default_agent: support
 agents:
   support:
@@ -146,7 +146,7 @@ describe('applyAgentBlockV2', () => {
     const manifest = v2Manifest();
     const applied = applyAgentBlockV2(manifest, 'pr-bot', {
       connectors: ['github'],
-      kortix_cli: ['project.cr.open'],
+      zed_cli: ['project.cr.open'],
     });
     expect(applied.ok).toBe(true);
     if (!applied.ok) return;
@@ -154,13 +154,13 @@ describe('applyAgentBlockV2', () => {
     expect(Object.keys(agents).sort()).toEqual(['pr-bot', 'support']);
   });
 
-  test('rejects an ungrantable kortix_cli action', () => {
+  test('rejects an ungrantable zed_cli action', () => {
     const applied = applyAgentBlockV2(v2Manifest(), 'support', {
-      kortix_cli: ['billing.read'],
+      zed_cli: ['billing.read'],
     });
     expect(applied.ok).toBe(false);
     if (applied.ok) return;
-    expect(applied.error).toContain('kortix_cli');
+    expect(applied.error).toContain('zed_cli');
   });
 
   test('rejects an unknown workspace value', () => {
@@ -183,12 +183,12 @@ describe('applyAgentBlockV2', () => {
   });
 
   test('refuses a v1 manifest with an upgrade pointer (v2-only feature)', () => {
-    const applied = applyAgentBlockV2(parseManifestString(V1, 'toml', 'kortix.toml'), 'kortix', {
+    const applied = applyAgentBlockV2(parseManifestString(V1, 'toml', 'zed.toml'), 'zed', {
       connectors: 'all',
     });
     expect(applied.ok).toBe(false);
     if (applied.ok) return;
-    expect(applied.error).toContain('kortix_version 2');
+    expect(applied.error).toContain('zed_version 2');
   });
 
   test('rejects an invalid agent name', () => {
@@ -202,7 +202,7 @@ describe('applyAgentBlockV2', () => {
 describe('applyDefaultAgentV2', () => {
   const twoAgentManifest = () =>
     v2Manifest(`
-kortix_version: 2
+zed_version: 2
 default_agent: support
 agents:
   support: {}
@@ -235,26 +235,26 @@ agents:
   });
 
   test('refuses a v1 manifest', () => {
-    const applied = applyDefaultAgentV2(parseManifestString(V1, 'toml', 'kortix.toml'), 'kortix');
+    const applied = applyDefaultAgentV2(parseManifestString(V1, 'toml', 'zed.toml'), 'zed');
     expect(applied.ok).toBe(false);
     if (applied.ok) return;
-    expect(applied.error).toContain('kortix_version 2');
+    expect(applied.error).toContain('zed_version 2');
   });
 });
 
 // GAP 2 (dev-live repro): `applyDefaultAgentV2`/`applyAgentBlockV2` validate
 // via `validateManifest(manifest.raw, format)` — the RAW in-memory object,
 // never through `serializeManifest`/re-parse (which re-injects
-// `kortix_version` from `manifest.schemaVersion` on the way OUT — see that
+// `zed_version` from `manifest.schemaVersion` on the way OUT — see that
 // function's doc comment). `loadManifestForEdit`'s synthesized "blank
-// project" manifest (no kortix.yaml/kortix.toml committed yet) is exactly
+// project" manifest (no zed.yaml/zed.toml committed yet) is exactly
 // this raw, never-serialized shape. #4974's own regression test proved the
 // synthesis valid only via serialize→reparse→validate — never the raw path
 // these two functions actually run — so it missed that the synthesized
-// `.raw` never embedded `kortix_version`, and `validateRoot` (manifest-schema)
-// rejects an object with no `kortix_version` key as unversioned before ever
+// `.raw` never embedded `zed_version`, and `validateRoot` (manifest-schema)
+// rejects an object with no `zed_version` key as unversioned before ever
 // reaching the v2 body validators. PUT /default-agent and PUT
-// /agents/:name/config both 400'd `kortix_version is required` on a blank
+// /agents/:name/config both 400'd `zed_version is required` on a blank
 // project even after #4974 merged. `synthesizeBlankManifest` (../projects/
 // triggers.ts) now embeds it — these tests exercise the EXACT functions the
 // write routes call, on the EXACT object those routes hold (not a
@@ -264,36 +264,36 @@ describe('the raw path `loadManifestForEdit` actually produces for a blank proje
   test('applyDefaultAgentV2 validates against the synthesized manifest as-is (no serialize/reparse)', () => {
     const manifest = synthesizeBlankManifest({
       name: 'blank-project',
-      manifestPath: 'kortix.toml',
+      manifestPath: 'zed.toml',
     });
     // Sanity: the bug this guards against — a raw object with no
-    // `kortix_version` key reads as unversioned to `validateRoot`.
-    expect(manifest.raw.kortix_version).toBe(2);
+    // `zed_version` key reads as unversioned to `validateRoot`.
+    expect(manifest.raw.zed_version).toBe(2);
 
-    const applied = applyDefaultAgentV2(manifest, 'kortix');
+    const applied = applyDefaultAgentV2(manifest, 'zed');
     expect(applied.ok).toBe(true);
     if (!applied.ok) return;
-    expect(applied.raw.default_agent).toBe('kortix');
+    expect(applied.raw.default_agent).toBe('zed');
   });
 
   test('applyAgentBlockV2 validates a new agent block against the synthesized manifest as-is', () => {
     const manifest = synthesizeBlankManifest({
       name: 'blank-project',
-      manifestPath: 'kortix.toml',
+      manifestPath: 'zed.toml',
     });
 
     const applied = applyAgentBlockV2(manifest, 'release-bot', {
       connectors: ['github'],
-      kortix_cli: ['project.cr.open'],
+      zed_cli: ['project.cr.open'],
     });
     expect(applied.ok).toBe(true);
     if (!applied.ok) return;
     const agents = applied.raw.agents as Record<string, unknown>;
-    expect(Object.keys(agents).sort()).toEqual(['kortix', 'release-bot']);
-    // The write result still carries kortix_version — a second edit in the
+    expect(Object.keys(agents).sort()).toEqual(['zed', 'release-bot']);
+    // The write result still carries zed_version — a second edit in the
     // same request (or a subsequent PUT before the first commit lands) must
     // keep validating too, not just the very first one.
-    expect(applied.raw.kortix_version).toBe(2);
+    expect(applied.raw.zed_version).toBe(2);
     const reapplied = applyDefaultAgentV2({ ...manifest, raw: applied.raw }, 'release-bot');
     expect(reapplied.ok).toBe(true);
   });
@@ -306,7 +306,7 @@ describe('the raw path `loadManifestForEdit` actually produces for a blank proje
     // serialize→reparse indirection).
     const manifest = synthesizeBlankManifest({
       name: 'blank-project',
-      manifestPath: 'kortix.toml',
+      manifestPath: 'zed.toml',
     });
     const applied = applyDefaultAgentV2(manifest, manifest.raw.default_agent as string);
     expect(applied.ok).toBe(true);
@@ -316,9 +316,9 @@ describe('the raw path `loadManifestForEdit` actually produces for a blank proje
 describe('connectors_required — the config route validation gate', () => {
   const manifestWith = (connectors: string[]) =>
     parseManifestString(
-      ['kortix_version: 2', 'default_agent: support', 'agents:', '  support:', `    connectors: [${connectors.join(', ')}]`, ''].join('\n'),
+      ['zed_version: 2', 'default_agent: support', 'agents:', '  support:', `    connectors: [${connectors.join(', ')}]`, ''].join('\n'),
       'yaml',
-      'kortix.yaml',
+      'zed.yaml',
     );
 
   test('a valid subset survives apply + re-parse with no errors', () => {

@@ -2,7 +2,7 @@
 set lock_timeout = '2s';
 set statement_timeout = '30s';
 
-update "kortix"."project_secrets"
+update "zed"."project_secrets"
 set
   "strategy" = 'broker',
   "consumer" = 'llm_gateway',
@@ -15,7 +15,7 @@ where
   "name" = 'CODEX_AUTH_JSON'
   and (
     "strategy" <> 'broker'
-    or "consumer" is distinct from 'llm_gateway'::"kortix"."project_secret_consumer"
+    or "consumer" is distinct from 'llm_gateway'::"zed"."project_secret_consumer"
     or "egress_policy" is not null
     or "handle_prefix" is not null
     or not "strategy_locked"

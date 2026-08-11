@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { SessionAudit } from '@kortix/sdk';
+import type { SessionAudit } from '@zed/sdk';
 import {
   approvalFailure,
   sessionApprovalsView,

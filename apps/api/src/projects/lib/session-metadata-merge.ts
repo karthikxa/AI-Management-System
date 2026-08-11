@@ -1,4 +1,4 @@
-import { projectSessions } from '@kortix/db';
+import { projectSessions } from '@zed/db';
 import { type SQL, sql } from 'drizzle-orm';
 
 /**

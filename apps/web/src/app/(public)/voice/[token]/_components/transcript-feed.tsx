@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/features/layout/section/empty-state';
 import Hint from '@/components/ui/hint';
-import { IconAgent, IconMessage, IconTerminal } from '@/components/ui/kortix-icons';
+import { IconAgent, IconMessage, IconTerminal } from '@/components/ui/zed-icons';
 import { StatusDot } from '@/components/ui/status';
 import { cn } from '@/lib/utils';
 import { useEffect, useMemo, useRef } from 'react';
@@ -18,14 +18,14 @@ const NEAR_BOTTOM_PX = 96;
 
 /** The tool whose two stored rows are folded into one (see `feed.ts`), and the
  *  only one that is a hand-off to another model rather than a command. */
-const ASK_TOOL = 'ask_kortix';
+const ASK_TOOL = 'ask_zed';
 
 /**
  * The centerpiece of the room: the WHOLE call, not just the two voices.
  *
  * It used to render LiveKit's client-side transcription and nothing else,
  * which is why the page showed a conversation with holes in it. Everything the
- * Kortix agent put into the call, and every tool call the voice made, is
+ * Zed agent put into the call, and every tool call the voice made, is
  * written server-side to `voice_call_turns` and never appears in the browser's
  * LiveKit stream at all — so it was simply absent. `entries` is that durable
  * record; `live` is the LiveKit tail, kept only for the seconds between
@@ -33,11 +33,11 @@ const ASK_TOOL = 'ask_kortix';
  *
  * FOUR THINGS HAPPEN ON A CALL AND ALL FOUR MUST BE TELLABLE APART (see
  * `CallEntryKind`) — because a voice call, alone among the channels, has TWO
- * models on it: the voice on the line, and the Kortix agent it hands work to.
+ * models on it: the voice on the line, and the Zed agent it hands work to.
  *
  *   the human         right-hand bubble, tinted with the primary
  *   the voice         left-hand bubble, plain popover surface
- *   the Kortix agent  left-hand bubble, kortix-tinted, agent glyph, and a hint
+ *   the Zed agent  left-hand bubble, zed-tinted, agent glyph, and a hint
  *                     saying it was sent INTO the call — the voice line right
  *                     after it is a paraphrase of it, not a repeat of it
  *   a tool call       not a bubble at all: full width, dashed, a status tile
@@ -93,7 +93,7 @@ export function TranscriptFeed({
               size="sm"
               icon={IconMessage}
               title="Waiting for the conversation to start"
-              description="Everything on this call shows up here — what's said on either side, what your Kortix agent sends in, and the tools it runs."
+              description="Everything on this call shows up here — what's said on either side, what your Zed agent sends in, and the tools it runs."
             />
           </div>
         ) : (
@@ -159,13 +159,13 @@ function LiveTail({ live }: { live: LiveUtterance[] }) {
   );
 }
 
-/** Bubble treatment per speaking kind. `kortix` gets its own so the agent's
+/** Bubble treatment per speaking kind. `zed` gets its own so the agent's
  *  own words are never mistaken for the voice's — they are two actors, and the
  *  voice's line right after is a paraphrase of the agent's, not a repeat. */
-const BUBBLE_TONE: Record<'human' | 'voice' | 'kortix', string> = {
+const BUBBLE_TONE: Record<'human' | 'voice' | 'zed', string> = {
   human: 'bg-primary/[0.06] border-primary/10',
   voice: 'bg-popover border-border',
-  kortix: 'bg-kortix-base/10 border-kortix-base/30',
+  zed: 'bg-zed-base/10 border-zed-base/30',
 };
 
 /** `HH:MM` in the reader's own locale, or null for a stamp we cannot read.
@@ -212,13 +212,13 @@ function SpeechRow({
    *  time to show, and inventing one from the browser clock would be a lie. */
   at: string | null;
   side: 'left' | 'right';
-  tone: 'human' | 'voice' | 'kortix';
+  tone: 'human' | 'voice' | 'zed';
   showLabel: boolean;
   pending?: boolean;
 }) {
   const label = (
     <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium">
-      {tone === 'kortix' && <IconAgent className="size-3 shrink-0" aria-hidden />}
+      {tone === 'zed' && <IconAgent className="size-3 shrink-0" aria-hidden />}
       {name}
     </span>
   );
@@ -227,10 +227,10 @@ function SpeechRow({
     <div className={cn('group flex flex-col gap-1', side === 'right' ? 'items-end' : 'items-start')}>
       {showLabel && (
         <div className="flex items-center gap-1.5 px-1">
-          {tone === 'kortix' ? (
+          {tone === 'zed' ? (
             <Hint
               side="top"
-              label="Sent into the call by your Kortix agent — the voice relays it in its own words"
+              label="Sent into the call by your Zed agent — the voice relays it in its own words"
             >
               {label}
             </Hint>
@@ -273,14 +273,14 @@ function SpeechRow({
 }
 
 /**
- * A tool call — an MCP call the voice made (`ask_kortix`, `run_command`).
+ * A tool call — an MCP call the voice made (`ask_zed`, `run_command`).
  *
  * Deliberately NOT a bubble and deliberately not attributed to anyone: nobody
  * said this. Full width, dashed, a tinted status tile, the tool's REAL name
  * (not a friendlier invention — this is the record of what ran), its argument
  * in monospace, and how it turned out as a badge.
  *
- * A hand-off shows as ONE row for its whole life: `waiting` while Kortix works,
+ * A hand-off shows as ONE row for its whole life: `waiting` while Zed works,
  * then the outcome when the settle row lands — see `foldAskSettlements`, which
  * is where the two stored rows become one.
  */
@@ -296,9 +296,9 @@ function ToolRow({ row }: { row: FeedRow }) {
       <span
         className={cn(
           'flex size-8 shrink-0 items-center justify-center rounded-sm',
-          tone === 'ok' && 'bg-kortix-green/15',
-          tone === 'bad' && 'bg-kortix-red/15',
-          tone === 'pending' && 'bg-kortix-yellow/15',
+          tone === 'ok' && 'bg-zed-green/15',
+          tone === 'bad' && 'bg-zed-red/15',
+          tone === 'pending' && 'bg-zed-yellow/15',
           tone === 'neutral' && 'bg-foreground/5',
         )}
       >
@@ -306,9 +306,9 @@ function ToolRow({ row }: { row: FeedRow }) {
           aria-hidden
           className={cn(
             'size-4',
-            tone === 'ok' && 'text-kortix-green',
-            tone === 'bad' && 'text-kortix-red',
-            tone === 'pending' && 'text-kortix-yellow',
+            tone === 'ok' && 'text-zed-green',
+            tone === 'bad' && 'text-zed-red',
+            tone === 'pending' && 'text-zed-yellow',
             tone === 'neutral' && 'text-muted-foreground',
           )}
         />

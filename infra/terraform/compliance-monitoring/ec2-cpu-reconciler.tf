@@ -10,7 +10,7 @@ data "archive_file" "ec2_cpu_alarm_reconciler" {
 }
 
 locals {
-  ec2_cpu_reconciler_name = "kortix-ec2-cpu-alarm-reconciler"
+  ec2_cpu_reconciler_name = "zed-ec2-cpu-alarm-reconciler"
 }
 
 data "aws_iam_policy_document" "ec2_cpu_reconciler_assume_role" {
@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "ec2_cpu_reconciler_assume_role" {
 }
 
 resource "aws_iam_role" "ec2_cpu_reconciler" {
-  name               = "KortixEc2CpuAlarmReconciler"
+  name               = "ZedEc2CpuAlarmReconciler"
   assume_role_policy = data.aws_iam_policy_document.ec2_cpu_reconciler_assume_role.json
   tags               = local.tags
 }
@@ -54,9 +54,9 @@ data "aws_iam_policy_document" "ec2_cpu_reconciler" {
     sid     = "ReconcileDcf86AlbAlarms"
     actions = ["cloudwatch:PutMetricAlarm", "cloudwatch:TagResource"]
     resources = [
-      "arn:aws:cloudwatch:us-west-2:${local.account_id}:alarm:kortix-alb-*",
-      "arn:aws:cloudwatch:eu-west-2:${local.account_id}:alarm:kortix-alb-*",
-      "arn:aws:cloudwatch:us-east-2:${local.account_id}:alarm:kortix-alb-*",
+      "arn:aws:cloudwatch:us-west-2:${local.account_id}:alarm:zed-alb-*",
+      "arn:aws:cloudwatch:eu-west-2:${local.account_id}:alarm:zed-alb-*",
+      "arn:aws:cloudwatch:us-east-2:${local.account_id}:alarm:zed-alb-*",
     ]
   }
 
@@ -156,7 +156,7 @@ resource "aws_lambda_function" "euw2_ec2_cpu_reconciler" {
 }
 
 resource "aws_cloudwatch_event_rule" "usw2_ec2_running" {
-  name        = "kortix-ec2-running-cpu-alarm-reconcile"
+  name        = "zed-ec2-running-cpu-alarm-reconcile"
   description = "Create or repair the DCF-86 CPU alarm when an EC2 instance starts"
   event_pattern = jsonencode({
     source      = ["aws.ec2"]
@@ -168,7 +168,7 @@ resource "aws_cloudwatch_event_rule" "usw2_ec2_running" {
 
 resource "aws_cloudwatch_event_rule" "euw2_ec2_running" {
   provider    = aws.euw2
-  name        = "kortix-ec2-running-cpu-alarm-reconcile"
+  name        = "zed-ec2-running-cpu-alarm-reconcile"
   description = "Create or repair the DCF-86 CPU alarm when an EC2 instance starts"
   event_pattern = jsonencode({
     source      = ["aws.ec2"]
@@ -179,7 +179,7 @@ resource "aws_cloudwatch_event_rule" "euw2_ec2_running" {
 }
 
 resource "aws_cloudwatch_event_rule" "usw2_ec2_cpu_reconcile_schedule" {
-  name                = "kortix-ec2-cpu-alarm-reconcile-schedule"
+  name                = "zed-ec2-cpu-alarm-reconcile-schedule"
   description         = "Repair missing or drifted DCF-86 EC2 CPU alarms"
   schedule_expression = "rate(5 minutes)"
   tags                = local.tags
@@ -187,7 +187,7 @@ resource "aws_cloudwatch_event_rule" "usw2_ec2_cpu_reconcile_schedule" {
 
 resource "aws_cloudwatch_event_rule" "euw2_ec2_cpu_reconcile_schedule" {
   provider            = aws.euw2
-  name                = "kortix-ec2-cpu-alarm-reconcile-schedule"
+  name                = "zed-ec2-cpu-alarm-reconcile-schedule"
   description         = "Repair missing or drifted DCF-86 EC2 CPU alarms"
   schedule_expression = "rate(5 minutes)"
   tags                = local.tags

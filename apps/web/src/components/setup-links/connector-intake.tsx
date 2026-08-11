@@ -15,7 +15,7 @@ import {
   getConnectorSetupLink,
   startConnectorSetupLink,
   type ConnectorSetupLinkInfo,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 type Phase = 'loading' | 'error' | 'ready' | 'starting' | 'opened';
 
@@ -55,7 +55,7 @@ export function ConnectorIntake({
           setError(
             cause instanceof Error
               ? cause.message
-              : 'Could not reach Kortix. Check your connection and try again.',
+              : 'Could not reach Zed. Check your connection and try again.',
           );
           setPhase('error');
         }

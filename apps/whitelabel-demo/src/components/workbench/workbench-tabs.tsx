@@ -21,10 +21,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChangesPanel } from '@/components/workbench/changes-panel';
 import { FilesPanel } from '@/components/workbench/files-panel';
 import { PreviewPanel } from '@/components/workbench/preview-panel';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
-import type { UseSessionResult } from '@kortix/sdk/react';
+import type { UseSessionResult } from '@zed/sdk/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Plus, RotateCw, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -101,7 +101,7 @@ function Thread({ session: c }: { session: UseSessionResult }) {
   // recover: restart() wakes the box and re-arms useSession's /start poll.
   const qc = useQueryClient();
   const restart = useMutation({
-    mutationFn: () => kortix.session(c.projectId, c.sessionId).restart(),
+    mutationFn: () => zed.session(c.projectId, c.sessionId).restart(),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.sessionStart(c.projectId, c.sessionId) });
       toast.success('Reconnecting the runtime…');

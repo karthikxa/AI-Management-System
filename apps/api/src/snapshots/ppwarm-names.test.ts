@@ -4,7 +4,7 @@ import { ppwarmProj8, ppwarmTpl8 } from './quota-gc-select';
 
 const PROJ_A = '9ee8bc9c-5108-437f-a01f-6c5e26f2062c';
 const PROJ_B_COLLIDING = '9ee8bc9c-aaaa-bbbb-cccc-dddddddddddd';
-const BASE = 'kortix-default-e881f000eae5';
+const BASE = 'zed-default-e881f000eae5';
 
 describe('perProjectWarmImageName — template-scoped naming', () => {
   test('produces the new (proj8, tpl8, hash12) shape', () => {
@@ -33,8 +33,8 @@ describe('perProjectWarmImageName — template-scoped naming', () => {
   });
 
   test('the same template always yields the same tpl8, independent of tip/base', () => {
-    const a = perProjectWarmImageName(PROJ_A, 'tipX', 'kortix-default-r1', 'default');
-    const b = perProjectWarmImageName(PROJ_A, 'tipY', 'kortix-default-r2', 'default');
+    const a = perProjectWarmImageName(PROJ_A, 'tipX', 'zed-default-r1', 'default');
+    const b = perProjectWarmImageName(PROJ_A, 'tipY', 'zed-default-r2', 'default');
     const aTpl = a.slice(PPWARM_PREFIX.length).split('-')[1];
     const bTpl = b.slice(PPWARM_PREFIX.length).split('-')[1];
     expect(aTpl).toBe(bTpl);
@@ -104,7 +104,7 @@ describe('ppwarmReapTargets — template-scoped reap', () => {
 describe('legacyPerProjectWarmImageName — migration fallback', () => {
   const PROJ = '11112222-3333-4444-5555-666677778888';
   const TIP = 'a'.repeat(40);
-  const BASE = 'kortix-default-c17604ba585c';
+  const BASE = 'zed-default-c17604ba585c';
 
   test('reproduces the pre-migration two-segment shape', () => {
     const legacy = legacyPerProjectWarmImageName(PROJ, TIP, BASE);

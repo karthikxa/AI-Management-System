@@ -12,7 +12,7 @@ import type { ToolProps } from '@/features/session/tool/shared/types';
 import { CaretRightIcon as ChevronRight, FolderIcon as Folder } from '@phosphor-icons/react';
 import { useMemo } from 'react';
 
-import { parseProjectSelectOutput } from '@/lib/utils/kortix-tool-output';
+import { parseProjectSelectOutput } from '@/lib/utils/zed-tool-output';
 
 export function ProjectSelectTool({ part }: ToolProps) {
   const input = partInput(part);

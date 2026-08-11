@@ -5,7 +5,7 @@ export const finance: RoleContent = {
   slug: 'finance',
   name: 'Finance',
   navDescription: 'The close, the reconciliation and the variance note',
-  seoTitle: 'Kortix for finance teams',
+  seoTitle: 'Zed for finance teams',
   seoDescription:
     'Reconciliation, variance analysis and the schedules behind the close, run on a machine that shows its working. Every figure traces to a source, and nothing posts to a system of record without approval.',
 
@@ -123,7 +123,7 @@ export const finance: RoleContent = {
     rows: [
       {
         k: 'Stripe',
-        v: 'Connected directly from its API description rather than through a middleman: Kortix reads the specification, works out the authentication, and turns every operation into a tool with its own answer.',
+        v: 'Connected directly from its API description rather than through a middleman: Zed reads the specification, works out the authentication, and turns every operation into a tool with its own answer.',
       },
       {
         k: 'Google Sheets and Drive',
@@ -188,12 +188,12 @@ export const finance: RoleContent = {
       {
         id: 'merge',
         k: 'Merge is default-deny',
-        v: 'Work the agent means to keep is committed on the session branch and reaches main through a change request. An agent cannot merge unless an admin has granted project.cr.merge in kortix.yaml — and widening that grant is itself a reviewed change.',
+        v: 'Work the agent means to keep is committed on the session branch and reaches main through a change request. An agent cannot merge unless an admin has granted project.cr.merge in zed.yaml — and widening that grant is itself a reviewed change.',
       },
       {
         id: 'creds',
         k: 'Connector credentials never enter the machine',
-        v: 'The sandbox carries one project-scoped Kortix token and no third-party keys. The banking or ledger credential is decrypted server-side and attached to the outbound request, then thrown away.',
+        v: 'The sandbox carries one project-scoped Zed token and no third-party keys. The banking or ledger credential is decrypted server-side and attached to the outbound request, then thrown away.',
       },
       {
         id: 'audit',
@@ -205,6 +205,6 @@ export const finance: RoleContent = {
 
   closing: {
     title: 'Hand over the assembly. Keep the judgement.',
-    sub: 'Open source and self-hostable. Any model, your keys. Kortix Cloud, your own VPC, or your own on-prem network.',
+    sub: 'Open source and self-hostable. Any model, your keys. Zed Cloud, your own VPC, or your own on-prem network.',
   },
 };

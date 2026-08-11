@@ -24,7 +24,7 @@ export const useCurrentAccountStore = create<CurrentAccountState>()(
       clear: () => set({ selectedAccountId: null }),
     }),
     {
-      name: 'kortix.currentAccount',
+      name: 'zed.currentAccount',
       storage: createSafeJSONStorage(),
       version: 1,
     },

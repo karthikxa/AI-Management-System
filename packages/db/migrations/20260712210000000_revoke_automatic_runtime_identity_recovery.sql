@@ -6,7 +6,7 @@
 -- Platinum can retain a complete backup even when a VM reports failed-start.
 -- Recovery must therefore revive the same external_id or fail closed.
 
-CREATE OR REPLACE FUNCTION kortix.guard_session_sandbox_identity()
+CREATE OR REPLACE FUNCTION zed.guard_session_sandbox_identity()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
@@ -27,7 +27,7 @@ BEGIN
   IF TG_OP = 'DELETE' AND OLD.external_id IS NOT NULL THEN
     SELECT coalesce((metadata->>'deletedAt') IS NOT NULL, false)
       INTO session_deleted
-      FROM kortix.project_sessions
+      FROM zed.project_sessions
      WHERE session_id = OLD.session_id;
 
     IF NOT coalesce(session_deleted, false) THEN

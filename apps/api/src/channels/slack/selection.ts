@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { chatChannelBindings, projects } from '@kortix/db';
+import { chatChannelBindings, projects } from '@zed/db';
 import { db } from '../../shared/db';
 import { withProjectGitAuth } from '../../projects/lib/git';
 import { listRepoFiles, loadProjectConfig } from '../../projects/git';
@@ -182,9 +182,9 @@ export interface ProjectAgent {
 export interface ProjectAgentGovernance {
   agents: ProjectAgent[];
   /**
-   * True when the project has adopted `kortix.yaml`'s `agents:` block — the listed
+   * True when the project has adopted `zed.yaml`'s `agents:` block — the listed
    * names are ENFORCED (an undeclared name isn't a real launchable agent), not
-   * merely discovered from `.kortix/opencode/agents/*.md`. Mirrors
+   * merely discovered from `.zed/opencode/agents/*.md`. Mirrors
    * `ProjectConfigSummary.agent_discovery === 'declarative'`. Callers that
    * validate a channel-binding's `agentName` against the catalog should only
    * reject unknown names when this is true — a legacy (undeclared) project
@@ -195,7 +195,7 @@ export interface ProjectAgentGovernance {
 
 /**
  * The project's launchable agents from the server-side config summary:
- * declarative `kortix.yaml` `agents:` for adopted projects, OpenCode markdown
+ * declarative `zed.yaml` `agents:` for adopted projects, OpenCode markdown
  * discovery for legacy projects. Touches git, so callers must use the async
  * slash response path (response_url) to stay inside Slack's 3s window.
  */
@@ -295,7 +295,7 @@ export async function getChannelBindingById(
 
 /**
  * A model id is shaped like a usable ref if it's a non-empty `provider/model`
- * pair (or `kortix/<id>`). Shape only — real servability is enforced separately
+ * pair (or `zed/<id>`). Shape only — real servability is enforced separately
  * via `isModelServableForAccount` against the account's tier + connected keys.
  */
 export function isValidModelId(s: string): boolean {

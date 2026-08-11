@@ -30,14 +30,14 @@
  * soften, inflate, or "restore" any of it.
  * ==========================================================================
  *  - AGENTS. An agent is an OpenCode agent. Markdown is the baseline — the
- *    starter's `.kortix/opencode/agents/kortix.md` carries real OpenCode
+ *    starter's `.zed/opencode/agents/zed.md` carries real OpenCode
  *    frontmatter (`mode: primary`, `permission: allow`) — and the whole
  *    OpenCode lifecycle sits in the same directory: tools, plugins, skills,
  *    commands, models. Never reduce an agent to "a markdown file".
- *  - HARNESS. OpenCode is the only one. ACP, `kortix_version: 3` and the
- *    Claude Code / Codex / Pi harnesses sit behind `KORTIX_ACP_RUNTIME`
+ *  - HARNESS. OpenCode is the only one. ACP, `zed_version: 3` and the
+ *    Claude Code / Codex / Pi harnesses sit behind `ZED_ACP_RUNTIME`
  *    (default false) and are not shipped. Never name them.
- *  - GRANTS. `kortix.yaml` states it outright: "Omitted grants resolve to
+ *  - GRANTS. `zed.yaml` states it outright: "Omitted grants resolve to
  *    `none` in this schema version. Grant explicitly." That is the claim made
  *    below, in those words.
  *  - MERGE is default-deny for AGENTS, not human-only — `project.cr.merge` is
@@ -47,7 +47,7 @@
  *    allow / ask / block (`apps/api/src/connectors/policy.ts`).
  *  - THE TREE below is the real shipped starter layout, read from
  *    `packages/starter/templates/base`. Do not add a directory it does not
- *    have, and do not show a `channels:` key in `kortix.yaml` — the v2 manifest
+ *    have, and do not show a `channels:` key in `zed.yaml` — the v2 manifest
  *    validator REJECTS it. Channel routing is live project state, exactly as
  *    the shipped manifest's own closing comment says.
  *  - SURFACES. Slack, web and CLI only. Slack is the one live channel; Teams is
@@ -130,7 +130,7 @@ export const owning = {
   eyebrow: 'What you own',
   title: 'The company is a directory.',
   paragraphs: [
-    'Every agent, every skill, every remembered fact and every grant is a file. An agent is an OpenCode agent — markdown is the baseline, and the rest of the OpenCode lifecycle lives beside it in the same directory: skills, tools, plugins, commands, models. kortix.yaml sits above all of it and says what each agent is allowed to touch.',
+    'Every agent, every skill, every remembered fact and every grant is a file. An agent is an OpenCode agent — markdown is the baseline, and the rest of the OpenCode lifecycle lives beside it in the same directory: skills, tools, plugins, commands, models. zed.yaml sits above all of it and says what each agent is allowed to touch.',
     'Leave a grant out and it resolves to none, so reach is something you write down rather than something you inherit. And because it is a repository it is portable: clone it and the company comes with you — the agents, the skills, and everything it has learned. Nothing you build here is locked to us.',
   ],
   panel: {
@@ -140,13 +140,13 @@ export const owning = {
       'The layout a new project ships with. Omitted grants resolve to none — reach is declared, never inherited.',
   },
   tree: [
-    { depth: 0, name: 'kortix.yaml', note: 'agents, grants, triggers' },
-    { depth: 0, name: '.kortix/', dir: true },
+    { depth: 0, name: 'zed.yaml', note: 'agents, grants, triggers' },
+    { depth: 0, name: '.zed/', dir: true },
     { depth: 1, name: 'memory/', dir: true },
     { depth: 2, name: 'MEMORY.md', note: 'what the company has learned' },
     { depth: 1, name: 'opencode/', dir: true },
     { depth: 2, name: 'agents/', dir: true },
-    { depth: 3, name: 'kortix.md', note: 'persona, mode, permission' },
+    { depth: 3, name: 'zed.md', note: 'persona, mode, permission' },
     { depth: 3, name: 'memory-reflector.md' },
     { depth: 2, name: 'skills/', dir: true, note: 'how you do one job' },
     { depth: 2, name: 'tools/', dir: true },

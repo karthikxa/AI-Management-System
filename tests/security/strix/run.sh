@@ -38,7 +38,7 @@ esac
 
 if [[ -n "${TARGET_URL}" ]]; then
   case "${TARGET_URL}" in
-    https://staging-api.kortix.com | https://dev-api.kortix.com | http://localhost:* | http://127.0.0.1:*) ;;
+    https://staging-api.zed.com | https://dev-api.zed.com | http://localhost:* | http://127.0.0.1:*) ;;
     *)
       echo "[strix] refusing non-development target: ${TARGET_URL}" >&2
       exit 1

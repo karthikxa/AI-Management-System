@@ -1,6 +1,6 @@
 # self-host-e2e
 
-Black-box test suite for `kortix self-host` (the generic Docker Compose
+Black-box test suite for `zed self-host` (the generic Docker Compose
 appliance — see `apps/cli/src/commands/self-host.ts`). Two layers:
 
 - **`fast/`** — pure CLI-artifact tests. Spawn the real CLI entrypoint
@@ -26,9 +26,9 @@ pulling in a YAML parser.
 bun test tests/self-host-e2e/fast/
 
 # live (opt-in — needs Docker + the API image built locally)
-RUN_SELFHOST_LIVE=1 API_IMAGE=kortix/kortix-api:selfhost-local \
+RUN_SELFHOST_LIVE=1 API_IMAGE=zed/zed-api:selfhost-local \
   bash tests/self-host-e2e/live/graceful-degradation.live.sh
-RUN_SELFHOST_LIVE=1 API_IMAGE=kortix/kortix-api:selfhost-local \
+RUN_SELFHOST_LIVE=1 API_IMAGE=zed/zed-api:selfhost-local \
   bash tests/self-host-e2e/live/rolling-update.live.sh
 ```
 
@@ -54,7 +54,7 @@ revert), the file degrades to a clean `describe.skip` instead of a false
 failure — no manual toggle to remember to flip back.
 
 The one genuinely still-unimplemented piece of case 4 — automatic
-`KORTIX_AUTO_UPDATE=false` when only `--local-images`/`--version` is passed
+`ZED_AUTO_UPDATE=false` when only `--local-images`/`--version` is passed
 without a domain — is not; it was confirmed live and is covered directly
 (see "an explicit `--auto-update` always wins" and the `--local-images`
 tests in `version-channel-images.test.ts`).

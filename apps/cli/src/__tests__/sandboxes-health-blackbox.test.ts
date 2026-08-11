@@ -27,13 +27,13 @@ function failure(error: string) {
 async function runCli(args: string[]) {
   const env: Record<string, string | undefined> = {
     ...process.env,
-    KORTIX_CONFIG_FILE: join(root, 'config.json'),
-    KORTIX_NO_UPDATE_CHECK: '1',
-    KORTIX_DISABLE_SANDBOX_ENV_FILE: '1',
+    ZED_CONFIG_FILE: join(root, 'config.json'),
+    ZED_NO_UPDATE_CHECK: '1',
+    ZED_DISABLE_SANDBOX_ENV_FILE: '1',
     NO_COLOR: '1',
     FORCE_COLOR: '0',
   };
-  for (const key of ['KORTIX_API_URL', 'KORTIX_CLI_TOKEN', 'KORTIX_PROJECT_ID', 'KORTIX_TOKEN']) {
+  for (const key of ['ZED_API_URL', 'ZED_CLI_TOKEN', 'ZED_PROJECT_ID', 'ZED_TOKEN']) {
     delete env[key];
   }
   const child = Bun.spawn({
@@ -52,8 +52,8 @@ async function runCli(args: string[]) {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'kortix-sandbox-health-cli-'));
-  mkdirSync(join(root, '.kortix'), { recursive: true });
+  root = mkdtempSync(join(tmpdir(), 'zed-sandbox-health-cli-'));
+  mkdirSync(join(root, '.zed'), { recursive: true });
   server = Bun.serve({
     port: 0,
     fetch(request) {
@@ -82,7 +82,7 @@ beforeEach(() => {
     }),
   );
   writeFileSync(
-    join(root, '.kortix', 'link.json'),
+    join(root, '.zed', 'link.json'),
     JSON.stringify({
       project_id: PROJECT_ID,
       account_id: ACCOUNT_ID,
@@ -99,7 +99,7 @@ afterEach(() => {
   if (root) rmSync(root, { recursive: true, force: true });
 });
 
-describe('kortix sandboxes health black box', () => {
+describe('zed sandboxes health black box', () => {
   test('a stale provider failure does not override current ready state', async () => {
     const staleFailure = failure('old E2B snapshot is missing');
     healthBody = {
@@ -143,6 +143,6 @@ describe('kortix sandboxes health black box', () => {
     expect(result.code).toBe(0);
     expect(result.stdout).toContain('primary default  blocked');
     expect(result.stdout).toContain('current failure: current Daytona build failed');
-    expect(result.stdout).toContain('kortix sandboxes fix');
+    expect(result.stdout).toContain('zed sandboxes fix');
   });
 });

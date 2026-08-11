@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { connectors, projectSecrets, projectSessionSecretHandles } from '@kortix/db';
+import { connectors, projectSecrets, projectSessionSecretHandles } from '@zed/db';
 import { Hono } from 'hono';
 import * as realAccess from '../projects/lib/access';
 
@@ -264,7 +264,7 @@ describe('PUT /v1/projects/:projectId/secrets/:identifier/strategy', () => {
 
   test('configures the generic HTTPS broker with a validated outbound policy', async () => {
     const egressPolicy = {
-      backend: 'kortix_fetch',
+      backend: 'zed_fetch',
       rules: [{ host: 'api.example.com', methods: ['POST'], path: '/v1/*' }],
       inject: { kind: 'header', name: 'authorization', template: 'Bearer {{secret}}' },
     };

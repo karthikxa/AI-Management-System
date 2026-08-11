@@ -1,20 +1,20 @@
 /**
  * 05 — what agents does the project have, and what is their config?
  *
- * Agents are config files in the repo (`.kortix/opencode/agents/*.md` here).
+ * Agents are config files in the repo (`.zed/opencode/agents/*.md` here).
  * The platform surfaces them read-only through `projects.detail().config`,
  * and `getAgentConfig()` returns one agent's resolved opencode config.
  *
  * Run (from packages/sdk):  bun run playground/agents/05-list-agents.ts [projectId]
  */
 import { getAgentConfig } from "../../src/index";
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("list-agents", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
 
-  const detail = await kortix.projects.detail(projectId);
+  const detail = await zed.projects.detail(projectId);
   const config = detail.config;
 
   console.log(`✓ agent discovery: ${config.agent_discovery}`);

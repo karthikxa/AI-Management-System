@@ -40,8 +40,8 @@ const badgeVariants = cva(
         success: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
         badgeSuccess:
           'border-transparent bg-emerald-200 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-500 bg-teal-100 text-teal-700 hover:bg-teal-100 focus:bg-teal-100 focus-visible:bg-teal-100 px-1.5 text-[11px]',
-        update: 'border-transparent text-kortix-orange bg-chart-2/25 border',
-        kortix: 'border-transparent text-foreground bg-kortix-base/25 border',
+        update: 'border-transparent text-zed-orange bg-chart-2/25 border',
+        zed: 'border-transparent text-foreground bg-zed-base/25 border',
         warning:
           'border-transparent bg-amber-400/30 border  text-amber-800  dark:bg-amber-400/30 dark:text-amber-800',
         outline: 'text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',

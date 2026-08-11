@@ -15,7 +15,7 @@ Turning the meeting notes into a grounded plan: what's real today, what the
 - **The pyramid idea is real and solves a genuine friction.** Today an agent's
   runtime access is `(launcher's own grants) ∩ (agent's declared needs)`, so to
   make an agent work for a person you must grant the resource **twice** — once
-  to the agent (`kortix.yaml`) and once to the human. Assigning the human to the
+  to the agent (`zed.yaml`) and once to the human. Assigning the human to the
   agent and letting them **inherit** the agent's declared resources removes that
   double-grant.
 - **But "human automatically HAS that resource" globally is over-permissive** —
@@ -24,7 +24,7 @@ Turning the meeting notes into a grounded plan: what's real today, what the
   assigning a human to an agent satisfies the agent's cap *for that agent's
   sessions*, not for the human's whole account.
 - **Recommendation:** make the **agent the unit of capability** (it declares
-  `env` / `connectors` / `skills` / `cli` in `kortix.yaml`), assign
+  `env` / `connectors` / `skills` / `cli` in `zed.yaml`), assign
   **humans/departments → agents**, and inherit **session-scoped** by default with
   an explicit **"grant standalone"** opt-in when a person genuinely needs the
   resource outside the agent. Keep the "agent ⊆ launcher" cap as the security
@@ -38,14 +38,14 @@ Turning the meeting notes into a grounded plan: what's real today, what the
 
 | Capability | Status | Where |
 |---|---|---|
-| Agent declares its resources (`env`, `connectors`, `kortix_cli`) | **Live** | `kortix.yaml agents:`; parsed in `agents.ts` |
+| Agent declares its resources (`env`, `connectors`, `zed_cli`) | **Live** | `zed.yaml agents:`; parsed in `agents.ts` |
 | Per-agent env allowlist enforced at session boot | **Live** | `sessions.ts buildSessionSandboxEnvVars` |
 | Agent capped at its launcher (standing identity ∩ launcher ∩ agentGrant) | **Live** | `iam/engine-v2.ts` |
 | Assign an **agent → member/department** (who may use it) | **Live** | `iam_resource_grants` type `agent`; Resource-access card |
 | Assign a **skill → member/department** | **Live** | `iam_resource_grants` type `skill` |
 | Secrets shared to members/departments (one source of truth) | **Live** | share model (`project_secret_grants` + `share_scope`) |
 | Connectors are **project-level** with share-scope + credential mode | **Live** | `connectors.project_id` |
-| Skills discovered from repo files (`.kortix/opencode/skills/*/SKILL.md`) | **Live** | `git/config.ts` |
+| Skills discovered from repo files (`.zed/opencode/skills/*/SKILL.md`) | **Live** | `git/config.ts` |
 | **Human inherits an agent's resources** | **Not built** | — |
 | **Per-agent `skills` allowlist** (like `env`/`connectors`) | **Not built** | — |
 | **Skills governed/run server-side via opencode config** | **Not built** | — |
@@ -74,7 +74,7 @@ agent-for-a-person setup therefore needs the resource granted in two places.
 They're compatible: inheritance grants the human exactly the agent's declared
 set, so the cap is met for that set, and the cap still prevents the agent from
 going beyond it. No circularity, because the agent's needs are **declared** in
-`kortix.yaml`, not themselves inherited.
+`zed.yaml`, not themselves inherited.
 
 ### The security fork — how far does "human has that resource" reach?
 
@@ -120,9 +120,9 @@ Department ──assigned──▶ Agent ──declares──▶ Resources (env 
   Human ─────────────────────────────────────────▶ effective access when running that agent
 ```
 
-- **Agent = capability bundle.** `kortix.yaml agents:` gains `skills: [...]`
-  alongside the existing `env` / `connectors` / `kortix_cli`. Reviewed in-repo,
-  auditable via `kortix validate`.
+- **Agent = capability bundle.** `zed.yaml agents:` gains `skills: [...]`
+  alongside the existing `env` / `connectors` / `zed_cli`. Reviewed in-repo,
+  auditable via `zed validate`.
 - **Assignment = human/department → agent** (reuse `iam_resource_grants` type
   `agent`, add an `inherit` flag / semantics).
 - **Inheritance = session-scoped by default.** At session boot, the agent's
@@ -150,7 +150,7 @@ Department ──assigned──▶ Agent ──declares──▶ Resources (env 
   build; the latter is a natural extension of the env/connector allowlist.
 
 ### 2. Inheritance (the pyramid) — core work
-- Add per-agent **`skills`** allowlist to `kortix.yaml` + parser + `kortix validate`.
+- Add per-agent **`skills`** allowlist to `zed.yaml` + parser + `zed validate`.
 - Add **assignment semantics**: human/dept → agent grant carries "inherit"; the
   Members UI gains an "Agents" way to assign people to agents (mirrors the
   Resource-access card, inverted).
@@ -179,7 +179,7 @@ Department ──assigned──▶ Agent ──declares──▶ Resources (env 
   vs global default; skills "server-side" meaning; is account-level connector
   inheritance actually wanted?
 - **Phase 1 — agent as capability bundle:** add `skills` to `[[agents]]` + parser
-  + `kortix validate` surface + the read-only Agents-view scope card. Low risk,
+  + `zed validate` surface + the read-only Agents-view scope card. Low risk,
   self-contained.
 - **Phase 2 — assignment + inheritance (session-scoped):** human/dept → agent
   assignment UI; session-boot inheritance for `env` first (the proven friction),

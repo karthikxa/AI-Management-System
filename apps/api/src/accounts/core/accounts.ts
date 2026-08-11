@@ -1,7 +1,7 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { and, count, eq, sql } from "drizzle-orm";
 import { json, errors, auth } from "../../openapi";
-import { accountMembers, accounts, projects } from "@kortix/db";
+import { accountMembers, accounts, projects } from "@zed/db";
 import { config } from "../../config";
 import { db } from "../../shared/db";
 import { ACCOUNT_ACTIONS, assertAuthorized } from "../../iam";
@@ -131,7 +131,7 @@ export function registerAccountRoutes(): void {
       // is narrowed. The personal-account bootstrap (GET /v1/accounts →
       // bootstrapPersonalAccount) never calls this route, so every user still
       // lands in their own account regardless of this flag.
-      if (config.KORTIX_RESTRICT_ACCOUNT_CREATION && !(await isPlatformAdmin(userId))) {
+      if (config.ZED_RESTRICT_ACCOUNT_CREATION && !(await isPlatformAdmin(userId))) {
         return c.json(
           {
             error: 'Creating new accounts is restricted to the server admin on this deployment',
@@ -207,7 +207,7 @@ export function registerAccountRoutes(): void {
       try {
         const res = await db.execute<{ n: number }>(sql`
       SELECT COUNT(*)::int AS n
-      FROM kortix.account_members am
+      FROM zed.account_members am
       WHERE am.account_id = ${accountId}::uuid
         AND NOT (
           am.user_id = am.account_id

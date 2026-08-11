@@ -49,7 +49,7 @@ The user chooses the connector name and slug. The first suggested slug is
 `computers`. Additional profiles use another available slug. Machine ids are
 stable tunnel UUIDs. Renaming a paired machine does not change a profile.
 
-Profiles do not live in `kortix.yaml`. Tunnel ids are account control-plane
+Profiles do not live in `zed.yaml`. Tunnel ids are account control-plane
 identities. The normal connector API creates, updates, renames, and deletes the
 DB-backed profiles.
 
@@ -80,9 +80,9 @@ no selector because it lists the profile's complete allowed set.
 Examples:
 
 ```bash
-kortix connectors call studio-computers.list_computers '{}'
+zed connectors call studio-computers.list_computers '{}'
 
-kortix connectors call studio-computers.fs.read \
+zed connectors call studio-computers.fs.read \
   '{"computer":"MacBook-Pro-9.local","path":"/etc/hosts"}'
 ```
 

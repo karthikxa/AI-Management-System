@@ -1,6 +1,6 @@
 # CI/CD Pipeline
 
-How code reaches production at Kortix, and which tests gate each step. Companion to [`../TESTING.md`](../TESTING.md) and [`TEST_ARCHITECTURE.md`](./TEST_ARCHITECTURE.md).
+How code reaches production at Zed, and which tests gate each step. Companion to [`../TESTING.md`](../TESTING.md) and [`TEST_ARCHITECTURE.md`](./TEST_ARCHITECTURE.md).
 
 ## Tiered model
 
@@ -65,9 +65,9 @@ Tests that need a live system read their target from env/vars — never hardcode
 | Lane | Target var | Source |
 |---|---|---|
 | e2e / visual / a11y | `E2E_BASE_URL` | `vars.QA_WEB_BASE_URL` (or `workflow_dispatch` input) — a deployed web URL (preview/dev/staging) |
-| api / ke2e / smoke | `KE2E_API_URL`, `KE2E_SUPABASE_URL`, `KE2E_OWNER_*`, `KE2E_ADMIN_TOKEN` | GitHub Actions **secrets** (point at `dev-api.kortix.com`, never prod) |
+| api / ke2e / smoke | `KE2E_API_URL`, `KE2E_SUPABASE_URL`, `KE2E_OWNER_*`, `KE2E_ADMIN_TOKEN` | GitHub Actions **secrets** (point at `dev-api.zed.com`, never prod) |
 | performance / DAST | `BASE_URL` / `TARGET_URL` | `vars` (dedicated perf/QA target) |
-| Report publish | `QA_REPORTS_ROLE_ARN` (OIDC), `QA_REPORTS_BUCKET` | secrets/vars (S3 + `qa.kortix.com`) |
+| Report publish | `QA_REPORTS_ROLE_ARN` (OIDC), `QA_REPORTS_BUCKET` | secrets/vars (S3 + `qa.zed.com`) |
 
 If a UI target var is unset, `qa-staging` **skips browser regression with a notice** (it does not fail) — set `QA_WEB_BASE_URL` (e.g. to the staging deployment) to enable it.
 
@@ -98,4 +98,4 @@ If a UI target var is unset, `qa-staging` **skips browser regression with a noti
 - **Staging DB isolation:** `deploy-staging.yml` must fail if `STAGING_DATABASE_URL`
   is missing; staging must not fall back to dev, KE2E, or prod Postgres for
   migrations or runtime.
-- **QA report portal (`qa.kortix.com`):** served from the private `kortix-qa-reports` S3 bucket via the in-cluster nginx pod, behind **Cloudflare Access (Zero Trust)** — every report (incl. the per-PR Allure links) requires Kortix auth. Configured in `infra/terraform/modules/qa-portal` (`enable_access = true`); needs `TF_VAR_cloudflare_account_id`, a Zero Trust identity provider, and a Cloudflare token with *Account · Access: Apps and Policies · Edit*. `QA_REPORTS_PUBLIC_BASE_URL` should point at `https://qa.kortix.com`, so PR links land at `qa.kortix.com/reports/pr/<PR#>/<run-id>/` and prompt login.
+- **QA report portal (`qa.zed.com`):** served from the private `zed-qa-reports` S3 bucket via the in-cluster nginx pod, behind **Cloudflare Access (Zero Trust)** — every report (incl. the per-PR Allure links) requires Zed auth. Configured in `infra/terraform/modules/qa-portal` (`enable_access = true`); needs `TF_VAR_cloudflare_account_id`, a Zero Trust identity provider, and a Cloudflare token with *Account · Access: Apps and Policies · Edit*. `QA_REPORTS_PUBLIC_BASE_URL` should point at `https://qa.zed.com`, so PR links land at `qa.zed.com/reports/pr/<PR#>/<run-id>/` and prompt login.

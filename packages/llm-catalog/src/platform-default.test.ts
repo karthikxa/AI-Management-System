@@ -14,6 +14,6 @@ describe('PLATFORM_DEFAULT_MODEL_ID', () => {
 
   test('the catalog does not recognize stale auto model ids', () => {
     expect(catalogModelForWireModel('auto')).toBeUndefined();
-    expect(catalogModelForWireModel('kortix/auto')).toBeUndefined();
+    expect(catalogModelForWireModel('zed/auto')).toBeUndefined();
   });
 });

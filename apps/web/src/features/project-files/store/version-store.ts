@@ -29,7 +29,7 @@ export const useVersionStore = create<VersionStore>()(
           return { selectedByProject: next };
         }),
     }),
-    { name: 'kortix-project-version-selection', storage: createSafeJSONStorage() },
+    { name: 'zed-project-version-selection', storage: createSafeJSONStorage() },
   ),
 );
 

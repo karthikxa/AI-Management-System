@@ -3,19 +3,19 @@ title: Change requests
 description: How session work reaches the default branch through review.
 ---
 
-A change request (CR) merges one git branch into another. Kortix creates a CR from a session's branch (`head_ref`) onto the project's default branch (`base_ref`, usually `main`). The CR row is metadata; the merge, diff, and conflict checks run as real git operations against the project's repository. A CR is the only way session work reaches the default branch.
+A change request (CR) merges one git branch into another. Zed creates a CR from a session's branch (`head_ref`) onto the project's default branch (`base_ref`, usually `main`). The CR row is metadata; the merge, diff, and conflict checks run as real git operations against the project's repository. A CR is the only way session work reaches the default branch.
 
 ## Why work goes through a CR
 
-A session runs in a sandbox on its own branch, named after the session ID. The sandbox does not last forever, but the branch does: git is the only durable record of a session's work. Every new session starts from the default branch. Until a CR merges, the work stays on its own branch, unreviewed and invisible to every other agent, trigger, and collaborator. This applies to every change: code, agents, skills, and the manifest (`kortix.yaml`) — no exceptions.
+A session runs in a sandbox on its own branch, named after the session ID. The sandbox does not last forever, but the branch does: git is the only durable record of a session's work. Every new session starts from the default branch. Until a CR merges, the work stays on its own branch, unreviewed and invisible to every other agent, trigger, and collaborator. This applies to every change: code, agents, skills, and the manifest (`zed.yaml`) — no exceptions.
 
 ## The agent mandate
 
 An agent must open a CR to land any change on the project's default branch. The agent does not merge its own CR — merging is the user's decision. Follow this contract:
 
-1. Commit on the session branch (`$KORTIX_BRANCH_NAME`). Make small, working commits. Do not rewrite history or force-push.
+1. Commit on the session branch (`$ZED_BRANCH_NAME`). Make small, working commits. Do not rewrite history or force-push.
 2. Push the branch: `git push origin HEAD`.
-3. Open the CR: `kortix cr open --title "..." --description "..."`. Inside a session sandbox, `--head` and `--session` default to `$KORTIX_BRANCH_NAME` and `$KORTIX_SESSION_ID`. `--base` defaults to the project's default branch.
+3. Open the CR: `zed cr open --title "..." --description "..."`. Inside a session sandbox, `--head` and `--session` default to `$ZED_BRANCH_NAME` and `$ZED_SESSION_ID`. `--base` defaults to the project's default branch.
 4. Tell the user the CR number, so they can review it.
 5. Stop. Do not merge the CR yourself.
 
@@ -62,21 +62,21 @@ open ──(close)──▶ closed ──(reopen)──▶ open
 - `closed` is reversible. `POST /:crId/reopen` sets it back to `open`.
 - `merged` is terminal. You cannot reopen or close a merged CR. Open a new CR against the merged state instead.
 
-Kortix refuses to create a CR whose branch has no commits ahead of the default branch. This usually means the agent committed locally but never pushed. Push the commits, then create the CR again.
+Zed refuses to create a CR whose branch has no commits ahead of the default branch. This usually means the agent committed locally but never pushed. Push the commits, then create the CR again.
 
 ## SHA refresh
 
-For an open CR, Kortix refreshes `head_commit_sha` and `base_commit_sha` against the live branches on every `GET`. If the repository is unreachable, or a branch is missing, Kortix skips the refresh and serves the CR's last known metadata. A merged CR keeps the SHAs captured at merge time — Kortix never refreshes them again.
+For an open CR, Zed refreshes `head_commit_sha` and `base_commit_sha` against the live branches on every `GET`. If the repository is unreachable, or a branch is missing, Zed skips the refresh and serves the CR's last known metadata. A merged CR keeps the SHAs captured at merge time — Zed never refreshes them again.
 
 ## Merge mechanics
 
 `POST /v1/projects/:projectId/change-requests/:crId/merge` runs these steps.
 
-1. Kortix reads the manifest (`kortix.yaml`) from `head_ref` and validates it against the manifest schema. A branch with no manifest passes. An invalid manifest returns `422` with `code: "MANIFEST_INVALID"` and stops the merge.
-2. Kortix fast-forwards `base_ref` if `head_ref` is strictly ahead of it.
-3. Otherwise, Kortix creates a merge commit. The default message is `Merge CR #<n>: <title>`, and you can override it with `message` in the request body. The commit author is `Kortix <noreply@kortix.ai>`.
+1. Zed reads the manifest (`zed.yaml`) from `head_ref` and validates it against the manifest schema. A branch with no manifest passes. An invalid manifest returns `422` with `code: "MANIFEST_INVALID"` and stops the merge.
+2. Zed fast-forwards `base_ref` if `head_ref` is strictly ahead of it.
+3. Otherwise, Zed creates a merge commit. The default message is `Merge CR #<n>: <title>`, and you can override it with `message` in the request body. The commit author is `Zed <noreply@zed.ai>`.
 4. A conflict returns `409` with the conflict list. Check the same list with `GET /:crId/merge-preview` before you merge.
-5. On success, Kortix sets `status` to `merged`, records `merged_at`, `merged_by`, and `merge_commit_sha`, and invalidates the project's git cache.
+5. On success, Zed sets `status` to `merged`, records `merged_at`, `merged_by`, and `merge_commit_sha`, and invalidates the project's git cache.
 
 Merging a CR that is not `open` returns `409`.
 

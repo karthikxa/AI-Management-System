@@ -7,8 +7,8 @@ import { BlogProse } from '@/components/blog/blog-prose';
 import { PostByline } from '@/components/blog/post-byline';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { KortixAsterisk } from '@/components/ui/kortix-asterisk';
-import { KortixLetterField } from '@/components/ui/marketing/kortix-letter-field';
+import { ZedAsterisk } from '@/components/ui/zed-asterisk';
+import { ZedLetterField } from '@/components/ui/marketing/zed-letter-field';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import {
   Callout,
@@ -87,7 +87,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       title: data.title,
       description: data.description,
       url,
-      siteName: 'Kortix',
+      siteName: 'Zed',
       publishedTime: data.date,
       modifiedTime: data.date,
       authors: [author.name],
@@ -124,9 +124,9 @@ export default async function UseCasePage(props: PageProps) {
     .slice(0, 3);
   const toc = (data.toc ?? []) as TocItem[];
   const post = getAllUseCases().find((p) => p.slug === slug);
-  // Default-on kill-switch shared with the API (KORTIX_TEMPLATES_ENABLED) — set it
+  // Default-on kill-switch shared with the API (ZED_TEMPLATES_ENABLED) — set it
   // to 'false' to hide the "Use this template" button.
-  const templatesEnabled = process.env.KORTIX_TEMPLATES_ENABLED !== 'false';
+  const templatesEnabled = process.env.ZED_TEMPLATES_ENABLED !== 'false';
 
   const postUrl = `${siteMetadata.url}/use-cases/${slug}`;
   const jsonLd = {
@@ -143,7 +143,7 @@ export default async function UseCasePage(props: PageProps) {
         author: { '@type': 'Person', name: author.name },
         publisher: {
           '@type': 'Organization',
-          name: 'Kortix',
+          name: 'Zed',
           logo: { '@type': 'ImageObject', url: `${siteMetadata.url}/favicon.png` },
         },
         image: data.cover ? `${siteMetadata.url}${data.cover}` : `${siteMetadata.url}/banner.png`,
@@ -175,7 +175,7 @@ export default async function UseCasePage(props: PageProps) {
       {/* Branded hero header — faint letter-field backdrop ties it to the platform. */}
       <section className="relative overflow-hidden px-5 pt-28 pb-4 sm:pt-32">
         <div className="absolute inset-0 z-0 mask-y-to-90% opacity-60">
-          <KortixLetterField seed={5190} />
+          <ZedLetterField seed={5190} />
         </div>
         <div className="relative z-10 mx-auto grid max-w-7xl gap-x-12 lg:grid-cols-[minmax(0,1fr)_16rem]">
           <div className="min-w-0">
@@ -190,7 +190,7 @@ export default async function UseCasePage(props: PageProps) {
             <header className="mt-8">
               {archetype && (
                 <div className="text-muted-foreground mb-4 flex items-center gap-2 font-mono text-xs tracking-wider uppercase">
-                  <KortixAsterisk index={0} parentClass="size-4" />
+                  <ZedAsterisk index={0} parentClass="size-4" />
                   {archetype}
                 </div>
               )}

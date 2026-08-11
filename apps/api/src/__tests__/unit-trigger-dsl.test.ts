@@ -13,54 +13,54 @@ name = "test"
 `;
 
 function manifestWith(triggersBlock: string): string {
-  return [`kortix_version = ${KNOWN_SCHEMA_VERSION}`, MIN_PROJECT, triggersBlock].join('\n');
+  return [`zed_version = ${KNOWN_SCHEMA_VERSION}`, MIN_PROJECT, triggersBlock].join('\n');
 }
 
-describe('kortix manifest — schema versioning', () => {
-  test('missing kortix_version is treated as v1 (back-compat)', () => {
+describe('zed manifest — schema versioning', () => {
+  test('missing zed_version is treated as v1 (back-compat)', () => {
     const parsed = parseManifestString(MIN_PROJECT);
     expect(parsed.schemaVersion).toBe(1);
   });
 
-  test('explicit kortix_version = 1 round-trips', () => {
-    const parsed = parseManifestString(`kortix_version = 1\n${MIN_PROJECT}`);
+  test('explicit zed_version = 1 round-trips', () => {
+    const parsed = parseManifestString(`zed_version = 1\n${MIN_PROJECT}`);
     expect(parsed.schemaVersion).toBe(1);
   });
 
   test('a future major version is rejected with a clear error', () => {
-    expect(() => parseManifestString(`kortix_version = 99\n${MIN_PROJECT}`)).toThrow(
-      /Unsupported kortix\.toml schema version 99/,
+    expect(() => parseManifestString(`zed_version = 99\n${MIN_PROJECT}`)).toThrow(
+      /Unsupported zed\.toml schema version 99/,
     );
   });
 
-  // kortix_version 2 (the `agents:` map manifest — spec §2.1/§2.2) must NOT
+  // zed_version 2 (the `agents:` map manifest — spec §2.1/§2.2) must NOT
   // throw here: this reader (readManifest → parseManifestString) is what the
   // whole session/trigger grant pipeline reads through (extractAgents in
   // ../projects/agents.ts is the v2-aware consumer). Rejecting v2 at THIS
   // layer was the runtime-wiring bug the fix closes — every v2 project would
   // otherwise resolve to either fully-unrestricted (a swallowed read error) or
   // every-session-rejected, instead of the agent's declared grant.
-  test('kortix_version 2 no longer throws — the reader every consumer (agents/triggers) reads through', () => {
+  test('zed_version 2 no longer throws — the reader every consumer (agents/triggers) reads through', () => {
     const parsed = parseManifestString(
-      'kortix_version: 2\ndefault_agent: support\nproject:\n  name: test\nagents:\n  support:\n    description: x\n',
+      'zed_version: 2\ndefault_agent: support\nproject:\n  name: test\nagents:\n  support:\n    description: x\n',
       'yaml',
-      'kortix.yaml',
+      'zed.yaml',
     );
     expect(parsed.schemaVersion).toBe(2);
   });
 
   // V2 is the current ceiling. Any later schema version must stay rejected.
   test('the current ceiling parses and anything above it is still rejected', () => {
-    expect(parseManifestString(`kortix_version = 2\n${MIN_PROJECT}`).schemaVersion).toBe(2);
-    expect(() => parseManifestString(`kortix_version = 3\n${MIN_PROJECT}`)).toThrow(
+    expect(parseManifestString(`zed_version = 2\n${MIN_PROJECT}`).schemaVersion).toBe(2);
+    expect(() => parseManifestString(`zed_version = 3\n${MIN_PROJECT}`)).toThrow(
       /schema version 3/,
     );
   });
 
-  test('serialize always emits kortix_version as the first key', () => {
-    const parsed = parseManifestString(`kortix_version = 1\n${MIN_PROJECT}`);
+  test('serialize always emits zed_version as the first key', () => {
+    const parsed = parseManifestString(`zed_version = 1\n${MIN_PROJECT}`);
     const out = serializeManifest(parsed);
-    expect(out.indexOf('kortix_version')).toBe(0);
+    expect(out.indexOf('zed_version')).toBe(0);
   });
 });
 
@@ -630,7 +630,7 @@ prompt = "x"
     expect(entry.session_key).toBe('{{ body.data.chat_jid }}');
     // The key implies the mode, so writing both would be redundant in the file
     // a human reads — and `session_mode: "keyed"` would fail the manifest-schema
-    // enum that `kortix validate` / the CR-merge gate applies.
+    // enum that `zed validate` / the CR-merge gate applies.
     expect(entry.session_mode).toBeUndefined();
     // Genuine round-trip: what we wrote must parse back to the same mode+key.
     const rewritten = [
@@ -763,7 +763,7 @@ prompt = "Hello"
 
 /**
  * Drift guard: the runtime trigger parser (extractTriggers) and the canonical
- * schema gate (@kortix/manifest-schema, run on CR-merge) must agree on which
+ * schema gate (@zed/manifest-schema, run on CR-merge) must agree on which
  * `[[triggers]]` shapes are valid. The runtime accepts several alias keys
  * (prompt_template, schedule/runAt, secretEnv, sessionMode) and coerces enabled
  * / lowercases session_mode; the gate must accept the same, or it falsely blocks
@@ -771,7 +771,7 @@ prompt = "Hello"
  * connector provider. Keep them locked together.
  */
 describe('[[triggers]] — runtime parser ⇄ schema gate agreement', () => {
-  const { validateManifest } = require('@kortix/manifest-schema') as typeof import('@kortix/manifest-schema');
+  const { validateManifest } = require('@zed/manifest-schema') as typeof import('@zed/manifest-schema');
 
   function schemaTriggerErrors(block: string): string[] {
     return validateManifest(manifestWith(block))
@@ -834,33 +834,33 @@ describe('[[triggers]] — runtime parser ⇄ schema gate agreement', () => {
 });
 
 // Regression guard: trigger `path` / error `path` breadcrumbs used to
-// hard-code `kortix.toml` regardless of which file the manifest actually came
+// hard-code `zed.toml` regardless of which file the manifest actually came
 // from. They now derive the filename from the parsed manifest's own `path`
-// (set by `parseManifestString`), so a `kortix.yaml` project's spec/error
-// paths say `kortix.yaml`, not a lie about a file that doesn't exist there.
+// (set by `parseManifestString`), so a `zed.yaml` project's spec/error
+// paths say `zed.yaml`, not a lie about a file that doesn't exist there.
 describe("[[triggers]] — spec/error `path` derives from the manifest's own filename", () => {
-  test("a yaml manifest's trigger spec path says kortix.yaml", () => {
+  test("a yaml manifest's trigger spec path says zed.yaml", () => {
     const manifest = parseManifestString(
-      `kortix_version: ${KNOWN_SCHEMA_VERSION}\nproject:\n  name: test\ntriggers:\n  - slug: nightly\n    type: cron\n    cron: "0 9 * * *"\n    prompt: go\n`,
+      `zed_version: ${KNOWN_SCHEMA_VERSION}\nproject:\n  name: test\ntriggers:\n  - slug: nightly\n    type: cron\n    cron: "0 9 * * *"\n    prompt: go\n`,
       'yaml',
-      'kortix.yaml',
+      'zed.yaml',
     );
     const { specs, errors } = extractTriggers(manifest);
     expect(errors).toEqual([]);
-    expect(specs[0]?.path).toBe('kortix.yaml#triggers.nightly');
+    expect(specs[0]?.path).toBe('zed.yaml#triggers.nightly');
   });
 
-  test("a yaml manifest's `[triggers]` (non-array) error path says kortix.yaml", () => {
+  test("a yaml manifest's `[triggers]` (non-array) error path says zed.yaml", () => {
     const manifest = parseManifestString(
-      `kortix_version: ${KNOWN_SCHEMA_VERSION}\nproject:\n  name: test\ntriggers:\n  slug: nightly\n`,
+      `zed_version: ${KNOWN_SCHEMA_VERSION}\nproject:\n  name: test\ntriggers:\n  slug: nightly\n`,
       'yaml',
-      'kortix.yaml',
+      'zed.yaml',
     );
     const { errors } = extractTriggers(manifest);
-    expect(errors[0]?.path).toBe('kortix.yaml');
+    expect(errors[0]?.path).toBe('zed.yaml');
   });
 
-  test('a toml manifest still says kortix.toml (default, unchanged)', () => {
+  test('a toml manifest still says zed.toml (default, unchanged)', () => {
     const { specs } = extractTriggers(
       parseManifestString(
         manifestWith(
@@ -868,6 +868,6 @@ describe("[[triggers]] — spec/error `path` derives from the manifest's own fil
         ),
       ),
     );
-    expect(specs[0]?.path).toBe('kortix.toml#triggers.nightly');
+    expect(specs[0]?.path).toBe('zed.toml#triggers.nightly');
   });
 });

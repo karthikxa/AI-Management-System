@@ -42,7 +42,7 @@ export async function runAuditReconciliationPage(
 ): Promise<AuditReconciliationPage> {
   const rows = await db.execute<PendingAccount>(sql`
     SELECT account_id AS "accountId"
-      FROM kortix.accounts account
+      FROM zed.accounts account
      WHERE (${afterAccountId}::uuid IS NULL OR account.account_id > ${afterAccountId}::uuid)
      ORDER BY account.account_id
      LIMIT 1

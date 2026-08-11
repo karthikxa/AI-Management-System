@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { chatEventDedup } from '@kortix/db';
+import { chatEventDedup } from '@zed/db';
 import { db } from '../../shared/db';
 import { EVENT_DEDUPE_TTL_MS } from './app';
 

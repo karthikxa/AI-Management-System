@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import Loading from '@/components/ui/loading';
 import { cn } from '@/lib/utils';
-import { chalkColors } from '@kortix/shared';
+import { chalkColors } from '@zed/shared';
 import { FileContentRenderer, getFileCategory } from './file-content-renderer';
 
 interface FileThumbnailProps {

@@ -7,7 +7,7 @@ import {
   manifestCandidatePaths,
   parseManifestText,
   validateManifest,
-} from '@kortix/manifest-schema';
+} from '@zed/manifest-schema';
 
 /** The `[env]` contract from the manifest — names the runtime needs. */
 export interface EnvSpec {
@@ -16,7 +16,7 @@ export interface EnvSpec {
 }
 
 export interface LocalManifest {
-  /** Absolute path to the manifest we read (kortix.yaml or kortix.toml). */
+  /** Absolute path to the manifest we read (zed.yaml or zed.toml). */
   path: string;
   /** The on-disk format — toml or yaml. */
   format: ManifestFormat;
@@ -62,7 +62,7 @@ export function envSpecFromManifest(data: Record<string, unknown>): EnvSpec {
 }
 
 /**
- * Resolve the on-disk manifest, preferring `kortix.yaml` over `kortix.toml`
+ * Resolve the on-disk manifest, preferring `zed.yaml` over `zed.toml`
  * (the dual-format rule). Returns the first candidate that exists, or null when
  * the repo has no manifest.
  */
@@ -77,14 +77,14 @@ export function resolveLocalManifest(
 }
 
 /** Absolute path of the manifest — the existing file if any, else the canonical
- *  `kortix.yaml` (used for "where to write / look" messages when none exists). */
+ *  `zed.yaml` (used for "where to write / look" messages when none exists). */
 export function manifestPath(cwd: string = process.cwd()): string {
-  return resolveLocalManifest(cwd)?.path ?? resolve(cwd, 'kortix.yaml');
+  return resolveLocalManifest(cwd)?.path ?? resolve(cwd, 'zed.yaml');
 }
 
 /**
- * Parse the local manifest (kortix.yaml or kortix.toml). Returns null when
- * there's no manifest (a project may be `.kortix/`-only). Throws the parser's
+ * Parse the local manifest (zed.yaml or zed.toml). Returns null when
+ * there's no manifest (a project may be `.zed/`-only). Throws the parser's
  * syntax error — callers surface that as the "does it compile" failure.
  */
 export function loadLocalManifest(cwd: string = process.cwd()): LocalManifest | null {
@@ -103,7 +103,7 @@ export function loadLocalManifest(cwd: string = process.cwd()): LocalManifest | 
 
 /**
  * Static-validate a parsed manifest the way the backend would. Thin shim
- * over `@kortix/manifest-schema/validateManifest` — kept as the legacy entry
+ * over `@zed/manifest-schema/validateManifest` — kept as the legacy entry
  * point for callers that already had a parsed object handy. The canonical
  * schema covers every versioned section, including v2 OpenCode config, plus
  * project, env, sandboxes, triggers, connectors, channels, and apps.
@@ -119,7 +119,7 @@ export function lintManifest(
 /**
  * Validate a manifest from raw text. Returns a syntax-error issue when it
  * doesn't parse; otherwise runs the canonical schema. Pass the `format` so a
- * `kortix.yaml` is parsed as YAML (defaults to TOML for back-compat).
+ * `zed.yaml` is parsed as YAML (defaults to TOML for back-compat).
  */
 export function lintManifestText(raw: string, format: ManifestFormat = 'toml'): ManifestIssues {
   const { issues } = validateManifest(raw, format);

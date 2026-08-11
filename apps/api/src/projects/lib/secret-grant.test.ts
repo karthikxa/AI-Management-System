@@ -29,14 +29,14 @@ const {
 function spec(
   name: string,
   env: AgentSpec['env'],
-  extra: Partial<Pick<AgentSpec, 'connectors' | 'kortixCli'>> = {},
+  extra: Partial<Pick<AgentSpec, 'connectors' | 'zedCli'>> = {},
 ): AgentSpec {
   return {
     name,
-    path: `kortix.yaml#agents.${name}`,
+    path: `zed.yaml#agents.${name}`,
     enabled: true,
     connectors: [],
-    kortixCli: [],
+    zedCli: [],
     env,
     file: null,
     model: null,
@@ -52,7 +52,7 @@ const PROJECT = {
   projectId: 'p1',
   repoUrl: 'https://github.com/acme/repo',
   defaultBranch: 'main',
-  manifestPath: 'kortix.yaml',
+  manifestPath: 'zed.yaml',
 };
 
 beforeEach(() => {
@@ -61,7 +61,7 @@ beforeEach(() => {
 
 describe('effectiveRunningAgent', () => {
   test('a concrete requested agent is the one that runs', () => {
-    expect(effectiveRunningAgent('release-bot', 'kortix')).toBe('release-bot');
+    expect(effectiveRunningAgent('release-bot', 'zed')).toBe('release-bot');
   });
 
   test('the default sentinel resolves to the session agent, not a fresh lookup', () => {
@@ -69,19 +69,19 @@ describe('effectiveRunningAgent', () => {
   });
 
   test('an absent or blank requested agent falls back to the session agent', () => {
-    expect(effectiveRunningAgent(null, 'kortix')).toBe('kortix');
-    expect(effectiveRunningAgent(undefined, 'kortix')).toBe('kortix');
-    expect(effectiveRunningAgent('   ', 'kortix')).toBe('kortix');
+    expect(effectiveRunningAgent(null, 'zed')).toBe('zed');
+    expect(effectiveRunningAgent(undefined, 'zed')).toBe('zed');
+    expect(effectiveRunningAgent('   ', 'zed')).toBe('zed');
   });
 
   test('surrounding whitespace does not create a distinct agent', () => {
-    expect(effectiveRunningAgent('  release-bot  ', 'kortix')).toBe('release-bot');
+    expect(effectiveRunningAgent('  release-bot  ', 'zed')).toBe('release-bot');
   });
 });
 
 describe('agentGrantDiffers', () => {
   const grant = (extra: Record<string, unknown>) =>
-    ({ agent: 'a', kortixCli: 'all', connectors: 'all', env: 'all', ...extra }) as never;
+    ({ agent: 'a', zedCli: 'all', connectors: 'all', env: 'all', ...extra }) as never;
 
   test('an identical grant is a free switch', () => {
     expect(agentGrantDiffers(grant({}), grant({}))).toBe(false);
@@ -94,8 +94,8 @@ describe('agentGrantDiffers', () => {
     expect(agentGrantDiffers(grant({}), grant({ connectors: ['calendar'] }))).toBe(true);
   });
 
-  test('a DIFFERENT kortixCli grant is a switch too', () => {
-    expect(agentGrantDiffers(grant({}), grant({ kortixCli: ['session.read'] }))).toBe(true);
+  test('a DIFFERENT zedCli grant is a switch too', () => {
+    expect(agentGrantDiffers(grant({}), grant({ zedCli: ['session.read'] }))).toBe(true);
   });
 
   test('order and duplicates in a connector list are not a difference', () => {
@@ -157,8 +157,8 @@ describe('secretGrantEnvDiffers', () => {
 
 describe('secretGrantEnvForRunningAgent', () => {
   test('no switch returns the running agent grant unchanged', () => {
-    const l = loaded([spec('kortix', ['STRIPE'])]);
-    expect(secretGrantEnvForRunningAgent(l, 'kortix', 'kortix')).toEqual(['STRIPE']);
+    const l = loaded([spec('zed', ['STRIPE'])]);
+    expect(secretGrantEnvForRunningAgent(l, 'zed', 'zed')).toEqual(['STRIPE']);
   });
 
   test('a switch between agents with equal grants is allowed', () => {
@@ -181,15 +181,15 @@ describe('secretGrantEnvForRunningAgent', () => {
   });
 
   test('an undeclared agent gets the default-deny grant and is refused against a granted session', () => {
-    const l = loaded([spec('kortix', 'all')]);
-    expect(() => secretGrantEnvForRunningAgent(l, 'kortix', 'ghost')).toThrow(
+    const l = loaded([spec('zed', 'all')]);
+    expect(() => secretGrantEnvForRunningAgent(l, 'zed', 'ghost')).toThrow(
       AgentSecretGrantMismatchError,
     );
   });
 
   test('an ungoverned session switching to an all-granted agent is not a privilege change', () => {
-    const l = loaded([spec('kortix', 'all')], 'kortix');
-    expect(secretGrantEnvForRunningAgent(l, 'default', 'kortix')).toBe('all');
+    const l = loaded([spec('zed', 'all')], 'zed');
+    expect(secretGrantEnvForRunningAgent(l, 'default', 'zed')).toBe('all');
   });
 
   test('the kill switch degrades to the running agent grant instead of the session one', () => {
@@ -208,7 +208,7 @@ describe('resolveSessionSecretGrant', () => {
     loadProjectAgentsImpl = async () => {
       throw new Error('git unreachable');
     };
-    await expect(resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'kortix' })).rejects.toThrow(
+    await expect(resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'zed' })).rejects.toThrow(
       SecretGrantResolutionError,
     );
   });
@@ -219,7 +219,7 @@ describe('resolveSessionSecretGrant', () => {
     };
     const result = await resolveSessionSecretGrant({
       ...PROJECT,
-      sessionAgent: 'kortix',
+      sessionAgent: 'zed',
     }).catch((err) => err);
     expect(result).toBeInstanceOf(SecretGrantResolutionError);
   });
@@ -229,14 +229,14 @@ describe('resolveSessionSecretGrant', () => {
       throw new Error('should not be called');
     };
     await expect(
-      resolveSessionSecretGrant({ ...PROJECT, defaultBranch: null, sessionAgent: 'kortix' }),
+      resolveSessionSecretGrant({ ...PROJECT, defaultBranch: null, sessionAgent: 'zed' }),
     ).resolves.toBeUndefined();
   });
 
   test('a project that has not adopted agents is unrestricted', async () => {
     loadProjectAgentsImpl = async () => loaded([]);
     await expect(
-      resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'kortix' }),
+      resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'zed' }),
     ).resolves.toBeUndefined();
   });
 
@@ -266,8 +266,8 @@ describe('resolveSessionSecretGrant', () => {
   test('re-scopes to the running agent when the optional strict lock is disabled', async () => {
     loadProjectAgentsImpl = async () =>
       loaded([
-        spec('narrow', ['NPM_TOKEN'], { connectors: ['registry'], kortixCli: [] }),
-        spec('broad', 'all', { connectors: 'all', kortixCli: 'all' }),
+        spec('narrow', ['NPM_TOKEN'], { connectors: ['registry'], zedCli: [] }),
+        spec('broad', 'all', { connectors: 'all', zedCli: 'all' }),
       ]);
 
     const grant = await resolveSessionAgentGrant({
@@ -281,7 +281,7 @@ describe('resolveSessionSecretGrant', () => {
       agent: 'broad',
       env: 'all',
       connectors: 'all',
-      kortixCli: 'all',
+      zedCli: 'all',
     });
   });
 
@@ -320,8 +320,8 @@ describe('resolveSessionSecretGrant', () => {
   test('allows a switch between agents whose grants match in every dimension', async () => {
     loadProjectAgentsImpl = async () =>
       loaded([
-        spec('a', ['NPM_TOKEN'], { connectors: ['calendar'], kortixCli: ['session.read'] }),
-        spec('b', ['npm_token'], { connectors: ['calendar'], kortixCli: ['session.read'] }),
+        spec('a', ['NPM_TOKEN'], { connectors: ['calendar'], zedCli: ['session.read'] }),
+        spec('b', ['npm_token'], { connectors: ['calendar'], zedCli: ['session.read'] }),
       ]);
     await expect(
       resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'a', requestedAgent: 'b' }),

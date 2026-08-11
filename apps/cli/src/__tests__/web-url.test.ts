@@ -8,10 +8,10 @@ import { projectWebUrl, sessionWebUrl, webDashboardUrl } from '../web-url';
 const SAVED = { ...process.env };
 
 beforeEach(() => {
-  delete process.env.KORTIX_FRONTEND_URL;
-  delete process.env.KORTIX_DASHBOARD_URL;
+  delete process.env.ZED_FRONTEND_URL;
+  delete process.env.ZED_DASHBOARD_URL;
   delete process.env.BASH_ENV;
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
 });
 
 afterEach(() => {
@@ -19,52 +19,52 @@ afterEach(() => {
 });
 
 describe('webDashboardUrl — derive fallback (no authoritative env)', () => {
-  test('prod api host never leaks: api-prod.kortix.com → kortix.com', () => {
-    // The original bug: this returned https://api-prod.kortix.com unchanged.
-    expect(webDashboardUrl('https://api-prod.kortix.com/v1')).toBe('https://kortix.com');
+  test('prod api host never leaks: api-prod.zed.com → zed.com', () => {
+    // The original bug: this returned https://api-prod.zed.com unchanged.
+    expect(webDashboardUrl('https://api-prod.zed.com/v1')).toBe('https://zed.com');
   });
 
-  test('api. prefix is stripped: api.kortix.com → kortix.com', () => {
-    expect(webDashboardUrl('https://api.kortix.com/v1')).toBe('https://kortix.com');
+  test('api. prefix is stripped: api.zed.com → zed.com', () => {
+    expect(webDashboardUrl('https://api.zed.com/v1')).toBe('https://zed.com');
   });
 
-  test('api-<env> maps to subdomain: api-dev.kortix.com → dev.kortix.com', () => {
-    expect(webDashboardUrl('https://api-dev.kortix.com')).toBe('https://dev.kortix.com');
+  test('api-<env> maps to subdomain: api-dev.zed.com → dev.zed.com', () => {
+    expect(webDashboardUrl('https://api-dev.zed.com')).toBe('https://dev.zed.com');
   });
 
-  test('<env>-api maps to subdomain: dev-api.kortix.com → dev.kortix.com', () => {
-    expect(webDashboardUrl('https://dev-api.kortix.com/v1')).toBe('https://dev.kortix.com');
+  test('<env>-api maps to subdomain: dev-api.zed.com → dev.zed.com', () => {
+    expect(webDashboardUrl('https://dev-api.zed.com/v1')).toBe('https://dev.zed.com');
   });
 
   test('local self-host: api :8008 → dashboard :3000', () => {
     expect(webDashboardUrl('http://localhost:8008')).toBe('http://localhost:3000');
   });
 
-  test('unparseable input falls back to kortix.com', () => {
-    expect(webDashboardUrl('not a url')).toBe('https://kortix.com');
+  test('unparseable input falls back to zed.com', () => {
+    expect(webDashboardUrl('not a url')).toBe('https://zed.com');
   });
 });
 
 describe('webDashboardUrl — authoritative env wins over derivation', () => {
-  test('KORTIX_FRONTEND_URL beats the api host', () => {
-    process.env.KORTIX_FRONTEND_URL = 'https://kortix.com/';
-    expect(webDashboardUrl('https://api-prod.kortix.com/v1')).toBe('https://kortix.com');
+  test('ZED_FRONTEND_URL beats the api host', () => {
+    process.env.ZED_FRONTEND_URL = 'https://zed.com/';
+    expect(webDashboardUrl('https://api-prod.zed.com/v1')).toBe('https://zed.com');
   });
 
-  test('KORTIX_DASHBOARD_URL is honored as a legacy override', () => {
-    process.env.KORTIX_DASHBOARD_URL = 'http://localhost:3001';
+  test('ZED_DASHBOARD_URL is honored as a legacy override', () => {
+    process.env.ZED_DASHBOARD_URL = 'http://localhost:3001';
     expect(webDashboardUrl('http://localhost:8008')).toBe('http://localhost:3001');
   });
 
-  test('KORTIX_FRONTEND_URL from agent-env.sh beats API host when shell did not source it', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'kortix-cli-agent-env-'));
+  test('ZED_FRONTEND_URL from agent-env.sh beats API host when shell did not source it', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'zed-cli-agent-env-'));
     try {
       const envFile = join(dir, 'agent-env.sh');
-      writeFileSync(envFile, "export KORTIX_FRONTEND_URL='https://dev.kortix.com/'\n");
+      writeFileSync(envFile, "export ZED_FRONTEND_URL='https://dev.zed.com/'\n");
       process.env.BASH_ENV = envFile;
-      delete process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE;
+      delete process.env.ZED_DISABLE_SANDBOX_ENV_FILE;
 
-      expect(webDashboardUrl('https://dev-api.kortix.com/v1')).toBe('https://dev.kortix.com');
+      expect(webDashboardUrl('https://dev-api.zed.com/v1')).toBe('https://dev.zed.com');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -74,19 +74,19 @@ describe('webDashboardUrl — authoritative env wins over derivation', () => {
 describe('projectWebUrl / sessionWebUrl', () => {
   test('prefers the server-provided dashboard_url', () => {
     expect(
-      projectWebUrl('https://api-prod.kortix.com/v1', 'p1', 'https://kortix.com/projects/p1'),
-    ).toBe('https://kortix.com/projects/p1');
+      projectWebUrl('https://api-prod.zed.com/v1', 'p1', 'https://zed.com/projects/p1'),
+    ).toBe('https://zed.com/projects/p1');
   });
 
   test('without dashboard_url, derived host still never leaks api-prod', () => {
-    expect(projectWebUrl('https://api-prod.kortix.com/v1', 'p1')).toBe(
-      'https://kortix.com/projects/p1',
+    expect(projectWebUrl('https://api-prod.zed.com/v1', 'p1')).toBe(
+      'https://zed.com/projects/p1',
     );
   });
 
   test('session url is built on the project url', () => {
-    expect(sessionWebUrl('https://api-prod.kortix.com/v1', 'p1', 's1')).toBe(
-      'https://kortix.com/projects/p1/sessions/s1',
+    expect(sessionWebUrl('https://api-prod.zed.com/v1', 'p1', 's1')).toBe(
+      'https://zed.com/projects/p1/sessions/s1',
     );
   });
 });

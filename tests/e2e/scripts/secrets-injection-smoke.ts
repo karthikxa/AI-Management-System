@@ -99,7 +99,7 @@ async function waitForRuntime(): Promise<void> {
   const end = deadline(3 * 60_000);
   let last = '';
   while (Date.now() < end) {
-    const response = await api(`/p/${externalId}/8000/kortix/health`);
+    const response = await api(`/p/${externalId}/8000/zed/health`);
     last = `${response.status} ${response.text.slice(0, 160)}`;
     if (response.status === 200) return;
     await sleep(3_000);
@@ -108,7 +108,7 @@ async function waitForRuntime(): Promise<void> {
 }
 
 async function shellSeesSecret(expected: 'PRESENT' | 'ABSENT', phase: string): Promise<void> {
-  const created = await api(`/p/${externalId}/8000/kortix/pty`, {
+  const created = await api(`/p/${externalId}/8000/zed/pty`, {
     method: 'POST',
     body: JSON.stringify({ env: { TERM: 'xterm-256color' } }),
   });
@@ -121,7 +121,7 @@ async function shellSeesSecret(expected: 'PRESENT' | 'ABSENT', phase: string): P
     ? `if [ "\${${secretName}-}" = '${secretValue}' ]; then printf '${marker}\\n'; else printf 'SECRET_WRONG\\n'; fi\n`
     : `if [ -z "\${${secretName}-}" ]; then printf '${marker}\\n'; else printf 'SECRET_STILL_SET\\n'; fi\n`;
   const wsBase = apiBase.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
-  const wsUrl = `${wsBase}/p/${externalId}/8000/kortix/pty/${encodeURIComponent(ptyId)}/connect?token=${encodeURIComponent(token)}`;
+  const wsUrl = `${wsBase}/p/${externalId}/8000/zed/pty/${encodeURIComponent(ptyId)}/connect?token=${encodeURIComponent(token)}`;
 
   try {
     await new Promise<void>((resolve, reject) => {
@@ -162,7 +162,7 @@ async function shellSeesSecret(expected: 'PRESENT' | 'ABSENT', phase: string): P
     });
     log(`${phase}: ${expected}`);
   } finally {
-    await api(`/p/${externalId}/8000/kortix/pty/${encodeURIComponent(ptyId)}`, {
+    await api(`/p/${externalId}/8000/zed/pty/${encodeURIComponent(ptyId)}`, {
       method: 'DELETE',
     }).catch(() => null);
   }

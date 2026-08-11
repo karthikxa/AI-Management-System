@@ -1,12 +1,12 @@
 import { writeFileSync } from 'node:fs';
-import { downloadAccountAudit, type AuditEvent, type AuditEventList } from '@kortix/sdk';
+import { downloadAccountAudit, type AuditEvent, type AuditEventList } from '@zed/sdk';
 import { loadAuth } from '../api/auth.ts';
 import { activeAccount } from '../api/config.ts';
 import { clientFromAuth, type ApiClient } from '../api/client.ts';
 import { emitJson, surfaceApiError, takeFlagValue, takeFlagBool } from '../command-helpers.ts';
 import { C, help, pad, status } from '../style.ts';
 
-// The account audit trail — the CLI face of `kortix.audit_events`, which the
+// The account audit trail — the CLI face of `zed.audit_events`, which the
 // dashboard already reads. Reads are gated server-side on `audit.read` plus the
 // account's `auditAccess` entitlement, so a non-Enterprise account gets a 402
 // that this command translates instead of printing raw.
@@ -21,7 +21,7 @@ import { C, help, pad, status } from '../style.ts';
 
 type AuditPage = AuditEventList;
 
-const HELP = help`Usage: kortix audit <subcommand> [options]
+const HELP = help`Usage: zed audit <subcommand> [options]
 
 Read the account audit trail — who did what, when, and whether it was allowed.
 Every authenticated API request is recorded, plus semantic session, connector,
@@ -63,12 +63,12 @@ Options:
   -h, --help           Show this help.
 
 Examples:
-  kortix audit ls --since 24h
-  kortix audit ls --outcome denied --since 7d
-  kortix audit ls --action iam. --json
-  kortix audit ls --project <project-id> --all
-  kortix audit session <session-id> --project <project-id>
-  kortix audit export --since 30d --format jsonl --out audit.jsonl
+  zed audit ls --since 24h
+  zed audit ls --outcome denied --since 7d
+  zed audit ls --action iam. --json
+  zed audit ls --project <project-id> --all
+  zed audit session <session-id> --project <project-id>
+  zed audit export --since 30d --format jsonl --out audit.jsonl
 `;
 
 const RELATIVE_SPAN = /^(\d+)\s*(m|h|d|w)$/i;
@@ -144,13 +144,13 @@ interface AuditContext {
 function resolveAccountContext(accountArg?: string): AuditContext | null {
   const auth = loadAuth();
   if (!auth?.token) {
-    process.stderr.write(`${status.err('Not logged in. Run `kortix login`.')}\n`);
+    process.stderr.write(`${status.err('Not logged in. Run `zed login`.')}\n`);
     return null;
   }
   const accountId = accountArg || activeAccount()?.id || auth.account_id || '';
   if (!accountId) {
     process.stderr.write(
-      `${status.err('No active account. Run `kortix accounts use` or pass --account <id>.')}\n`,
+      `${status.err('No active account. Run `zed accounts use` or pass --account <id>.')}\n`,
     );
     return null;
   }
@@ -176,7 +176,7 @@ function surfaceAuditError(err: unknown): number {
       `${status.err('The account audit log is an Enterprise feature and is not enabled for this account.')}\n`,
     );
     process.stderr.write(
-      `  ${C.dim}Per-session agent actions are still available: ${C.reset}kortix audit session <session-id>\n`,
+      `  ${C.dim}Per-session agent actions are still available: ${C.reset}zed audit session <session-id>\n`,
     );
     return 1;
   }

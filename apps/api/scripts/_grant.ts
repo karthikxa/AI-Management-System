@@ -1,5 +1,5 @@
 import { db } from '../src/shared/db';
-import { accountMembers } from '@kortix/db';
+import { accountMembers } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 
 const ACC = 'fbea71d0-9655-4ab4-aca5-1b68e1ae7f71';

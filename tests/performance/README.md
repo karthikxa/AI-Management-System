@@ -1,6 +1,6 @@
 # Performance Tests (k6)
 
-Load, stress, spike, and soak tests for the Kortix API, written for
+Load, stress, spike, and soak tests for the Zed API, written for
 [Grafana k6](https://k6.io) (OSS, Apache-2.0). Everything runs through the
 official `grafana/k6` Docker image — no local k6 install is required.
 
@@ -23,7 +23,7 @@ exercises `GET /health` plus any extra paths in `ENDPOINTS`.
 tests/performance/run.sh load
 
 # custom target
-BASE_URL=https://staging.kortix.example/v1 tests/performance/run.sh stress
+BASE_URL=https://staging.zed.example/v1 tests/performance/run.sh stress
 
 # authenticated endpoints + extra paths to browse
 AUTH_TOKEN=eyJ... ENDPOINTS=/health,/agents,/threads tests/performance/run.sh load

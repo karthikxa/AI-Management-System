@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeEach, mock } from 'bun:test';
 
-// Same harness as `./use-project-secrets.test.ts` / `./use-kortix-master.test.ts`:
+// Same harness as `./use-project-secrets.test.ts` / `./use-zed-master.test.ts`:
 // `useQuery` is mocked to (a) capture the config the hook builds, so the
 // queryKey/enabled/freshness wiring can be asserted without a React render
 // tree, and (b) return a canned `{ data }` so the hook's derivation off that

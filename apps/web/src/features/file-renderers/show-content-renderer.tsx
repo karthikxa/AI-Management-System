@@ -45,7 +45,7 @@ import { getIframeSandbox } from '@/lib/security/iframe-sandbox';
 import { cn } from '@/lib/utils';
 import { isHeicFile } from '@/lib/utils/heic-convert';
 import { isAppRouteUrl, parseLocalhostUrl } from '@/lib/utils/sandbox-url';
-import { buildStaticFileLocalUrl } from '@kortix/sdk';
+import { buildStaticFileLocalUrl } from '@zed/sdk';
 import {
   WarningIcon as AlertTriangle,
   CaretLeftIcon as ChevronLeft,
@@ -255,7 +255,7 @@ export function ShowContentRenderer({
 
   // ── Sandbox file path normalization ──
   // The show tool backend resolves paths to absolute (e.g. /workspace/foo.png).
-  // The /file/raw endpoint on kortix-master accepts absolute paths and validates
+  // The /file/raw endpoint on zed-master accepts absolute paths and validates
   // them against ALLOWED_ROOTS (/workspace, /opt, /tmp, /home).
   // Keep the path absolute — do NOT strip /workspace/ prefix.
   const isLocalPath = path ? isLocalSandboxFilePath(path) : false;

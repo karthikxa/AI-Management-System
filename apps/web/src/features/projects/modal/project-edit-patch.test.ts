@@ -33,7 +33,7 @@ describe('nothing to save', () => {
   });
 
   test('an undefined stored icon also compares equal to a null draft', () => {
-    // `KortixProject.icon` is optional, so a response that simply omits the
+    // `ZedProject.icon` is optional, so a response that simply omits the
     // member arrives as undefined, not null.
     expect(buildProjectEditPatch({ name: 'Atlas' }, { name: 'Atlas', icon: null })).toEqual({
       status: 'unchanged',

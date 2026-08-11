@@ -1,9 +1,9 @@
 /**
- * Kortix system skills — `/v1/skills` (apps/api/src/skills/). Maps 1:1 to spec
- * §0 "Kortix system skills" (SKILL-*).
+ * Zed system skills — `/v1/skills` (apps/api/src/skills/). Maps 1:1 to spec
+ * §0 "Zed system skills" (SKILL-*).
  *
- * These routes are the reason an agent in any harness can drive Kortix with
- * nothing but the `kortix` binary and a token, so the properties worth asserting
+ * These routes are the reason an agent in any harness can drive Zed with
+ * nothing but the `zed` binary and a token, so the properties worth asserting
  * black-box are: authed-not-public, the list is choosable without bodies, the
  * body is complete, and a name/path that is not a managed skill cannot be used
  * to read anything else. Read-only, no fixtures, no sandboxes.
@@ -12,8 +12,8 @@ import { flow } from '../core/flow';
 import type { FlowContext } from '../core/types';
 
 // The one skill guaranteed to exist on every deploy — it is the entry pointer
-// every other Kortix skill and the seeded project scaffold reference by name.
-const KNOWN_SKILL = 'kortix-system';
+// every other Zed skill and the seeded project scaffold reference by name.
+const KNOWN_SKILL = 'zed-system';
 
 async function createProjectPat(ctx: FlowContext, label: string) {
   const project = await ctx.fixtures.project();
@@ -39,7 +39,7 @@ flow('SKILL-1', {
     r.status(401);
   });
   await ctx.step('a PROJECT-scoped PAT can list — this is the in-sandbox agent', async () => {
-    // The `KORTIX_CLI_TOKEN` injected into every sandbox is a project+session
+    // The `ZED_CLI_TOKEN` injected into every sandbox is a project+session
     // scoped PAT, and project-scoped tokens are default-DENIED on surfaces
     // outside /v1/projects/:id. That is the caller these routes exist for, so
     // it is the one that must be asserted here — an owner JWT passing proves
@@ -108,7 +108,7 @@ flow(
     await ctx.step('a name that is not a managed skill → 404', async () => {
       const r = await ctx.client
         .as(ctx.P.OWNER)
-        .get('/v1/skills/:name', { params: { name: 'not-a-kortix-skill' } });
+        .get('/v1/skills/:name', { params: { name: 'not-a-zed-skill' } });
       r.status(404);
     });
   },

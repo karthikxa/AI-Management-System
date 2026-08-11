@@ -43,8 +43,8 @@ import type { MarketplaceItem, MarketplaceItemDetail } from '@/lib/marketplace-c
 import { isManagedGitUnavailableError } from '@/lib/onboarding/ensure-first-project';
 import { useCustomizeStore } from '@/stores/customize-store';
 import { useCurrentAccountStore } from '@/stores/current-account-store';
-import { getManagedGitStatus, listAccounts, provisionProject } from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+import { getManagedGitStatus, listAccounts, provisionProject } from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 import { capabilityCount, hasCapabilities } from './marketplace-install';
 import { useProjectPicker } from './marketplace-project-picker';
 import { prepareMarketplaceInstallSessionNavigation } from './marketplace-session-navigation';
@@ -297,7 +297,7 @@ export function AddToProjectModal({
                     <ul className="mt-2 space-y-1.5">
                       {caps?.secrets.map((s) => (
                         <li key={s} className="flex items-center gap-2.5">
-                          <span className="bg-kortix-yellow/15 text-kortix-yellow flex size-6 shrink-0 items-center justify-center rounded-sm">
+                          <span className="bg-zed-yellow/15 text-zed-yellow flex size-6 shrink-0 items-center justify-center rounded-sm">
                             <KeyRound className="size-3.5" />
                           </span>
                           <span className="text-foreground min-w-0 flex-1 truncate font-mono text-xs">
@@ -310,7 +310,7 @@ export function AddToProjectModal({
                       ))}
                       {caps?.connectors.map((c) => (
                         <li key={c} className="flex items-center gap-2.5">
-                          <span className="bg-kortix-blue/15 text-kortix-blue flex size-6 shrink-0 items-center justify-center rounded-sm">
+                          <span className="bg-zed-blue/15 text-zed-blue flex size-6 shrink-0 items-center justify-center rounded-sm">
                             <Plug className="size-3.5" />
                           </span>
                           <span className="text-foreground min-w-0 flex-1 truncate text-sm">
@@ -323,7 +323,7 @@ export function AddToProjectModal({
                       ))}
                       {caps?.tools.map((t) => (
                         <li key={t} className="flex items-center gap-2.5">
-                          <span className="bg-kortix-orange/15 text-kortix-orange flex size-6 shrink-0 items-center justify-center rounded-sm">
+                          <span className="bg-zed-orange/15 text-zed-orange flex size-6 shrink-0 items-center justify-center rounded-sm">
                             <Wrench className="size-3.5" />
                           </span>
                           <span className="text-foreground min-w-0 flex-1 truncate text-sm">

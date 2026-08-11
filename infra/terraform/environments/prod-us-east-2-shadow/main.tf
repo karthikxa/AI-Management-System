@@ -18,10 +18,10 @@ provider "aws" {
 }
 
 locals {
-  name = "kortix-prod-use2"
+  name = "zed-prod-use2"
   tags = {
     Environment = "prod-use2-shadow"
-    Project     = "kortix"
+    Project     = "zed"
     ManagedBy   = "terraform"
   }
   secrets = {
@@ -48,8 +48,8 @@ module "network" {
 module "certificate" {
   source = "../../modules/acm-cloudflare"
 
-  domain_name               = "*.kortix.com"
-  subject_alternative_names = ["kortix.com"]
+  domain_name               = "*.zed.com"
+  subject_alternative_names = ["zed.com"]
   manage_validation_records = false
   zone_id                   = var.cloudflare_zone_id
   tags = merge(local.tags, {
@@ -74,7 +74,7 @@ module "api" {
   health_check_path = "/health/ready"
   certificate_arn   = module.certificate.certificate_arn
   environment = {
-    KORTIX_VERSION = "0.10.14"
+    ZED_VERSION = "0.10.14"
   }
   secrets          = local.secrets
   secrets_blob_arn = var.secret_arn
@@ -93,7 +93,7 @@ module "api" {
 
   requests_per_target_target = 600
   tags = merge(local.tags, {
-    Service = "kortix-api"
+    Service = "zed-api"
   })
 }
 
@@ -113,8 +113,8 @@ module "gateway" {
   health_check_path = "/health/live"
   certificate_arn   = module.certificate.certificate_arn
   environment = {
-    KORTIX_API_URL = "https://${var.api_shadow_hostname}"
-    KORTIX_VERSION = "0.10.14"
+    ZED_API_URL = "https://${var.api_shadow_hostname}"
+    ZED_VERSION = "0.10.14"
   }
   secrets          = local.secrets
   secrets_blob_arn = var.secret_arn
@@ -132,6 +132,6 @@ module "gateway" {
   memory_target      = 65
 
   tags = merge(local.tags, {
-    Service = "kortix-gateway"
+    Service = "zed-gateway"
   })
 }

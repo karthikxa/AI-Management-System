@@ -1,5 +1,5 @@
-import type { SessionCostSummary } from '@kortix/sdk';
-import { createScopedKortix } from '@kortix/sdk/server';
+import type { SessionCostSummary } from '@zed/sdk';
+import { createScopedZed } from '@zed/sdk/server';
 import { getRequestSession } from '@/server/auth';
 import { consumeRateLimit } from '@/server/rate-limit';
 import { isValidProjectId, listOwnedProjects } from '@/server/users';
@@ -13,7 +13,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function upstreamBase(): string {
-  return (process.env.KORTIX_UPSTREAM ?? 'https://api.kortix.com/v1').replace(
+  return (process.env.ZED_UPSTREAM ?? 'https://api.zed.com/v1').replace(
     /\/+$/,
     '',
   );
@@ -33,14 +33,14 @@ function errorText(error: unknown): string {
 }
 
 async function listProjectSessionCosts(
-  kortix: ReturnType<typeof createScopedKortix>,
+  zed: ReturnType<typeof createScopedZed>,
   projectId: string,
 ): Promise<SessionCostSummary[]> {
   const sessions: SessionCostSummary[] = [];
   let offset: number | null = 0;
 
   while (offset !== null) {
-    const page = await kortix.billing.sessionCosts.list({
+    const page = await zed.billing.sessionCosts.list({
       projectId,
       limit: 100,
       offset,
@@ -53,7 +53,7 @@ async function listProjectSessionCosts(
 }
 
 export async function GET(req: NextRequest) {
-  const apiKey = process.env.KORTIX_API_KEY;
+  const apiKey = process.env.ZED_API_KEY;
   if (!apiKey) {
     return Response.json(
       { error: 'Wrapper mode is not enabled on this server.' },
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
 
   const markup = markupMultiplier();
   const projectIds = listOwnedProjects(session.userId).filter(isValidProjectId);
-  const kortix = createScopedKortix({
+  const zed = createScopedZed({
     backendUrl: upstreamBase(),
     getToken: async () => apiKey,
   });
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
   const projects: SessionCostProject[] = await Promise.all(
     projectIds.map(async (projectId) => {
       try {
-        const sessions = await listProjectSessionCosts(kortix, projectId);
+        const sessions = await listProjectSessionCosts(zed, projectId);
         return {
           projectId,
           sessions: sessions.map((sessionCost) => ({

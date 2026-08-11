@@ -1,8 +1,8 @@
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { and, desc, eq } from 'drizzle-orm';
 import { resolveSandboxIngress } from '../../sandbox-proxy/backend';
 import { db } from '../../shared/db';
-import { KORTIX_SERVICE_CALL_HEADER } from '../../shared/kortix-user-context';
+import { ZED_SERVICE_CALL_HEADER } from '../../shared/zed-user-context';
 import { resolveCommitSha, type GitBackedProject } from '../git';
 
 export interface WarmSessionWorkspaceRefresh {
@@ -84,14 +84,14 @@ export async function refreshWarmSessionWorkspace(
     // proof this is a DIRECT call and not one relayed through the user-facing
     // proxy — which authenticates user traffic with this same service key. The
     // proxy strips this header, so only a direct caller can present it.
-    headers.set(KORTIX_SERVICE_CALL_HEADER, '1');
+    headers.set(ZED_SERVICE_CALL_HEADER, '1');
     const query = new URLSearchParams({
       base: '1',
       base_sha: baseSha,
       restart: '0',
     });
     const response = await dependencies.fetch(
-      `${ingress.url.replace(/\/+$/, '')}/kortix/refresh?${query}`,
+      `${ingress.url.replace(/\/+$/, '')}/zed/refresh?${query}`,
       {
         method: 'POST',
         headers,

@@ -18,21 +18,21 @@ describe('createCorsMiddleware', () => {
     const response = await app.request('/v1/read', {
       method: 'OPTIONS',
       headers: {
-        Origin: 'https://kortix.com',
+        Origin: 'https://zed.com',
         'Access-Control-Request-Method': 'GET',
         'Access-Control-Request-Headers':
-          'authorization,content-type,last-event-id,x-kortix-client',
+          'authorization,content-type,last-event-id,x-zed-client',
       },
     });
 
     expect(response.status).toBe(204);
-    expect(response.headers.get('access-control-allow-origin')).toBe('https://kortix.com');
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://zed.com');
     expect(response.headers.get('access-control-allow-credentials')).toBe('true');
     expect(response.headers.get('access-control-allow-headers')?.toLowerCase()).toContain(
       'last-event-id',
     );
     expect(response.headers.get('access-control-allow-headers')?.toLowerCase()).toContain(
-      'x-kortix-client',
+      'x-zed-client',
     );
     expect(response.headers.get('access-control-max-age')).toBe('600');
   });
@@ -74,12 +74,12 @@ describe('createCorsMiddleware', () => {
       headers: { Origin: 'https://customer.example' },
     });
     const preview = await app.request('/v1/read', {
-      headers: { Origin: 'https://change-123.preview.kortix.com' },
+      headers: { Origin: 'https://change-123.preview.zed.com' },
     });
 
     expect(configured.headers.get('access-control-allow-origin')).toBe('https://customer.example');
     expect(preview.headers.get('access-control-allow-origin')).toBe(
-      'https://change-123.preview.kortix.com',
+      'https://change-123.preview.zed.com',
     );
   });
 });

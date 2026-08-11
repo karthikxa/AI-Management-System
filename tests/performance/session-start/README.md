@@ -9,7 +9,7 @@ opencode boot) and attributes every step a user waits on.
 
 Prereqs: local stack up (`pnpm dev` → API `:8008`, Supabase `:54321`, Postgres
 `:54322`), `psql` on PATH, and the sandbox-agent binary built
-(`cd apps/kortix-sandbox-agent-server && bun run build`).
+(`cd apps/zed-sandbox-agent-server && bun run build`).
 
 ```bash
 cd tests/performance/session-start
@@ -31,9 +31,9 @@ Three independent timelines are lined up so the total is attributable:
    `POST /sessions/:id/start?wait_ms=0` until `stage=ready`, recording the
    `provisioning → starting → ready` transitions and when the sandbox row flips
    to `active` + gets an `external_id`.
-2. **Host `provisionTimeline`** (read from `kortix.session_sandboxes.metadata`):
+2. **Host `provisionTimeline`** (read from `zed.session_sandboxes.metadata`):
    `row+tokens → image-cached|image-built|warm-base → provider-create`.
-3. **In-sandbox `boot_timeline`** (from the daemon `/kortix/health`):
+3. **In-sandbox `boot_timeline`** (from the daemon `/zed/health`):
    `static-web → git-identity → repo-materialized → config-deps →
    opencode-spawned → proxy-up → opencode-session-created → opencode-ready`.
 
@@ -67,7 +67,7 @@ in the CRUD/DB layer (READ ~300ms, LIST ~200ms, PATCH/DELETE ~10ms). The wait is
   (`apps/api/src/snapshots/__tests__/config-deps-version.test.ts`) keeps the
   starter pin in lockstep so it can't drift on the next opencode bump.
 - **Catalog fetch fallback.** The full model catalog is baked to
-  `/opt/kortix/llm-catalog.json`; the daemon now falls back to it (full picker)
+  `/opt/zed/llm-catalog.json`; the daemon now falls back to it (full picker)
   when the gateway `/models` fetch is slow/down, instead of collapsing to ~13
   models. (The live per-account fetch still runs first for correctness.)
 
@@ -92,21 +92,21 @@ Results (`create → running`, 2026-06-28):
 |---|---|---|---|---|---|
 | Daytona **container** @us | ubuntu:22.04 | 20 | 0.8s | **~1.7s** | **21.4s** ⚠️ ~10% spike |
 | Daytona **linux-vm** microVM @us-west-2 | ubuntu:22.04 | 20 | 0.8s | **~1.1s** | **1.4s** |
-| **Platinum** microVM (our platform) @nl-ams | **kortix-default template (our runtime)** | 11 | 0.9s | **~0.96s** | **1.5s** |
+| **Platinum** microVM (our platform) @nl-ams | **zed-default template (our runtime)** | 11 | 0.9s | **~0.96s** | **1.5s** |
 
 - **Platinum is the fastest + most consistent** — and uniquely it ran with OUR
   actual runtime template (the Daytona rows are bare ubuntu, so they'd be slower
   with our heavier image). Platinum (`api.platinum.dev`) is OUR Cloud-Hypervisor
   microVM platform ("14ms warm-start" via CoW fork — not even exercised here; this
   is cold template create). It's reachable, the `pt_live_…` key is valid, and
-  `kortix-default-*` templates are `ready`. It's just **deactivated in routing**
+  `zed-default-*` templates are `ready`. It's just **deactivated in routing**
   (creates currently land on Daytona). `PLATINUM_TEMPLATE` is empty in env but
   templates exist and resolve by id. Run: `platinum-bench.mjs` (PLATINUM_API_URL/
   PLATINUM_API_KEY from dotenvx).
 - **Daytona linux-vm** is ~35% faster than container at the median AND kills the
   tail — the container path produced ~21s `create→running` spikes ~10% of the time
   (the "spike to 30s+ on a 2× retry": our provider's first Daytona `create` hangs
-  to `KORTIX_DAYTONA_CREATE_TIMEOUT_SECONDS=30` then retries). Adopting it needs
+  to `ZED_DAYTONA_CREATE_TIMEOUT_SECONDS=30` then retries). Adopting it needs
   SDK ≥0.192 (repo pins 0.184, no `SandboxClass.LINUX_VM`), our image in a
   **registry** (linux-vm has no declarative builder), + a us-west-2 client.
 
@@ -114,7 +114,7 @@ Results (`create → running`, 2026-06-28):
 
 - **opencode cold start (~2–6s, high variance)** — Bun loading the opencode
   bundle + project init on a cold Daytona runner. Reducing it further needs a
-  patched opencode build (`/usr/local/bin/opencode-kortix`) or more bake-time
+  patched opencode build (`/usr/local/bin/opencode-zed`) or more bake-time
   initialization in the warm snapshot.
 - **Daytona `provider-create` variance / retries** — the largest run-to-run
   swing.

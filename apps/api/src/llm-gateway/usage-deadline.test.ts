@@ -23,7 +23,7 @@ mock.module('../config', () => ({
     {},
     {
       get: (target: Record<PropertyKey, unknown>, key) => {
-        if (key === 'KORTIX_BILLING_INTERNAL_ENABLED') return false;
+        if (key === 'ZED_BILLING_INTERNAL_ENABLED') return false;
         if (key === 'LLM_GATEWAY_DEFAULT_MODEL') return 'claude-sonnet-4.6';
         if (key === 'LLM_GATEWAY_VISION_MODEL') return 'claude-sonnet-4.6';
         if (key === 'LLM_GATEWAY_FALLBACK_POLICIES') return [];
@@ -42,7 +42,7 @@ mock.module('../shared/usage-events', () => ({
 }));
 
 // `../billing/services/credits` is deliberately NOT mocked: with
-// KORTIX_BILLING_INTERNAL_ENABLED false, recordGatewayUsage returns before it
+// ZED_BILLING_INTERNAL_ENABLED false, recordGatewayUsage returns before it
 // reaches the wallet, and a partial stub of that module breaks its other
 // importers (mock.module replaces the whole module, exports and all).
 

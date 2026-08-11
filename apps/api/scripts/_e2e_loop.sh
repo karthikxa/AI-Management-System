@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Kortix session e2e loop: create -> resolve sandbox -> runtimeReady -> verify daemon -> cleanup.
+# Zed session e2e loop: create -> resolve sandbox -> runtimeReady -> verify daemon -> cleanup.
 # Loops until N consecutive fast+healthy runs (or max rounds). FAA: also asserts
 # the daemon is actually serving :8000 in-guest (startup regressions left it dead before).
 set -uo pipefail
@@ -13,7 +13,7 @@ PLATINUM_API_KEY=$(grep '^PLATINUM_API_KEY=' "$DIR/.env.local" 2>/dev/null | hea
 PLATINUM_API_URL=$(grep '^PLATINUM_API_URL=' "$DIR/.env.local" 2>/dev/null | head -1 | cut -d= -f2-)
 PURL="${PLATINUM_API_URL:-https://api.platinum.dev}"
 [ -z "$PLATINUM_API_KEY" ] && { echo "FATAL: no PLATINUM_API_KEY in $DIR/.env.local"; exit 1; }
-psql() { docker exec supabase_db_kortix-local psql -U postgres -tA -c "$1" 2>/dev/null; }
+psql() { docker exec supabase_db_zed-local psql -U postgres -tA -c "$1" 2>/dev/null; }
 nowms() { python3 -c 'import time;print(int(time.time()*1000))'; }   # macOS date lacks %N
 
 ok=0
@@ -27,7 +27,7 @@ for round in $(seq 1 "$MAX"); do
   # resolve sandbox external_id + active status from DB
   ext=""; st=""
   while :; do
-    row=$(psql "select external_id||'|'||status from kortix.session_sandboxes where session_id='$sid';")
+    row=$(psql "select external_id||'|'||status from zed.session_sandboxes where session_id='$sid';")
     ext=${row%%|*}; st=${row##*|}
     [ "$st" = "active" ] && [ -n "$ext" ] && break
     now=$(nowms); [ $(( (now-t0)/1000 )) -ge "$CAP" ] && break
@@ -39,7 +39,7 @@ for round in $(seq 1 "$MAX"); do
   # poll runtimeReady through the comp proxy (the FE path)
   ready=""; health=""
   while :; do
-    health=$(curl -s -m5 "http://localhost:8008/v1/p/$ext/8000/kortix/health" -H "Authorization: Bearer $JWT" 2>/dev/null)
+    health=$(curl -s -m5 "http://localhost:8008/v1/p/$ext/8000/zed/health" -H "Authorization: Bearer $JWT" 2>/dev/null)
     echo "$health" | grep -q '"runtimeReady":true' && { ready=1; break; }
     now=$(nowms); [ $(( (now-t0)/1000 )) -ge "$CAP" ] && break
     sleep 0.25
@@ -62,7 +62,7 @@ EOF
 
   # cleanup: delete the sandbox (self-created) so nothing accumulates
   curl -s -m15 -X DELETE "$PURL/v1/sandboxes/$ext" -H "Authorization: Bearer $PLATINUM_API_KEY" >/dev/null 2>&1
-  psql "delete from kortix.session_sandboxes where session_id='$sid';" >/dev/null 2>&1
+  psql "delete from zed.session_sandboxes where session_id='$sid';" >/dev/null 2>&1
 
   [ "$ok" -ge "$WANT_OK" ] && { echo "PASS: $WANT_OK consecutive healthy runs"; exit 0; }
 done

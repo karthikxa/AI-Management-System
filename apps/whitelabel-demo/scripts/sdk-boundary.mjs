@@ -40,8 +40,8 @@ const RULES = [
     scope: 'all',
     rule: 'direct-runtime-import',
     pattern:
-      /['"]@kortix\/sdk\/(?:event-stream|idb-sync-cache|opencode(?:-[^'"]*)?|sandbox(?:-[^'"]*)?|server-store|session|sync-store)['"]/gi,
-    message: 'Client code must use @kortix/sdk and @kortix/sdk/react only.',
+      /['"]@zed\/sdk\/(?:event-stream|idb-sync-cache|opencode(?:-[^'"]*)?|sandbox(?:-[^'"]*)?|server-store|session|sync-store)['"]/gi,
+    message: 'Client code must use @zed/sdk and @zed/sdk/react only.',
   },
   {
     scope: 'all',
@@ -148,12 +148,12 @@ function rawFetchViolations(source, client) {
       );
     if (!isAllowed) {
       violations.push({
-        rule: 'raw-kortix-fetch',
+        rule: 'raw-zed-fetch',
         index: match.index,
         match: match[0],
         message: client
           ? 'Client fetch is restricted to documented same-origin app routes.'
-          : 'Server Kortix transport must use @kortix/sdk/server.',
+          : 'Server Zed transport must use @zed/sdk/server.',
       });
     }
   }
@@ -200,17 +200,17 @@ export function scanTestSource(source) {
       rule: 'test-sdk-internal-import',
       index: match.index,
       match: match[0],
-      message: 'Application tests must import the public @kortix/sdk surface.',
+      message: 'Application tests must import the public @zed/sdk surface.',
     });
   }
   const directTransportPattern =
-    /\bfetch\s*\([^)]{0,500}\/api\/kortix(?:\/|['"`])/g;
+    /\bfetch\s*\([^)]{0,500}\/api\/zed(?:\/|['"`])/g;
   for (const match of source.matchAll(directTransportPattern)) {
     violations.push({
-      rule: 'test-raw-kortix-transport',
+      rule: 'test-raw-zed-transport',
       index: match.index,
       match: match[0],
-      message: 'Application tests must call Kortix through @kortix/sdk.',
+      message: 'Application tests must call Zed through @zed/sdk.',
     });
   }
   return violations.sort((left, right) => left.index - right.index);

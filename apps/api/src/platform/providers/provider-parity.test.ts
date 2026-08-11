@@ -15,8 +15,8 @@ process.env.DAYTONA_TARGET = 'us';
 process.env.PLATINUM_API_KEY = 'pt_test_key';
 process.env.PLATINUM_API_URL = 'https://api.platinum.test';
 process.env.E2B_API_KEY = 'e2b_test_key';
-process.env.KORTIX_URL = 'https://api.example.com';
-process.env.INTERNAL_KORTIX_ENV = 'dev';
+process.env.ZED_URL = 'https://api.example.com';
+process.env.INTERNAL_ZED_ENV = 'dev';
 process.env.FRONTEND_URL = 'https://app.example.com';
 
 const { KNOWN_PROVIDERS, config } = await import('../../config');

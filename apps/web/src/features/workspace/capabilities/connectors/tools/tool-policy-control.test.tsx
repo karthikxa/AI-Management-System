@@ -44,10 +44,10 @@ describe('ToolPolicyControl', () => {
   test('Allow is green and Ask is yellow — the shipped POLICY_LABEL tints', () => {
     expect(
       render(<ToolPolicyControl value="always_run" onChange={() => {}} label="a" />),
-    ).toContain('text-kortix-green');
+    ).toContain('text-zed-green');
     expect(
       render(<ToolPolicyControl value="require_approval" onChange={() => {}} label="a" />),
-    ).toContain('text-kortix-yellow');
+    ).toContain('text-zed-yellow');
   });
 
   // Following the connector default is a state the user can be IN and a choice
@@ -66,7 +66,7 @@ describe('ToolPolicyControl', () => {
     const [, pressedClass, pressedLabel] = pressed[0]!;
     expect(pressedLabel).toBe('Default');
     expect(pressedClass).toContain('text-muted-foreground');
-    for (const tint of ['text-kortix-green', 'text-kortix-yellow', 'text-destructive']) {
+    for (const tint of ['text-zed-green', 'text-zed-yellow', 'text-destructive']) {
       expect(pressedClass!.split(' ').filter((c) => c === tint)).toEqual([]);
     }
   });

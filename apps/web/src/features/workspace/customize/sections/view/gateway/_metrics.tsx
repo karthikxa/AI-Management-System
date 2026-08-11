@@ -19,20 +19,20 @@ export const RANGES = [
   { days: 90, label: '90d' },
 ];
 
-// Monochrome + one accent: kortix-blue carries the signal, neutrals carry the
+// Monochrome + one accent: zed-blue carries the signal, neutrals carry the
 // secondary series, red is only ever "errors". No yellow/amber/brown chart ramp.
 export const chartConfig = {
-  cost: { label: 'Spend', color: 'var(--kortix-blue)' },
-  requests: { label: 'Requests', color: 'var(--kortix-blue)' },
+  cost: { label: 'Spend', color: 'var(--zed-blue)' },
+  requests: { label: 'Requests', color: 'var(--zed-blue)' },
   errors: { label: 'Errors', color: 'var(--destructive)' },
-  input_tokens: { label: 'Input', color: 'var(--kortix-blue)' },
+  input_tokens: { label: 'Input', color: 'var(--zed-blue)' },
   output_tokens: { label: 'Output', color: 'var(--muted-foreground)' },
   p50: { label: 'p50', color: 'var(--muted-foreground)' },
   p95: {
     label: 'p95',
-    color: 'color-mix(in oklch, var(--kortix-blue) 55%, var(--muted-foreground))',
+    color: 'color-mix(in oklch, var(--zed-blue) 55%, var(--muted-foreground))',
   },
-  p99: { label: 'p99', color: 'var(--kortix-blue)' },
+  p99: { label: 'p99', color: 'var(--zed-blue)' },
 } satisfies ChartConfig;
 
 export function fmtDay(value: string): string {

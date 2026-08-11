@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import {
   deletePersonalProjectSecret,
   deleteProjectProviderOAuth,
@@ -33,7 +33,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 const last = () => calls[calls.length - 1];
 
 test('listProjectSecrets hits GET /projects/:id/secrets and returns the parsed body', async () => {
@@ -53,13 +53,13 @@ test('listProjectSecrets is a silent background read — a 403 never hits the gl
   // project.secret.read is editor-tier: plain members legitimately 403 from
   // member-visible surfaces (model picker, LLM providers). No global toast.
   const onError = mock(() => {});
-  configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok', onError });
+  configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok', onError });
   try {
     nextResponse = { status: 403, body: { message: 'forbidden' } };
     await expect(listProjectSecrets('P1')).rejects.toBeTruthy();
     expect(onError).not.toHaveBeenCalled();
   } finally {
-    configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+    configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
   }
 });
 
@@ -118,7 +118,7 @@ test('setProjectSecretStrategy sends broker policy options', async () => {
   await setProjectSecretStrategy('P1', 'API_KEY', 'broker', {
     consumer: 'http_broker',
     egress_policy: {
-      backend: 'kortix_fetch',
+      backend: 'zed_fetch',
       rules: [{ host: 'api.example.com', methods: ['POST'], path: '/v1/*' }],
       inject: { kind: 'header', name: 'authorization', template: 'Bearer {{secret}}' },
     },
@@ -129,7 +129,7 @@ test('setProjectSecretStrategy sends broker policy options', async () => {
     strategy: 'broker',
     consumer: 'http_broker',
     egress_policy: {
-      backend: 'kortix_fetch',
+      backend: 'zed_fetch',
       rules: [{ host: 'api.example.com', methods: ['POST'], path: '/v1/*' }],
       inject: { kind: 'header', name: 'authorization', template: 'Bearer {{secret}}' },
     },

@@ -8,7 +8,7 @@ const REQUIRED = {
   BACKEND_URL: 'http://localhost:8008/v1',
 };
 
-// Self-host configuration flag: KORTIX_PUBLIC_DISABLE_LANDING_PAGE. Defaults
+// Self-host configuration flag: ZED_PUBLIC_DISABLE_LANDING_PAGE. Defaults
 // to false (a fresh self-host or cloud deployment has the landing page on)
 // and is a boolean by the time it reaches this schema — env-config.ts /
 // public-env-server.ts already did the `=== 'true'` coercion.
@@ -31,22 +31,22 @@ describe('RuntimeEnvSchema — self-host configuration flags', () => {
     expect(env.BILLING_ENABLED).toBe(false);
   });
 });
-// CLOUD-ONLY: Kortix's own managed model lineup ("Managed · Included with
+// CLOUD-ONLY: Zed's own managed model lineup ("Managed · Included with
 // your plan") must never appear on a self-host by default. Mirrors the
-// backend's KORTIX_MANAGED_PROVIDER_ENABLED.
+// backend's ZED_MANAGED_PROVIDER_ENABLED.
 describe('RuntimeEnvSchema — MANAGED_PROVIDER_ENABLED', () => {
   test('defaults false (self-host)', () => {
     const env = parseRuntimeEnv(REQUIRED);
     expect(env.MANAGED_PROVIDER_ENABLED).toBe(false);
   });
 
-  test('flips on when Kortix Cloud sets it true', () => {
+  test('flips on when Zed Cloud sets it true', () => {
     const env = parseRuntimeEnv({ ...REQUIRED, MANAGED_PROVIDER_ENABLED: true });
     expect(env.MANAGED_PROVIDER_ENABLED).toBe(true);
   });
 });
 
-// Self-host account-creation restriction: KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION.
+// Self-host account-creation restriction: ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION.
 // Defaults false (cloud is unaffected); the self-host CLI sets it explicitly
 // via SHARED_FEATURE_FLAG_DEFAULTS.
 describe('RuntimeEnvSchema — RESTRICT_ACCOUNT_CREATION', () => {

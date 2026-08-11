@@ -4,14 +4,14 @@
  *
  * Run (from packages/sdk):  bun run playground/env/32-personal-secrets.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 const NAME = "SDK_PLAYGROUND_PERSONAL_SECRET";
 
 run("personal-secrets", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
-  const secrets = kortix.project(projectId).secrets;
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
+  const secrets = zed.project(projectId).secrets;
 
   await secrets.setPersonal(NAME, { value: "personal-value-from-playground" });
   console.log(`✓ setPersonal(${NAME})`);

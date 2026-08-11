@@ -16,7 +16,7 @@ import { runSessionsConnect } from './sessions-connect.ts';
 import type { Auth } from '../api/auth.ts';
 import { confirm } from '../prompts.ts';
 import { hasEnvTokenHost } from '../api/config.ts';
-import { kortixFromAuth } from '../api/sdk.ts';
+import { zedFromAuth } from '../api/sdk.ts';
 import type { ProjectSession, ProjectSummary } from '../api/types.ts';
 import { C, help, pad, status } from '../style.ts';
 import { sessionWebUrl } from '../web-url.ts';
@@ -34,9 +34,9 @@ import { runSessionsScope } from './sessions-scope.ts';
 import { runSessionsShell } from './sessions-shell.ts';
 import { runSessionsWaitFor } from './sessions-wait.ts';
 
-const HELP = help`Usage: kortix sessions <subcommand> [options]
+const HELP = help`Usage: zed sessions <subcommand> [options]
 
-Manage Kortix project sessions — each session is an isolated sandbox VM
+Manage Zed project sessions — each session is an isolated sandbox VM
 on its own ephemeral branch.
 
 Subcommands:
@@ -338,7 +338,7 @@ async function sessionsLs(opts: CtxOpts, json = false): Promise<number> {
 
   if (sessions.length === 0) {
     process.stdout.write(
-      `  ${C.dim}No sessions yet — start one with \`kortix sessions new\`.${C.reset}\n`,
+      `  ${C.dim}No sessions yet — start one with \`zed sessions new\`.${C.reset}\n`,
     );
     return 0;
   }
@@ -401,7 +401,7 @@ async function sessionsNew(
   // --with-file manifest the CLI appends around them.
   if (prompt) body.title_source = prompt;
   // Explicit caller override — the server otherwise falls back to the
-  // project's declared default agent (kortix.yaml's `default_agent`), or the
+  // project's declared default agent (zed.yaml's `default_agent`), or the
   // non-binding 'default' sentinel when none is configured. See
   // apps/api/src/projects/lib/sessions.ts createProjectSession.
   if (agent) body.agent_name = agent;
@@ -484,7 +484,7 @@ async function sessionsNew(
 
   // Deliver --with-file uploads, then the deferred prompt.
   if (uploads.length > 0) {
-    const files = kortixFromAuth(ctx.auth).session(ctx.projectId, created.session_id).files;
+    const files = zedFromAuth(ctx.auth).session(ctx.projectId, created.session_id).files;
     try {
       for (const u of uploads) {
         const bytes = await readFile(u.local);
@@ -535,11 +535,11 @@ async function sendPromptToSession(
   session: ProjectSession,
   text: string,
 ): Promise<void> {
-  const handle = kortixFromAuth(ctx.auth).session(ctx.projectId, session.session_id);
+  const handle = zedFromAuth(ctx.auth).session(ctx.projectId, session.session_id);
   const ready = await handle.ensureReady();
   // Carry the session's persisted model + agent: an async prompt without them
   // is stored but never processed (OpenCode falls back to its own default
-  // model, which Kortix sandboxes don't provision).
+  // model, which Zed sandboxes don't provision).
   const defaults = sessionPromptDefaults(session);
   const result = await handle.runtime.session.promptAsync({
     sessionID: ready.opencodeSessionId,
@@ -587,7 +587,7 @@ async function prepareClientCreatedBranch(
     );
     if (detail) process.stderr.write(`  ${C.dim}${detail.split('\n').join('\n  ')}${C.reset}\n`);
     process.stderr.write(
-      `  ${C.dim}Run ${C.reset}${C.cyan}kortix ship${C.reset}${C.dim} first, then retry.${C.reset}\n`,
+      `  ${C.dim}Run ${C.reset}${C.cyan}zed ship${C.reset}${C.dim} first, then retry.${C.reset}\n`,
     );
     return 'error';
   }
@@ -610,7 +610,7 @@ async function sessionsInfo(
   const located = await locateSessionAnywhere(
     sessionId,
     opts,
-    (host) => `kortix sessions info ${sessionId} --host ${host}`,
+    (host) => `zed sessions info ${sessionId} --host ${host}`,
   );
   if (!located) return 1;
   const s = located.located.session;
@@ -659,7 +659,7 @@ async function sessionsPreview(
   const located = await locateSessionAnywhere(
     sessionId,
     opts,
-    (host) => `kortix sessions preview ${sessionId} --port ${port} --host ${host}`,
+    (host) => `zed sessions preview ${sessionId} --port ${port} --host ${host}`,
   );
   if (!located) return 1;
   const { session: s, auth } = located.located;
@@ -678,7 +678,7 @@ async function sessionsPreview(
   }
   const ext = m[1];
   const base = new URL(auth.api_base);
-  // Kortix subdomain preview: served at root (so SPA/Next assets resolve), the
+  // Zed subdomain preview: served at root (so SPA/Next assets resolve), the
   // `?token` authorizes the subdomain (in-memory TTL) and sets a cookie for
   // subsequent asset requests. `*.localhost` resolves to 127.0.0.1 in browsers.
   const scheme = base.protocol.replace(':', '');
@@ -703,7 +703,7 @@ async function sessionsRestart(sessionId: string | undefined, opts: CtxOpts): Pr
   const located = await locateSessionAnywhere(
     sessionId,
     opts,
-    (host) => `kortix sessions restart ${sessionId} --host ${host}`,
+    (host) => `zed sessions restart ${sessionId} --host ${host}`,
   );
   if (!located) return 1;
   const canonicalSessionId = located.located.session.session_id;
@@ -762,7 +762,7 @@ async function sessionsReload(
   const located = await locateSessionAnywhere(
     sessionId,
     opts,
-    (host) => `kortix sessions reload ${sessionId} --host ${host}`,
+    (host) => `zed sessions reload ${sessionId} --host ${host}`,
   );
   if (!located) return 1;
   const { client, projectId, session } = located.located;
@@ -793,7 +793,7 @@ async function sessionsReload(
       }
       process.stdout.write(
         state.stale
-          ? `${status.warn(`Behind — running ${C.bold}${state.running_etag}${C.reset}, latest is ${C.bold}${state.latest_etag}${C.reset}. Run \`kortix sessions reload ${shortId(sessionId)}\`.`)}\n`
+          ? `${status.warn(`Behind — running ${C.bold}${state.running_etag}${C.reset}, latest is ${C.bold}${state.latest_etag}${C.reset}. Run \`zed sessions reload ${shortId(sessionId)}\`.`)}\n`
           : `${status.ok(`Up to date (${state.running_etag}).`)}\n`,
       );
       return 0;
@@ -858,7 +858,7 @@ async function sessionsRename(
   const located = await locateSessionAnywhere(
     sessionId,
     opts,
-    (host) => `kortix sessions rename ${sessionId} "${name}" --host ${host}`,
+    (host) => `zed sessions rename ${sessionId} "${name}" --host ${host}`,
   );
   if (!located) return 1;
   const canonicalSessionId = located.located.session.session_id;
@@ -891,7 +891,7 @@ async function sessionsRm(sessionId: string | undefined, opts: CtxOpts): Promise
   const located = await locateSessionAnywhere(
     sessionId,
     opts,
-    (host) => `kortix sessions rm ${sessionId} --host ${host}`,
+    (host) => `zed sessions rm ${sessionId} --host ${host}`,
   );
   if (!located) return 1;
   const canonicalSessionId = located.located.session.session_id;
@@ -915,7 +915,7 @@ async function sessionsOpen(sessionId: string | undefined, opts: CtxOpts): Promi
   const located = await locateSessionAnywhere(
     sessionId,
     opts,
-    (host) => `kortix sessions open ${sessionId} --host ${host}`,
+    (host) => `zed sessions open ${sessionId} --host ${host}`,
   );
   if (!located) return 1;
   const url = sessionWebUrl(

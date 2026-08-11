@@ -4,7 +4,7 @@
 set lock_timeout = '2s';
 set statement_timeout = '30s';
 
--- Backend-only per-session secrets allowlist (Kortix-as-a-Backend): a jsonb
+-- Backend-only per-session secrets allowlist (Zed-as-a-Backend): a jsonb
 -- array of project-secret IDENTIFIERS this session may receive. Set once by a
 -- backend-origin caller at create, immutable afterward; the injected sandbox
 -- env is NARROWED to (agent-grant set) INTERSECT (this allowlist) at both boot
@@ -15,5 +15,5 @@ set statement_timeout = '30s';
 --       rewrite, no backfill. null = no restriction (pre-KaaB behavior).
 --   [x] No CHECK/FK/unique/index -- read only by the session PK lookup.
 
-ALTER TABLE "kortix"."project_sessions"
+ALTER TABLE "zed"."project_sessions"
   ADD COLUMN "secrets_allowlist" jsonb;

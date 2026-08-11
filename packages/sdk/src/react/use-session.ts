@@ -8,7 +8,7 @@
  * canonical OpenCode id, and syncs messages — exposing one `phase`
  * (starting|ready|error) plus messages/send/abort/questions/permissions and the
  * server-side capabilities (models/agents/commands/picks). The host imports
- * `createKortix` + `useSession` and NOTHING else runtime-related: no server-store,
+ * `createZed` + `useSession` and NOTHING else runtime-related: no server-store,
  * no `switchToSessionSandboxAsync`, no health poller, no event-stream provider.
  *
  * Readiness comes from the SERVER (`stage==='ready'` is only returned after the
@@ -287,11 +287,11 @@ export const SESSION_START_POLL_OPTIONS = {
 // case; failures are surfaced as this typed union instead.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Discriminant for `KortixSendError` — what kind of failure interrupted a send. */
-export type KortixSendErrorKind = 'billing' | 'connector' | 'runtime-not-ready' | 'runtime-error';
+/** Discriminant for `ZedSendError` — what kind of failure interrupted a send. */
+export type ZedSendErrorKind = 'billing' | 'connector' | 'runtime-not-ready' | 'runtime-error';
 
 /** One connector the session needs and has no usable connection for. */
-export interface KortixSendErrorConnector {
+export interface ZedSendErrorConnector {
   id: string;
   slug: string;
   name: string;
@@ -306,8 +306,8 @@ export interface KortixSendErrorConnector {
 
 /** Typed failure surfaced by `send` (via `sendError`) and thrown by
  * `answerQuestion`/`rejectQuestion`/`answerPermission`. */
-export interface KortixSendError {
-  kind: KortixSendErrorKind;
+export interface ZedSendError {
+  kind: ZedSendErrorKind;
   /** Human-readable message, already formatted for display. */
   message: string;
   /** Present when `kind === 'billing'` — the parsed 402 detail. */
@@ -321,7 +321,7 @@ export interface KortixSendError {
    * into a generic `runtime-error`, and the host could only show "something went
    * wrong" for the one failure that has an obvious remedy.
    */
-  connectors?: KortixSendErrorConnector[];
+  connectors?: ZedSendErrorConnector[];
   /**
    * Present when `kind === 'runtime-error'` and the failure carries the LLM
    * gateway's structured error envelope (provider/code/suggestion/...) — see
@@ -402,13 +402,13 @@ function errorBodyMessage(error: unknown): string | null {
  * A refusal that names no connection still returns null — a connector prompt that
  * cannot say which connector is worse than the generic error it replaced.
  */
-function connectorRefusalConnections(error: unknown): KortixSendErrorConnector[] | null {
+function connectorRefusalConnections(error: unknown): ZedSendErrorConnector[] | null {
   const body = errorBody(error);
   if (body?.code !== 'CONNECTOR_CONNECTION_REQUIRED') return null;
   const listed = [body.connector_connections, body.connectorConnections].find(Array.isArray) as
     | unknown[]
     | undefined;
-  const connections: KortixSendErrorConnector[] = [];
+  const connections: ZedSendErrorConnector[] = [];
   for (const entry of listed ?? []) {
     if (!entry || typeof entry !== 'object') continue;
     const connection = entry as Record<string, unknown>;
@@ -427,8 +427,8 @@ function connectorRefusalConnections(error: unknown): KortixSendErrorConnector[]
 }
 
 /** Classify a thrown/rejected error from a send or a permission/question reply
- * into a `KortixSendError`. Pure — safe to unit test without a runtime. */
-export function classifySendError(error: unknown): KortixSendError {
+ * into a `ZedSendError`. Pure — safe to unit test without a runtime. */
+export function classifySendError(error: unknown): ZedSendError {
   if (
     error instanceof RuntimeNotReadyError ||
     (error instanceof Error && error.message.includes(RUNTIME_NOT_READY_MARKER))
@@ -492,7 +492,7 @@ export interface SendState {
   /** Pending optimistic message text, or null. */
   pending: string | null;
   /** Last send failure, or null. Reset on every new `send` call. */
-  sendError: KortixSendError | null;
+  sendError: ZedSendError | null;
 }
 
 export interface SessionCommandOptions {
@@ -578,7 +578,7 @@ export async function restoreOpenCodeSessionRewind(sessionId: string): Promise<v
 /**
  * Answer an agent question through the session's runtime and drop it from
  * local pending state — but only once the server has actually accepted the
- * reply. On failure the question stays pending and a `KortixSendError` is
+ * reply. On failure the question stays pending and a `ZedSendError` is
  * thrown.
  */
 export async function answerQuestion(requestId: string, answers: string[][]): Promise<void> {
@@ -630,7 +630,7 @@ export interface UseSessionOptions {
    */
   enabled?: boolean;
   /**
-   * A server-authorized OpenCode session pin associated with this Kortix
+   * A server-authorized OpenCode session pin associated with this Zed
    * session. The `/start` response remains authoritative.
    */
   initialOpenCodeSessionId?: string | null;
@@ -830,14 +830,14 @@ export function useSession(projectId: string, sessionId: string, options: UseSes
   // a falsy/non-canonical session id) — and use a fixed, type-stable empty
   // result instead of whatever it happens to return for that starved call.
   const rawSync = useSessionSync(chatEngine ? ocSessionId : '', {
-    kortixSessionScope: `${projectId}/${sessionId}`,
+    zedSessionScope: `${projectId}/${sessionId}`,
     networkEnabled: switched,
   });
   const sync = chatEngine ? rawSync : DISABLED_CHAT_ENGINE_SYNC;
   const runtimePhase = useRuntimePhase();
   const [restRewind, setRestRewind] = useState<SessionRewindState | null>(null);
   const [rewindPending, setRewindPending] = useState(false);
-  const [rewindError, setRewindError] = useState<KortixSendError | null>(null);
+  const [rewindError, setRewindError] = useState<ZedSendError | null>(null);
   const rewindMessageId = restRewind?.staged ? restRewind.messageId : null;
   const messages = useMemo(
     () => messagesBeforeRewind(sync.messages, restRewind?.messageId ?? null),
@@ -1158,7 +1158,7 @@ export function useSession(projectId: string, sessionId: string, options: UseSes
     cancel,
     runCommand,
     /** Answer an agent question through the server and drop it from pending
-     * state on success; throws a `KortixSendError` and leaves it pending on
+     * state on success; throws a `ZedSendError` and leaves it pending on
      * failure. */
     answerQuestion,
     /** Reject an agent question through the server (see `answerQuestion`). */

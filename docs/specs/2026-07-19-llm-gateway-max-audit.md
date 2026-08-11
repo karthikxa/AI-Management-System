@@ -1,14 +1,14 @@
 # LLM Gateway — routing/fallback/cost/latency/evals audit + proposal
 
 > Goal §1: *LLM Gateway to the max: optimal routing, fallbacks, cost/latency-aware.
-> Evals/benchmarks become part of the Kortix core system.*
+> Evals/benchmarks become part of the Zed core system.*
 >
 > Status: SCOPING (Mirko AGI cycle 35, 2026-07-19). This doc audits the current
 > gateway against the goal and proposes the attack sequence.
 
 ## What's already built (solid foundation)
 
-The `@kortix/llm-gateway` package (`packages/llm-gateway/src/`) is a mature,
+The `@zed/llm-gateway` package (`packages/llm-gateway/src/`) is a mature,
 well-structured gateway:
 
 ### Resilience — production-grade

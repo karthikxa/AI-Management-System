@@ -11,13 +11,13 @@ const ORIGINAL_STDOUT_WRITE = process.stdout.write;
 const ORIGINAL_STDERR_WRITE = process.stderr.write;
 
 const ENV_KEYS = [
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_AUTH_FILE',
+  'ZED_CLI_TOKEN',
+  'ZED_TOKEN',
+  'ZED_API_URL',
+  'ZED_PROJECT_ID',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CONFIG_FILE',
+  'ZED_AUTH_FILE',
 ] as const;
 
 let saved: Record<string, string | undefined>;
@@ -95,7 +95,7 @@ function writeConfig(): void {
     }),
     'utf8',
   );
-  process.env.KORTIX_CONFIG_FILE = file;
+  process.env.ZED_CONFIG_FILE = file;
 }
 
 function captureOutput() {
@@ -141,7 +141,7 @@ function mockApi() {
         optional: manifestOptional,
         can_manage: true,
         manifest_status: 'loaded',
-        manifest_path: 'kortix.yaml',
+        manifest_path: 'zed.yaml',
       });
     }
     if (url.includes('/projects/proj_1/secrets/') && url.endsWith('/broker') && method === 'POST') {
@@ -189,10 +189,10 @@ beforeEach(() => {
     saved[key] = process.env[key];
     delete process.env[key];
   }
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
-  process.env.KORTIX_PROJECT_ID = 'proj_1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_PROJECT_ID = 'proj_1';
   originalCwd = process.cwd();
-  tmp = mkdtempSync(join(tmpdir(), 'kortix-secrets-test-'));
+  tmp = mkdtempSync(join(tmpdir(), 'zed-secrets-test-'));
   process.chdir(tmp);
   writeConfig();
   captureOutput();
@@ -245,7 +245,7 @@ function objectBody(request: (typeof requests)[number]): Record<string, unknown>
   return request.body as Record<string, unknown>;
 }
 
-describe('kortix secrets set — identifier', () => {
+describe('zed secrets set — identifier', () => {
   test('KEY=VALUE with no identifier posts {name,value}, identifier defaults server-side', async () => {
     const code = await runSecrets(['set', 'STRIPE_API_KEY=sk_live_1']);
     expect(code).toBe(0);
@@ -307,7 +307,7 @@ describe('kortix secrets set — identifier', () => {
   });
 });
 
-describe('kortix secrets sync — verified delivery', () => {
+describe('zed secrets sync — verified delivery', () => {
   test('reports verified exports instead of formatting a boolean as a count', async () => {
     const code = await runSecrets(['sync']);
 
@@ -394,7 +394,7 @@ describe('kortix secrets sync — verified delivery', () => {
   });
 });
 
-describe('kortix secrets ls — identifier-first', () => {
+describe('zed secrets ls — identifier-first', () => {
   test('lists a secret by identifier and shows → key when they differ', async () => {
     secretItems = [
       { identifier: 'GMAPS-primary', name: 'GOOGLE_MAPS_API_KEY' },
@@ -525,7 +525,7 @@ describe('kortix secrets ls — identifier-first', () => {
   });
 });
 
-describe('kortix secrets delivery', () => {
+describe('zed secrets delivery', () => {
   test('changes a secret to denied delivery', async () => {
     const code = await runSecrets(['delivery', 'ANTHROPIC_API_KEY', 'denied']);
     expect(code).toBe(0);
@@ -569,7 +569,7 @@ describe('kortix secrets delivery', () => {
       strategy: 'broker',
       consumer: 'http_broker',
       egress_policy: {
-        backend: 'kortix_fetch',
+        backend: 'zed_fetch',
         rules: [
           { host: 'api.anthropic.com', methods: ['POST'], path: '/v1/*' },
           { host: '*.anthropic.com', methods: ['POST'], path: '/v1/*' },
@@ -683,7 +683,7 @@ describe('kortix secrets delivery', () => {
   });
 });
 
-describe('kortix secrets call', () => {
+describe('zed secrets call', () => {
   test('sends a broker request through the SDK and prints the decoded response', async () => {
     const code = await runSecrets([
       'call',
@@ -759,7 +759,7 @@ describe('kortix secrets call', () => {
   });
 });
 
-describe('kortix secrets unset — by identifier', () => {
+describe('zed secrets unset — by identifier', () => {
   test('deletes by identifier', async () => {
     const code = await runSecrets(['unset', 'GMAPS-backup']);
     expect(code).toBe(0);

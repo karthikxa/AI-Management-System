@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Fast iteration — build only the current host's target and symlink
-# `bundle/kortix → bundle/kortix-<host>` so you can run `./bundle/kortix …`.
+# `bundle/zed → bundle/zed-<host>` so you can run `./bundle/zed …`.
 set -euo pipefail
 
 HERE="$(dirname "${BASH_SOURCE[0]}")"
@@ -26,13 +26,13 @@ if [[ ! -f "$SCRIPT" ]]; then
 fi
 
 bash "$SCRIPT"
-link_host "kortix-${OS}-${ARCH}"
+link_host "zed-${OS}-${ARCH}"
 
 # Print a path the user can actually paste. pnpm cd's into the package
 # dir before running scripts, so $PWD here is apps/cli — not where the
 # user typed `pnpm cli:bundle`. pnpm preserves the original cwd in
 # $INIT_CWD; prefer that when present.
-BIN_ABS="$OUT_DIR/kortix"
+BIN_ABS="$OUT_DIR/zed"
 USER_CWD="${INIT_CWD:-$PWD}"
 if command -v python3 >/dev/null 2>&1; then
   REL="$(python3 -c "import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))" "$BIN_ABS" "$USER_CWD")"

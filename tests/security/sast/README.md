@@ -20,7 +20,7 @@ This **complements** the existing GitHub CodeQL workflow
 - **CodeQL** runs in CI on PRs/schedule with deep taint dataflow analysis and
   publishes to the repo Security tab. Slow, thorough, GitHub-hosted.
 - **Semgrep** runs fast, locally/in any CI, with editable pattern rules that
-  encode Kortix-specific anti-patterns. Quick feedback loop and portable SARIF.
+  encode Zed-specific anti-patterns. Quick feedback loop and portable SARIF.
 
 Running both gives broad-pattern + deep-dataflow coverage. Both emit SARIF so
 findings can be merged into one code-scanning view.

@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test';
 
-// Self-host default: KORTIX_MANAGED_PROVIDER_ENABLED is OFF. This file boots
+// Self-host default: ZED_MANAGED_PROVIDER_ENABLED is OFF. This file boots
 // the gateway's real (unmocked) descriptors/resolve-candidates/catalog/picker
 // modules against that config so every consumer of the managed lineup is
 // exercised end to end. No managed models are served. No managed candidates
@@ -17,8 +17,8 @@ mock.module('../../config', () => ({
     {
       get: (target: Record<PropertyKey, unknown>, key) => {
         if (Object.hasOwn(target, key)) return target[key];
-        if (key === 'KORTIX_MANAGED_PROVIDER_ENABLED') return false;
-        if (key === 'KORTIX_BILLING_INTERNAL_ENABLED') return false;
+        if (key === 'ZED_MANAGED_PROVIDER_ENABLED') return false;
+        if (key === 'ZED_BILLING_INTERNAL_ENABLED') return false;
         if (key === 'LLM_GATEWAY_ENABLED') return true;
         if (key === 'LLM_GATEWAY_DEFAULT_ENABLED') return false;
         if (key === 'LLM_GATEWAY_MANAGED_MODELS') return undefined;
@@ -79,7 +79,7 @@ mock.module('../../projects/secrets', () => ({
 
 mock.module('../credentials/codex', () => ({
   // Not a self-host managed-provider concern (Codex routes through the
-  // caller's own ChatGPT OAuth credential, never Kortix's shared creds) —
+  // caller's own ChatGPT OAuth credential, never Zed's shared creds) —
   // stubbed purely so importing the REAL descriptors.ts/resolve-candidates.ts
   // below doesn't pull in the real module's DB import chain.
   CHATGPT_CODEX_BASE_URL: 'https://chatgpt.com/backend-api/codex',
@@ -106,7 +106,7 @@ const FAKE_MANAGED_MODEL = {
   limit: { context: 200_000, output: 32_000 },
 };
 
-describe('managed provider disabled (KORTIX_MANAGED_PROVIDER_ENABLED=false, the self-host default)', () => {
+describe('managed provider disabled (ZED_MANAGED_PROVIDER_ENABLED=false, the self-host default)', () => {
   test('the managed registry is empty — the single choke point every consumer reads through', () => {
     expect(RUNTIME_MANAGED_MODELS).toEqual([]);
     expect(isRuntimeManagedModelId('claude-sonnet-4.6')).toBe(false);
@@ -137,7 +137,7 @@ describe('managed provider disabled (KORTIX_MANAGED_PROVIDER_ENABLED=false, the 
     expect(asterKeyReads).toBe(0);
   });
 
-  test('a request explicitly naming a managed model resolves to NO candidates — never a silent fallback to Kortix credits', async () => {
+  test('a request explicitly naming a managed model resolves to NO candidates — never a silent fallback to Zed credits', async () => {
     await expect(
       resolveCandidates(
         { userId: 'u-managed', accountId: 'a-managed', projectId: 'p-managed' },

@@ -14,13 +14,13 @@ describe('entityDirectory', () => {
   test('a root-level file has no directory', () => {
     expect(entityDirectory('AGENTS.md')).toBe('');
   });
-  // Real project data (`.kortix/opencode/skills/<name>/SKILL.md`) uses a
+  // Real project data (`.zed/opencode/skills/<name>/SKILL.md`) uses a
   // different prefix than the `.opencode/skill/` shape above — the function
   // must derive the directory from whatever prefix the path actually carries,
   // never assume one.
-  test('works for the real .kortix/opencode/skills prefix', () => {
-    expect(entityDirectory('.kortix/opencode/skills/docx/SKILL.md')).toBe(
-      '.kortix/opencode/skills/docx',
+  test('works for the real .zed/opencode/skills prefix', () => {
+    expect(entityDirectory('.zed/opencode/skills/docx/SKILL.md')).toBe(
+      '.zed/opencode/skills/docx',
     );
   });
 });
@@ -60,7 +60,7 @@ describe('buildFileTree', () => {
   });
 
   // Real fixture: the `docx` skill, 12 files across three depths
-  // (`.kortix/opencode/skills/docx/…`, `scripts/…`, `scripts/templates/…`).
+  // (`.zed/opencode/skills/docx/…`, `scripts/…`, `scripts/templates/…`).
   // Confirmed live in the browser against this exact skill (task-5 review):
   // sorting the joined path as one string put `scripts/templates/comments.xml`
   // (depth 2) ahead of its own sibling `scripts/unpack.py` (depth 1) —
@@ -68,7 +68,7 @@ describe('buildFileTree', () => {
   // reading as orphaned. `compareSegments` fixes this: a file sorts before
   // its own directory's subdirectories, regardless of alphabetical value.
   test('sorts a three-depth tree so each directory groups its own files before its subdirectories', () => {
-    const realDir = '.kortix/opencode/skills/docx';
+    const realDir = '.zed/opencode/skills/docx';
     const paths = [
       `${realDir}/CREATION.md`,
       `${realDir}/EDITING.md`,
@@ -111,7 +111,7 @@ describe('buildFileTree', () => {
 
 describe('isMarkdownPath', () => {
   test('.md and .markdown files are markdown', () => {
-    expect(isMarkdownPath('.kortix/opencode/skills/docx/SKILL.md')).toBe(true);
+    expect(isMarkdownPath('.zed/opencode/skills/docx/SKILL.md')).toBe(true);
     expect(isMarkdownPath('README.markdown')).toBe(true);
   });
   test('everything else is not', () => {

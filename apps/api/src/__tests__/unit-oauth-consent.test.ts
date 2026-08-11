@@ -5,7 +5,7 @@ import {
   accountMembers,
   oauthAuthorizationCodes,
   oauthClients,
-} from '@kortix/db';
+} from '@zed/db';
 
 const USER_ID = '00000000-0000-4000-a000-000000000001';
 const ACCOUNT_ID = '00000000-0000-4000-a000-000000000101';

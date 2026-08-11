@@ -365,8 +365,8 @@ flow(
 // docs/specs/2026-07-05-agent-first-config-unification.md §2.2). GET reports the
 // agent's full block + the manifest schema version (the UI's v1-vs-v2 branch);
 // PUT replaces the whole block, validating it through the manifest-schema
-// validator before the kortix.yaml commit. A bare provisioned project now
-// synthesizes a v2 manifest (synthesizeBlankManifest, kortix_version 2 — see
+// validator before the zed.yaml commit. A bare provisioned project now
+// synthesizes a v2 manifest (synthesizeBlankManifest, zed_version 2 — see
 // PR #4980), so GET reports schema_version 2 and editable:true. PUT still
 // validates the block shape strictly: a body with unrecognized top-level keys
 // (or a bad enum) is refused with a 400; the editor-tier gate holds.
@@ -389,7 +389,7 @@ flow(
         const r = await ctx.client
           .as(ctx.P.OWNER)
           .get('/v1/projects/:projectId/agents/:agentName/config', {
-            params: { projectId: project.id, agentName: 'kortix' },
+            params: { projectId: project.id, agentName: 'zed' },
           });
         r.status(200).body().has('$.schema_version', 2).has('$.editable', true);
       },
@@ -401,7 +401,7 @@ flow(
         .put(
           '/v1/projects/:projectId/agents/:agentName/config',
           { mode: 'primary', description: 'Support', temperature: 0.2 },
-          { params: { projectId: project.id, agentName: 'kortix' } },
+          { params: { projectId: project.id, agentName: 'zed' } },
         );
       r.status(400);
     });
@@ -412,7 +412,7 @@ flow(
         .put(
           '/v1/projects/:projectId/agents/:agentName/config',
           { mode: 'supervisor' },
-          { params: { projectId: project.id, agentName: 'kortix' } },
+          { params: { projectId: project.id, agentName: 'zed' } },
         );
       r.status(400);
     });
@@ -424,7 +424,7 @@ flow(
         const r = await ctx.client
           .as(bare)
           .get('/v1/projects/:projectId/agents/:agentName/config', {
-            params: { projectId: project.id, agentName: 'kortix' },
+            params: { projectId: project.id, agentName: 'zed' },
           });
         r.status(403);
       },
@@ -682,7 +682,7 @@ flow(
       r.status(400);
     });
     await ctx.step('a valid minimal v2 manifest → 200 valid:true', async () => {
-      const raw = 'kortix_version: 2\ndefault_agent: kortix\nagents:\n  kortix: {}\n';
+      const raw = 'zed_version: 2\ndefault_agent: zed\nagents:\n  zed: {}\n';
       const r = await ctx.client
         .as(ctx.P.OWNER)
         .post(
@@ -695,7 +695,7 @@ flow(
     await ctx.step(
       'a broken manifest (default_agent not declared) → 200 valid:false with issues',
       async () => {
-        const raw = 'kortix_version: 2\ndefault_agent: does-not-exist\nagents:\n  kortix: {}\n';
+        const raw = 'zed_version: 2\ndefault_agent: does-not-exist\nagents:\n  zed: {}\n';
         const r = await ctx.client
           .as(ctx.P.OWNER)
           .post(
@@ -711,7 +711,7 @@ flow(
         .as(ctx.P.NONMEMBER)
         .post(
           '/v1/projects/:projectId/manifest/validate',
-          { raw: 'kortix_version: 2\n', format: 'yaml' },
+          { raw: 'zed_version: 2\n', format: 'yaml' },
           { params: { projectId: p.id } },
         );
       r.status([403, 404]);
@@ -719,10 +719,10 @@ flow(
   },
 );
 
-// PROJ-30 — set the project default agent. `kortix.yaml.default_agent` is
+// PROJ-30 — set the project default agent. `zed.yaml.default_agent` is
 // durable truth; project.metadata.default_agent mirrors it for reads. A fresh
-// provisioned project now synthesizes a blank v2 manifest with a `kortix`
-// agent already declared (see PROJ-19), so setting it back to `kortix` is a
+// provisioned project now synthesizes a blank v2 manifest with a `zed`
+// agent already declared (see PROJ-19), so setting it back to `zed` is a
 // safe, real no-op write (still commits to git) that proves the success path.
 flow(
   'PROJ-30',
@@ -733,15 +733,15 @@ flow(
   },
   async (ctx) => {
     const p = await ctx.fixtures.project({ seed: true });
-    await ctx.step("set default agent to the existing 'kortix' agent → 200", async () => {
+    await ctx.step("set default agent to the existing 'zed' agent → 200", async () => {
       const r = await ctx.client
         .as(ctx.P.OWNER)
         .put(
           '/v1/projects/:projectId/default-agent',
-          { agent: 'kortix' },
+          { agent: 'zed' },
           { params: { projectId: p.id } },
         );
-      r.status(200).body().has('$.ok', true).has('$.default_agent', 'kortix');
+      r.status(200).body().has('$.ok', true).has('$.default_agent', 'zed');
     });
     await ctx.step('unknown agent name → 400', async () => {
       const r = await ctx.client
@@ -768,7 +768,7 @@ flow(
         .as(ctx.P.NONMEMBER)
         .put(
           '/v1/projects/:projectId/default-agent',
-          { agent: 'kortix' },
+          { agent: 'zed' },
           { params: { projectId: p.id } },
         );
       r.status([403, 404]);

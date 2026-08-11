@@ -4,17 +4,17 @@
  *
  * Run (from packages/sdk):  bun run playground/sandbox/23-sandbox.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("sandbox", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
-  const project = kortix.project(projectId);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
+  const project = zed.project(projectId);
 
-  const health = await kortix.projects.sandboxHealth(projectId);
+  const health = await zed.projects.sandboxHealth(projectId);
   console.log(`✓ sandboxHealth(): ${JSON.stringify(health).slice(0, 250)}…`);
 
-  const templates = await kortix.projects.sandboxTemplates(projectId);
+  const templates = await zed.projects.sandboxTemplates(projectId);
   console.log(
     `✓ sandboxTemplates(): ${JSON.stringify(templates).slice(0, 250)}…`,
   );

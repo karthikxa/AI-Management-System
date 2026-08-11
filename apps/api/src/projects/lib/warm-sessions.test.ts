@@ -9,7 +9,7 @@ function record(overrides: Partial<WarmProjectSessionRecord> = {}): WarmProjectS
     sessionId: 'session-1',
     status: 'running',
     baseRef: 'main',
-    agentName: 'kortix',
+    agentName: 'zed',
     metadata: {
       warm_session: {
         state: 'available',
@@ -39,7 +39,7 @@ describe('warm project session coordinator', () => {
 
     const result = await coordinator.ensure({
       baseRef: 'main',
-      agentName: 'kortix',
+      agentName: 'zed',
       sandboxSlug: 'default',
     });
 
@@ -65,7 +65,7 @@ describe('warm project session coordinator', () => {
 
     const result = await coordinator.ensure({
       baseRef: 'main',
-      agentName: 'kortix',
+      agentName: 'zed',
       sandboxSlug: 'default',
     });
 
@@ -95,7 +95,7 @@ describe('warm project session coordinator', () => {
 
     const result = await coordinator.ensure({
       baseRef: 'main',
-      agentName: 'kortix',
+      agentName: 'zed',
       sandboxSlug: 'default',
     });
 
@@ -130,7 +130,7 @@ describe('warm project session coordinator', () => {
 
     const result = await coordinator.ensure({
       baseRef: 'main',
-      agentName: 'kortix',
+      agentName: 'zed',
       sandboxSlug: 'default',
     });
 
@@ -207,7 +207,7 @@ describe('warm project session coordinator', () => {
 
     const configuration = {
       baseRef: 'main',
-      agentName: 'kortix',
+      agentName: 'zed',
       sandboxSlug: 'default',
     };
     const [first, second] = await Promise.all([
@@ -246,7 +246,7 @@ describe('warm project session coordinator', () => {
 
     const result = await coordinator.claim({
       sessionId: 'session-1',
-      agentName: 'kortix',
+      agentName: 'zed',
       sandboxSlug: 'default',
     });
 
@@ -265,7 +265,7 @@ describe('warm project session coordinator', () => {
     await expect(
       coordinator.claim({
         sessionId: 'session-1',
-        agentName: 'kortix',
+        agentName: 'zed',
         sandboxSlug: 'large',
       }),
     ).rejects.toMatchObject({

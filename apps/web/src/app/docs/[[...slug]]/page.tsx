@@ -35,7 +35,7 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
   const breadcrumbs = getBreadcrumbItems(page.url, tree);
   // `page.path` is the loader's virtualized path relative to the content
   // directory (e.g. `sdk/getting-started.mdx`).
-  const editUrl = `https://github.com/kortix-ai/suna/blob/main/apps/web/content/docs/${page.path}`;
+  const editUrl = `https://github.com/zed-ai/suna/blob/main/apps/web/content/docs/${page.path}`;
   // Same derivation as `sourceDocuments()` in `@/lib/seo/public-content.ts`:
   // strip the `.mdx` extension, then collapse a nested `<dir>/index` down to
   // `<dir>` (a bare `index` — the docs root — has no leading slash to strip,
@@ -157,16 +157,16 @@ export async function generateMetadata(props: {
   const page = source.getPage(slug);
   if (!page) return {};
 
-  // `absolute` opts out of the root `%s | Kortix` template so the title never
-  // doubles up. The docs index frontmatter title is "Kortix", so collapse that
-  // case to just "Kortix Docs" instead of "Kortix | Kortix Docs | Kortix".
+  // `absolute` opts out of the root `%s | Zed` template so the title never
+  // doubles up. The docs index frontmatter title is "Zed", so collapse that
+  // case to just "Zed Docs" instead of "Zed | Zed Docs | Zed".
   const pageTitle = page.data.title?.trim();
   const title =
-    pageTitle && pageTitle.toLowerCase() !== 'kortix'
-      ? `${pageTitle} – Kortix Docs`
-      : 'Kortix Docs';
+    pageTitle && pageTitle.toLowerCase() !== 'zed'
+      ? `${pageTitle} – Zed Docs`
+      : 'Zed Docs';
 
-  const description = page.data.description ?? 'Kortix developer documentation.';
+  const description = page.data.description ?? 'Zed developer documentation.';
   const url = `${CANONICAL_ORIGIN}${page.url}`;
   return {
     title: { absolute: title },

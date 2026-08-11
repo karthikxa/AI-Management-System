@@ -1,4 +1,4 @@
-import type { ModelFallbackPolicy } from '@kortix/llm-gateway';
+import type { ModelFallbackPolicy } from '@zed/llm-gateway';
 import { z } from 'zod';
 
 const fallbackPolicySchema = z.object({

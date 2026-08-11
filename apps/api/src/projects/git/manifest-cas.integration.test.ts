@@ -34,15 +34,15 @@ async function waitForFile(path: string): Promise<void> {
 }
 
 beforeEach(async () => {
-  testRoot = await mkdtemp(join(tmpdir(), 'kortix-manifest-cas-'));
+  testRoot = await mkdtemp(join(tmpdir(), 'zed-manifest-cas-'));
   remotePath = join(testRoot, 'remote.git');
   seedPath = join(testRoot, 'seed');
   await git(['init', '--bare', remotePath]);
   await git(['init', '--initial-branch=main', seedPath]);
-  await git(['config', 'user.name', 'Kortix Test'], seedPath);
-  await git(['config', 'user.email', 'test@kortix.invalid'], seedPath);
-  await writeFile(join(seedPath, 'kortix.yaml'), 'kortix_version: 2\nconnectors: []\n');
-  await git(['add', 'kortix.yaml'], seedPath);
+  await git(['config', 'user.name', 'Zed Test'], seedPath);
+  await git(['config', 'user.email', 'test@zed.invalid'], seedPath);
+  await writeFile(join(seedPath, 'zed.yaml'), 'zed_version: 2\nconnectors: []\n');
+  await git(['add', 'zed.yaml'], seedPath);
   await git(['commit', '-m', 'seed manifest'], seedPath);
   await git(['remote', 'add', 'origin', remotePath], seedPath);
   await git(['push', 'origin', 'main'], seedPath);
@@ -52,7 +52,7 @@ beforeEach(async () => {
     projectId: `manifest-cas-${crypto.randomUUID()}`,
     repoUrl: remotePath,
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     gitAuthToken: 'local-test',
   };
 });
@@ -79,11 +79,11 @@ describe('manifest file compare-and-swap', () => {
     expect(
       await commitManifest(project as Parameters<typeof commitManifest>[0], stale, 'stale write'),
     ).toEqual({
-      error: 'File "kortix.yaml" changed since it was read',
+      error: 'File "zed.yaml" changed since it was read',
       status: 409,
     });
 
-    expect(await git(['--git-dir', remotePath, 'show', 'main:kortix.yaml'])).toContain(
+    expect(await git(['--git-dir', remotePath, 'show', 'main:zed.yaml'])).toContain(
       'slug: first',
     );
   });
@@ -96,14 +96,14 @@ describe('manifest file compare-and-swap', () => {
     await commitMultipleFilesToBranch(project, {
       files: [
         {
-          path: 'kortix.yaml',
-          content: 'kortix_version: 2\nconnectors:\n  - slug: first\n    provider: http\n',
+          path: 'zed.yaml',
+          content: 'zed_version: 2\nconnectors:\n  - slug: first\n    provider: http\n',
         },
-        { path: '.kortix/opencode/agents/default.md', content: 'first behavior\n' },
+        { path: '.zed/opencode/agents/default.md', content: 'first behavior\n' },
       ],
       message: 'first multi-file write',
       expectedFileRevision: {
-        path: 'kortix.yaml',
+        path: 'zed.yaml',
         sha: original.revision,
         candidatePaths: original.candidatePaths,
       },
@@ -113,48 +113,48 @@ describe('manifest file compare-and-swap', () => {
       commitMultipleFilesToBranch(project, {
         files: [
           {
-            path: 'kortix.yaml',
-            content: 'kortix_version: 2\nconnectors:\n  - slug: stale\n    provider: http\n',
+            path: 'zed.yaml',
+            content: 'zed_version: 2\nconnectors:\n  - slug: stale\n    provider: http\n',
           },
-          { path: '.kortix/opencode/agents/default.md', content: 'stale behavior\n' },
+          { path: '.zed/opencode/agents/default.md', content: 'stale behavior\n' },
         ],
         message: 'stale multi-file write',
         expectedFileRevision: {
-          path: 'kortix.yaml',
+          path: 'zed.yaml',
           sha: original.revision,
           candidatePaths: original.candidatePaths,
         },
       }),
     ).rejects.toBeInstanceOf(GitFileRevisionConflictError);
 
-    expect(await git(['--git-dir', remotePath, 'show', 'main:kortix.yaml'])).toContain(
+    expect(await git(['--git-dir', remotePath, 'show', 'main:zed.yaml'])).toContain(
       'slug: first',
     );
     expect(
-      await git(['--git-dir', remotePath, 'show', 'main:.kortix/opencode/agents/default.md']),
+      await git(['--git-dir', remotePath, 'show', 'main:.zed/opencode/agents/default.md']),
     ).toBe('first behavior');
   });
 
   test('rejects a write when a higher-priority manifest appears', async () => {
-    await git(['rm', 'kortix.yaml'], seedPath);
+    await git(['rm', 'zed.yaml'], seedPath);
     await writeFile(
-      join(seedPath, 'kortix.toml'),
-      'kortix_version = 1\n[project]\nname = "initial"\n',
+      join(seedPath, 'zed.toml'),
+      'zed_version = 1\n[project]\nname = "initial"\n',
     );
-    await git(['add', 'kortix.toml'], seedPath);
+    await git(['add', 'zed.toml'], seedPath);
     await git(['commit', '-m', 'switch to toml'], seedPath);
     await git(['push', 'origin', 'main'], seedPath);
 
     const original = await readManifest(project);
-    expect(original?.path).toBe('kortix.toml');
-    expect(original?.candidatePaths).toEqual(['kortix.yaml', 'kortix.yml', 'kortix.toml']);
+    expect(original?.path).toBe('zed.toml');
+    expect(original?.candidatePaths).toEqual(['zed.yaml', 'zed.yml', 'zed.toml']);
     if (!original) throw new Error('Expected the TOML manifest');
 
     await writeFile(
-      join(seedPath, 'kortix.yaml'),
-      'kortix_version: 2\nproject:\n  name: concurrent\nconnectors: []\n',
+      join(seedPath, 'zed.yaml'),
+      'zed_version: 2\nproject:\n  name: concurrent\nconnectors: []\n',
     );
-    await git(['add', 'kortix.yaml'], seedPath);
+    await git(['add', 'zed.yaml'], seedPath);
     await git(['commit', '-m', 'add higher priority manifest'], seedPath);
     await git(['push', 'origin', 'main'], seedPath);
 
@@ -163,14 +163,14 @@ describe('manifest file compare-and-swap', () => {
     expect(
       await commitManifest(project as Parameters<typeof commitManifest>[0], stale, 'stale write'),
     ).toEqual({
-      error: 'File "kortix.toml" changed since it was read',
+      error: 'File "zed.toml" changed since it was read',
       status: 409,
     });
 
-    expect(await git(['--git-dir', remotePath, 'show', 'main:kortix.yaml'])).toContain(
+    expect(await git(['--git-dir', remotePath, 'show', 'main:zed.yaml'])).toContain(
       'name: concurrent',
     );
-    expect(await git(['--git-dir', remotePath, 'show', 'main:kortix.toml'])).toContain(
+    expect(await git(['--git-dir', remotePath, 'show', 'main:zed.toml'])).toContain(
       'name = "initial"',
     );
   });
@@ -207,7 +207,7 @@ describe('manifest file compare-and-swap', () => {
     expect(results.filter((result) => 'ok' in result)).toHaveLength(1);
     expect(results.filter((result) => 'status' in result && result.status === 409)).toHaveLength(1);
 
-    const remoteManifest = await git(['--git-dir', remotePath, 'show', 'main:kortix.yaml']);
+    const remoteManifest = await git(['--git-dir', remotePath, 'show', 'main:zed.yaml']);
     const winner = remoteManifest.includes('slug: first') ? 'first' : 'second';
     const losingProject = results[0] && 'status' in results[0] ? firstProject : secondProject;
     const warmRead = await readManifest(losingProject);
@@ -244,7 +244,7 @@ describe('manifest file compare-and-swap', () => {
 
     expect(visibleDuringPush?.raw.connectors).toEqual([]);
     expect(await commit).toMatchObject({ status: 502 });
-    expect(await git(['--git-dir', remotePath, 'show', 'main:kortix.yaml'])).not.toContain(
+    expect(await git(['--git-dir', remotePath, 'show', 'main:zed.yaml'])).not.toContain(
       'never-landed',
     );
     expect((await readManifest(project))?.raw.connectors).toEqual([]);

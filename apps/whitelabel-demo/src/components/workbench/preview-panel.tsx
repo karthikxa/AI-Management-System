@@ -47,10 +47,10 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getApiKey, kortix } from '@/lib/kortix';
+import { getApiKey, zed } from '@/lib/zed';
 import { getSessionToken } from '@/lib/session';
 import { cn } from '@/lib/utils';
-import type { SessionPublicShare } from '@kortix/sdk';
+import type { SessionPublicShare } from '@zed/sdk';
 
 // Session sharing intent — a subset of the SDK's ConnectorSharing union that
 // needs no extra ids (private requires an ownerId, so it's omitted here).
@@ -141,7 +141,7 @@ export function PreviewPanel({
 }) {
   const qc = useQueryClient();
   const wrapperMode = useWrapperMode();
-  const session = useMemo(() => kortix.session(projectId, sessionId), [projectId, sessionId]);
+  const session = useMemo(() => zed.session(projectId, sessionId), [projectId, sessionId]);
 
   const previewsKey = ['session-previews', projectId, sessionId];
   const sharesKey = ['session-shares', projectId, sessionId];

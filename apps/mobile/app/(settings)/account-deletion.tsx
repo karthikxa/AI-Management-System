@@ -9,7 +9,7 @@ import { Icon } from '@/components/ui/icon';
 import { Trash2, Calendar, AlertTriangle, CheckCircle, Zap, Clock, Info } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { haptics } from '@/lib/haptics';
-import { KortixLoader } from '@/components/ui';
+import { ZedLoader } from '@/components/ui';
 import {
   useAccountDeletionStatus,
   useRequestAccountDeletion,
@@ -467,7 +467,7 @@ function ActionButton({
     >
       {isLoading ? (
         <>
-          <KortixLoader size="small" forceTheme={colorScheme === 'dark' ? 'dark' : 'light'} />
+          <ZedLoader size="small" forceTheme={colorScheme === 'dark' ? 'dark' : 'light'} />
           <Text className={`${textColor} text-sm font-roobert-medium`}>
             {t('accountDeletion.processing')}
           </Text>

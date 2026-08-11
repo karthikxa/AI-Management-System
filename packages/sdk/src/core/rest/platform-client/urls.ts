@@ -20,7 +20,7 @@ export function getSandboxUrl(sandbox: SandboxInfo): string {
     );
   }
 
-  return `${getPlatformUrl()}/p/${sandbox.external_id}/${SANDBOX_PORTS.KORTIX_MASTER}`;
+  return `${getPlatformUrl()}/p/${sandbox.external_id}/${SANDBOX_PORTS.ZED_MASTER}`;
 }
 
 /**

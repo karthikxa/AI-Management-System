@@ -7,14 +7,14 @@
 # LiveKit's build service builds this image and runs the worker for us; we host
 # nothing. The build context is apps/voice-agent ITSELF, not the repo root —
 # unlike every other Dockerfile here. That works only because this app has NO
-# @kortix/* workspace dependencies (just @livekit/* and zod), so it installs
+# @zed/* workspace dependencies (just @livekit/* and zod), so it installs
 # standalone. If a workspace dep is ever added, this build breaks; the fix is to
 # switch to a repo-root context with a synthetic workspace the way
 # apps/llm-gateway/Dockerfile does it, not to paper over it.
 #
 # No secrets are baked in and none are needed at runtime: LiveKit Cloud injects
 # LIVEKIT_URL / LIVEKIT_API_KEY / LIVEKIT_API_SECRET itself, every model runs
-# through LiveKit Inference, and the per-call Kortix API URL and token arrive in
+# through LiveKit Inference, and the per-call Zed API URL and token arrive in
 # LiveKit job metadata. `lk agent create` can be run with an empty secret set.
 
 ARG BUN_VERSION=1.2
@@ -36,10 +36,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Surfaced in logs so it is obvious which build is live.
-ARG KORTIX_VERSION=dev
-ARG KORTIX_COMMIT=unknown
-ENV KORTIX_VERSION=${KORTIX_VERSION}
-ENV KORTIX_COMMIT=${KORTIX_COMMIT}
+ARG ZED_VERSION=dev
+ARG ZED_COMMIT=unknown
+ENV ZED_VERSION=${ZED_VERSION}
+ENV ZED_COMMIT=${ZED_COMMIT}
 
 # package.json "main" points at src, so bun runs the TypeScript directly —
 # no build step, same as apps/llm-gateway.

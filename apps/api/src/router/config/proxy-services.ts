@@ -34,15 +34,15 @@ export interface ProxyServiceConfig {
   name: string;
   /** Real upstream base URL (e.g. "https://api.tavily.com") — used for passthrough (Mode 2/3) */
   targetBaseUrl: string;
-  /** Alternate upstream base URL for Kortix-managed requests (Mode 1). Falls back to targetBaseUrl. */
-  kortixTargetBaseUrl?: string;
-  /** Kortix-owned API key for this upstream service */
-  getKortixApiKey: () => string;
+  /** Alternate upstream base URL for Zed-managed requests (Mode 1). Falls back to targetBaseUrl. */
+  zedTargetBaseUrl?: string;
+  /** Zed-owned API key for this upstream service */
+  getZedApiKey: () => string;
   /** How to inject the API key into upstream requests (passthrough) */
   keyInjection: KeyInjectionMethod;
-  /** Alternate key injection for Kortix-managed requests (Mode 1). Falls back to keyInjection. */
-  kortixKeyInjection?: KeyInjectionMethod;
-  /** Only these routes are allowed when using Kortix's key (prevents cost abuse) */
+  /** Alternate key injection for Zed-managed requests (Mode 1). Falls back to keyInjection. */
+  zedKeyInjection?: KeyInjectionMethod;
+  /** Only these routes are allowed when using Zed's key (prevents cost abuse) */
   allowedRoutes: AllowedRoute[];
   /** Default tool name for billing attribution (can be overridden per-route) */
   billingToolName: string;
@@ -61,7 +61,7 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
     tavily: {
       name: 'tavily',
       targetBaseUrl: config.TAVILY_API_URL,
-      getKortixApiKey: () => config.TAVILY_API_KEY,
+      getZedApiKey: () => config.TAVILY_API_KEY,
       keyInjection: { type: 'json_body_field', field: 'api_key' },
       allowedRoutes: [
         { path: '/search', methods: ['POST'] },
@@ -72,7 +72,7 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
     serper: {
       name: 'serper',
       targetBaseUrl: config.SERPER_API_URL,
-      getKortixApiKey: () => config.SERPER_API_KEY,
+      getZedApiKey: () => config.SERPER_API_KEY,
       keyInjection: { type: 'header', headerName: 'X-API-KEY' },
       allowedRoutes: [
         { path: '/search', methods: ['POST'] },
@@ -86,14 +86,14 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
 
     // People search (Apify — LinkedIn profile search actor). Powers the sandbox
     // `people_search` tool: a marketplace opt-in (not default-included), billed
-    // to the account via Kortix's APIFY_TOKEN when installed; users can also
+    // to the account via Zed's APIFY_TOKEN when installed; users can also
     // bring their own APIFY_TOKEN (passthrough).
     // Locked to the one pinned actor's run endpoint so the shared key can't run
     // arbitrary (billable) Apify actors.
     apify: {
       name: 'apify',
       targetBaseUrl: config.APIFY_API_URL,
-      getKortixApiKey: () => config.APIFY_TOKEN,
+      getZedApiKey: () => config.APIFY_TOKEN,
       keyInjection: { type: 'header', headerName: 'Authorization', prefix: 'Bearer ' },
       allowedRoutes: [
         { path: '/v2/acts/harvestapi~linkedin-profile-search/run-sync-get-dataset-items', methods: ['POST'] },
@@ -104,7 +104,7 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
     firecrawl: {
       name: 'firecrawl',
       targetBaseUrl: config.FIRECRAWL_API_URL,
-      getKortixApiKey: () => config.FIRECRAWL_API_KEY,
+      getZedApiKey: () => config.FIRECRAWL_API_KEY,
       keyInjection: { type: 'header', headerName: 'Authorization', prefix: 'Bearer ' },
       allowedRoutes: [
         { path: '/v1/scrape', methods: ['POST'] },
@@ -123,7 +123,7 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
     replicate: {
       name: 'replicate',
       targetBaseUrl: config.REPLICATE_API_URL,
-      getKortixApiKey: () => config.REPLICATE_API_TOKEN,
+      getZedApiKey: () => config.REPLICATE_API_TOKEN,
       keyInjection: { type: 'header', headerName: 'Authorization', prefix: 'Token ' },
       allowedRoutes: [
         // Allowed models — locked to specific models, each with own billing.
@@ -153,7 +153,7 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
         },
         // Polling for a created prediction's result (`GET /predictions/{id}`). Cheap and
         // gated by the create step above (you can only poll predictions you created with
-        // Kortix's key), so it's billed at zero.
+        // Zed's key), so it's billed at zero.
         {
           path: '/predictions',
           methods: ['GET'],
@@ -167,7 +167,7 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
     context7: {
       name: 'context7',
       targetBaseUrl: config.CONTEXT7_API_URL,
-      getKortixApiKey: () => config.CONTEXT7_API_KEY,
+      getZedApiKey: () => config.CONTEXT7_API_KEY,
       keyInjection: { type: 'header', headerName: 'Authorization', prefix: 'Bearer ' },
       allowedRoutes: [
         { path: '/api/v2/libs/search', methods: ['GET', 'POST'] },
@@ -179,22 +179,22 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
     // ─── LLM Providers ─────────────────────────────────────────────────────
     //
     // Dual-mode:
-    // - Kortix-managed (Mode 1): uses Kortix-owned provider keys.
+    // - Zed-managed (Mode 1): uses Zed-owned provider keys.
     //   Anthropic/OpenAI go direct to native providers.
     //   xAI/Gemini/Groq route through OpenRouter.
     // - Passthrough (Mode 2): forwards the user's own API key to the real
     //   upstream provider for platform-fee billing.
     //
-    // Mode 1 (Kortix token in auth): inject provider key configured in service
-    // Mode 2 (user key + X-Kortix-Token): passthrough to real provider
+    // Mode 1 (Zed token in auth): inject provider key configured in service
+    // Mode 2 (user key + X-Zed-Token): passthrough to real provider
     //
     // The proxy handler picks targetBaseUrl for Mode 2/3 and
-    // kortixTargetBaseUrl for Mode 1 (when present).
+    // zedTargetBaseUrl for Mode 1 (when present).
 
     anthropic: {
       name: 'anthropic',
       targetBaseUrl: config.ANTHROPIC_API_URL,   // https://api.anthropic.com/v1
-      getKortixApiKey: () => config.ANTHROPIC_API_KEY,
+      getZedApiKey: () => config.ANTHROPIC_API_KEY,
       keyInjection: { type: 'header', headerName: 'x-api-key' },
       allowedRoutes: [
         { path: '/messages', methods: ['POST'] },
@@ -206,7 +206,7 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
     openai: {
       name: 'openai',
       targetBaseUrl: config.OPENAI_API_URL,      // https://api.openai.com/v1
-      getKortixApiKey: () => config.OPENAI_API_KEY,
+      getZedApiKey: () => config.OPENAI_API_KEY,
       keyInjection: { type: 'header', headerName: 'Authorization', prefix: 'Bearer ' },
       allowedRoutes: [
         { path: '/chat/completions', methods: ['POST'] },
@@ -219,8 +219,8 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
     xai: {
       name: 'xai',
       targetBaseUrl: config.XAI_API_URL,         // https://api.x.ai/v1
-      kortixTargetBaseUrl: config.OPENROUTER_API_URL,
-      getKortixApiKey: () => config.OPENROUTER_API_KEY,
+      zedTargetBaseUrl: config.OPENROUTER_API_URL,
+      getZedApiKey: () => config.OPENROUTER_API_KEY,
       keyInjection: { type: 'header', headerName: 'Authorization', prefix: 'Bearer ' },
       allowedRoutes: [
         { path: '/chat/completions', methods: ['POST'] },
@@ -232,8 +232,8 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
     gemini: {
       name: 'gemini',
       targetBaseUrl: config.GEMINI_API_URL,      // https://generativelanguage.googleapis.com/v1beta
-      kortixTargetBaseUrl: config.OPENROUTER_API_URL,
-      getKortixApiKey: () => config.OPENROUTER_API_KEY,
+      zedTargetBaseUrl: config.OPENROUTER_API_URL,
+      getZedApiKey: () => config.OPENROUTER_API_KEY,
       keyInjection: { type: 'header', headerName: 'Authorization', prefix: 'Bearer ' },
       allowedRoutes: [
         { path: '/chat/completions', methods: ['POST'] },
@@ -245,8 +245,8 @@ export function getProxyServices(): Record<string, ProxyServiceConfig> {
     groq: {
       name: 'groq',
       targetBaseUrl: config.GROQ_API_URL,        // https://api.groq.com/openai/v1
-      kortixTargetBaseUrl: config.OPENROUTER_API_URL,
-      getKortixApiKey: () => config.OPENROUTER_API_KEY,
+      zedTargetBaseUrl: config.OPENROUTER_API_URL,
+      getZedApiKey: () => config.OPENROUTER_API_KEY,
       keyInjection: { type: 'header', headerName: 'Authorization', prefix: 'Bearer ' },
       allowedRoutes: [
         { path: '/chat/completions', methods: ['POST'] },

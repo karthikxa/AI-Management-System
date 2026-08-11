@@ -2,7 +2,7 @@
  * Pure rules for the Slack-as-a-first-class-channel consolidation. No DB / git
  * imports so they're cheap to unit test. Used by:
  *   - db-deps.ts      → hide a superseded user `slack` connector from listings
- *   - channel-manifest.ts → declare/undeclare the channel connector in kortix.yaml
+ *   - channel-manifest.ts → declare/undeclare the channel connector in zed.yaml
  */
 import { SLACK_RESERVED_SLUG, type ChannelPlatform } from '../projects/connectors';
 
@@ -20,7 +20,7 @@ function isChannelFor(e: Entry, platform: ChannelPlatform): boolean {
 
 /**
  * Slack is a first-class channel connector. When a project has BOTH the
- * platform-owned Slack channel (`kortix_slack`) AND a legacy user-defined
+ * platform-owned Slack channel (`zed_slack`) AND a legacy user-defined
  * `slack` connector (e.g. a Pipedream Slack added before the picker hid it, like
  * older projects still carry), hide the legacy one so there's exactly one
  * "Slack". Native Slack actions already route to the channel (gateway
@@ -60,7 +60,7 @@ export function withChannelDeclaration(
   if (!connectors.some((e) => e?.slug === slug)) {
     // `name` gives the connector a human label ("Slack") so the dashboard shows
     // it as a normal connector — without it the parser falls back to the slug
-    // ("kortix_slack"). Set only on the freshly-added entry so a later user
+    // ("zed_slack"). Set only on the freshly-added entry so a later user
     // rename is never clobbered on reconcile.
     connectors.push({ slug, provider: 'channel', platform, ...(name ? { name } : {}) });
     changed = true;

@@ -8,7 +8,7 @@
  *   - POST    /v1/p/share         combinedAuth → create a share link
  *   - DELETE  /v1/p/share/:token  combinedAuth → revoke a share link
  *
- * /v1/p/auth validates the Authorization Bearer (kortix_ token OR Supabase JWT)
+ * /v1/p/auth validates the Authorization Bearer (zed_ token OR Supabase JWT)
  * and on success sets the cookie. Missing/invalid → 401. We do NOT fabricate a
  * sandbox: the OWNER JWT is a *valid identity* so /auth accepts it (200) even
  * though no preview context is implied; ANON (no header) → 401.

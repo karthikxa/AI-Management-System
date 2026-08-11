@@ -81,7 +81,7 @@
     "guest": {
       "label": "Invitado",
       "title": "Browse Without\nan Account",
-      "description": "Try Kortix with limited features. No signup required!",
+      "description": "Try Zed with limited features. No signup required!",
       "continue": "Continue as Guest",
       "signUp": "Sign Up Instead",
       "agreement": "By continuing, you agree to our",
@@ -99,7 +99,7 @@
     "resetFailed": "No pudimos enviar el email. Intenta de nuevo.",
     "passwordsDontMatch": "Las contraseñas no coinciden",
     "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
-    "welcomeTitle": "Contrata Kortix para",
+    "welcomeTitle": "Contrata Zed para",
     "rotatingPhrases": {
       "presentations": "presentaciones",
       "writing": "redacción",
@@ -138,12 +138,12 @@
     "browseAsGuest": "Navegar como invitado"
   },
   "onboarding": {
-    "welcome": "Descubre lo que Kortix puede hacer",
+    "welcome": "Descubre lo que Zed puede hacer",
     "welcomeSubtitle": "Tu asistente IA que toma acción",
     "skip": "Saltar",
     "next": "Siguiente",
     "getStarted": "Comenzar",
-    "kortixComputer": "Kortix Computer",
+    "zedComputer": "Zed Computer",
     "ready": "Listo",
     "examples": {
       "presentations": {
@@ -265,8 +265,8 @@
   },
   "chat": {
     "newChat": "Nuevo Chat",
-    "placeholder": "Dale a Kortix una tarea...",
-    "inputPlaceholder": "Pregúntale a Kortix cualquier cosa...",
+    "placeholder": "Dale a Zed una tarea...",
+    "inputPlaceholder": "Pregúntale a Zed cualquier cosa...",
     "recording": "Grabando...",
     "cancelRecording": "Cancelar grabación",
     "stopRecording": "Detener grabación",
@@ -279,7 +279,7 @@
     "rateThisResult": "Califica este resultado",
     "feedbackHelpsImprove": "Tu comentario nos ayuda a mejorar",
     "additionalFeedbackOptional": "Comentario adicional (opcional)",
-    "helpKortixImprove": "Ayuda a Kortix a mejorar con mi comentario",
+    "helpZedImprove": "Ayuda a Zed a mejorar con mi comentario",
     "submit": "Enviar",
     "submitting": "Enviando...",
     "suggestedFollowUps": "Sugerencias de seguimiento",
@@ -294,7 +294,7 @@
     "newWorker": "Nuevo Worker",
     "myWorkers": "Mis Workers",
     "searchAgents": "Buscar workers",
-    "defaultAgent": "Kortix",
+    "defaultAgent": "Zed",
     "defaultDescription": "IA para todo tipo de tareas",
     "superWorker": "Super Worker",
     "coder": "Coder",
@@ -512,8 +512,8 @@
   "billing": {
     "loadingPaywall": "Cargando planes...",
     "checkoutUnavailable": "Checkout móvil no disponible",
-    "checkoutUnavailableMessage": "Para suscribirte a un plan, visita kortix.com en la web.",
-    "goToWeb": "Ir a kortix.com",
+    "checkoutUnavailableMessage": "Para suscribirte a un plan, visita zed.com en la web.",
+    "goToWeb": "Ir a zed.com",
     "billingStatus": "Estado de Facturación",
     "loading": "Cargando información de facturación...",
     "error": "Error al cargar información de facturación",
@@ -562,12 +562,12 @@
   "beta": {
     "title": "Funciones Beta",
     "webSupportTitle": "Totalmente Compatible en Web",
-    "webSupportDescription": "Disponible en Kortix.com. Próximamente en móvil—aún en desarrollo aquí.",
-    "visitKortix": "Visitar Kortix.com",
+    "webSupportDescription": "Disponible en Zed.com. Próximamente en móvil—aún en desarrollo aquí.",
+    "visitZed": "Visitar Zed.com",
     "advancedFeatures": "Funciones Avanzadas",
     "mobileBeta": "Beta Móvil",
     "pleaseNote": "Ten en Cuenta",
-    "mobileWarning": "En desarrollo en móvil y puede tener problemas. Para la mejor experiencia, usa Kortix.com."
+    "mobileWarning": "En desarrollo en móvil y puede tener problemas. Para la mejor experiencia, usa Zed.com."
   },
   "accountDeletion": {
     "title": "Eliminar Cuenta",
@@ -604,7 +604,7 @@
     "mode": "Modo"
   },
   "placeholders": {
-    "default": "Dale a Kortix una tarea...",
+    "default": "Dale a Zed una tarea...",
     "search": "Buscar...",
     "searchConversations": "Buscar chats",
     "searchAgents": "Buscar workers",

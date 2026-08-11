@@ -3,7 +3,7 @@ import { writeFileSync } from 'fs';
 
 const SECRET = 'super-secret-jwt-token-with-at-least-32-characters-long';
 const SB = 'http://127.0.0.1:54321';
-const EMAIL = process.env.MINT_EMAIL || 'test@kortix.ai';
+const EMAIL = process.env.MINT_EMAIL || 'test@zed.ai';
 
 const b64 = (o: any) => Buffer.from(JSON.stringify(o)).toString('base64url');
 function hs256(payload: any): string {

@@ -2,12 +2,12 @@
 # Durability engine for the Allure portal.
 #
 # Carries trend history across runs and archives everything to S3 (versioned),
-# so results are never lost and the hosted portal (qa.kortix.com) always serves
+# so results are never lost and the hosted portal (qa.zed.com) always serves
 # the latest report. Degrades gracefully to generate-only when S3 isn't
 # configured (local dev) so the same command works everywhere.
 #
 # Env:
-#   S3_BUCKET        target bucket (e.g. kortix-qa-reports). Unset = local-only.
+#   S3_BUCKET        target bucket (e.g. zed-qa-reports). Unset = local-only.
 #   S3_PREFIX        key prefix (default: reports)
 #   RESULTS_DIR      allure-results input (default: test-results/allure-results)
 #   REPORT_DIR       generated report output (default: test-results/allure-report)

@@ -6,7 +6,7 @@
 # rewritten to satisfy this ruleset — see packages/db/SQUAWK_BASELINE.md for
 # the one-time retro-lint report over the pre-existing files.
 #
-# `pnpm --filter @kortix/db lint:squawk` runs this same config locally.
+# `pnpm --filter @zed/db lint:squawk` runs this same config locally.
 
 # Our runtime reality: packages/db/scripts/migrate.ts configures node-pg-migrate
 # with `singleTransaction: true` — every .sql migration file in a `pnpm migrate`
@@ -45,8 +45,8 @@ excluded_rules = [
 # hits against the current corpus — enabling them costs nothing today and
 # extends coverage the moment someone writes the first violating migration.
 included_rules = [
-  "require-table-schema",              # every object must be schema-qualified (kortix.foo, never bare foo) — no search_path surprises across kortix/basejump/public
-  "prefer-timestamptz",                # matches existing convention everywhere in kortix.ts
+  "require-table-schema",              # every object must be schema-qualified (zed.foo, never bare foo) — no search_path surprises across zed/basejump/public
+  "prefer-timestamptz",                # matches existing convention everywhere in zed.ts
   "prefer-identity",                   # matches existing convention (GENERATED ALWAYS AS IDENTITY, not serial)
   "ban-char-field",                    # char(n) blank-pads and is never what we want; not used today
   "require-concurrent-partition-detach",

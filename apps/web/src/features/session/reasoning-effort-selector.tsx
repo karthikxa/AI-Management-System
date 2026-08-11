@@ -3,7 +3,7 @@
 /**
  * Reasoning-effort control for the session chat composer — shown only for a
  * model that actually exposes a tunable effort knob, driven off the SAME
- * live models.dev capability data (`@kortix/llm-catalog`'s
+ * live models.dev capability data (`@zed/llm-catalog`'s
  * `generationControlCapabilities`) that gates the gateway settings'
  * Generation Controls panel (`generation-controls.tsx`, #4995). Never a
  * hardcoded per-model list — a reasoning model with no `reasoning_options`
@@ -12,7 +12,7 @@
  *
  * *** WHY THIS WRITES A PROJECT-LEVEL SETTING, NOT A PER-MESSAGE ONE ***
  * OpenCode's own message-send payload (`SendMessageOptions` in
- * `@kortix/sdk`'s `use-opencode-sessions/keys.ts`, consumed by
+ * `@zed/sdk`'s `use-opencode-sessions/keys.ts`, consumed by
  * `promptRuntimeMessage`) only ever carries `model` / `agent` / `variant` /
  * `directory` — there is no per-message reasoning-effort field to set on a
  * chat send today. Separately, models.dev-sourced models don't populate
@@ -58,11 +58,11 @@ import {
 } from '@/components/ui/command';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { catalogModelForGateway } from '@/features/workspace/customize/sections/view/gateway/generation-controls';
-import { modelKeyToWire } from '@kortix/sdk/react';
+import { modelKeyToWire } from '@zed/sdk/react';
 import { cn } from '@/lib/utils';
-import { generationControlCapabilities } from '@kortix/llm-catalog';
-import type { GatewayProjectRoutingPolicy } from '@kortix/sdk';
-import { useGatewayRoutingPolicy } from '@kortix/sdk/react';
+import { generationControlCapabilities } from '@zed/llm-catalog';
+import type { GatewayProjectRoutingPolicy } from '@zed/sdk';
+import { useGatewayRoutingPolicy } from '@zed/sdk/react';
 
 export interface ReasoningEffortModelKey {
   providerID: string;
@@ -87,7 +87,7 @@ export interface ReasoningEffortControl {
 
 /**
  * The model's own effort labels for the composer to offer — the show/hide
- * source of truth. Pure wrapper around `@kortix/llm-catalog`'s
+ * source of truth. Pure wrapper around `@zed/llm-catalog`'s
  * `generationControlCapabilities` so it's testable without mounting React or
  * a query client; a model with no reasoning-effort knob returns `[]`, which
  * is exactly what makes the control render nothing.

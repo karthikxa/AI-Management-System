@@ -128,7 +128,7 @@ function FilePathCode({ text, children }: { text: string; children: React.ReactN
       }}
       className={cn(
         INLINE_CODE,
-        'hover:text-kortix-blue cursor-pointer transition-colors',
+        'hover:text-zed-blue cursor-pointer transition-colors',
         'focus-visible:ring-ring rounded-sm focus-visible:ring-2 focus-visible:outline-none',
       )}
     >
@@ -145,7 +145,7 @@ export function ClickableInlineCode({ children }: { children: React.ReactNode })
 
   if (isUrl) {
     const href = proxyUrl(text) ?? text;
-    const linkClass = cn(INLINE_CODE, 'hover:text-kortix-blue cursor-pointer transition-colors');
+    const linkClass = cn(INLINE_CODE, 'hover:text-zed-blue cursor-pointer transition-colors');
 
     // A malformed absolute URL (e.g. `http://:`) must not reach next/link —
     // its prefetch path throws `Cannot prefetch '...'` (see isLinkSafeHref).

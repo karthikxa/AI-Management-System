@@ -1,4 +1,4 @@
-import { connectorCalls, projectSessions, projects, serviceAccounts } from '@kortix/db';
+import { connectorCalls, projectSessions, projects, serviceAccounts } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { bindChatThread } from '../../channels/slack/binding';
 import { config } from '../../config';
@@ -818,7 +818,7 @@ async function postPrompt(
       `?directory=${encodeURIComponent(WORKSPACE)}`,
       new Headers({ 'Content-Type': 'application/json' }),
       body.buffer as ArrayBuffer,
-      config.KORTIX_URL ?? '',
+      config.ZED_URL ?? '',
     );
     if (res.ok || res.status === 204) return true;
     if (res.status !== 404)

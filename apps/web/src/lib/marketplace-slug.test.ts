@@ -11,7 +11,7 @@ import {
 
 describe('companySlugFromId', () => {
   test('keeps simple ids as-is', () => {
-    expect(companySlugFromId('kortix')).toBe('kortix');
+    expect(companySlugFromId('zed')).toBe('zed');
   });
 
   test('encodes slashes in owner/repo ids', () => {
@@ -24,7 +24,7 @@ describe('companySlugFromId', () => {
 
 describe('companyIdFromSlug', () => {
   test('round-trips encoded company ids', () => {
-    for (const id of ['kortix', 'anthropics/skills', 'anthropics/knowledge-work-plugins']) {
+    for (const id of ['zed', 'anthropics/skills', 'anthropics/knowledge-work-plugins']) {
       expect(companyIdFromSlug(companySlugFromId(id))).toBe(id);
     }
   });
@@ -32,7 +32,7 @@ describe('companyIdFromSlug', () => {
 
 describe('pathPartsToItemId', () => {
   test('rejoins company and single-segment item names', () => {
-    expect(pathPartsToItemId('kortix', ['code-review'])).toBe('kortix:code-review');
+    expect(pathPartsToItemId('zed', ['code-review'])).toBe('zed:code-review');
   });
 
   test('rejoins multi-segment item names with slashes', () => {
@@ -46,13 +46,13 @@ describe('pathPartsToItemId', () => {
   });
 
   test('returns the company alone when there are no item segments', () => {
-    expect(pathPartsToItemId('kortix', [])).toBe('kortix');
+    expect(pathPartsToItemId('zed', [])).toBe('zed');
   });
 });
 
 describe('round-trip', () => {
   for (const id of [
-    'kortix:code-review',
+    'zed:code-review',
     'acme:tools/pdf',
     'anthropics/skills:pdf-tools',
     'anthropics/knowledge-work-plugins:brand-voice',
@@ -66,7 +66,7 @@ describe('round-trip', () => {
 
 describe('marketplaceItemHref', () => {
   test('builds a clean nested path', () => {
-    expect(marketplaceItemHref('kortix:code-review')).toBe('/marketplace/kortix/code-review');
+    expect(marketplaceItemHref('zed:code-review')).toBe('/marketplace/zed/code-review');
   });
 
   test('encodes slashy company ids in one segment', () => {
@@ -86,7 +86,7 @@ describe('marketplaceItemHref', () => {
 
 describe('marketplaceCompanyHref', () => {
   test('links to the company browse page', () => {
-    expect(marketplaceCompanyHref('kortix')).toBe('/marketplace/kortix');
+    expect(marketplaceCompanyHref('zed')).toBe('/marketplace/zed');
     expect(marketplaceCompanyHref('anthropics/skills')).toBe('/marketplace/anthropics--skills');
   });
 });

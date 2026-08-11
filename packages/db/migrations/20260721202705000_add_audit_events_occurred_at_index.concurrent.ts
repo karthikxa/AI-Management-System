@@ -29,9 +29,9 @@
 //     something old code might still read (see MIGRATIONS.md).
 //
 // Why this index: the admin /ops/overview dashboard
-// (apps/api/src/ops/index.ts) counts `kortix.audit_events` from the last
+// (apps/api/src/ops/index.ts) counts `zed.audit_events` from the last
 // 24h with no account/actor/resource filter:
-//   SELECT count(*)::int AS count FROM kortix.audit_events
+//   SELECT count(*)::int AS count FROM zed.audit_events
 //   WHERE occurred_at >= now() - interval '24 hours'
 // The pre-existing indices (account_id, occurred_at), (actor_user_id,
 // occurred_at), (resource_type, resource_id) all have a different LEADING
@@ -60,7 +60,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create index concurrently if not exists idx_audit_events_occurred_at
-      on kortix.audit_events (occurred_at)
+      on zed.audit_events (occurred_at)
   `);
 };
 

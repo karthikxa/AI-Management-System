@@ -17,7 +17,7 @@ import { WebPanelWrapper } from '../web-panel-wrapper';
  * both, and neither would parse.
  */
 const CONFIG: { line: string; tone?: 'muted' | 'accent' }[] = [
-  { line: '# .kortix/opencode/agents/kortix.md', tone: 'muted' },
+  { line: '# .zed/opencode/agents/zed.md', tone: 'muted' },
   { line: 'description: General knowledge worker' },
   { line: 'model: auto' },
   { line: 'permission:' },
@@ -41,7 +41,7 @@ export function StepHarness(): ReactNode {
         title="Agent harness"
         sub="Powered by OpenCode."
         action={
-          <Badge variant="kortix" size="sm" className="shrink-0 rounded">
+          <Badge variant="zed" size="sm" className="shrink-0 rounded">
             Open source
           </Badge>
         }
@@ -49,7 +49,7 @@ export function StepHarness(): ReactNode {
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <Panel
-          title="kortix"
+          title="zed"
           count="primary"
           action={
             <span className="border-border bg-background flex size-7 items-center justify-center rounded-md border">

@@ -28,8 +28,8 @@ import { cn } from '@/lib/utils';
 import { BillingAccountProvider } from '@/stores/billing-account-context';
 import { useCustomizeStore } from '@/stores/customize-store';
 import { useProjectSessionTabsStore } from '@/stores/project-session-tabs-store';
-import { getProjectDetail } from '@kortix/sdk';
-import { contract, qk, useGatewayCatalogSync } from '@kortix/sdk/react';
+import { getProjectDetail } from '@zed/sdk';
+import { contract, qk, useGatewayCatalogSync } from '@zed/sdk/react';
 import { SidebarSimpleIcon as PanelLeft } from '@phosphor-icons/react';
 
 const CommandPalette = lazy(() =>

@@ -7,10 +7,10 @@
  * existed every answer lived in the source: the dialog started a session and
  * nothing on screen said which request that was. So each KaaB control carries
  * its own disclosure, showing the SDK call this app runs and the HTTP request
- * that reaches Kortix — next to the button that performs it, not in a README.
+ * that reaches Zed — next to the button that performs it, not in a README.
  *
  * Both blocks are copy-pasteable, and neither ever carries real credentials:
- * the bearer is always the `$KORTIX_API_KEY` placeholder and secret values are
+ * the bearer is always the `$ZED_API_KEY` placeholder and secret values are
  * never rendered at all (`src/lib/call-snippets.ts` has nowhere to put one).
  *
  * Colouring is presentation and nothing else. The tokenizer
@@ -86,7 +86,7 @@ export function CallSnippet({
             label="HTTP"
             caption={
               isCopyableHttp(snippet.http)
-                ? 'What reaches Kortix — the form to use from any language.'
+                ? 'What reaches Zed — the form to use from any language.'
                 : 'Not a REST call.'
             }
             code={http}
@@ -125,10 +125,10 @@ export function CallSnippet({
           </ul>
 
           <p className="text-[11px] leading-relaxed text-muted-foreground">
-            <span className="font-mono">$KORTIX_API_KEY</span> is a placeholder.
+            <span className="font-mono">$ZED_API_KEY</span> is a placeholder.
             Nothing here ever renders a real key, token or secret value — the
             key stays on your server, and the end user&apos;s own token never
-            reaches Kortix.
+            reaches Zed.
           </p>
         </div>
       </CollapsibleContent>

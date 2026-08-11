@@ -40,7 +40,7 @@ describe('agent tunnel service definitions', () => {
 
   test('systemd unit restarts forever', () => {
     const unit = renderSystemdUnit('exec /bin/echo tunnel');
-    expect(unit).toContain('Description=Kortix Agent Tunnel');
+    expect(unit).toContain('Description=Zed Agent Tunnel');
     expect(unit).toContain('Restart=always');
     expect(unit).toContain('WantedBy=default.target');
     expect(unit).toContain('agent-tunnel.out.log');

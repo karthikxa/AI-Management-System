@@ -1,7 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { eq } from 'drizzle-orm';
 import { json, errors, auth } from '../../openapi';
-import { accountMembers, accounts } from '@kortix/db';
+import { accountMembers, accounts } from '@zed/db';
 import { db } from '../../shared/db';
 import { resolveAccountId } from '../../shared/resolve-account';
 import {
@@ -97,7 +97,7 @@ accountsRouter.openapi(
       session_id: (c.get('sessionId') as string | undefined) ?? null,
       agent: (c.get('agentGrant') as { agent?: string } | null | undefined)?.agent ?? null,
       connectors: (c.get('agentGrant') as { connectors?: string[] | 'all' } | null | undefined)?.connectors ?? null,
-      kortix_cli: (c.get('agentGrant') as { kortixCli?: string[] | 'all' } | null | undefined)?.kortixCli ?? null,
+      zed_cli: (c.get('agentGrant') as { zedCli?: string[] | 'all' } | null | undefined)?.zedCli ?? null,
       env: (c.get('agentGrant') as { env?: string[] | 'all' } | null | undefined)?.env ?? null,
     },
     accounts: memberships.map((m) => ({

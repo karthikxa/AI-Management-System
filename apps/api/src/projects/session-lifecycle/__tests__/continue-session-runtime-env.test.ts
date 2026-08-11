@@ -2,7 +2,7 @@
 // prompt is delivered. This test isolates engine.ts because Bun mocks are
 // process-global; run this file separately from other engine mock tests.
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { projectSessions, projects } from '@kortix/db';
+import { projectSessions, projects } from '@zed/db';
 
 const SESSION_ID = 'sess-runtime-env-1';
 const ACCOUNT_ID = 'acct-1';
@@ -10,7 +10,7 @@ const PROJECT_ID = 'proj-1';
 const EXTERNAL_ID = 'sandbox-1';
 const events: string[] = [];
 
-mock.module('../../../config', () => ({ config: { KORTIX_URL: 'https://api.test' } }));
+mock.module('../../../config', () => ({ config: { ZED_URL: 'https://api.test' } }));
 
 mock.module('../../../shared/db', () => ({
   db: {
@@ -73,7 +73,7 @@ mock.module('../../lib/sandbox-env-sync', () => ({
       serviceKey: 'service-key-1',
       previewUrl: 'https://sandbox.test',
       providerName: 'daytona',
-      opencodeEnv: { KORTIX_CONNECTORS_MCP_ENABLED: '1' },
+      opencodeEnv: { ZED_CONNECTORS_MCP_ENABLED: '1' },
     });
   },
 }));
@@ -123,7 +123,7 @@ describe('continueSession runtime env', () => {
         source: 'email',
         sessionId: SESSION_ID,
         text: 'new email',
-        opencodeEnv: { KORTIX_CONNECTORS_MCP_ENABLED: '1' },
+        opencodeEnv: { ZED_CONNECTORS_MCP_ENABLED: '1' },
       }),
     ).toBe('delivered');
     expect(events).toEqual(['open', 'sync', 'prompt']);

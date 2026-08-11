@@ -18,14 +18,14 @@ set -euo pipefail
 
 # Some providers start the image as root with only HOME=/ and omit the image
 # PATH. Restore the runtime environment before any command resolves.
-KORTIX_PATH="/home/kortix/.local/bin:/home/kortix/.local/share/pnpm/bin:/home/kortix/.bun/bin"
+ZED_PATH="/home/zed/.local/bin:/home/zed/.local/share/pnpm/bin:/home/zed/.bun/bin"
 case ":${PATH:-}:" in
-  *:"${KORTIX_PATH}":*) ;;
-  *) PATH="${KORTIX_PATH}:${PATH:-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}" ;;
+  *:"${ZED_PATH}":*) ;;
+  *) PATH="${ZED_PATH}:${PATH:-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}" ;;
 esac
 export PATH
 
-if [ "$(id -u)" -eq 0 ] && id kortix >/dev/null 2>&1; then
+if [ "$(id -u)" -eq 0 ] && id zed >/dev/null 2>&1; then
   # TEMPORARY: Platinum starts with /dev/shm as a plain directory and low
   # nofile limits. Both settings must be repaired before the privilege drop.
   grep -q " /dev/shm " /proc/mounts \
@@ -34,20 +34,20 @@ if [ "$(id -u)" -eq 0 ] && id kortix >/dev/null 2>&1; then
   chmod 1777 /dev/shm 2>/dev/null || true
   ulimit -Hn 1048576 2>/dev/null || true
   ulimit -Sn 1048576 2>/dev/null || true
-  export HOME=/home/kortix USER=kortix LOGNAME=kortix SHELL=/bin/bash
+  export HOME=/home/zed USER=zed LOGNAME=zed SHELL=/bin/bash
   if command -v setpriv >/dev/null 2>&1; then
-    exec setpriv --reuid kortix --regid kortix --init-groups "$0" "$@"
+    exec setpriv --reuid zed --regid zed --init-groups "$0" "$@"
   fi
-  exec sudo -u kortix -- env \
-    HOME=/home/kortix USER=kortix LOGNAME=kortix PATH="${PATH}" \
+  exec sudo -u zed -- env \
+    HOME=/home/zed USER=zed LOGNAME=zed PATH="${PATH}" \
     "$0" "$@"
 fi
 
 if [ "${HOME:-/}" = "/" ]; then
-  export HOME=/home/kortix
+  export HOME=/home/zed
 fi
 
-WORKSPACE="${KORTIX_WORKSPACE:-/workspace}"
+WORKSPACE="${ZED_WORKSPACE:-/workspace}"
 DEADLINE_S=120
 # Require 2 consecutive clean probes at a tight 0.25s cadence (~0.5s on the
 # common path where the dir is stable immediately) instead of 4×0.5s=2s. The
@@ -65,12 +65,12 @@ while :; do
   # the image starts. Repair only the mountpoint ownership (never recursively
   # chown a materialized repository) before testing it as the runtime user.
   if { mkdir -p "${WORKSPACE}" 2>/dev/null \
-        && touch "${WORKSPACE}/.kortix-init-probe" 2>/dev/null; } \
+        && touch "${WORKSPACE}/.zed-init-probe" 2>/dev/null; } \
       || { sudo mkdir -p "${WORKSPACE}" \
         && sudo chown "$(id -u):$(id -g)" "${WORKSPACE}" \
-        && touch "${WORKSPACE}/.kortix-init-probe"; } \
+        && touch "${WORKSPACE}/.zed-init-probe"; } \
       && test -w "${WORKSPACE}" \
-      && rm -f "${WORKSPACE}/.kortix-init-probe" 2>/dev/null; then
+      && rm -f "${WORKSPACE}/.zed-init-probe" 2>/dev/null; then
     stable=$((stable + 1))
     if [ "${stable}" -ge "${STABLE_REQUIRED}" ]; then
       echo "[entrypoint] workspace stable after ${stable} probes" >&2
@@ -102,4 +102,4 @@ done
 # ${WORKSPACE} from here on.
 cd /
 echo "[entrypoint] daemon takeover (cwd=/, workspace=${WORKSPACE})" >&2
-exec /usr/local/bin/kortix-agent "$@"
+exec /usr/local/bin/zed-agent "$@"

@@ -14,7 +14,7 @@ describe('triggerBadgeState', () => {
     expect(badge.status).toBe('active');
     expect(badge.icon).toBe('clock');
     expect(badge.label).toBe('Active');
-    expect(badge.className).toContain('kortix-green');
+    expect(badge.className).toContain('zed-green');
   });
 
   test('an enabled webhook trigger reads as active with the webhook icon', () => {
@@ -29,7 +29,7 @@ describe('triggerBadgeState', () => {
       expect(badge.status).toBe('paused');
       expect(badge.icon).toBe('pause');
       expect(badge.label).toBe('Paused');
-      expect(badge.className).not.toContain('kortix-green');
+      expect(badge.className).not.toContain('zed-green');
     }
   });
 

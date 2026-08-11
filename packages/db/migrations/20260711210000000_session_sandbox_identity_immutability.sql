@@ -2,7 +2,7 @@
 -- Its provider identity is immutable for the lifetime of the session. Runtime
 -- health checks may stop or flag it, but may never swap in an empty sandbox.
 
-CREATE OR REPLACE FUNCTION kortix.guard_session_sandbox_identity()
+CREATE OR REPLACE FUNCTION zed.guard_session_sandbox_identity()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
@@ -23,7 +23,7 @@ BEGIN
   IF TG_OP = 'DELETE' AND OLD.external_id IS NOT NULL THEN
     SELECT coalesce((metadata->>'deletedAt') IS NOT NULL, false)
       INTO session_deleted
-      FROM kortix.project_sessions
+      FROM zed.project_sessions
      WHERE session_id = OLD.session_id;
 
     IF NOT coalesce(session_deleted, false)
@@ -44,10 +44,10 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_session_sandbox_identity_immutable
-  ON kortix.session_sandboxes;
+  ON zed.session_sandboxes;
 
 CREATE TRIGGER trg_session_sandbox_identity_immutable
 BEFORE UPDATE OF external_id, provider OR DELETE
-ON kortix.session_sandboxes
+ON zed.session_sandboxes
 FOR EACH ROW
-EXECUTE FUNCTION kortix.guard_session_sandbox_identity();
+EXECUTE FUNCTION zed.guard_session_sandbox_identity();

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 // Keep the catalog hermetic — don't load the built-in default marketplaces
 // (which would hit the network) unless a test explicitly opts in.
-process.env.KORTIX_DEFAULT_MARKETPLACES = '';
+process.env.ZED_DEFAULT_MARKETPLACES = '';
 import {
   DEFAULT_MARKETPLACES,
   _resetExternalCache,
@@ -19,7 +19,7 @@ import {
 
 describe('marketplace catalog', () => {
   test('no external marketplaces are enabled by default — Anthropic and Hermes both stay opt-in', () => {
-    // Only Kortix loads out of the box; every external source (Anthropic
+    // Only Zed loads out of the box; every external source (Anthropic
     // included) is a one-click "Add a source" from FEATURED_MARKETPLACES.
     expect(DEFAULT_MARKETPLACES).toEqual([]);
     expect(DEFAULT_MARKETPLACES).not.toContain('NousResearch/hermes-agent');
@@ -29,33 +29,33 @@ describe('marketplace catalog', () => {
   test('surfaces the starter project and its skills through browse; support types stay internal', async () => {
     const all = await listCatalogItems();
 
-    // The marketplace leads with the "Kortix Starter" project as the hero, but
-    // individual kortix-starter skills are ALSO browseable top-level tiles
+    // The marketplace leads with the "Zed Starter" project as the hero, but
+    // individual zed-starter skills are ALSO browseable top-level tiles
     // (each one also ships inside the project). Support types (bundles/tools/
     // files) stay internal for dependency handling.
     expect(all.some((i) => i.type === 'registry:bundle')).toBe(false);
     expect(all.some((i) => i.type === 'registry:project')).toBe(true);
     expect(all.some((i) => i.type === 'registry:tool')).toBe(false);
     expect(all.some((i) => i.type === 'registry:file')).toBe(false);
-    expect(all.find((i) => i.id === 'kortix-projects:starter')).toBeTruthy();
+    expect(all.find((i) => i.id === 'zed-projects:starter')).toBeTruthy();
 
     // Browseable: a starter skill like `pdf` is a top-level browse tile again…
     const pdf = all.find((i) => i.name === 'pdf');
     expect(pdf).toBeTruthy();
-    expect(pdf!.partOfProject).toEqual({ id: 'kortix-projects:starter', title: 'Kortix Starter' });
+    expect(pdf!.partOfProject).toEqual({ id: 'zed-projects:starter', title: 'Zed Starter' });
 
     // …and it's still resolvable by id and shows up typed inside the starter
     // project's "what's inside" list.
-    const starterDetail = await getCatalogItemDetail('kortix-projects:starter');
+    const starterDetail = await getCatalogItemDetail('zed-projects:starter');
     expect(starterDetail).toBeTruthy();
     expect(starterDetail!.dependencyItems.some((d) => d.name === 'pdf')).toBe(true);
   });
 
   test('the starter project lists only the starter floor; marketplace-layer skills stay out', async () => {
-    // "What's inside" the Kortix Starter is exactly what a cloned starter repo
+    // "What's inside" the Zed Starter is exactly what a cloned starter repo
     // ships: the general-knowledge-worker floor. Marketplace-layer extras and
     // use-case runbook skills must not be badged as starter contents.
-    const starterDetail = await getCatalogItemDetail('kortix-projects:starter');
+    const starterDetail = await getCatalogItemDetail('zed-projects:starter');
     expect(starterDetail!.dependencyItems.map((d) => d.name).sort()).toEqual([
       'agent-browser',
       'convert-documents-to-markdown',
@@ -69,10 +69,10 @@ describe('marketplace catalog', () => {
       'xlsx',
     ]);
 
-    const all = await listCatalogItems({ source: 'kortix' });
+    const all = await listCatalogItems({ source: 'zed' });
 
     // A marketplace-layer extra (deep-research) is a standalone browse tile
-    // WITHOUT the "Part of Kortix Starter" badge.
+    // WITHOUT the "Part of Zed Starter" badge.
     const deepResearch = all.find((i) => i.name === 'deep-research');
     expect(deepResearch).toBeTruthy();
     expect(deepResearch!.partOfProject).toBeUndefined();
@@ -82,21 +82,21 @@ describe('marketplace catalog', () => {
     const invoiceMath = all.find((i) => i.name === 'invoice-math');
     expect(invoiceMath).toBeTruthy();
     expect(invoiceMath!.partOfProject).toEqual({
-      id: 'kortix-projects:use-case-pack',
+      id: 'zed-projects:use-case-pack',
       title: 'Use-case pack',
     });
     expect(starterDetail!.dependencyItems.some((d) => d.name === 'invoice-math')).toBe(false);
   });
 
   test('the Use-case pack groups every runbook skill and clones to conventional paths', async () => {
-    const all = await listCatalogItems({ source: 'kortix' });
-    expect(all.find((i) => i.id === 'kortix-projects:use-case-pack')).toBeTruthy();
+    const all = await listCatalogItems({ source: 'zed' });
+    expect(all.find((i) => i.id === 'zed-projects:use-case-pack')).toBeTruthy();
 
-    const pack = await getCatalogItemDetail('kortix-projects:use-case-pack');
+    const pack = await getCatalogItemDetail('zed-projects:use-case-pack');
     expect(pack).toBeTruthy();
     expect(pack!.type).toBe('registry:project');
     // Every runbook skill lives in the pack's "what's inside" list — dozens of
-    // them — and none of them leak into the Kortix Starter.
+    // them — and none of them leak into the Zed Starter.
     expect(pack!.dependencyItems.length).toBeGreaterThan(40);
     expect(pack!.dependencyItems.some((d) => d.name === 'invoice-math')).toBe(true);
     expect(pack!.dependencyItems.every((d) => d.type === 'registry:skill')).toBe(true);
@@ -105,16 +105,16 @@ describe('marketplace catalog', () => {
     // in-project paths (same mapping the install wizard uses), plus a README.
     const targets = pack!.files.map((f) => f.target);
     expect(targets).toContain('README.md');
-    expect(targets.some((t) => t.startsWith('.kortix/opencode/skills/'))).toBe(true);
-    expect(targets.some((t) => t.startsWith('.kortix/opencode/agents/'))).toBe(true);
+    expect(targets.some((t) => t.startsWith('.zed/opencode/skills/'))).toBe(true);
+    expect(targets.some((t) => t.startsWith('.zed/opencode/agents/'))).toBe(true);
     expect(targets.every((t) => !t.startsWith('runtime/'))).toBe(true);
   });
 
-  test('lists optional Kortix skills through the marketplace', async () => {
-    // agent-browser is browseable alongside every other kortix-starter skill,
+  test('lists optional Zed skills through the marketplace', async () => {
+    // agent-browser is browseable alongside every other zed-starter skill,
     // and it stays fully resolvable by id and shows up inside the starter
     // project's dependencyItems.
-    const all = await listCatalogItems({ source: 'kortix' });
+    const all = await listCatalogItems({ source: 'zed' });
     expect(all.find((i) => i.name === 'agent-browser')).toBeTruthy();
 
     const agentBrowser = await findCatalogEntryByName('agent-browser');
@@ -122,32 +122,32 @@ describe('marketplace catalog', () => {
     expect(agentBrowser!.item.type).toBe('registry:skill');
     expect(agentBrowser!.item.meta?.managedBy).toBeUndefined();
 
-    const agentBrowserDetail = await getCatalogItemDetail('kortix-starter:agent-browser');
+    const agentBrowserDetail = await getCatalogItemDetail('zed-starter:agent-browser');
     expect(agentBrowserDetail).toBeTruthy();
-    expect(agentBrowserDetail!.marketplaceId).toBe('kortix');
+    expect(agentBrowserDetail!.marketplaceId).toBe('zed');
     expect(agentBrowserDetail!.type).toBe('registry:skill');
     expect(agentBrowserDetail!.managedBy).toBeUndefined();
     // `agent-browser` ships in the SCAFFOLD now (driving a browser is a floor
     // capability), so it is no longer an opt-in default marketplace install —
     // it arrives with the repo and is badged as part of the starter instead.
     expect(agentBrowserDetail!.defaultProjectInstall).toBe(false);
-    expect(agentBrowserDetail!.partOfProject?.title).toBe('Kortix Starter');
+    expect(agentBrowserDetail!.partOfProject?.title).toBe('Zed Starter');
 
-    const starterDetail = await getCatalogItemDetail('kortix-projects:starter');
+    const starterDetail = await getCatalogItemDetail('zed-projects:starter');
     expect(starterDetail!.dependencyItems.some((d) => d.name === 'agent-browser')).toBe(true);
 
     // Support types / internal-only names never surface, by name or by browse.
     expect(await findCatalogEntryByName('pty')).toBeNull();
-    expect(await findCatalogEntryByName('kortix-simple-memory')).toBeNull();
+    expect(await findCatalogEntryByName('zed-simple-memory')).toBeNull();
     expect((await findCatalogEntryByName('web_search'))?.item.type).toBe('registry:tool');
     expect((await findCatalogEntryByName('scrape_webpage'))?.item.type).toBe('registry:tool');
     expect((await findCatalogEntryByName('image_search'))?.item.type).toBe('registry:tool');
     expect(all.find((i) => i.name === 'pty')).toBeUndefined();
-    expect(all.find((i) => i.name === 'kortix-simple-memory')).toBeUndefined();
+    expect(all.find((i) => i.name === 'zed-simple-memory')).toBeUndefined();
     expect(all.find((i) => i.name === 'web_search')).toBeUndefined();
     expect(all.find((i) => i.name === 'scrape_webpage')).toBeUndefined();
     expect(all.find((i) => i.name === 'image_search')).toBeUndefined();
-    expect(await findCatalogEntryByName('kortix-tool-env')).toBeNull();
+    expect(await findCatalogEntryByName('zed-tool-env')).toBeNull();
 
     // The known default-install skills are still marked as such (resolved both
     // from the browse list directly and from the starter project's dependencyItems).
@@ -180,7 +180,7 @@ describe('marketplace catalog', () => {
     expect(all.find((i) => i.name === 'research-report')).toBeUndefined();
   });
 
-  test('marks only kortix-* runtime skills as Kortix-managed', async () => {
+  test('marks only zed-* runtime skills as Zed-managed', async () => {
     // Managed system skills are excluded from the starter project's
     // dependencyItems (they're server-injected platform floor, not a project's
     // "what's inside" list) and from browse/detail (not browseable) — so managed
@@ -188,22 +188,22 @@ describe('marketplace catalog', () => {
     // browseable again, so their managed status can also be checked directly
     // off the browse list.
     const managedCandidates = [
-      'kortix-cli',
-      'kortix-computer',
-      'kortix-connectors',
-      'kortix-marketplace',
-      'kortix-voice',
-      'kortix-memory',
-      'kortix-onboarding',
-      'kortix-slack',
-      'kortix-system',
-      'kortix-teams',
+      'zed-cli',
+      'zed-computer',
+      'zed-connectors',
+      'zed-marketplace',
+      'zed-voice',
+      'zed-memory',
+      'zed-onboarding',
+      'zed-slack',
+      'zed-system',
+      'zed-teams',
     ];
     for (const name of managedCandidates) {
       const entry = await findCatalogEntryByName(name);
-      expect(entry?.item.meta?.managedBy).toBe('kortix');
+      expect(entry?.item.meta?.managedBy).toBe('zed');
     }
-    for (const name of ['agent-browser', 'kortix', 'harness-reflector', 'web_search', 'pdf']) {
+    for (const name of ['agent-browser', 'zed', 'harness-reflector', 'web_search', 'pdf']) {
       const entry = await findCatalogEntryByName(name);
       expect(entry?.item.meta?.managedBy).toBeUndefined();
     }
@@ -225,7 +225,7 @@ describe('marketplace catalog', () => {
     expect((await listCatalogItems({ query: 'pdf' })).some((i) => i.name === 'pdf')).toBe(true);
     expect(
       (await listCatalogItems({ query: 'starter' })).some(
-        (i) => i.id === 'kortix-projects:starter',
+        (i) => i.id === 'zed-projects:starter',
       ),
     ).toBe(true);
     expect((await listCatalogItems({ query: 'zzzznotathing' })).length).toBe(0);
@@ -247,31 +247,31 @@ describe('marketplace catalog', () => {
 
   test('browse by marketplace — listMarketplaces + source filter', async () => {
     const mkts = await listMarketplaces();
-    const kortix = mkts.find((m) => m.id === 'kortix')!;
-    expect(kortix).toBeTruthy();
-    expect(kortix.label).toBe('Kortix');
-    expect(kortix.external).toBe(false);
-    // Kortix browses as the "Kortix Starter" + "Use-case pack" projects PLUS
-    // every individual kortix-starter skill as its own top-level browse tile
+    const zed = mkts.find((m) => m.id === 'zed')!;
+    expect(zed).toBeTruthy();
+    expect(zed.label).toBe('Zed');
+    expect(zed.external).toBe(false);
+    // Zed browses as the "Zed Starter" + "Use-case pack" projects PLUS
+    // every individual zed-starter skill as its own top-level browse tile
     // (starter-floor and runbook skills carry a partOfProject badge, so the
     // web folds them under their project tile) — the facet count is the full
-    // browseable kortix set, not the folded model's single hero tile (1).
-    expect(kortix.count).toBeGreaterThan(20);
+    // browseable zed set, not the folded model's single hero tile (1).
+    expect(zed.count).toBeGreaterThan(20);
 
-    // The base registries (kortix bundles + kortix-starter skills) collapse to one id…
-    expect(marketplaceIdOf('kortix-starter')).toBe('kortix');
+    // The base registries (zed bundles + zed-starter skills) collapse to one id…
+    expect(marketplaceIdOf('zed-starter')).toBe('zed');
     expect(marketplaceIdOf('anthropics/skills')).toBe('anthropics/skills');
 
     // …and the source filter narrows the catalog to exactly that marketplace.
-    const kortixOnly = await listCatalogItems({ source: 'kortix' });
-    expect(kortixOnly.length).toBe(kortix.count);
-    expect(kortixOnly.every((i) => marketplaceIdOf(i.registry) === 'kortix')).toBe(true);
+    const zedOnly = await listCatalogItems({ source: 'zed' });
+    expect(zedOnly.length).toBe(zed.count);
+    expect(zedOnly.every((i) => marketplaceIdOf(i.registry) === 'zed')).toBe(true);
     expect(await listCatalogItems({ source: 'nope/nothing' })).toHaveLength(0);
   });
 
   test('surfaces capability hints (secrets / tools) on known skills', async () => {
     // Skills are browseable again — fetch them straight from the browse list.
-    const all = await listCatalogItems({ source: 'kortix' });
+    const all = await listCatalogItems({ source: 'zed' });
     const deepResearch = all.find((i) => i.name === 'deep-research');
     expect(deepResearch?.capabilities.tools).toContain('web_search');
     const domainResearch = all.find((i) => i.name === 'domain-research');
@@ -282,9 +282,9 @@ describe('marketplace catalog', () => {
   });
 
   test('item detail carries files + a readme', async () => {
-    const all = await listCatalogItems({ source: 'kortix' });
+    const all = await listCatalogItems({ source: 'zed' });
     const pdf = all.find((i) => i.name === 'pdf')!;
-    expect(pdf.partOfProject?.title).toBe('Kortix Starter');
+    expect(pdf.partOfProject?.title).toBe('Zed Starter');
     const detail = (await getCatalogItemDetail(pdf.id))!;
     expect(detail.files.length).toBeGreaterThan(1);
     expect(detail.files.every((f) => f.target.startsWith('@skills/'))).toBe(true);
@@ -335,7 +335,7 @@ describe('marketplace external registries (skills.sh / GitHub path)', () => {
       }),
       [`${RAW}/hello/SKILL.md`]: '---\nname: hello-ext\n---\n# Hi from an external registry',
     });
-    process.env.KORTIX_MARKETPLACE_REGISTRIES = 'github:mockorg/mockrepo';
+    process.env.ZED_MARKETPLACE_REGISTRIES = 'github:mockorg/mockrepo';
     _resetExternalCache();
     try {
       const all = await listCatalogItems();
@@ -357,25 +357,25 @@ describe('marketplace external registries (skills.sh / GitHub path)', () => {
       expect(fetched?.content).toContain('Hi from an external registry');
     } finally {
       restoreFetch();
-      delete process.env.KORTIX_MARKETPLACE_REGISTRIES;
+      delete process.env.ZED_MARKETPLACE_REGISTRIES;
       _resetExternalCache();
     }
   });
 
   test.serial('a flaky external registry degrades gracefully (base still served)', async () => {
     stub({}); // every fetch 404s
-    process.env.KORTIX_MARKETPLACE_REGISTRIES = 'github:does-not/exist';
+    process.env.ZED_MARKETPLACE_REGISTRIES = 'github:does-not/exist';
     _resetExternalCache();
     try {
       const all = await listCatalogItems();
       // Base intact — the starter project (browse now folds individual
-      // kortix-starter skills like `pdf` inside it, so check by id/detail).
-      expect(all.find((i) => i.id === 'kortix-projects:starter')).toBeTruthy();
-      expect(await getCatalogItemDetail('kortix-starter:pdf')).toBeTruthy();
+      // zed-starter skills like `pdf` inside it, so check by id/detail).
+      expect(all.find((i) => i.id === 'zed-projects:starter')).toBeTruthy();
+      expect(await getCatalogItemDetail('zed-starter:pdf')).toBeTruthy();
       expect(all.find((i) => i.name === 'hello-ext')).toBeUndefined();
     } finally {
       restoreFetch();
-      delete process.env.KORTIX_MARKETPLACE_REGISTRIES;
+      delete process.env.ZED_MARKETPLACE_REGISTRIES;
       _resetExternalCache();
     }
   });
@@ -435,7 +435,7 @@ describe('marketplace external registries (skills.sh / GitHub path)', () => {
     }) as typeof fetch;
     globalThis.fetch = fetchStub;
     githubLoaderOptions.fetchImpl = fetchStub;
-    process.env.KORTIX_MARKETPLACE_REGISTRIES = Array.from(
+    process.env.ZED_MARKETPLACE_REGISTRIES = Array.from(
       { length: sourceCount },
       (_, index) => `github:mockorg/source-${index}`,
     ).join(',');
@@ -448,7 +448,7 @@ describe('marketplace external registries (skills.sh / GitHub path)', () => {
       expect(maxActive).toBeLessThanOrEqual(4);
     } finally {
       restoreFetch();
-      delete process.env.KORTIX_MARKETPLACE_REGISTRIES;
+      delete process.env.ZED_MARKETPLACE_REGISTRIES;
       _resetExternalCache();
     }
   });

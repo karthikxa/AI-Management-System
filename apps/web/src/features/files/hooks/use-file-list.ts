@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRuntimeStore } from '@kortix/sdk/react';
+import { useRuntimeStore } from '@zed/sdk/react';
 import { listFiles } from '../api/runtime-files';
 import { useFilesStore } from '@/features/file-browser/store/files-store';
 import type { FileNode } from '@/features/file-browser/types';
@@ -47,14 +47,14 @@ export function useFileList(
   });
 
   // Filter hidden files client-side so the cache stays complete.
-  // .kortix and .opencode are always shown — they are elevated system dirs.
+  // .zed and .opencode are always shown — they are elevated system dirs.
   const data = useMemo(() => {
     if (!query.data) return query.data;
     if (showHidden) return query.data;
     return query.data.filter(
       (node) =>
         !node.name.startsWith('.') ||
-        node.name === '.kortix' ||
+        node.name === '.zed' ||
         node.name === '.opencode',
     );
   }, [query.data, showHidden]);

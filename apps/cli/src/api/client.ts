@@ -1,8 +1,8 @@
-import { backendApi } from '@kortix/sdk';
+import { backendApi } from '@zed/sdk';
 
 import type { Auth } from './auth.ts';
 import { secureRemoteBase } from './config.ts';
-import { withKortixScope } from './sdk.ts';
+import { withZedScope } from './sdk.ts';
 
 // Re-exported for callers/tests that reach it via the client module.
 export { secureRemoteBase };
@@ -88,7 +88,7 @@ async function request<T>(
 ): Promise<T> {
   const endpoint = withAccountId(toEndpoint(path), opts.accountId);
   const options = { showErrors: false as const, timeout: CLI_REQUEST_TIMEOUT_MS };
-  return withKortixScope(opts.auth, async () => {
+  return withZedScope(opts.auth, async () => {
     switch (method) {
       case 'GET':
         return unwrap<T>(await backendApi.get<T>(endpoint, options));
@@ -105,7 +105,7 @@ async function request<T>(
 }
 
 export function createApiClient(opts: ClientOptions): ApiClient {
-  const apiBase = opts.apiBase ?? 'https://api.kortix.com';
+  const apiBase = opts.apiBase ?? 'https://api.zed.com';
   const accountId = opts.accountId || undefined;
   // The SDK config seam is keyed on an `Auth`; a bare `createApiClient` caller
   // only supplies a base + token, so synthesize the identity-free rest.

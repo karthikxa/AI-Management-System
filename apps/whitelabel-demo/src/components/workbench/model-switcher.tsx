@@ -10,7 +10,7 @@ import {
 import { classifyModelChange } from '@/lib/mid-session-change';
 import { qk } from '@/lib/query-keys';
 import { getSessionToken } from '@/lib/session';
-import { useProjectModels } from '@kortix/sdk/react';
+import { useProjectModels } from '@zed/sdk/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Cpu } from 'lucide-react';
 import { toast } from 'sonner';

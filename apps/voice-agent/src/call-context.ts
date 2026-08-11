@@ -1,5 +1,5 @@
 /**
- * Where this worker learns WHICH call it is, and how to talk back to Kortix.
+ * Where this worker learns WHICH call it is, and how to talk back to Zed.
  *
  * A single worker process handles many jobs (rooms) concurrently, each one a
  * different project/session/call. So anything call-specific — project id,
@@ -13,15 +13,15 @@
  * readable from `ctx.job` before `ctx.connect()` completes.
  *
  * Only things that really are the same for every job on this process — how to
- * reach LiveKit itself, and a fallback Kortix API base URL for local dev —
+ * reach LiveKit itself, and a fallback Zed API base URL for local dev —
  * come from env vars, and even those are just fallbacks: room metadata always
  * wins when present. See README.md for the full list.
  */
 
 export interface CallContext {
-  /** The Kortix project this call belongs to. */
+  /** The Zed project this call belongs to. */
   projectId: string;
-  /** The Kortix session this call is bound to. Also the LiveKit room name. */
+  /** The Zed session this call is bound to. Also the LiveKit room name. */
   sessionId: string;
   /**
    * Identifies this call for transcript writes and inbound replies. One live
@@ -30,10 +30,10 @@ export interface CallContext {
    * room metadata does not set it explicitly.
    */
   callId: string;
-  /** Kortix API base URL, e.g. `https://api.kortix.com` or `http://localhost:8008`. */
-  kortixApiUrl: string;
+  /** Zed API base URL, e.g. `https://api.zed.com` or `http://localhost:8008`. */
+  zedApiUrl: string;
   /** Short-lived, call-scoped bearer credential. Never a shared/static token. */
-  kortixApiToken: string;
+  zedApiToken: string;
   /** Spoken display name for the agent's own persona ("You are <botName>..."). */
   botName: string;
 }
@@ -42,12 +42,12 @@ interface RoomMetadataShape {
   project_id?: unknown;
   session_id?: unknown;
   call_id?: unknown;
-  kortix_api_url?: unknown;
+  zed_api_url?: unknown;
   bot_name?: unknown;
 }
 
 interface WorkerMetadataShape extends RoomMetadataShape {
-  kortix_api_token?: unknown;
+  zed_api_token?: unknown;
 }
 
 function asNonEmptyString(value: unknown): string | undefined {
@@ -68,7 +68,7 @@ function parseMetadata<T extends object>(raw: string | undefined): T {
  * Builds this job's `CallContext` from the LiveKit room it was dispatched
  * into. Throws with a message naming exactly what was missing — this runs
  * once at the top of the entrypoint, so failing loudly and immediately beats
- * limping into a call the worker cannot actually talk to Kortix from.
+ * limping into a call the worker cannot actually talk to Zed from.
  */
 export function resolveCallContext(
   roomName: string | undefined,
@@ -90,20 +90,20 @@ export function resolveCallContext(
     throw new Error('voice-agent: room metadata is missing project_id');
   }
 
-  const kortixApiToken = asNonEmptyString(workerMeta.kortix_api_token);
-  if (!kortixApiToken) {
-    throw new Error('voice-agent: worker metadata is missing kortix_api_token');
+  const zedApiToken = asNonEmptyString(workerMeta.zed_api_token);
+  if (!zedApiToken) {
+    throw new Error('voice-agent: worker metadata is missing zed_api_token');
   }
 
   return {
     projectId,
     sessionId,
     callId: asNonEmptyString(roomMeta.call_id) ?? sessionId,
-    kortixApiUrl:
-      asNonEmptyString(roomMeta.kortix_api_url) ??
-      process.env.KORTIX_API_URL ??
+    zedApiUrl:
+      asNonEmptyString(roomMeta.zed_api_url) ??
+      process.env.ZED_API_URL ??
       'http://localhost:8008',
-    kortixApiToken,
-    botName: asNonEmptyString(roomMeta.bot_name) ?? 'Kortix',
+    zedApiToken,
+    botName: asNonEmptyString(roomMeta.bot_name) ?? 'Zed',
   };
 }

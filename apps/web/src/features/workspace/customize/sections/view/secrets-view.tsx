@@ -80,8 +80,8 @@ import {
   setConnectorSecretBinding,
   setProjectSecretStrategy,
   upsertProjectSecret,
-} from '@kortix/sdk';
-import { contract, qk, refreshProjectProviderState } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk, refreshProjectProviderState } from '@zed/sdk/react';
 import {
   WarningIcon as DangerTriangleSolid,
   PencilSimpleIcon,
@@ -112,7 +112,7 @@ type Requirement = 'required' | 'optional' | null;
 
 /**
  * A project secret is `{ identifier, key, value }` — authorization is
- * centralized on the agent grant (by identifier, in kortix.yaml); this page is
+ * centralized on the agent grant (by identifier, in zed.yaml); this page is
  * project-wide create/configure/value only. `identifier` is the unique handle;
  * `key` (the env var name) is NOT unique — two identifiers may share one.
  */
@@ -469,7 +469,7 @@ function buildRows(raw: ProjectSecretsResponse | ProjectSecret[] | null | undefi
 }
 
 function statusLabel(row: SecretRow): string {
-  if (row.system) return row.configured ? 'Managed by Kortix' : 'Not set';
+  if (row.system) return row.configured ? 'Managed by Zed' : 'Not set';
   return row.configured ? 'Set' : 'Not set';
 }
 
@@ -493,7 +493,7 @@ function SecretTableRow({
 
   return (
     <TableRow
-      className={cn(row.requirement === 'required' && !row.configured && 'bg-kortix-orange/[0.04]')}
+      className={cn(row.requirement === 'required' && !row.configured && 'bg-zed-orange/[0.04]')}
     >
       <TableCell className="max-w-[220px]">
         <div className="flex min-w-0 flex-col gap-1.5">
@@ -529,7 +529,7 @@ function SecretTableRow({
             {delivery.label}
           </Badge>
           {row.requiresRotation && (
-            <span className="text-kortix-orange text-[11px] font-medium">Rotation required</span>
+            <span className="text-zed-orange text-[11px] font-medium">Rotation required</span>
           )}
         </div>
       </TableCell>
@@ -673,8 +673,8 @@ function SecretDialog({
     if (requiresValue && !value.trim()) {
       throw new Error('Value is required.');
     }
-    if (finalKey.startsWith('KORTIX_')) {
-      throw new Error('KORTIX_* keys are reserved for platform variables');
+    if (finalKey.startsWith('ZED_')) {
+      throw new Error('ZED_* keys are reserved for platform variables');
     }
     if (strategy === 'runtime' && row?.requiresRotation && !value.trim()) {
       throw new Error('Enter a new value before making this secret readable in the sandbox.');
@@ -895,7 +895,7 @@ function SecretDialog({
                 </label>
                 <Input
                   id="secret-dialog-identifier"
-                  name="kortix-secret-identifier"
+                  name="zed-secret-identifier"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder={key ? key : 'e.g. GMAPS-primary'}
@@ -910,7 +910,7 @@ function SecretDialog({
               </div>
               <Input
                 id="secret-dialog-key"
-                name="kortix-secret-key"
+                name="zed-secret-key"
                 value={key}
                 onChange={(e) => setKey(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ''))}
                 placeholder="KEY_NAME"
@@ -924,7 +924,7 @@ function SecretDialog({
               />
               <Input
                 id="secret-dialog-value"
-                name="kortix-secret-value"
+                name="zed-secret-value"
                 type="password"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
@@ -991,7 +991,7 @@ function SecretDialog({
             {strategy === 'broker' && (
               <div className="border-border bg-sidebar space-y-4 rounded-md border p-3">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Kortix service</p>
+                  <p className="text-sm font-medium">Zed service</p>
                   <p className="text-muted-foreground text-xs">
                     The selected service uses the value outside the sandbox.
                   </p>
@@ -1012,13 +1012,13 @@ function SecretDialog({
                     <SelectContent>
                       <SelectItem
                         value="llm_gateway"
-                        description="Kortix sends model requests. The sandbox receives no key."
+                        description="Zed sends model requests. The sandbox receives no key."
                       >
                         LLM gateway
                       </SelectItem>
                       <SelectItem
                         value="http_broker"
-                        description="Kortix adds the value to one approved HTTPS destination."
+                        description="Zed adds the value to one approved HTTPS destination."
                       >
                         HTTPS broker
                       </SelectItem>
@@ -1095,7 +1095,7 @@ function SecretDialog({
                 {brokerConsumer === 'http_broker' && (
                   <>
                     <InfoBanner tone="neutral" title="Opaque sandbox handle">
-                      The sandbox receives a session handle. Kortix adds the real value only to a
+                      The sandbox receives a session handle. Zed adds the real value only to a
                       matching HTTPS request.
                     </InfoBanner>
 
@@ -1113,7 +1113,7 @@ function SecretDialog({
                         disabled={save.isPending}
                       />
                       <FieldDescription>
-                        One exact host or leading wildcard per line. Kortix denies every other host.
+                        One exact host or leading wildcard per line. Zed denies every other host.
                       </FieldDescription>
                     </Field>
 
@@ -1207,7 +1207,7 @@ function SecretDialog({
                           disabled={save.isPending}
                         />
                         <FieldDescription>
-                          Optional. Include {'{{secret}}'} where Kortix inserts the value.
+                          Optional. Include {'{{secret}}'} where Zed inserts the value.
                         </FieldDescription>
                       </Field>
                     )}

@@ -165,7 +165,7 @@ const originalRequireIdentity = config.SLACK_REQUIRE_USER_IDENTITY;
 
 const envelope = { team_id: 'T1', event: undefined } as any;
 const event = { type: 'app_mention', channel: 'C1', ts: '100.1', user: 'U1', thread_ts: '90.0', text: 'hi' } as any;
-const project = { projectId: 'proj-1', accountId: 'acc-1', defaultBranch: 'main', repoUrl: 'r', name: 'P', manifestPath: 'kortix.yaml' };
+const project = { projectId: 'proj-1', accountId: 'acc-1', defaultBranch: 'main', repoUrl: 'r', name: 'P', manifestPath: 'zed.yaml' };
 
 afterAll(() => {
   config.SLACK_REQUIRE_USER_IDENTITY = originalRequireIdentity;
@@ -329,7 +329,7 @@ describe('spawnAgentTurn — unauthenticated Slack prompt placement', () => {
       expect(ephemerals[0]).toMatchObject({
         channel: 'C1',
         user: 'U1',
-        text: 'Kortix needs a linked Kortix account to continue.',
+        text: 'Zed needs a linked Zed account to continue.',
       });
       expect(ephemerals[0].threadTs).toBeUndefined();
     } finally {
@@ -391,7 +391,7 @@ describe('spawnAgentTurn — permanent 1:1 thread↔session, never a second sess
     expect(finalizeCalls.at(-1)?.error).toContain('error');
     // The notice links straight to the session so the thread isn't a dead end.
     expect(finalizeCalls.at(-1)?.error).toContain('proj-1/sessions/sess-1');
-    expect(finalizeCalls.at(-1)?.error).toContain('Open it in Kortix');
+    expect(finalizeCalls.at(-1)?.error).toContain('Open it in Zed');
   });
 
   test('failed AGAIN → notice already claimed → stay silent (no repeat, the thread isn’t spammed)', async () => {
@@ -460,7 +460,7 @@ describe('createOrJoinThreadSession — atomic claim arbitrates a brand-new thre
   });
 });
 
-// The exactly-once gate is THE regression guard for "@Kortix answered the same
+// The exactly-once gate is THE regression guard for "@Zed answered the same
 // question 3×". Slack delivers one user message as several events (a channel
 // @mention arrives as BOTH `app_mention` and `message`), can retry it with a
 // fresh event_id, and fans it across replicas — every one of which shares the
@@ -515,7 +515,7 @@ describe('dispatchSlackEvent — exactly-once per inbound user message', () => {
     expect(ephemerals[0]).toMatchObject({
       channel: 'C1',
       user: 'U1',
-      text: 'Kortix needs a linked Kortix account to continue.',
+      text: 'Zed needs a linked Zed account to continue.',
     });
 
     dbResults = [

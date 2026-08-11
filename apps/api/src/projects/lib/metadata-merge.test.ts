@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { eq } from 'drizzle-orm';
-import { createDb, accounts, projects, type Database } from '@kortix/db';
+import { createDb, accounts, projects, type Database } from '@zed/db';
 import { metadataClearSubtreeKey, metadataMerge, metadataMergeSubtree } from './metadata-merge';
 import {
   ACTIVE_EXTERNAL_ID_META_KEY,
@@ -108,7 +108,7 @@ async function pinProject(projectId: string, provider: string, snapshotName: str
   const res = await reserveSwitchTransition(db, {
     accountId,
     sourceProvider: 'daytona',
-    identity: { projectId, targetProvider: provider, commitSha: 'c1', baseRuntimeIdentity: 'kortix-default-r1', snapshotName },
+    identity: { projectId, targetProvider: provider, commitSha: 'c1', baseRuntimeIdentity: 'zed-default-r1', snapshotName },
   });
   const out = await activateWithCas(db, {
     projectId,
@@ -137,7 +137,7 @@ afterAll(async () => {
 d('atomic merge preserves the routing pin (throwaway Postgres)', () => {
   test('a metadata writer holding a PRE-activation snapshot does NOT revert the pin', async () => {
     const projectId = await freshProject();
-    const snap = 'kortix-ppwarm-aaaa1111-deadbeefcafe';
+    const snap = 'zed-ppwarm-aaaa1111-deadbeefcafe';
 
     // A racy writer reads the (empty) metadata BEFORE the pin is activated…
     const staleSnapshot = await readMeta(projectId);
@@ -165,7 +165,7 @@ d('atomic merge preserves the routing pin (throwaway Postgres)', () => {
 
   test('the delete-key path removes a key while preserving the pin', async () => {
     const projectId = await freshProject();
-    await pinProject(projectId, 'platinum', 'kortix-ppwarm-bbbb2222-000011112222');
+    await pinProject(projectId, 'platinum', 'zed-ppwarm-bbbb2222-000011112222');
     await db.update(projects).set({ metadata: metadataMerge({ triggers_paused: true }) }).where(eq(projects.projectId, projectId));
 
     await db.update(projects).set({ metadata: metadataMerge({}, ['triggers_paused']) }).where(eq(projects.projectId, projectId));
@@ -177,7 +177,7 @@ d('atomic merge preserves the routing pin (throwaway Postgres)', () => {
 
   test('nested experimental toggles never clobber each other or the pin, and cleanup drops the empty object', async () => {
     const projectId = await freshProject();
-    await pinProject(projectId, 'platinum', 'kortix-ppwarm-cccc3333-000011112222');
+    await pinProject(projectId, 'platinum', 'zed-ppwarm-cccc3333-000011112222');
 
     // Two DIFFERENT experimental sub-keys — a shallow `||` of the whole
     // `experimental` object would lose one; the nested merge keeps both.
@@ -202,17 +202,17 @@ d('atomic merge preserves the routing pin (throwaway Postgres)', () => {
 
   test('the generation CAS still rejects a stale activation (unchanged by the merge conversion)', async () => {
     const projectId = await freshProject();
-    const snap1 = 'kortix-ppwarm-dddd4444-000011112222';
+    const snap1 = 'zed-ppwarm-dddd4444-000011112222';
     const first = await reserveSwitchTransition(db, {
       accountId,
       sourceProvider: 'daytona',
-      identity: { projectId, targetProvider: 'platinum', commitSha: 'c1', baseRuntimeIdentity: 'kortix-default-r1', snapshotName: snap1 },
+      identity: { projectId, targetProvider: 'platinum', commitSha: 'c1', baseRuntimeIdentity: 'zed-default-r1', snapshotName: snap1 },
     });
     // A newer request bumps the project generation to 2 (supersedes gen 1).
     await reserveSwitchTransition(db, {
       accountId,
       sourceProvider: 'daytona',
-      identity: { projectId, targetProvider: 'platinum', commitSha: 'c2', baseRuntimeIdentity: 'kortix-default-r1', snapshotName: 'kortix-ppwarm-dddd4444-333344445555' },
+      identity: { projectId, targetProvider: 'platinum', commitSha: 'c2', baseRuntimeIdentity: 'zed-default-r1', snapshotName: 'zed-ppwarm-dddd4444-333344445555' },
     });
 
     const out = await activateWithCas(db, {
@@ -231,11 +231,11 @@ d('atomic merge preserves the routing pin (throwaway Postgres)', () => {
 
   test('the lease-epoch fence still rejects a zombie activation at a matching generation', async () => {
     const projectId = await freshProject();
-    const snap = 'kortix-ppwarm-eeee5555-000011112222';
+    const snap = 'zed-ppwarm-eeee5555-000011112222';
     const res = await reserveSwitchTransition(db, {
       accountId,
       sourceProvider: 'daytona',
-      identity: { projectId, targetProvider: 'platinum', commitSha: 'c1', baseRuntimeIdentity: 'kortix-default-r1', snapshotName: snap },
+      identity: { projectId, targetProvider: 'platinum', commitSha: 'c1', baseRuntimeIdentity: 'zed-default-r1', snapshotName: snap },
     });
     // A live owner acquires the lease, bumping the epoch to 1.
     const leased = await acquireLease(db, res.row.transitionId, 10 * 60 * 1000);

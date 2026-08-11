@@ -17,7 +17,7 @@ import { useRequestDemo } from '@/features/contact/request-demo-provider';
 // The marketing enterprise page. CTAs no longer navigate here — they open the
 // in-app demo-request modal — but keep the constant exported for any surface
 // that still wants to link out.
-export const ENTERPRISE_PAGE_URL = 'https://kortix.com/enterprise';
+export const ENTERPRISE_PAGE_URL = 'https://zed.com/enterprise';
 
 type UpsellFeature = 'groups' | 'roles' | 'audit' | 'identity';
 
@@ -84,7 +84,7 @@ export function EnterpriseUpsell({ feature }: EnterpriseUpsellProps) {
       <div className="space-y-3 px-4 py-4">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-foreground text-sm font-medium">{copy.title}</h3>
-          <Badge variant="kortix" size="sm">
+          <Badge variant="zed" size="sm">
             <Lock />
             Enterprise
           </Badge>
@@ -93,7 +93,7 @@ export function EnterpriseUpsell({ feature }: EnterpriseUpsellProps) {
         <ul className="space-y-1.5">
           {copy.points.map((point) => (
             <li key={point} className="text-muted-foreground flex items-start gap-2 text-xs">
-              <Check className="text-kortix-green mt-0.5 size-3.5 shrink-0" />
+              <Check className="text-zed-green mt-0.5 size-3.5 shrink-0" />
               <span>{point}</span>
             </li>
           ))}

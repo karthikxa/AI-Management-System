@@ -9,7 +9,7 @@
  * modal — it calls `onEditConfig`, and the page swaps the editor into the
  * detail modal's source pane (`paneOverride`).
  *
- * `AgentConfigEditor` is the real editor for a v2 (kortix.yaml) project; the
+ * `AgentConfigEditor` is the real editor for a v2 (zed.yaml) project; the
  * `fallback` below is what a v1 project still gets — the legacy model + scope
  * cards. We degrade, never blank the pane.
  */
@@ -32,8 +32,8 @@ import {
   listProjectSecrets,
   type ProjectConfigSummary,
   setAgentScope,
-} from '@kortix/sdk';
-import { contract, qk, useModelDefaults, useRuntimeProviders } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk, useModelDefaults, useRuntimeProviders } from '@zed/sdk/react';
 import { CheckIcon as Check, UserIcon as User, UsersIcon as Users } from '@phosphor-icons/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
@@ -228,11 +228,11 @@ function AgentModel({ projectId, agentName }: { projectId: string; agentName: st
 }
 
 /**
- * An agent's manifest allowlist (`agents:` in kortix.yaml, or the legacy
- * `[[agents]]` in kortix.toml) — which secrets it receives in $ENV, which
- * connectors it may call, which Kortix-CLI powers it has. Editors EDIT
+ * An agent's manifest allowlist (`agents:` in zed.yaml, or the legacy
+ * `[[agents]]` in zed.toml) — which secrets it receives in $ENV, which
+ * connectors it may call, which Zed-CLI powers it has. Editors EDIT
  * secrets + connectors here (persisted straight to the manifest); everyone
- * else sees the read-only mirror. `kortix_cli` stays read-only (a sharper
+ * else sees the read-only mirror. `zed_cli` stays read-only (a sharper
  * escalation, manifest-only). Absent for OpenCode-discovered agents, which
  * aren't governed by the manifest.
  */
@@ -324,7 +324,7 @@ function AgentScopeCard({
         <dl className="space-y-2">
           <ScopeRow label="Secrets" value={scope.env} />
           <ScopeRow label="Connectors" value={scope.connectors} />
-          <ScopeRow label="CLI" value={scope.kortix_cli} />
+          <ScopeRow label="CLI" value={scope.zed_cli} />
         </dl>
         <p className="text-muted-foreground text-xs leading-relaxed text-pretty">
           All = everything the person launching the session can see. None = fully scoped out.
@@ -355,7 +355,7 @@ function AgentScopeCard({
         onChange={setConnectors}
       />
       <dl>
-        <ScopeRow label="CLI" value={scope.kortix_cli} />
+        <ScopeRow label="CLI" value={scope.zed_cli} />
       </dl>
       {/* The save bar only exists once there is something to save — an always-on
           disabled pair of buttons is chrome that never earns its row. */}
@@ -423,7 +423,7 @@ function ScopeEditor({
   const selected = value === 'all' ? new Set<string>() : new Set(value);
   const optionIds = new Set(options.map((o) => o.id));
   // Selected names that aren't in the current option list (deleted resource, or
-  // typed via kortix.yaml) — keep them visible so they can be unchecked.
+  // typed via zed.yaml) — keep them visible so they can be unchecked.
   const orphanRows = [...selected]
     .filter((id) => !optionIds.has(id))
     .map((id) => ({ id, label: id }));
@@ -501,7 +501,7 @@ function ScopeEditor({
                     {isSel && <Check className="size-3" />}
                   </span>
                   <span className="min-w-0 flex-1 truncate font-mono">{o.label}</span>
-                  {isOrphan && <span className="text-kortix-orange">missing</span>}
+                  {isOrphan && <span className="text-zed-orange">missing</span>}
                 </button>
               );
             })}

@@ -1,4 +1,4 @@
-# Reusable VPC for the Kortix API: public subnets (ALB + NAT) and private
+# Reusable VPC for the Zed API: public subnets (ALB + NAT) and private
 # subnets (Fargate tasks) across N availability zones. Identical for dev and
 # prod — only CIDR / az_count / single_nat_gateway differ via variables.
 
@@ -46,7 +46,7 @@ resource "aws_vpc" "this" {
     ManagedBy                           = "terraform"
     Name                                = "${var.name}-vpc"
     Environment                         = lookup(var.tags, "Environment", "managed")
-    Project                             = lookup(var.tags, "Project", "kortix")
+    Project                             = lookup(var.tags, "Project", "zed")
     Service                             = lookup(var.tags, "Service", var.name)
     Platform                            = lookup(var.tags, "Platform", "network")
     "kubernetes.io/cluster/${var.name}" = lookup(var.extra_vpc_tags, "kubernetes.io/cluster/${var.name}", null)
@@ -167,7 +167,7 @@ resource "aws_subnet" "public" {
     ManagedBy                           = "terraform"
     Name                                = "${var.name}-public-${local.azs[count.index]}"
     Environment                         = lookup(var.tags, "Environment", "managed")
-    Project                             = lookup(var.tags, "Project", "kortix")
+    Project                             = lookup(var.tags, "Project", "zed")
     Service                             = lookup(var.tags, "Service", var.name)
     Platform                            = lookup(var.tags, "Platform", "network")
     Tier                                = "public"
@@ -186,7 +186,7 @@ resource "aws_route_table" "public" {
     ManagedBy   = "terraform"
     Name        = "${var.name}-public-rt"
     Environment = lookup(var.tags, "Environment", "managed")
-    Project     = lookup(var.tags, "Project", "kortix")
+    Project     = lookup(var.tags, "Project", "zed")
     Service     = lookup(var.tags, "Service", var.name)
     Platform    = lookup(var.tags, "Platform", "network")
     Tier        = "public"
@@ -209,7 +209,7 @@ resource "aws_subnet" "private" {
     ManagedBy                           = "terraform"
     Name                                = "${var.name}-private-${local.azs[count.index]}"
     Environment                         = lookup(var.tags, "Environment", "managed")
-    Project                             = lookup(var.tags, "Project", "kortix")
+    Project                             = lookup(var.tags, "Project", "zed")
     Service                             = lookup(var.tags, "Service", var.name)
     Platform                            = lookup(var.tags, "Platform", "network")
     Tier                                = "private"
@@ -243,7 +243,7 @@ resource "aws_route_table" "private" {
     ManagedBy   = "terraform"
     Name        = "${var.name}-private-rt-${count.index}"
     Environment = lookup(var.tags, "Environment", "managed")
-    Project     = lookup(var.tags, "Project", "kortix")
+    Project     = lookup(var.tags, "Project", "zed")
     Service     = lookup(var.tags, "Service", var.name)
     Platform    = lookup(var.tags, "Platform", "network")
     Tier        = "private"

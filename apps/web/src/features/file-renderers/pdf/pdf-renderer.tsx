@@ -1,6 +1,6 @@
 'use client';
 
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { cn } from '@/lib/utils';
 import { WarningIcon as AlertTriangle } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
@@ -76,7 +76,7 @@ export function PdfRenderer({
   if (status === 'loading') {
     return (
       <div className={cn('flex h-full w-full items-center justify-center', className)}>
-        <KortixLoader size="medium" />
+        <ZedLoader size="medium" />
       </div>
     );
   }

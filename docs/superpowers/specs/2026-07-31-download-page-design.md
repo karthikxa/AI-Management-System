@@ -1,16 +1,16 @@
 # `/download` — public download page
 
 **Date:** 2026-07-31
-**Branch:** `download` (worktree `/Users/jay/root/kortix/suna-download`)
-**Linear project:** Kortix download (team `Jay`)
+**Branch:** `download` (worktree `/Users/jay/root/zed/suna-download`)
+**Linear project:** Zed download (team `Jay`)
 
 ## Problem
 
-Kortix ships four consumer surfaces — desktop app, CLI, iOS, Android — and has no
+Zed ships four consumer surfaces — desktop app, CLI, iOS, Android — and has no
 public page that hands a visitor the right file. Today:
 
 - `/download` is a **route handler** that 302s straight to a GitHub asset. A
-  visitor who types `kortix.com/download` gets a 195 MB file with no page, no
+  visitor who types `zed.com/download` gets a 195 MB file with no page, no
   version, no size, and no way to pick a different platform.
 - The only real download UI is `DownloadAppsModal`
   (`apps/web/src/features/layout/download-apps-modal.tsx`), which is **inside the
@@ -18,7 +18,7 @@ public page that hands a visitor the right file. Today:
 - That modal carries six `shadow-[…]` declarations and `rounded-3xl` containers,
   both of which the design system forbids for in-flow surfaces.
 
-A non-technical visitor has no supported path to installing Kortix.
+A non-technical visitor has no supported path to installing Zed.
 
 ## Goal
 
@@ -32,23 +32,23 @@ visitor does not read a matrix and decide; they click the black button.
 ## Verified inventory
 
 Everything below is read from the live GitHub release, not from docs.
-Source: `https://api.github.com/repos/kortix-ai/suna/releases/latest`,
+Source: `https://api.github.com/repos/zed-ai/suna/releases/latest`,
 tag `v0.11.0`, published 2026-07-28.
 
 | Artifact | Platform | Size |
 | --- | --- | --- |
-| `Kortix-0.11.0-universal.dmg` | macOS (Apple Silicon + Intel) | 195.3 MB |
-| `Kortix-Setup-0.11.0.exe` | Windows x64 | 91.6 MB |
-| `Kortix-0.11.0-x86_64.AppImage` | Linux x86_64 | 110.5 MB |
-| `kortix-darwin-arm64` | CLI, macOS Apple Silicon | 66.5 MB |
-| `kortix-darwin-x64` | CLI, macOS Intel | 71.9 MB |
-| `kortix-linux-arm64` | CLI, Linux ARM64 | 95.3 MB |
-| `kortix-linux-x64` | CLI, Linux x64 | 96.1 MB |
+| `Zed-0.11.0-universal.dmg` | macOS (Apple Silicon + Intel) | 195.3 MB |
+| `Zed-Setup-0.11.0.exe` | Windows x64 | 91.6 MB |
+| `Zed-0.11.0-x86_64.AppImage` | Linux x86_64 | 110.5 MB |
+| `zed-darwin-arm64` | CLI, macOS Apple Silicon | 66.5 MB |
+| `zed-darwin-x64` | CLI, macOS Intel | 71.9 MB |
+| `zed-linux-arm64` | CLI, Linux ARM64 | 95.3 MB |
+| `zed-linux-x64` | CLI, Linux x64 | 96.1 MB |
 
 Mobile (live, not in the GitHub release):
 
-- iOS — `https://apps.apple.com/ie/app/kortix/id6754448524`
-- Android — `https://play.google.com/store/apps/details?id=com.kortix.app`
+- iOS — `https://apps.apple.com/ie/app/zed/id6754448524`
+- Android — `https://play.google.com/store/apps/details?id=com.zed.app`
 
 ### Two gaps the page must state, not hide
 
@@ -71,14 +71,14 @@ Perplexity download page: full-bleed product image, then title and description,
 then a divided list of platform rows, each row ending in its own button.
 
 ```
-                        Download Kortix
+                        Download Zed
           Get the app for your desktop, phone, or terminal.
 
 ┌────────────────────────────────┐  ┌────────────────────────────────┐
 │ ▓▓▓ product poster 16:10 ▓▓▓▓▓ │  │ ▓▓▓ three phone shots ▓▓▓▓▓▓▓▓ │
 ├────────────────────────────────┤  ├────────────────────────────────┤
 │ Desktop app                    │  │ Mobile app                     │
-│ Run Kortix on your own machine │  │ Start a session anywhere and   │
+│ Run Zed on your own machine │  │ Start a session anywhere and   │
 │ with your files and terminal.  │  │ pick up where you left off.    │
 ├────────────────────────────────┤  ├────────────────────────────────┤
 │  macOS             [Download] ←│  │  iPhone and iPad   [Download]  │
@@ -93,7 +93,7 @@ then a divided list of platform rows, each row ending in its own button.
 
 ┌──────────────────────────────────────────────────────────────────┐
 │ Terminal · macOS & Linux · WSL on Windows                        │
-│  curl -fsSL https://kortix.com/install.sh | bash        [copy]   │
+│  curl -fsSL https://zed.com/install.sh | bash        [copy]   │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -216,7 +216,7 @@ generated:
 
 | Card | Asset | Notes |
 | --- | --- | --- |
-| Desktop | `/media/showcase/kortix-showcase-poster.jpg` + `-dark-poster.jpg` | 1920×1200, 96 KB each. Real app, both palettes, same session. |
+| Desktop | `/media/showcase/zed-showcase-poster.jpg` + `-dark-poster.jpg` | 1920×1200, 96 KB each. Real app, both palettes, same session. |
 | Mobile | `/images/mobile-app/app-{1,2,3}.png` | 1080×2337 each. Composed as three phones in a 16:10 box. |
 
 The desktop pair is toggled with `dark:hidden` / `hidden dark:block`, **not**
@@ -273,7 +273,7 @@ Real-surface verification (required before merge):
 This worktree is slot 13: web `14300`, api `14308`.
 
 1. `curl -sI localhost:14300/download/macos` → `302` with a `location` ending
-   `Kortix-<version>-universal.dmg`. Repeat for `windows` and `linux`.
+   `Zed-<version>-universal.dmg`. Repeat for `windows` and `linux`.
 2. `curl -s localhost:14300/download -H 'User-Agent: <UA>'` for all five
    platforms → the served HTML contains the correct card order and the filled
    button on the correct row **in the initial payload**, proving no client flash.

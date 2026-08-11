@@ -9,7 +9,7 @@ import { FileViewer } from '@/features/session/action-panel/easy/file-viewer';
 import { SessionFilesExplorer } from '@/features/session/session-files-explorer';
 import { SessionFilesPanel } from '@/features/session/session-files-panel';
 import { ToolActivateContext, ToolPartRenderer } from '@/features/session/tool/tool-renderers';
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import type { MessageWithParts } from '@/ui';
 import { useState } from 'react';
 
@@ -157,7 +157,7 @@ export function formatBytes(bytes: number): string {
 }
 \`\`\`
 
-Read more on the [Kortix design system](https://kortix.com) or ping me on
+Read more on the [Zed design system](https://zed.com) or ping me on
 Slack.
 `;
 
@@ -643,7 +643,7 @@ const GROUPS: Group[] = [
               title: 'server.ts',
               language: 'typescript',
               content:
-                "import { serve } from 'bun';\n\nserve({\n  port: 3000,\n  fetch(req) {\n    const url = new URL(req.url);\n    if (url.pathname === '/health') return new Response('ok');\n    return new Response('Hello, Kortix', {\n      headers: { 'content-type': 'text/plain' },\n    });\n  },\n});\n",
+                "import { serve } from 'bun';\n\nserve({\n  port: 3000,\n  fetch(req) {\n    const url = new URL(req.url);\n    if (url.pathname === '/health') return new Response('ok');\n    return new Response('Hello, Zed', {\n      headers: { 'content-type': 'text/plain' },\n    });\n  },\n});\n",
             },
             '',
           ),
@@ -656,9 +656,9 @@ const GROUPS: Group[] = [
           done(
             {
               type: 'url',
-              title: 'Kortix',
+              title: 'Zed',
               description: 'Your AI workforce, in one place.',
-              url: 'https://kortix.com',
+              url: 'https://zed.com',
             },
             '',
           ),
@@ -734,9 +734,9 @@ const GROUPS: Group[] = [
         node: part('agent_status', done({}, AGENT_STATUS_OUTPUT)),
       },
       {
-        label: 'kortix-connectors_call',
+        label: 'zed-connectors_call',
         node: part(
-          'kortix-connectors_call',
+          'zed-connectors_call',
           done(
             {
               connector: 'linear',
@@ -764,7 +764,7 @@ const GROUPS: Group[] = [
       },
       {
         label: 'project_delete',
-        node: part('project_delete', done({ project: 'kortix-marketing-site' }, '')),
+        node: part('project_delete', done({ project: 'zed-marketing-site' }, '')),
       },
     ],
   },
@@ -1116,7 +1116,7 @@ export default function DebugToolsPage() {
   const tI18nHardcoded = useTranslations('hardcodedUi');
   const tHardcodedUi = useTranslations('hardcodedUi');
   const [open, setOpen] = useState(true);
-  const focusToolCall = useKortixComputerStore((s) => s.focusToolCall);
+  const focusToolCall = useZedComputerStore((s) => s.focusToolCall);
 
   return (
     <div className="bg-background text-foreground min-h-screen w-full">

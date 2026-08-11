@@ -1,8 +1,8 @@
 import { createInterface } from 'node:readline';
-import type { MessageWithParts, OpencodeClient, Part, SessionHandle } from '@kortix/sdk';
+import type { MessageWithParts, OpencodeClient, Part, SessionHandle } from '@zed/sdk';
 
 import type { Auth } from '../api/auth.ts';
-import { kortixFromAuth, unwrapRuntime, withKortixScope } from '../api/sdk.ts';
+import { zedFromAuth, unwrapRuntime, withZedScope } from '../api/sdk.ts';
 import type { ProjectSession } from '../api/types.ts';
 import {
   emitJson,
@@ -18,7 +18,7 @@ import { selectFromList } from '../tui-select.ts';
 type CtxOpts = { projectArg?: string; hostArg?: string };
 
 export interface ResolvedSession {
-  /** Kortix session row. */
+  /** Zed session row. */
   session: ProjectSession;
   /** Auth used for every scoped SDK call. */
   auth: Auth;
@@ -30,7 +30,7 @@ export interface ResolvedSession {
   runtimeUrl: string;
   /** Canonical OpenCode session id resolved by `/start`. */
   opencodeSessionId: string;
-  /** Kortix-side API client (for PATCH/save-back). */
+  /** Zed-side API client (for PATCH/save-back). */
   ctx: NonNullable<Awaited<ReturnType<typeof resolveProjectContext>>>;
 }
 
@@ -38,7 +38,7 @@ export interface ResolvedSession {
  * Common pre-flight for chat commands: locate which project (and host) the
  * session lives in — trying the active/linked one first, then scanning
  * every other logged-in host/account when it's not pinned by
- * --host/--project — fetch the Kortix session, confirm the sandbox is
+ * --host/--project — fetch the Zed session, confirm the sandbox is
  * reachable, and return a bundle of everything the caller needs.
  *
  * `cliCommand` (e.g. `"sessions chat"`) is used only to build the
@@ -56,7 +56,7 @@ export async function loadSessionForChat(
   const found = await locateSessionAnywhere(
     sessionId,
     opts,
-    (host) => `kortix ${cliCommand} ${sessionId} --host ${host}`,
+    (host) => `zed ${cliCommand} ${sessionId} --host ${host}`,
   );
   if (!found) return null;
   const { client, projectId, auth, session, projectName, hostName } = found.located;
@@ -71,14 +71,14 @@ export async function loadSessionForChat(
   if (options.requireRunning !== false && session.status !== 'running') {
     process.stderr.write(
       `${status.err(`Session ${session.session_id} is ${session.status}, not running.`)}\n` +
-        `  ${C.dim}Run \`kortix sessions restart ${session.session_id}\` first.${C.reset}\n`,
+        `  ${C.dim}Run \`zed sessions restart ${session.session_id}\` first.${C.reset}\n`,
     );
     return null;
   }
-  const handle = kortixFromAuth(auth).session(projectId, session.session_id);
+  const handle = zedFromAuth(auth).session(projectId, session.session_id);
   let ready: Awaited<ReturnType<SessionHandle['ensureReady']>>;
   try {
-    ready = await withKortixScope(auth, () => handle.ensureReady());
+    ready = await withZedScope(auth, () => handle.ensureReady());
   } catch (error) {
     surfaceApiError(error);
     return null;
@@ -95,9 +95,9 @@ export async function loadSessionForChat(
 }
 
 /**
- * Ensure the session has a working OpenCode session id. If the Kortix
+ * Ensure the session has a working OpenCode session id. If the Zed
  * row already has one, use it. Otherwise: list, pick the first, or
- * create one — and persist the id back to Kortix so subsequent CLI calls
+ * create one — and persist the id back to Zed so subsequent CLI calls
  * stay glued to the same conversation.
  */
 export async function ensureOpencodeSession(r: ResolvedSession): Promise<string> {
@@ -164,7 +164,7 @@ export function prompt(label: string): Promise<string> {
   });
 }
 
-const CHAT_HELP = help`Usage: kortix sessions chat [<session-id>] [options]
+const CHAT_HELP = help`Usage: zed sessions chat [<session-id>] [options]
 
 Talk to a running session's agent from your terminal — the same agent you'd
 chat with in the dashboard. With no session id, picks your most recent running
@@ -177,13 +177,13 @@ session (or starts one with --new).
   --new                   Start a fresh session and chat with it.
   --agent <name>          Agent to run for this turn (defaults to the session's).
   --project <id>          Operate on this project id (default: linked).
-  --host <name>           Operate against a non-default Kortix host.
+  --host <name>           Operate against a non-default Zed host.
   -h, --help              Show this help.
 
 In the REPL: type a message + Enter to send. Ctrl-D or \`exit\` quits.`;
 
 /**
- * `kortix sessions chat` — send prompts to a session's OpenCode agent and
+ * `zed sessions chat` — send prompts to a session's OpenCode agent and
  * print replies. One-shot with --prompt; interactive REPL otherwise.
  */
 export async function runSessionsChat(argv: string[]): Promise<number> {
@@ -242,7 +242,7 @@ export async function runSessionsChat(argv: string[]): Promise<number> {
   );
   // Replay any prior conversation so the REPL has context on screen.
   try {
-    const history = await withKortixScope(resolved.auth, async () =>
+    const history = await withZedScope(resolved.auth, async () =>
       unwrapRuntime(
         await resolved.runtime.session.messages({
           sessionID: ocSessionId,
@@ -314,7 +314,7 @@ async function resolveChatSessionId(
   if (!chosen) {
     process.stderr.write(
       `${status.err('No running session to chat with.')}\n` +
-        `  ${C.dim}Start one: ${C.reset}${C.cyan}kortix sessions chat --new${C.reset}` +
+        `  ${C.dim}Start one: ${C.reset}${C.cyan}zed sessions chat --new${C.reset}` +
         `${C.dim}, or pass a session id.${C.reset}\n`,
     );
     return null;
@@ -376,7 +376,7 @@ export async function resolveRunningSessionId(
   explicit: string | undefined,
   opts: CtxOpts,
   pickTitle: string,
-  startHint = 'kortix sessions new --wait',
+  startHint = 'zed sessions new --wait',
 ): Promise<string | null> {
   if (explicit) return explicit;
   const ctx = await resolveProjectContext(opts);
@@ -420,7 +420,7 @@ async function waitForRunning(
   return false;
 }
 
-const LOG_HELP = help`Usage: kortix sessions log [<session-id>] [options]
+const LOG_HELP = help`Usage: zed sessions log [<session-id>] [options]
 
 Print a session agent's recent messages — a read-only peek at what an agent is
 doing *right now*, without sending it anything. With no session id, uses your
@@ -429,15 +429,15 @@ most recent running session.
   --limit, -n <N>   How many recent messages to show (default 10).
   --json            Emit structured JSON (role / text / parts) for scripting.
   --project <id>    Operate on this project id (default: linked).
-  --host <name>     Operate against a non-default Kortix host.
+  --host <name>     Operate against a non-default Zed host.
   -h, --help        Show this help.
 
-Pair it with \`kortix sessions ls\` (see every session) to check up on other
-agents: list them, then \`kortix sessions log <id>\` to read what any one of
+Pair it with \`zed sessions ls\` (see every session) to check up on other
+agents: list them, then \`zed sessions log <id>\` to read what any one of
 them is currently doing. Aliases: \`messages\`, \`history\`.`;
 
 /**
- * `kortix sessions log` — print a running session's recent OpenCode messages.
+ * `zed sessions log` — print a running session's recent OpenCode messages.
  * Read-only: it never sends a prompt, so it's the safe way for one agent to
  * observe what other agents are doing. Reading requires a live sandbox, so the
  * session must be `running` (a stopped session has no sandbox to query).
@@ -484,7 +484,7 @@ export async function runSessionsLog(argv: string[]): Promise<number> {
     if (!chosen) {
       process.stderr.write(
         `${status.err('No running session.')}\n` +
-          `  ${C.dim}List sessions with ${C.reset}${C.cyan}kortix sessions ls${C.reset}` +
+          `  ${C.dim}List sessions with ${C.reset}${C.cyan}zed sessions ls${C.reset}` +
           `${C.dim}, or pass a session id.${C.reset}\n`,
       );
       return 1;
@@ -499,7 +499,7 @@ export async function runSessionsLog(argv: string[]): Promise<number> {
 
   let messages: MessageWithParts[];
   try {
-    messages = await withKortixScope(resolved.auth, async () =>
+    messages = await withZedScope(resolved.auth, async () =>
       unwrapRuntime(
         await resolved.runtime.session.messages({
           sessionID: ocSessionId,
@@ -576,7 +576,7 @@ async function sendAndPrint(
   // In --json mode keep stdout pure JSON (no "…thinking" spinner).
   if (!json) process.stdout.write(`${C.dim}…thinking${C.reset}\r`);
   try {
-    const reply = await withKortixScope(resolved.auth, async () =>
+    const reply = await withZedScope(resolved.auth, async () =>
       unwrapRuntime(await resolved.handle.send(text, extra)),
     );
     if (json) {
@@ -594,7 +594,7 @@ async function sendAndPrint(
 
 // ── sessions status — mission control ────────────────────────────────────────
 
-const STATUS_HELP = help`Usage: kortix sessions status [options]
+const STATUS_HELP = help`Usage: zed sessions status [options]
 
 Mission control: a one-line overview of every session and what each agent is
 doing *right now* — for when many run in parallel. For each running session it
@@ -605,11 +605,11 @@ to include stopped ones. Aliases: \`overview\`, \`ps\`.
   --all, -a         Include stopped/completed sessions.
   --json            Structured output for scripting.
   --project <id>    Operate on this project id (default: linked).
-  --host <name>     Operate against a non-default Kortix host.
+  --host <name>     Operate against a non-default Zed host.
   -h, --help        Show this help.
 
-Then talk to any of them: \`kortix sessions chat <id> --prompt "…"\`, or read
-one in full: \`kortix sessions log <id>\`.`;
+Then talk to any of them: \`zed sessions chat <id> --prompt "…"\`, or read
+one in full: \`zed sessions log <id>\`.`;
 
 interface SessionActivity {
   /** True when the agent is mid-turn (generating or running a tool). */
@@ -625,7 +625,7 @@ interface SessionActivity {
 }
 
 /**
- * `kortix sessions status` — overview of all sessions + live per-agent
+ * `zed sessions status` — overview of all sessions + live per-agent
  * activity. Running sessions get one concurrent OpenCode read each (capped),
  * so it scales to a wall of parallel sessions without a thundering herd.
  */
@@ -741,8 +741,8 @@ async function fetchSessionActivity(
   auth: Auth,
 ): Promise<SessionActivity | null> {
   try {
-    const handle = kortixFromAuth(auth).session(projectId, s.session_id);
-    const ready = await withKortixScope(auth, () =>
+    const handle = zedFromAuth(auth).session(projectId, s.session_id);
+    const ready = await withZedScope(auth, () =>
       handle.ensureReady({ readyTimeoutMs: SESSION_ACTIVITY_PHASE_TIMEOUT_MS }),
     );
     // Fetch a small recent window (not just the last message): an assistant turn
@@ -756,7 +756,7 @@ async function fetchSessionActivity(
       // SDK facade type currently lists only endpoint fields.
       signal: AbortSignal.timeout(SESSION_ACTIVITY_PHASE_TIMEOUT_MS),
     } as Parameters<typeof handle.runtime.session.messages>[0] & { signal: AbortSignal };
-    const msgs = await withKortixScope(auth, async () =>
+    const msgs = await withZedScope(auth, async () =>
       unwrapRuntime(
         await handle.runtime.session.messages(messageRequest),
       ),
@@ -770,7 +770,7 @@ async function fetchSessionActivity(
 }
 
 /**
- * Turn a session's recent messages + Kortix status into a compact "what's it
+ * Turn a session's recent messages + Zed status into a compact "what's it
  * doing" summary. Reads the whole recent window (not just the newest message) so
  * an in-flight assistant turn is never missed, and honours the lifecycle status
  * so a still-booting box isn't reported as an idle/queued agent.

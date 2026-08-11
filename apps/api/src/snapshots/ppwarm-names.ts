@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
 
 /**
- * Naming + reap-selection for per-project COLD warm images (`kortix-ppwarm-…`),
- * the cold, provider-agnostic analogue of prod's stateful `kortix-wproj-`
+ * Naming + reap-selection for per-project COLD warm images (`zed-ppwarm-…`),
+ * the cold, provider-agnostic analogue of prod's stateful `zed-wproj-`
  * snapshots. Pure — NO config/env/provider imports — so the selection logic is
  * unit-testable without booting the server.
  *
- * Names are scoped to (project, template): `kortix-ppwarm-<proj8>-<tpl8>-<hash12>`.
+ * Names are scoped to (project, template): `zed-ppwarm-<proj8>-<tpl8>-<hash12>`.
  * See the FORMAT MIGRATION note below {@link perProjectWarmImageName} for why —
  * in short, a name scoped only to the project (the pre-existing shape) is safe
  * ONLY while a project can have at most one live warm image; the moment a second
@@ -14,7 +14,7 @@ import { createHash } from 'node:crypto';
  * an infinite mutual-rebuild loop.
  */
 
-export const PPWARM_PREFIX = 'kortix-ppwarm-';
+export const PPWARM_PREFIX = 'zed-ppwarm-';
 
 /**
  * A ppwarm image (re)built within this window is protected from supersession
@@ -100,7 +100,7 @@ const MIRRORED_DEFAULT_TEMPLATE_SLUG = 'default';
  *
  * This is now a LIVE residual, not a hypothetical: `perProjectWarmEligible`
  * (builder.ts) mints per-template warm images for real on the providers in
- * `KORTIX_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS` (Platinum by default). It is
+ * `ZED_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS` (Platinum by default). It is
  * accepted deliberately — a 32-bit space against a realistic 1-3 templates per
  * project — and widening it now would force a SECOND warm-image-invalidating
  * format migration (see the FORMAT MIGRATION note below) for a negligible risk.
@@ -115,7 +115,7 @@ export function tpl8(templateSlug: string): string {
  * Content-addressed name for a project's COLD warm image, keyed on
  * (project, template, tip, base runtime identity). A new tip OR a runtime-
  * fingerprint bump moves the name → a fresh bake; a stale name is never served
- * for a moved tip. Mirrors warm-project.ts's `kortix-wproj-<proj8>-<hash12>`
+ * for a moved tip. Mirrors warm-project.ts's `zed-wproj-<proj8>-<hash12>`
  * naming, with an added `<tpl8>` scope segment — see the module header's FORMAT
  * MIGRATION note for why this is a hard format change, not an in-place tweak.
  *
@@ -139,7 +139,7 @@ export function perProjectWarmImageName(
 
 /**
  * The PRE-MIGRATION name for a project's default-template warm image:
- * `kortix-ppwarm-<proj8>-<hash12>` over `projectId|tip|baseSnapshotName` (no
+ * `zed-ppwarm-<proj8>-<hash12>` over `projectId|tip|baseSnapshotName` (no
  * template segment, no slug in the hash).
  *
  * Exists so the warm-HIT lookup can serve an image that is already built and
@@ -174,11 +174,11 @@ export function legacyPerProjectWarmImageName(
 /**
  * ── FORMAT MIGRATION ────────────────────────────────────────────────────────
  * Every ppwarm name baked before this change has the OLD shape
- * `kortix-ppwarm-<proj8>-<hash12>` (2 dash-delimited segments after the
+ * `zed-ppwarm-<proj8>-<hash12>` (2 dash-delimited segments after the
  * prefix) — proj8 was the ONLY scope key, correct only because every caller of
  * `perProjectWarmImageName` hardcoded the shared default template, i.e. at most
  * one live tip per PROJECT. The NEW shape is
- * `kortix-ppwarm-<proj8>-<tpl8>-<hash12>` (3 segments), scoped to (project,
+ * `zed-ppwarm-<proj8>-<tpl8>-<hash12>` (3 segments), scoped to (project,
  * template) so a second template's warm image can never reap — or be reaped
  * by — the default's.
  *
@@ -213,7 +213,7 @@ interface ParsedPpwarmName {
   tpl8: string | null;
 }
 
-/** Parse a `kortix-ppwarm-…` name into its scope key(s). Returns null for
+/** Parse a `zed-ppwarm-…` name into its scope key(s). Returns null for
  *  anything outside the ppwarm namespace. See the FORMAT MIGRATION note above. */
 function parsePpwarmName(name: string): ParsedPpwarmName | null {
   if (!name.startsWith(PPWARM_PREFIX)) return null;
@@ -235,7 +235,7 @@ function parsePpwarmName(name: string): ParsedPpwarmName | null {
  * the SAME TEMPLATE as `currentName` — never another template's tip (the
  * mutual-deletion hazard this migration closes) and never an old-format name
  * (see the FORMAT MIGRATION note; those are left to quota-gc-select.ts). The
- * shared base (`kortix-default-…`) never carries the ppwarm prefix so it's
+ * shared base (`zed-default-…`) never carries the ppwarm prefix so it's
  * never a target; returns [] when only the current tip exists (idempotent
  * re-bake). Tombstones are excluded: Platinum's delete is a soft-delete that
  * renames the row to `…__deleted_<id>` while KEEPING the ppwarm prefix, so an

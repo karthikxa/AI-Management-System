@@ -1,4 +1,4 @@
-import type { ProjectSession } from '@kortix/sdk';
+import type { ProjectSession } from '@zed/sdk';
 
 import { getSessionDisplayTitle } from '@/features/workspace/project-sidebar/project-session-list-helpers';
 import { siteMetadata } from '@/lib/site-metadata';
@@ -45,7 +45,7 @@ function elide(value: string): string {
 }
 
 /**
- * `<session name> — Kortix`. An absent name means the session could not be
+ * `<session name> — Zed`. An absent name means the session could not be
  * read, so it gets the explicit unavailable label: never an empty title, never
  * a raw id.
  */

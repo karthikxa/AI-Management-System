@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import type { GatewayTrace } from '@kortix/llm-gateway';
+import type { GatewayTrace } from '@zed/llm-gateway';
 import { runWithContext, setContextField } from '../lib/request-context';
 import { emitGatewayGenAiSpan } from './hooks';
 
@@ -101,7 +101,7 @@ describe('emitGatewayGenAiSpan', () => {
     delete process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
   });
 
-  test('emits a gen_ai span with OTel semantic-convention + kortix custom attributes', async () => {
+  test('emits a gen_ai span with OTel semantic-convention + zed custom attributes', async () => {
     await emitAndFlush(baseTrace());
 
     expect(fetchCalls).toHaveLength(1);
@@ -116,18 +116,18 @@ describe('emitGatewayGenAiSpan', () => {
     expect(attrScalar(span, 'gen_ai.usage.input_tokens')).toBe('120');
     expect(attrScalar(span, 'gen_ai.usage.output_tokens')).toBe('45');
 
-    expect(attrScalar(span, 'kortix.cost_usd')).toBe(0.003);
-    expect(attrScalar(span, 'kortix.upstream_cost_usd')).toBe(0.002);
-    expect(attrScalar(span, 'kortix.provider')).toBe('bedrock');
-    expect(attrScalar(span, 'kortix.cached_tokens')).toBe('10');
-    expect(attrScalar(span, 'kortix.cache_write_tokens')).toBe('7');
-    expect(attrScalar(span, 'kortix.streaming')).toBe(false);
-    expect(attrScalar(span, 'kortix.billing_mode')).toBe('credits');
-    expect(attrScalar(span, 'kortix.request_id')).toBe('req_gw_1');
-    expect(attrScalar(span, 'kortix.attempts')).toBe('1');
-    expect(attrScalar(span, 'kortix.gateway_status')).toBe('200');
-    expect(attrScalar(span, 'kortix.ok')).toBe(true);
-    expect(attr(span, 'kortix.error_code')).toBeUndefined();
+    expect(attrScalar(span, 'zed.cost_usd')).toBe(0.003);
+    expect(attrScalar(span, 'zed.upstream_cost_usd')).toBe(0.002);
+    expect(attrScalar(span, 'zed.provider')).toBe('bedrock');
+    expect(attrScalar(span, 'zed.cached_tokens')).toBe('10');
+    expect(attrScalar(span, 'zed.cache_write_tokens')).toBe('7');
+    expect(attrScalar(span, 'zed.streaming')).toBe(false);
+    expect(attrScalar(span, 'zed.billing_mode')).toBe('credits');
+    expect(attrScalar(span, 'zed.request_id')).toBe('req_gw_1');
+    expect(attrScalar(span, 'zed.attempts')).toBe('1');
+    expect(attrScalar(span, 'zed.gateway_status')).toBe('200');
+    expect(attrScalar(span, 'zed.ok')).toBe(true);
+    expect(attr(span, 'zed.error_code')).toBeUndefined();
   });
 
   test('falls back gen_ai.response.model to the requested model when unresolved', async () => {
@@ -138,12 +138,12 @@ describe('emitGatewayGenAiSpan', () => {
     expect(attrScalar(span, 'gen_ai.response.model')).toBe('claude-sonnet');
   });
 
-  test('includes kortix.error_code for a failed gateway call', async () => {
+  test('includes zed.error_code for a failed gateway call', async () => {
     await emitAndFlush(baseTrace({ ok: false, status: 502, errorCode: 'upstream_error' }));
 
     const span = lastSpan();
-    expect(attrScalar(span, 'kortix.error_code')).toBe('upstream_error');
-    expect(attrScalar(span, 'kortix.ok')).toBe(false);
+    expect(attrScalar(span, 'zed.error_code')).toBe('upstream_error');
+    expect(attrScalar(span, 'zed.ok')).toBe(false);
   });
 
   test('computes the span time window from latencyMs', async () => {

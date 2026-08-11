@@ -34,7 +34,7 @@ test('serializeForInlineScript escapes & and the U+2028/U+2029 line separators',
 });
 
 test('serializeForInlineScript output is still valid JSON that round-trips', () => {
-  const raw = 'kortix://auth/callback?x=</script>&y= z';
+  const raw = 'zed://auth/callback?x=</script>&y= z';
   assert.equal(JSON.parse(serializeForInlineScript(raw)), raw);
 });
 
@@ -55,14 +55,14 @@ test('buildDesktopDeepLink drops the desktop flag and re-encodes values', () => 
   sp.set('code', 'a b');
   sp.set('x', '</script>');
   const link = buildDesktopDeepLink(sp);
-  assert.ok(link.startsWith('kortix://auth/callback?'));
+  assert.ok(link.startsWith('zed://auth/callback?'));
   assert.ok(!link.includes('desktop='), 'desktop flag is not forwarded');
   assert.ok(!link.includes('<'), 'values are percent-encoded');
   assert.ok(link.includes('code=a+b'));
 });
 
 test('buildDesktopDeepLink with no params yields a bare deep link', () => {
-  assert.equal(buildDesktopDeepLink(new URLSearchParams()), 'kortix://auth/callback');
+  assert.equal(buildDesktopDeepLink(new URLSearchParams()), 'zed://auth/callback');
 });
 
 // ── mobile handoff ─────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ test('buildMobileDeepLink keeps the auth code, state, and registration marker', 
 
   assert.equal(
     link,
-    'kortix://auth/callback?mobile_callback=1&code=a+b&state=native-state&x=%3C%2Fscript%3E',
+    'zed://auth/callback?mobile_callback=1&code=a+b&state=native-state&x=%3C%2Fscript%3E',
   );
 });
 
@@ -95,10 +95,10 @@ test('buildMobileBounceHtml keeps a state-validated callback safe without an aut
   assert.equal((html.match(/<\/script>/gi) ?? []).length, 0);
   assert.ok(
     html.includes(
-      'kortix://auth/callback?mobile_callback=1&amp;code=abc123&amp;state=native-state',
+      'zed://auth/callback?mobile_callback=1&amp;code=abc123&amp;state=native-state',
     ),
   );
-  assert.ok(html.includes('Open Kortix'));
+  assert.ok(html.includes('Open Zed'));
 });
 
 // ── buildDesktopBounceHtml: end-to-end, with a malicious payload ────────────
@@ -120,7 +120,7 @@ test('buildDesktopBounceHtml does not allow a script breakout from query params'
   // The desktop flag is never echoed back.
   assert.ok(!html.includes('desktop=true'));
   // The legitimate deep link is still present.
-  assert.ok(html.includes('kortix://auth/callback'));
+  assert.ok(html.includes('zed://auth/callback'));
 });
 
 test('buildDesktopBounceHtml renders a normal deep link cleanly', () => {
@@ -129,6 +129,6 @@ test('buildDesktopBounceHtml renders a normal deep link cleanly', () => {
   sp.set('code', 'abc123');
   const html = buildDesktopBounceHtml(sp);
   assert.ok(html.includes('window.location.replace('));
-  assert.ok(html.includes('kortix://auth/callback?code=abc123'));
+  assert.ok(html.includes('zed://auth/callback?code=abc123'));
   assert.equal((html.match(/<\/script>/gi) ?? []).length, 1);
 });

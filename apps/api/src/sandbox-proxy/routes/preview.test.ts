@@ -5,7 +5,7 @@ import {
   AgentSecretGrantMismatchError,
   SecretGrantResolutionError,
 } from '../../projects/lib/secret-grant';
-import { KORTIX_SERVICE_CALL_HEADER } from '../../shared/kortix-user-context';
+import { ZED_SERVICE_CALL_HEADER } from '../../shared/zed-user-context';
 import {
   STRIP_FORWARD_HEADERS,
   bindSandboxRequestContext,
@@ -144,8 +144,8 @@ describe('longTurnTimeoutResponse', () => {
   });
 
   test('reflects CORS origin like every other proxy response', () => {
-    const res = longTurnTimeoutResponse('https://app.kortix.ai');
-    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('https://app.kortix.ai');
+    const res = longTurnTimeoutResponse('https://app.zed.ai');
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('https://app.zed.ai');
     expect(res.headers.get('Access-Control-Allow-Credentials')).toBe('true');
   });
 
@@ -172,7 +172,7 @@ describe('secretGrantErrorResponse', () => {
 
   test('an unresolvable grant is a 503, not the generic unreachable 502', async () => {
     const res = secretGrantErrorResponse(
-      new SecretGrantResolutionError('kortix', new Error('git unreachable')),
+      new SecretGrantResolutionError('zed', new Error('git unreachable')),
       '',
     );
     expect(res?.status).toBe(503);
@@ -188,9 +188,9 @@ describe('secretGrantErrorResponse', () => {
   test('reflects CORS origin like every other proxy response', () => {
     const res = secretGrantErrorResponse(
       new AgentSecretGrantMismatchError('a', 'b'),
-      'https://app.kortix.ai',
+      'https://app.zed.ai',
     );
-    expect(res?.headers.get('Access-Control-Allow-Origin')).toBe('https://app.kortix.ai');
+    expect(res?.headers.get('Access-Control-Allow-Origin')).toBe('https://app.zed.ai');
   });
 });
 
@@ -205,44 +205,44 @@ describe('secretGrantErrorResponse', () => {
 // refusal has to happen at the layer that knows a user is on the other end.
 describe('isProxiedBaseReset', () => {
   test('refuses the destructive flag on the daemon port', () => {
-    expect(isProxiedBaseReset(8000, '/kortix/refresh', 'base=1')).toBe(true);
+    expect(isProxiedBaseReset(8000, '/zed/refresh', 'base=1')).toBe(true);
   });
 
   test('refuses it on opencode 4096 too, which Daytona does not reroute', () => {
     // Gating on 8000 alone left the direct-:4096 Daytona path open — the same
     // drift that made the session-visibility gate a cross-end-user leak.
-    expect(isProxiedBaseReset(4096, '/kortix/refresh', 'base=1')).toBe(true);
+    expect(isProxiedBaseReset(4096, '/zed/refresh', 'base=1')).toBe(true);
   });
 
   test('refuses it behind the in-box /proxy/{port} prefix', () => {
-    expect(isProxiedBaseReset(8000, '/proxy/8000/kortix/refresh', 'base=1')).toBe(true);
+    expect(isProxiedBaseReset(8000, '/proxy/8000/zed/refresh', 'base=1')).toBe(true);
   });
 
   test('refuses it regardless of where the flag sits in the query', () => {
-    expect(isProxiedBaseReset(8000, '/kortix/refresh', 'restart=0&base=1&base_sha=abc')).toBe(true);
+    expect(isProxiedBaseReset(8000, '/zed/refresh', 'restart=0&base=1&base_sha=abc')).toBe(true);
   });
 
   test('leaves an ordinary refresh alone', () => {
     // The SDK's `restart` mode is a bare POST to this path. Blocking the path
     // rather than the flag would break it.
-    expect(isProxiedBaseReset(8000, '/kortix/refresh', '')).toBe(false);
-    expect(isProxiedBaseReset(8000, '/kortix/refresh', 'restart=0&config_dir=1')).toBe(false);
+    expect(isProxiedBaseReset(8000, '/zed/refresh', '')).toBe(false);
+    expect(isProxiedBaseReset(8000, '/zed/refresh', 'restart=0&config_dir=1')).toBe(false);
   });
 
   test('does not fire on a lookalike value', () => {
-    expect(isProxiedBaseReset(8000, '/kortix/refresh', 'base=0')).toBe(false);
-    expect(isProxiedBaseReset(8000, '/kortix/refresh', 'base_sha=deadbeef')).toBe(false);
+    expect(isProxiedBaseReset(8000, '/zed/refresh', 'base=0')).toBe(false);
+    expect(isProxiedBaseReset(8000, '/zed/refresh', 'base_sha=deadbeef')).toBe(false);
   });
 
   test('does not fire on a lookalike path', () => {
-    expect(isProxiedBaseReset(8000, '/kortix/refresh-status', 'base=1')).toBe(false);
-    expect(isProxiedBaseReset(8000, '/kortix/env', 'base=1')).toBe(false);
+    expect(isProxiedBaseReset(8000, '/zed/refresh-status', 'base=1')).toBe(false);
+    expect(isProxiedBaseReset(8000, '/zed/env', 'base=1')).toBe(false);
   });
 
   test('ignores ports that are not the session data path', () => {
     // A user's own app on :3000 owns its query strings; this gate is about the
     // daemon's control surface, not arbitrary traffic.
-    expect(isProxiedBaseReset(3000, '/kortix/refresh', 'base=1')).toBe(false);
+    expect(isProxiedBaseReset(3000, '/zed/refresh', 'base=1')).toBe(false);
   });
 });
 
@@ -251,7 +251,7 @@ describe('isProxiedBaseReset', () => {
 // set it themselves and the daemon's gate opens.
 describe('the service-call header cannot be injected through the proxy', () => {
   test('it is stripped from forwarded requests', () => {
-    expect(STRIP_FORWARD_HEADERS.has(KORTIX_SERVICE_CALL_HEADER.toLowerCase())).toBe(true);
+    expect(STRIP_FORWARD_HEADERS.has(ZED_SERVICE_CALL_HEADER.toLowerCase())).toBe(true);
   });
 
   test('the strip list is matched case-insensitively, as headers are', () => {

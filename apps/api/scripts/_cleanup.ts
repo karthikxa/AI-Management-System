@@ -1,5 +1,5 @@
 import { db } from '../src/shared/db';
-import { projects, sessionSandboxes } from '@kortix/db';
+import { projects, sessionSandboxes } from '@zed/db';
 import { and, eq, like, inArray } from 'drizzle-orm';
 import { readFileSync } from 'fs';
 

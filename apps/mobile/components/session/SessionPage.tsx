@@ -33,7 +33,7 @@ import { Text as RNText } from 'react-native';
 
 import { useSyncStore } from '@/lib/opencode/sync-store';
 import { useSessionSync } from '@/lib/opencode/session-sync';
-import { groupMessagesIntoTurns } from '@kortix/sdk/turns';
+import { groupMessagesIntoTurns } from '@zed/sdk/turns';
 import type { Turn, QuestionRequest, ToolPart } from '@/lib/opencode/types';
 import { useSession, replyToQuestion, rejectQuestion, useRenameSession } from '@/lib/platform/hooks';
 import { useTabStore } from '@/stores/tab-store';
@@ -63,8 +63,8 @@ import { QuestionPrompt } from './QuestionPrompt';
 import { useSessions } from '@/lib/platform/hooks';
 import { FileViewer } from '@/components/files/FileViewer';
 import type { SandboxFile } from '@/api/types';
-import KortixSymbolBlack from '@/assets/brand/kortix-symbol-scale-effect-black.svg';
-import KortixSymbolWhite from '@/assets/brand/kortix-symbol-scale-effect-white.svg';
+import ZedSymbolBlack from '@/assets/brand/zed-symbol-scale-effect-black.svg';
+import ZedSymbolWhite from '@/assets/brand/zed-symbol-scale-effect-white.svg';
 
 // AnimatedToggleIcon was extracted to components/ui/animated-toggle-icon.tsx
 // so it can be shared with PageHeader and page-level headers across the app.
@@ -851,9 +851,9 @@ export function SessionPage({ sessionId, onBack, onOpenDrawer, onOpenRightDrawer
                   {/* Compacting indicator */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     {isDark ? (
-                      <KortixSymbolWhite width={14} height={14} />
+                      <ZedSymbolWhite width={14} height={14} />
                     ) : (
-                      <KortixSymbolBlack width={14} height={14} />
+                      <ZedSymbolBlack width={14} height={14} />
                     )}
                     <RNText style={{ fontSize: 14, fontFamily: 'Roobert', color: isDark ? '#888' : '#666' }}>
                       Compacting session...
@@ -1004,7 +1004,7 @@ function FreshSessionHero({
   visible: boolean;
   windowWidth: number;
 }) {
-  const Symbol = isDark ? KortixSymbolWhite : KortixSymbolBlack;
+  const Symbol = isDark ? ZedSymbolWhite : ZedSymbolBlack;
   const greeting = useMemo(() => getGreetingLabel(), []);
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;

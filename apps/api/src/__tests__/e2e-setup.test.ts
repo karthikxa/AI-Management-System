@@ -32,7 +32,7 @@ mock.module('child_process', () => ({
 const { setupApp } = await import('../setup');
 
 const ORIGINAL_CWD = process.cwd();
-const TEST_DIR = mkdtempSync(join(tmpdir(), 'kortix-setup-test-'));
+const TEST_DIR = mkdtempSync(join(tmpdir(), 'zed-setup-test-'));
 
 // ─── Test app factory ───────────────────────────────────────────────────────
 
@@ -55,8 +55,8 @@ beforeAll(() => {
 
   writeFileSync(resolve(TEST_DIR, 'docker-compose.local.yml'), 'services:\n  test:\n    image: hello-world\n');
   writeFileSync(resolve(TEST_DIR, 'scripts', 'setup-env.sh'), '#!/usr/bin/env bash\nexit 0\n');
-  writeFileSync(resolve(TEST_DIR, '.env.example'), 'KORTIX_BILLING_INTERNAL_ENABLED=false\nANTHROPIC_API_KEY=\n');
-  writeFileSync(resolve(TEST_DIR, 'deploy', 'docker', 'sandbox', '.env.example'), 'ANTHROPIC_API_KEY=\nKORTIX_BILLING_INTERNAL_ENABLED=false\n');
+  writeFileSync(resolve(TEST_DIR, '.env.example'), 'ZED_BILLING_INTERNAL_ENABLED=false\nANTHROPIC_API_KEY=\n');
+  writeFileSync(resolve(TEST_DIR, 'deploy', 'docker', 'sandbox', '.env.example'), 'ANTHROPIC_API_KEY=\nZED_BILLING_INTERNAL_ENABLED=false\n');
 
   // Point CWD at the test dir so getProjectRoot() finds it
   process.chdir(TEST_DIR);

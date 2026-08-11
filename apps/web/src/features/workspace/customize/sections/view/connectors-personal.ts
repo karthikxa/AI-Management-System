@@ -1,4 +1,4 @@
-import type { AgentGrantSetV2 } from '@kortix/sdk';
+import type { AgentGrantSetV2 } from '@zed/sdk';
 
 /**
  * Keep `connectors_required` a valid subset of the `connectors` grant.

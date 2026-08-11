@@ -7,11 +7,11 @@ import {
   setAdminBypass,
 } from './api-client';
 import { ApiError, featureDisabledKey, isFeatureDisabledError } from './api/errors';
-import { configureKortix } from './config';
+import { configureZed } from './config';
 
 afterEach(() => {
   setAdminBypass(false);
-  configureKortix({ backendUrl: '', getToken: async () => null });
+  configureZed({ backendUrl: '', getToken: async () => null });
 });
 
 describe('setAdminBypass / isAdminBypassEnabled', () => {
@@ -46,8 +46,8 @@ describe('makeRequest admin-bypass header', () => {
     };
   }
 
-  test('attaches x-kortix-admin-bypass when enabled', async () => {
-    configureKortix({
+  test('attaches x-zed-admin-bypass when enabled', async () => {
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'test-token',
     });
@@ -55,14 +55,14 @@ describe('makeRequest admin-bypass header', () => {
     try {
       setAdminBypass(true);
       await backendApi.get('/projects/abc/detail');
-      expect(stub.getHeaders()?.['x-kortix-admin-bypass']).toBe('1');
+      expect(stub.getHeaders()?.['x-zed-admin-bypass']).toBe('1');
     } finally {
       stub.restore();
     }
   });
 
   test('omits the header when disabled', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'test-token',
     });
@@ -70,14 +70,14 @@ describe('makeRequest admin-bypass header', () => {
     try {
       setAdminBypass(false);
       await backendApi.get('/projects/abc/detail');
-      expect(stub.getHeaders()?.['x-kortix-admin-bypass']).toBeUndefined();
+      expect(stub.getHeaders()?.['x-zed-admin-bypass']).toBeUndefined();
     } finally {
       stub.restore();
     }
   });
 
   test('attaches the configured client surface to backend requests', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'test-token',
       clientSource: 'cli',
@@ -85,7 +85,7 @@ describe('makeRequest admin-bypass header', () => {
     const stub = stubFetch();
     try {
       await backendApi.get('/projects/abc/detail');
-      expect(stub.getHeaders()?.['X-Kortix-Client']).toBe('cli');
+      expect(stub.getHeaders()?.['X-Zed-Client']).toBe('cli');
     } finally {
       stub.restore();
     }
@@ -112,7 +112,7 @@ describe('makeRequest keeps ApiError.message a string for non-string body fields
   }
 
   test('a non-string top-level `message` (object) does not become ApiError.message', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
     });
@@ -130,7 +130,7 @@ describe('makeRequest keeps ApiError.message a string for non-string body fields
   });
 
   test('a non-string `detail.message` (number) does not become ApiError.message', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
     });
@@ -146,7 +146,7 @@ describe('makeRequest keeps ApiError.message a string for non-string body fields
   });
 
   test('a real string `message` is still used verbatim', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
     });
@@ -194,7 +194,7 @@ describe('makeRequest retries transient gateway (502/503/504) on idempotent read
   }
 
   test('a single transient 502 on GET is retried and succeeds (no error surfaced)', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
     });
@@ -213,7 +213,7 @@ describe('makeRequest retries transient gateway (502/503/504) on idempotent read
   });
 
   test('503 and 504 are also retried on GET', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
     });
@@ -230,7 +230,7 @@ describe('makeRequest retries transient gateway (502/503/504) on idempotent read
   });
 
   test('a persistent 502 on GET exhausts retries and surfaces the error', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
     });
@@ -247,7 +247,7 @@ describe('makeRequest retries transient gateway (502/503/504) on idempotent read
   });
 
   test('a 502 on a POST is NOT retried (non-idempotent)', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
     });
@@ -263,7 +263,7 @@ describe('makeRequest retries transient gateway (502/503/504) on idempotent read
   });
 
   test('a 500 on GET is NOT retried (deterministic server error)', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
     });
@@ -279,7 +279,7 @@ describe('makeRequest retries transient gateway (502/503/504) on idempotent read
   });
 
   test('a 4xx on GET is NOT retried', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
     });
@@ -298,7 +298,7 @@ describe('makeRequest retries transient gateway (502/503/504) on idempotent read
 describe('makeRequest retries transient transport failures on idempotent reads', () => {
   test('a failed preflight on GET is retried before the host error handler runs', async () => {
     const errors: Error[] = [];
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: (error) => {
@@ -324,7 +324,7 @@ describe('makeRequest retries transient transport failures on idempotent reads',
 
   test('persistent GET transport failures report once after three attempts', async () => {
     const errors: Error[] = [];
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: (error) => {
@@ -349,7 +349,7 @@ describe('makeRequest retries transient transport failures on idempotent reads',
   });
 
   test('a POST transport failure is not retried', async () => {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
     });
@@ -372,7 +372,7 @@ describe('makeRequest retries transient transport failures on idempotent reads',
 describe('makeRequest keeps request deadlines silent to the global host error handler', () => {
   test('a client request deadline returns TIMEOUT without invoking onError', async () => {
     const errors: Error[] = [];
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: (error) => {
@@ -410,7 +410,7 @@ describe('makeRequest keeps request deadlines silent to the global host error ha
 
   test('a typed API request deadline returns its error without invoking onError', async () => {
     const errors: Error[] = [];
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: (error) => {
@@ -444,7 +444,7 @@ describe('makeRequest keeps request deadlines silent to the global host error ha
 
   test('a legacy API request deadline is normalized and stays silent during rollout', async () => {
     const errors: Error[] = [];
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: (error) => {
@@ -473,7 +473,7 @@ describe('makeRequest keeps request deadlines silent to the global host error ha
 
   test('an unrelated 503 still invokes onError after read retries are exhausted', async () => {
     const errors: Error[] = [];
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: (error) => {
@@ -494,7 +494,7 @@ describe('makeRequest keeps request deadlines silent to the global host error ha
   });
 });
 
-describe('account_mfa_required 403 → kortix:mfa-required browser event', () => {
+describe('account_mfa_required 403 → zed:mfa-required browser event', () => {
   function stubFetch403(body: Record<string, unknown>) {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = (async () =>
@@ -527,7 +527,7 @@ describe('account_mfa_required 403 → kortix:mfa-required browser event', () =>
   }
 
   test('the coded MFA denial dispatches the step-up event', async () => {
-    configureKortix({ backendUrl: 'http://test', getToken: async () => 'tok' });
+    configureZed({ backendUrl: 'http://test', getToken: async () => 'tok' });
     const restoreFetch = stubFetch403({
       error: 'mfa needed',
       code: 'account_mfa_required',
@@ -536,7 +536,7 @@ describe('account_mfa_required 403 → kortix:mfa-required browser event', () =>
     try {
       const res = await backendApi.get('/accounts/abc/iam/groups');
       expect(res.success).toBe(false);
-      expect(win.dispatched).toContain('kortix:mfa-required');
+      expect(win.dispatched).toContain('zed:mfa-required');
     } finally {
       win.restore();
       restoreFetch();
@@ -544,7 +544,7 @@ describe('account_mfa_required 403 → kortix:mfa-required browser event', () =>
   });
 
   test('an ordinary 403 dispatches nothing', async () => {
-    configureKortix({ backendUrl: 'http://test', getToken: async () => 'tok' });
+    configureZed({ backendUrl: 'http://test', getToken: async () => 'tok' });
     const restoreFetch = stubFetch403({
       error: "You don't have permission to create projects.",
     });
@@ -588,7 +588,7 @@ describe('makeRequest classifies a typed feature_not_supported 501 as silent to 
 
   test('a 501 with code=feature_not_supported does NOT fire onError (Sentry) but returns an ApiError', async () => {
     let onErrorCalls = 0;
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: () => {
@@ -623,7 +623,7 @@ describe('makeRequest classifies a typed feature_not_supported 501 as silent to 
 
   test('a genuine 501 (no feature_not_supported code) STILL fires onError (Sentry)', async () => {
     let onErrorCalls = 0;
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: () => {
@@ -680,7 +680,7 @@ describe('makeRequest classifies a typed model_not_servable 409 as silent to Sen
 
   test('a 409 with code=model_not_servable does NOT fire onError (Sentry) but returns an ApiError', async () => {
     let onErrorCalls = 0;
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: () => {
@@ -714,7 +714,7 @@ describe('makeRequest classifies a typed model_not_servable 409 as silent to Sen
 
   test('a genuine 409 (no model_not_servable code) STILL fires onError (Sentry)', async () => {
     let onErrorCalls = 0;
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: () => {
@@ -765,7 +765,7 @@ describe('makeRequest classifies a typed provision_in_flight 409 as silent to Se
 
   test('a 409 with code=provision_in_flight does NOT fire onError but returns an ApiError', async () => {
     let onErrorCalls = 0;
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: () => {
@@ -795,7 +795,7 @@ describe('makeRequest classifies a typed provision_in_flight 409 as silent to Se
 
   test('a genuine 409 on /provision (no typed code) STILL fires onError', async () => {
     let onErrorCalls = 0;
-    configureKortix({
+    configureZed({
       backendUrl: 'http://api.test/v1',
       getToken: async () => 'tok',
       onError: () => {
@@ -831,7 +831,7 @@ describe('makeRequest surfaces the body `code` on a 403 feature_disabled gate', 
         }),
         { status: 403, headers: { 'content-type': 'application/json' } },
       )) as unknown as typeof fetch;
-    configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
+    configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
 
     try {
       const { error } = await backendApi.get('/projects/p1/apps', { showErrors: false });

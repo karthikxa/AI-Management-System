@@ -11,12 +11,12 @@ Daytona). What does going non-declarative actually cost us?
 ## What "non-declarative" means here
 
 **Today (declarative).** We never ship a finished image. At snapshot-build time we
-*assemble a build context at runtime* — gzip the freshly-built `kortix-agent` +
-`kortix` CLI, copy `slack-cli`, the starter `.kortix/opencode`
+*assemble a build context at runtime* — gzip the freshly-built `zed-agent` +
+`zed` CLI, copy `slack-cli`, the starter `.zed/opencode`
 config, the generated `llm-catalog.json`, and a generated `scaffold.git` — compose
 the layered Dockerfile (`dockerfile-layer.ts`), and hand it to the provider via
 `Image.fromDockerfile(ctx.composedPath)`. Daytona builds + caches it, content-
-addressed (`kortix-default-{hash}` / `kortix-tpl-{hash}`). **Platinum does the same
+addressed (`zed-default-{hash}` / `zed-tpl-{hash}`). **Platinum does the same
 thing** (uploads the context tar→S3, builds server-side with podman). So *both*
 providers are declarative today — **we have zero non-declarative prior art.**
 
@@ -28,7 +28,7 @@ linux-vm Dockerfile build is Daytona telling us a registry must be configured.
 ## Blast radius — what we'd have to build/own (none exists today)
 
 1. **A sandbox-image build+push pipeline.** Today there is **no** sandbox-image
-   build anywhere — only `kortix/kortix-api` (the API server) is built+pushed in CI.
+   build anywhere — only `zed/zed-api` (the API server) is built+pushed in CI.
    The sandbox "build" is runtime context-assembly. Non-declarative needs a real
    `docker build` + push, run somewhere we operate (CI or a builder fleet).
 2. **A registry + auth + GC.** Pick ECR/GHCR/Docker Hub, wire creds into Daytona's
@@ -39,7 +39,7 @@ linux-vm Dockerfile build is Daytona telling us a registry must be configured.
    content-addressed, shared when identical. Non-declarative means *we* build+push
    an image for every distinct (Dockerfile × spec × runtime-fingerprint) — a
    build-as-a-service. **But measured usage is ~0:** 94/94 recent sandboxes used the
-   shared `kortix-default-*` image; zero `kortix-tpl-*`. So in practice this is a
+   shared `zed-default-*` image; zero `zed-tpl-*`. So in practice this is a
    tail case, not the common path.
 4. **Build-context freshness.** The context is assembled fresh each build (always the
    agent binary matching the current runtime fingerprint). Pre-building bakes it, so
@@ -66,7 +66,7 @@ Because **~all sessions use the one shared platform-default image**, we don't ne
 per-project build service. The pragmatic path:
 
 1. Build the **platform-default** sandbox image in CI (extend the existing
-   `kortix/kortix-api` buildx workflow), tagged by runtime fingerprint, pushed to a
+   `zed/zed-api` buildx workflow), tagged by runtime fingerprint, pushed to a
    registry.
 2. Configure that registry in Daytona (Registries).
 3. Route **default-template** sessions to `linux-vm @ us-west-2` (SDK ≥0.192 for

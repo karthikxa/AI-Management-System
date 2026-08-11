@@ -23,7 +23,7 @@ describe('platform meta agent', () => {
       ],
       commands: [],
       skills: [],
-      is_kortix_repo: true,
+      is_zed_repo: true,
       signals: {},
       manifest_raw: null,
       manifest: {},
@@ -45,7 +45,7 @@ describe('platform meta agent', () => {
       scope: {
         env: [],
         connectors: [],
-        kortix_cli: 'all',
+        zed_cli: 'all',
       },
     });
     expect(config.open_code_default_agent).toBe('meta');
@@ -55,10 +55,10 @@ describe('platform meta agent', () => {
     expect(JSON.parse(buildPlatformMetaOpenCodeConfig())).toEqual({
       agent: {
         meta: {
-          description: 'Starts specialized Kortix sessions and coordinates their work.',
+          description: 'Starts specialized Zed sessions and coordinates their work.',
           mode: 'primary',
           prompt:
-            'Follow /workspace/AGENTS.md. Coordinate work through the Kortix CLI. You are the only coordinator: spawn specialized sessions to do the work, give each one bounded task via --prompt, and never ask a session to spawn further sessions.',
+            'Follow /workspace/AGENTS.md. Coordinate work through the Zed CLI. You are the only coordinator: spawn specialized sessions to do the work, give each one bounded task via --prompt, and never ask a session to spawn further sessions.',
         },
       },
     });
@@ -73,7 +73,7 @@ describe('platform meta agent', () => {
   test('grants the coordinator every project action without secrets or connectors', () => {
     expect(platformMetaAgentGrant()).toEqual({
       agent: 'meta',
-      kortixCli: 'all',
+      zedCli: 'all',
       connectors: [],
       env: [],
     });

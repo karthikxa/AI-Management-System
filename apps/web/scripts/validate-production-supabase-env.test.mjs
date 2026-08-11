@@ -85,7 +85,7 @@ describe('validateProductionSupabaseEnv', () => {
         }),
         { fetchImpl: successfulFetch() },
       ),
-      /NEXT_PUBLIC_SUPABASE_URL must be https:\/\/supa\.kortix\.com or the native EU project URL/,
+      /NEXT_PUBLIC_SUPABASE_URL must be https:\/\/supa\.zed\.com or the native EU project URL/,
     );
   });
 
@@ -94,11 +94,11 @@ describe('validateProductionSupabaseEnv', () => {
       validateProductionSupabaseEnv(
         productionEnv({
           SUPABASE_URL: EXPECTED_PRODUCTION_SUPABASE_URL,
-          KORTIX_PUBLIC_SUPABASE_URL: 'https://uhrwvisbqjfxhxjvoofd.supabase.co',
+          ZED_PUBLIC_SUPABASE_URL: 'https://uhrwvisbqjfxhxjvoofd.supabase.co',
         }),
         { fetchImpl: successfulFetch() },
       ),
-      /KORTIX_PUBLIC_SUPABASE_URL must be https:\/\/supa\.kortix\.com or the native EU project URL/,
+      /ZED_PUBLIC_SUPABASE_URL must be https:\/\/supa\.zed\.com or the native EU project URL/,
     );
   });
 
@@ -107,7 +107,7 @@ describe('validateProductionSupabaseEnv', () => {
       validateProductionSupabaseEnv(
         productionEnv({
           SUPABASE_ANON_KEY: jwtFor(EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF),
-          KORTIX_PUBLIC_SUPABASE_ANON_KEY: `${jwtFor(EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF)}-rotated`,
+          ZED_PUBLIC_SUPABASE_ANON_KEY: `${jwtFor(EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF)}-rotated`,
         }),
         { fetchImpl: successfulFetch() },
       ),
@@ -137,8 +137,8 @@ describe('deployed production validation', () => {
     VERSION: '0.11.0',
   };
   const script =
-    `window.__KORTIX_RUNTIME_CONFIG=${JSON.stringify(config)};` +
-    'window.__RUNTIME_ENV=window.__KORTIX_RUNTIME_CONFIG;';
+    `window.__ZED_RUNTIME_CONFIG=${JSON.stringify(config)};` +
+    'window.__RUNTIME_ENV=window.__ZED_RUNTIME_CONFIG;';
 
   it('parses the public runtime bootstrap without evaluating JavaScript', () => {
     assert.deepEqual(parseRuntimeConfigScript(script), config);
@@ -147,7 +147,7 @@ describe('deployed production validation', () => {
   it('validates the deployed version, backend, custom domain, and native project', async () => {
     const calls = [];
     const result = await validateDeployedProductionSupabase(
-      'https://kortix.com/api/runtime-config',
+      'https://zed.com/api/runtime-config',
       {
         expectedVersion: '0.11.0',
         fetchImpl: async (url) => {
@@ -161,7 +161,7 @@ describe('deployed production validation', () => {
 
     assert.equal(result.projectRef, EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF);
     assert.deepEqual(calls, [
-      'https://kortix.com/api/runtime-config',
+      'https://zed.com/api/runtime-config',
       `${EXPECTED_PRODUCTION_SUPABASE_URL}/auth/v1/settings`,
       `https://${EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF}.supabase.co/auth/v1/settings`,
     ]);
@@ -169,7 +169,7 @@ describe('deployed production validation', () => {
 
   it('rejects a stale deployed frontend version', async () => {
     await assert.rejects(
-      validateDeployedProductionSupabase('https://kortix.com/api/runtime-config', {
+      validateDeployedProductionSupabase('https://zed.com/api/runtime-config', {
         expectedVersion: '0.11.1',
         fetchImpl: async () => new Response(script, { status: 200 }),
       }),
@@ -178,17 +178,17 @@ describe('deployed production validation', () => {
   });
 
   it('rejects a deployed frontend that points at another backend', async () => {
-    const wrongBackendScript = `window.__KORTIX_RUNTIME_CONFIG=${JSON.stringify({
+    const wrongBackendScript = `window.__ZED_RUNTIME_CONFIG=${JSON.stringify({
       ...config,
-      BACKEND_URL: 'https://api-use2-shadow.kortix.com/v1',
-    })};window.__RUNTIME_ENV=window.__KORTIX_RUNTIME_CONFIG;`;
+      BACKEND_URL: 'https://api-use2-shadow.zed.com/v1',
+    })};window.__RUNTIME_ENV=window.__ZED_RUNTIME_CONFIG;`;
 
     await assert.rejects(
-      validateDeployedProductionSupabase('https://kortix.com/api/runtime-config', {
+      validateDeployedProductionSupabase('https://zed.com/api/runtime-config', {
         expectedVersion: '0.11.0',
         fetchImpl: async () => new Response(wrongBackendScript, { status: 200 }),
       }),
-      /does not match https:\/\/api\.kortix\.com\/v1/,
+      /does not match https:\/\/api\.zed\.com\/v1/,
     );
   });
 });

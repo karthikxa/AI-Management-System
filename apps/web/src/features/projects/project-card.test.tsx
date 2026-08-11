@@ -1,4 +1,4 @@
-import type { KortixProject } from '@kortix/sdk';
+import type { ZedProject } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -16,13 +16,13 @@ const code = readFileSync(fileURLToPath(new URL('./project-card.tsx', import.met
   .replace(/\/\*[\s\S]*?\*\//g, '')
   .replace(/(^|[^:])\/\/.*$/gm, '$1');
 
-const BASE: KortixProject = {
+const BASE: ZedProject = {
   project_id: 'p1',
   account_id: 'a1',
   name: 'Turtle Shop',
-  repo_url: 'https://github.com/kortix-ai/turtle-shop',
+  repo_url: 'https://github.com/zed-ai/turtle-shop',
   default_branch: 'main',
-  manifest_path: 'kortix.yaml',
+  manifest_path: 'zed.yaml',
   status: 'active',
   metadata: {},
   last_opened_at: null,
@@ -33,7 +33,7 @@ const BASE: KortixProject = {
 /** `useTranslations('hardcodedUi')` needs the provider; the card reads no real
  *  copy this file asserts on, so empty messages plus a swallowed onError is
  *  enough (same shell as features/session/action-panel/mode-gate.test.tsx). */
-const render = (project: Partial<KortixProject>) =>
+const render = (project: Partial<ZedProject>) =>
   renderToStaticMarkup(
     <NextIntlClientProvider locale="en" messages={{}} onError={() => {}}>
       <ProjectCard
@@ -89,7 +89,7 @@ describe('ProjectCard — the project’s own icon', () => {
   });
 
   test('a response with no icon field at all still shows the initial', () => {
-    // `icon` is optional on KortixProject, so a stale/cached payload omits it.
+    // `icon` is optional on ZedProject, so a stale/cached payload omits it.
     expect(tileTextOf(render({}))).toBe('T');
   });
 
@@ -170,7 +170,7 @@ describe('ProjectCard — the project’s own glyph', () => {
   });
 
   test('a response with no glyph field at all still shows the initial', () => {
-    // `icon_glyph` is optional on KortixProject, so a stale/cached payload
+    // `icon_glyph` is optional on ZedProject, so a stale/cached payload
     // omits it — the same case `icon` already covers.
     expect(tileTextOf(render({}))).toBe('T');
   });

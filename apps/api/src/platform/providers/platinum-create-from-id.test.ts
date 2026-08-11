@@ -16,9 +16,9 @@ setTestEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-service-role');
 setTestEnv('API_KEY_SECRET', 'test-api-key-secret');
 setTestEnv('TUNNEL_SIGNING_SECRET', 'test-tunnel-signing-secret');
 setTestEnv('ALLOWED_SANDBOX_PROVIDERS', 'platinum');
-setTestEnv('KORTIX_URL', 'https://api.example.com');
+setTestEnv('ZED_URL', 'https://api.example.com');
 setTestEnv('FRONTEND_URL', 'http://localhost:3000');
-setTestEnv('INTERNAL_KORTIX_ENV', 'dev');
+setTestEnv('INTERNAL_ZED_ENV', 'dev');
 setTestEnv('PLATINUM_API_URL', 'https://api.platinum.dev');
 setTestEnv('PLATINUM_API_KEY', 'pt_test_key');
 setTestEnv('PLATINUM_TEMPLATE', 'tpl_default');
@@ -45,7 +45,7 @@ mock.module('../sandbox-frontend-url', () => ({ sandboxFrontendBaseUrl: () => 'h
 const { PlatinumProvider } = await import('./platinum');
 const { SandboxTemplateNotFoundError } = await import('./index');
 
-const baseOpts = { accountId: 'a', userId: 'u', name: 'box', envVars: { KORTIX_SANDBOX_TOKEN: 'tok' } };
+const baseOpts = { accountId: 'a', userId: 'u', name: 'box', envVars: { ZED_SANDBOX_TOKEN: 'tok' } };
 
 beforeEach(() => {
   calls = [];

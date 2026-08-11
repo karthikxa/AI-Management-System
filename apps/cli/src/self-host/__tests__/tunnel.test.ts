@@ -8,20 +8,20 @@ import {
 } from '../tunnel.ts';
 
 describe('reachabilityMode', () => {
-  test('KORTIX_DOMAIN set always wins, regardless of KORTIX_REACHABILITY_MODE', () => {
-    expect(reachabilityMode({ KORTIX_DOMAIN: 'kortix.example.com', KORTIX_REACHABILITY_MODE: 'tunnel' })).toBe('domain');
-    expect(reachabilityMode({ KORTIX_DOMAIN: 'kortix.example.com', KORTIX_REACHABILITY_MODE: 'local' })).toBe('domain');
-    expect(reachabilityMode({ KORTIX_DOMAIN: '  ' })).toBe('local');
+  test('ZED_DOMAIN set always wins, regardless of ZED_REACHABILITY_MODE', () => {
+    expect(reachabilityMode({ ZED_DOMAIN: 'zed.example.com', ZED_REACHABILITY_MODE: 'tunnel' })).toBe('domain');
+    expect(reachabilityMode({ ZED_DOMAIN: 'zed.example.com', ZED_REACHABILITY_MODE: 'local' })).toBe('domain');
+    expect(reachabilityMode({ ZED_DOMAIN: '  ' })).toBe('local');
   });
 
   test('tunnel mode requires the explicit preference, and only absent a domain', () => {
-    expect(reachabilityMode({ KORTIX_REACHABILITY_MODE: 'tunnel' })).toBe('tunnel');
-    expect(reachabilityMode({ KORTIX_DOMAIN: '', KORTIX_REACHABILITY_MODE: 'tunnel' })).toBe('tunnel');
+    expect(reachabilityMode({ ZED_REACHABILITY_MODE: 'tunnel' })).toBe('tunnel');
+    expect(reachabilityMode({ ZED_DOMAIN: '', ZED_REACHABILITY_MODE: 'tunnel' })).toBe('tunnel');
   });
 
   test('defaults to local when nothing is configured — backward compatible with pre-feature instances', () => {
     expect(reachabilityMode({})).toBe('local');
-    expect(reachabilityMode({ KORTIX_REACHABILITY_MODE: 'bogus' })).toBe('local');
+    expect(reachabilityMode({ ZED_REACHABILITY_MODE: 'bogus' })).toBe('local');
   });
 });
 
@@ -29,12 +29,12 @@ describe('namedTunnelConfigured', () => {
   test('requires BOTH a token and a hostname', () => {
     expect(namedTunnelConfigured({})).toBe(false);
     expect(namedTunnelConfigured({ CLOUDFLARE_TUNNEL_TOKEN: 'abc' })).toBe(false);
-    expect(namedTunnelConfigured({ CLOUDFLARE_TUNNEL_HOSTNAME: 'kortix.example.com' })).toBe(false);
-    expect(namedTunnelConfigured({ CLOUDFLARE_TUNNEL_TOKEN: 'abc', CLOUDFLARE_TUNNEL_HOSTNAME: 'kortix.example.com' })).toBe(true);
+    expect(namedTunnelConfigured({ CLOUDFLARE_TUNNEL_HOSTNAME: 'zed.example.com' })).toBe(false);
+    expect(namedTunnelConfigured({ CLOUDFLARE_TUNNEL_TOKEN: 'abc', CLOUDFLARE_TUNNEL_HOSTNAME: 'zed.example.com' })).toBe(true);
   });
 
   test('blank/whitespace-only values do not count as configured', () => {
-    expect(namedTunnelConfigured({ CLOUDFLARE_TUNNEL_TOKEN: '  ', CLOUDFLARE_TUNNEL_HOSTNAME: 'kortix.example.com' })).toBe(false);
+    expect(namedTunnelConfigured({ CLOUDFLARE_TUNNEL_TOKEN: '  ', CLOUDFLARE_TUNNEL_HOSTNAME: 'zed.example.com' })).toBe(false);
   });
 });
 
@@ -79,19 +79,19 @@ describe('resolveTunnelUrl', () => {
   test('a named tunnel resolves instantly from the hostname — no log polling', async () => {
     let readCalls = 0;
     const result = await resolveTunnelUrl(
-      { CLOUDFLARE_TUNNEL_TOKEN: 'tok', CLOUDFLARE_TUNNEL_HOSTNAME: 'kortix.example.com' },
+      { CLOUDFLARE_TUNNEL_TOKEN: 'tok', CLOUDFLARE_TUNNEL_HOSTNAME: 'zed.example.com' },
       () => { readCalls++; return ''; },
     );
-    expect(result).toEqual({ ok: true, url: 'https://kortix.example.com' });
+    expect(result).toEqual({ ok: true, url: 'https://zed.example.com' });
     expect(readCalls).toBe(0);
   });
 
   test('strips a scheme prefix if the operator pasted the hostname with one', async () => {
     const result = await resolveTunnelUrl(
-      { CLOUDFLARE_TUNNEL_TOKEN: 'tok', CLOUDFLARE_TUNNEL_HOSTNAME: 'https://kortix.example.com' },
+      { CLOUDFLARE_TUNNEL_TOKEN: 'tok', CLOUDFLARE_TUNNEL_HOSTNAME: 'https://zed.example.com' },
       () => '',
     );
-    expect(result.url).toBe('https://kortix.example.com');
+    expect(result.url).toBe('https://zed.example.com');
   });
 
   test('quick tunnel: returns the URL as soon as the logs contain it', async () => {

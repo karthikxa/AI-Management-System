@@ -67,12 +67,12 @@ beforeEach(async () => {
   await writeFile(join(upstream, 'README.md'), '# hi\n');
   await git(['add', '.'], upstream);
   await git(['commit', '-m', 'init'], upstream);
-  // mirror.ts reads KORTIX_GIT_CACHE_DIR at call time.
-  process.env.KORTIX_GIT_CACHE_DIR = cacheDir;
+  // mirror.ts reads ZED_GIT_CACHE_DIR at call time.
+  process.env.ZED_GIT_CACHE_DIR = cacheDir;
 });
 
 afterAll(async () => {
-  delete process.env.KORTIX_GIT_CACHE_DIR;
+  delete process.env.ZED_GIT_CACHE_DIR;
 });
 
 describe('refreshMirror auth self-sufficiency', () => {

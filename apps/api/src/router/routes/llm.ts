@@ -20,7 +20,7 @@ import {
   settleLlmReservation,
   type LlmCreditReservation,
 } from '../services/llm-reservation';
-import { KORTIX_MARKUP } from '../../config';
+import { ZED_MARKUP } from '../../config';
 
 const llm = makeOpenApiApp<{ Variables: AppContext }>();
 
@@ -104,7 +104,7 @@ llm.openapi(
     const reservation = await reserveEstimatedLlmCredits(
       accountId,
       JSON.stringify(body),
-      KORTIX_MARKUP,
+      ZED_MARKUP,
       actor,
       'openrouter',
     );
@@ -189,7 +189,7 @@ llm.openapi(
         usage.completionTokens,
         usage.cachedTokens,
         usage.cacheWriteTokens,
-        KORTIX_MARKUP,
+        ZED_MARKUP,
         usage.upstreamCost,
       );
       await settleLlmReservation({
@@ -333,7 +333,7 @@ async function extractUsageFromStream(
         usage.completionTokens,
         usage.cachedTokens,
         usage.cacheWriteTokens,
-        KORTIX_MARKUP,
+        ZED_MARKUP,
         usage.upstreamCost,
       );
       settlementStarted = true;

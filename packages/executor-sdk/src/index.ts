@@ -1,15 +1,15 @@
 import {
   ApiError,
-  configureKortix,
-  createKortix,
+  configureZed,
+  createZed,
   type ConnectorAttachmentUploadInput,
   type ConnectorAttachmentUploadResult,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
-/** @deprecated Use Connector terminology from `@kortix/sdk`. */
+/** @deprecated Use Connector terminology from `@zed/sdk`. */
 export type ExecutorRisk = 'read' | 'write' | 'destructive' | string;
 
-/** @deprecated Use `ConnectorAction` from `@kortix/sdk`. */
+/** @deprecated Use `ConnectorAction` from `@zed/sdk`. */
 export interface ExecutorAction {
   path: string;
   name: string;
@@ -18,7 +18,7 @@ export interface ExecutorAction {
   inputSchema: unknown;
 }
 
-/** @deprecated Use `ConnectorCatalogEntry` from `@kortix/sdk`. */
+/** @deprecated Use `ConnectorCatalogEntry` from `@zed/sdk`. */
 export interface ExecutorConnector {
   slug: string;
   name: string;
@@ -27,7 +27,7 @@ export interface ExecutorConnector {
   actions: ExecutorAction[];
 }
 
-/** @deprecated Use `ConnectorTool` from `@kortix/sdk`. */
+/** @deprecated Use `ConnectorTool` from `@zed/sdk`. */
 export interface ExecutorToolMatch {
   tool: string;
   connector: string;
@@ -37,7 +37,7 @@ export interface ExecutorToolMatch {
   inputSchema: unknown;
 }
 
-/** @deprecated Use `ConnectorCallResult` from `@kortix/sdk`. */
+/** @deprecated Use `ConnectorCallResult` from `@zed/sdk`. */
 export interface ExecutorCallResult<T = unknown> {
   ok: boolean;
   data?: T;
@@ -51,13 +51,13 @@ export interface ExecutorCallResult<T = unknown> {
   approval_instructions?: string | null;
 }
 
-/** @deprecated Use `ConnectorAttachmentUploadInput` from `@kortix/sdk`. */
+/** @deprecated Use `ConnectorAttachmentUploadInput` from `@zed/sdk`. */
 export interface ExecutorAttachmentUploadInput extends ConnectorAttachmentUploadInput {}
 
-/** @deprecated Use `ConnectorAttachmentUploadResult` from `@kortix/sdk`. */
+/** @deprecated Use `ConnectorAttachmentUploadResult` from `@zed/sdk`. */
 export interface ExecutorAttachmentUploadResult extends ConnectorAttachmentUploadResult {}
 
-/** @deprecated Use `createKortix` from `@kortix/sdk`. */
+/** @deprecated Use `createZed` from `@zed/sdk`. */
 export interface ExecutorClientOptions {
   apiUrl: string;
   token: string;
@@ -66,7 +66,7 @@ export interface ExecutorClientOptions {
   timeoutMs?: number;
 }
 
-/** @deprecated Catch `ApiError` from `@kortix/sdk`. */
+/** @deprecated Catch `ApiError` from `@zed/sdk`. */
 export class ExecutorError extends Error {
   constructor(
     message: string,
@@ -79,13 +79,13 @@ export class ExecutorError extends Error {
   }
 }
 
-type SDK = ReturnType<typeof createKortix>;
+type SDK = ReturnType<typeof createZed>;
 
 /**
  * Final compatibility adapter for the retired Executor name.
  *
- * @deprecated Use `createKortix({ backendUrl, getToken })` and
- * `kortix.project(projectId).connectors` from `@kortix/sdk`.
+ * @deprecated Use `createZed({ backendUrl, getToken })` and
+ * `zed.project(projectId).connectors` from `@zed/sdk`.
  */
 export class ExecutorClient {
   private readonly apiUrl: string;
@@ -94,7 +94,7 @@ export class ExecutorClient {
   private readonly fetchImpl: typeof fetch;
   private readonly timeoutMs: number;
   private readonly sdk: SDK;
-  private readonly sdkConfig: Parameters<typeof createKortix>[0];
+  private readonly sdkConfig: Parameters<typeof createZed>[0];
 
   constructor(opts: ExecutorClientOptions) {
     if (!opts.apiUrl.trim()) throw new Error('apiUrl is required');
@@ -111,7 +111,7 @@ export class ExecutorClient {
       fetch: this.fetchImpl,
       clientSource: 'cli',
     };
-    this.sdk = createKortix(this.sdkConfig);
+    this.sdk = createZed(this.sdkConfig);
   }
 
   private connectorsApi() {
@@ -121,10 +121,10 @@ export class ExecutorClient {
   }
 
   private async throughSdk<T>(operation: () => Promise<T>): Promise<T> {
-    // @kortix/sdk uses one configured client per host. Re-apply this deprecated
+    // @zed/sdk uses one configured client per host. Re-apply this deprecated
     // adapter's configuration before each operation so sequential legacy clients
     // retain their original token and URL behavior during migration.
-    configureKortix(this.sdkConfig);
+    configureZed(this.sdkConfig);
     try {
       return await operation();
     } catch (error) {
@@ -203,7 +203,7 @@ export class ExecutorClient {
    * Compatibility-only raw request escape hatch.
    *
    * @deprecated Replace raw Executor routes with the typed Connector methods on
-   * `kortix.project(projectId).connectors` from `@kortix/sdk`.
+   * `zed.project(projectId).connectors` from `@zed/sdk`.
    */
   async request<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
     const normalized = normalizeLegacyPath(path);
@@ -246,7 +246,7 @@ export class ExecutorClient {
 }
 
 /**
- * @deprecated Use `createKortix` from `@kortix/sdk`.
+ * @deprecated Use `createZed` from `@zed/sdk`.
  */
 export function createExecutorClient(opts: ExecutorClientOptions): ExecutorClient {
   return new ExecutorClient(opts);

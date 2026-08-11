@@ -1,12 +1,12 @@
 /**
- * Manifest format layer — the ONE place that knows a Kortix manifest can be
- * written as either TOML (`kortix.toml`, the original) or YAML (`kortix.yaml`).
+ * Manifest format layer — the ONE place that knows a Zed manifest can be
+ * written as either TOML (`zed.toml`, the original) or YAML (`zed.yaml`).
  *
  * Resolution rule (used everywhere a manifest is read): given the project's
  * configured manifest path, prefer a sibling `.yaml` (then `.yml`), and fall
  * back to `.toml`. So a repo with BOTH files uses the YAML one, a repo with
- * only `kortix.toml` keeps working unchanged, and a repo that switched to
- * `kortix.yaml` is picked up automatically.
+ * only `zed.toml` keeps working unchanged, and a repo that switched to
+ * `zed.yaml` is picked up automatically.
  *
  * The parsed OBJECT shape is identical across formats — TOML `[[agents]]` and
  * YAML `agents: [...]` both decode to `{ agents: [...] }` — so every downstream
@@ -19,8 +19,8 @@ import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 
 export type ManifestFormat = 'toml' | 'yaml';
 
-export const MANIFEST_FILENAME_TOML = 'kortix.toml';
-export const MANIFEST_FILENAME_YAML = 'kortix.yaml';
+export const MANIFEST_FILENAME_TOML = 'zed.toml';
+export const MANIFEST_FILENAME_YAML = 'zed.yaml';
 
 /** A candidate manifest file: where it lives + how to parse/serialize it. */
 export interface ManifestCandidate {
@@ -31,8 +31,8 @@ export interface ManifestCandidate {
 /**
  * The candidate manifest files for a project, in RESOLUTION PRIORITY order
  * (first present wins). Derived from the configured manifest path by swapping
- * the extension, so a custom path like `config/kortix.toml` still resolves its
- * `config/kortix.yaml` sibling. YAML is preferred over TOML.
+ * the extension, so a custom path like `config/zed.toml` still resolves its
+ * `config/zed.yaml` sibling. YAML is preferred over TOML.
  */
 export function manifestCandidatePaths(configuredPath?: string | null): ManifestCandidate[] {
   const base = (configuredPath && configuredPath.trim()) || MANIFEST_FILENAME_TOML;
@@ -56,7 +56,7 @@ export function parseManifestText(raw: string, format: ManifestFormat): Record<s
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     // An empty YAML doc parses to null; a scalar/array top level is invalid.
     // Normalize to an empty object so the schema validator reports the real
-    // "kortix_version is required" issue instead of throwing on a null access.
+    // "zed_version is required" issue instead of throwing on a null access.
     return {};
   }
   return value as Record<string, unknown>;

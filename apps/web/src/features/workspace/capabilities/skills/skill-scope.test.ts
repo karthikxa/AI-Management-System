@@ -8,25 +8,25 @@ const skill = (name: string, description: string | null = null) => ({
 });
 
 describe('skillScope', () => {
-  test('kortix-* skills are platform runtime', () => {
-    expect(skillScope('kortix-cli')).toBe('kortix');
-    expect(skillScope('kortix-presentation')).toBe('kortix');
+  test('zed-* skills are platform runtime', () => {
+    expect(skillScope('zed-cli')).toBe('zed');
+    expect(skillScope('zed-presentation')).toBe('zed');
   });
   test('everything else belongs to the project', () => {
     expect(skillScope('podcast')).toBe('project');
-    expect(skillScope('my-kortix-thing')).toBe('project');
+    expect(skillScope('my-zed-thing')).toBe('project');
   });
 });
 
 describe('filterSkills', () => {
-  const all = [skill('kortix-cli'), skill('podcast', 'Make an episode'), skill('dataviz')];
+  const all = [skill('zed-cli'), skill('podcast', 'Make an episode'), skill('dataviz')];
 
   test('scope null returns everything', () => {
     expect(filterSkills(all, { scope: null, query: '' })).toHaveLength(3);
   });
   test('scope narrows to one family', () => {
-    expect(filterSkills(all, { scope: 'kortix', query: '' }).map((s) => s.name)).toEqual([
-      'kortix-cli',
+    expect(filterSkills(all, { scope: 'zed', query: '' }).map((s) => s.name)).toEqual([
+      'zed-cli',
     ]);
   });
   test('query matches name and description, case-insensitively', () => {
@@ -36,6 +36,6 @@ describe('filterSkills', () => {
     ]);
   });
   test('scope and query compose', () => {
-    expect(filterSkills(all, { scope: 'project', query: 'kortix' })).toHaveLength(0);
+    expect(filterSkills(all, { scope: 'project', query: 'zed' })).toHaveLength(0);
   });
 });

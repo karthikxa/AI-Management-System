@@ -1,6 +1,6 @@
 'use client';
 
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
@@ -79,7 +79,7 @@ export function DocxRenderer({
   if (!src) {
     return (
       <div className={cn('flex h-full w-full items-center justify-center', className)}>
-        <KortixLoader size="medium" />
+        <ZedLoader size="medium" />
       </div>
     );
   }

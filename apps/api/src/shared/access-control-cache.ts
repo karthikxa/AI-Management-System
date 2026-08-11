@@ -1,11 +1,11 @@
 import { db } from './db';
-import { platformSettings, accessAllowlist } from '@kortix/db';
+import { platformSettings, accessAllowlist } from '@zed/db';
 import { eq } from 'drizzle-orm';
 
 const REFRESH_INTERVAL_MS = 60_000;
 
 const globalForAccessControl = globalThis as typeof globalThis & {
-  __kortixAccessControlRefreshTimer?: ReturnType<typeof setInterval> | null;
+  __zedAccessControlRefreshTimer?: ReturnType<typeof setInterval> | null;
 };
 
 let signupsEnabled = true; // fail-open default
@@ -40,12 +40,12 @@ async function refresh() {
 }
 
 export function startAccessControlCache() {
-  if (globalForAccessControl.__kortixAccessControlRefreshTimer) {
-    clearInterval(globalForAccessControl.__kortixAccessControlRefreshTimer);
+  if (globalForAccessControl.__zedAccessControlRefreshTimer) {
+    clearInterval(globalForAccessControl.__zedAccessControlRefreshTimer);
   }
   refresh(); // initial load (fire-and-forget)
   refreshTimer = setInterval(refresh, REFRESH_INTERVAL_MS);
-  globalForAccessControl.__kortixAccessControlRefreshTimer = refreshTimer;
+  globalForAccessControl.__zedAccessControlRefreshTimer = refreshTimer;
 }
 
 export function stopAccessControlCache() {
@@ -53,9 +53,9 @@ export function stopAccessControlCache() {
     clearInterval(refreshTimer);
     refreshTimer = null;
   }
-  if (globalForAccessControl.__kortixAccessControlRefreshTimer) {
-    clearInterval(globalForAccessControl.__kortixAccessControlRefreshTimer);
-    globalForAccessControl.__kortixAccessControlRefreshTimer = null;
+  if (globalForAccessControl.__zedAccessControlRefreshTimer) {
+    clearInterval(globalForAccessControl.__zedAccessControlRefreshTimer);
+    globalForAccessControl.__zedAccessControlRefreshTimer = null;
   }
 }
 

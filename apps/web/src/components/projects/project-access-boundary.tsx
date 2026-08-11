@@ -16,7 +16,7 @@ import { useAuth } from '@/features/providers/auth-provider';
 import { useAdminRole } from '@/hooks/admin/use-admin-role';
 import { clearLastProjectId, readLastProjectId } from '@/lib/onboarding/last-project-cookie';
 import { focusWithoutScroll } from '@/lib/utils/focus-without-scroll';
-import { getProject, requestProjectAccess, setAdminBypass } from '@kortix/sdk';
+import { getProject, requestProjectAccess, setAdminBypass } from '@zed/sdk';
 
 const QUERY_KEY = 'project-access-boundary';
 
@@ -444,7 +444,7 @@ function AccessGateScreen({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-kortix-orange hover:text-kortix-orange hover:bg-kortix-orange/10 -mr-2 h-7 shrink-0 px-2 text-xs"
+                    className="text-zed-orange hover:text-zed-orange hover:bg-zed-orange/10 -mr-2 h-7 shrink-0 px-2 text-xs"
                     onClick={() => bypassMutation.mutate()}
                     disabled={bypassMutation.isPending}
                   >

@@ -1,4 +1,4 @@
-import { chatChannelBindings, chatInstalls, projects } from '@kortix/db';
+import { chatChannelBindings, chatInstalls, projects } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { db } from '../../shared/db';
 import type { ChannelCtx } from '../slack/selection';

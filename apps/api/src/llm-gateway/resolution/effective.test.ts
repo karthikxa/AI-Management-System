@@ -47,9 +47,9 @@ describe('chooseEffectiveModel', () => {
     ).toEqual({ model: null, source: 'platform' });
   });
 
-  test('free tier: a kortix/-prefixed managed default is also dropped', () => {
+  test('free tier: a zed/-prefixed managed default is also dropped', () => {
     expect(
-      chooseEffectiveModel({ projectDefault: 'kortix/glm-5.2', freeModelsOnly: true }),
+      chooseEffectiveModel({ projectDefault: 'zed/glm-5.2', freeModelsOnly: true }),
     ).toEqual({ model: null, source: 'platform' });
   });
 
@@ -61,22 +61,22 @@ describe('chooseEffectiveModel', () => {
 });
 
 describe('toWireModel / toOpencodeModelRef', () => {
-  test('strips the opencode-only kortix/ prefix to the bare wire id', () => {
-    expect(toWireModel('kortix/claude-sonnet-4.6')).toBe('claude-sonnet-4.6');
+  test('strips the opencode-only zed/ prefix to the bare wire id', () => {
+    expect(toWireModel('zed/claude-sonnet-4.6')).toBe('claude-sonnet-4.6');
     expect(toWireModel('anthropic/claude-sonnet-4.6')).toBe('anthropic/claude-sonnet-4.6');
     expect(toWireModel('glm-5.2')).toBe('glm-5.2');
   });
 
   test('re-prefixes a bare managed id to the opencode ref; leaves BYOK/codex alone', () => {
-    expect(toOpencodeModelRef('glm-5.2')).toBe('kortix/glm-5.2');
-    expect(toOpencodeModelRef('claude-opus-4.8')).toBe('kortix/claude-opus-4.8');
-    expect(toOpencodeModelRef('kortix/glm-5.2')).toBe('kortix/glm-5.2');
+    expect(toOpencodeModelRef('glm-5.2')).toBe('zed/glm-5.2');
+    expect(toOpencodeModelRef('claude-opus-4.8')).toBe('zed/claude-opus-4.8');
+    expect(toOpencodeModelRef('zed/glm-5.2')).toBe('zed/glm-5.2');
     expect(toOpencodeModelRef('anthropic/claude-sonnet-4.6')).toBe('anthropic/claude-sonnet-4.6');
     expect(toOpencodeModelRef('codex/gpt-5.5')).toBe('codex/gpt-5.5');
   });
 
   test('round-trips a managed id through wire → opencode', () => {
-    expect(toOpencodeModelRef(toWireModel('kortix/glm-5.2'))).toBe('kortix/glm-5.2');
+    expect(toOpencodeModelRef(toWireModel('zed/glm-5.2'))).toBe('zed/glm-5.2');
   });
 });
 
@@ -110,13 +110,13 @@ describe('degradeUnservableDefault — stale default guard', () => {
     expect(await degradeUnservableDefault(undefined, { hasProject: true }, neverProbe)).toBeNull();
   });
 
-  test('managed default is trusted without a probe (bare id and kortix/ ref)', async () => {
+  test('managed default is trusted without a probe (bare id and zed/ ref)', async () => {
     expect(await degradeUnservableDefault('glm-5.2', { hasProject: true }, neverProbe)).toBe(
       'glm-5.2',
     );
     expect(
-      await degradeUnservableDefault('kortix/claude-opus-4.8', { hasProject: true }, neverProbe),
-    ).toBe('kortix/claude-opus-4.8');
+      await degradeUnservableDefault('zed/claude-opus-4.8', { hasProject: true }, neverProbe),
+    ).toBe('zed/claude-opus-4.8');
   });
 
   test('BYOK default with no project context degrades to platform, no probe', async () => {

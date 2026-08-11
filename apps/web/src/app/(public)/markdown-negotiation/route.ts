@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export function GET(request: Request) {
   const htmlPath =
-    request.headers.get('x-kortix-markdown-path') ?? new URL(request.url).searchParams.get('path');
+    request.headers.get('x-zed-markdown-path') ?? new URL(request.url).searchParams.get('path');
   if (!htmlPath?.startsWith('/') || htmlPath.startsWith('//')) {
     return new Response('Invalid path\n', { status: 400 });
   }

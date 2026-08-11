@@ -5,7 +5,7 @@
  *
  * The whole origin shares ONE ~5–10MB localStorage bucket. Every store, cache
  * and feature flag writes into it. Historically a few caches were keyed by the
- * *ephemeral* per-sandbox server id (`kortix_cache_sessions:<serverId>`, …) and
+ * *ephemeral* per-sandbox server id (`zed_cache_sessions:<serverId>`, …) and
  * never evicted — so every new session minted a fresh set of keys that piled up
  * forever. Eventually the bucket saturated and the *next* `setItem` from *any*
  * store threw `QuotaExceededError` synchronously, crashing whatever happened to

@@ -8,7 +8,7 @@ import {
 
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/loading';
-import type { PendingSessionPrompt } from '@kortix/sdk';
+import type { PendingSessionPrompt } from '@zed/sdk';
 
 interface ProviderFailureRecoveryProps {
   pendingPrompt: PendingSessionPrompt | null;

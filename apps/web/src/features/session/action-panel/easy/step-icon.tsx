@@ -61,8 +61,8 @@ export function StepIcon({ family, status }: { family: StepFamily; status: Step[
   if (status === 'running') {
     return (
       <span className="relative flex size-4 shrink-0 items-center justify-center">
-        <span className="bg-kortix-green/25 absolute inline-flex size-4 animate-ping rounded-full motion-reduce:animate-none" />
-        <Glyph className="text-kortix-green relative size-4" />
+        <span className="bg-zed-green/25 absolute inline-flex size-4 animate-ping rounded-full motion-reduce:animate-none" />
+        <Glyph className="text-zed-green relative size-4" />
       </span>
     );
   }
@@ -71,7 +71,7 @@ export function StepIcon({ family, status }: { family: StepFamily; status: Step[
     <Glyph
       className={cn(
         'size-4 shrink-0',
-        status === 'error' ? 'text-kortix-red' : 'text-muted-foreground',
+        status === 'error' ? 'text-zed-red' : 'text-muted-foreground',
       )}
     />
   );

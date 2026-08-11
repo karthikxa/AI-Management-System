@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { qk } from '@kortix/sdk/react';
+import { qk } from '@zed/sdk/react';
 import { CheckIcon as Check, LockIcon as Lock, UsersIcon as Users } from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 

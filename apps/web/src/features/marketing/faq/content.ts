@@ -50,7 +50,7 @@
  *    and no Claude-subscription auth path anywhere in the codebase, however
  *    often other copy says so (`how-it-works-content.ts:39-41` records the same
  *    correction). Name ChatGPT only.
- *  - SELF-HOST IS NOT AIR-GAPPED. `kortix self-host start` pulls images over the
+ *  - SELF-HOST IS NOT AIR-GAPPED. `zed self-host start` pulls images over the
  *    internet, the default sandbox provider is remote, and the instance must be
  *    reachable so the sandbox can call back (`apps/cli/src/commands/self-host.ts`,
  *    and the honesty gate in `marketing/self-hosted/content.ts`). Say it.
@@ -74,8 +74,8 @@
  *    true for the Platinum provider (Cloud Hypervisor) and not for the default.
  *    Never "container" in external copy. Never claim egress is controlled at the
  *    network; nothing implements it.
- *  - HARNESS. OpenCode only. ACP, `kortix_version: 3` and the Claude Code /
- *    Codex / Pi harnesses sit behind `KORTIX_ACP_RUNTIME` (default false) and
+ *  - HARNESS. OpenCode only. ACP, `zed_version: 3` and the Claude Code /
+ *    Codex / Pi harnesses sit behind `ZED_ACP_RUNTIME` (default false) and
  *    are not shipped. Never name them.
  *  - LICENCE. Say "open source" and stop. Never name one.
  *  - NO CUSTOMER NAMES. NO INVENTED METRICS. The live GitHub star count is the
@@ -96,7 +96,7 @@ export const faq = {
   eyebrow: 'Straight answers',
   title: 'The questions people ask before the first session.',
   /** One link out, to the page that carries the longest of these answers. */
-  /* No trailing link. One 'How Kortix is secured →' under a list of six
+  /* No trailing link. One 'How Zed is secured →' under a list of six
      questions pointed at the answer to only one of them, and reads as an
      apology for the section. Each answer carries its own link where it needs
      one. */
@@ -111,7 +111,7 @@ export const faq = {
       id: 'guardrails',
       question: 'What stops it doing something I did not want?',
       answer:
-        'You set allow, ask or block per action, and a rule can match on a glob, a regular expression, or the arguments of the call itself. Be aware that nothing is switched on for you: a project with no policy declared runs every action, so this is a thing you configure rather than a thing you inherit. Session work reaches main through a change request, and merge is default-deny for an agent — an admin has to grant it in kortix.yaml, and that grant is itself an edit somebody else has to merge.',
+        'You set allow, ask or block per action, and a rule can match on a glob, a regular expression, or the arguments of the call itself. Be aware that nothing is switched on for you: a project with no policy declared runs every action, so this is a thing you configure rather than a thing you inherit. Session work reaches main through a change request, and merge is default-deny for an agent — an admin has to grant it in zed.yaml, and that grant is itself an edit somebody else has to merge.',
     },
     {
       id: 'audit',

@@ -4,7 +4,7 @@
  *   • Base (sync, offline): the bundled starter pack (skills, agents, tools,
  *     inline content) + curated `registry:bundle`s. Always available.
  *   • External (async, cached): registries configured via
- *     `KORTIX_MARKETPLACE_REGISTRIES` (GitHub repos / registry.json URLs / repos
+ *     `ZED_MARKETPLACE_REGISTRIES` (GitHub repos / registry.json URLs / repos
  *     that just have SKILL.md files). Their items merge in; content is fetched
  *     from source at install time. Failures degrade to the base catalog.
  *
@@ -21,8 +21,8 @@ import {
   getProjectTemplateFiles,
   getStarterCatalogSourceMap,
   getStarterFiles,
-  isKortixManagedSkillName,
-} from "@kortix/starter";
+  isZedManagedSkillName,
+} from "@zed/starter";
 import { parse as parseYaml } from "yaml";
 import {
   buildRegistry,
@@ -36,7 +36,7 @@ import {
   type RegistryItem,
   type RegistryJson,
   type RegistryRef,
-} from "@kortix/registry";
+} from "@zed/registry";
 import type { MarketplaceSource } from "./sources-store";
 import { safeEgressFetch } from "../shared/ssrf-guard";
 
@@ -67,9 +67,9 @@ export interface CatalogItem {
   owner?: string;
   /** The user-added source row this came from (for exact Remove matching); absent for base/env. */
   sourceId?: string;
-  /** First-party runtime skill managed by Kortix, not an ordinary optional install. */
-  managedBy?: "kortix";
-  updatePolicy?: "kortix-managed";
+  /** First-party runtime skill managed by Zed, not an ordinary optional install. */
+  managedBy?: "zed";
+  updatePolicy?: "zed-managed";
   defaultProjectInstall?: boolean;
   defaultProjectInstallOrder?: number;
   hidden?: boolean;
@@ -103,20 +103,20 @@ export interface CatalogItemDetail extends CatalogItem {
   files: Array<{ target: string; type: string }>;
   readme: string | null;
   dependencyItems: DependencyItem[];
-  /** For a `registry:project`: its agents + triggers, parsed from kortix.yaml. */
+  /** For a `registry:project`: its agents + triggers, parsed from zed.yaml. */
   projectAgents?: ProjectAgent[];
   projectTriggers?: ProjectTrigger[];
   /** For a `registry:template`: the full declaration an install needs — the
    *  declared inputs, required secret env vars, and the `meta.template` block
    *  (agent grants, connectors, channels, triggers). Surfaced here so
-   *  `kortix marketplace show <id> --json` gives an installing agent everything
+   *  `zed marketplace show <id> --json` gives an installing agent everything
    *  in one shot. */
   inputs?: unknown[];
   envVars?: Record<string, string>;
   template?: Record<string, unknown>;
 }
 
-/** Parse a project item's `kortix.yaml` (+ each agent's own `.md` frontmatter)
+/** Parse a project item's `zed.yaml` (+ each agent's own `.md` frontmatter)
  *  to surface its agents and triggers in the detail view, the same way its
  *  skills are surfaced from `registryDependencies`. Best-effort: any parse
  *  failure just yields empty lists. */
@@ -137,7 +137,7 @@ function projectAgentsAndTriggers(
   files: Array<{ path: string; target?: string; content?: string }>,
 ): { agents: ProjectAgent[]; triggers: ProjectTrigger[] } {
   const pathOf = (f: { path: string; target?: string }) => f.target ?? f.path;
-  const manifestFile = files.find((f) => pathOf(f) === "kortix.yaml");
+  const manifestFile = files.find((f) => pathOf(f) === "zed.yaml");
   if (typeof manifestFile?.content !== "string") return { agents: [], triggers: [] };
   let manifest: unknown;
   try {
@@ -149,7 +149,7 @@ function projectAgentsAndTriggers(
 
   const agentNames = m.agents && typeof m.agents === "object" ? Object.keys(m.agents) : [];
   const agents: ProjectAgent[] = agentNames.map((name) => {
-    const md = files.find((f) => pathOf(f) === `.kortix/opencode/agents/${name}.md`);
+    const md = files.find((f) => pathOf(f) === `.zed/opencode/agents/${name}.md`);
     // Parse the agent's own `.md` frontmatter with the YAML parser (not a
     // line-based one) so folded block scalars (`description: >-`) resolve to the
     // real text, and collapse it to a single line for the card.
@@ -245,7 +245,7 @@ let marketplaceLabelsCache: Map<string, string> | null = null;
 function marketplaceLabels(): Map<string, string> {
   if (marketplaceLabelsCache) return marketplaceLabelsCache;
   const labels = new Map<string, string>([
-    ["kortix", "Kortix"],
+    ["zed", "Zed"],
     ["anthropics/skills", "Anthropic Skills"],
     ["anthropics/knowledge-work-plugins", "Anthropic Knowledge Work"],
   ]);
@@ -254,15 +254,15 @@ function marketplaceLabels(): Map<string, string> {
   return labels;
 }
 
-/** Display label for a registry/marketplace (base → "Kortix", external → curated name). */
+/** Display label for a registry/marketplace (base → "Zed", external → curated name). */
 export function marketplaceLabelOf(registry: string): string {
   const id = marketplaceIdOf(registry);
-  return marketplaceLabels().get(id) ?? (id === "kortix" ? "Kortix" : id);
+  return marketplaceLabels().get(id) ?? (id === "zed" ? "Zed" : id);
 }
 
 /** GitHub owner from a marketplace id, when it looks like `owner/repo` (for avatars). */
 function ownerOf(marketplaceId: string): string | undefined {
-  return marketplaceId !== "kortix" &&
+  return marketplaceId !== "zed" &&
     marketplaceId.includes("/") &&
     !marketplaceId.includes("://")
     ? marketplaceId.split("/")[0]
@@ -292,10 +292,10 @@ function entryToCatalogItem(e: CatalogEntry): CatalogItem {
     marketplaceLabel: marketplaceLabelOf(e.registry),
     owner: ownerOf(marketplaceId),
     sourceId: e.sourceId,
-    managedBy: e.item.meta?.managedBy === "kortix" ? "kortix" : undefined,
+    managedBy: e.item.meta?.managedBy === "zed" ? "zed" : undefined,
     updatePolicy:
-      e.item.meta?.updatePolicy === "kortix-managed"
-        ? "kortix-managed"
+      e.item.meta?.updatePolicy === "zed-managed"
+        ? "zed-managed"
         : undefined,
     defaultProjectInstall: e.item.meta?.defaultProjectInstall === true,
     defaultProjectInstallOrder,
@@ -348,30 +348,30 @@ function buildStarterRegistry(): RegistryJson {
   const starterFloorFiles = [
     ...getManagedSkillFiles(),
     ...getStarterFiles({
-      projectName: "Kortix Starter",
+      projectName: "Zed Starter",
       template: "general-knowledge-worker",
     }),
   ];
-  // The `marketplace` template layer is "listed in the Kortix marketplace but
-  // not part of the starter floor" (see getMarketplaceFiles in @kortix/starter):
+  // The `marketplace` template layer is "listed in the Zed marketplace but
+  // not part of the starter floor" (see getMarketplaceFiles in @zed/starter):
   // standalone optional skills plus the use-case templates' runbook skills.
   const files = [...starterFloorFiles, ...getMarketplaceFiles()];
   const starterFloorPaths = new Set(starterFloorFiles.map((f) => f.path));
   const map = new Map(files.map((f) => [f.path, f.content] as const));
   const { registry } = buildRegistry({
-    name: "kortix-starter",
+    name: "zed-starter",
     source: memSource(map),
   });
   for (const item of registry.items ?? []) {
     const primaryPath = item.files?.[0]?.path;
-    if (item.type === "registry:skill" && isKortixManagedSkillName(item.name)) {
+    if (item.type === "registry:skill" && isZedManagedSkillName(item.name)) {
       item.categories = [
-        ...new Set([...(item.categories ?? []), "kortix-managed"]),
+        ...new Set([...(item.categories ?? []), "zed-managed"]),
       ];
       item.meta = {
         ...(item.meta ?? {}),
-        managedBy: "kortix",
-        updatePolicy: "kortix-managed",
+        managedBy: "zed",
+        updatePolicy: "zed-managed",
       };
     } else if (
       item.type === "registry:skill" &&
@@ -379,19 +379,19 @@ function buildStarterRegistry(): RegistryJson {
       starterFloorPaths.has(primaryPath)
     ) {
       // A starter-floor skill: it stands on its own in the catalog AND ships
-      // inside the Kortix Starter project, so tag it so the UI can badge it
-      // "Part of Kortix Starter" and link back to the whole project.
+      // inside the Zed Starter project, so tag it so the UI can badge it
+      // "Part of Zed Starter" and link back to the whole project.
       item.meta = {
         ...(item.meta ?? {}),
-        partOfProject: { id: STARTER_KIT_ITEM_ID, title: "Kortix Starter" },
+        partOfProject: { id: STARTER_KIT_ITEM_ID, title: "Zed Starter" },
       };
     } else if (
       item.type === "registry:skill" &&
       primaryPath?.startsWith("runtime/")
     ) {
       // A use-case runbook skill (declared in the marketplace template's
-      // kortix.registry.json): it ships inside the Use-case pack project, not
-      // the Kortix Starter. Tag it so the explore grid folds it under the
+      // zed.registry.json): it ships inside the Use-case pack project, not
+      // the Zed Starter. Tag it so the explore grid folds it under the
       // pack tile while it stays resolvable for the use-case install wizard.
       item.meta = {
         ...(item.meta ?? {}),
@@ -400,7 +400,7 @@ function buildStarterRegistry(): RegistryJson {
     }
     // Remaining marketplace-layer skills (deep-research, search, coding, …)
     // are ordinary standalone browse tiles: optional installs, not part of
-    // the Kortix Starter project.
+    // the Zed Starter project.
     for (const f of item.files ?? []) {
       const content = map.get(f.path);
       if (content != null) f.content = content;
@@ -465,36 +465,36 @@ function buildProjectTemplateRegistry(): RegistryItem[] {
       files: files
         .filter((f) => f.path !== "project.json")
         .map((f) => ({ path: f.path, type: "registry:file" as const, content: f.content })),
-      meta: { source: "kortix", visibility: "global", ...(meta.hidden ? { hidden: true } : {}) },
+      meta: { source: "zed", visibility: "global", ...(meta.hidden ? { hidden: true } : {}) },
     });
   }
   return items;
 }
 
-// The marketplace hero: one synthetic "Kortix Starter" project. Its contents
+// The marketplace hero: one synthetic "Zed Starter" project. Its contents
 // (`what's inside`) are every browseable starter skill — resolved typed from the
 // catalog by name — and its files are the whole starter kit (file browser +
 // clone). This is the single project we lead the marketplace with; individual
 // starter skills live *inside* it rather than as their own top-level tiles.
 export const STARTER_KIT_ITEM_NAME = "starter";
-export const STARTER_KIT_ITEM_ID = `kortix-projects:${STARTER_KIT_ITEM_NAME}`;
+export const STARTER_KIT_ITEM_ID = `zed-projects:${STARTER_KIT_ITEM_NAME}`;
 
 // The second synthetic project: the Use-case pack. One browse tile that groups
 // every use-case runbook skill + persona agent from the marketplace template
 // layer (`packages/starter/templates/marketplace/runtime/**`) — visible and
-// clonable in the marketplace, but never advertised as Kortix Starter content.
+// clonable in the marketplace, but never advertised as Zed Starter content.
 export const USE_CASE_PACK_ITEM_NAME = "use-case-pack";
-export const USE_CASE_PACK_ITEM_ID = `kortix-projects:${USE_CASE_PACK_ITEM_NAME}`;
+export const USE_CASE_PACK_ITEM_ID = `zed-projects:${USE_CASE_PACK_ITEM_NAME}`;
 export const USE_CASE_PACK_TITLE = "Use-case pack";
 
-const STARTER_KIT_README = `# Kortix Starter
+const STARTER_KIT_README = `# Zed Starter
 
-The default Kortix project — a general knowledge worker that's ready to do real
+The default Zed project — a general knowledge worker that's ready to do real
 work from the very first message.
 
-It comes preloaded with the core Kortix skill floor: documents (PDF, DOCX,
+It comes preloaded with the core Zed skill floor: documents (PDF, DOCX,
 XLSX) and slides, web apps and websites, browser automation, publishing and
-deployments, and design foundations. The managed Kortix platform skills
+deployments, and design foundations. The managed Zed platform skills
 (sessions, memory, the CLI) are injected into every session automatically.
 More skills — research, outreach, and per-role runbooks — are one install away
 in the marketplace.
@@ -542,31 +542,31 @@ function buildStarterKitProjectItem(): RegistryItem {
   return {
     name: STARTER_KIT_ITEM_NAME,
     type: "registry:project",
-    title: "Kortix Starter",
+    title: "Zed Starter",
     description:
-      "The default Kortix project — a general knowledge worker preloaded with the core skill floor (documents, slides, spreadsheets, web apps, browser automation, and more), ready to work from the first session.",
+      "The default Zed project — a general knowledge worker preloaded with the core skill floor (documents, slides, spreadsheets, web apps, browser automation, and more), ready to work from the first session.",
     categories: ["project", "starter"],
     registryDependencies: skillNames,
     files,
-    meta: { source: "kortix", visibility: "global" },
+    meta: { source: "zed", visibility: "global" },
   };
 }
 
 const USE_CASE_PACK_README = `# Use-case pack
 
-Every Kortix use-case runbook in one place: the day-to-day operations playbooks
+Every Zed use-case runbook in one place: the day-to-day operations playbooks
 (sales, finance, support, recruiting, engineering, and more) plus the persona
 agents that run them.
 
 ## How to use it
 
 - **Guided (recommended):** each use case installs individually through the
-  [use-case pages](https://kortix.com/use-cases) — the wizard wires the agent,
+  [use-case pages](https://zed.com/use-cases) — the wizard wires the agent,
   its skill, grants, and any scheduled trigger into your project.
 - **Bulk clone:** clone this pack as a project to get every runbook skill under
-  \`.kortix/opencode/skills/\` and every persona agent file under
-  \`.kortix/opencode/agents/\`. Agent files ship undeclared — add the ones you
-  want to \`kortix.yaml\`'s \`agents:\` map (grants are deny-by-default) before
+  \`.zed/opencode/skills/\` and every persona agent file under
+  \`.zed/opencode/agents/\`. Agent files ship undeclared — add the ones you
+  want to \`zed.yaml\`'s \`agents:\` map (grants are deny-by-default) before
   using them.
 
 Everything is plain files in your repo: read, edit, and adapt them to how your
@@ -575,13 +575,13 @@ team actually works.
 
 /** Rewrite a marketplace-template `runtime/` path to its conventional
  *  in-project location, mirroring the install wizard's target mapping
- *  (`@skills/y` → `.kortix/opencode/skills/y`, `@agents/x.md` →
- *  `.kortix/opencode/agents/x.md`). Non-runtime paths return undefined. */
+ *  (`@skills/y` → `.zed/opencode/skills/y`, `@agents/x.md` →
+ *  `.zed/opencode/agents/x.md`). Non-runtime paths return undefined. */
 function useCasePackRepoPath(path: string): string | undefined {
   if (path.startsWith("runtime/skills/"))
-    return `.kortix/opencode/skills/${path.slice("runtime/skills/".length)}`;
+    return `.zed/opencode/skills/${path.slice("runtime/skills/".length)}`;
   if (path.startsWith("runtime/agents/"))
-    return `.kortix/opencode/agents/${path.slice("runtime/agents/".length)}`;
+    return `.zed/opencode/agents/${path.slice("runtime/agents/".length)}`;
   return undefined;
 }
 
@@ -610,25 +610,25 @@ function buildUseCasePackProjectItem(): RegistryItem {
     type: "registry:project",
     title: USE_CASE_PACK_TITLE,
     description:
-      "Every Kortix use-case runbook and persona agent in one pack — sales, finance, support, recruiting, engineering ops, and more. Install use cases one at a time from the use-case pages, or clone the whole pack.",
+      "Every Zed use-case runbook and persona agent in one pack — sales, finance, support, recruiting, engineering ops, and more. Install use cases one at a time from the use-case pages, or clone the whole pack.",
     categories: ["project", "use-case"],
     registryDependencies: skillNames,
     files,
-    meta: { source: "kortix", visibility: "global" },
+    meta: { source: "zed", visibility: "global" },
   };
 }
 
 let BASE: Catalog | null = null;
 
-const KORTIX_REPO = "https://github.com/kortix-ai/suna";
+const ZED_REPO = "https://github.com/zed-ai/suna";
 
-/** Source-of-truth GitHub path for a bundled `kortix-projects` item — these
+/** Source-of-truth GitHub path for a bundled `zed-projects` item — these
  *  are real files in this repo, not a synthetic/external registry, so "View
  *  source" can point straight at them. */
 function projectTemplateSourceUrl(slug: string): string {
   if (slug === USE_CASE_PACK_ITEM_NAME)
-    return `${KORTIX_REPO}/tree/main/packages/starter/templates/marketplace`;
-  return `${KORTIX_REPO}/tree/main/packages/starter/templates/marketplace-projects/${slug}`;
+    return `${ZED_REPO}/tree/main/packages/starter/templates/marketplace`;
+  return `${ZED_REPO}/tree/main/packages/starter/templates/marketplace-projects/${slug}`;
 }
 
 let STARTER_SOURCE_MAP: Map<string, string> | null = null;
@@ -637,7 +637,7 @@ function starterSourceMap(): Map<string, string> {
   return STARTER_SOURCE_MAP;
 }
 
-/** "View source" URL for a first-party `kortix-starter` item — resolved from
+/** "View source" URL for a first-party `zed-starter` item — resolved from
  *  the item's own file back to its real path in this repo. Skills link to
  *  their folder (so references/scripts are visible); single-file items link
  *  to the file. Undefined when the file isn't a bundled one (defensive). */
@@ -647,17 +647,17 @@ function starterItemSourceUrl(item: RegistryItem): string | undefined {
   const repoPath = starterSourceMap().get(primary);
   if (!repoPath) return undefined;
   if (item.type === "registry:skill") {
-    return `${KORTIX_REPO}/tree/main/${repoPath.replace(/\/[^/]+$/, "")}`;
+    return `${ZED_REPO}/tree/main/${repoPath.replace(/\/[^/]+$/, "")}`;
   }
-  return `${KORTIX_REPO}/blob/main/${repoPath}`;
+  return `${ZED_REPO}/blob/main/${repoPath}`;
 }
 
 function getBaseCatalog(): Catalog {
   if (BASE) return BASE;
   const registries: Array<{ name: string; items: RegistryItem[] }> = [
-    { name: "kortix-starter", items: buildStarterRegistry().items ?? [] },
+    { name: "zed-starter", items: buildStarterRegistry().items ?? [] },
     {
-      name: "kortix-projects",
+      name: "zed-projects",
       items: [
         buildStarterKitProjectItem(),
         buildUseCasePackProjectItem(),
@@ -672,7 +672,7 @@ function getBaseCatalog(): Catalog {
       const id = `${reg.name}:${item.name}`;
       if (byId.has(id)) continue;
       const sourceUrl =
-        reg.name === "kortix-projects"
+        reg.name === "zed-projects"
           ? projectTemplateSourceUrl(item.name)
           : starterItemSourceUrl(item);
       const entry = makeEntry(item, reg.name, undefined, sourceUrl);
@@ -692,7 +692,7 @@ export const MARKETPLACE_EXTERNAL_BUILD_CONCURRENCY = 4;
 
 // The cache lives on globalThis so it survives `bun --hot` reloads in dev
 // (otherwise every edit re-scans every source → the "so slow"). External sources
-// resolve PROGRESSIVELY: the base (Kortix) shows instantly and each source is
+// resolve PROGRESSIVELY: the base (Zed) shows instantly and each source is
 // folded into `partial` as it arrives, so the list never blocks on the slowest.
 /** Per-source resolution state — drives the UI's spinner-per-source. */
 export interface SourceStatus {
@@ -717,9 +717,9 @@ interface MarketplaceCache {
 }
 const CACHE: MarketplaceCache = ((
   globalThis as unknown as {
-    __kortixMarketplaceCache2?: MarketplaceCache;
+    __zedMarketplaceCache2?: MarketplaceCache;
   }
-).__kortixMarketplaceCache2 ??= {
+).__zedMarketplaceCache2 ??= {
   external: null,
   externalAt: 0,
   externalRefreshAt: 0,
@@ -746,25 +746,25 @@ export function registerMarketplaceSourceProvider(
 
 /** Static registries from config (comma-separated addresses). */
 function envSources(): string[] {
-  return (process.env.KORTIX_MARKETPLACE_REGISTRIES ?? "")
+  return (process.env.ZED_MARKETPLACE_REGISTRIES ?? "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
 }
 
 /**
- * Marketplaces that ship ENABLED by default — loaded like the Kortix base (not
+ * Marketplaces that ship ENABLED by default — loaded like the Zed base (not
  * removable), so the catalog is full on day one. For now this is empty: **only
- * Kortix is active by default**, and every other source (Anthropic, OpenAI, and
+ * Zed is active by default**, and every other source (Anthropic, OpenAI, and
  * the rest of FEATURED_MARKETPLACES) is one-click opt-in via "Add a source".
- * Can be overridden by `KORTIX_DEFAULT_MARKETPLACES` (comma-separated).
+ * Can be overridden by `ZED_DEFAULT_MARKETPLACES` (comma-separated).
  */
 export const DEFAULT_MARKETPLACES: string[] = [];
 
-/** The defaults actually loaded — `KORTIX_DEFAULT_MARKETPLACES` overrides (set it
+/** The defaults actually loaded — `ZED_DEFAULT_MARKETPLACES` overrides (set it
  *  to "" to disable, e.g. for hermetic tests). Read at call-time, not import. */
 function activeDefaultMarketplaces(): string[] {
-  const env = process.env.KORTIX_DEFAULT_MARKETPLACES;
+  const env = process.env.ZED_DEFAULT_MARKETPLACES;
   if (env === undefined) return DEFAULT_MARKETPLACES;
   return env
     .split(",")
@@ -833,7 +833,7 @@ async function externalRefs(): Promise<ExternalRef[]> {
 
 // Authenticate GitHub API/raw calls when a token is configured — lifts the
 // unauthenticated 60 req/hr scan ceiling to 5,000/hr so many marketplaces can be
-// browsed + installed without rate-limiting. Kept out of @kortix/registry (which
+// browsed + installed without rate-limiting. Kept out of @zed/registry (which
 // stays pure) — injected here as a fetch wrapper via the loader's fetchImpl.
 const GITHUB_TOKEN =
   process.env.GITHUB_TOKEN || process.env.MANAGED_GIT_GITHUB_TOKEN || "";
@@ -879,7 +879,7 @@ export const githubLoaderOptions: { fetchImpl: typeof fetch } = {
 // A source address is user-supplied + global, so in the hosted API it must not
 // read the server's disk (`local`) or fetch internal URLs (`url` → cloud
 // metadata, localhost, RFC-1918). `local` is dev-only behind an opt-in flag.
-const ALLOW_LOCAL_SOURCES = process.env.KORTIX_MARKETPLACE_ALLOW_LOCAL === "1";
+const ALLOW_LOCAL_SOURCES = process.env.ZED_MARKETPLACE_ALLOW_LOCAL === "1";
 
 function isPrivateHost(host: string): boolean {
   const h = host.toLowerCase().replace(/\.$/, "");
@@ -1041,7 +1041,7 @@ async function buildExternalCatalog(): Promise<Catalog> {
     : (CACHE.partial ??= { items: [], byId: new Map() });
   // Resolve sources concurrently with isolation — one slow/huge/dead source
   // neither blocks the others nor sinks the catalog; each folds in the instant
-  // it arrives so the list streams Kortix-first, then source-by-source.
+  // it arrives so the list streams Zed-first, then source-by-source.
   await forEachWithConcurrency(
     refs,
     MARKETPLACE_EXTERNAL_BUILD_CONCURRENCY,
@@ -1158,12 +1158,12 @@ export function catalogStatus(): {
 }
 
 /**
- * Group the base registries (kortix bundles + kortix-starter skills) under one
- * "Kortix" marketplace; every external registry is its own marketplace keyed by
+ * Group the base registries (zed bundles + zed-starter skills) under one
+ * "Zed" marketplace; every external registry is its own marketplace keyed by
  * its `owner/repo`. This is the id the "browse by marketplace" filter uses.
  */
 export function marketplaceIdOf(registry: string): string {
-  return registry === "kortix-starter" || registry === "kortix-projects" ? "kortix" : registry;
+  return registry === "zed-starter" || registry === "zed-projects" ? "zed" : registry;
 }
 
 export interface MarketplaceFacet {
@@ -1188,9 +1188,9 @@ export async function listMarketplaces(): Promise<MarketplaceFacet[]> {
     const id = it.marketplaceId;
     let m = by.get(id);
     // A company/source's sourceUrl means "the repo this whole source lives in"
-    // — only external registries have one. Base items (kortix-starter,
-    // kortix-projects) may carry a per-ITEM sourceUrl (e.g. a project
-    // template's own path), but that must NOT become the whole "Kortix"
+    // — only external registries have one. Base items (zed-starter,
+    // zed-projects) may carry a per-ITEM sourceUrl (e.g. a project
+    // template's own path), but that must NOT become the whole "Zed"
     // company's source, or it leaks onto every sibling item's page.
     const companySourceUrl = it.external ? it.sourceUrl : undefined;
     if (!m) {
@@ -1212,11 +1212,11 @@ export async function listMarketplaces(): Promise<MarketplaceFacet[]> {
     if (!m.sourceUrl && companySourceUrl) m.sourceUrl = companySourceUrl;
     if (!m.sourceId && it.sourceId) m.sourceId = it.sourceId;
   }
-  // Kortix first, then external alphabetically.
+  // Zed first, then external alphabetically.
   return [...by.values()].sort((a, b) =>
-    a.id === "kortix"
+    a.id === "zed"
       ? -1
-      : b.id === "kortix"
+      : b.id === "zed"
         ? 1
         : a.label.localeCompare(b.label),
   );
@@ -1869,17 +1869,17 @@ type ItemQuery = { query?: string; type?: string; source?: string };
 const MARKETPLACE_VISIBLE_TYPES = new Set<string>(["registry:skill", "registry:project"]);
 
 function isBrowseableCatalogItem(it: CatalogItem): boolean {
-  // Kortix-managed system skills (kortix-system/connectors/memory/slack/computer/
+  // Zed-managed system skills (zed-system/connectors/memory/slack/computer/
   // meet) are the platform floor — they ship in every project and are served
-  // live via `kortix skills get`, so they're not browse-and-install cards. They
+  // live via `zed skills get`, so they're not browse-and-install cards. They
   // stay installable by id (getCatalogEntry, ungated).
-  if (it.managedBy === "kortix") return false;
+  if (it.managedBy === "zed") return false;
   return MARKETPLACE_VISIBLE_TYPES.has(it.type) && !it.hidden;
 }
 
 /** Resolvable-by-id (detail + file fetch) but not necessarily browse-listed.
  *  Use-case templates and the agents they install stay OUT of the browse grid
- *  (that's the use-case pages' job), yet `kortix marketplace show <id>` /
+ *  (that's the use-case pages' job), yet `zed marketplace show <id>` /
  *  install-session must read them — so they resolve by id. Runbook skills are
  *  ordinary browseable items badged into the Use-case pack, so the web folds
  *  them under that tile. */
@@ -1964,7 +1964,7 @@ export async function listCatalogItems(
   return filterCatalogItems((await mergedCatalogComplete()).items, opts);
 }
 
-/** Progressive catalog — base (Kortix) instantly, external sources as they land.
+/** Progressive catalog — base (Zed) instantly, external sources as they land.
  *  Use for the browse list so the UI never blocks on the slowest source. */
 export async function listCatalogItemsLive(
   opts: ItemQuery = {},

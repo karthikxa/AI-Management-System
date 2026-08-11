@@ -1,18 +1,18 @@
-# @kortix/executor-sdk
+# @zed/executor-sdk
 
-Deprecated. Use `@kortix/sdk`.
+Deprecated. Use `@zed/sdk`.
 
 ```ts
-import { createKortix } from '@kortix/sdk';
+import { createZed } from '@zed/sdk';
 
-const kortix = createKortix({
-  backendUrl: 'https://api.kortix.com/v1',
-  getToken: async () => process.env.KORTIX_TOKEN ?? null,
+const zed = createZed({
+  backendUrl: 'https://api.zed.com/v1',
+  getToken: async () => process.env.ZED_TOKEN ?? null,
 });
 
-const connectors = kortix.project(projectId).connectors;
+const connectors = zed.project(projectId).connectors;
 await connectors.call('gmail.send_email', { to, subject, body });
 ```
 
 Version `0.12.5` is the final compatibility release. Existing
-`ExecutorClient` code continues to work while it migrates to `@kortix/sdk`.
+`ExecutorClient` code continues to work while it migrates to `@zed/sdk`.

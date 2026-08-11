@@ -18,13 +18,13 @@ const libSrc = readdirSync(LIB_DIR)
 const depBins = new Set(DEPS.map((d) => d.bin));
 
 describe('migrate contract — the worktree migrate must reference real things', () => {
-  test('every `pnpm --filter @kortix/db <script>` the worktree runs exists in @kortix/db', () => {
-    const calls = [...libSrc.matchAll(/'@kortix\/db',\s*'([a-z0-9:-]+)'/g)].map((m) => m[1]);
+  test('every `pnpm --filter @zed/db <script>` the worktree runs exists in @zed/db', () => {
+    const calls = [...libSrc.matchAll(/'@zed\/db',\s*'([a-z0-9:-]+)'/g)].map((m) => m[1]);
     expect(calls.length).toBeGreaterThan(0);
     for (const script of calls) {
       expect(
         dbPkg.scripts?.[script],
-        `lib.ts runs \`pnpm --filter @kortix/db ${script}\` but no such script exists (this is the dead db:migrate class of bug)`,
+        `lib.ts runs \`pnpm --filter @zed/db ${script}\` but no such script exists (this is the dead db:migrate class of bug)`,
       ).toBeDefined();
     }
   });
@@ -64,9 +64,9 @@ describe('dependency contract — every external binary the worktree spawns is d
 describe('runtime artifact contract', () => {
   test('worktree startup builds every binary consumed by runtime snapshot staging', () => {
     const services = readFileSync(join(LIB_DIR, 'services.ts'), 'utf8');
-    expect(services).toContain("['sandbox agent', '@kortix/sandbox-agent-server']");
-    expect(services).toContain("['CLI', '@kortix/cli']");
-    expect(services).toContain("['Apps runtime', 'apps/kortix-app-runtime/build.sh']");
+    expect(services).toContain("['sandbox agent', '@zed/sandbox-agent-server']");
+    expect(services).toContain("['CLI', '@zed/cli']");
+    expect(services).toContain("['Apps runtime', 'apps/zed-app-runtime/build.sh']");
   });
 });
 

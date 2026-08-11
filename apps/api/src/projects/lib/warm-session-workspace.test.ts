@@ -5,7 +5,7 @@ const project = {
   projectId: 'project-1',
   repoUrl: 'https://git.example.test/project-1.git',
   defaultBranch: 'main',
-  manifestPath: 'kortix.yaml',
+  manifestPath: 'zed.yaml',
 };
 
 describe('refreshWarmSessionWorkspace', () => {
@@ -62,7 +62,7 @@ describe('refreshWarmSessionWorkspace', () => {
     expect(resolvedProjects).toEqual([project]);
     expect(requests).toHaveLength(1);
     expect(requests[0]?.url).toBe(
-      `https://sandbox.test/kortix/refresh?base=1&base_sha=${baseSha}&restart=0`,
+      `https://sandbox.test/zed/refresh?base=1&base_sha=${baseSha}&restart=0`,
     );
     expect(new Headers(requests[0]?.init.headers).get('authorization')).toBe(
       'Bearer service-key',
@@ -74,7 +74,7 @@ describe('refreshWarmSessionWorkspace', () => {
     // the preview proxy strips the header from everything it relays, so a user
     // cannot present it, and the service key alone does not prove the hop
     // (the proxy authenticates user traffic with that same key).
-    expect(new Headers(requests[0]?.init.headers).get('x-kortix-service-call')).toBe('1');
+    expect(new Headers(requests[0]?.init.headers).get('x-zed-service-call')).toBe('1');
     expect(result).toEqual({
       status: 'updated',
       before_sha: 'before-sha',

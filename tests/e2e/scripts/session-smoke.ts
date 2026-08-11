@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Live session smoke test — drives the full Kortix session flow against a
+ * Live session smoke test — drives the full Zed session flow against a
  * running stack and asserts an agent actually replies.
  *
  *   CRUD project -> snapshot ready -> set provider secret -> CRUD session ->
@@ -15,7 +15,7 @@
  *   E2E_SERVICE_ROLE_KEY   Supabase service key  (default: apps/api/.env)
  *   E2E_ANON_KEY           Supabase anon key     (default: apps/web/.env)
  *   E2E_DATABASE_URL       local Postgres URL    (default postgresql://postgres:postgres@127.0.0.1:54322/postgres)
- *   E2E_MODEL              opencode model id     (default kortix/glm-5.2)
+ *   E2E_MODEL              opencode model id     (default zed/glm-5.2)
  *   E2E_EXPECT_MANAGED_GIT_PROVIDER  assert the configured managed Git provider
  *   E2E_SANDBOX_PROVIDER     explicit sandbox provider (daytona/platinum/e2b)
  *   E2E_SKIP_SNAPSHOT_WAIT   create the session immediately (default false)
@@ -53,7 +53,7 @@ const SERVICE_KEY = need(process.env.E2E_SERVICE_ROLE_KEY || process.env.SUPABAS
 const ANON_KEY = need(process.env.E2E_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || fromEnvFile(WEB_ENV, 'NEXT_PUBLIC_SUPABASE_ANON_KEY'), 'SUPABASE anon key');
 const DATABASE_URL = process.env.E2E_DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 const SKIP_AGENT_REPLY = process.env.E2E_SKIP_AGENT_REPLY === '1';
-const MODEL = process.env.E2E_MODEL || 'kortix/glm-5.2';
+const MODEL = process.env.E2E_MODEL || 'zed/glm-5.2';
 const EXPECTED_MANAGED_GIT_PROVIDER = process.env.E2E_EXPECT_MANAGED_GIT_PROVIDER || '';
 const SANDBOX_PROVIDER = process.env.E2E_SANDBOX_PROVIDER || '';
 const [MODEL_PROVIDER, ...MODEL_REST] = MODEL.split('/');
@@ -78,7 +78,7 @@ function fundAccount(accountId: string): void {
       '-v',
       'ON_ERROR_STOP=1',
       '-c',
-      `INSERT INTO kortix.credit_accounts (
+      `INSERT INTO zed.credit_accounts (
          account_id,
          balance,
          balance_precise,
@@ -125,7 +125,7 @@ async function eventuallyGet(
 }
 
 async function main() {
-  log(`=== Kortix session smoke === API=${API}`);
+  log(`=== Zed session smoke === API=${API}`);
 
   // 1. fresh confirmed user + JWT (GoTrue admin API)
   const email = `e2e-smoke-${Date.now()}@example.test`;
@@ -174,11 +174,11 @@ async function main() {
   // converting a transient 5xx/deadline into a permanent false negative.
   const files = await eventuallyGet(
     `/projects/${projectId}/files`,
-    (result) => result.status === 200 && Array.isArray(result.json) && result.json.some((file: any) => file.path === 'kortix.yaml'),
+    (result) => result.status === 200 && Array.isArray(result.json) && result.json.some((file: any) => file.path === 'zed.yaml'),
   );
-  ok('managed repo files cloned into API mirror', files.status === 200 && Array.isArray(files.json) && files.json.some((file: any) => file.path === 'kortix.yaml'), `${files.status} ${files.text.slice(0, 160)}`);
+  ok('managed repo files cloned into API mirror', files.status === 200 && Array.isArray(files.json) && files.json.some((file: any) => file.path === 'zed.yaml'), `${files.status} ${files.text.slice(0, 160)}`);
   const manifest = await eventuallyGet(
-    `/projects/${projectId}/files/content?path=kortix.yaml`,
+    `/projects/${projectId}/files/content?path=zed.yaml`,
     (result) => result.status === 200 && typeof result.json?.content === 'string' && result.json.content.length > 0,
   );
   ok('managed repo manifest content readable', manifest.status === 200 && typeof manifest.json?.content === 'string' && manifest.json.content.length > 0, `${manifest.status} ${manifest.text.slice(0, 160)}`);
@@ -284,8 +284,8 @@ async function main() {
     await sleep(5000);
   }
   if (!ok('OpenCode runtime reachable', up, lastProbe)) return finish({ projectId, sessionId });
-  const runtimeManifest = await api('GET', `/p/${ext}/8000/file/content?path=${encodeURIComponent('kortix.yaml')}`);
-  ok('sandbox workspace contains cloned kortix.yaml', runtimeManifest.status === 200 && typeof runtimeManifest.json?.content === 'string' && runtimeManifest.json.content.length > 0, `${runtimeManifest.status} ${runtimeManifest.text.slice(0, 160)}`);
+  const runtimeManifest = await api('GET', `/p/${ext}/8000/file/content?path=${encodeURIComponent('zed.yaml')}`);
+  ok('sandbox workspace contains cloned zed.yaml', runtimeManifest.status === 200 && typeof runtimeManifest.json?.content === 'string' && runtimeManifest.json.content.length > 0, `${runtimeManifest.status} ${runtimeManifest.text.slice(0, 160)}`);
 
   // 9. create OpenCode session, prompt, assert a real assistant reply
   const oc = await api('POST', `/p/${ext}/8000/session`, {});

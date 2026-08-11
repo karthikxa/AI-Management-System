@@ -1,6 +1,6 @@
 /**
  * POST /v1/platform/boot-timeline — sandbox-only sink for the in-guest boot
- * timeline (apps/kortix-sandbox-agent-server/src/boot-timeline-relay.ts's
+ * timeline (apps/zed-sandbox-agent-server/src/boot-timeline-relay.ts's
  * `relayBootTimelineToApi`), persisted via boot-timeline-store.ts's
  * `recordBootTimeline`.
  *
@@ -11,7 +11,7 @@
  *      (mirrors the existing `platformApp.route('/sandbox/version', versionRouter)`
  *      and `platformApp.route('/github-app', githubAppSetupRouter)` lines.)
  *   2. Add this route's path suffix to `sandboxTokenPathAllowed` in
- *      middleware/auth.ts's `supabaseAuth` — a sandbox (Kortix) token is only
+ *      middleware/auth.ts's `supabaseAuth` — a sandbox (Zed) token is only
  *      accepted on an explicit allowlist of path suffixes (currently
  *      `/git/clone-credential`, `/turn-stream`, `/turn-question`,
  *      `/llm-catalog`); without adding `/boot-timeline` there, every relay
@@ -20,7 +20,7 @@
  */
 import { createRoute, z } from '@hono/zod-openapi';
 import { and, eq, inArray } from 'drizzle-orm';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { db } from '../../shared/db';
 import { auth, errors, json, makeOpenApiApp } from '../../openapi';
 import type { AppEnv } from '../../types';

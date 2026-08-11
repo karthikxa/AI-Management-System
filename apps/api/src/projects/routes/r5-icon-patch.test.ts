@@ -55,7 +55,7 @@ function projectRow(over: Record<string, unknown> = {}) {
     name: 'icon-patch-test',
     repoUrl: 'https://github.com/acme/icon-patch-test.git',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     status: 'active',
     metadata: { icon: '🚀' },
     lastOpenedAt: null,
@@ -174,7 +174,7 @@ describe('PATCH /:projectId — icon set', () => {
     const { sql, params } = metadataQuery();
     // The `- $n` is the icon/icon_glyph mutual exclusion: setting `icon` must
     // delete `icon_glyph` in the same statement, or a project could hold both.
-    expect(sql).toBe(`(coalesce("kortix"."projects"."metadata", '{}'::jsonb) - $1) || $2::jsonb`);
+    expect(sql).toBe(`(coalesce("zed"."projects"."metadata", '{}'::jsonb) - $1) || $2::jsonb`);
     expect(params).toEqual(['icon_glyph', '{"icon":"🎯"}']);
     // The response is what the browser re-renders from.
     expect(await res.json()).toMatchObject({ icon: '🎯' });
@@ -211,7 +211,7 @@ describe('PATCH /:projectId — icon cleared', () => {
 
     expect(res.status).toBe(200);
     const { sql, params } = metadataQuery();
-    expect(sql).toBe(`(coalesce("kortix"."projects"."metadata", '{}'::jsonb) - $1) || $2::jsonb`);
+    expect(sql).toBe(`(coalesce("zed"."projects"."metadata", '{}'::jsonb) - $1) || $2::jsonb`);
     expect(params).toEqual(['icon', '{}']);
     expect(await res.json()).toMatchObject({ icon: null });
   });

@@ -2,7 +2,7 @@
 
 import { Disclosure, DisclosureContent, DisclosureTrigger } from '@/components/ui/disclosure';
 import { SystemMessage } from '@/components/ui/system-message';
-import { stripKortixSystemTags } from '@/lib/utils/kortix-system-tags';
+import { stripZedSystemTags } from '@/lib/utils/zed-system-tags';
 
 // ============================================================================
 // Parse <file> XML references from uploaded file text parts
@@ -165,7 +165,7 @@ export function parseReplyContext(text: string): {
 // Matches any XML block: <tag_name>...content...</tag_name>
 // No hardcoded tag names. Runs LAST in the parsing pipeline so all
 // other XML subsystems (file refs, session refs, reply context, DCP,
-// kortix_system) have already consumed their tags. Whatever remains
+// zed_system) have already consumed their tags. Whatever remains
 // is a system notification.
 const XML_BLOCK_REGEX = /<([a-z][a-z0-9_-]*)>([\s\S]*?)<\/\1>/gi;
 
@@ -221,10 +221,10 @@ export function parseSystemNotifications(text: string): {
 
 export function stripSystemPtyText(text: string): string {
   if (!text) return '';
-  // Only strip kortix_system tags (backend-internal metadata).
+  // Only strip zed_system tags (backend-internal metadata).
   // Notification XML is stripped later by parseSystemNotifications()
   // which runs last in the parsing pipeline.
-  return stripKortixSystemTags(text)
+  return stripZedSystemTags(text)
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }

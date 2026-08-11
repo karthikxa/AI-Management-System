@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { KortixLoader } from '@/components/ui';
+import { ZedLoader } from '@/components/ui';
 import { X, Download, ChevronLeft, ChevronRight, Pencil, Check } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -344,7 +344,7 @@ export function FileViewer({
                     gap: 6,
                   }}>
                   {writeMutation.isPending ? (
-                    <KortixLoader size="small" forceTheme={isDark ? 'light' : 'dark'} />
+                    <ZedLoader size="small" forceTheme={isDark ? 'light' : 'dark'} />
                   ) : (
                     <Icon as={Check} size={16} color={isDark ? '#121215' : '#f8f8f8'} strokeWidth={2.4} />
                   )}
@@ -396,7 +396,7 @@ export function FileViewer({
                   className="p-2"
                   style={{ opacity: isDownloading ? 0.6 : 1 }}>
                   {isDownloading ? (
-                    <KortixLoader size="small" />
+                    <ZedLoader size="small" />
                   ) : (
                     <Icon
                       as={Download}
@@ -454,7 +454,7 @@ export function FileViewer({
             </KeyboardAvoidingView>
           ) : isLoading ? (
             <View className="flex-1 items-center justify-center">
-              <KortixLoader size="large" />
+              <ZedLoader size="large" />
               <Text className="mt-4 text-sm text-muted-foreground">Loading file...</Text>
             </View>
           ) : hasError ? (

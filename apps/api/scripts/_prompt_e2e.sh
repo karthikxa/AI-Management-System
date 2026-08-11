@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# REAL kortix agent e2e on prod: create session -> runtimeReady -> ensure-opencode
+# REAL zed agent e2e on prod: create session -> runtimeReady -> ensure-opencode
 # -> send a prompt the LLM must COMPUTE (answer not in the prompt) -> verify reply.
 set -uo pipefail
 cd "$(dirname "$0")/.."   # apps/api
 DIR=$(pwd)
 PID="${PID:-9ebbfc1f-8c57-4882-be8d-db3058c5e7a1}"
 BASE=http://localhost:8008
-psql(){ docker exec supabase_db_kortix-local psql -U postgres -tA -c "$1" 2>/dev/null; }
+psql(){ docker exec supabase_db_zed-local psql -U postgres -tA -c "$1" 2>/dev/null; }
 nowms(){ python3 -c 'import time;print(int(time.time()*1000))'; }
 MINT_EMAIL='vukasinkubet@gmail.com' bun run scripts/_mint_jwt.ts >/dev/null 2>&1
 JWT=$(cat /tmp/userjwt); H=(-H "Authorization: Bearer $JWT" -H 'Content-Type: application/json')
@@ -17,12 +17,12 @@ sid=$(curl -s -m20 "${H[@]}" -X POST "$BASE/v1/projects/$PID/sessions" -d '{"bra
 echo "session=$sid +$(( $(nowms)-t0 ))ms"
 
 # resolve sandbox external_id (active)
-ext=""; while :; do row=$(psql "select external_id||'|'||status from kortix.session_sandboxes where session_id='$sid';"); ext=${row%%|*}; [ "${row##*|}" = active ] && [ -n "$ext" ] && break; [ $(( ($(nowms)-t0)/1000 )) -ge 200 ] && break; sleep 0.3; done
+ext=""; while :; do row=$(psql "select external_id||'|'||status from zed.session_sandboxes where session_id='$sid';"); ext=${row%%|*}; [ "${row##*|}" = active ] && [ -n "$ext" ] && break; [ $(( ($(nowms)-t0)/1000 )) -ge 200 ] && break; sleep 0.3; done
 echo "sandbox=$ext +$(( $(nowms)-t0 ))ms"
 [ -z "$ext" ] && { echo "NO_SANDBOX"; exit 1; }
 
 # runtimeReady
-while :; do echo "$(curl -s -m5 "${H[@]}" "$BASE/v1/p/$ext/8000/kortix/health")" | grep -q '"runtimeReady":true' && break; [ $(( ($(nowms)-t0)/1000 )) -ge 200 ] && { echo "NOT_READY"; exit 2; }; sleep 0.3; done
+while :; do echo "$(curl -s -m5 "${H[@]}" "$BASE/v1/p/$ext/8000/zed/health")" | grep -q '"runtimeReady":true' && break; [ $(( ($(nowms)-t0)/1000 )) -ge 200 ] && { echo "NOT_READY"; exit 2; }; sleep 0.3; done
 echo "runtimeReady +$(( $(nowms)-t0 ))ms"
 
 # ensure-opencode (best-effort: pins root + tracks in comp), then get the id from opencode directly
@@ -55,6 +55,6 @@ if [ "$ans" = 42 ]; then echo "AGENT_E2E_PASS (LLM computed 6*7=42)"; else echo 
 # cleanup
 PK=$(grep '^PLATINUM_API_KEY=' "$DIR/.env.local" | head -1 | cut -d= -f2-)
 curl -s -m15 -X DELETE "https://api.platinum.dev/v1/sandboxes/$ext" -H "Authorization: Bearer $PK" >/dev/null 2>&1
-psql "delete from kortix.session_sandboxes where session_id='$sid';" >/dev/null 2>&1
+psql "delete from zed.session_sandboxes where session_id='$sid';" >/dev/null 2>&1
 echo "cleaned $ext"
 [ "$ans" = 42 ] && exit 0 || exit 3

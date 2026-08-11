@@ -128,7 +128,7 @@ function makeGatewayDeps(): GatewayDeps {
       world.executions.push(r);
       return `exec-${world.executions.length}`;
     },
-    mintApprovalLink: ({ executionId }) => `https://app.kortix.test/approve/token-${executionId}`,
+    mintApprovalLink: ({ executionId }) => `https://app.zed.test/approve/token-${executionId}`,
     fetchImpl: async (url, init) => {
       world.upstream.push({ url, ...init });
       return {
@@ -605,7 +605,7 @@ describe('admin routes', () => {
 
   test('returns a manifest provider failure with its 502 status', async () => {
     world.connectorCreateError = {
-      error: 'Failed to commit kortix.yaml',
+      error: 'Failed to commit zed.yaml',
       status: 502,
     };
     const res = await req(`/projects/${PROJECT}/connectors`, {
@@ -620,7 +620,7 @@ describe('admin routes', () => {
     });
 
     expect(res.status).toBe(502);
-    expect(await res.json()).toEqual({ error: 'Failed to commit kortix.yaml' });
+    expect(await res.json()).toEqual({ error: 'Failed to commit zed.yaml' });
   });
 
   test('rejects a non-boolean create-only flag before connector creation', async () => {
@@ -751,9 +751,9 @@ describe('connector-scoped policy enforcement', () => {
       status: 'pending_approval',
       execution_id: 'exec-1',
       retryable: false,
-      approval_url: 'https://app.kortix.test/approve/token-exec-1',
+      approval_url: 'https://app.zed.test/approve/token-exec-1',
       approval_instructions:
-        'Share approval_url with a human, then stop this turn. Kortix resumes the session after approve or deny.',
+        'Share approval_url with a human, then stop this turn. Zed resumes the session after approve or deny.',
     });
   });
 

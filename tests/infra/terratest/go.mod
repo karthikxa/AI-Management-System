@@ -1,4 +1,4 @@
-module github.com/kortix/suna/tests/infra/terratest
+module github.com/zed/suna/tests/infra/terratest
 
 go 1.22
 

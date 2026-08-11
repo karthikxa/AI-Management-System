@@ -17,7 +17,7 @@ import { config } from '../config';
 import { getProvider } from '../platform/providers';
 import { supabaseAuth } from '../middleware/auth';
 import { eq, sql } from 'drizzle-orm';
-import { accounts } from '@kortix/db';
+import { accounts } from '@zed/db';
 import { db, hasDatabase } from '../shared/db';
 import { resolveAccountId } from '../shared/resolve-account';
 import { getSupabase } from '../shared/supabase';
@@ -76,7 +76,7 @@ function getProjectRoot(): string {
 
 function getMasterUrlCandidates(): string[] {
   const candidates: string[] = [];
-  const explicit = process.env.KORTIX_MASTER_URL;
+  const explicit = process.env.ZED_MASTER_URL;
   if (explicit && explicit.trim()) candidates.push(explicit.trim());
 
   // Inside docker-compose network, the sandbox service is reachable by name.
@@ -114,7 +114,7 @@ async function fetchMasterJson<T>(path: string, init: RequestInit = {}, timeoutM
     const url = `${base}${path}`;
     try {
       const res = await fetchWithTimeout(url, init, timeoutMs);
-      // 503 from /kortix/health means "starting" — still return the JSON body
+      // 503 from /zed/health means "starting" — still return the JSON body
       // so callers can inspect the status/opencode fields.
       if (!res.ok && res.status !== 503) {
         lastErr = new Error(`Master ${url} returned ${res.status}`);
@@ -338,7 +338,7 @@ setupApp.openapi(
   } catch {}
 
   return c.json({
-    billingEnabled: config.KORTIX_BILLING_INTERNAL_ENABLED,
+    billingEnabled: config.ZED_BILLING_INTERNAL_ENABLED,
     dockerRunning,
     envExists,
     // The old sandbox-secrets file is gone.

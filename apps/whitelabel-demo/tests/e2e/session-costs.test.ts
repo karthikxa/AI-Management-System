@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import {
   APP_SETUP_TIMEOUT_MS,
   type AppInstance,
-  createTestKortix,
+  createTestZed,
   loginUser,
   resetUsersStore,
   startApp,
@@ -20,7 +20,7 @@ async function provision(
   token: string,
   name: string,
 ): Promise<string> {
-  const project = await createTestKortix(app, token).projects.provision({
+  const project = await createTestZed(app, token).projects.provision({
     name,
   });
   return project.project_id;
@@ -33,7 +33,7 @@ describe('/api/session-costs', () => {
   beforeAll(async () => {
     resetUsersStore();
     mock = createMockUpstream(WRAPPER_KEY);
-    app = await startApp(wrapperEnv({ KORTIX_UPSTREAM: `${mock.url}/v1` }));
+    app = await startApp(wrapperEnv({ ZED_UPSTREAM: `${mock.url}/v1` }));
   }, APP_SETUP_TIMEOUT_MS);
 
   afterAll(async () => {

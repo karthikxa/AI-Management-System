@@ -1,5 +1,5 @@
 # ════════════════════════════════════════════════════════════════════════════
-# kortix-gha-nacl-audit — the OIDC role the scheduled NACL admin-port audit
+# zed-gha-nacl-audit — the OIDC role the scheduled NACL admin-port audit
 # assumes (terraform-ci.yml, job "nacl admin-port audit").
 #
 # WHY A DEDICATED ROLE: the audit only needs to list regions and read network
@@ -16,7 +16,7 @@
 # ════════════════════════════════════════════════════════════════════════════
 
 resource "aws_iam_role" "gha_nacl_audit" {
-  name = "kortix-gha-nacl-audit"
+  name = "zed-gha-nacl-audit"
   # Pinned to the default branch. qa-pr.yml runs on pull_request with
   # id-token: write and executes PR-controlled code, so a wildcard subject
   # would let any pull request mint a token and assume this role. The audit
@@ -32,14 +32,14 @@ resource "aws_iam_role" "gha_nacl_audit" {
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-          "token.actions.githubusercontent.com:sub" = "repo:kortix-ai/suna:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub" = "repo:zed-ai/suna:ref:refs/heads/main"
         }
       }
     }]
   })
   tags = {
     ManagedBy  = "terraform"
-    Name       = "kortix-gha-nacl-audit"
+    Name       = "zed-gha-nacl-audit"
     Stack      = "security-baseline"
     Compliance = "soc2"
   }

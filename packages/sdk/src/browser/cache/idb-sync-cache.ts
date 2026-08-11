@@ -9,7 +9,7 @@
 import { platformConfig } from '../../core/http/config';
 import { buildSessionCacheKey } from './idb-sync-cache-key';
 
-const DB_NAME = 'kortix-session-cache';
+const DB_NAME = 'zed-session-cache';
 const DB_VERSION = 2;
 const STORE_NAME = 'sessions';
 const MAX_CACHED_SESSIONS = 50;
@@ -19,7 +19,7 @@ interface CachedSession {
   cacheKey: string;
   userId: string;
   sessionId: string;
-  kortixSessionScope?: string;
+  zedSessionScope?: string;
   messages: any[];
   parts: Record<string, any[]>;
   updatedAt: number;
@@ -85,7 +85,7 @@ const pendingWrites = new Map<
   {
     scope: string;
     sessionId: string;
-    kortixSessionScope?: string;
+    zedSessionScope?: string;
     messages: any[];
     parts: Record<string, any[]>;
   }
@@ -111,7 +111,7 @@ async function flushPendingWrites(): Promise<void> {
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    for (const [cacheKey, { scope, sessionId, kortixSessionScope, messages, parts }] of batch) {
+    for (const [cacheKey, { scope, sessionId, zedSessionScope, messages, parts }] of batch) {
       const partsForSession: Record<string, any[]> = {};
       for (const msg of messages) {
         if (parts[msg.id]) {
@@ -122,7 +122,7 @@ async function flushPendingWrites(): Promise<void> {
         cacheKey,
         userId: scope,
         sessionId,
-        kortixSessionScope,
+        zedSessionScope,
         messages,
         parts: partsForSession,
         updatedAt: Date.now(),
@@ -141,16 +141,16 @@ export async function saveSessionToIDB(
   sessionId: string,
   messages: any[],
   parts: Record<string, any[]>,
-  kortixSessionScope?: string,
+  zedSessionScope?: string,
 ): Promise<void> {
   const scope = await getCurrentCacheScope();
   if (!scope) return;
 
-  const cacheKey = buildSessionCacheKey(scope, sessionId, kortixSessionScope);
+  const cacheKey = buildSessionCacheKey(scope, sessionId, zedSessionScope);
   pendingWrites.set(cacheKey, {
     scope,
     sessionId,
-    kortixSessionScope,
+    zedSessionScope,
     messages,
     parts,
   });
@@ -168,7 +168,7 @@ export function flushIDBWrites(): Promise<void> {
 
 export async function loadSessionFromIDB(
   sessionId: string,
-  kortixSessionScope?: string,
+  zedSessionScope?: string,
 ): Promise<{ messages: any[]; parts: Record<string, any[]> } | null> {
   try {
     const scope = await getCurrentCacheScope();
@@ -177,20 +177,20 @@ export async function loadSessionFromIDB(
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
-    const req = store.get(buildSessionCacheKey(scope, sessionId, kortixSessionScope));
+    const req = store.get(buildSessionCacheKey(scope, sessionId, zedSessionScope));
     const result = await new Promise<CachedSession | undefined>((resolve, reject) => {
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
     });
     if (!result) return null;
     if (result.userId !== scope) return null;
-    if (kortixSessionScope) {
-      if (result.kortixSessionScope !== kortixSessionScope) return null;
+    if (zedSessionScope) {
+      if (result.zedSessionScope !== zedSessionScope) return null;
     } else if (result.sessionId !== sessionId) {
       return null;
     }
     if (Date.now() - result.updatedAt > MAX_SESSION_AGE_MS) {
-      deleteSessionFromIDB(sessionId, kortixSessionScope);
+      deleteSessionFromIDB(sessionId, zedSessionScope);
       return null;
     }
     return { messages: result.messages, parts: result.parts };
@@ -220,7 +220,7 @@ export async function loadAllSessionIdsFromIDB(): Promise<string[]> {
 
 export async function deleteSessionFromIDB(
   sessionId: string,
-  kortixSessionScope?: string,
+  zedSessionScope?: string,
 ): Promise<void> {
   try {
     const scope = await getCurrentCacheScope();
@@ -228,7 +228,7 @@ export async function deleteSessionFromIDB(
 
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, 'readwrite');
-    tx.objectStore(STORE_NAME).delete(buildSessionCacheKey(scope, sessionId, kortixSessionScope));
+    tx.objectStore(STORE_NAME).delete(buildSessionCacheKey(scope, sessionId, zedSessionScope));
   } catch {
     // ignore
   }

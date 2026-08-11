@@ -1,14 +1,14 @@
 /**
  * Agent-minted SETUP LINKS — the authenticated half.
  *
- * The in-sandbox agent (its `KORTIX_CLI_TOKEN` is a
+ * The in-sandbox agent (its `ZED_CLI_TOKEN` is a
  * session-scoped PAT, accepted by supabaseAuth) calls these to mint a
  * short-lived link it can hand to a human to (a) enter a project secret value,
  * or (b) 1-click connect a Pipedream app.
  * The link itself is resolved/submitted by the PUBLIC app at /v1/setup-links/*.
  *
  * See ../../setup-links/token.ts for the stateless token model and
- * .kortix/opencode/skills/kortix-system/references/kortix/credentials-and-setup-links.md
+ * .zed/opencode/skills/zed-system/references/zed/credentials-and-setup-links.md
  * for the agent-facing flow.
  */
 import { auth, errors, json } from '../../openapi';
@@ -79,8 +79,8 @@ projectsApp.openapi(
       if (!isValidSecretName(name)) {
         return c.json({ error: `"${name}" is not a valid env var name (A-Z, 0-9, _; max 64 chars)` }, 400);
       }
-      if (name.startsWith('KORTIX_')) {
-        return c.json({ error: 'KORTIX_* names are reserved for platform/runtime-managed variables' }, 400);
+      if (name.startsWith('ZED_')) {
+        return c.json({ error: 'ZED_* names are reserved for platform/runtime-managed variables' }, 400);
       }
       if (name === CODEX_AUTH_JSON_SECRET_NAME) {
         return c.json({ error: `${CODEX_AUTH_JSON_SECRET_NAME} is managed by ChatGPT subscription onboarding` }, 400);
@@ -154,7 +154,7 @@ projectsApp.openapi(
             error:
               `"${slug}" is a ${eligibility.providerType} connector, and setup links are Pipedream ` +
               'Quick Connect links. It is already on this project — connect it the way that ' +
-              'provider is connected rather than adding it to kortix.yaml again.',
+              'provider is connected rather than adding it to zed.yaml again.',
             code: 'CONNECTOR_NOT_PIPEDREAM',
           },
           409,
@@ -170,7 +170,7 @@ projectsApp.openapi(
         );
       }
       return c.json(
-        { error: `"${slug}" is not a connector on this project. Add it to kortix.yaml first.` },
+        { error: `"${slug}" is not a connector on this project. Add it to zed.yaml first.` },
         404,
       );
     }

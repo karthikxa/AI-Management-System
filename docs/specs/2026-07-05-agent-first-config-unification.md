@@ -6,7 +6,7 @@
 **Status:** Shipped — Marko + Fable, 2026-07-05. Phases 0–2 (hygiene, schema v2 +
 compiler, mandatory agents) are live, and `per_user` credential removal (part of
 Phase 3's original scope) shipped early. Still open: secrets v2 (named secrets
-with per-agent values), the `kortix_cli` approval tier, and Phase 4 (the git
+with per-agent values), the `zed_cli` approval tier, and Phase 4 (the git
 boundary) — see §3 and §4.
 **Depends on:** IAM/RBAC v1 (shipped, `feat/iam-rbac-v1`), `docs/AUTHZ_MODEL_FINAL_PLAN.md`, `docs/specs/2026-06-28-token-session-agent-identity.md`
 **Supersedes in part:** `docs/specs/2026-06-28-project-authorization-runtime-governance.md` (the config-compilation direction; the ACL model it sketched was replaced by IAM v1)
@@ -26,19 +26,19 @@ consequence of taking that sentence seriously.
 Facts established by direct code inspection — each of these shapes a decision below:
 
 1. **`[[agents]]` is a governance overlay, not an agent definition.** It carries
-   `connectors`/`kortix_cli`/`env` grants. All *behavior* (prompt, mode, tools,
+   `connectors`/`zed_cli`/`env` grants. All *behavior* (prompt, mode, tools,
    permission tree, temperature, steps…) lives in hand-authored
-   `.kortix/opencode/agents/*.md` files that Kortix passes through blind.
+   `.zed/opencode/agents/*.md` files that Zed passes through blind.
 2. **Two `[[agents]]` fields are dead**: `model` parses and round-trips but never
    reaches the running OpenCode process (effective model comes from
-   `KORTIX_OPENCODE_MODEL` ← session/model-preferences DB); `file` is carried but
+   `ZED_OPENCODE_MODEL` ← session/model-preferences DB); `file` is carried but
    unused in materialization.
 3. **Agents are optional, and absence means unrestricted.** No `[[agents]]` → grant
    resolves to `null` → session capped only by the launching human's role. Once a
    project adopts `[[agents]]`, unlisted agents are default-denied. This
    adopt-to-govern posture is deliberate back-compat.
 4. **YAML already works.** `packages/manifest-schema/src/format.ts` is dual-format;
-   `kortix.yaml` is *preferred* over `kortix.toml` in candidate-path resolution.
+   `zed.yaml` is *preferred* over `zed.toml` in candidate-path resolution.
    Blockers are narrow: `apps/cli/src/manifest-edit.ts` (comment-preserving TOML
    text surgery) guard-throws on YAML projects, and
    `POST /projects/:id/manifest/validate` assumes TOML.
@@ -47,7 +47,7 @@ Facts established by direct code inspection — each of these shapes a decision 
    Slack; no web UI exists.
 6. **There are two unrelated trigger systems.** The git `[[triggers]]` manifest is
    what the scheduler fires (agent-first, correct); the web "Triggers" UI talks to
-   the in-sandbox daemon's ephemeral `/kortix/triggers` endpoint and never touches
+   the in-sandbox daemon's ephemeral `/zed/triggers` endpoint and never touches
    the manifest.
 7. **Trigger identity is agent-first with two seams**: (a) a trigger with no
    `agent` in an ungoverned project resolves to full owner-equivalent access;
@@ -63,7 +63,7 @@ Facts established by direct code inspection — each of these shapes a decision 
    *launching human's* credential, which is the main obstacle to fully
    agent-based sessions (AUTHZ plan §3b/§4b).
 10. **CLI permissions and connector policies are different systems for good
-    reason.** `kortix_cli` grants are role-anchored (`userRole ∩ agentGrant` — the
+    reason.** `zed_cli` grants are role-anchored (`userRole ∩ agentGrant` — the
     agent can never exceed its launching human); the connector policy engine is
     risk-tiered per-call approval for discovered external actions. Folding CLI
     into connectors would forfeit the role ceiling. What CLI *lacks* is the
@@ -84,12 +84,12 @@ Facts established by direct code inspection — each of these shapes a decision 
 
 ### 2.1 The manifest is the agent registry — and agents become mandatory
 
-- `kortix.yaml` becomes the canonical manifest (see §2.7 for the TOML story).
+- `zed.yaml` becomes the canonical manifest (see §2.7 for the TOML story).
 - Every project **must declare its agents** in the manifest. Enforcement:
   - New projects: the starter template ships with agents declared and
-    `agents.required = true` implied by `kortix_version: 2`. Creation flows
-    (starter, `kortix init`) always scaffold at least one agent.
-  - Existing projects: a platform flag (`KORTIX_REQUIRE_DECLARED_AGENTS`,
+    `agents.required = true` implied by `zed_version: 2`. Creation flows
+    (starter, `zed init`) always scaffold at least one agent.
+  - Existing projects: a platform flag (`ZED_REQUIRE_DECLARED_AGENTS`,
     default **on for new projects, off for pre-existing**) controls whether an
     undeclared agent name may boot a session. Pre-existing projects keep the
     v1 adopt-to-govern behavior until migrated (§2.8).
@@ -106,20 +106,20 @@ Facts established by direct code inspection — each of these shapes a decision 
 > sub-object inside the manifest's agent block, with an "illegal frontmatter"
 > gate on the `.md`) shipped first, then was killed the same day for hedging
 > between two homes for one concern. **The replacement, in one sentence:
-> OpenCode behavior lives in the native `.md` (frontmatter + body); Kortix
-> governance lives in `kortix.yaml`. One home per concern.** Everything below
+> OpenCode behavior lives in the native `.md` (frontmatter + body); Zed
+> governance lives in `zed.yaml`. One home per concern.** Everything below
 > describes the *current*, redirected model. The nested-`opencode:`-block /
 > illegal-frontmatter design is dead — do not resurrect it.
 
 The v2 agent entry does NOT unify `[[agents]]` (TOML) and
-`.kortix/opencode/agents/*.md` into one manifest-side bag of fields. Instead
+`.zed/opencode/agents/*.md` into one manifest-side bag of fields. Instead
 it leaves behavior exactly where OpenCode itself already expects it — the
 agent's own `.md` frontmatter + body, a stock OpenCode agent file with no
-Kortix-specific split — and narrows the manifest's `agents:` map down to pure
+Zed-specific split — and narrows the manifest's `agents:` map down to pure
 governance:
 
 ```yaml
-kortix_version: 2
+zed_version: 2
 default_agent: support
 
 agents:
@@ -128,16 +128,16 @@ agents:
     connectors: [github, slack]         # connector slugs | all | none
     secrets: [STRIPE_KEY, GH_TOKEN]     # renamed from `env`; names | all | none
     skills: [pdf-export]                # project skill names | all | none
-    kortix_cli: [project.session.start, project.cr.open]
+    zed_cli: [project.session.start, project.cr.open]
     workspace: runtime                  # runtime | read | branch  (Phase 4, git boundary)
   pr-bot:
     connectors: [github]
-    kortix_cli: [project.cr.open, project.cr.merge, project.review.submit]
+    zed_cli: [project.cr.open, project.cr.merge, project.review.submit]
 ```
 
 That's the WHOLE agent block — no `description`, no `model`, no `opencode:`
 sub-object, no `mode`/`temperature`/`permission`/`prompt`. Every one of those
-now lives in the matching `.kortix/opencode/agents/<name>.md`:
+now lives in the matching `.zed/opencode/agents/<name>.md`:
 
 ```markdown
 ---
@@ -161,20 +161,20 @@ Rules:
 
 - **The agent's NAME is the join** between the manifest's `agents:` map key
   and the `.md` filename: `agents.<name>` ↔
-  `.kortix/opencode/agents/<name>.md` (path derived from the project's
-  top-level `[opencode] config_dir`, default `.kortix/opencode` — unrelated to
+  `.zed/opencode/agents/<name>.md` (path derived from the project's
+  top-level `[opencode] config_dir`, default `.zed/opencode` — unrelated to
   the old per-agent nesting, this is the same project-wide setting v1 always
   had). No manifest field ever spells this path out.
-- **`model` and `description` moved OFF the Kortix layer** — both are native
+- **`model` and `description` moved OFF the Zed layer** — both are native
   OpenCode `AgentConfig` fields (the gateway/session pipeline still resolves
   `model` the same way; `description` is what OpenCode itself uses for
   subagent-selection hints), so both live in the `.md` now, not in
-  `kortix.yaml`. `enabled` stays the one Kortix-governance field with no
+  `zed.yaml`. `enabled` stays the one Zed-governance field with no
   OpenCode equivalent — "can this agent even start a session," a
   platform-level gate, orthogonal to whatever the `.md`'s own native
   `disable` field (if hand-authored) says.
 - **Frontmatter is EXPECTED, never illegal.** A stock OpenCode agent `.md` —
-  including ones with rich frontmatter nobody wrote with Kortix in mind — is
+  including ones with rich frontmatter nobody wrote with Zed in mind — is
   valid v2 input as-is. The "illegal frontmatter" gate and the nested
   `opencode:` manifest sub-object are both **removed outright**, not renamed
   again. Authoring any behavioral field (`description`/`model`/`mode`/
@@ -210,7 +210,7 @@ Rules:
 `apps/api/src/projects/lib/compile-agent-config.ts`, exactly as designed below.
 
 ```
-kortix.yaml (governance) ─┐
+zed.yaml (governance) ─┐
                           ├─► runtime compiler ──► OpenCode config
 .md frontmatter+body ─────┘   (per runtime:       (agent map + permission
  (OpenCode behavior)            opencode | codex    + mcp + model overlays,
@@ -231,7 +231,7 @@ kortix.yaml (governance) ─┐
   passthrough still mirrors the `default_agent`'s resolved model. Only where
   the compiler reads FROM changed, not what it produces.
 - Implementation home: extend the existing merge point —
-  `buildOpencodeConfigContent()` in `apps/kortix-sandbox-agent-server` already
+  `buildOpencodeConfigContent()` in `apps/zed-sandbox-agent-server` already
   overlays MCP/provider/permission onto the repo's config. The compiler moves
   that composition server-side (apps/api) so the sandbox receives a **sealed,
   already-compiled config** rather than composing trust-relevant config inside
@@ -262,9 +262,9 @@ agent." Target:
   (visibility narrowing) and continues to compose: first "may this agent see
   this secret at all," then "which value does it get."
 - UI: secrets manager gets display name + a per-value "applies to" agent picker.
-  CLI: `kortix secrets set STRIPE_KEY --agent billing`.
-- **Starter hygiene — DONE.** `packages/starter/templates/base/kortix.toml` no
-  longer exists (the starter ships `kortix.yaml`, v2, directly); the
+  CLI: `zed secrets set STRIPE_KEY --agent billing`.
+- **Starter hygiene — DONE.** `packages/starter/templates/base/zed.toml` no
+  longer exists (the starter ships `zed.yaml`, v2, directly); the
   `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` platform-credential examples are gone
   from it and from the doc prose that used to showcase them.
 
@@ -325,9 +325,9 @@ agent." Target:
   credential or being explicitly disallowed. The sales-outreach scenario above
   is the acceptance test for that feature.
 
-### 2.6 Kortix CLI permissions: role-anchored, approval-capable
+### 2.6 Zed CLI permissions: role-anchored, approval-capable
 
-Decision: **do not fold `kortix_cli` into connectors.** The role ceiling
+Decision: **do not fold `zed_cli` into connectors.** The role ceiling
 (`userRole ∩ agentGrant`) is the system's core invariant and lives in the IAM
 engine; connectors' access model has no role awareness, and faking it inside the
 connector gateway would duplicate the engine. What we take from the connector
@@ -335,7 +335,7 @@ instead is its approval UX:
 
 - Add an optional risk tier to CLI leaf actions: `project.gitops.merge`,
   `project.members.manage` (initial set) can be marked
-  `require_approval` per project (manifest: `approvals.kortix_cli: [project.gitops.merge]`).
+  `require_approval` per project (manifest: `approvals.zed_cli: [project.gitops.merge]`).
   Enforcement reuses `sessionToolApprovals` + the Review Center / Slack card
   machinery the connector already has — additive layer *after* the allow/deny
   gate, never a substitute for it.
@@ -346,8 +346,8 @@ instead is its approval UX:
 
 ### 2.7 TOML → YAML
 
-- v2 manifests are YAML (`kortix.yaml`). TOML remains fully supported **for v1
-  manifests only** — `kortix_version: 2` in a `.toml` file is a validation error
+- v2 manifests are YAML (`zed.yaml`). TOML remains fully supported **for v1
+  manifests only** — `zed_version: 2` in a `.toml` file is a validation error
   pointing at the migration command. This gives TOML a clean sunset without a
   hard break: v1 projects keep working untouched.
 - Work items (small, verified): make `manifest-edit.ts` format-aware (or switch
@@ -362,9 +362,9 @@ instead is its approval UX:
 
 ### 2.8 Migrating existing projects
 
-- `kortix migrate` (CLI) + a one-click dashboard banner, both driving the same
+- `zed migrate` (CLI) + a one-click dashboard banner, both driving the same
   server-side transform: read v1 TOML's `[[agents]]` governance → emit
-  `kortix.yaml` (v2) with an equivalent `agents:` map, `env` renamed `secrets`
+  `zed.yaml` (v2) with an equivalent `agents:` map, `env` renamed `secrets`
   (written explicitly as `all` where v1 defaulted), `[[channels]]` dropped —
   delivered as a **change request** on the project repo, reviewed and merged
   like any other change. Nothing migrates silently. **Redirected 2026-07-05:**
@@ -394,10 +394,10 @@ The complexity Marko flagged collapses under one rule:
 | Start/stop sessions | platform action | `project.session.*` |
 | Member/group/role admin | platform action (account/project) | IAM roles + Enterprise entitlement for custom RBAC |
 
-- "Can he edit the agent's skills?" = "can he land a CR touching `.kortix/`" —
+- "Can he edit the agent's skills?" = "can he land a CR touching `.zed/`" —
   one question, not two systems. The *session* path to the same edit (ask an
   agent to edit the repo) goes through the **same** gate because the agent's
-  write lands as a CR under the agent's `kortix_cli`/workspace powers.
+  write lands as a CR under the agent's `zed_cli`/workspace powers.
 - Auto-clone on project creation, "can he clone at all," and per-agent repo
   visibility are all the **Phase 4 git boundary** (workspace/git powers stamped
   into the session token; `authorizeGitProxy` honoring them) — the one
@@ -414,11 +414,11 @@ Each phase is independently shippable; order minimizes rework.
 | Phase | Scope | Size |
 |---|---|---|
 | **0. Hygiene** — SHIPPED | Starter key examples removed; Members copy fix; Groups/Roles visual gating; manifest.mdx agents/channels docs; CLI-leaf enforcement audit | S |
-| **1. Schema v2 + compiler skeleton** — SHIPPED | `kortix_version: 2` YAML schema (governance-only agent block, `secrets` rename, deny-by-default, `runtime` enum, `[[channels]]` removal); server-side `compileAgentConfig` for opencode reading behavior from each agent's native `.md` frontmatter (redirected 2026-07-05 — no illegal-frontmatter gate, no nested `opencode:` block); dead-field removal; `manifest-edit`/validate-endpoint format fixes | L |
-| **2. Mandatory agents + trigger identity** — SHIPPED | `KORTIX_REQUIRE_DECLARED_AGENTS` flag (on for new projects); default-sentinel-must-resolve rule; trigger/channel sessions attributed to agent SA; web Channels management surface | M |
+| **1. Schema v2 + compiler skeleton** — SHIPPED | `zed_version: 2` YAML schema (governance-only agent block, `secrets` rename, deny-by-default, `runtime` enum, `[[channels]]` removal); server-side `compileAgentConfig` for opencode reading behavior from each agent's native `.md` frontmatter (redirected 2026-07-05 — no illegal-frontmatter gate, no nested `opencode:` block); dead-field removal; `manifest-edit`/validate-endpoint format fixes | L |
+| **2. Mandatory agents + trigger identity** — SHIPPED | `ZED_REQUIRE_DECLARED_AGENTS` flag (on for new projects); default-sentinel-must-resolve rule; trigger/channel sessions attributed to agent SA; web Channels management surface | M |
 | **3. Secrets v2 + approvals** — OPEN (`per_user` removal shipped early, see §2.5) | display name + per-agent values (schema + resolution + UI/CLI); CLI-action approval tier via Review Center (default set: `project.gitops.merge`) | L |
 | **4. Git boundary** | `workspace`/`git` powers per agent; resource caps stamped into session token; `authorizeGitProxy` enforces; auto-clone policy per agent | L |
-| **5. Migration & sunset** | `kortix migrate` CR generator; dashboard banner; v1 write-freeze; eventually flip remaining projects | M |
+| **5. Migration & sunset** | `zed migrate` CR generator; dashboard banner; v1 write-freeze; eventually flip remaining projects | M |
 
 Phase 0 ships in the IAM-finalisation PR this spec accompanies. Phases 1–2 are
 the "agent-first identity is real everywhere" milestone; 3–5 are quality and

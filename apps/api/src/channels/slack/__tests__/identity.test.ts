@@ -72,7 +72,7 @@ describe('resolveSlackActor', () => {
     expect(r).toEqual({ reason: 'not_member' });
   });
 
-  test('linked and project-write-capable → returns the Kortix userId', async () => {
+  test('linked and project-write-capable → returns the Zed userId', async () => {
     dbResults = [[{ userId: 'u1' }], [{ userId: 'u1' }]]; // identity hit, membership hit
     const r = await resolveSlackActor('T1', 'U1', 'acct1', 'proj1');
     expect(r).toEqual({ userId: 'u1' });
@@ -93,7 +93,7 @@ describe('postIdentityPrompt', () => {
     expect(ephemerals[0]).toMatchObject({
       channel: 'C1',
       user: 'U1',
-      text: 'Kortix needs a linked Kortix account to continue.',
+      text: 'Zed needs a linked Zed account to continue.',
     });
     expect(ephemerals[0].threadTs).toBeUndefined();
   });

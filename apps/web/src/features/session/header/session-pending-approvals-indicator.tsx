@@ -25,7 +25,7 @@ import { useParams } from 'next/navigation';
 import { useState } from 'react';
 
 export function SessionPendingApprovalsIndicator({ sessionId }: { sessionId: string }) {
-  // Route params: `id` = projectId, `sessionId` = the Kortix (route) session id
+  // Route params: `id` = projectId, `sessionId` = the Zed (route) session id
   // the audit endpoint keys on — distinct from the OpenCode `sessionId` prop we
   // use to drive the panel's tab store.
   const { id: projectId, sessionId: projectSessionId } = useParams<{
@@ -54,7 +54,7 @@ export function SessionPendingApprovalsIndicator({ sessionId }: { sessionId: str
           aria-label={`${pending.length} action${pending.length === 1 ? '' : 's'} awaiting your approval`}
           className="relative"
         >
-          <ShieldWarningIcon className="text-kortix-orange size-4" />
+          <ShieldWarningIcon className="text-zed-orange size-4" />
           <Badge variant="warning" size="tabular" className="absolute -top-1 -right-1">
             {pending.length}
           </Badge>

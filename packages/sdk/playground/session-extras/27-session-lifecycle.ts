@@ -4,12 +4,12 @@
  * after readying the runtime — previewUrl/proxyUrl plus the file-search and
  * git-status surfaces. Needs a sandbox.
  *
- * Uses KORTIX_SESSION_ID if set, otherwise creates a fresh session.
+ * Uses ZED_SESSION_ID if set, otherwise creates a fresh session.
  *
  * Run (from packages/sdk):  bun run playground/session-extras/27-session-lifecycle.ts
  */
 import {
-  makeKortix,
+  makeZed,
   pickOrCreateSessionId,
   pickProjectId,
   retryUntilReady,
@@ -17,14 +17,14 @@ import {
 } from "../_shared";
 
 run("session-lifecycle", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed);
   const sessionId = await pickOrCreateSessionId(
-    kortix,
+    zed,
     projectId,
     "sdk lifecycle test",
   );
-  const session = kortix.session(projectId, sessionId);
+  const session = zed.session(projectId, sessionId);
 
   const row = await session.get();
   console.log(`✓ get(): status=${(row as { status?: string } | null)?.status}`);

@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { accountMembers, projects } from '@kortix/db';
+import { accountMembers, projects } from '@zed/db';
 import { db } from '../../shared/db';
 import { config } from '../../config';
 import { getAccountTier } from '../../billing/services/entitlements';
@@ -16,7 +16,7 @@ export interface ChannelModelContext {
   accountId: string;
   /** A representative project-owner user (for codex credential lookups). */
   ownerUserId: string;
-  /** The account may not use platform-managed Kortix models. */
+  /** The account may not use platform-managed Zed models. */
   freeManagedOnly: boolean;
 }
 
@@ -40,7 +40,7 @@ export async function channelModelContext(ctx: ChannelCtx): Promise<ChannelModel
     .where(and(eq(accountMembers.accountId, project.accountId), eq(accountMembers.accountRole, 'owner')))
     .limit(1);
   const tier = await getAccountTier(project.accountId);
-  const freeManagedOnly = config.KORTIX_BILLING_INTERNAL_ENABLED && accountIsFreeTierForModels(tier);
+  const freeManagedOnly = config.ZED_BILLING_INTERNAL_ENABLED && accountIsFreeTierForModels(tier);
   return {
     projectId: selection.projectId,
     accountId: project.accountId,

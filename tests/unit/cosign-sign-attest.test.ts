@@ -16,7 +16,7 @@ const workflow = join(repoRoot, ".github/workflows/deploy-dev.yml");
 const tempDirs: string[] = [];
 
 function runSigner(mode: string) {
-  const dir = mkdtempSync(join(tmpdir(), "kortix-cosign-test-"));
+  const dir = mkdtempSync(join(tmpdir(), "zed-cosign-test-"));
   tempDirs.push(dir);
   const attempts = join(dir, "attempts");
   writeFileSync(attempts, "0\n");
@@ -54,7 +54,7 @@ esac
 
   const result = spawnSync(
     "bash",
-    [signer, "kortix/example@sha256:abc", "sbom.json"],
+    [signer, "zed/example@sha256:abc", "sbom.json"],
     {
       encoding: "utf8",
       env: {

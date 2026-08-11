@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, mock, test } from 'bun:test';
 import * as realTiers from '../../billing/services/tiers';
 
 const config: Record<string, unknown> = {
-  KORTIX_MANAGED_PROVIDER_ENABLED: true,
+  ZED_MANAGED_PROVIDER_ENABLED: true,
   ASTER_API_KEY: 'aster-test-key',
   ASTER_API_URL: 'https://api.asterlab.ai/v1',
 };

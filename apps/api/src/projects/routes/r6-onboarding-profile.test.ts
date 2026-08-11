@@ -38,7 +38,7 @@ function projectRow(over: Record<string, unknown> = {}) {
     name: 'onboarding-profile-test',
     repoUrl: 'https://github.com/acme/onboarding-profile-test.git',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     status: 'active',
     metadata: {},
     lastOpenedAt: null,

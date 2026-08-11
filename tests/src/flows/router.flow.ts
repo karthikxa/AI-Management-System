@@ -1,8 +1,8 @@
 /**
  * Router — the in-sandbox runtime's gateway to managed LLM + web tooling.
  * Maps to spec §… (RTR-1..RTR-4). The whole point of this surface is that it
- * is authed by a Kortix API key (`apiKeyAuth`), NOT a user JWT: it is called
- * by the sandbox runtime, which only ever holds KORTIX_TOKEN. So the real
+ * is authed by a Zed API key (`apiKeyAuth`), NOT a user JWT: it is called
+ * by the sandbox runtime, which only ever holds ZED_TOKEN. So the real
  * boundary to pin here is "user-JWT and ANON both 401" on the key-gated routes.
  *
  * Confirmed in apps/api/src/router/index.ts:
@@ -16,7 +16,7 @@
  * `POST /v1/llm/messages` (see llm-gateway.flow.ts, spec §GW-6), which runs
  * through the same BYOK-capable auth/billing pipeline as chat.completions.
  *
- * We do not hold a kortix_ API key principal here, so we assert the negative
+ * We do not hold a zed_ API key principal here, so we assert the negative
  * (401) boundary exhaustively rather than faking a successful managed call.
  */
 import { flow } from "../core/flow";
@@ -32,21 +32,21 @@ flow(
     await ctx.step("web-search: OWNER JWT → 401 (apiKeyAuth only)", async () => {
       const r = await ctx.client
         .as(ctx.P.OWNER)
-        .post("/v1/router/web-search", { query: "kortix" });
+        .post("/v1/router/web-search", { query: "zed" });
       r.status(401);
     });
     await ctx.step("web-search: ANON → 401", async () => {
-      const r = await ctx.client.as(ctx.P.ANON).post("/v1/router/web-search", { query: "kortix" });
+      const r = await ctx.client.as(ctx.P.ANON).post("/v1/router/web-search", { query: "zed" });
       r.status(401);
     });
     await ctx.step("image-search: OWNER JWT → 401", async () => {
       const r = await ctx.client
         .as(ctx.P.OWNER)
-        .post("/v1/router/image-search", { query: "kortix" });
+        .post("/v1/router/image-search", { query: "zed" });
       r.status(401);
     });
     await ctx.step("image-search: ANON → 401", async () => {
-      const r = await ctx.client.as(ctx.P.ANON).post("/v1/router/image-search", { query: "kortix" });
+      const r = await ctx.client.as(ctx.P.ANON).post("/v1/router/image-search", { query: "zed" });
       r.status(401);
     });
   },

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
-import { clearSessionFresh, isSessionFresh } from '@kortix/sdk/fresh-sessions';
-import { qk } from '@kortix/sdk/react';
+import { clearSessionFresh, isSessionFresh } from '@zed/sdk/fresh-sessions';
+import { qk } from '@zed/sdk/react';
 import {
   marketplaceInstallSessionHref,
   prepareMarketplaceInstallSessionNavigation,

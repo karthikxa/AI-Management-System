@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { type Ports, computePorts, repoRoot, runMigrate, sh } from '../../scripts/worktree/lib';
 
 const dockerOk = sh(['docker', 'info']).ok;
-const CONTAINER = 'kortix-lifetime-rollup-test';
+const CONTAINER = 'zed-lifetime-rollup-test';
 const PORT = Number(process.env.LIFETIME_ROLLUP_TEST_PORT || 55441);
 const ROOT = repoRoot();
 const ports: Ports = { ...computePorts(0), sbDb: PORT };
@@ -20,13 +20,13 @@ function pgReady(): boolean {
 
 function newAccount(): string {
   const id = psql('select gen_random_uuid()');
-  psql(`insert into kortix.credit_accounts (account_id) values ('${id}')`);
+  psql(`insert into zed.credit_accounts (account_id) values ('${id}')`);
   return id;
 }
 
 function ledger(accountId: string, amount: string, type: string): void {
   psql(
-    `insert into kortix.credit_ledger (account_id, amount_precise, type) values ('${accountId}', ${amount}, '${type}')`,
+    `insert into zed.credit_ledger (account_id, amount_precise, type) values ('${accountId}', ${amount}, '${type}')`,
   );
 }
 
@@ -38,7 +38,7 @@ function lifetime(accountId: string): {
 } {
   const row = psql(
     `select lifetime_granted_precise, lifetime_purchased_precise, lifetime_used_precise, lifetime_granted
-     from kortix.credit_accounts where account_id = '${accountId}'`,
+     from zed.credit_accounts where account_id = '${accountId}'`,
   ).split('|');
   return {
     granted: Number(row[0]),
@@ -148,20 +148,20 @@ suite('credit_accounts lifetime_* rollup (throwaway Postgres)', () => {
     ledger(account, '25', 'tier_grant');
     ledger(account, '-4', 'usage');
     psql(
-      `update kortix.credit_accounts set lifetime_granted_precise = 999, lifetime_used_precise = 0 where account_id = '${account}'`,
+      `update zed.credit_accounts set lifetime_granted_precise = 999, lifetime_used_precise = 0 where account_id = '${account}'`,
     );
 
-    const repaired = Number(psql(`select kortix.recompute_credit_account_lifetime('${account}')`));
+    const repaired = Number(psql(`select zed.recompute_credit_account_lifetime('${account}')`));
     expect(repaired).toBe(1);
     expect(lifetime(account)).toMatchObject({ granted: 25, used: 4 });
 
-    const secondRun = Number(psql(`select kortix.recompute_credit_account_lifetime('${account}')`));
+    const secondRun = Number(psql(`select zed.recompute_credit_account_lifetime('${account}')`));
     expect(secondRun).toBe(0);
   });
 
   test('an account with no ledger history stays at zero', () => {
     const account = newAccount();
-    psql('select kortix.recompute_credit_account_lifetime(null)');
+    psql('select zed.recompute_credit_account_lifetime(null)');
     expect(lifetime(account)).toMatchObject({ granted: 0, purchased: 0, used: 0 });
   });
 
@@ -169,7 +169,7 @@ suite('credit_accounts lifetime_* rollup (throwaway Postgres)', () => {
     const acl = psql(
       `select proname || ':' || (aclexplode(proacl)).grantee::regrole::text
        from pg_proc
-       where pronamespace = 'kortix'::regnamespace
+       where pronamespace = 'zed'::regnamespace
          and proname in ('credit_ledger_lifetime_deltas', 'apply_credit_ledger_lifetime_rollup', 'recompute_credit_account_lifetime')`,
     );
     expect(acl).toContain('credit_ledger_lifetime_deltas:service_role');
@@ -182,11 +182,11 @@ suite('credit_accounts lifetime_* rollup (throwaway Postgres)', () => {
     // does not, which is how the missing grants shipped. Recreate that
     // environment, then write the ledger as service_role through the trigger.
     const account = newAccount();
-    psql(`revoke execute on function kortix.credit_ledger_lifetime_deltas(numeric, text) from public`);
-    psql(`revoke execute on function kortix.apply_credit_ledger_lifetime_rollup() from public`);
+    psql(`revoke execute on function zed.credit_ledger_lifetime_deltas(numeric, text) from public`);
+    psql(`revoke execute on function zed.apply_credit_ledger_lifetime_rollup() from public`);
     psql(
       `set role service_role;
-       insert into kortix.credit_ledger (account_id, amount_precise, type) values ('${account}', 25, 'tier_grant');
+       insert into zed.credit_ledger (account_id, amount_precise, type) values ('${account}', 25, 'tier_grant');
        reset role`,
     );
     expect(lifetime(account)).toMatchObject({ granted: 25, purchased: 0, used: 0 });

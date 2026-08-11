@@ -6,14 +6,14 @@
 **Area:** project secrets, sandbox egress, `apps/api/src/router`
 
 Companion to [`2026-07-26-agent-scoped-secret-injection.md`](./2026-07-26-agent-scoped-secret-injection.md),
-which shipped as [#5514](https://github.com/kortix-ai/suna/pull/5514) and scoped
+which shipped as [#5514](https://github.com/zed-ai/suna/pull/5514) and scoped
 *which* secrets an agent receives. This document is about a different axis:
 **whether the agent receives the secret at all.**
 
 ## The problem
 
 Every project secret is materialized as a plaintext env var inside the sandbox —
-written to `/dev/shm/kortix/agent-env.sh` (0600, tmpfs, shredded on shutdown) and
+written to `/dev/shm/zed/agent-env.sh` (0600, tmpfs, shredded on shutdown) and
 sourced by every shell via `BASH_ENV`. Scoping decides *which* secrets land
 there. Nothing stops the agent from reading the ones that do:
 
@@ -43,7 +43,7 @@ goes anywhere other than `api.stripe.com`, no credential is attached.
 ### Why the existing router is NOT this
 
 `apps/api/src/router/config/proxy-services.ts` already does server-side key
-injection for 11+ Kortix-owned services (Tavily, Serper, Firecrawl, Replicate,
+injection for 11+ Zed-owned services (Tavily, Serper, Firecrawl, Replicate,
 Context7, and the LLM providers):
 
 ```ts
@@ -52,15 +52,15 @@ keyInjection: { type: 'header', headerName: 'Authorization', prefix: 'Bearer ' }
 allowedRoutes: [{ path, methods, prefixMatch, allowedBodyVersions }]
 ```
 
-The sandbox holds only `KORTIX_TOKEN` and calls
-`${KORTIX_API_URL}/v1/router/{service}`; the API attaches the real upstream key.
+The sandbox holds only `ZED_TOKEN` and calls
+`${ZED_API_URL}/v1/router/{service}`; the API attaches the real upstream key.
 The mechanism is proven and in production.
 
 **But it is opt-in by URL rewrite, and that is the crucial difference.** The
-agent has to know to call `${KORTIX_API_URL}/v1/router/tavily` instead of
+agent has to know to call `${ZED_API_URL}/v1/router/tavily` instead of
 `api.tavily.com`. That means:
 
-- Every connector needs Kortix-specific code. Ordinary SDKs, `curl`, and any
+- Every connector needs Zed-specific code. Ordinary SDKs, `curl`, and any
   library that hardcodes its vendor base URL all bypass it.
 - It is a *convention*, not a *control*. An agent that ignores the convention and
   calls the vendor directly is not stopped — it just doesn't get a key from us.
@@ -95,7 +95,7 @@ STRIPE_SECRET_KEY:
 `inject` deliberately mirrors the existing `KeyInjectionMethod` union in
 `proxy-services.ts` (`header` | `json_body_field`) so the two converge rather
 than fork. The long-term shape is that `proxy-services.ts` becomes the
-Kortix-owned *preset* layer over the same per-project policy engine.
+Zed-owned *preset* layer over the same per-project policy engine.
 
 The mental model — "where does this secret get materialized?" — is also the
 product story: **your agent never holds the key.**
@@ -118,7 +118,7 @@ reach `api.stripe.com` except through us — and we do the injection. Same resul
 on both prod providers, using each one's actual capability.
 
 Constraint to design around: Daytona's allowlist caps at **5 CIDRs** and is
-tier-gated, so the allowlist must be "the Kortix egress proxy," never "the union
+tier-gated, so the allowlist must be "the Zed egress proxy," never "the union
 of every domain a project uses."
 
 Platinum gets the stronger version — we control the netns directly.
@@ -128,12 +128,12 @@ Platinum gets the stronger version — we control the netns directly.
 These are the reasons this is a project and not a patch.
 
 **1. TLS interception.** Attaching a header to an HTTPS request means terminating
-TLS at the proxy: a Kortix CA in the sandbox trust store and MITM on egress.
+TLS at the proxy: a Zed CA in the sandbox trust store and MITM on egress.
 SNI tells you the hostname but does not let you modify an encrypted stream —
 which is why E2B's filtering is SNI-based while its `transform.headers` must be
 terminating. There is no way around this for header injection.
 
-*Open question:* some enterprise customers will reject a Kortix CA in the trust
+*Open question:* some enterprise customers will reject a Zed CA in the trust
 store on principle. If so, `proxy` mode must be opt-in per project, which weakens
 the marketing claim from "always" to "when enabled."
 
@@ -160,20 +160,20 @@ Agent identity has two halves: secret delivery and the connector token grant.
 exactly **one** call site — at sandbox provision. It stamps the token with
 `agentGrant` from the session's create-time agent. The proxy rewrites the
 persisted grant before every prompt. It compares the resolved grant, not only
-the agent name. A same-agent change to `connectors` or `kortix_cli` therefore
+the agent name. A same-agent change to `connectors` or `zed_cli` therefore
 takes effect in the existing session.
 
 Re-scoping *env* per prompt is not sufficient on its own. The proxy also
 reconciles every active session token's `agent_grant` before it forwards each
-prompt. Connector and Kortix CLI authorization therefore follow the current
-manifest and running agent. `KORTIX_ENFORCE_AGENT_SECRET_GRANT_LOCK` defaults
+prompt. Connector and Zed CLI authorization therefore follow the current
+manifest and running agent. `ZED_ENFORCE_AGENT_SECRET_GRANT_LOCK` defaults
 off; operators can set it to true when they require immutable secret grants per
 sandbox.
 
 There is also a live fail-open on that path: `session-sandbox.ts:143` does
 `resolveAgentGrant(...).catch(() => null)`, and `null` means unrestricted. It
 calls `loadProjectAgents` **without** `rethrowReadErrors`, so a transient git
-failure synthesizes a manifest granting `connectors: 'all'` + `kortix_cli: 'all'`.
+failure synthesizes a manifest granting `connectors: 'all'` + `zed_cli: 'all'`.
 This is the same bug class #5514 fixed for env, still open for the token — and
 the plumbing to fix it (`rethrowReadErrors`) is already on main.
 

@@ -2,10 +2,10 @@
  * Read/write for an OpenCode agent's native `.md` file — YAML frontmatter +
  * body (the system prompt). This is now the ONE home for agent BEHAVIOR
  * (docs/specs/2026-07-05-agent-first-config-unification.md, decision
- * 2026-07-05: "OpenCode behavior lives in the native .md; Kortix governance
- * lives in kortix.yaml — one home per concern").
+ * 2026-07-05: "OpenCode behavior lives in the native .md; Zed governance
+ * lives in zed.yaml — one home per concern").
  *
- * Distinct from `@kortix/registry`'s `parseFrontmatter` (a dependency-free
+ * Distinct from `@zed/registry`'s `parseFrontmatter` (a dependency-free
  * flat-string reader used for SKILL.md metadata, shipped into the sandbox/CLI
  * bundle) — an agent's frontmatter can carry a full nested `permission` tree,
  * numbers, and booleans, so this uses the real YAML parser (already a

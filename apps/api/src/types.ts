@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { AgentGrant } from '@kortix/db';
+import type { AgentGrant } from '@zed/db';
 import type { BillingState } from './billing/services/billing-state';
 
 // === Request Schemas (Router) ===
@@ -92,7 +92,7 @@ export interface AuthVariables {
   /** PAT token identity for the IAM engine (token-as-principal evaluation). */
   iamTokenId?: string;
   /** Per-agent authorization grant — non-null only for agent-session tokens.
-   *  Read by assertAgentScope() to gate Kortix CLI/API actions on top of the
+   *  Read by assertAgentScope() to gate Zed CLI/API actions on top of the
    *  user's own role (net = userRole ∩ agentGrant). Null = full access. */
   agentGrant?: AgentGrant | null;
 }

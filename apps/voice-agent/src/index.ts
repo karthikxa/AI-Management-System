@@ -1,5 +1,5 @@
 /**
- * The LiveKit agent worker — the voice of a Kortix agent inside a live call.
+ * The LiveKit agent worker — the voice of a Zed agent inside a live call.
  *
  * This is the ONLY part of voice that has to be a separate process. apps/api
  * talks to LiveKit's CONTROL plane (livekit-server-sdk: create a room, mint a
@@ -14,7 +14,7 @@
  * LIVEKIT_API_KEY / LIVEKIT_API_SECRET automatically, and every model below runs
  * through LiveKit Inference, so this worker needs NO third-party API keys and no
  * secrets of its own. Everything else it needs (project, session, call id, the
- * Kortix API URL and a per-call token) arrives in job metadata.
+ * Zed API URL and a per-call token) arrives in job metadata.
  *
  * Run locally with `bun run src/index.ts dev`.
  */
@@ -103,7 +103,7 @@ export default defineAgent({
     // NOTE: a `session.on(AgentSessionEventTypes.Close, …)` listener was tried
     // here to shut the job down with its session (a closed session leaves the
     // process connected to the room as a participant that can no longer act on
-    // `kortix` data messages). Adding it correlated with ConversationItemAdded
+    // `zed` data messages). Adding it correlated with ConversationItemAdded
     // never firing again — the agent spoke, but nothing reached
     // voice_call_turns — which is the same failure mode this codebase has
     // already hit once from subscribing to AgentSessionEventTypes. Do not
@@ -136,7 +136,7 @@ export default defineAgent({
  * This name is a contract with the API. Changing it on one side alone means
  * every dispatch targets a worker that does not exist.
  */
-export const VOICE_AGENT_NAME = 'kortix-voice';
+export const VOICE_AGENT_NAME = 'zed-voice';
 
 cli.runApp(
   new ServerOptions({ agent: fileURLToPath(import.meta.url), agentName: VOICE_AGENT_NAME }),

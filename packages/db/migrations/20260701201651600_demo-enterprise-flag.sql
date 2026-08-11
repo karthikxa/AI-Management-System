@@ -7,10 +7,10 @@
 -- Default false → existing accounts are unaffected and it fails closed. NOT a
 -- real Enterprise plan (that stays sales-assigned via credit_accounts.tier).
 
-ALTER TABLE "kortix"."credit_accounts"
+ALTER TABLE "zed"."credit_accounts"
   ADD COLUMN "demo_enterprise" boolean NOT NULL DEFAULT false;
 
 -- Down Migration
 
-ALTER TABLE "kortix"."credit_accounts"
+ALTER TABLE "zed"."credit_accounts"
   DROP COLUMN "demo_enterprise";

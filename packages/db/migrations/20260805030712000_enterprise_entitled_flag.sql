@@ -23,10 +23,10 @@
 -- admin route (POST /v1/admin/api/accounts/:id/enterprise-entitlement) is the
 -- documented setter, used when a contract is signed.
 
-ALTER TABLE "kortix"."credit_accounts"
+ALTER TABLE "zed"."credit_accounts"
   ADD COLUMN "enterprise_entitled" boolean NOT NULL DEFAULT false;
 
 -- Down Migration
 
-ALTER TABLE "kortix"."credit_accounts"
+ALTER TABLE "zed"."credit_accounts"
   DROP COLUMN "enterprise_entitled";

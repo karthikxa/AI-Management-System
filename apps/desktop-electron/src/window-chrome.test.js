@@ -16,7 +16,7 @@ describe('desktop window chrome', () => {
   });
 
   test('does not inject a full-width drag overlay', () => {
-    expect(DESKTOP_CHROME_JS).not.toContain('kortix-drag-strip');
+    expect(DESKTOP_CHROME_JS).not.toContain('zed-drag-strip');
     expect(DESKTOP_CHROME_JS).not.toContain('pointer-events:none');
     expect(DESKTOP_CHROME_JS).not.toContain('MutationObserver');
   });

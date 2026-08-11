@@ -1,5 +1,5 @@
 /**
- * Direct agent creation — writes to kortix.yaml manifest and creates the
+ * Direct agent creation — writes to zed.yaml manifest and creates the
  * agent's .md file without starting a session. This allows local dev
  * without cloud sandboxes.
  */
@@ -72,7 +72,7 @@ projectsApp.openapi(
       const { db } = await import('../../shared/db');
       const { sql } = await import('drizzle-orm');
       const existing = await db.execute(sql`
-        SELECT 1 FROM kortix.project_agents 
+        SELECT 1 FROM zed.project_agents 
         WHERE project_id = ${projectId} AND name = ${name} LIMIT 1
       `);
       const rows = Array.isArray(existing) ? existing : (existing as any).rows || [];
@@ -89,17 +89,17 @@ projectsApp.openapi(
       const { sql } = await import('drizzle-orm');
       
       await db.execute(sql`
-        INSERT INTO kortix.project_agents 
+        INSERT INTO zed.project_agents 
         (project_id, account_id, name, display_name, description, agent_type, model_id, status)
         VALUES (${projectId}, ${loaded.row.accountId}, ${name}, ${displayName || name}, ${description || ''}, 'subagent', ${model || null}, 'active')
       `);
     } catch (e) {
       console.error('[agent-create] DB insert error:', e);
       // Fall back to in-memory if DB fails
-      if (!(globalThis as any).__kortix_agents) {
-        (globalThis as any).__kortix_agents = {};
+      if (!(globalThis as any).__zed_agents) {
+        (globalThis as any).__zed_agents = {};
       }
-      const agents = (globalThis as any).__kortix_agents;
+      const agents = (globalThis as any).__zed_agents;
       if (!agents[projectId]) agents[projectId] = {};
       agents[projectId][name] = {
         name,

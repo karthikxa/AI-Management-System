@@ -14,30 +14,30 @@ describe('session runtime context boundaries', () => {
     const env = mergeSessionSandboxEnv({
       [SESSION_RUNTIME_CONTEXT_ENV_NAME]: serialized,
     });
-    expect(env).toEqual({ KORTIX_SESSION_CONTEXT: serialized });
+    expect(env).toEqual({ ZED_SESSION_CONTEXT: serialized });
     expect(env).not.toHaveProperty('workspace_id');
     expect(env).not.toHaveProperty('locale');
   });
 
   test('rejects invalid internal values at the same boundary as public input', () => {
     expect(parseSessionRuntimeContext({ workspace_id: { nested: true } }).ok).toBe(false);
-    expect(parseSessionRuntimeContext({ KORTIX_TOKEN: 'shadow' }).ok).toBe(false);
+    expect(parseSessionRuntimeContext({ ZED_TOKEN: 'shadow' }).ok).toBe(false);
     expect(parseSessionRuntimeContext({ workspace_token: 'secret' }).ok).toBe(false);
   });
 
-  test('trusted internal extras cannot shadow or invent KORTIX_SESSION_CONTEXT', () => {
-    const base = { KORTIX_SESSION_CONTEXT: '{"workspace_id":"org_a"}', OTHER: 'base' };
+  test('trusted internal extras cannot shadow or invent ZED_SESSION_CONTEXT', () => {
+    const base = { ZED_SESSION_CONTEXT: '{"workspace_id":"org_a"}', OTHER: 'base' };
     expect(
       mergeSessionSandboxEnv(base, {
-        KORTIX_SESSION_CONTEXT: '{"workspace_id":"org_b"}',
+        ZED_SESSION_CONTEXT: '{"workspace_id":"org_b"}',
         OTHER: 'extra',
       }),
     ).toEqual({
-      KORTIX_SESSION_CONTEXT: '{"workspace_id":"org_a"}',
+      ZED_SESSION_CONTEXT: '{"workspace_id":"org_a"}',
       OTHER: 'extra',
     });
     expect(
-      mergeSessionSandboxEnv({ OTHER: 'base' }, { KORTIX_SESSION_CONTEXT: 'invented' }),
+      mergeSessionSandboxEnv({ OTHER: 'base' }, { ZED_SESSION_CONTEXT: 'invented' }),
     ).toEqual({ OTHER: 'base' });
   });
 
@@ -45,12 +45,12 @@ describe('session runtime context boundaries', () => {
     const catalog = '{"version":1,"capabilities":[]}';
     expect(
       mergeSessionSandboxEnv(
-        { KORTIX_SECRET_CAPABILITIES: catalog },
-        { KORTIX_SECRET_CAPABILITIES: '{"forged":true}' },
+        { ZED_SECRET_CAPABILITIES: catalog },
+        { ZED_SECRET_CAPABILITIES: '{"forged":true}' },
       ),
-    ).toEqual({ KORTIX_SECRET_CAPABILITIES: catalog });
+    ).toEqual({ ZED_SECRET_CAPABILITIES: catalog });
     expect(
-      mergeSessionSandboxEnv({}, { KORTIX_SECRET_CAPABILITIES: '{"forged":true}' }),
+      mergeSessionSandboxEnv({}, { ZED_SECRET_CAPABILITIES: '{"forged":true}' }),
     ).toEqual({});
   });
 });

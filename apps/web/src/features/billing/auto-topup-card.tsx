@@ -14,7 +14,7 @@ import {
   getAutoTopupSettings,
   getAutoTopupSetupStatus,
   type AutoTopupSettings as AutoTopupConfig,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { useBillingAccountId } from '@/stores/billing-account-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -22,7 +22,7 @@ import {
   AUTO_TOPUP_DEFAULT_THRESHOLD,
   AUTO_TOPUP_MIN_AMOUNT,
   AUTO_TOPUP_MIN_THRESHOLD,
-} from '@kortix/shared';
+} from '@zed/shared';
 
 export interface AutoTopupCardProps {
   /** If true, fetches current settings from API on mount (for settings modal) */

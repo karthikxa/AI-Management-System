@@ -466,7 +466,7 @@ flow(
     // otherwise). Block on OpenCode readiness before minting the share token.
     await createOcConversation(ctx, sandboxId);
 
-    // The mint proxies to the sandbox daemon's /kortix/share. The default
+    // The mint proxies to the sandbox daemon's /zed/share. The default
     // template's daemon returns an opaque payload (a token when share is wired,
     // else an HTML/empty body) — so we assert the platform endpoint responds and
     // extract a token if present, without failing the auth-boundary flow when the

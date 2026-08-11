@@ -15,7 +15,7 @@
  *                         relayed by the daemon at runtime-ready and written by
  *                         platform/services/boot-timeline-store.ts
  *
- * Both live in kortix.provider_events, so one query gives the real distribution
+ * Both live in zed.provider_events, so one query gives the real distribution
  * per provider per stage. Use this — not a small live sample — for any claim about
  * "boot takes N seconds".
  *
@@ -75,7 +75,7 @@ async function main() {
         m.mk->>'label' as label,
         (m.mk->>'atMs')::int as at_ms,
         (m.mk->>'deltaMs')::int as delta_ms
-      from kortix.provider_events e,
+      from zed.provider_events e,
         lateral jsonb_array_elements(e.marks) with ordinality m(mk, ord)
       where e.kind in ('provision', 'boot')
         and e.outcome = 'ok'
@@ -107,7 +107,7 @@ async function main() {
       percentile_disc(0.5) within group (order by total_ms)::int as p50,
       percentile_disc(0.9) within group (order by total_ms)::int as p90,
       percentile_disc(0.95) within group (order by total_ms)::int as p95
-    from kortix.provider_events
+    from zed.provider_events
     where kind in ('provision', 'boot') and outcome = 'ok'
       and total_ms is not null
       and created_at > now() - (${DAYS} || ' days')::interval
@@ -121,14 +121,14 @@ async function main() {
   const images = (await sql`
     select provider::text as provider,
       case
-        when metadata->'runtimeArtifact'->>'providerArtifactRef' like 'kortix-ppwarm-%' then 'warm-hit'
-        when metadata->'runtimeArtifact'->>'providerArtifactRef' like 'kortix-default-%' then 'cold-shared-default'
-        when metadata->'runtimeArtifact'->>'providerArtifactRef' like 'kortix-tpl-%' then 'cold-per-project-template'
+        when metadata->'runtimeArtifact'->>'providerArtifactRef' like 'zed-ppwarm-%' then 'warm-hit'
+        when metadata->'runtimeArtifact'->>'providerArtifactRef' like 'zed-default-%' then 'cold-shared-default'
+        when metadata->'runtimeArtifact'->>'providerArtifactRef' like 'zed-tpl-%' then 'cold-per-project-template'
         when metadata->'runtimeArtifact'->>'providerArtifactRef' is null then 'unknown'
         else 'other'
       end as image_kind,
       count(*)::int as n
-    from kortix.session_sandboxes
+    from zed.session_sandboxes
     where created_at > now() - (${DAYS} || ' days')::interval
     group by 1, 2
     order by 1, 3 desc

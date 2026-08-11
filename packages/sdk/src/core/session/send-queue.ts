@@ -8,7 +8,7 @@
  *
  * This holds a prompt until the session is idle, then dispatches it. Ordering
  * is guaranteed HERE rather than assumed of the server, which matters because
- * the endpoint Kortix currently uses (`/session/{id}/prompt_async`) makes no
+ * the endpoint Zed currently uses (`/session/{id}/prompt_async`) makes no
  * documented promise about what happens to a prompt that arrives mid-run. The
  * runtime does have a durable native queue (`delivery: 'queue'` on the v2
  * `/api/session/{id}/prompt` route, with `session.next.prompt.admitted` to

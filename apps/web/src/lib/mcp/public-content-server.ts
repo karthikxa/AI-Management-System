@@ -16,7 +16,7 @@ type JsonRpcRequest = {
 const TOOL_DEFINITIONS = [
   {
     name: 'list_public_content',
-    description: 'List Kortix public documentation and marketing pages.',
+    description: 'List Zed public documentation and marketing pages.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -37,7 +37,7 @@ const TOOL_DEFINITIONS = [
   },
   {
     name: 'get_public_markdown',
-    description: 'Read the Markdown representation of a Kortix public page.',
+    description: 'Read the Markdown representation of a Zed public page.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -112,7 +112,7 @@ function callTool(name: unknown, args: unknown) {
   if (name === 'get_public_markdown') {
     const path = typeof input.path === 'string' ? input.path : '';
     if (!path.startsWith('/') || path.startsWith('//') || path.includes('://')) {
-      return { isError: true, ...toolText('path must be an absolute Kortix path') };
+      return { isError: true, ...toolText('path must be an absolute Zed path') };
     }
     const resolved = resolveMarkdownFromHtmlPath(path);
     if (!resolved) return { isError: true, ...toolText(`No public Markdown exists for ${path}`) };
@@ -140,7 +140,7 @@ export function handlePublicContentMcp(request: JsonRpcRequest) {
           resources: { subscribe: false, listChanged: false },
         },
         serverInfo: {
-          name: 'kortix-public-content',
+          name: 'zed-public-content',
           version: MCP_SERVER_VERSION,
         },
         instructions: 'Use list_public_content before get_public_markdown.',
@@ -153,7 +153,7 @@ export function handlePublicContentMcp(request: JsonRpcRequest) {
       return result(id, callTool(request.params?.name, request.params?.arguments));
     case 'resources/list': {
       const resources = publicRecordData(undefined, 50).map((record) => ({
-        uri: `https://kortix.com${record.markdown_path}`,
+        uri: `https://zed.com${record.markdown_path}`,
         name: record.title,
         description: record.description ?? undefined,
         mimeType: 'text/markdown',
@@ -166,8 +166,8 @@ export function handlePublicContentMcp(request: JsonRpcRequest) {
       let pathname = '';
       try {
         const url = new URL(uri);
-        if (url.origin !== 'https://kortix.com')
-          return error(id, -32602, 'uri must use kortix.com');
+        if (url.origin !== 'https://zed.com')
+          return error(id, -32602, 'uri must use zed.com');
         pathname = url.pathname;
       } catch {
         return error(id, -32602, 'uri must be an absolute URL');

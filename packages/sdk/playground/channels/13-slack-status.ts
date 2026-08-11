@@ -7,12 +7,12 @@
  *
  * Run (from packages/sdk):  bun run playground/channels/13-slack-status.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("slack-status", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
-  const slack = kortix.project(projectId).channels.slack;
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
+  const slack = zed.project(projectId).channels.slack;
 
   const installation = await slack.installation();
   if (installation) {

@@ -1,6 +1,6 @@
 /**
  * Guardrail: connectors and triggers are config-first. Their definitions live
- * in kortix.yaml; the DB is only ever a derived cache (connectors) or absent
+ * in zed.yaml; the DB is only ever a derived cache (connectors) or absent
  * (triggers — read live from the manifest). This test fails the build if any
  * code path writes an entity definition straight to the DB, which would
  * reintroduce the "lands in the DB before it's in config" race.
@@ -57,7 +57,7 @@ describe('config-first invariant (no DB-first creation)', () => {
   });
 
   test('projectTriggers (legacy definition table) is never inserted — triggers are file-defined', () => {
-    // No allowance: trigger definitions live in kortix.yaml, period.
+    // No allowance: trigger definitions live in zed.yaml, period.
     expect(offenders('projectTriggers', () => false)).toEqual([]);
   });
 });

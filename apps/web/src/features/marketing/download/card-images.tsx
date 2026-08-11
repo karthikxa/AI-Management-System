@@ -22,7 +22,7 @@ export function DesktopCardImage() {
       />
 
       <Image
-        src="/media/showcase/kortix-showcase-poster.jpg"
+        src="/media/showcase/zed-showcase-poster.jpg"
         alt=""
         fill
         sizes="(min-width: 768px) 50vw, 100vw"
@@ -30,7 +30,7 @@ export function DesktopCardImage() {
         priority
       />
       <Image
-        src="/media/showcase/kortix-showcase-dark-poster.jpg"
+        src="/media/showcase/zed-showcase-dark-poster.jpg"
         alt=""
         fill
         sizes="(min-width: 768px) 50vw, 100vw"

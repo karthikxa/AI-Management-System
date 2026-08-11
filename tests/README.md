@@ -1,6 +1,6 @@
-# Kortix Test Suite
+# Zed Test Suite
 
-All tests for the Kortix platform, centralised in one place.
+All tests for the Zed platform, centralised in one place.
 
 ## Quick Start
 
@@ -8,13 +8,13 @@ All tests for the Kortix platform, centralised in one place.
 cd suna
 
 # Playwright E2E
-pnpm --filter @kortix/tests test:e2e
+pnpm --filter @zed/tests test:e2e
 
 # Browser tests only (stack already running)
-pnpm --filter @kortix/tests test:e2e:browser
+pnpm --filter @zed/tests test:e2e:browser
 
 # Everything
-pnpm --filter @kortix/tests test
+pnpm --filter @zed/tests test
 ```
 
 ## Structure
@@ -90,20 +90,20 @@ dotenvx run -f apps/api/.env -f apps/web/.env -- \
 ## pnpm Scripts
 
 ```bash
-pnpm --filter @kortix/tests test                         # Playwright
-pnpm --filter @kortix/tests test:e2e                     # Playwright
-pnpm --filter @kortix/tests test:e2e:browser             # Playwright only
-pnpm --filter @kortix/tests test:e2e:gate5:local         # Local Gate 5 verifier
-pnpm --filter @kortix/tests test:e2e:gate5:target        # Target Gate 5 rehearsal
-pnpm --filter @kortix/tests test:e2e:gate5:verify-evidence
-pnpm --filter @kortix/tests test:shell:vps               # VPS checks
+pnpm --filter @zed/tests test                         # Playwright
+pnpm --filter @zed/tests test:e2e                     # Playwright
+pnpm --filter @zed/tests test:e2e:browser             # Playwright only
+pnpm --filter @zed/tests test:e2e:gate5:local         # Local Gate 5 verifier
+pnpm --filter @zed/tests test:e2e:gate5:target        # Target Gate 5 rehearsal
+pnpm --filter @zed/tests test:e2e:gate5:verify-evidence
+pnpm --filter @zed/tests test:shell:vps               # VPS checks
 ```
 
 ## Environment Variables
 
 | Variable             | Default                     | Description         |
 | -------------------- | --------------------------- | ------------------- |
-| `E2E_OWNER_EMAIL`    | `test-e2e@kortix.ai`        | Test owner email    |
+| `E2E_OWNER_EMAIL`    | `test-e2e@zed.ai`        | Test owner email    |
 | `E2E_OWNER_PASSWORD` | `e2e-testpass-123`          | Test owner password |
 | `E2E_BASE_URL`       | `http://localhost:13737`    | Frontend URL        |
 | `E2E_API_URL`        | `http://localhost:13738/v1` | API URL             |

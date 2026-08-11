@@ -4,7 +4,7 @@ import { config } from '../../config';
 // Short-lived, integrity-protected token that round-trips a Slack user's
 // identity through the `/login` web page. The payload (team + Slack user id) is
 // not secret — it only needs to be unforgeable so a member can't bind someone
-// else's Slack id to their Kortix account. Same HMAC construction as the Slack
+// else's Slack id to their Zed account. Same HMAC construction as the Slack
 // OAuth `state` token (slack-oauth.ts); keyed off the canonical signing secret.
 
 const LOGIN_TTL_MS = 10 * 60 * 1000;
@@ -18,7 +18,7 @@ export interface LoginStatePayload {
 }
 
 function loginSigningKey(): string {
-  return config.SLACK_SIGNING_SECRET ?? 'kortix-dev-state-key';
+  return config.SLACK_SIGNING_SECRET ?? 'zed-dev-state-key';
 }
 
 export function signLoginState(input: { teamId: string; slackUserId: string; pendingId?: string }): string {
@@ -54,16 +54,16 @@ export function verifyLoginState(token: string): LoginStatePayload | null {
 
 export function buildSlackLoginUrl(input: { teamId: string; slackUserId: string; pendingId?: string }): string {
   const token = signLoginState(input);
-  const apiBase = (config.KORTIX_URL || '').replace(/\/+$/, '');
+  const apiBase = (config.ZED_URL || '').replace(/\/+$/, '');
   if (apiBase.startsWith('https://')) {
     return `${apiBase}/v1/channels/slack/identity/login/${token}`;
   }
 
-  const configured = config.FRONTEND_URL || 'https://kortix.com';
+  const configured = config.FRONTEND_URL || 'https://zed.com';
   const apiPort = Number(process.env.PORT);
   const localWorktreeFrontend =
     configured === 'http://localhost:3000' &&
-    process.env.KORTIX_LOCAL_DEV === '1' &&
+    process.env.ZED_LOCAL_DEV === '1' &&
     Number.isFinite(apiPort) &&
     apiPort >= 10_000
       ? `http://localhost:${apiPort - 8}`

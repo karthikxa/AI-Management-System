@@ -8,7 +8,7 @@
  * exactly ONE replica — otherwise every cron trigger fires N times (N duplicate
  * paid agent sessions + duplicate external side effects), etc.
  *
- * We elect a single leader with a TTL lease row in `kortix.worker_leader_lease`.
+ * We elect a single leader with a TTL lease row in `zed.worker_leader_lease`.
  * One atomic UPSERT both acquires (when the row is absent or its lease expired)
  * and renews (when we already own it); a non-owning live lease yields no row, so
  * the caller knows it lost. The leader renews well within the TTL; if it dies or
@@ -73,7 +73,7 @@ export function shouldDemote(
 /**
  * Does this pod actually OWN singleton work, i.e. should it join the election?
  *
- * The helm "API-only" profile (workers.enabled=false) sets every KORTIX_*_ENABLED
+ * The helm "API-only" profile (workers.enabled=false) sets every ZED_*_ENABLED
  * worker flag to "false" so the pod serves requests but runs no background loops.
  * Such a pod MUST NOT join the election: election is independent of those flags,
  * so a workers-disabled pod can win the shared lease and sit on it as a
@@ -84,13 +84,13 @@ export function shouldDemote(
  * (unset) = owner, so single-node / self-host is unaffected.
  */
 export function runsSingletonWorkers(env: NodeJS.ProcessEnv = process.env): boolean {
-  if (env.KORTIX_WORKERS_ENABLED === 'false') return false;
+  if (env.ZED_WORKERS_ENABLED === 'false') return false;
   const on = (v: string | undefined) => v !== 'false';
   return (
-    on(env.KORTIX_TRIGGER_SCHEDULER_ENABLED) ||
-    on(env.KORTIX_PROJECT_MAINTENANCE_ENABLED) ||
-    on(env.KORTIX_LEGACY_MIGRATION_WORKER_ENABLED) ||
-    on(env.KORTIX_SUNA_MIGRATION_WORKER_ENABLED)
+    on(env.ZED_TRIGGER_SCHEDULER_ENABLED) ||
+    on(env.ZED_PROJECT_MAINTENANCE_ENABLED) ||
+    on(env.ZED_LEGACY_MIGRATION_WORKER_ENABLED) ||
+    on(env.ZED_SUNA_MIGRATION_WORKER_ENABLED)
   );
 }
 
@@ -119,7 +119,7 @@ async function ensureLeaseTable(): Promise<void> {
   // migration) we swallow the error and let the upsert be the real gate.
   try {
     await sql.unsafe(`
-      CREATE TABLE IF NOT EXISTS kortix.worker_leader_lease (
+      CREATE TABLE IF NOT EXISTS zed.worker_leader_lease (
         lock_key   text PRIMARY KEY,
         owner_id   text        NOT NULL,
         expires_at timestamptz NOT NULL,
@@ -139,7 +139,7 @@ async function acquireOrRenew(): Promise<boolean> {
   await ensureLeaseTable();
   const ttlSec = Math.ceil(TTL_MS / 1000);
   const rows = await sql<{ owner_id: string }[]>`
-    INSERT INTO kortix.worker_leader_lease AS l (lock_key, owner_id, expires_at, updated_at)
+    INSERT INTO zed.worker_leader_lease AS l (lock_key, owner_id, expires_at, updated_at)
     VALUES (${LOCK_KEY}, ${ownerId}, now() + make_interval(secs => ${ttlSec}), now())
     ON CONFLICT (lock_key) DO UPDATE
       SET owner_id   = EXCLUDED.owner_id,
@@ -271,7 +271,7 @@ export async function stopLeaderElection(): Promise<void> {
   await demote('shutdown');
   try {
     if (sql && wasLeader) {
-      await sql`DELETE FROM kortix.worker_leader_lease WHERE lock_key = ${LOCK_KEY} AND owner_id = ${ownerId}`;
+      await sql`DELETE FROM zed.worker_leader_lease WHERE lock_key = ${LOCK_KEY} AND owner_id = ${ownerId}`;
     }
   } catch (err) {
     logger.warn('[leader] lease release on shutdown failed', { error: err instanceof Error ? err.message : String(err) });

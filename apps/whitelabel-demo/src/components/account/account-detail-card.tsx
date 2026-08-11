@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { relativeTime } from '@/lib/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { LogOut, Users } from 'lucide-react';
@@ -40,7 +40,7 @@ export function AccountDetailCard({
   const qc = useQueryClient();
   const detail = useQuery({
     queryKey: ['account', accountId],
-    queryFn: () => kortix.accounts.get(accountId),
+    queryFn: () => zed.accounts.get(accountId),
   });
 
   const data = detail.data;
@@ -50,7 +50,7 @@ export function AccountDetailCard({
   }, [data?.name]);
 
   const rename = useMutation({
-    mutationFn: () => kortix.accounts.updateName(accountId, name.trim()),
+    mutationFn: () => zed.accounts.updateName(accountId, name.trim()),
     onSuccess: (updated) => {
       qc.setQueryData(['account', accountId], updated);
       qc.invalidateQueries({ queryKey: ['accounts'] });
@@ -60,7 +60,7 @@ export function AccountDetailCard({
   });
 
   const leave = useMutation({
-    mutationFn: () => kortix.accounts.leave(accountId),
+    mutationFn: () => zed.accounts.leave(accountId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['accounts'] });
       toast.success('You left the account');

@@ -9,12 +9,12 @@ import { hasUsableModel, useModelStore, type ModelKey } from './use-model-store'
 // preferring the explicit `provider` field the gateway now serves per model
 // over parsing it out of the wire model id — see `subProviderOf` in
 // use-model-store.ts. Every model under the gateway is registered under
-// `providerID: 'kortix'`; `provider` is the field that says who REALLY
+// `providerID: 'zed'`; `provider` is the field that says who REALLY
 // serves it.
 function gatewayModel(partial: Partial<FlatModel> & Pick<FlatModel, 'modelID'>): FlatModel {
   return {
-    providerID: 'kortix',
-    providerName: 'Kortix',
+    providerID: 'zed',
+    providerName: 'Zed',
     modelName: partial.modelID,
     ...partial,
   };
@@ -52,7 +52,7 @@ describe('hasUsableModel — gateway connection gating prefers the explicit `pro
   });
 
   test('a managed model is usable iff the caller is not free-tier, regardless of `provider`', () => {
-    const models = [gatewayModel({ modelID: 'claude-opus-4.8', provider: 'kortix' })];
+    const models = [gatewayModel({ modelID: 'claude-opus-4.8', provider: 'zed' })];
     expect(hasUsableModel(models, { freeTier: true })).toBe(false);
     expect(hasUsableModel(models, { freeTier: false })).toBe(true);
   });
@@ -87,8 +87,8 @@ function captureModelStore(
 
 function codexModel(partial: Partial<FlatModel> & Pick<FlatModel, 'modelID'>): FlatModel {
   return {
-    providerID: 'kortix',
-    providerName: 'Kortix',
+    providerID: 'zed',
+    providerName: 'Zed',
     modelName: partial.modelID,
     provider: 'codex',
     ...partial,
@@ -139,15 +139,15 @@ describe('useModelStore — `isVisible` is independent of the calling surface (c
     // Full, family-grouped catalog: only the true newest-in-family
     // (gpt-5.6-max) is "latest"; gpt-5.6-nova has a valid-but-not-newest
     // date so it's explicitly hidden, not merely defaulted.
-    expect(full.isVisible({ providerID: 'kortix', modelID: 'codex/gpt-5.6-max' })).toBe(true);
-    expect(full.isVisible({ providerID: 'kortix', modelID: 'codex/gpt-5.6-nova' })).toBe(false);
+    expect(full.isVisible({ providerID: 'zed', modelID: 'codex/gpt-5.6-max' })).toBe(true);
+    expect(full.isVisible({ providerID: 'zed', modelID: 'codex/gpt-5.6-nova' })).toBe(false);
 
     // Without `family`, every model is its own singleton family, so both
     // dated models independently qualify as "latest" — gpt-5.6-nova comes
     // back visible even though the full-catalog computation says it
     // shouldn't be. This is the surface-dependence bug.
-    expect(connectedOnly.isVisible({ providerID: 'kortix', modelID: 'codex/gpt-5.6-max' })).toBe(true);
-    expect(connectedOnly.isVisible({ providerID: 'kortix', modelID: 'codex/gpt-5.6-nova' })).toBe(true);
+    expect(connectedOnly.isVisible({ providerID: 'zed', modelID: 'codex/gpt-5.6-max' })).toBe(true);
+    expect(connectedOnly.isVisible({ providerID: 'zed', modelID: 'codex/gpt-5.6-nova' })).toBe(true);
   });
 
   test('fix: passing the same `catalogModels` makes both surfaces agree on every key', () => {

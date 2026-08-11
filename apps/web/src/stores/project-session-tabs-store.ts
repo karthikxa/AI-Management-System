@@ -43,7 +43,7 @@ interface State {
   optimisticActiveByProject: Record<string, string | null>;
 }
 
-const STORAGE_KEY = 'kortix.project-session-tabs';
+const STORAGE_KEY = 'zed.project-session-tabs';
 
 /**
  * Cap how many projects we retain tab state for. The maps below are keyed by

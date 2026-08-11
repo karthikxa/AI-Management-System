@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  Kortix — Container chaos via pumba (OSS, gaiaadm/pumba)                       ║
+# ║  Zed — Container chaos via pumba (OSS, gaiaadm/pumba)                       ║
 # ║                                                                               ║
 # ║  Steady-state hypothesis:                                                     ║
 # ║    "Killing or pausing a single API container does not take the service down: ║
@@ -11,13 +11,13 @@
 # ║  pumba acts on the local Docker daemon, so run it on the host running them.    ║
 # ║                                                                               ║
 # ║  Usage:                                                                       ║
-# ║    TARGET=kortix-api ACTION=kill ./container-chaos-pumba.sh                    ║
-# ║    TARGET=kortix-api ACTION=pause DURATION=20s ./container-chaos-pumba.sh      ║
+# ║    TARGET=zed-api ACTION=kill ./container-chaos-pumba.sh                    ║
+# ║    TARGET=zed-api ACTION=pause DURATION=20s ./container-chaos-pumba.sh      ║
 # ║                                                                               ║
 # ║  Env:                                                                         ║
 # ║    BASE_URL    API base url to probe   (default http://localhost:8008/v1)      ║
 # ║    HEALTH_PATH health endpoint         (default /health)                       ║
-# ║    TARGET      container name/regex     (default kortix-api)                   ║
+# ║    TARGET      container name/regex     (default zed-api)                   ║
 # ║    ACTION      kill | pause | stop      (default kill)                         ║
 # ║    DURATION    for pause/stop           (default 15s)                          ║
 # ║    SIGNAL      for kill                  (default SIGKILL)                      ║
@@ -32,7 +32,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 BASE_URL="${BASE_URL:-http://localhost:8008/v1}"
 HEALTH_PATH="${HEALTH_PATH:-/health}"
-TARGET="${TARGET:-kortix-api}"
+TARGET="${TARGET:-zed-api}"
 ACTION="${ACTION:-kill}"
 DURATION="${DURATION:-15s}"
 SIGNAL="${SIGNAL:-SIGKILL}"

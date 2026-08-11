@@ -1,4 +1,4 @@
-import { auditEvents } from '@kortix/db';
+import { auditEvents } from '@zed/db';
 import { sql, type SQL } from 'drizzle-orm';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -55,7 +55,7 @@ export function buildAuditCursorCondition(
   const exactOccurredAt = sql`coalesce(
     (
       select cursor_event.occurred_at
-      from kortix.audit_events as cursor_event
+      from zed.audit_events as cursor_event
       where cursor_event.event_id = ${cursor.eventId}::uuid
         and cursor_event.account_id = ${accountId}::uuid
     ),

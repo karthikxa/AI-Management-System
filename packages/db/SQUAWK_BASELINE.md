@@ -12,7 +12,7 @@ migrations that are *not* listed in `packages/db/grandfathered-migrations.json`
 Regenerate this report at any time with:
 
 ```bash
-pnpm --filter @kortix/db lint:squawk -- --all
+pnpm --filter @zed/db lint:squawk -- --all
 ```
 
 (`--all` lints the whole corpus and does not change enforcement — enforcement
@@ -61,7 +61,7 @@ is always scoped to non-grandfathered files.)
 Every migration added after this PR gets:
 
 1. **squawk**, scoped via `grandfathered-migrations.json` (`pnpm --filter
-   @kortix/db lint:squawk`, wired into CI) — the mechanical, locking-focused
+   @zed/db lint:squawk`, wired into CI) — the mechanical, locking-focused
    checks above, blocking by default.
 2. **The mixed-version guard** (`scripts/lint-migrations.ts`) — the semantic
    check squawk can't do: any drop/alter of a constraint, unique index,

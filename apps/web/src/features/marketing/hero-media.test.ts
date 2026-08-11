@@ -59,8 +59,8 @@ describe('hero media', () => {
     const dark = new Set(paths.filter((p) => p.includes('-dark-')));
 
     const orphanedLight = light.filter((p) => {
-      // kortix-showcase-1920.mp4 -> kortix-showcase-dark-1920.mp4
-      const twin = p.replace(/\/(kortix-(?:showcase|cli))-/, '/$1-dark-');
+      // zed-showcase-1920.mp4 -> zed-showcase-dark-1920.mp4
+      const twin = p.replace(/\/(zed-(?:showcase|cli))-/, '/$1-dark-');
       return twin !== p && !dark.has(twin);
     });
     expect(orphanedLight, `light encodes with no dark twin:\n${orphanedLight.join('\n')}`).toEqual(

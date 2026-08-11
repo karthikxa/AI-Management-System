@@ -2,7 +2,7 @@
 // Registers onto the shared scimRouter via side effect.
 
 import { createRoute, z } from '@hono/zod-openapi';
-import { accountInvitations, accountMembers } from '@kortix/db';
+import { accountInvitations, accountMembers } from '@zed/db';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { invalidateIamCacheForUser } from '../iam/cache-invalidation';
 import { scimError } from '../middleware/scim-auth';
@@ -560,7 +560,7 @@ async function applyUserWrite(
 }
 
 // PUT — Okta's "Push Profile Updates" replaces the whole resource via PUT
-// (Kortix previously implemented only PATCH, so these calls 404'd). Treat the
+// (Zed previously implemented only PATCH, so these calls 404'd). Treat the
 // full body as the change set and run the shared write path.
 scimRouter.openapi(
   createRoute({

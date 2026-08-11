@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test';
-import type { CatalogModel } from '@kortix/llm-catalog';
+import type { CatalogModel } from '@zed/llm-catalog';
 import { generateText, jsonSchema, streamText, tool } from 'ai';
 import { MockLanguageModelV4, simulateReadableStream } from 'ai/test';
 import type { UpstreamDescriptor } from '../../domain';
@@ -446,14 +446,14 @@ describe('ai-sdk request conversion', () => {
 });
 
 // buildAiSdkArgs is now models.dev-capability-driven: when the caller passes
-// the resolved CatalogModel (index.ts resolves it via @kortix/llm-catalog's
+// the resolved CatalogModel (index.ts resolves it via @zed/llm-catalog's
 // `catalogModelForWireModel`), the four generation params are clamped ONCE in
 // normalizeRequest through the CANONICAL `clampGenerationConfig` — the exact
 // same gate the host runs on route defaults, now also applied to the
 // client-supplied values that path never touched. With NO model the clamp is a
 // deliberate NO-OP (permissive parity), which is why every test above still
 // passes a body with no model and sees pre-gating behavior verbatim.
-describe('ai-sdk per-request capability gating (reuses @kortix/llm-catalog clampGenerationConfig)', () => {
+describe('ai-sdk per-request capability gating (reuses @zed/llm-catalog clampGenerationConfig)', () => {
   // Fixtures use only capability shapes that derive identically in every
   // catalog version (an explicit `effort` reasoning_options entry, a literal
   // `temperature` flag, an explicit `limit.output`) — never a bare
@@ -1699,7 +1699,7 @@ describe('response_format end-to-end — the built model call actually receives 
       doGenerate: async (options) => {
         seenResponseFormat = options.responseFormat;
         return {
-          content: [{ type: 'text', text: '{"name":"kortix"}' }],
+          content: [{ type: 'text', text: '{"name":"zed"}' }],
           finishReason: { unified: 'stop', raw: undefined },
           usage,
           warnings: [],

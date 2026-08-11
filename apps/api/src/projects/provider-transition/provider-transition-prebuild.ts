@@ -12,7 +12,7 @@
  * in-flight/ready row rather than starting a duplicate build.
  */
 import { and, desc, eq, gt, sql } from 'drizzle-orm';
-import { projectSessions, projects, type Database } from '@kortix/db';
+import { projectSessions, projects, type Database } from '@zed/db';
 import { db as appDb } from '../../shared/db';
 import { logger } from '../../lib/logger';
 import { defaultTransitionDeps, requestPrebuild } from './provider-transition-service';

@@ -9,13 +9,13 @@ import { cn } from '@/lib/utils';
  * case-insensitively and regardless of which module it comes from, to stop
  * apps/web reaching into the OpenCode runtime SDK. That scan is independent
  * of (and stricter than) eslint's `no-restricted-syntax` rule, which is now
- * scoped to `@kortix/sdk`/opencode-ish sources and no longer flags this file
+ * scoped to `@zed/sdk`/opencode-ish sources and no longer flags this file
  * — but sdk-boundary.mjs still would. `RuntimeMark` mirrors the SDK's own
  * convention for this exact rename (`ProjectOpenCodeSession as
  * ProjectRuntimeSession` in `packages/sdk/src/index.ts`), not "Harness":
  * this codebase already uses "harness" for the pluggable-agent-runtime
  * concept (OpenCode vs. the Claude Code / Codex / Pi harnesses behind
- * `KORTIX_ACP_RUNTIME`), so reusing it here for an unrelated brand mark
+ * `ZED_ACP_RUNTIME`), so reusing it here for an unrelated brand mark
  * would collide with a real domain term. Import this as `import { RuntimeMark
  * as OpenCode } from '@/features/icon/icons/open-code'` to keep call sites
  * unchanged.

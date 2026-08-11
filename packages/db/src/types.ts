@@ -1,4 +1,4 @@
-import { sandboxes, kortixApiKeys, accounts, accountMembers, accountInvitations, accountGithubInstallations, auditEvents, usageEvents, gatewayRequestLogs, gatewayApiKeys, gatewayBudgets, projects, projectGitConnections, projectGitCredentials, projectMembers, projectSecrets, projectSessions, projectSessionSecretHandles, projectSnapshotBuilds, sandboxTemplates, sessionSandboxes, legacySandboxMigrations, creditAccounts, tunnelConnections, tunnelPermissions, tunnelPermissionRequests, tunnelAuditLogs, chatChannelBindings, chatInstalls, chatThreads } from './schema/kortix';
+import { sandboxes, zedApiKeys, accounts, accountMembers, accountInvitations, accountGithubInstallations, auditEvents, usageEvents, gatewayRequestLogs, gatewayApiKeys, gatewayBudgets, projects, projectGitConnections, projectGitCredentials, projectMembers, projectSecrets, projectSessions, projectSessionSecretHandles, projectSnapshotBuilds, sandboxTemplates, sessionSandboxes, legacySandboxMigrations, creditAccounts, tunnelConnections, tunnelPermissions, tunnelPermissionRequests, tunnelAuditLogs, chatChannelBindings, chatInstalls, chatThreads } from './schema/zed';
 import { apiKeys } from './schema/public';
 
 // Select types (what you get back from queries)
@@ -45,12 +45,12 @@ export type NewLegacySandboxMigration = typeof legacySandboxMigrations.$inferIns
 export type Sandbox = typeof sandboxes.$inferSelect;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type CreditAccount = typeof creditAccounts.$inferSelect;
-export type KortixApiKey = typeof kortixApiKeys.$inferSelect;
+export type ZedApiKey = typeof zedApiKeys.$inferSelect;
 
 // Insert types (what you pass to inserts)
 export type NewSandbox = typeof sandboxes.$inferInsert;
 export type NewApiKey = typeof apiKeys.$inferInsert;
-export type NewKortixApiKey = typeof kortixApiKeys.$inferInsert;
+export type NewZedApiKey = typeof zedApiKeys.$inferInsert;
 export type ChatChannelBinding = typeof chatChannelBindings.$inferSelect;
 export type NewChatChannelBinding = typeof chatChannelBindings.$inferInsert;
 export type ChatInstall = typeof chatInstalls.$inferSelect;

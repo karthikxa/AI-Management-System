@@ -142,20 +142,20 @@ test("root export graph has no 'use client' directives", () => {
   }
 });
 
-test('root entry loads and createKortix constructs outside React', async () => {
+test('root entry loads and createZed constructs outside React', async () => {
   const sdk = await import('./index');
-  const kortix = sdk.createKortix({
+  const zed = sdk.createZed({
     backendUrl: 'http://isomorphic.test/v1',
     getToken: async () => null,
   });
-  expect(typeof kortix.projects.list).toBe('function');
-  expect(typeof kortix.project('p').secrets.upsert).toBe('function');
-  const session = kortix.session('p', 's');
+  expect(typeof zed.projects.list).toBe('function');
+  expect(typeof zed.project('p').secrets.upsert).toBe('function');
+  const session = zed.session('p', 's');
   expect(typeof session.send).toBe('function');
   expect(typeof session.health).toBe('function');
   // previewUrl (like health/proxyUrl/runtime) never falls back to a globally
   // active sandbox — it throws until this handle resolves its OWN runtime via
-  // ensureReady()/start()/send(). See kortix.test.ts for the resolved-runtime cases.
+  // ensureReady()/start()/send(). See zed.test.ts for the resolved-runtime cases.
   expect(() => session.previewUrl(3000)).toThrow(/Session runtime not ready/);
 });
 
@@ -354,7 +354,7 @@ test('core/ never touches a bare process/window/document/localStorage global', (
   // Widened from a same-line-only guard check: in practice the `typeof x !==
   // 'undefined'` guard often sits a line or two above the read it protects —
   // an `if (typeof window !== 'undefined' && window.foo) { … }` block whose
-  // body reads `window` again a line later (kortix.ts:100→102), or an
+  // body reads `window` again a line later (zed.ts:100→102), or an
   // early-return guard immediately above the read it covers
   // (instance-routes.ts:68→70, :74→75). Look back up to GUARD_WINDOW lines for
   // a `typeof <that specific captured global>` mention before flagging —

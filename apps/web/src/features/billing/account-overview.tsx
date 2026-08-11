@@ -11,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAccountState } from '@/hooks/billing/use-account-state';
 import { cn } from '@/lib/utils';
-import { dollarsToCredits, formatCredits } from '@kortix/shared';
+import { dollarsToCredits, formatCredits } from '@zed/shared';
 
 type LimitRow = {
   id: string;
@@ -84,7 +84,7 @@ export function AccountOverviewTab({ accountId }: AccountOverviewTabProps = {}) 
             <p
               className={cn(
                 'text-xs capitalize',
-                subStatus === 'active' ? 'text-kortix-green' : 'text-muted-foreground',
+                subStatus === 'active' ? 'text-zed-green' : 'text-muted-foreground',
               )}
             >
               {subStatus === 'active' ? 'Active' : (subStatus ?? 'No subscription')}
@@ -124,7 +124,7 @@ export function AccountOverviewTab({ accountId }: AccountOverviewTabProps = {}) 
                 <div key={row.id} className="space-y-2.5">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-foreground">{row.label}</span>
-                    <span className={cn('font-medium tabular-nums', atCap && 'text-kortix-red')}>
+                    <span className={cn('font-medium tabular-nums', atCap && 'text-zed-red')}>
                       {row.active} / {row.limit}
                     </span>
                   </div>

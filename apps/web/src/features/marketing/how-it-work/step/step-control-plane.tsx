@@ -21,7 +21,7 @@ const SURFACES = ['Web', 'Slack', 'Mobile', 'CLI', 'API', 'Cron', 'Webhook'];
 const CHANGES = [
   {
     title: 'Fix the billing webhook retry',
-    meta: '7f2a1c94 · +48 −12 · kortix',
+    meta: '7f2a1c94 · +48 −12 · zed',
   },
   {
     title: 'Refresh the Monday revenue brief',
@@ -69,23 +69,23 @@ export function StepControlPlane(): ReactNode {
                       <span
                         className={cn(
                           'flex size-9 items-center justify-center rounded-sm transition-colors duration-300',
-                          done ? 'bg-kortix-green/15' : 'bg-kortix-blue/15',
+                          done ? 'bg-zed-green/15' : 'bg-zed-blue/15',
                         )}
                       >
                         {done ? (
                           <CheckIcon
                             weight="fill"
-                            className="text-kortix-green size-4.5 shrink-0"
+                            className="text-zed-green size-4.5 shrink-0"
                           />
                         ) : (
-                          <GitPullRequestIcon className="text-kortix-blue size-4.5 shrink-0" />
+                          <GitPullRequestIcon className="text-zed-blue size-4.5 shrink-0" />
                         )}
                       </span>
                     }
                     title={change.title}
                     subtitle={<span className="font-mono text-[11px]">{change.meta}</span>}
                     trailing={
-                      <Badge size="xs" variant={done ? 'success' : 'kortix'} className="shrink-0">
+                      <Badge size="xs" variant={done ? 'success' : 'zed'} className="shrink-0">
                         {done ? 'merged' : 'review'}
                       </Badge>
                     }
@@ -103,7 +103,7 @@ export function StepControlPlane(): ReactNode {
                     transition={{ duration: 0.25, ease: 'easeOut' }}
                   >
                     <InfoBanner tone="success" icon={CheckIcon} title="Merged into main">
-                      Merging is a named grant in kortix.yaml. Narrow it to a person, a group or
+                      Merging is a named grant in zed.yaml. Narrow it to a person, a group or
                       nobody.
                     </InfoBanner>
                   </m.div>
@@ -144,13 +144,13 @@ export function StepControlPlane(): ReactNode {
               <Panel title="Lands as">
                 <div className="text-muted-foreground space-y-1.5 px-4 py-3 font-mono text-[11.5px]">
                   <div>
-                    <span className="text-kortix-green">+</span> a branch per session
+                    <span className="text-zed-green">+</span> a branch per session
                   </div>
                   <div>
-                    <span className="text-kortix-green">+</span> a diff you read before it merges
+                    <span className="text-zed-green">+</span> a diff you read before it merges
                   </div>
                   <div>
-                    <span className="text-kortix-green">+</span> a commit on main you can revert
+                    <span className="text-zed-green">+</span> a commit on main you can revert
                   </div>
                 </div>
               </Panel>

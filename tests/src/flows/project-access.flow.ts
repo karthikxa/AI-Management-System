@@ -6,7 +6,7 @@
  * Three surfaces, all real flows (no mocking, no direct DB):
  *  - Per-user project membership: GET/PUT/DELETE /projects/:id/access/:userId
  *    + email invite + the pending-invite queue (list/cancel/resend) for
- *    emails with no Kortix account yet.
+ *    emails with no Zed account yet.
  *  - Group grants: attach an IAM group to a project at a role
  *    (GET/POST/PATCH/DELETE /projects/:id/group-grants).
  *  - Account invites the recipient acts on:
@@ -168,7 +168,7 @@ flow(
   async (ctx) => {
     const team = await ctx.fixtures.team();
     const p = await team.project();
-    const inviteEmail = `${ctx.fixtures.name('pacc-invitee')}@ke2e.kortix.test`.toLowerCase();
+    const inviteEmail = `${ctx.fixtures.name('pacc-invitee')}@ke2e.zed.test`.toLowerCase();
     let inviteId = '';
     await ctx.step('invite a brand-new email → 201 pending invitation', async () => {
       const r = await ctx.client
@@ -200,7 +200,7 @@ flow(
         .as(ctx.P.OWNER)
         .post(
           '/v1/projects/:projectId/access/invite',
-          { email: `${ctx.fixtures.name('x')}@ke2e.kortix.test`, role: 'wizard' },
+          { email: `${ctx.fixtures.name('x')}@ke2e.zed.test`, role: 'wizard' },
           { params: { projectId: p.id } },
         );
       r.status(400);
@@ -472,7 +472,7 @@ flow(
 // ─── Account-invite accept side (recipient-driven) ───────────────────────
 //
 // A clean accept/decline needs the invited user to sign in as the addressed
-// email — the suite synthesizes members but the account-invite (no Kortix
+// email — the suite synthesizes members but the account-invite (no Zed
 // user yet) recipient isn't a provisioned principal, so we cover the
 // recipient-facing routes via real invite creation + the describe/error
 // boundaries that don't require being the addressee.
@@ -485,7 +485,7 @@ flow(
   },
   async (ctx) => {
     const team = await ctx.fixtures.team();
-    const inviteEmail = `${ctx.fixtures.name('inv3')}@ke2e.kortix.test`.toLowerCase();
+    const inviteEmail = `${ctx.fixtures.name('inv3')}@ke2e.zed.test`.toLowerCase();
     let inviteId = '';
     await ctx.step('create a pending account invite (new email)', async () => {
       const r = await ctx.client
@@ -531,7 +531,7 @@ flow(
   },
   async (ctx) => {
     const team = await ctx.fixtures.team();
-    const inviteEmail = `${ctx.fixtures.name('inv4')}@ke2e.kortix.test`.toLowerCase();
+    const inviteEmail = `${ctx.fixtures.name('inv4')}@ke2e.zed.test`.toLowerCase();
     let inviteId = '';
     await ctx.step('create a pending account invite', async () => {
       const r = await ctx.client
@@ -578,7 +578,7 @@ flow(
   },
   async (ctx) => {
     const team = await ctx.fixtures.team();
-    const inviteEmail = `${ctx.fixtures.name('inv5')}@ke2e.kortix.test`.toLowerCase();
+    const inviteEmail = `${ctx.fixtures.name('inv5')}@ke2e.zed.test`.toLowerCase();
     let inviteId = '';
     await ctx.step('create a pending account invite', async () => {
       const r = await ctx.client
@@ -635,7 +635,7 @@ flow(
   },
   async (ctx) => {
     const team = await ctx.fixtures.team();
-    // An email with NO existing Kortix user → POST .../members creates a pending
+    // An email with NO existing Zed user → POST .../members creates a pending
     // invite (members.ts:269) rather than adding the user immediately.
     const inviteEmail = `${ctx.fixtures.name('inv6')}@${ctx.env.testEmailDomain}`.toLowerCase();
     let inviteId = '';
@@ -793,7 +793,7 @@ flow(
   },
 );
 
-// PACC-2 — project email invite. A brand-new email (no Kortix account yet)
+// PACC-2 — project email invite. A brand-new email (no Zed account yet)
 // creates an account invitation carrying a bootstrap project grant → 201
 // {status:"invited"}. Validation (missing email / bad role → 400) and the
 // manage gate (non-member → 404, project not loadable) are enforced.
@@ -803,7 +803,7 @@ flow(
   async (ctx) => {
     const team = await ctx.fixtures.team();
     const p = await team.project();
-    await ctx.step('invite an email with no Kortix account → 201 invitation created', async () => {
+    await ctx.step('invite an email with no Zed account → 201 invitation created', async () => {
       const email = `${ctx.fixtures.name('invitee')}@example.com`.toLowerCase();
       const r = await ctx.client
         .as(ctx.P.OWNER)

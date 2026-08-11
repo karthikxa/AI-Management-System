@@ -1,4 +1,4 @@
-import type { Config } from '@kortix/sdk';
+import type { Config } from '@zed/sdk';
 
 export interface CustomProviderFormValues {
   providerID: string;

@@ -1,9 +1,9 @@
-// deriveActivity turns a session's recent messages + Kortix status into a "what's
+// deriveActivity turns a session's recent messages + Zed status into a "what's
 // it doing" label. The regression these tests guard: a RUNNING session that is
 // actively mid-turn (an in-flight assistant turn, or a running tool from a just-
 // dispatched subagent batch) must NOT be labelled "queued — agent picking up…".
 import { describe, expect, test } from 'bun:test';
-import type { MessageWithParts } from '@kortix/sdk';
+import type { MessageWithParts } from '@zed/sdk';
 
 import { deriveActivity } from '../commands/sessions-chat.ts';
 

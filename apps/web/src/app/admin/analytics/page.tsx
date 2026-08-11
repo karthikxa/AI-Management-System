@@ -4,7 +4,7 @@
  * Admin activity analytics — "how active are our users?" at a glance.
  *
  * Backed by GET /v1/admin/analytics/{activity,usage} through
- * `useAdminActivityAnalytics` / `useAdminUsageAnalytics` (@kortix/sdk/react via
+ * `useAdminActivityAnalytics` / `useAdminUsageAnalytics` (@zed/sdk/react via
  * the @/hooks/admin shim). The page holds no data logic of its own.
  *
  * CHART DESIGN NOTES (dataviz skill):

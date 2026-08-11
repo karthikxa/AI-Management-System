@@ -12,7 +12,7 @@ function wrappedDatabaseError(code: string, message: string): Error {
       code,
       severity: 'FATAL',
       table: 'iam_policies',
-      schema_name: 'kortix',
+      schema_name: 'zed',
       detail: 'provider detail',
       hint: 'provider hint',
     }),
@@ -33,7 +33,7 @@ describe('inspectDatabaseError', () => {
       pgCode: '08006',
       severity: 'FATAL',
       table: 'iam_policies',
-      schema: 'kortix',
+      schema: 'zed',
       detail: 'provider detail',
       hint: 'provider hint',
     });

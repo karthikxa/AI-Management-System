@@ -4,7 +4,7 @@
  * models.dev's live api.json.
  *
  * *** WHY THIS SCRIPT EXISTS ***
- * models.dev's api.json carries far more per-model data than Kortix's
+ * models.dev's api.json carries far more per-model data than Zed's
  * `CatalogModel` (packages/llm-catalog/src/index.ts) used to mirror — it used
  * to drop `reasoning_options`, `cost` (+ tiers/cache/context_over_200k),
  * `structured_output`, `knowledge`, `family`, `description`, `interleaved`,

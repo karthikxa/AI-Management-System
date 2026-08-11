@@ -11,7 +11,7 @@ import { C, help, pad, status } from '../style.ts';
 
 type CtxOpts = { projectArg?: string; hostArg?: string };
 
-const DIGEST_HELP = help`Usage: kortix sessions digest [options]
+const DIGEST_HELP = help`Usage: zed sessions digest [options]
 
 Compact review of recent sessions for reflection / handoff. It lists sessions
 in a time window and, for running sessions, reads the live OpenCode transcript
@@ -26,7 +26,7 @@ tool inputs and outputs are intentionally stripped so the digest stays readable.
   --all                Ignore --since and include every listable session.
   --json               Emit structured JSON for scripting.
   --project <id>       Operate on this project id (default: linked).
-  --host <name>        Operate against a non-default Kortix host.
+  --host <name>        Operate against a non-default Zed host.
   -h, --help           Show this help.
 
 Aliases: review, summary.

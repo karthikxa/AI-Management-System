@@ -1,7 +1,7 @@
 /**
- * Supabase auth seam — the one place we drop below the Kortix API, used only to
+ * Supabase auth seam — the one place we drop below the Zed API, used only to
  * create/confirm synthetic users and exchange password for a real JWT. Everything
- * else (accounts, members, policies, tokens) is provisioned through the Kortix API
+ * else (accounts, members, policies, tokens) is provisioned through the Zed API
  * so fixtures stay honest.
  *
  * Every call is time-bounded: a raw fetch with no timeout against an unreachable

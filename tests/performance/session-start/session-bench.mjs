@@ -8,7 +8,7 @@
 //
 // Steps measured per session:
 //   POST /sessions (201) -> poll /start until ready -> GET /sandbox active
-//   -> /p/:ext/8000/kortix/health -> /global/health -> first file list
+//   -> /p/:ext/8000/zed/health -> /global/health -> first file list
 //   -> READ / LIST / PATCH / DELETE
 //
 // Run via ./run.sh (injects the local Supabase + DB secrets). Env knobs:
@@ -142,8 +142,8 @@ async function runIteration(token, i) {
 
   let daemonHealth = null, opencodeHealth = null, fileList = null;
   if (externalId && tReady !== null) {
-    daemonHealth = await timed(() => apiFetch(token, 'GET', `/p/${externalId}/8000/kortix/health`, undefined, 12_000));
-    mark(`daemon /kortix/health -> ${daemonHealth.value?.status} (${daemonHealth.ms}ms)`);
+    daemonHealth = await timed(() => apiFetch(token, 'GET', `/p/${externalId}/8000/zed/health`, undefined, 12_000));
+    mark(`daemon /zed/health -> ${daemonHealth.value?.status} (${daemonHealth.ms}ms)`);
     opencodeHealth = await timed(() => apiFetch(token, 'GET', `/p/${externalId}/8000/global/health`, undefined, 12_000));
     mark(`opencode /global/health -> ${opencodeHealth.value?.status} (${opencodeHealth.ms}ms)`);
     fileList = await timed(() => apiFetch(token, 'GET', `/p/${externalId}/8000/file?path=${encodeURIComponent('.')}`, undefined, 15_000));
@@ -158,7 +158,7 @@ async function runIteration(token, i) {
 
   let hostTimeline = null;
   try {
-    const raw = psql(`select coalesce((metadata->'provisionTimeline')::text,'') from kortix.session_sandboxes where sandbox_id='${sessionId}'::uuid limit 1;`);
+    const raw = psql(`select coalesce((metadata->'provisionTimeline')::text,'') from zed.session_sandboxes where sandbox_id='${sessionId}'::uuid limit 1;`);
     if (raw) hostTimeline = JSON.parse(raw);
   } catch (e) { hostTimeline = { error: String(e) }; }
 

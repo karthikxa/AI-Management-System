@@ -1,14 +1,14 @@
 /**
- * `kortix registry <subcommand>` — author and inspect registry.json files.
+ * `zed registry <subcommand>` — author and inspect registry.json files.
  *
- *   kortix registry build      Scan this repo → registry.json (now it's a registry)
- *   kortix registry validate   Validate a registry.json
- *   kortix registry list <reg> List the items in a registry
- *   kortix registry view <item>Show one item's details
- *   kortix registry search <reg> --query <q>
+ *   zed registry build      Scan this repo → registry.json (now it's a registry)
+ *   zed registry validate   Validate a registry.json
+ *   zed registry list <reg> List the items in a registry
+ *   zed registry view <item>Show one item's details
+ *   zed registry search <reg> --query <q>
  *
  * The format is shadcn-compatible (registry.json / registry-item.json), so any
- * Kortix repo with a registry.json is marketplace-addressable and readable by
+ * Zed repo with a registry.json is marketplace-addressable and readable by
  * shadcn tooling for plain files.
  */
 
@@ -24,13 +24,13 @@ import {
   validateRegistry,
   type RegistryItem,
   type RegistryLoaderOptions,
-} from '@kortix/registry';
+} from '@zed/registry';
 import { emitJson } from '../command-helpers.ts';
 import { C, help, status } from '../style.ts';
 
-const HELP = help`Usage: kortix registry <subcommand> [options]
+const HELP = help`Usage: zed registry <subcommand> [options]
 
-Author and inspect Kortix registries (shadcn-compatible registry.json).
+Author and inspect Zed registries (shadcn-compatible registry.json).
 
 Subcommands:
   build               Scan this repo and write a registry.json.
@@ -176,7 +176,7 @@ async function registryList(argv: string[], json: boolean): Promise<number> {
   const ref = takeValue(argv, '--ref');
   const address = argv.find((a) => !a.startsWith('-'));
   if (!address) {
-    process.stderr.write(`${status.err('pass a registry: kortix registry list owner/repo')}\n`);
+    process.stderr.write(`${status.err('pass a registry: zed registry list owner/repo')}\n`);
     return 2;
   }
   let items: RegistryItem[];
@@ -202,7 +202,7 @@ async function registrySearch(argv: string[], json: boolean): Promise<number> {
   const query = (takeValue(argv, '--query') ?? '').toLowerCase();
   const address = argv.find((a) => !a.startsWith('-'));
   if (!address) {
-    process.stderr.write(`${status.err('pass a registry: kortix registry search owner/repo --query <q>')}\n`);
+    process.stderr.write(`${status.err('pass a registry: zed registry search owner/repo --query <q>')}\n`);
     return 2;
   }
   let items: RegistryItem[];
@@ -231,7 +231,7 @@ async function registryView(argv: string[], json: boolean): Promise<number> {
   const ref = takeValue(argv, '--ref');
   const address = argv.find((a) => !a.startsWith('-'));
   if (!address) {
-    process.stderr.write(`${status.err('pass an item: kortix registry view owner/repo/item')}\n`);
+    process.stderr.write(`${status.err('pass an item: zed registry view owner/repo/item')}\n`);
     return 2;
   }
   let resolved;

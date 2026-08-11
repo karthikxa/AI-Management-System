@@ -1,4 +1,4 @@
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { type SandboxProviderName, config } from '../../config';
 import { getProvider } from '../../platform/providers';

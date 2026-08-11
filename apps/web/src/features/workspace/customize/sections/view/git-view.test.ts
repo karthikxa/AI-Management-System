@@ -5,15 +5,15 @@ import { join } from 'node:path';
 import { providerLabel, repositoryWebUrl } from './git-view-helpers';
 
 test('formats the live Code Storage provider identifier', () => {
-  expect(providerLabel('code-storage')).toBe('Kortix Code Storage');
-  expect(providerLabel('code_storage')).toBe('Kortix Code Storage');
+  expect(providerLabel('code-storage')).toBe('Zed Code Storage');
+  expect(providerLabel('code_storage')).toBe('Zed Code Storage');
 });
 
 test('only links repository providers with a human web page', () => {
   expect(repositoryWebUrl('github', 'https://github.com/acme/project.git')).toBe(
     'https://github.com/acme/project',
   );
-  expect(repositoryWebUrl('code-storage', 'https://kortix.code.storage/project.git')).toBeNull();
+  expect(repositoryWebUrl('code-storage', 'https://zed.code.storage/project.git')).toBeNull();
 });
 
 test('copy control keeps both icons in an animated fixed-size box', () => {

@@ -5,10 +5,10 @@ import {
   CliError,
   getEnv,
   handleError,
-  kortixConnectorCall,
-  kortixPost,
-  kortixProjectId,
-  kortixSessionId,
+  zedConnectorCall,
+  zedPost,
+  zedProjectId,
+  zedSessionId,
   out,
   parseArgs,
 } from '../lib';
@@ -24,12 +24,12 @@ function resolveDownloadOutput(outPath: string): string {
 }
 
 async function downloadFile(url: string, outPath: string) {
-  const apiUrl = getEnv('KORTIX_API_URL');
-  const tok = getEnv('KORTIX_CLI_TOKEN');
-  const projectId = kortixProjectId();
+  const apiUrl = getEnv('ZED_API_URL');
+  const tok = getEnv('ZED_CLI_TOKEN');
+  const projectId = zedProjectId();
   if (!apiUrl || !tok || !projectId) {
     throw new CliError(
-      'KORTIX_API_URL / KORTIX_CLI_TOKEN / KORTIX_PROJECT_ID not set — cannot download.',
+      'ZED_API_URL / ZED_CLI_TOKEN / ZED_PROJECT_ID not set — cannot download.',
     );
   }
   const proxyUrl = new URL(
@@ -60,10 +60,10 @@ async function downloadFile(url: string, outPath: string) {
 
 async function sendFile(filePath: string, description?: string) {
   if (!existsSync(filePath)) throw new CliError(`File not found: ${filePath}`);
-  const projectId = kortixProjectId();
+  const projectId = zedProjectId();
   const serviceUrl = getEnv('MS_TEAMS_SERVICE_URL');
   const conversationId = getEnv('MS_TEAMS_CONVERSATION_ID');
-  if (!projectId) throw new CliError('KORTIX_PROJECT_ID not set — cannot upload.');
+  if (!projectId) throw new CliError('ZED_PROJECT_ID not set — cannot upload.');
   if (!serviceUrl || !conversationId) {
     throw new CliError(
       'MS_TEAMS_SERVICE_URL / MS_TEAMS_CONVERSATION_ID not set — no active Teams conversation.',
@@ -71,7 +71,7 @@ async function sendFile(filePath: string, description?: string) {
   }
   const data = readFileSync(filePath);
   const filename = filePath.split('/').pop() || 'file';
-  const r = await kortixPost<{ ok?: boolean; uploadId?: string }>(
+  const r = await zedPost<{ ok?: boolean; uploadId?: string }>(
     `/projects/${projectId}/channels/teams/file/upload`,
     {
       service_url: serviceUrl,
@@ -86,7 +86,7 @@ async function sendFile(filePath: string, description?: string) {
 
 async function connectorCall(action: string, args: Record<string, unknown>): Promise<unknown> {
   try {
-    const res = await kortixConnectorCall<{ data?: unknown }>(`${TEAMS_CONNECTOR}.${action}`, args);
+    const res = await zedConnectorCall<{ data?: unknown }>(`${TEAMS_CONNECTOR}.${action}`, args);
     return res.data ?? res;
   } catch (err) {
     if (err instanceof CliError) throw err;
@@ -99,11 +99,11 @@ async function relayTurnStream(
   text: string,
   extras: { detail?: string; output?: string; sources?: Array<{ url: string; text: string }> } = {},
 ): Promise<boolean> {
-  const projectId = kortixProjectId();
-  const sessionId = kortixSessionId();
+  const projectId = zedProjectId();
+  const sessionId = zedSessionId();
   if (!projectId || !sessionId) return false;
   try {
-    const r = await kortixPost<{ ok?: boolean }>(`/projects/${projectId}/turn-stream`, {
+    const r = await zedPost<{ ok?: boolean }>(`/projects/${projectId}/turn-stream`, {
       session_id: sessionId,
       kind,
       text,
@@ -201,8 +201,8 @@ async function main(): Promise<void> {
       console.log(`
 teams — Microsoft Teams adapter
 
-Auth: none in-sandbox — turn replies are rendered by the Kortix server; vendor
-reads run through the Kortix Connector (Graph token resolved server-side).
+Auth: none in-sandbox — turn replies are rendered by the Zed server; vendor
+reads run through the Zed Connector (Graph token resolved server-side).
 
 Turn commands (use these when answering a Teams message):
   step  "<checkpoint>"   [--detail "<subtitle>"] [--output "<prev result>"] [--source URL|TITLE]

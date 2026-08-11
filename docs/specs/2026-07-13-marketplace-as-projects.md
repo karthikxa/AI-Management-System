@@ -9,21 +9,21 @@ as a gallery of **projects** — clonable bundles that can carry skills, agents,
 tools, whatever — with the **starter project** as the hero. Clicking it shows
 everything inside via the file browser we just built, instead of N loose skills.
 
-At the same time, collapse the plumbing. Make **`kortix-cli` the single,
-server-side source of truth** for "how Kortix works / what's available" (the
-agent-browser pattern we already use for the `kortix-*` system skills), and
+At the same time, collapse the plumbing. Make **`zed-cli` the single,
+server-side source of truth** for "how Zed works / what's available" (the
+agent-browser pattern we already use for the `zed-*` system skills), and
 **delete the entire deterministic install + update machinery** — registry-lock,
 versioning, dependency resolution, the update system, all of it.
 
 ## Why now — the driving pain
 
-Today a project's Kortix system skills are **committed files that go stale**. A
-project cloned months ago carries an old `kortix-system` descriptor and never
+Today a project's Zed system skills are **committed files that go stale**. A
+project cloned months ago carries an old `zed-system` descriptor and never
 learns the latest CLI/manifest/CR truth. That single problem is the whole reason
-the update system was built — and it's the wrong fix. If the Kortix system layer
-is **served live** (the CLI is the source of truth, and `kortix-cli` can even be
+the update system was built — and it's the wrong fix. If the Zed system layer
+is **served live** (the CLI is the source of truth, and `zed-cli` can even be
 injected at the sandbox/agent-server level and edited via an MCP server, never
-touching the user's repo), **no project is ever stale on Kortix internals again**,
+touching the user's repo), **no project is ever stale on Zed internals again**,
 and the update machinery has no remaining reason to exist.
 
 ## The reframe: two tiers, not one
@@ -32,20 +32,20 @@ The whole thing clarifies once you notice the catalog serves two populations
 that want *opposite* things, and "updates" / registry-lock were mis-aimed at
 both:
 
-| | **System tier** (`kortix-cli`, `kortix-*`) | **Owned tier** (`generic-*`, `pdf`, `research`, …) |
+| | **System tier** (`zed-cli`, `zed-*`) | **Owned tier** (`generic-*`, `pdf`, `research`, …) |
 | --- | --- | --- |
 | Where it lives | **Server-side**, fetched live via the CLI | **A file in the user's git repo** |
 | Freshness | Always-latest, ephemeral | Frozen at clone time |
 | Edited by user? | No — it's platform truth | **Yes** — forked to fit their ops (the "TODO: make this yours" model) |
 | Needs updates? | Yes, but **not registry-lock** — it's not committed, nothing to update | No — an auto-update would **clobber the user's fork** |
-| Discovery | `kortix skills get` / `kortix marketplace …` | Present as files; read/diff/land via CRs |
+| Discovery | `zed skills get` / `zed marketplace …` | Present as files; read/diff/land via CRs |
 
 The punchline: **registry-lock + `marketplace update` serve nobody well.** System
 skills don't need a lock (they're server-side). Owned skills shouldn't *want*
 updates (updates destroy forks). So the lock/update system can be retired — while
 keeping the git-native "skills are owned files you edit" model for the owned tier.
 
-Why the lock existed at all: it was added to update the Kortix system skills from
+Why the lock existed at all: it was added to update the Zed system skills from
 the marketplace. That requirement is now fully served by the server-side/CLI
 path, so its reason for being is gone.
 
@@ -55,7 +55,7 @@ path, so its reason for being is gone.
   owned, editable, forkable, versioned, landed via CRs. This is the moat and it's
   exactly what the `generic-*` "edit to fit your ops" design depends on.
 - **Items are heterogeneous, recognized by file structure.** A marketplace item
-  can be a whole **project** (its own `kortix.yaml` + agents + skills + tools), or
+  can be a whole **project** (its own `zed.yaml` + agents + skills + tools), or
   a single **skill**, **agent**, or **tool** — we detect *what a repo is* from its
   files and the import agent wires it in accordingly. One import path for all of
   them. The richest items are **end-to-end projects** (web-studio-style, focused
@@ -68,7 +68,7 @@ path, so its reason for being is gone.
   description, type, and a **source git repo/ref**. We delete the install
   *engine*, not the catalog. `search`/`show` stay.
 - **A trivial deterministic seed** (`packages/starter` folder-copy). Not "the
-  engine" — just the file write that makes a new repo a bootable Kortix project.
+  engine" — just the file write that makes a new repo a bootable Zed project.
   Everything *added* to a project after that is an agent import.
 
 ## What we don't do (the trap)
@@ -98,26 +98,26 @@ Presentation only; no mechanics change.
   hero item (the general-knowledge-worker kit as a browsable project).
 - Risk: low. Reversible. Ships value immediately and sets up 2–3.
 
-### 2. `kortix-cli` as the always-injected front door
+### 2. `zed-cli` as the always-injected front door
 - The one always-present skill: "install the CLI; ask it for anything; it's
   always current." Everything system-level is retrieved live. Extends the
-  existing managed pattern (`KORTIX_MANAGED_SKILL_NAMES` in
+  existing managed pattern (`ZED_MANAGED_SKILL_NAMES` in
   `packages/starter/src/index.ts`).
 - **Guaranteed present, not merely shipped.** It's shipped as a default
   owned-layer skill, but the real guarantee is that the **sandbox/agent-server
-  injects it (and/or a Kortix-MCP) into every agent**, always-latest. Every agent
-  therefore has Kortix context no matter what — even if the repo copy is deleted,
-  the injected layer still provides it. That injected `kortix-cli`/MCP is *the*
-  one thing Kortix always guarantees to every agent.
-- Touch: the `kortix-cli` skill copy (done this session) + the sandbox/agent-server
-  injection point + `kortix skills get` / `kortix marketplace` read surface.
+  injects it (and/or a Zed-MCP) into every agent**, always-latest. Every agent
+  therefore has Zed context no matter what — even if the repo copy is deleted,
+  the injected layer still provides it. That injected `zed-cli`/MCP is *the*
+  one thing Zed always guarantees to every agent.
+- Touch: the `zed-cli` skill copy (done this session) + the sandbox/agent-server
+  injection point + `zed skills get` / `zed marketplace` read surface.
 - Risk: low–medium (adds a runtime injection point).
 
 ### 3. Delete the deterministic install engine — install becomes an agent import
 The real change, and it goes further than "drop the lock." A marketplace item is
 just a **discoverable open git repo**. **Installing = an agent clones/reads that
 repo and self-merges it** into the project's own files (skills/agents/tools/
-`kortix.yaml`), then opens a CR. No deterministic file-copy, no
+`zed.yaml`), then opens a CR. No deterministic file-copy, no
 `registry-lock.json`, no versioning, no dependency engine, no update detection.
 Everything that lands is 100% user-owned files, integrated by judgment — the
 same way the agent already writes any other code.
@@ -164,9 +164,9 @@ different things:
   versioning, no agent.
 
 So there's no contradiction with "it's all just files." A brand-new project needs
-*some* seed to be a valid Kortix project a session can boot in (a `kortix.yaml` +
+*some* seed to be a valid Zed project a session can boot in (a `zed.yaml` +
 runtime wiring) — chicken-and-egg: no agent exists yet to do the importing. That
-seed is a plain deterministic folder-copy, and the runtime/`kortix-cli` layer is
+seed is a plain deterministic folder-copy, and the runtime/`zed-cli` layer is
 server-injected on top (Move 2).
 
 The split (decided):
@@ -182,7 +182,7 @@ onboarding + personalization into creation (the agent adapts the starter to what
 the user says they're doing, right from the marketplace) and keeps projects from
 going stale. The deterministic clone stays as the fast/vanilla option. Either way
 a minimal deterministic **seed** boots first (chicken-and-egg: something must
-exist before an agent can run), and the `kortix-cli`/MCP layer is server-injected
+exist before an agent can run), and the `zed-cli`/MCP layer is server-injected
 on top (Move 2).
 
 ## Considerations / tradeoffs
@@ -222,9 +222,9 @@ on top (Move 2).
 2. **Creation:** default = **agent creation** (onboarding/personalization import);
    keep the **deterministic clone** as an available fast path. Minimal seed boots
    either way.
-3. **Import:** a **standard import skill** (folded into `kortix-marketplace`) drives
+3. **Import:** a **standard import skill** (folded into `zed-marketplace`) drives
    every add — detect type → place files → adapt TODOs → wire connectors → CR.
-4. **File-type recognition:** v1 = simple conventions (`kortix.yaml`⇒project,
+4. **File-type recognition:** v1 = simple conventions (`zed.yaml`⇒project,
    `SKILL.md`⇒skill, agent file⇒agent, tool file⇒tool); extensible recognizer.
 5. **Sequencing:** build it all **on the current PR #4493 as one big PR**; do
    **not** merge yet.
@@ -233,7 +233,7 @@ on top (Move 2).
 
 - Not changing the CR system or the git-native ownership of the owned tier
   (that's the moat we're leaning *into*). The one intentional runtime addition is
-  injecting `kortix-cli`/Kortix-MCP into every agent (Move 2).
+  injecting `zed-cli`/Zed-MCP into every agent (Move 2).
 - Not auto-updating owned skills — deliberately dropped, not deferred.
 - Not building a deterministic install engine "lite." The engine is deleted;
   adds are agent imports; the only deterministic thing is a folder copy.

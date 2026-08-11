@@ -16,7 +16,7 @@ import {
 
 // Re-export the ENTIRE opencode v2 type surface through the SDK, so a host app
 // imports `Event`, `Part`, `Message`, `Session`, `Pty`, `Config`, `Agent`,
-// `ProviderListResponse`, … from `@kortix/sdk/opencode-client` and NEVER from
+// `ProviderListResponse`, … from `@zed/sdk/opencode-client` and NEVER from
 // `@opencode-ai/sdk` directly. `packages/sdk/package.json` pins the package's
 // OWN `@opencode-ai/sdk` dependency to one exact version — it does not, by
 // itself, force every workspace package to resolve that same version (pnpm can
@@ -32,25 +32,25 @@ import { isConfigured } from "../http/config";
 import { getActiveOpenCodeUrl } from "../session/server-store/active";
 import { ApiError } from "../http/api/errors";
 
-// Sandbox env/secrets client (`GET/PUT/DELETE /env`), the `/kortix/triggers`
-// wrapper, the Kortix-native PTY client (`/kortix/pty`, independent of
-// whatever agent runtime is running), and the kortix-master
-// project-management client (`/kortix/tasks`, `/kortix/tickets`,
-// `/kortix/projects`, `/kortix/services`, ...) all live in sibling modules,
+// Sandbox env/secrets client (`GET/PUT/DELETE /env`), the `/zed/triggers`
+// wrapper, the Zed-native PTY client (`/zed/pty`, independent of
+// whatever agent runtime is running), and the zed-master
+// project-management client (`/zed/tasks`, `/zed/tickets`,
+// `/zed/projects`, `/zed/services`, ...) all live in sibling modules,
 // re-exported here so hosts only ever import daemon operations from this one
 // subpath.
 export { listEnv, setEnv, deleteEnv, env } from "./env";
 export { triggersRequest } from "./triggers";
 export {
-	listKortixPty,
-	createKortixPty,
-	updateKortixPty,
-	removeKortixPty,
-	getKortixPtyWebSocketUrl,
-	kortixPty,
-	type KortixPty,
+	listZedPty,
+	createZedPty,
+	updateZedPty,
+	removeZedPty,
+	getZedPtyWebSocketUrl,
+	zedPty,
+	type ZedPty,
 } from "./pty";
-export * from "./kortix-master";
+export * from "./zed-master";
 
 
 /**
@@ -105,7 +105,7 @@ export function getClient(): OpencodeClient {
  * route, so it always needs the same auth as any other backend call (the
  * daemon has no separate auth of its own). There is no "public sandbox URL"
  * case that would justify a bare, unauthenticated fetch — sending one would
- * silently 401/leak. If the host never called `configureKortix()`, fail loudly
+ * silently 401/leak. If the host never called `configureZed()`, fail loudly
  * instead of quietly sending an unauthenticated request.
  */
 export function getClientForUrl(url: string): OpencodeClient {
@@ -117,7 +117,7 @@ export function getClientForUrl(url: string): OpencodeClient {
 
 	if (!isConfigured()) {
 		throw new Error(
-			'[opencode-sdk] No auth token provider configured — call configureKortix()/createKortix() before talking to a sandbox runtime.',
+			'[opencode-sdk] No auth token provider configured — call configureZed()/createZed() before talking to a sandbox runtime.',
 		);
 	}
 
@@ -219,14 +219,14 @@ export interface SystemReloadResult {
  *
  * `'dispose-only'` — `POST /global/dispose`. opencode re-reads its config FILE
  * from disk, in-process: same pid, ~51ms, and an in-flight turn survives.
- * `'full'` — `POST /kortix/refresh`. The daemon pulls the workspace and restarts
+ * `'full'` — `POST /zed/refresh`. The daemon pulls the workspace and restarts
  * opencode. Slower (~8s) and it DOES end the turn in flight, but it is the only
  * client-reachable path that re-runs spawn-time setup.
  *
  * Both endpoints were verified against the pinned opencode (1.17.11) on
  * 2026-08-03 — see docs/SESSION_CONFIG_RELOAD.md.
  *
- * This used to POST `/kortix/services/system/reload`, which does not exist. That
+ * This used to POST `/zed/services/system/reload`, which does not exist. That
  * path falls through to opencode's SPA catch-all, so the call got `200` with an
  * HTML body and died on `response.json()` — both command-palette entries built
  * on it have never worked. Mobile was unaffected because it calls
@@ -242,7 +242,7 @@ export async function systemReload(mode: SystemReloadMode): Promise<SystemReload
 			code: 'RUNTIME_UNAVAILABLE',
 		});
 	}
-	const path = mode === 'full' ? '/kortix/refresh' : '/global/dispose';
+	const path = mode === 'full' ? '/zed/refresh' : '/global/dispose';
 	const response = await authenticatedFetch(`${url}${path}`, { method: 'POST' });
 	const contentType = response.headers.get('content-type') ?? '';
 	// Case-insensitive, and `application/<vendor>+json` counts. A false negative
@@ -275,7 +275,7 @@ export async function systemReload(mode: SystemReloadMode): Promise<SystemReload
 			{ status: response.status, response, code: 'RUNTIME_UNAVAILABLE' },
 		);
 	}
-	// `/global/dispose` answers a bare `true`; `/kortix/refresh` answers an
+	// `/global/dispose` answers a bare `true`; `/zed/refresh` answers an
 	// object with `ok`. Neither matches SystemReloadResult, so build it here
 	// rather than changing a shape callers already consume.
 	const success = body === true || (typeof body === 'object' && body !== null && (body as { ok?: unknown }).ok === true);

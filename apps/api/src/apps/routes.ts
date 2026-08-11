@@ -6,7 +6,7 @@ import {
   appDeployments,
   appRuntimes,
   apps,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, desc, eq, inArray, isNull, max, sql } from 'drizzle-orm';
 import { PROJECT_ACTIONS } from '../iam';
 import { auth, errors, json } from '../openapi';
@@ -26,7 +26,7 @@ import { ensureAppRuntimeRunning, loadPublicApp } from './public-proxy';
 import { type AppSourceSpec } from './spec';
 import { AppBudgetExceededError } from './budget';
 import { assertProjectCapability, loadProjectForUser } from '../projects/lib/access';
-import { callerKortixSessionId } from '../projects/lib/caller-session';
+import { callerZedSessionId } from '../projects/lib/caller-session';
 import { projectsApp } from '../projects/lib/app';
 import { requireFeatureFlag } from '../feature-flags/gate';
 import {
@@ -38,11 +38,11 @@ import {
   type AppAccessMode,
 } from './access';
 
-const AppObject = z.object({}).passthrough().openapi('KortixApp');
-const DeploymentObject = z.object({}).passthrough().openapi('KortixAppDeployment');
-const ArtifactObject = z.object({}).passthrough().openapi('KortixAppArtifact');
+const AppObject = z.object({}).passthrough().openapi('ZedApp');
+const DeploymentObject = z.object({}).passthrough().openapi('ZedAppDeployment');
+const ArtifactObject = z.object({}).passthrough().openapi('ZedAppArtifact');
 const APP_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
-const APP_ENV_NAME = /^(?!KORTIX_|OPENCODE_)[A-Za-z_][A-Za-z0-9_]{0,127}$/;
+const APP_ENV_NAME = /^(?!ZED_|OPENCODE_)[A-Za-z_][A-Za-z0-9_]{0,127}$/;
 const APP_SECRET_IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/;
 const EnvironmentSchema = z.record(
   z.string().regex(APP_ENV_NAME),
@@ -121,12 +121,12 @@ function sourceFromWire(input: z.infer<typeof SourceSchema>): AppSourceSpec {
 }
 
 export function appPublicUrl(row: { slug: string; routeKey: string }): string {
-  const localPort = process.env.KORTIX_APPS_LOCAL_PORT || String(config.PORT);
-  if (process.env.KORTIX_APPS_LOCAL === 'true' || config.KORTIX_URL.includes('localhost')) {
+  const localPort = process.env.ZED_APPS_LOCAL_PORT || String(config.PORT);
+  if (process.env.ZED_APPS_LOCAL === 'true' || config.ZED_URL.includes('localhost')) {
     return `http://${row.routeKey}.apps.localhost:${localPort}`;
   }
-  const domain = (process.env.KORTIX_APPS_BASE_DOMAIN || 'apps.kortix.com').replace(/^\.+|\.+$/g, '');
-  return `https://${config.INTERNAL_KORTIX_ENV}-${row.slug}-${row.routeKey}.${domain}`;
+  const domain = (process.env.ZED_APPS_BASE_DOMAIN || 'apps.zed.com').replace(/^\.+|\.+$/g, '');
+  return `https://${config.INTERNAL_ZED_ENV}-${row.slug}-${row.routeKey}.${domain}`;
 }
 
 function serializeApp(row: typeof apps.$inferSelect) {
@@ -192,7 +192,7 @@ function serializeDeployment(row: typeof appDeployments.$inferSelect) {
 }
 
 function appDeploymentActorType(c: any): 'human' | 'agent' | 'service_account' | 'system' {
-  if (callerKortixSessionId(c)) return 'agent';
+  if (callerZedSessionId(c)) return 'agent';
   if (c.get('authType') === 'service_account') return 'service_account';
   if (c.get('authType') === 'apiKey') return 'system';
   return 'human';
@@ -565,7 +565,7 @@ projectsApp.openapi(
         appId, artifactId: artifact.artifactId, version, status: 'queued',
         sourceKind: source.kind, hostingProvider: body.provider ?? null,
         createdBy: loaded.userId,
-        sourceSessionId: callerKortixSessionId(c),
+        sourceSessionId: callerZedSessionId(c),
         actorType: appDeploymentActorType(c),
         runtimeVersion: APP_RUNTIME_VERSION,
         buildSpec: {

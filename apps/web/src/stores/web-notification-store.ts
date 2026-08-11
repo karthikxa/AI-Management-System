@@ -17,9 +17,9 @@ export interface WebNotificationPreferences {
   onCompletion: boolean;
   /** Notify when a session error occurs */
   onError: boolean;
-  /** Notify when Kortix asks a question that needs user input */
+  /** Notify when Zed asks a question that needs user input */
   onQuestion: boolean;
-  /** Notify when Kortix requests a permission */
+  /** Notify when Zed requests a permission */
   onPermission: boolean;
   /** Only send browser notifications when the tab is not visible */
   onlyWhenHidden: boolean;
@@ -122,7 +122,7 @@ export const useWebNotificationStore = create<WebNotificationState>()(
       },
     }),
     {
-      name: 'kortix-web-notifications',
+      name: 'zed-web-notifications',
       storage: createSafeJSONStorage(),
       partialize: (state) => ({
         preferences: state.preferences,

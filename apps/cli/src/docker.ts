@@ -29,7 +29,7 @@ export function dockerAvailable(): boolean {
  * fallback for an arch we don't map, which is what Docker itself would do).
  *
  * Native is the right DEFAULT for a local build even though the cloud is always
- * linux/amd64: an emulated amd64 build of the Kortix layer (texlive +
+ * linux/amd64: an emulated amd64 build of the Zed layer (texlive +
  * libreoffice + chromium under QEMU) takes hours on an M-series Mac, and a gate
  * nobody waits for gates nothing. Callers print the mismatch and offer
  * `--platform linux/amd64` for an exact match.

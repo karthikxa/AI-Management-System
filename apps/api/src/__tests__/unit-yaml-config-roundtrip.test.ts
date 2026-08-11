@@ -14,8 +14,8 @@ import { extractConnectors } from '../projects/connectors';
 // prove the write path preserves the file's own format (a .yaml project must
 // never serialize back as TOML).
 
-const YAML_V2 = `kortix_version: 2
-default_agent: kortix
+const YAML_V2 = `zed_version: 2
+default_agent: zed
 project:
   name: probe
   description: A probe project.
@@ -23,15 +23,15 @@ env:
   required: []
   optional: [STRIPE_API_KEY]
 opencode:
-  config_dir: .kortix/opencode
+  config_dir: .zed/opencode
 agents:
-  kortix:
+  zed:
     connectors: all
     secrets: all
-    kortix_cli: all
+    zed_cli: all
     skills: all
   scout:
-    kortix_cli: [project.cr.open]
+    zed_cli: [project.cr.open]
     connectors: [github]
 triggers:
   - slug: nightly
@@ -44,11 +44,11 @@ triggers:
     prompt: do the nightly thing
 `;
 
-const TOML_V1 = `kortix_version = 1
-default_agent = "kortix"
+const TOML_V1 = `zed_version = 1
+default_agent = "zed"
 
 [[agents]]
-name = "kortix"
+name = "zed"
 env = "all"
 connectors = "all"
 
@@ -60,18 +60,18 @@ connectors = ["github"]
 slug = "nightly"
 name = "Nightly"
 type = "cron"
-agent = "kortix"
+agent = "zed"
 enabled = true
 cron = "0 0 3 * * *"
 prompt = "do the nightly thing"
 `;
 
 describe('YAML v2 manifest — parse + extract', () => {
-  const m = parseManifestString(YAML_V2, 'yaml', 'kortix.yaml');
+  const m = parseManifestString(YAML_V2, 'yaml', 'zed.yaml');
 
   test('parses as yaml, schema v2, format/path threaded', () => {
     expect(m.format).toBe('yaml');
-    expect(m.path).toBe('kortix.yaml');
+    expect(m.path).toBe('zed.yaml');
     expect(m.schemaVersion).toBe(2);
   });
 
@@ -79,12 +79,12 @@ describe('YAML v2 manifest — parse + extract', () => {
     const { specs, errors } = extractAgents(m);
     expect(errors).toEqual([]);
     const names = specs.map((s) => s.name).sort();
-    expect(names).toEqual(['kortix', 'scout']);
+    expect(names).toEqual(['zed', 'scout']);
     const scout = specs.find((s) => s.name === 'scout')!;
-    expect(scout.kortixCli).toEqual(['project.cr.open']);
+    expect(scout.zedCli).toEqual(['project.cr.open']);
     expect(scout.connectors).toEqual(['github']);
-    const kortix = specs.find((s) => s.name === 'kortix')!;
-    expect(kortix.connectors).toBe('all');
+    const zed = specs.find((s) => s.name === 'zed')!;
+    expect(zed.connectors).toBe('all');
   });
 
   test('extractTriggers reads the yaml triggers list', () => {
@@ -100,7 +100,7 @@ describe('YAML v2 manifest — parse + extract', () => {
 });
 
 describe('TOML v1 manifest — parse + extract (parity)', () => {
-  const m = parseManifestString(TOML_V1, 'toml', 'kortix.toml');
+  const m = parseManifestString(TOML_V1, 'toml', 'zed.toml');
 
   test('parses as toml, schema v1', () => {
     expect(m.format).toBe('toml');
@@ -110,7 +110,7 @@ describe('TOML v1 manifest — parse + extract (parity)', () => {
   test('extractAgents reads the v1 [[agents]] ARRAY', () => {
     const { specs, errors } = extractAgents(m);
     expect(errors).toEqual([]);
-    expect(specs.map((s) => s.name).sort()).toEqual(['kortix', 'scout']);
+    expect(specs.map((s) => s.name).sort()).toEqual(['zed', 'scout']);
     expect(specs.find((s) => s.name === 'scout')!.connectors).toEqual(['github']);
   });
 
@@ -123,48 +123,48 @@ describe('TOML v1 manifest — parse + extract (parity)', () => {
 
 describe('round-trip serialize preserves the file format', () => {
   test('yaml manifest → serialize stays YAML (agents map, not [[agents]]) + re-parses equal', () => {
-    const m = parseManifestString(YAML_V2, 'yaml', 'kortix.yaml');
+    const m = parseManifestString(YAML_V2, 'yaml', 'zed.yaml');
     const out = serializeManifest(m);
-    expect(out).toMatch(/^kortix_version: 2/m); // yaml scalar, not `kortix_version = 2`
+    expect(out).toMatch(/^zed_version: 2/m); // yaml scalar, not `zed_version = 2`
     expect(out).toContain('agents:');
     expect(out).not.toContain('[[agents]]');
     // Re-parse and confirm no data loss on the round-trip.
-    const m2 = parseManifestString(out, 'yaml', 'kortix.yaml');
-    expect(extractAgents(m2).specs.map((s) => s.name).sort()).toEqual(['kortix', 'scout']);
+    const m2 = parseManifestString(out, 'yaml', 'zed.yaml');
+    expect(extractAgents(m2).specs.map((s) => s.name).sort()).toEqual(['zed', 'scout']);
     expect(extractTriggers(m2).specs.map((s) => s.slug)).toEqual(['nightly']);
   });
 
   test('toml manifest → serialize stays TOML ([[agents]], not agents:)', () => {
-    const m = parseManifestString(TOML_V1, 'toml', 'kortix.toml');
+    const m = parseManifestString(TOML_V1, 'toml', 'zed.toml');
     const out = serializeManifest(m);
-    expect(out).toMatch(/kortix_version = 1/);
+    expect(out).toMatch(/zed_version = 1/);
     expect(out).toContain('[[agents]]');
-    const m2 = parseManifestString(out, 'toml', 'kortix.toml');
-    expect(extractAgents(m2).specs.map((s) => s.name).sort()).toEqual(['kortix', 'scout']);
+    const m2 = parseManifestString(out, 'toml', 'zed.toml');
+    expect(extractAgents(m2).specs.map((s) => s.name).sort()).toEqual(['zed', 'scout']);
   });
 });
 
 describe('draftToSpec — new trigger spec path uses the real manifest file', () => {
   const draft = {
-    slug: 'nightly', name: 'Nightly', type: 'cron' as const, agent: 'kortix', model: null,
+    slug: 'nightly', name: 'Nightly', type: 'cron' as const, agent: 'zed', model: null,
     enabled: true, promptTemplate: 'do it', cron: '0 0 3 * * *', runAt: null,
     timezone: 'UTC', secretEnv: null, sessionMode: 'fresh' as const, pinnedSessionId: null,
         sessionKey: null,
         filter: null,
   };
 
-  test('YAML project → path is kortix.yaml#triggers.<slug> (not hardcoded toml)', () => {
-    expect(draftToSpec(draft, 'kortix.yaml').path).toBe('kortix.yaml#triggers.nightly');
+  test('YAML project → path is zed.yaml#triggers.<slug> (not hardcoded toml)', () => {
+    expect(draftToSpec(draft, 'zed.yaml').path).toBe('zed.yaml#triggers.nightly');
   });
 
   test('TOML default preserved when no path passed', () => {
-    expect(draftToSpec(draft).path).toBe('kortix.toml#triggers.nightly');
+    expect(draftToSpec(draft).path).toBe('zed.toml#triggers.nightly');
   });
 });
 
 describe('session_mode = pinned — parse, validate, serialize', () => {
-  const yamlWith = (triggerExtra: string) => `kortix_version: 2
-default_agent: kortix
+  const yamlWith = (triggerExtra: string) => `zed_version: 2
+default_agent: zed
 project:
   name: probe
   description: A probe project.
@@ -172,18 +172,18 @@ env:
   required: []
   optional: []
 opencode:
-  config_dir: .kortix/opencode
+  config_dir: .zed/opencode
 agents:
-  kortix:
+  zed:
     connectors: all
     secrets: all
-    kortix_cli: all
+    zed_cli: all
     skills: all
 triggers:
   - slug: loop
     name: Loop
     type: cron
-    agent: kortix
+    agent: zed
     enabled: true
     cron: "0 0 * * * *"
     timezone: UTC
@@ -194,7 +194,7 @@ ${triggerExtra}`;
     const m = parseManifestString(
       yamlWith('    session_mode: pinned\n    session_id: sess-abc\n'),
       'yaml',
-      'kortix.yaml',
+      'zed.yaml',
     );
     const { specs, errors } = extractTriggers(m);
     expect(errors).toEqual([]);
@@ -203,7 +203,7 @@ ${triggerExtra}`;
   });
 
   test('pinned WITHOUT session_id is a parse error', () => {
-    const m = parseManifestString(yamlWith('    session_mode: pinned\n'), 'yaml', 'kortix.yaml');
+    const m = parseManifestString(yamlWith('    session_mode: pinned\n'), 'yaml', 'zed.yaml');
     const { errors } = extractTriggers(m);
     expect(errors.length).toBeGreaterThan(0);
     expect(errors[0].error).toMatch(/session_id/);
@@ -213,7 +213,7 @@ ${triggerExtra}`;
     const m = parseManifestString(
       yamlWith('    session_mode: pinned\n    session_id: sess-xyz\n'),
       'yaml',
-      'kortix.yaml',
+      'zed.yaml',
     );
     const spec = extractTriggers(m).specs[0];
     const entry = triggerSpecToTomlEntry(spec);
@@ -222,7 +222,7 @@ ${triggerExtra}`;
   });
 
   test('fresh trigger omits session_mode/session_id on serialize', () => {
-    const m = parseManifestString(yamlWith(''), 'yaml', 'kortix.yaml');
+    const m = parseManifestString(yamlWith(''), 'yaml', 'zed.yaml');
     const entry = triggerSpecToTomlEntry(extractTriggers(m).specs[0]);
     expect(entry.session_mode).toBeUndefined();
     expect(entry.session_id).toBeUndefined();

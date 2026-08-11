@@ -18,13 +18,13 @@ let ctx: { projectId: string; accountId: string; userId: string } | null = null;
 beforeAll(async () => {
   // Idempotently ensure the columns createAccountToken writes (the local DB may
   // be behind on migrations). Mirrors the agent_grant pattern already here.
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists agent_grant jsonb`);
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists session_id text`);
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists service_account_id uuid`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists agent_grant jsonb`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists session_id text`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists service_account_id uuid`);
   const rows = (await db.execute(sql`
     select p.project_id, p.account_id, m.user_id
-    from kortix.projects p
-    join kortix.account_members m on m.account_id = p.account_id and m.account_role = 'owner'
+    from zed.projects p
+    join zed.account_members m on m.account_id = p.account_id and m.account_role = 'owner'
     limit 1`)) as unknown as Array<{ project_id: string; account_id: string; user_id: string }>;
   const r = rows[0];
   if (r) ctx = { projectId: r.project_id, accountId: r.account_id, userId: r.user_id };
@@ -32,7 +32,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   for (const tokenId of minted) {
-    await db.execute(sql`delete from kortix.account_tokens where token_id = ${tokenId}`);
+    await db.execute(sql`delete from zed.account_tokens where token_id = ${tokenId}`);
   }
 });
 
@@ -60,7 +60,7 @@ function mergeReq(secret: string) {
 describe('HTTP enforcement — CR merge gate via the real route', () => {
   test('agent granted cr.open but NOT cr.merge → 403 at the route', async () => {
     if (!ctx) { console.warn('[http] no owner+project in local DB — skipping'); return; }
-    const secret = await mintToken({ agent: 'release-bot', kortixCli: ['project.cr.open'], connectors: [] });
+    const secret = await mintToken({ agent: 'release-bot', zedCli: ['project.cr.open'], connectors: [] });
     const res = await mergeReq(secret);
     expect(res.status).toBe(403);
     const body = await res.json().catch(() => ({}));
@@ -69,7 +69,7 @@ describe('HTTP enforcement — CR merge gate via the real route', () => {
 
   test('agent granted cr.merge → passes the scope gate (404 CR-not-found, not 403)', async () => {
     if (!ctx) return;
-    const secret = await mintToken({ agent: 'deployer', kortixCli: ['project.cr.merge'], connectors: [] });
+    const secret = await mintToken({ agent: 'deployer', zedCli: ['project.cr.merge'], connectors: [] });
     const res = await mergeReq(secret);
     expect(res.status).not.toBe(403);
   });
@@ -78,7 +78,7 @@ describe('HTTP enforcement — CR merge gate via the real route', () => {
     if (!ctx) return;
     const secret = await mintToken({
       agent: 'meta',
-      kortixCli: 'all',
+      zedCli: 'all',
       connectors: [],
       env: [],
     });

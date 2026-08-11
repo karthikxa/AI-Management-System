@@ -1,6 +1,6 @@
 'use client';
 
-import { createConnector } from '@kortix/sdk';
+import { createConnector } from '@zed/sdk';
 import { MonitorIcon } from '@phosphor-icons/react';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -94,7 +94,7 @@ function ComputersAddFlowContent({
       <ModalContent className="lg:max-w-xl">
         <ModalHeader>
           <div className="flex items-start gap-3">
-            <span className="bg-kortix-blue/15 text-kortix-blue flex size-10 shrink-0 items-center justify-center rounded-sm">
+            <span className="bg-zed-blue/15 text-zed-blue flex size-10 shrink-0 items-center justify-center rounded-sm">
               <MonitorIcon className="size-5" />
             </span>
             <div className="min-w-0 space-y-1">

@@ -1,4 +1,4 @@
-import type { AdminConnector } from '@kortix/sdk';
+import type { AdminConnector } from '@zed/sdk';
 
 export type ConnectorTab = 'accounts' | 'tools' | 'settings';
 

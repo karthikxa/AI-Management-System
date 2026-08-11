@@ -1,14 +1,14 @@
 'use client';
 
-import { getManagedModel } from '@kortix/llm-catalog';
+import { getManagedModel } from '@zed/llm-catalog';
 import { CheckIcon as Check, CopyIcon as Copy } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
-// One brand accent for the whole surface (Kortix is monochrome + a single
+// One brand accent for the whole surface (Zed is monochrome + a single
 // accent). Per-model rainbow coloring was the "yellow-brown" noise — gone.
-export const ACCENT = 'var(--kortix-blue)';
+export const ACCENT = 'var(--zed-blue)';
 
 export function modelAccent(_id: string): string {
   return ACCENT;
@@ -43,7 +43,7 @@ export function CopyButton({ text, className }: { text: string; className?: stri
         className,
       )}
     >
-      {copied ? <Check className="text-kortix-green size-3.5" /> : <Copy className="size-3.5" />}
+      {copied ? <Check className="text-zed-green size-3.5" /> : <Copy className="size-3.5" />}
     </button>
   );
 }

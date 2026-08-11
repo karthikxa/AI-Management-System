@@ -6,7 +6,7 @@
 set lock_timeout = '2s';
 set statement_timeout = '30s';
 
-CREATE OR REPLACE FUNCTION "kortix"."session_sandboxes_anchor_guard"()
+CREATE OR REPLACE FUNCTION "zed"."session_sandboxes_anchor_guard"()
 RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
   derived boolean := false;
@@ -63,5 +63,5 @@ BEGIN
 END;
 $$;
 
-COMMENT ON COLUMN "kortix"."session_sandboxes"."deadline_at" IS
+COMMENT ON COLUMN "zed"."session_sandboxes"."deadline_at" IS
   'When the reaper may stop this box. The provider-confirmed boot and resume floor is 15 minutes. Later control-plane observations can extend it within active_since + 24h.';

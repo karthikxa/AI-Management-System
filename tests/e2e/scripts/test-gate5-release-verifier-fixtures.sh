@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 cd "$REPO_ROOT"
 
-tmpdir="$(mktemp -d /tmp/kortix-gate5-verifier-fixture.XXXXXX)"
+tmpdir="$(mktemp -d /tmp/zed-gate5-verifier-fixture.XXXXXX)"
 trap 'rm -rf "$tmpdir"' EXIT
 
 local_dir="$tmpdir/local"
@@ -249,27 +249,27 @@ LOG
   jq -n '{
     project_id: "project-fixture",
     account_id: "account-fixture",
-    repo_url: "https://github.com/kortix/fixture.git",
+    repo_url: "https://github.com/zed/fixture.git",
     default_branch: "main",
-    manifest_path: "kortix.yaml",
+    manifest_path: "zed.yaml",
     status: "active"
   }' >"$target_dir/api-curl-project.json"
   jq -n '{
     project: {
       project_id: "project-fixture",
-      repo_url: "https://github.com/kortix/fixture.git"
+      repo_url: "https://github.com/zed/fixture.git"
     },
     config: { manifest: { project: { name: "fixture" } } },
     file_count: 3,
     files: [
       {type: "file", path: "README.md", name: "README.md"},
-      {type: "file", path: "kortix.yaml", name: "kortix.yaml"},
+      {type: "file", path: "zed.yaml", name: "zed.yaml"},
       {type: "file", path: ".opencode/opencode.jsonc", name: "opencode.jsonc"}
     ]
   }' >"$target_dir/api-curl-project-detail.json"
   jq -n '[
     {type: "file", path: "README.md", name: "README.md"},
-    {type: "file", path: "kortix.yaml", name: "kortix.yaml"},
+    {type: "file", path: "zed.yaml", name: "zed.yaml"},
     {type: "file", path: ".opencode/opencode.jsonc", name: "opencode.jsonc"}
   ]' >"$target_dir/api-curl-project-files.json"
   jq -n '{
@@ -300,7 +300,7 @@ LOG
     opencode: "ok",
     uptime_s: 42,
     opencode_pid: 123,
-    repo: "https://github.com/kortix/fixture.git",
+    repo: "https://github.com/zed/fixture.git",
     branch: "session-fixture",
     commit_sha: "1111111111111111111111111111111111111111",
     auth: "configured"
@@ -624,7 +624,7 @@ assert_final_verifier_rejects_malformed_refresh_proof() {
   status=$?
   set -e
   if [ "$status" -eq 0 ]; then
-    echo "[gate5-fixture] Expected final verifier to reject malformed /kortix/refresh API curl proof" >&2
+    echo "[gate5-fixture] Expected final verifier to reject malformed /zed/refresh API curl proof" >&2
     exit 1
   fi
 
@@ -978,9 +978,9 @@ verify_status "$tmpdir/synthetic.json" "synthetic-complete"
 
 rm -rf "$target_dir" "$drills_dir"
 mkdir -p "$target_dir" "$drills_dir"
-write_target_fixture "https://gate5-target.kortix.dev/v1" "https://gate5-target.kortix.dev" "https://gate5-supabase.kortix.dev"
-write_drills "https://gate5-target.kortix.dev/v1"
-jq '.evidence[0] = "http://artifacts.kortix.dev/managed-log.txt"' \
+write_target_fixture "https://gate5-target.zed.dev/v1" "https://gate5-target.zed.dev" "https://gate5-supabase.zed.dev"
+write_drills "https://gate5-target.zed.dev/v1"
+jq '.evidence[0] = "http://artifacts.zed.dev/managed-log.txt"' \
   "$target_dir/managed-log-proof.json" >"$target_dir/managed-log-proof.tmp"
 mv "$target_dir/managed-log-proof.tmp" "$target_dir/managed-log-proof.json"
 

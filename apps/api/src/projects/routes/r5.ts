@@ -17,7 +17,7 @@ import {
   searchRepoFileNames,
 } from '../git';
 import { createRoute, z } from '@hono/zod-openapi';
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import { eq, sql as drizzleSql, type SQL } from 'drizzle-orm';
 import {
   assertAgentSessionWorkspaceAllowsRepository,
@@ -121,7 +121,7 @@ projectsApp.openapi(
       projectId,
       error: error instanceof Error ? error.message : String(error),
     });
-    c.header('X-Kortix-Repo-Status', 'unavailable');
+    c.header('X-Zed-Repo-Status', 'unavailable');
   }
   const rawConfig = await loadProjectConfig(gitProject, files);
 
@@ -129,7 +129,7 @@ projectsApp.openapi(
   try {
     const dbAgents = await db.execute(drizzleSql`
       SELECT name, display_name, description, model_id
-      FROM kortix.project_agents
+      FROM zed.project_agents
       WHERE project_id = ${projectId} AND status != 'archived'
     `);
     const rows = Array.isArray(dbAgents) ? dbAgents : (dbAgents as any).rows || [];
@@ -146,7 +146,7 @@ projectsApp.openapi(
         .filter((row: any) => !existingNames.has(row.name))
         .map((row: any) => ({
           name: row.name,
-          path: `.kortix/opencode/agents/${row.name}.md`,
+          path: `.zed/opencode/agents/${row.name}.md`,
           displayName: row.display_name || row.name,
           description: row.description || '',
           mode: 'primary' as const,
@@ -247,7 +247,7 @@ projectsApp.openapi(
       projectId,
       error: error instanceof Error ? error.message : String(error),
     });
-    c.header('X-Kortix-Repo-Status', 'unavailable');
+    c.header('X-Zed-Repo-Status', 'unavailable');
   }
   // Visibility isolation: drop files of agents/skills this member is scoped out
   // of. No-op (one memo check) when the project scopes nothing.
@@ -547,7 +547,7 @@ projectsApp.openapi(
       projectId,
       error: error instanceof Error ? error.message : String(error),
     });
-    c.header('X-Kortix-Repo-Status', 'unavailable');
+    c.header('X-Zed-Repo-Status', 'unavailable');
     return c.json({ default_branch: loaded.row.defaultBranch, branches: [] });
   }
 },
@@ -757,7 +757,7 @@ projectsApp.openapi(
   if (!loaded) return c.json({ error: 'Not found' }, 404);
   // Editing project config (name / default_branch / manifest_path) is a
   // customize-write capability. manifest_path is especially sensitive: it
-  // selects which kortix.yaml drives per-agent env scoping, so a custom role
+  // selects which zed.yaml drives per-agent env scoping, so a custom role
   // can withhold it and a scoped agent must hold it (central fold).
   await assertProjectCapability(c, loaded.userId, loaded.row.accountId, projectId, PROJECT_ACTIONS.PROJECT_CUSTOMIZE_WRITE);
 

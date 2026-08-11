@@ -6,7 +6,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create unique index concurrently if not exists idx_audit_events_source_phase
-      on kortix.audit_events
+      on zed.audit_events
         (source_ledger, source_record_id, phase, coalesce(source_revision, ''))
       where source_ledger is not null and source_record_id is not null
   `);

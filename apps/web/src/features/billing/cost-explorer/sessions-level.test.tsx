@@ -6,7 +6,7 @@ import {
   type SessionCostsPage,
   type SessionCostSort,
   type SessionCostSummary,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import {
   focusManager,
   QueryClient,

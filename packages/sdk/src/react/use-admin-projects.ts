@@ -15,7 +15,7 @@ import { backendApi } from '../core/http/api-client';
 export interface AdminProject {
   projectId: string;
   name: string;
-  /** `kortix.project_status` — 'active' | 'archived'. */
+  /** `zed.project_status` — 'active' | 'archived'. */
   status: string | null;
   accountId: string;
   accountName: string | null;
@@ -45,7 +45,7 @@ export interface AdminProjectsFilters {
   /** Matches project name, account name, or any account member's email. */
   search?: string;
   accountId?: string;
-  /** `kortix.project_status` values; empty = no status filter. */
+  /** `zed.project_status` values; empty = no status filter. */
   status?: string[];
   sortBy?: AdminProjectsSortBy;
   sortDir?: AdminProjectsSortDir;

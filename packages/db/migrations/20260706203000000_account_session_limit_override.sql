@@ -8,15 +8,15 @@
 -- means "no override": the account's tier decides. Resolution lives in
 -- resolveAccountSessionLimit (apps/api/src/shared/account-limits.ts).
 
-ALTER TABLE "kortix"."credit_accounts"
+ALTER TABLE "zed"."credit_accounts"
   ADD COLUMN IF NOT EXISTS "max_concurrent_sessions" integer;
 --> statement-breakpoint
 
--- Seed: effectively-uncapped override for the internal Kortix dogfood account.
+-- Seed: effectively-uncapped override for the internal Zed dogfood account.
 -- Upsert (mirrors setDemoEnterprise) so it applies even on environments where
 -- the account has no credit_accounts row yet; all other columns keep their
 -- schema defaults there. Idempotent — re-running just re-sets the same value.
-INSERT INTO "kortix"."credit_accounts" ("account_id", "max_concurrent_sessions")
+INSERT INTO "zed"."credit_accounts" ("account_id", "max_concurrent_sessions")
 VALUES ('3b1fc472-a90e-404f-823f-ca42f6b32e4d', 100000)
 ON CONFLICT ("account_id")
 DO UPDATE SET

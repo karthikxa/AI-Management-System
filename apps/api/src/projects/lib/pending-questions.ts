@@ -23,7 +23,7 @@
  * two prompts in the UI.
  */
 
-import { sessionPendingQuestions } from '@kortix/db';
+import { sessionPendingQuestions } from '@zed/db';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { db } from '../../shared/db';
 

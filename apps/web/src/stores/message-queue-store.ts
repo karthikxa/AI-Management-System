@@ -3,7 +3,7 @@
 /**
  * The per-session message queue, persisted across reloads and tab switches.
  *
- * The rules live in `@kortix/sdk/message-queue` as pure transitions; this store
+ * The rules live in `@zed/sdk/message-queue` as pure transitions; this store
  * is the two things the SDK deliberately does not do — hold the state per
  * session, and write it to disk.
  *
@@ -42,10 +42,10 @@ import {
   retryFailed,
   type QueuedMessage,
   type SessionQueue,
-} from '@kortix/sdk/message-queue';
+} from '@zed/sdk/message-queue';
 import { create } from 'zustand';
 
-export const QUEUE_STORAGE_KEY = 'kortix_message_queue_v3';
+export const QUEUE_STORAGE_KEY = 'zed_message_queue_v3';
 
 /**
  * An attachment on a queued message. `lost` is what a `local`/`remote` file

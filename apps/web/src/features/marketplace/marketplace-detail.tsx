@@ -551,7 +551,7 @@ export function MarketplaceDetail({
       }));
     return groupMarketplaceItemsByType(items);
   }, [isProject, data]);
-  // A project's agents + triggers (parsed from kortix.yaml) rendered with the
+  // A project's agents + triggers (parsed from zed.yaml) rendered with the
   // SAME card + name-based icon heuristic as its skills — just non-navigable,
   // since they aren't their own catalog items.
   const projectExtraGroups = useMemo(() => {
@@ -712,7 +712,7 @@ export function MarketplaceDetail({
                   </div>
                 </section>
               ))}
-              {/* Agents + triggers (from kortix.yaml), rendered as the SAME cards
+              {/* Agents + triggers (from zed.yaml), rendered as the SAME cards
                 in the SAME grid as the skills above — just non-navigable. */}
               {projectExtraGroups.map((g) => (
                 <section key={g.label}>

@@ -8,7 +8,7 @@ interface GridCell {
   word: string | null;
 }
 
-interface KortixGridProps {
+interface ZedGridProps {
   count?: number;
   cols?: number;
   rows?: number;
@@ -29,15 +29,15 @@ function createRng(seed: number) {
   };
 }
 
-export default function KortixGrid({
+export default function ZedGrid({
   count,
   cols = 9,
   rows = 12,
-  words = ['kortix'],
+  words = ['zed'],
   seed = 1,
-  gradient = 'linear-gradient(to top left, var(--kortix-green), var(--kortix-purple), var(--kortix-green))',
+  gradient = 'linear-gradient(to top left, var(--zed-green), var(--zed-purple), var(--zed-green))',
   speed = 15,
-}: KortixGridProps) {
+}: ZedGridProps) {
   const gridItems = useMemo(() => {
     const totalCells = cols * rows;
     const cells: GridCell[] = new Array(totalCells).fill(null).map((_, i) => ({

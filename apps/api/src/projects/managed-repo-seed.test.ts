@@ -290,7 +290,7 @@ describe('shouldSelfHealManagedRepoSeed', () => {
     expect(shouldSelfHealManagedRepoSeed({ managed: true, metadata })).toBe(true);
   });
 
-  test('leaves an explicit caller opt-out alone so kortix ship can push its own history', () => {
+  test('leaves an explicit caller opt-out alone so zed ship can push its own history', () => {
     const metadata = {
       git: {
         managed: true,
@@ -305,7 +305,7 @@ describe('shouldSelfHealManagedRepoSeed', () => {
     expect(shouldSelfHealManagedRepoSeed({ managed: true, metadata })).toBe(false);
   });
 
-  test('never touches a repo Kortix does not manage', () => {
+  test('never touches a repo Zed does not manage', () => {
     expect(shouldSelfHealManagedRepoSeed({ managed: false, metadata: null })).toBe(false);
   });
 });

@@ -5,7 +5,7 @@ export const product: RoleContent = {
   slug: 'product',
   name: 'Product',
   navDescription: 'Feedback synthesised into specs, with the evidence attached',
-  seoTitle: 'Kortix for product teams',
+  seoTitle: 'Zed for product teams',
   seoDescription:
     'Turn scattered feedback into a spec with the evidence attached, keep the tracker honest, and write the release notes from the actual diff. Everything lands as a document a person reviews.',
 
@@ -168,12 +168,12 @@ export const product: RoleContent = {
       {
         id: 'merge',
         k: 'Merge is default-deny',
-        v: 'Specs, notes and research land on the session branch and reach main through a change request. An agent cannot merge unless an admin has granted project.cr.merge in kortix.yaml, and widening the grant is itself a reviewed change.',
+        v: 'Specs, notes and research land on the session branch and reach main through a change request. An agent cannot merge unless an admin has granted project.cr.merge in zed.yaml, and widening the grant is itself a reviewed change.',
       },
       {
         id: 'creds',
         k: 'Connector credentials never enter the machine',
-        v: 'The sandbox carries one project-scoped Kortix token and no third-party keys. Your tracker and helpdesk credentials are decrypted server-side and attached to the outbound call.',
+        v: 'The sandbox carries one project-scoped Zed token and no third-party keys. Your tracker and helpdesk credentials are decrypted server-side and attached to the outbound call.',
       },
       {
         id: 'memory',
@@ -185,6 +185,6 @@ export const product: RoleContent = {
 
   closing: {
     title: 'Do the reading. Keep the deciding.',
-    sub: 'Open source and self-hostable. Any model, your keys. Kortix Cloud, your own VPC, or your own on-prem network.',
+    sub: 'Open source and self-hostable. Any model, your keys. Zed Cloud, your own VPC, or your own on-prem network.',
   },
 };

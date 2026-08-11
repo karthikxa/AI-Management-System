@@ -71,7 +71,7 @@ describe('IAM V2 — project role table', () => {
     for (const a of PROJECT_ROLE_PERMS.member) {
       expect(a).toMatch(/\.(read|start|stop|fire|submit)$/);
     }
-    // Can start / run / stop sessions (the floor role must be able to USE Kortix).
+    // Can start / run / stop sessions (the floor role must be able to USE Zed).
     expect(projectRoleAllows('member', PROJECT_ACTIONS.PROJECT_SESSION_START)).toBe(true);
     expect(projectRoleAllows('member', PROJECT_ACTIONS.PROJECT_SESSION_STOP)).toBe(true);
     // ...and can FIRE the project's triggers (operate its automations).

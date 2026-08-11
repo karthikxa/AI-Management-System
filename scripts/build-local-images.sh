@@ -29,7 +29,7 @@ Usage: build-local-images.sh [options]
 Options:
   --tag <tag>          Image tag to build (default: latest)
   --tag=<tag>          Same as above
-  --include-postgres   Also build `kortix/postgres:<tag>`
+  --include-postgres   Also build `zed/postgres:<tag>`
 EOF
       exit 0
       ;;
@@ -52,7 +52,7 @@ printf "[build-local-images] Building frontend standalone output...\n"
   NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co \
   NEXT_PUBLIC_SUPABASE_ANON_KEY=local-build-placeholder-anon-key \
   NEXT_OUTPUT=standalone \
-  pnpm --filter Kortix-Computer-Frontend exec next build --experimental-app-only
+  pnpm --filter Zed-Computer-Frontend exec next build --experimental-app-only
 )
 
 printf "[build-local-images] Repairing frontend standalone Next package...\n"
@@ -137,18 +137,18 @@ while (queue.length > 0) {
 JS
 )
 
-printf "[build-local-images] Building kortix/kortix-frontend:%s...\n" "$TAG"
-docker build --no-cache -f "$REPO_ROOT/apps/web/Dockerfile" -t "kortix/kortix-frontend:${TAG}" "$REPO_ROOT"
+printf "[build-local-images] Building zed/zed-frontend:%s...\n" "$TAG"
+docker build --no-cache -f "$REPO_ROOT/apps/web/Dockerfile" -t "zed/zed-frontend:${TAG}" "$REPO_ROOT"
 
-printf "[build-local-images] Building kortix/kortix-api:%s...\n" "$TAG"
-docker build --build-arg SERVICE=apps/api -f "$REPO_ROOT/apps/api/Dockerfile" -t "kortix/kortix-api:${TAG}" "$REPO_ROOT"
+printf "[build-local-images] Building zed/zed-api:%s...\n" "$TAG"
+docker build --build-arg SERVICE=apps/api -f "$REPO_ROOT/apps/api/Dockerfile" -t "zed/zed-api:${TAG}" "$REPO_ROOT"
 
-printf "[build-local-images] Building kortix/kortix-gateway:%s...\n" "$TAG"
-docker build -f "$REPO_ROOT/apps/llm-gateway/Dockerfile" -t "kortix/kortix-gateway:${TAG}" "$REPO_ROOT"
+printf "[build-local-images] Building zed/zed-gateway:%s...\n" "$TAG"
+docker build -f "$REPO_ROOT/apps/llm-gateway/Dockerfile" -t "zed/zed-gateway:${TAG}" "$REPO_ROOT"
 
 if [ "$INCLUDE_POSTGRES" = "1" ]; then
-  printf "[build-local-images] Building kortix/postgres:%s...\n" "$TAG"
-  docker build -f "$REPO_ROOT/services/postgres/Dockerfile" -t "kortix/postgres:${TAG}" "$REPO_ROOT/services/postgres"
+  printf "[build-local-images] Building zed/postgres:%s...\n" "$TAG"
+  docker build -f "$REPO_ROOT/services/postgres/Dockerfile" -t "zed/postgres:${TAG}" "$REPO_ROOT/services/postgres"
 fi
 
 printf "[build-local-images] Done.\n"

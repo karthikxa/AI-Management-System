@@ -1,6 +1,6 @@
 import { createAccountToken } from '../src/repositories/account-tokens';
 import { db } from '../src/shared/db';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 const ACC='fbea71d0-9655-4ab4-aca5-1b68e1ae7f71'; const BASE='http://localhost:8008';
 const tok=(await createAccountToken({accountId:ACC,userId:ACC,name:'mk3'})).secretKey;

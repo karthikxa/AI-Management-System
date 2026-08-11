@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useProjectConfig } from '@kortix/sdk/react';
+import { useProjectConfig } from '@zed/sdk/react';
 import { Bot, type LucideIcon, Slash, Sparkles } from 'lucide-react';
 
 /**

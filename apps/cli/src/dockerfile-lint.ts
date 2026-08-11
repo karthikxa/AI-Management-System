@@ -1,22 +1,22 @@
 /**
  * Static lint for a project's sandbox Dockerfile — the pre-push gate.
  *
- * `kortix validate` used to read kortix.yaml and stop there: every constraint
+ * `zed validate` used to read zed.yaml and stop there: every constraint
  * a sandbox Dockerfile has to satisfy was only discovered by the CLOUD builder,
  * minutes after a push, as an opaque remote failure. These checks are the ones
  * that can be decided from the Dockerfile TEXT alone — no Docker, no network,
  * microseconds — so they belong at authoring time, where `validate` already
- * runs (standalone, inside `kortix ship`, and in the CR-merge gate).
+ * runs (standalone, inside `zed ship`, and in the CR-merge gate).
  *
  * The three checks below are each backed by a real incident. None of them is a
  * style opinion: every one is a build that FAILS in the cloud today.
  *
  * Emits `ManifestIssue`s so `validate` can merge them straight into the report
  * it already prints — `path` carries the Dockerfile's repo-relative path (not a
- * kortix.yaml dot-path) and `line` is the line WITHIN that Dockerfile, so
+ * zed.yaml dot-path) and `line` is the line WITHIN that Dockerfile, so
  * `formatIssues` renders `error path/to/Dockerfile: … (line 3)`.
  */
-import type { ManifestIssue } from '@kortix/manifest-schema';
+import type { ManifestIssue } from '@zed/manifest-schema';
 
 export interface LintDockerfileOpts {
   /**
@@ -32,22 +32,22 @@ export interface LintDockerfileOpts {
  * there — in particular, NOT the user's repo.
  *
  * This is the precision argument for the COPY check being an ERROR rather than
- * a hint: the context's contents are a CLOSED set, fixed by Kortix, and none of
+ * a hint: the context's contents are a CLOSED set, fixed by Zed, and none of
  * it is anything a user Dockerfile would legitimately COPY. So every
  * context-reading COPY in a user Dockerfile is a build that cannot succeed —
  * there is no false positive to trade against.
  */
 export const STAGED_CONTEXT_ENTRIES = [
-  'kortix-agent.gz',
-  'kortix.gz',
-  'kortix-entrypoint',
-  'kortix-slack-cli/',
-  'kortix-opencode-config/',
-  'kortix-llm-catalog.json',
+  'zed-agent.gz',
+  'zed.gz',
+  'zed-entrypoint',
+  'zed-slack-cli/',
+  'zed-opencode-config/',
+  'zed-llm-catalog.json',
   'scaffold.git',
 ] as const;
 
-/** Bases whose package manager is not apt — the Kortix layer's floor needs it. */
+/** Bases whose package manager is not apt — the Zed layer's floor needs it. */
 const NON_DEBIAN_BASES = [
   'alpine',
   'amazonlinux',
@@ -170,17 +170,17 @@ function fromBase(args: string): { base: string; stage?: string } | null {
 }
 
 /**
- * Lint a sandbox Dockerfile for the constraints the Kortix cloud builder
+ * Lint a sandbox Dockerfile for the constraints the Zed cloud builder
  * enforces. Returns `ManifestIssue`s in source order; an empty array means the
  * text passes every static check (it says NOTHING about whether the image
- * actually builds — see `kortix sandboxes build --local` for that).
+ * actually builds — see `zed sandboxes build --local` for that).
  */
 export function lintDockerfile(text: string, opts: LintDockerfileOpts): ManifestIssue[] {
   const issues: ManifestIssue[] = [];
   const instructions = parseInstructions(text);
 
   // ── 1. COPY/ADD from the build context ───────────────────────────────────
-  // `stageBuildContext` stages ONLY Kortix's own artifacts (see
+  // `stageBuildContext` stages ONLY Zed's own artifacts (see
   // STAGED_CONTEXT_ENTRIES). The user's repo is NEVER in the build context —
   // it is git-cloned to /workspace when a session boots, precisely so that a
   // code change doesn't invalidate the image. So any COPY that reads from the
@@ -204,7 +204,7 @@ export function lintDockerfile(text: string, opts: LintDockerfileOpts): Manifest
         severity: 'error',
         message:
           `\`${ins.keyword} ${src}\` reads from the build context, but your repo is NOT in it — ` +
-          `the cloud build fails with "Path does not exist: …/${src.replace(/^\.\//, '')}". Kortix ` +
+          `the cloud build fails with "Path does not exist: …/${src.replace(/^\.\//, '')}". Zed ` +
           `stages only its own artifacts there; your project source is git-cloned to /workspace ` +
           `when a session boots, so the image never bakes it in. Read it from /workspace at ` +
           `runtime, inline it with a RUN, or copy it from an earlier stage (\`COPY --from=<stage>\`).`,
@@ -235,7 +235,7 @@ export function lintDockerfile(text: string, opts: LintDockerfileOpts): Manifest
       line: ins.line,
       severity: 'error',
       message:
-        `RUN heredoc is not buildah-portable: "${ins.firstLine.trim().slice(0, 120)}". Kortix's ` +
+        `RUN heredoc is not buildah-portable: "${ins.firstLine.trim().slice(0, 120)}". Zed's ` +
         `Platinum provider builds with buildah's classic imagebuilder, which parses the heredoc ` +
         `body's first line as a Dockerfile instruction and aborts the build ("Unknown ` +
         `instruction: …"). Use a single-line equivalent (e.g. \`python3 -c '…'\`) — heredocs and ` +
@@ -244,7 +244,7 @@ export function lintDockerfile(text: string, opts: LintDockerfileOpts): Manifest
   }
 
   // ── 3. Non-Debian base ───────────────────────────────────────────────────
-  // The Kortix layer's floor opens with `apt-get update && apt-get install`, so
+  // The Zed layer's floor opens with `apt-get update && apt-get install`, so
   // a base without apt cannot carry it. Only the FINAL stage's base matters —
   // the layer is appended to the end of the user's Dockerfile, so an
   // alpine BUILDER stage is perfectly legal. This is a WARNING, not an error:
@@ -285,7 +285,7 @@ export function lintDockerfile(text: string, opts: LintDockerfileOpts): Manifest
           line: finalBase.line,
           severity: 'warning',
           message:
-            `\`FROM ${base}\` looks like a non-Debian base (${hit}). The Kortix runtime layer ` +
+            `\`FROM ${base}\` looks like a non-Debian base (${hit}). The Zed runtime layer ` +
             `appended on top installs its floor with \`apt-get\`, which only exists on ` +
             `Debian/Ubuntu-family images — on this base the cloud build fails at the layer's ` +
             `first RUN. Warning, not an error: only the tag is visible here, and it could be a ` +

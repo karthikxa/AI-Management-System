@@ -16,7 +16,7 @@ setTestEnv('DAYTONA_API_KEY', 'test-daytona-key');
 setTestEnv('DAYTONA_SERVER_URL', 'https://daytona.example.test');
 setTestEnv('DAYTONA_TARGET', 'test-target');
 setTestEnv('FRONTEND_URL', 'http://localhost:3000');
-setTestEnv('INTERNAL_KORTIX_ENV', 'dev');
+setTestEnv('INTERNAL_ZED_ENV', 'dev');
 
 const { daytonaProvider, isDaytonaSnapshotNotFoundError } = await import('./daytona');
 
@@ -53,15 +53,15 @@ describe('DaytonaAdapter.buildSnapshot input validation (FROM-base fast path)', 
 
   test('rejects when none of image, userDockerfile, baseImageRef are set', async () => {
     await expect(
-      daytonaProvider.buildSnapshot({ snapshotName: 'kortix-tpl-x', ...BASE_SPEC }),
+      daytonaProvider.buildSnapshot({ snapshotName: 'zed-tpl-x', ...BASE_SPEC }),
     ).rejects.toThrow('none of image, userDockerfile, baseImageRef set');
   });
 
   test('rejects baseImageRef without warmRepo before touching the network', async () => {
     await expect(
       daytonaProvider.buildSnapshot({
-        snapshotName: 'kortix-ppwarm-x',
-        baseImageRef: 'registry.example/kortix-default-abc:latest',
+        snapshotName: 'zed-ppwarm-x',
+        baseImageRef: 'registry.example/zed-default-abc:latest',
         ...BASE_SPEC,
       }),
     ).rejects.toThrow('baseImageRef requires warmRepo');

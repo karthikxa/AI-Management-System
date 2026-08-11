@@ -2,15 +2,15 @@
 set -Eeuo pipefail
 
 AWS_REGION="${AWS_REGION:-us-east-2}"
-TARGET_SECRET_ID="${TARGET_SECRET_ID:-kortix-prod-us-east-2-env}"
-TARGET_ECS_CLUSTER="${TARGET_ECS_CLUSTER:-kortix-prod-use2}"
-TARGET_ECS_SERVICE="${TARGET_ECS_SERVICE:-kortix-prod-use2}"
-TARGET_LOG_GROUP="${TARGET_LOG_GROUP:-/ecs/kortix-prod-use2}"
-FREEZE_MARKER_PARAMETER="${FREEZE_MARKER_PARAMETER:-/kortix/prod-use2/source-freeze}"
-PRODUCTION_API_URL="${PRODUCTION_API_URL:-https://api.kortix.com}"
+TARGET_SECRET_ID="${TARGET_SECRET_ID:-zed-prod-us-east-2-env}"
+TARGET_ECS_CLUSTER="${TARGET_ECS_CLUSTER:-zed-prod-use2}"
+TARGET_ECS_SERVICE="${TARGET_ECS_SERVICE:-zed-prod-use2}"
+TARGET_LOG_GROUP="${TARGET_LOG_GROUP:-/ecs/zed-prod-use2}"
+FREEZE_MARKER_PARAMETER="${FREEZE_MARKER_PARAMETER:-/zed/prod-use2/source-freeze}"
+PRODUCTION_API_URL="${PRODUCTION_API_URL:-https://api.zed.com}"
 
-APPLICATION_SUBSCRIPTION="kortix_us_east_2_20260725"
-AUTH_SUBSCRIPTION="kortix_use2_auth_20260725"
+APPLICATION_SUBSCRIPTION="zed_us_east_2_20260725"
+AUTH_SUBSCRIPTION="zed_use2_auth_20260725"
 
 require_command() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -117,29 +117,29 @@ SQL
 }
 
 disabled_flags_filter='
-  .KORTIX_WORKERS_ENABLED == "false"
+  .ZED_WORKERS_ENABLED == "false"
   and .SCHEDULER_ENABLED == "false"
   and .CHANNELS_ENABLED == "false"
-  and .KORTIX_PRERESUME_ENABLED == "false"
-  and .KORTIX_TRIGGER_SCHEDULER_ENABLED == "false"
-  and .KORTIX_PROJECT_MAINTENANCE_ENABLED == "false"
-  and .KORTIX_LEGACY_MIGRATION_WORKER_ENABLED == "false"
-  and .KORTIX_SUNA_MIGRATION_WORKER_ENABLED == "false"
-  and .KORTIX_WARM_POOL_ENABLED == "false"
-  and .KORTIX_WARM_SNAPSHOT_ENABLED == "false"
+  and .ZED_PRERESUME_ENABLED == "false"
+  and .ZED_TRIGGER_SCHEDULER_ENABLED == "false"
+  and .ZED_PROJECT_MAINTENANCE_ENABLED == "false"
+  and .ZED_LEGACY_MIGRATION_WORKER_ENABLED == "false"
+  and .ZED_SUNA_MIGRATION_WORKER_ENABLED == "false"
+  and .ZED_WARM_POOL_ENABLED == "false"
+  and .ZED_WARM_SNAPSHOT_ENABLED == "false"
 '
 
 enabled_flags_filter='
-  .KORTIX_WORKERS_ENABLED == "true"
+  .ZED_WORKERS_ENABLED == "true"
   and .SCHEDULER_ENABLED == "true"
   and .CHANNELS_ENABLED == "true"
-  and .KORTIX_PRERESUME_ENABLED == "true"
-  and .KORTIX_TRIGGER_SCHEDULER_ENABLED == "true"
-  and .KORTIX_PROJECT_MAINTENANCE_ENABLED == "true"
-  and .KORTIX_LEGACY_MIGRATION_WORKER_ENABLED == "false"
-  and .KORTIX_SUNA_MIGRATION_WORKER_ENABLED == "false"
-  and .KORTIX_WARM_POOL_ENABLED == "false"
-  and .KORTIX_WARM_SNAPSHOT_ENABLED == "false"
+  and .ZED_PRERESUME_ENABLED == "true"
+  and .ZED_TRIGGER_SCHEDULER_ENABLED == "true"
+  and .ZED_PROJECT_MAINTENANCE_ENABLED == "true"
+  and .ZED_LEGACY_MIGRATION_WORKER_ENABLED == "false"
+  and .ZED_SUNA_MIGRATION_WORKER_ENABLED == "false"
+  and .ZED_WARM_POOL_ENABLED == "false"
+  and .ZED_WARM_SNAPSHOT_ENABLED == "false"
 '
 
 assert_flags() {
@@ -175,30 +175,30 @@ write_flags() {
   case "$mode" in
     enabled)
       jq '
-        .KORTIX_WORKERS_ENABLED = "true"
+        .ZED_WORKERS_ENABLED = "true"
         | .SCHEDULER_ENABLED = "true"
         | .CHANNELS_ENABLED = "true"
-        | .KORTIX_PRERESUME_ENABLED = "true"
-        | .KORTIX_TRIGGER_SCHEDULER_ENABLED = "true"
-        | .KORTIX_PROJECT_MAINTENANCE_ENABLED = "true"
-        | .KORTIX_LEGACY_MIGRATION_WORKER_ENABLED = "false"
-        | .KORTIX_SUNA_MIGRATION_WORKER_ENABLED = "false"
-        | .KORTIX_WARM_POOL_ENABLED = "false"
-        | .KORTIX_WARM_SNAPSHOT_ENABLED = "false"
+        | .ZED_PRERESUME_ENABLED = "true"
+        | .ZED_TRIGGER_SCHEDULER_ENABLED = "true"
+        | .ZED_PROJECT_MAINTENANCE_ENABLED = "true"
+        | .ZED_LEGACY_MIGRATION_WORKER_ENABLED = "false"
+        | .ZED_SUNA_MIGRATION_WORKER_ENABLED = "false"
+        | .ZED_WARM_POOL_ENABLED = "false"
+        | .ZED_WARM_SNAPSHOT_ENABLED = "false"
       ' <<<"$secret_json" >"$secret_file"
       ;;
     disabled)
       jq '
-        .KORTIX_WORKERS_ENABLED = "false"
+        .ZED_WORKERS_ENABLED = "false"
         | .SCHEDULER_ENABLED = "false"
         | .CHANNELS_ENABLED = "false"
-        | .KORTIX_PRERESUME_ENABLED = "false"
-        | .KORTIX_TRIGGER_SCHEDULER_ENABLED = "false"
-        | .KORTIX_PROJECT_MAINTENANCE_ENABLED = "false"
-        | .KORTIX_LEGACY_MIGRATION_WORKER_ENABLED = "false"
-        | .KORTIX_SUNA_MIGRATION_WORKER_ENABLED = "false"
-        | .KORTIX_WARM_POOL_ENABLED = "false"
-        | .KORTIX_WARM_SNAPSHOT_ENABLED = "false"
+        | .ZED_PRERESUME_ENABLED = "false"
+        | .ZED_TRIGGER_SCHEDULER_ENABLED = "false"
+        | .ZED_PROJECT_MAINTENANCE_ENABLED = "false"
+        | .ZED_LEGACY_MIGRATION_WORKER_ENABLED = "false"
+        | .ZED_SUNA_MIGRATION_WORKER_ENABLED = "false"
+        | .ZED_WARM_POOL_ENABLED = "false"
+        | .ZED_WARM_SNAPSHOT_ENABLED = "false"
       ' <<<"$secret_json" >"$secret_file"
       ;;
     *)
@@ -311,16 +311,16 @@ status() {
   local secret_json
   secret_json="$(load_target_secret)"
   jq '{
-    KORTIX_WORKERS_ENABLED,
+    ZED_WORKERS_ENABLED,
     SCHEDULER_ENABLED,
     CHANNELS_ENABLED,
-    KORTIX_PRERESUME_ENABLED,
-    KORTIX_TRIGGER_SCHEDULER_ENABLED,
-    KORTIX_PROJECT_MAINTENANCE_ENABLED,
-    KORTIX_LEGACY_MIGRATION_WORKER_ENABLED,
-    KORTIX_SUNA_MIGRATION_WORKER_ENABLED,
-    KORTIX_WARM_POOL_ENABLED,
-    KORTIX_WARM_SNAPSHOT_ENABLED
+    ZED_PRERESUME_ENABLED,
+    ZED_TRIGGER_SCHEDULER_ENABLED,
+    ZED_PROJECT_MAINTENANCE_ENABLED,
+    ZED_LEGACY_MIGRATION_WORKER_ENABLED,
+    ZED_SUNA_MIGRATION_WORKER_ENABLED,
+    ZED_WARM_POOL_ENABLED,
+    ZED_WARM_SNAPSHOT_ENABLED
   }' <<<"$secret_json"
   aws ecs describe-services \
     --region "$AWS_REGION" \
@@ -328,7 +328,7 @@ status() {
     --services "$TARGET_ECS_SERVICE" \
     --query 'services[0].{service:serviceName,desired:desiredCount,running:runningCount,pending:pendingCount,taskDefinition:taskDefinition,rollout:deployments[0].rolloutState}' \
     --output json
-  echo "api.kortix.com backend: $(edge_backend)"
+  echo "api.zed.com backend: $(edge_backend)"
 }
 
 case "${1:-}" in

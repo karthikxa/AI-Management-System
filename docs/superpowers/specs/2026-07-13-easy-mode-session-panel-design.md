@@ -11,7 +11,7 @@ The session panel today is built for engineers. It is a one-tool-at-a-time stepp
 and a raw tool view for whichever of the 104 registered tools is selected. A
 non-technical user opening it sees `grep`, `pty_spawn`, and JSON arguments.
 
-Kortix's primary audience is non-technical. The panel should, by default, tell that
+Zed's primary audience is non-technical. The panel should, by default, tell that
 user what the agent is *doing* — in their language — while keeping every bit of
 engineer detail one tap away for the people who want it.
 
@@ -77,7 +77,7 @@ matching `ToolRegistry.get()` already does.
 | `delegate` | "Asked a helper agent to…" | `agent_spawn` `agent_message` `agent_status` `agent_stop` `agent_task` `agent_task_create` `agent_task_get` `agent_task_list` `agent_task_update` `agent_task_start` `agent_task_message` `agent_task_approve` `agent_task_cancel` |
 | `sessions` | "Checked earlier work" | `session_get` `session_read` `session_search` `session_message` `session_spawn` `session_lineage` `session_stats` `session_list` `session_list_background` `session_list_spawned` `session_start_background` |
 | `memory` | "Recalled what you told it before" | `memory` `memory_search` `mem_search` `ltm_search` `get_mem` |
-| `apps` | "Connected to Gmail" | `connector_get` `connector_list` `connector_setup` `kortix_connector_call` `kortix_connectors` `kortix_connector_describe` `kortix_connector_discover` |
+| `apps` | "Connected to Gmail" | `connector_get` `connector_list` `connector_setup` `zed_connector_call` `zed_connectors` `zed_connector_describe` `zed_connector_discover` |
 | `automations` | "Set up an automation" | `triggers` `trigger_create` `trigger_delete` `trigger_get` `trigger_list` `trigger_pause` `trigger_resume` `trigger_test` `trigger_update` |
 | `projects` | "Opened your project" | `project_create` `project_delete` `project_get` `project_list` `project_select` `project_update` |
 | `skills` | "Used a skill" | `skill` |
@@ -124,7 +124,7 @@ must not re-animate the list. Running row shimmers. All behind `prefers-reduced-
 ## The toggle
 
 `panelMode: 'easy' | 'advanced'` in `stores/user-preferences-store.ts` (persisted,
-`kortix-user-preferences`). Defaults to `easy` for **all** users, existing included.
+`zed-user-preferences`). Defaults to `easy` for **all** users, existing included.
 
 Three entry points:
 

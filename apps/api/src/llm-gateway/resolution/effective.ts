@@ -8,28 +8,28 @@ export type ModelSource = 'explicit' | 'agent' | 'project' | 'account' | 'platfo
 /** Where an effective agent came from. */
 export type AgentSource = 'explicit' | 'project' | 'fallback';
 
-const KORTIX_PREFIX = 'kortix/';
+const ZED_PREFIX = 'zed/';
 
 /**
  * The GATEWAY WIRE form of a model ref: a managed model is stored/served bare
- * (`glm-5.2`), so strip the opencode-only `kortix/` namespace before it reaches
+ * (`glm-5.2`), so strip the opencode-only `zed/` namespace before it reaches
  * the gateway (route resolution and managed-model lookup both expect the
  * bare id). BYOK (`provider/model`) and codex (`codex/<id>`) refs pass through.
  * This is what `account_model_preferences` stores and what servability checks.
  */
 export function toWireModel(ref: string): string {
-  return ref.startsWith(KORTIX_PREFIX) ? ref.slice(KORTIX_PREFIX.length) : ref;
+  return ref.startsWith(ZED_PREFIX) ? ref.slice(ZED_PREFIX.length) : ref;
 }
 
 /**
- * The OPENCODE ref form: opencode addresses a managed model as `kortix/<id>` (and
+ * The OPENCODE ref form: opencode addresses a managed model as `zed/<id>` (and
  * sends the bare id on the wire), so a bare managed id must be re-prefixed before
  * it's handed to opencode as `opencode_model`. BYOK/codex refs already carry a
  * provider segment and pass through unchanged.
  */
 export function toOpencodeModelRef(model: string): string {
-  if (model.startsWith(KORTIX_PREFIX)) return model;
-  return isRuntimeManagedModelId(model) ? `${KORTIX_PREFIX}${model}` : model;
+  if (model.startsWith(ZED_PREFIX)) return model;
+  return isRuntimeManagedModelId(model) ? `${ZED_PREFIX}${model}` : model;
 }
 
 function isManagedRef(ref: string): boolean {
@@ -64,7 +64,7 @@ export function chooseEffectiveModel(params: {
     source = 'account';
   }
   if (!candidate) return { model: null, source: 'platform' };
-  // Free tier cannot use managed Kortix models; the chosen candidate is dropped
+  // Free tier cannot use managed Zed models; the chosen candidate is dropped
   // to the platform default rather than falling through to a broader layer.
   if (params.freeModelsOnly && isManagedRef(candidate)) return { model: null, source: 'platform' };
   return { model: candidate, source };

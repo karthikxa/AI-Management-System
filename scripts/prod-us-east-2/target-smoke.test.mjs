@@ -48,7 +48,7 @@ test("shadow smokes can bypass the production custom domain before cutover", () 
 test("US shadow exposes the managed model catalog for runtime verification", () => {
   assert.match(
     shadowWorkflow,
-    /\.KORTIX_MANAGED_PROVIDER_ENABLED == "true"/,
+    /\.ZED_MANAGED_PROVIDER_ENABLED == "true"/,
   );
 });
 
@@ -75,11 +75,11 @@ test("US shadow deploy accepts an immutable candidate image tag", () => {
   );
   assert.match(
     shadowWorkflow,
-    /"kortix\/kortix-api:\$\{IMAGE_TAG\}"/,
+    /"zed\/zed-api:\$\{IMAGE_TAG\}"/,
   );
   assert.match(
     shadowWorkflow,
-    /"kortix\/kortix-gateway:\$\{IMAGE_TAG\}"/,
+    /"zed\/zed-gateway:\$\{IMAGE_TAG\}"/,
   );
 });
 
@@ -116,19 +116,19 @@ test("shadow smokes remove and count target-only billing state", () => {
   for (const smokeProgram of [targetSmokeProgram, frontendSmoke]) {
     assert.match(
       smokeProgram,
-      /FROM kortix\.account_members[\s\S]*WHERE user_id = :'smoke_user_id'::uuid/,
+      /FROM zed\.account_members[\s\S]*WHERE user_id = :'smoke_user_id'::uuid/,
     );
     assert.match(
       smokeProgram,
-      /DELETE FROM kortix\.credit_ledger\s+WHERE account_id = ANY\(:'smoke_account_ids'::uuid\[\]\);/,
+      /DELETE FROM zed\.credit_ledger\s+WHERE account_id = ANY\(:'smoke_account_ids'::uuid\[\]\);/,
     );
     assert.match(
       smokeProgram,
-      /DELETE FROM kortix\.credit_accounts\s+WHERE account_id = ANY\(:'smoke_account_ids'::uuid\[\]\);/,
+      /DELETE FROM zed\.credit_accounts\s+WHERE account_id = ANY\(:'smoke_account_ids'::uuid\[\]\);/,
     );
     assert.match(
       smokeProgram,
-      /SELECT count\(\*\) FROM kortix\.credit_ledger\s+WHERE account_id = ANY\(:'smoke_account_ids'::uuid\[\]\)/,
+      /SELECT count\(\*\) FROM zed\.credit_ledger\s+WHERE account_id = ANY\(:'smoke_account_ids'::uuid\[\]\)/,
     );
   }
 });

@@ -29,7 +29,7 @@ import { DRAG_MIME } from '@/features/file-browser/components/file-tree-item';
 import { useFilesStore, type SortField } from '@/features/file-browser/store/files-store';
 import type { FileNode } from '@/features/file-browser/types';
 import { cn } from '@/lib/utils';
-import { chalkColors } from '@kortix/shared';
+import { chalkColors } from '@zed/shared';
 import {
   ArrowDownIcon as ArrowDown,
   ArrowUpIcon as ArrowUp,
@@ -43,7 +43,7 @@ import { FileDriveMenuItems, FolderDriveMenuItems } from './drive-grid-view';
 import { getFileIcon } from './file-icon';
 
 const ELEVATED_DIR_META: Record<string, string> = {
-  '.kortix': 'Project config, tasks, context',
+  '.zed': 'Project config, tasks, context',
   '.opencode': 'Agents, skills, commands',
 };
 

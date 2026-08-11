@@ -60,7 +60,7 @@ export const up = (pgm) => {
   // The companion .sql migration immediately before this one adds the column.
   pgm.sql(`
     create unique index concurrently if not exists idx_projects_account_idempotency_key
-      on kortix.projects (account_id, idempotency_key)
+      on zed.projects (account_id, idempotency_key)
       where idempotency_key is not null
   `);
 };

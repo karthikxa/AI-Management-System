@@ -11,7 +11,7 @@
  * failures are logged at error level with the flag + project; the reconcilers
  * they call are themselves idempotent and re-run on their periodic sweeps.
  */
-import type { FeatureFlagKey } from '@kortix/api-contract';
+import type { FeatureFlagKey } from '@zed/api-contract';
 import { reconcileChannelConnectors, reconcileComputerConnectors } from '../connectors/sync';
 import { projectLlmGatewayEnabled } from '../llm-gateway/enablement';
 import { propagateLlmGatewayModeToActiveSandboxes } from '../projects/lib/sandbox-env-sync';

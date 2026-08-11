@@ -48,11 +48,11 @@ function makePart(input: Record<string, unknown>): ToolPart {
 describe('ProjectDeleteTool joins the shared BasicTool shell', () => {
   test('inline surface: renders through the standard row, no bespoke div chrome, message preserved', () => {
     const html = renderToStaticMarkup(
-      withProviders(<ProjectDeleteTool part={makePart({ project: 'kortix-web' })} />),
+      withProviders(<ProjectDeleteTool part={makePart({ project: 'zed-web' })} />),
     );
 
     expect(html).toContain('Workspace delete disabled');
-    expect(html).toContain('kortix-web');
+    expect(html).toContain('zed-web');
     expect(html).not.toContain('text-muted-foreground/40 flex items-center gap-2 px-2.5 py-1 text-xs');
   });
 

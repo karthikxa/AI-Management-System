@@ -1,4 +1,4 @@
-import { CATALOG, catalogModelForWireModel } from '@kortix/llm-catalog';
+import { CATALOG, catalogModelForWireModel } from '@zed/llm-catalog';
 import { InvalidPromptError, generateText, streamText } from 'ai';
 import type { UpstreamDescriptor } from '../../domain';
 import { NetworkError, UpstreamHttpError, looksLikeTerminalAuthFailure } from '../../errors';
@@ -233,12 +233,12 @@ export async function callUpstreamViaAiSdk(
     // of whether the caller supplied its own fetchImpl (tests) or this falls
     // through to the platform default (production).
     fetch: guardEmptyChoicesFetch(opts.fetch ?? ((input, init) => globalThis.fetch(input, init))),
-    // Kortix-internal correlation id, mirrored onto the upstream request as a
+    // Zed-internal correlation id, mirrored onto the upstream request as a
     // best-effort header — every provider here tolerates unknown headers.
     // This is the ai-sdk-engine equivalent of what the retired native
     // transport's `callUpstream` used to attach directly onto the built
     // request (see http/call-upstream.ts).
-    extraHeaders: opts.requestId ? { 'x-kortix-request-id': opts.requestId } : undefined,
+    extraHeaders: opts.requestId ? { 'x-zed-request-id': opts.requestId } : undefined,
   });
   const args = buildAiSdkArgs(body, family, {
     // The ChatGPT Codex backend always expects a reasoning effort; the native

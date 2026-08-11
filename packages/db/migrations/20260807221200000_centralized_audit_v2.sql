@@ -1,14 +1,14 @@
 SET lock_timeout = '5s';--> statement-breakpoint
 SET statement_timeout = '120s';--> statement-breakpoint
 
-CREATE TABLE "kortix"."audit_session_sequences" (
+CREATE TABLE "zed"."audit_session_sequences" (
   "session_id" text PRIMARY KEY NOT NULL,
   "last_sequence" bigint DEFAULT 0 NOT NULL,
   "last_integrity_hash" varchar(64),
   "updated_at" timestamptz DEFAULT now() NOT NULL
 );--> statement-breakpoint
 
-CREATE TABLE "kortix"."audit_webhook_deliveries" (
+CREATE TABLE "zed"."audit_webhook_deliveries" (
   "delivery_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   "webhook_id" uuid NOT NULL,
   "event_id" uuid NOT NULL,
@@ -23,59 +23,59 @@ CREATE TABLE "kortix"."audit_webhook_deliveries" (
   "created_at" timestamptz DEFAULT now() NOT NULL,
   "updated_at" timestamptz DEFAULT now() NOT NULL,
   CONSTRAINT "audit_delivery_webhook_fk"
-    FOREIGN KEY (webhook_id) REFERENCES kortix.audit_webhooks(webhook_id) ON DELETE CASCADE,
+    FOREIGN KEY (webhook_id) REFERENCES zed.audit_webhooks(webhook_id) ON DELETE CASCADE,
   CONSTRAINT "audit_delivery_event_fk"
-    FOREIGN KEY (event_id) REFERENCES kortix.audit_events(event_id) ON DELETE CASCADE,
+    FOREIGN KEY (event_id) REFERENCES zed.audit_events(event_id) ON DELETE CASCADE,
   CONSTRAINT "audit_webhook_deliveries_status_check"
     CHECK (status IN ('pending', 'delivering', 'delivered', 'retry', 'dead_letter'))
 );--> statement-breakpoint
 
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "opencode_session_id" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "turn_id" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "message_id" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "tool_call_id" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "execution_id" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "session_sequence" bigint;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "agent_id" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "agent_name" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "initiator_actor_type" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "initiator_actor_id" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "parent_event_id" uuid;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "delegation_depth" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "authoritative_source" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "client_reported_source" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "phase" text DEFAULT 'completed' NOT NULL;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "causation_id" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "source_ledger" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "source_record_id" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "source_revision" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "input_summary" jsonb;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "output_summary" jsonb;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "input_sha256" varchar(64);--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "output_sha256" varchar(64);--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "error_code" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "error_message" text;--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "integrity_previous_hash" varchar(64);--> statement-breakpoint
-ALTER TABLE "kortix"."audit_events" ADD COLUMN "integrity_hash" varchar(64);--> statement-breakpoint
-ALTER TABLE "kortix"."tunnel_audit_logs" ADD COLUMN "project_id" uuid;--> statement-breakpoint
-ALTER TABLE "kortix"."tunnel_audit_logs" ADD COLUMN "session_id" text;--> statement-breakpoint
-ALTER TABLE "kortix"."tunnel_audit_logs" ADD COLUMN "actor_user_id" uuid;--> statement-breakpoint
-ALTER TABLE "kortix"."tunnel_audit_logs" ADD COLUMN "actor_type" text;--> statement-breakpoint
-ALTER TABLE "kortix"."tunnel_audit_logs" ADD COLUMN "phase" varchar(24) DEFAULT 'completed' NOT NULL;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "opencode_session_id" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "turn_id" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "message_id" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "tool_call_id" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "execution_id" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "session_sequence" bigint;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "agent_id" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "agent_name" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "initiator_actor_type" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "initiator_actor_id" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "parent_event_id" uuid;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "delegation_depth" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "authoritative_source" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "client_reported_source" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "phase" text DEFAULT 'completed' NOT NULL;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "causation_id" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "source_ledger" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "source_record_id" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "source_revision" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "input_summary" jsonb;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "output_summary" jsonb;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "input_sha256" varchar(64);--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "output_sha256" varchar(64);--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "error_code" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "error_message" text;--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "integrity_previous_hash" varchar(64);--> statement-breakpoint
+ALTER TABLE "zed"."audit_events" ADD COLUMN "integrity_hash" varchar(64);--> statement-breakpoint
+ALTER TABLE "zed"."tunnel_audit_logs" ADD COLUMN "project_id" uuid;--> statement-breakpoint
+ALTER TABLE "zed"."tunnel_audit_logs" ADD COLUMN "session_id" text;--> statement-breakpoint
+ALTER TABLE "zed"."tunnel_audit_logs" ADD COLUMN "actor_user_id" uuid;--> statement-breakpoint
+ALTER TABLE "zed"."tunnel_audit_logs" ADD COLUMN "actor_type" text;--> statement-breakpoint
+ALTER TABLE "zed"."tunnel_audit_logs" ADD COLUMN "phase" varchar(24) DEFAULT 'completed' NOT NULL;--> statement-breakpoint
 
 DO $$
 BEGIN
   -- mixed-version-safe: old API versions only INSERT audit rows. Removing the
   -- account FK changes delete behavior and does not remove any column, index,
   -- or constraint referenced by an old write or ON CONFLICT statement.
-  ALTER TABLE kortix.audit_events
+  ALTER TABLE zed.audit_events
     DROP CONSTRAINT IF EXISTS audit_events_account_id_accounts_account_id_fk;
-  ALTER TABLE kortix.audit_events
+  ALTER TABLE zed.audit_events
     DROP CONSTRAINT IF EXISTS audit_events_account_id_fkey;
 END;
 $$;--> statement-breakpoint
 
-UPDATE kortix.audit_events
+UPDATE zed.audit_events
 SET authoritative_source = COALESCE(source, 'api')
 WHERE authoritative_source IS NULL;--> statement-breakpoint
 
@@ -88,34 +88,34 @@ WITH ranked AS (
            PARTITION BY session_id
            ORDER BY occurred_at, event_id
          ) AS session_sequence
-    FROM kortix.audit_events
+    FROM zed.audit_events
    WHERE session_id IS NOT NULL
 )
-UPDATE kortix.audit_events AS event
+UPDATE zed.audit_events AS event
    SET session_sequence = ranked.session_sequence
   FROM ranked
  WHERE event.event_id = ranked.event_id;--> statement-breakpoint
 
-INSERT INTO kortix.audit_session_sequences(session_id, last_sequence)
+INSERT INTO zed.audit_session_sequences(session_id, last_sequence)
 SELECT session_id, max(session_sequence)
-  FROM kortix.audit_events
+  FROM zed.audit_events
  WHERE session_id IS NOT NULL
  GROUP BY session_id
 ON CONFLICT (session_id) DO UPDATE
 SET last_sequence = GREATEST(
-  kortix.audit_session_sequences.last_sequence,
+  zed.audit_session_sequences.last_sequence,
   EXCLUDED.last_sequence
 );--> statement-breakpoint
 
 CREATE UNIQUE INDEX "idx_audit_webhook_delivery_event"
-  ON "kortix"."audit_webhook_deliveries" ("webhook_id", "event_id");--> statement-breakpoint
+  ON "zed"."audit_webhook_deliveries" ("webhook_id", "event_id");--> statement-breakpoint
 CREATE INDEX "idx_audit_webhook_delivery_due"
-  ON "kortix"."audit_webhook_deliveries" ("status", "next_attempt_at", "locked_until");--> statement-breakpoint
-CREATE OR REPLACE FUNCTION kortix.audit_prepare_event()
+  ON "zed"."audit_webhook_deliveries" ("status", "next_attempt_at", "locked_until");--> statement-breakpoint
+CREATE OR REPLACE FUNCTION zed.audit_prepare_event()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public, extensions
+SET search_path = zed, public, extensions
 AS $$
 DECLARE
   next_sequence bigint;
@@ -141,7 +141,7 @@ BEGIN
     );
     IF EXISTS (
       SELECT 1
-        FROM kortix.audit_events
+        FROM zed.audit_events
        WHERE source_ledger = NEW.source_ledger
          AND source_record_id = NEW.source_record_id
          AND phase = NEW.phase
@@ -152,13 +152,13 @@ BEGIN
   END IF;
 
   IF NEW.session_id IS NOT NULL THEN
-    INSERT INTO kortix.audit_session_sequences(session_id)
+    INSERT INTO zed.audit_session_sequences(session_id)
     VALUES (NEW.session_id)
     ON CONFLICT (session_id) DO NOTHING;
 
     SELECT last_sequence + 1, last_integrity_hash
       INTO next_sequence, previous_hash
-      FROM kortix.audit_session_sequences
+      FROM zed.audit_session_sequences
      WHERE session_id = NEW.session_id
      FOR UPDATE;
 
@@ -172,7 +172,7 @@ BEGIN
   NEW.integrity_hash := encode(extensions.digest(convert_to(canonical, 'UTF8'), 'sha256'), 'hex');
 
   IF NEW.session_id IS NOT NULL THEN
-    UPDATE kortix.audit_session_sequences
+    UPDATE zed.audit_session_sequences
        SET last_sequence = next_sequence,
            last_integrity_hash = NEW.integrity_hash,
            updated_at = now()
@@ -183,38 +183,38 @@ END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER audit_events_prepare
-BEFORE INSERT ON kortix.audit_events
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_prepare_event();--> statement-breakpoint
+BEFORE INSERT ON zed.audit_events
+FOR EACH ROW EXECUTE FUNCTION zed.audit_prepare_event();--> statement-breakpoint
 
-CREATE OR REPLACE FUNCTION kortix.audit_reject_mutation()
+CREATE OR REPLACE FUNCTION zed.audit_reject_mutation()
 RETURNS trigger
 LANGUAGE plpgsql
-SET search_path = kortix, public
+SET search_path = zed, public
 AS $$
 BEGIN
-  IF current_setting('kortix.audit_maintenance', true) = 'on' THEN
+  IF current_setting('zed.audit_maintenance', true) = 'on' THEN
     RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
   END IF;
-  RAISE EXCEPTION 'kortix.audit_events is append-only'
+  RAISE EXCEPTION 'zed.audit_events is append-only'
     USING ERRCODE = 'P0001';
 END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER audit_events_append_only
-BEFORE UPDATE OR DELETE ON kortix.audit_events
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_reject_mutation();--> statement-breakpoint
+BEFORE UPDATE OR DELETE ON zed.audit_events
+FOR EACH ROW EXECUTE FUNCTION zed.audit_reject_mutation();--> statement-breakpoint
 
-CREATE OR REPLACE FUNCTION kortix.audit_enqueue_webhooks()
+CREATE OR REPLACE FUNCTION zed.audit_enqueue_webhooks()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public
+SET search_path = zed, public
 AS $$
 BEGIN
   IF NEW.account_id IS NULL THEN RETURN NEW; END IF;
-  INSERT INTO kortix.audit_webhook_deliveries(webhook_id, event_id)
+  INSERT INTO zed.audit_webhook_deliveries(webhook_id, event_id)
   SELECT webhook_id, NEW.event_id
-    FROM kortix.audit_webhooks
+    FROM zed.audit_webhooks
    WHERE account_id = NEW.account_id
      AND enabled = true
      AND (action_prefix IS NULL OR NEW.action LIKE action_prefix || '%')
@@ -224,14 +224,14 @@ END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER audit_events_enqueue_webhooks
-AFTER INSERT ON kortix.audit_events
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_enqueue_webhooks();--> statement-breakpoint
+AFTER INSERT ON zed.audit_events
+FOR EACH ROW EXECUTE FUNCTION zed.audit_enqueue_webhooks();--> statement-breakpoint
 
-CREATE OR REPLACE FUNCTION kortix.audit_connector_call()
+CREATE OR REPLACE FUNCTION zed.audit_connector_call()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public
+SET search_path = zed, public
 AS $$
 DECLARE
   event_phase text;
@@ -249,7 +249,7 @@ BEGIN
     WHEN 'ok' THEN 'success'
     WHEN 'denied' THEN 'denied'
     ELSE 'failure' END;
-  INSERT INTO kortix.audit_events(
+  INSERT INTO zed.audit_events(
     account_id, project_id, session_id, actor_user_id, actor_type,
     authoritative_source, outcome, action, phase, resource_type, resource_id,
     execution_id, source_ledger, source_record_id, source_revision,
@@ -279,14 +279,14 @@ END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER connector_calls_project_audit
-AFTER INSERT OR UPDATE ON kortix.connector_calls
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_connector_call();--> statement-breakpoint
+AFTER INSERT OR UPDATE ON zed.connector_calls
+FOR EACH ROW EXECUTE FUNCTION zed.audit_connector_call();--> statement-breakpoint
 
-CREATE OR REPLACE FUNCTION kortix.audit_project_session()
+CREATE OR REPLACE FUNCTION zed.audit_project_session()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public, extensions
+SET search_path = zed, public, extensions
 AS $$
 DECLARE
   event_source text;
@@ -313,7 +313,7 @@ BEGIN
       NULLIF(NEW.metadata #>> '{audit_v2,actor_type}', ''),
       event_actor_type
     );
-    INSERT INTO kortix.audit_events(
+    INSERT INTO zed.audit_events(
       account_id, project_id, session_id, opencode_session_id, actor_user_id,
       actor_type, agent_name, initiator_actor_type, initiator_actor_id,
       delegation_depth, authoritative_source, client_reported_source, outcome,
@@ -357,7 +357,7 @@ BEGIN
     WHEN 'running' THEN 'success'
     WHEN 'stopped' THEN 'success'
     ELSE 'failure' END;
-  INSERT INTO kortix.audit_events(
+  INSERT INTO zed.audit_events(
     account_id, project_id, session_id, opencode_session_id, actor_type,
     agent_name, authoritative_source, outcome, action, phase, resource_type,
     resource_id, source_ledger, source_record_id, source_revision,
@@ -378,14 +378,14 @@ END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER project_sessions_project_audit
-AFTER INSERT OR UPDATE OF status ON kortix.project_sessions
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_project_session();--> statement-breakpoint
+AFTER INSERT OR UPDATE OF status ON zed.project_sessions
+FOR EACH ROW EXECUTE FUNCTION zed.audit_project_session();--> statement-breakpoint
 
-CREATE OR REPLACE FUNCTION kortix.audit_session_lifecycle_command()
+CREATE OR REPLACE FUNCTION zed.audit_session_lifecycle_command()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public
+SET search_path = zed, public
 AS $$
 DECLARE
   event_outcome text;
@@ -398,7 +398,7 @@ BEGIN
     WHEN 'running' THEN 'pending'
     WHEN 'succeeded' THEN 'success'
     ELSE 'failure' END;
-  INSERT INTO kortix.audit_events(
+  INSERT INTO zed.audit_events(
     account_id, project_id, session_id, actor_user_id, actor_type,
     authoritative_source, outcome, action, phase, resource_type, resource_id,
     execution_id, source_ledger, source_record_id, source_revision,
@@ -422,22 +422,22 @@ END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER session_lifecycle_commands_project_audit
-AFTER INSERT OR UPDATE ON kortix.session_lifecycle_commands
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_session_lifecycle_command();--> statement-breakpoint
+AFTER INSERT OR UPDATE ON zed.session_lifecycle_commands
+FOR EACH ROW EXECUTE FUNCTION zed.audit_session_lifecycle_command();--> statement-breakpoint
 
-CREATE OR REPLACE FUNCTION kortix.audit_trigger_execution()
+CREATE OR REPLACE FUNCTION zed.audit_trigger_execution()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public
+SET search_path = zed, public
 AS $$
 DECLARE account_uuid uuid;
 BEGIN
   IF TG_OP = 'UPDATE'
      AND NEW.status IS NOT DISTINCT FROM OLD.status
      AND NEW.attempts IS NOT DISTINCT FROM OLD.attempts THEN RETURN NEW; END IF;
-  SELECT account_id INTO account_uuid FROM kortix.projects WHERE project_id = NEW.project_id;
-  INSERT INTO kortix.audit_events(
+  SELECT account_id INTO account_uuid FROM zed.projects WHERE project_id = NEW.project_id;
+  INSERT INTO zed.audit_events(
     account_id, project_id, session_id, actor_type, authoritative_source, outcome,
     action, phase, resource_type, resource_id, execution_id, source_ledger,
     source_record_id, source_revision, input_summary, output_sha256, occurred_at
@@ -458,19 +458,19 @@ END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER project_trigger_executions_project_audit
-AFTER INSERT OR UPDATE ON kortix.project_trigger_executions
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_trigger_execution();--> statement-breakpoint
+AFTER INSERT OR UPDATE ON zed.project_trigger_executions
+FOR EACH ROW EXECUTE FUNCTION zed.audit_trigger_execution();--> statement-breakpoint
 
-CREATE OR REPLACE FUNCTION kortix.audit_provider_event()
+CREATE OR REPLACE FUNCTION zed.audit_provider_event()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public
+SET search_path = zed, public
 AS $$
 DECLARE project_uuid uuid;
 BEGIN
-  SELECT project_id INTO project_uuid FROM kortix.project_sessions WHERE session_id = NEW.session_id;
-  INSERT INTO kortix.audit_events(
+  SELECT project_id INTO project_uuid FROM zed.project_sessions WHERE session_id = NEW.session_id;
+  INSERT INTO zed.audit_events(
     account_id, project_id, session_id, actor_type, authoritative_source, outcome,
     action, phase, resource_type, resource_id, execution_id, source_ledger,
     source_record_id, source_revision, input_summary, output_summary,
@@ -491,17 +491,17 @@ END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER provider_events_project_audit
-AFTER INSERT ON kortix.provider_events
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_provider_event();--> statement-breakpoint
+AFTER INSERT ON zed.provider_events
+FOR EACH ROW EXECUTE FUNCTION zed.audit_provider_event();--> statement-breakpoint
 
-CREATE OR REPLACE FUNCTION kortix.audit_usage_event()
+CREATE OR REPLACE FUNCTION zed.audit_usage_event()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public
+SET search_path = zed, public
 AS $$
 BEGIN
-  INSERT INTO kortix.audit_events(
+  INSERT INTO zed.audit_events(
     account_id, project_id, session_id, actor_user_id, actor_type,
     authoritative_source, outcome, action, phase, resource_type, resource_id,
     execution_id, source_ledger, source_record_id, source_revision,
@@ -522,17 +522,17 @@ END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER usage_events_project_audit
-AFTER INSERT ON kortix.usage_events
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_usage_event();--> statement-breakpoint
+AFTER INSERT ON zed.usage_events
+FOR EACH ROW EXECUTE FUNCTION zed.audit_usage_event();--> statement-breakpoint
 
-CREATE OR REPLACE FUNCTION kortix.audit_gateway_request()
+CREATE OR REPLACE FUNCTION zed.audit_gateway_request()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public
+SET search_path = zed, public
 AS $$
 BEGIN
-  INSERT INTO kortix.audit_events(
+  INSERT INTO zed.audit_events(
     account_id, project_id, session_id, actor_user_id, actor_type,
     authoritative_source, outcome, action, phase, resource_type, resource_id,
     execution_id, request_id, source_ledger, source_record_id, source_revision,
@@ -558,19 +558,19 @@ END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER gateway_request_logs_project_audit
-AFTER INSERT ON kortix.gateway_request_logs
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_gateway_request();--> statement-breakpoint
+AFTER INSERT ON zed.gateway_request_logs
+FOR EACH ROW EXECUTE FUNCTION zed.audit_gateway_request();--> statement-breakpoint
 
-CREATE OR REPLACE FUNCTION kortix.audit_voice_turn()
+CREATE OR REPLACE FUNCTION zed.audit_voice_turn()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public, extensions
+SET search_path = zed, public, extensions
 AS $$
 DECLARE account_uuid uuid;
 BEGIN
-  SELECT account_id INTO account_uuid FROM kortix.projects WHERE project_id = NEW.project_id;
-  INSERT INTO kortix.audit_events(
+  SELECT account_id INTO account_uuid FROM zed.projects WHERE project_id = NEW.project_id;
+  INSERT INTO zed.audit_events(
     account_id, project_id, session_id, actor_type, authoritative_source, outcome,
     action, phase, resource_type, resource_id, message_id, source_ledger,
     source_record_id, source_revision, input_summary, input_sha256, occurred_at
@@ -588,18 +588,18 @@ END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER voice_call_turns_project_audit
-AFTER INSERT ON kortix.voice_call_turns
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_voice_turn();--> statement-breakpoint
+AFTER INSERT ON zed.voice_call_turns
+FOR EACH ROW EXECUTE FUNCTION zed.audit_voice_turn();--> statement-breakpoint
 
-CREATE OR REPLACE FUNCTION kortix.audit_tunnel_operation()
+CREATE OR REPLACE FUNCTION zed.audit_tunnel_operation()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kortix, public
+SET search_path = zed, public
 AS $$
 BEGIN
   IF TG_OP = 'UPDATE' AND NEW.phase IS NOT DISTINCT FROM OLD.phase THEN RETURN NEW; END IF;
-  INSERT INTO kortix.audit_events(
+  INSERT INTO zed.audit_events(
     account_id, project_id, session_id, actor_user_id, actor_type,
     authoritative_source, outcome, action, phase,
     resource_type, resource_id, execution_id, source_ledger, source_record_id,
@@ -632,5 +632,5 @@ END;
 $$;--> statement-breakpoint
 
 CREATE TRIGGER tunnel_audit_logs_project_audit
-AFTER INSERT OR UPDATE OF phase ON kortix.tunnel_audit_logs
-FOR EACH ROW EXECUTE FUNCTION kortix.audit_tunnel_operation();
+AFTER INSERT OR UPDATE OF phase ON zed.tunnel_audit_logs
+FOR EACH ROW EXECUTE FUNCTION zed.audit_tunnel_operation();

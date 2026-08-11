@@ -16,12 +16,12 @@ interface ModelDefaults {
   resolvedForCaller: string | null;
 }
 
-const HELP = help`Usage: kortix agents <subcommand> [options]
+const HELP = help`Usage: zed agents <subcommand> [options]
 
-Per-agent settings on the linked Kortix project. Today: which MODEL each agent
+Per-agent settings on the linked Zed project. Today: which MODEL each agent
 runs on — an explicit concrete model (scope=agent), applied instantly with no
-kortix.yaml commit. An agent without a pin follows the project → account →
-platform default. (The declarative default lives in kortix.yaml as
+zed.yaml commit. An agent without a pin follows the project → account →
+platform default. (The declarative default lives in zed.yaml as
 [[agents]].model.)
 
 Subcommands:
@@ -31,7 +31,7 @@ Subcommands:
 
 Global:
   --project <id>     Operate on this project id (default: linked).
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   -h, --help         Show this help.
 `;
 
@@ -82,7 +82,7 @@ export async function runAgents(argv: string[]): Promise<number> {
         if (entries.length === 0) {
           process.stdout.write(
             `  ${C.dim}No per-agent model pins — every agent follows the default.${C.reset}\n` +
-              `  ${C.dim}Pin one: ${C.reset}${C.cyan}kortix agents model <agent> <model-id>${C.reset}\n\n`,
+              `  ${C.dim}Pin one: ${C.reset}${C.cyan}zed agents model <agent> <model-id>${C.reset}\n\n`,
           );
           return 0;
         }

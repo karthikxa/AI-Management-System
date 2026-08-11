@@ -47,10 +47,10 @@ import {
   snoozeUpdate,
 } from './update-check.ts';
 
-// CI bakes the real version via --define process.env.KORTIX_CLI_VERSION (the
+// CI bakes the real version via --define process.env.ZED_CLI_VERSION (the
 // unified X.Y.Z on release, X.Y.Z-dev.<sha> on dev). This fallback only applies
 // to a bare `bun run src/index.ts` during local dev.
-const VERSION = process.env.KORTIX_CLI_VERSION ?? 'dev';
+const VERSION = process.env.ZED_CLI_VERSION ?? 'dev';
 
 interface Command {
   name: string;
@@ -89,7 +89,7 @@ const TIERS: readonly CommandTier[] = [
           {
             name: 'system-skills',
             args: '[get <name>]',
-            blurb: 'Learn how to drive Kortix — the platform docs, served live by your host',
+            blurb: 'Learn how to drive Zed — the platform docs, served live by your host',
           },
         ],
       },
@@ -104,7 +104,7 @@ const TIERS: readonly CommandTier[] = [
           {
             name: 'hosts',
             args: '<subcommand>',
-            blurb: 'Sign in + switch Kortix instances (login/logout/use/ls)',
+            blurb: 'Sign in + switch Zed instances (login/logout/use/ls)',
           },
           { name: 'login', blurb: 'Sign in to the active host (shortcut for `hosts login`)' },
           { name: 'logout', blurb: 'Sign out of the active host (shortcut for `hosts logout`)' },
@@ -113,7 +113,7 @@ const TIERS: readonly CommandTier[] = [
           {
             name: 'self-host',
             args: '<subcommand>',
-            blurb: 'Run your own Kortix instance from Docker images',
+            blurb: 'Run your own Zed instance from Docker images',
           },
         ],
       },
@@ -133,12 +133,12 @@ const TIERS: readonly CommandTier[] = [
           {
             name: 'init',
             args: '[project-name]',
-            blurb: 'Start a new Kortix project (a fresh standalone directory)',
+            blurb: 'Start a new Zed project (a fresh standalone directory)',
           },
           {
             name: 'projects',
             args: '<subcommand>',
-            blurb: 'List, link, set-default (use), open Kortix cloud projects',
+            blurb: 'List, link, set-default (use), open Zed cloud projects',
           },
         ],
       },
@@ -166,7 +166,7 @@ const TIERS: readonly CommandTier[] = [
         title: 'Author & ship',
         commands: [
           { name: 'ship', blurb: 'Create the cloud project (first run) + push your code' },
-          { name: 'validate', blurb: "Statically validate this project's kortix.yaml" },
+          { name: 'validate', blurb: "Statically validate this project's zed.yaml" },
           {
             name: 'doctor',
             args: '[--no-session]',
@@ -175,7 +175,7 @@ const TIERS: readonly CommandTier[] = [
           {
             name: 'schema',
             args: '[--version 1|2]',
-            blurb: 'Print the canonical kortix.yaml/kortix.toml JSON Schema',
+            blurb: 'Print the canonical zed.yaml/zed.toml JSON Schema',
           },
         ],
       },
@@ -221,7 +221,7 @@ const TIERS: readonly CommandTier[] = [
           {
             name: 'apps',
             args: '<subcommand>',
-            blurb: 'Experimental: deploy serverless Apps with stable Kortix URLs',
+            blurb: 'Experimental: deploy serverless Apps with stable Zed URLs',
           },
           {
             name: 'marketplace',
@@ -276,8 +276,8 @@ const TIERS: readonly CommandTier[] = [
       {
         title: '',
         commands: [
-          { name: 'update', blurb: 'Pull the latest CLI from kortix.com/install' },
-          { name: 'uninstall', blurb: 'Remove the Kortix CLI from this machine' },
+          { name: 'update', blurb: 'Pull the latest CLI from zed.com/install' },
+          { name: 'uninstall', blurb: 'Remove the Zed CLI from this machine' },
           { name: 'help', blurb: 'Show this help' },
           { name: 'version', blurb: 'Print the CLI version' },
         ],
@@ -302,7 +302,7 @@ function renderHelp(): string {
   );
   const lines: string[] = [];
   lines.push('');
-  lines.push(header('Kortix CLI', VERSION));
+  lines.push(header('Zed CLI', VERSION));
   lines.push(rule());
   for (const tier of TIERS) {
     const sections = tier.sections
@@ -322,20 +322,20 @@ function renderHelp(): string {
   }
   lines.push('');
   lines.push(
-    `  ${C.dim}Run${C.reset} ${C.cyan}kortix <subcommand> --help${C.reset} ${C.dim}for command-specific options.${C.reset}`,
+    `  ${C.dim}Run${C.reset} ${C.cyan}zed <subcommand> --help${C.reset} ${C.dim}for command-specific options.${C.reset}`,
   );
   lines.push('');
   return lines.join('\n');
 }
 
 function printVersion(): void {
-  process.stdout.write(`${header('Kortix CLI', VERSION)}\n`);
+  process.stdout.write(`${header('Zed CLI', VERSION)}\n`);
 }
 
 // The landing screen: ASCII banner → host/account/project context → update
-// notice → the grouped command list. `kortix`, `kortix help`, and
-// `kortix --help` all render EXACTLY this, so there's no "which one shows the
-// banner/context" surprise. The one difference is that BARE `kortix` may stop
+// notice → the grouped command list. `zed`, `zed help`, and
+// `zed --help` all render EXACTLY this, so there's no "which one shows the
+// banner/context" surprise. The one difference is that BARE `zed` may stop
 // at the update notice to ask (see offerInteractiveUpdate) — an explicit help
 // request stays a pure, non-blocking render.
 async function printLanding(opts: { offerUpdate: boolean }): Promise<void> {
@@ -355,14 +355,14 @@ async function printLanding(opts: { offerUpdate: boolean }): Promise<void> {
  *  CI and a non-TTY stdout; a prompt additionally needs a readable stdin, and
  *  an explicit opt-out for anyone who wants the notice without the question. */
 function canPromptForUpdate(): boolean {
-  if (process.env.KORTIX_NO_UPDATE_PROMPT) return false;
+  if (process.env.ZED_NO_UPDATE_PROMPT) return false;
   return process.stdin.isTTY === true && process.stdout.isTTY === true;
 }
 
 /**
- * Bare `kortix` on a terminal: show the update box and offer to install it on
+ * Bare `zed` on a terminal: show the update box and offer to install it on
  * the spot, so being out of date takes a deliberate "no" rather than the
- * inertia of never getting around to `kortix update`.
+ * inertia of never getting around to `zed update`.
  *
  * Returns true when the binary was replaced — the caller then skips the help
  * screen, which came from the version that no longer exists on disk.
@@ -390,28 +390,28 @@ async function offerInteractiveUpdate(): Promise<boolean> {
     // Remember the "no" so we ask once per release, not once per invocation.
     snoozeUpdate(status.latestTag);
     process.stdout.write(
-      `  ${C.dim}Skipped. Run ${C.reset}${C.cyan}kortix update${C.reset}${C.dim} whenever you're ready.${C.reset}\n`,
+      `  ${C.dim}Skipped. Run ${C.reset}${C.cyan}zed update${C.reset}${C.dim} whenever you're ready.${C.reset}\n`,
     );
     return false;
   }
 
   process.stdout.write('\n');
   if ((await runUpdate([])) !== 0) return false;
-  process.stdout.write(`  ${C.dim}Run ${C.reset}${C.cyan}kortix${C.reset}${C.dim} again to pick it up.${C.reset}\n\n`);
+  process.stdout.write(`  ${C.dim}Run ${C.reset}${C.cyan}zed${C.reset}${C.dim} again to pick it up.${C.reset}\n\n`);
   return true;
 }
 
 async function main(argv: string[]): Promise<number> {
   // Only the LEADING `--version`/`-v` is the global "print the CLI's own
   // version" flag. Scanning the whole argv used to hijack any subcommand's
-  // own same-named flag (e.g. `kortix schema --version 2`, `kortix self-host
+  // own same-named flag (e.g. `zed schema --version 2`, `zed self-host
   // update --version <tag>`) before it ever reached the subcommand parser.
   if (argv[0] === '--version' || argv[0] === '-v') {
     printVersion();
     return 0;
   }
-  // Bare `kortix` and explicit help are the same landing screen. Only the bare
-  // form offers to update: `kortix --help` is what people (and scripts) reach
+  // Bare `zed` and explicit help are the same landing screen. Only the bare
+  // form offers to update: `zed --help` is what people (and scripts) reach
   // for to READ something, and it must never block on a question.
   if (argv.length === 0 || argv[0] === 'help' || argv[0] === '--help' || argv[0] === '-h') {
     await printLanding({ offerUpdate: argv.length === 0 });
@@ -517,15 +517,15 @@ async function main(argv: string[]): Promise<number> {
     return runMarketplace(argv.slice(1));
   }
   // `system-skills` is the canonical name; `skills` stays a permanent alias
-  // because every already-baked sandbox image seeds a kortix-system skill whose
-  // live pointer says `kortix skills get <name>`. Both hand the invoked name
+  // because every already-baked sandbox image seeds a zed-system skill whose
+  // live pointer says `zed skills get <name>`. Both hand the invoked name
   // down so every hint the command prints matches how it was called.
   if (argv[0] === SYSTEM_SKILLS_COMMAND || argv[0] === 'skills') {
     return runSystemSkills(argv.slice(1), argv[0]);
   }
   if (argv[0] === 'registry') {
     process.stderr.write(
-      `${C.yellow}developer command:${C.reset} registry is an internal marketplace authoring format; use ${C.cyan}kortix marketplace${C.reset} for normal install/search.\n`,
+      `${C.yellow}developer command:${C.reset} registry is an internal marketplace authoring format; use ${C.cyan}zed marketplace${C.reset} for normal install/search.\n`,
     );
     return runRegistry(argv.slice(1));
   }
@@ -554,14 +554,14 @@ async function main(argv: string[]): Promise<number> {
     return runUninstall(argv.slice(1));
   }
   // Anything else is an unknown command. This must NEVER fall through to a
-  // project scaffold — `kortix <new-project-name>` used to, which turned
+  // project scaffold — `zed <new-project-name>` used to, which turned
   // every mistyped subcommand into a freshly scaffolded directory in cwd.
-  // Scaffolding is explicit-only: `kortix init [project-name]`.
+  // Scaffolding is explicit-only: `zed init [project-name]`.
   const suggestion = closestCommand(argv[0]);
-  const lines = [`${C.red}kortix:${C.reset} unknown command \`${argv[0]}\``];
-  if (suggestion) lines.push(`       Did you mean ${C.cyan}kortix ${suggestion}${C.reset}?`);
+  const lines = [`${C.red}zed:${C.reset} unknown command \`${argv[0]}\``];
+  if (suggestion) lines.push(`       Did you mean ${C.cyan}zed ${suggestion}${C.reset}?`);
   lines.push(
-    `       Run ${C.cyan}kortix --help${C.reset} for the full list, or ${C.cyan}kortix init <name>${C.reset} to start a new project.`,
+    `       Run ${C.cyan}zed --help${C.reset} for the full list, or ${C.cyan}zed init <name>${C.reset} to start a new project.`,
   );
   process.stderr.write(`${lines.join('\n')}\n`);
   return 2;
@@ -661,7 +661,7 @@ async function printUpdateNoticeForCommand(command: string): Promise<void> {
 }
 
 // `process.exit()` does NOT wait for a piped stdout/stderr to flush — on large
-// output (e.g. `kortix projects ls --all --json | jq`, or connector JSON the
+// output (e.g. `zed projects ls --all --json | jq`, or connector JSON the
 // in-sandbox agent parses) it drops everything past the ~64KiB pipe buffer,
 // producing truncated/invalid output. Instead set the exit code and let the
 // runtime flush both streams and exit naturally. Release stdin first so an
@@ -681,6 +681,6 @@ main(process.argv.slice(2))
   .then((code) => finish(code))
   .catch((err: unknown) => {
     const msg = err instanceof Error ? err.message : String(err);
-    process.stderr.write(`${C.red}kortix:${C.reset} ${msg}\n`);
+    process.stderr.write(`${C.red}zed:${C.reset} ${msg}\n`);
     finish(1);
   });

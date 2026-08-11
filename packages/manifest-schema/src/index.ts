@@ -1,13 +1,13 @@
 /**
- * Canonical kortix.yaml schema + validator.
+ * Canonical zed.yaml schema + validator.
  *
  * One source of truth, exercised wherever manifest input is accepted:
  *
- *   1. `kortix ship` (CLI) — pre-flight validation before push. A broken
+ *   1. `zed ship` (CLI) — pre-flight validation before push. A broken
  *      manifest fails fast with a colored diagnostic, no push happens.
  *   2. Backend CR-merge gate — backstop so manifests pushed without the CLI
  *      (raw git push, web edit) still can't take a project down.
- *   3. `kortix validate` (CLI) — explicit subcommand that just runs the
+ *   3. `zed validate` (CLI) — explicit subcommand that just runs the
  *      validator and prints a report.
  *
  * Errors are structured (path + severity + message + optional line/col) so
@@ -26,9 +26,9 @@ import {
   CONNECTOR_POLICY_ACTIONS,
   CONNECTOR_PROVIDERS,
   ENV_NAME_RE,
-  GRANTABLE_KORTIX_CLI_ACTIONS,
+  GRANTABLE_ZED_CLI_ACTIONS,
   LEGACY_SANDBOX_KEYS,
-  LEGACY_TOLERATED_KORTIX_CLI_ACTIONS,
+  LEGACY_TOLERATED_ZED_CLI_ACTIONS,
   RESERVED_SANDBOX_SLUG,
   RESERVED_SLUG_PROVIDERS,
   SANDBOX_CPU_BOUNDS,
@@ -40,7 +40,7 @@ import {
 // The 7 below (v2-only enums/regex) are no longer consumed directly in this
 // file — validateAgentMdFrontmatter and friends moved to ./index.v2.ts, which
 // imports them itself — but are kept in the re-export block just below for
-// `@kortix/manifest-schema` backward compatibility.
+// `@zed/manifest-schema` backward compatibility.
 import {
   rejectChannelsV2,
   validateAgentsV2,
@@ -88,10 +88,10 @@ export {
   CONNECTOR_POLICY_ACTIONS,
   CONNECTOR_PROVIDERS,
   ENV_NAME_RE,
-  GRANTABLE_KORTIX_CLI_ACTIONS,
+  GRANTABLE_ZED_CLI_ACTIONS,
   HEX_COLOR_RE_V2,
   LEGACY_SANDBOX_KEYS,
-  LEGACY_TOLERATED_KORTIX_CLI_ACTIONS,
+  LEGACY_TOLERATED_ZED_CLI_ACTIONS,
   PERMISSION_ACTION_ONLY_KEYS_V2,
   PERMISSION_ACTIONS_V2,
   RESERVED_SANDBOX_SLUG,
@@ -133,10 +133,10 @@ export {
  * Maximum manifest schema version this validator understands.
  *
  * v1 = `[[agents]]` array overlay, TOML or YAML, `[[channels]]` allowed.
- * v2 = `agents:` map — GOVERNANCE ONLY (connectors/secrets/skills/kortix_cli/
+ * v2 = `agents:` map — GOVERNANCE ONLY (connectors/secrets/skills/zed_cli/
  * workspace/enabled); OpenCode behavior (mode/model/temperature/top_p/steps/
  * variant/color/hidden/permission/prompt) lives entirely in the agent's own
- * native `.kortix/opencode/agents/<name>.md` frontmatter + body, never in
+ * native `.zed/opencode/agents/<name>.md` frontmatter + body, never in
  * this manifest. YAML-only, `[[channels]]` removed, deny-by-default grant
  * sets. See docs/specs/2026-07-05-agent-first-config-unification.md
  * §2.1/§2.2/§2.7 (decision 2026-07-05: "one home per concern").
@@ -185,7 +185,7 @@ export interface ManifestValidationResult {
  * Validate a manifest. Accepts either the raw manifest string (canonical input
  * for CLI / git pushes) or an already-parsed object. When given a string, pass
  * the `format` so it's parsed with the right parser — defaults to TOML for
- * backward compatibility; pass `'yaml'` for a `kortix.yaml`.
+ * backward compatibility; pass `'yaml'` for a `zed.yaml`.
  */
 export function validateManifest(
   input: string | Record<string, unknown>,
@@ -237,7 +237,7 @@ export function validateManifest(
 }
 
 /**
- * kortix_version 1 section validators — UNCHANGED from before v2 existed.
+ * zed_version 1 section validators — UNCHANGED from before v2 existed.
  * Byte-for-byte the same calls as always; v1 manifests must keep validating
  * identically no matter what v2 support is added alongside it.
  */
@@ -259,7 +259,7 @@ function validateManifestBodyV1(
 }
 
 /**
- * kortix_version 2 section validators. Every v1 top-level section keeps its
+ * zed_version 2 section validators. Every v1 top-level section keeps its
  * v1 shape/validation (project, env, opencode, sandbox, triggers, connectors);
  * `agents` becomes a name→block map (§2.2), `channels`
  * is removed (§2.5), and `default_agent` + `runtime` are new top-level keys
@@ -316,10 +316,10 @@ function listSectionHint(key: string, format: ManifestFormat = 'toml'): string {
 // ─── Section validators ───────────────────────────────────────────────────
 
 /**
- * Validate a `connectors` / `kortix_cli` grant value (array | "all" | "none").
+ * Validate a `connectors` / `zed_cli` grant value (array | "all" | "none").
  *
- * `version` only changes how a `kortix_cli` entry from
- * `LEGACY_TOLERATED_KORTIX_CLI_ACTIONS` is treated (only reachable when
+ * `version` only changes how a `zed_cli` entry from
+ * `LEGACY_TOLERATED_ZED_CLI_ACTIONS` is treated (only reachable when
  * `checkAction` is true): v1 keeps it a warning (these actions were REMOVED
  * from enforcement, not from v1's manifest shape — an existing manifest that
  * still lists one must keep validating, just with a deprecation nudge). v2 is
@@ -369,20 +369,20 @@ export function validateGrantList(
       return;
     }
     const s = item.trim();
-    if (checkAction && s !== '*' && !GRANTABLE_KORTIX_CLI_ACTIONS.includes(s)) {
-      if (LEGACY_TOLERATED_KORTIX_CLI_ACTIONS.includes(s)) {
+    if (checkAction && s !== '*' && !GRANTABLE_ZED_CLI_ACTIONS.includes(s)) {
+      if (LEGACY_TOLERATED_ZED_CLI_ACTIONS.includes(s)) {
         issues.push({
           path: `${where}[${k}]`,
           message:
             version === 2
-              ? `"${s}" is a deprecated, no-op kortix_cli action (removed from enforcement) and is not tolerated in kortix_version 2 — remove it from the manifest.`
-              : `"${s}" is a deprecated, no-op kortix_cli action (removed from enforcement — granting or omitting it has no effect). Remove it from the manifest.`,
+              ? `"${s}" is a deprecated, no-op zed_cli action (removed from enforcement) and is not tolerated in zed_version 2 — remove it from the manifest.`
+              : `"${s}" is a deprecated, no-op zed_cli action (removed from enforcement — granting or omitting it has no effect). Remove it from the manifest.`,
           severity: version === 2 ? 'error' : 'warning',
         });
       } else {
         issues.push({
           path: `${where}[${k}]`,
-          message: `"${s}" is not a grantable kortix_cli action (allowed: project.*; account-scoped actions can never be granted to an agent).`,
+          message: `"${s}" is not a grantable zed_cli action (allowed: project.*; account-scoped actions can never be granted to an agent).`,
           severity: 'error',
         });
       }
@@ -390,7 +390,7 @@ export function validateGrantList(
   });
 }
 
-/** `[[agents]]` — the per-agent scoping overlay (name + connectors + kortix_cli). */
+/** `[[agents]]` — the per-agent scoping overlay (name + connectors + zed_cli). */
 function validateAgents(node: unknown, path: string, issues: ManifestIssue[], format: ManifestFormat = 'toml'): void {
   if (node == null) return;
   if (!Array.isArray(node)) {
@@ -427,9 +427,9 @@ function validateAgents(node: unknown, path: string, issues: ManifestIssue[], fo
       seen.add(name);
     }
     validateGrantList(entry.connectors, `${where}.connectors`, 'connectors', issues, false);
-    validateGrantList(entry.kortix_cli, `${where}.kortix_cli`, 'kortix_cli', issues, true);
+    validateGrantList(entry.zed_cli, `${where}.zed_cli`, 'zed_cli', issues, true);
     // `env` (project-secret allowlist) shares the same array | "all" | "none"
-    // shape as connectors/kortix_cli (runtime parseGrantSet, no per-entry
+    // shape as connectors/zed_cli (runtime parseGrantSet, no per-entry
     // action check). Omitted defaults to "all" at runtime (back-compat — a
     // NEW dimension must not starve existing agents), so absence is not an
     // error here either; validateGrantList already no-ops on undefined/null.
@@ -438,7 +438,7 @@ function validateAgents(node: unknown, path: string, issues: ManifestIssue[], fo
 }
 
 /**
- * Validate `kortix_version` and resolve which section-validator set applies.
+ * Validate `zed_version` and resolve which section-validator set applies.
  * Returns the parsed version number so the caller can dispatch to the v1 or
  * v2 body validators — `undefined` only when the field itself is missing or
  * not a valid positive integer (nothing sensible to dispatch on).
@@ -448,11 +448,11 @@ function validateRoot(
   format: ManifestFormat,
   issues: ManifestIssue[],
 ): number | undefined {
-  const versionRaw = raw.kortix_version;
+  const versionRaw = raw.zed_version;
   if (versionRaw == null) {
     issues.push({
-      path: 'kortix_version',
-      message: 'kortix_version is required — add `kortix_version = 1` at the top.',
+      path: 'zed_version',
+      message: 'zed_version is required — add `zed_version = 1` at the top.',
       severity: 'error',
     });
     return undefined;
@@ -460,15 +460,15 @@ function validateRoot(
   const version = typeof versionRaw === 'number' ? versionRaw : Number.NaN;
   if (!Number.isFinite(version) || version < 1 || Math.floor(version) !== version) {
     issues.push({
-      path: 'kortix_version',
-      message: `kortix_version must be a positive integer (got ${JSON.stringify(versionRaw)}).`,
+      path: 'zed_version',
+      message: `zed_version must be a positive integer (got ${JSON.stringify(versionRaw)}).`,
       severity: 'error',
     });
     return undefined;
   }
   if (version > KNOWN_SCHEMA_VERSION) {
     issues.push({
-      path: 'kortix_version',
+      path: 'zed_version',
       message: `Unsupported schema version ${version}. This tool understands up to v${KNOWN_SCHEMA_VERSION}; upgrade the CLI or pin the manifest.`,
       severity: 'error',
     });
@@ -479,9 +479,9 @@ function validateRoot(
   // the migration path rather than silently misparsing.
   if (version === 2 && format === 'toml') {
     issues.push({
-      path: 'kortix_version',
+      path: 'zed_version',
       message:
-        'kortix_version 2 manifests must be kortix.yaml (TOML only supports kortix_version 1). Rename the file to kortix.yaml or run `kortix migrate`.',
+        'zed_version 2 manifests must be zed.yaml (TOML only supports zed_version 1). Rename the file to zed.yaml or run `zed migrate`.',
       severity: 'error',
     });
     return version;
@@ -658,7 +658,7 @@ function validateSandboxTemplates(node: unknown, path: string, issues: ManifestI
     } else {
       seenSlugs.add(slug);
     }
-    // The runtime caps sandbox-template slugs at 64 chars (@kortix/shared/sandbox
+    // The runtime caps sandbox-template slugs at 64 chars (@zed/shared/sandbox
     // SLUG_RE) — a longer slug parses here but is silently dropped at sync, so warn.
     if (slug && SLUG_RE.test(slug) && slug.length > 64) {
       issues.push({
@@ -1098,7 +1098,7 @@ function validateConnectors(node: unknown, path: string, issues: ManifestIssue[]
       issues.push({
         path: `${where}.provider`,
         message:
-          'provider="computer" is managed automatically when you connect a machine (Computers) — it cannot be declared in kortix.yaml.',
+          'provider="computer" is managed automatically when you connect a machine (Computers) — it cannot be declared in zed.yaml.',
         severity: 'error',
       });
     } else if (!(CONNECTOR_PROVIDERS as readonly string[]).includes(provider)) {
@@ -1193,7 +1193,7 @@ function validateConnectors(node: unknown, path: string, issues: ManifestIssue[]
           path: `${where}.credential`,
           message:
             version === 2
-              ? 'credential "per_user" is not supported in kortix_version 2 — connectors are always "shared"; remove this key.'
+              ? 'credential "per_user" is not supported in zed_version 2 — connectors are always "shared"; remove this key.'
               : 'credential "per_user" was removed — it is tolerated here for now and resolves to "shared", but should be removed from the manifest.',
           severity: version === 2 ? 'error' : 'warning',
         });
@@ -1244,7 +1244,7 @@ function validateConnectors(node: unknown, path: string, issues: ManifestIssue[]
         path: `${where}.agent_scope`,
         message:
           version === 2
-            ? 'agent_scope is not supported in kortix_version 2 — connector access is set on the agent (`connectors` grant); remove this key.'
+            ? 'agent_scope is not supported in zed_version 2 — connector access is set on the agent (`connectors` grant); remove this key.'
             : 'agent_scope is no longer used — connector access is set on the agent (`connectors` grant), not on the connector. This key is ignored at runtime; remove it from the manifest.',
         severity: version === 2 ? 'error' : 'warning',
       });
@@ -1412,7 +1412,7 @@ function validateChannels(node: unknown, path: string, issues: ManifestIssue[], 
   });
 }
 
-// ─── kortix_version 2 types + validators ──────────────────────────────────
+// ─── zed_version 2 types + validators ──────────────────────────────────
 // Extracted to ./index.v2.ts (thermo-nuclear-review FIX 1) — re-exported
 // below for backward compatibility, and imported here for dispatch from
 // validateManifestBodyV2. See index.v2.ts's header for the cycle rationale.
@@ -1504,19 +1504,19 @@ function expectBoundedIntOrAbsent(
 }
 
 // The canonical, public JSON Schema (`./json-schema.ts`) is built FROM the
-// constants above (GRANTABLE_KORTIX_CLI_ACTIONS, CONNECTOR_PROVIDERS,
+// constants above (GRANTABLE_ZED_CLI_ACTIONS, CONNECTOR_PROVIDERS,
 // AGENT_MODES_V2, …), so it imports this module — this re-export must stay
 // the LAST statement in the file: json-schema.ts's own top-level code calls
-// its builder functions eagerly (`export const KORTIX_V1_JSON_SCHEMA =
+// its builder functions eagerly (`export const ZED_V1_JSON_SCHEMA =
 // buildManifestV1Schema()`), so by the time this circular import resolves
 // (whichever module loads first), every constant it needs must already be
 // initialized — which only holds if everything above has already run.
 export {
   type JsonSchemaFragment,
-  KORTIX_SCHEMA_BASE_URL,
-  KORTIX_V1_JSON_SCHEMA,
-  KORTIX_V2_JSON_SCHEMA,
-  KORTIX_JSON_SCHEMA,
+  ZED_SCHEMA_BASE_URL,
+  ZED_V1_JSON_SCHEMA,
+  ZED_V2_JSON_SCHEMA,
+  ZED_JSON_SCHEMA,
   buildManifestV1Schema,
   buildManifestV2Schema,
   buildManifestSchema,

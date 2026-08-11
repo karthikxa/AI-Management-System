@@ -19,13 +19,13 @@ import { shouldSetSessionAgentName } from './session-agent-name-guard';
 describe('shouldSetSessionAgentName — idempotency guard breaks the #185 loop', () => {
   test('returns false (no-op) when next equals current, so the store is not mutated', () => {
     expect(shouldSetSessionAgentName('pm', 'pm')).toBe(false);
-    expect(shouldSetSessionAgentName('kortix', 'kortix')).toBe(false);
+    expect(shouldSetSessionAgentName('zed', 'zed')).toBe(false);
   });
 
   test('returns true when next differs from current, so the write proceeds', () => {
-    expect(shouldSetSessionAgentName('pm', 'kortix')).toBe(true);
-    expect(shouldSetSessionAgentName(undefined, 'kortix')).toBe(true);
-    expect(shouldSetSessionAgentName('kortix', undefined)).toBe(true);
+    expect(shouldSetSessionAgentName('pm', 'zed')).toBe(true);
+    expect(shouldSetSessionAgentName(undefined, 'zed')).toBe(true);
+    expect(shouldSetSessionAgentName('zed', undefined)).toBe(true);
   });
 
   test('treats empty string as the "clear" intent, matching the setter delete branch', () => {
@@ -59,7 +59,7 @@ function captureModelStore(allModels: FlatModel[]): ReturnType<typeof useModelSt
 }
 
 const MODELS: FlatModel[] = [
-  { providerID: 'kortix', providerName: 'Kortix', modelName: 'kortix', modelID: 'kortix' },
+  { providerID: 'zed', providerName: 'Zed', modelName: 'zed', modelID: 'zed' },
 ];
 
 describe('useModelStore.setSessionAgentName — no-op write does not notify listeners (regression for BS 351da943)', () => {
@@ -70,7 +70,7 @@ describe('useModelStore.setSessionAgentName — no-op write does not notify list
   // write: with the guard, the snapshot object reference is unchanged.
   test('calling setSessionAgentName with the already-stored value does not change the snapshot', () => {
     const store = captureModelStore(MODELS);
-    store.setSessionAgentName('ses_snap', 'kortix');
+    store.setSessionAgentName('ses_snap', 'zed');
     // The snapshot after the first real write.
     const beforeSnap = captureModelStore(MODELS).getSessionAgentName('ses_snap');
 
@@ -78,7 +78,7 @@ describe('useModelStore.setSessionAgentName — no-op write does not notify list
     // fresh `sessionAgentName` record, mutates `_store`, and notifies every
     // `useSyncExternalStore` subscriber → re-render → the re-firing path runs
     // again → React #185. With the guard, `setStore` is never called.
-    store.setSessionAgentName('ses_snap', 'kortix');
+    store.setSessionAgentName('ses_snap', 'zed');
     const afterSnap = captureModelStore(MODELS).getSessionAgentName('ses_snap');
 
     expect(afterSnap).toBe(beforeSnap);
@@ -86,8 +86,8 @@ describe('useModelStore.setSessionAgentName — no-op write does not notify list
 
   test('calling setSessionAgentName with a different value still writes through', () => {
     const store = captureModelStore(MODELS);
-    store.setSessionAgentName('ses_write', 'kortix');
-    expect(captureModelStore(MODELS).getSessionAgentName('ses_write')).toBe('kortix');
+    store.setSessionAgentName('ses_write', 'zed');
+    expect(captureModelStore(MODELS).getSessionAgentName('ses_write')).toBe('zed');
 
     // A genuine change must still propagate so the agent picker works.
     store.setSessionAgentName('ses_write', 'pm');
@@ -148,15 +148,15 @@ describe('useModelStore — no-op setSessionAgentName does not re-render subscri
       return null;
     }
     renderToStaticMarkup(createElement(First));
-    firstStore!.setSessionAgentName('ses_render', 'kortix');
+    firstStore!.setSessionAgentName('ses_render', 'zed');
     // Snapshot after the genuine first write.
     const before = captureModelStore(MODELS).getSessionAgentName('ses_render');
     // The re-fire: the SAME value. Must be a no-op.
-    firstStore!.setSessionAgentName('ses_render', 'kortix');
+    firstStore!.setSessionAgentName('ses_render', 'zed');
     renderToStaticMarkup(createElement(Second));
     const after = secondStore!.getSessionAgentName('ses_render');
     expect(after).toBe(before);
     // Value is correct.
-    expect(after).toBe('kortix');
+    expect(after).toBe('zed');
   });
 });

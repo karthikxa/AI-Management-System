@@ -20,7 +20,7 @@ export interface RuntimeArtifactFingerprintInput {
 }
 
 /**
- * Files that can change `kortix connectors` inside a sandbox.
+ * Files that can change `zed connectors` inside a sandbox.
  *
  * Paths are relative to `apps/cli`. The snapshot identity and the compiled
  * binary attestation both use this one list.
@@ -31,8 +31,8 @@ export const CLI_CONNECTOR_RUNTIME_FILES = [
   'src/api/auth.ts',
   'src/api/client.ts',
   'src/api/config.ts',
-  // The CLI's one seam onto `@kortix/sdk`. `src/api/client.ts` imports it, so
-  // every in-sandbox `kortix connectors` call resolves its transport through this
+  // The CLI's one seam onto `@zed/sdk`. `src/api/client.ts` imports it, so
+  // every in-sandbox `zed connectors` call resolves its transport through this
   // file — a change to it changes the connector's behavior and MUST move the
   // snapshot's runtime identity. Left out, an edit here shipped a stale binary
   // under an unchanged snapshot name (apps/api/src/snapshots/__tests__/cli-connector-closure.test.ts
@@ -52,17 +52,17 @@ export function cliConnectorRuntimeArtifacts(
     ...CLI_CONNECTOR_RUNTIME_FILES.map((relativePath) => ({
       // Preserve the existing snapshot-fingerprint labels. The paths moved
       // from an apps/cli/src-relative list to this apps/cli-relative list.
-      label: `kortix-cli-${relativePath.replace(/^src\//, '')}`,
+      label: `zed-cli-${relativePath.replace(/^src\//, '')}`,
       path: join(cliRoot, relativePath),
       excludeNames: CLI_RUNTIME_EXCLUDES,
     })),
-    { label: 'kortix-cli-pkg', path: join(cliRoot, 'package.json') },
+    { label: 'zed-cli-pkg', path: join(cliRoot, 'package.json') },
     {
-      label: 'kortix-sdk-src',
+      label: 'zed-sdk-src',
       path: join(sdkRoot, 'src'),
       excludeNames: CLI_RUNTIME_EXCLUDES,
     },
-    { label: 'kortix-sdk-pkg', path: join(sdkRoot, 'package.json') },
+    { label: 'zed-sdk-pkg', path: join(sdkRoot, 'package.json') },
   ];
 }
 
@@ -106,7 +106,7 @@ export async function buildRuntimeArtifactFingerprint(
   hash.update(`sandbox_version\0${input.sandboxVersion}\0`);
   hash.update(`opencode_version\0${input.opencodeVersion}\0`);
   await hashArtifacts(hash, input.artifacts);
-  return `kortix-runtime:${input.sandboxVersion}:artifacts:${hash.digest('hex')}`;
+  return `zed-runtime:${input.sandboxVersion}:artifacts:${hash.digest('hex')}`;
 }
 
 async function hashArtifacts(hash: Hash, artifacts: RuntimeArtifact[]): Promise<void> {

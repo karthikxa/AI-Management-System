@@ -22,7 +22,7 @@ flow(
     await ctx.step("create a pending invite (new email)", async () => {
       const r = await ctx.client.as(ctx.P.OWNER).post(
         "/v1/accounts/:accountId/members",
-        { email: `inv-${Date.now()}@ke2e.kortix.test`, role: "member" },
+        { email: `inv-${Date.now()}@ke2e.zed.test`, role: "member" },
         { params: { accountId: team.id } },
       );
       r.status(201);

@@ -11,13 +11,13 @@ const ORIGINAL_STDOUT_WRITE = process.stdout.write;
 const ORIGINAL_STDERR_WRITE = process.stderr.write;
 
 const ENV_KEYS = [
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_AUTH_FILE',
+  'ZED_CLI_TOKEN',
+  'ZED_TOKEN',
+  'ZED_API_URL',
+  'ZED_PROJECT_ID',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CONFIG_FILE',
+  'ZED_AUTH_FILE',
 ] as const;
 
 let saved: Record<string, string | undefined>;
@@ -76,7 +76,7 @@ function writeConfig(): void {
     }),
     'utf8',
   );
-  process.env.KORTIX_CONFIG_FILE = file;
+  process.env.ZED_CONFIG_FILE = file;
 }
 
 function captureOutput() {
@@ -131,9 +131,9 @@ beforeEach(() => {
     saved[key] = process.env[key];
     delete process.env[key];
   }
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
   originalCwd = process.cwd();
-  tmp = mkdtempSync(join(tmpdir(), 'kortix-grants-test-'));
+  tmp = mkdtempSync(join(tmpdir(), 'zed-grants-test-'));
   process.chdir(tmp);
   writeConfig();
   captureOutput();
@@ -153,7 +153,7 @@ afterEach(() => {
   rmSync(tmp, { recursive: true, force: true });
 });
 
-describe('kortix grants', () => {
+describe('zed grants', () => {
   test('ls prints grantable agents (with declared scope) + existing grants', async () => {
     const code = await runGrants(['ls', '--project', PROJECT]);
     expect(code).toBe(0);

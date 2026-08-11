@@ -1,5 +1,5 @@
 import { Langfuse } from 'langfuse';
-import type { GatewayTrace } from '@kortix/llm-gateway';
+import type { GatewayTrace } from '@zed/llm-gateway';
 
 export interface LangfuseConfig {
   publicKey: string;

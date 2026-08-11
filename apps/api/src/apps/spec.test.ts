@@ -15,9 +15,9 @@ describe('normalizeAppBuild', () => {
       { kind: 'static', root: 'public', spa: true },
       '/tmp/source',
     );
-    expect(build.dockerfile).toContain('COPY . /kortix/app');
+    expect(build.dockerfile).toContain('COPY . /zed/app');
     expect(build.runtimeSpec).toEqual({
-      static_root: '/kortix/app/public',
+      static_root: '/zed/app/public',
       spa: true,
       readiness_path: '/',
     });
@@ -34,12 +34,12 @@ describe('normalizeAppBuild', () => {
       '/tmp/source',
     );
     expect(build.dockerfile).toContain('RUN ["sh","-lc","npm ci"]');
-    expect(build.dockerfile).toContain('COPY --from=build /source/build /kortix/app/public');
-    expect(build.runtimeSpec).toMatchObject({ static_root: '/kortix/app/public', spa: true });
+    expect(build.dockerfile).toContain('COPY --from=build /source/build /zed/app/public');
+    expect(build.runtimeSpec).toMatchObject({ static_root: '/zed/app/public', spa: true });
   });
 
   test('loads a user Dockerfile and validates its dynamic runtime contract', async () => {
-    const source = await mkdtemp(join(tmpdir(), 'kortix-app-spec-'));
+    const source = await mkdtemp(join(tmpdir(), 'zed-app-spec-'));
     cleanup.push(source);
     await writeFile(
       join(source, 'Dockerfile'),
@@ -67,11 +67,11 @@ describe('normalizeAppBuild', () => {
   test('layers appd over a public OCI image', async () => {
     const build = await normalizeAppBuild({
       kind: 'oci_image',
-      image: 'ghcr.io/kortix/example@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      image: 'ghcr.io/zed/example@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       command: ['/usr/local/bin/server'],
       port: 4000,
     });
-    expect(build.dockerfile).toStartWith('FROM ghcr.io/kortix/example@sha256:');
+    expect(build.dockerfile).toStartWith('FROM ghcr.io/zed/example@sha256:');
     expect(build.sourceDir).toBeUndefined();
     expect(build.runtimeSpec).toMatchObject({ target_port: 4000 });
   });

@@ -1,15 +1,15 @@
 /**
- * Kortix registry schema — a superset of the shadcn registry format.
+ * Zed registry schema — a superset of the shadcn registry format.
  *
  * We deliberately track shadcn's `registry.json` / `registry-item.json`
  * shape (https://ui.shadcn.com/docs/registry) so that:
- *   - any Kortix repo is "just a registry" (drop a registry.json at the root),
+ *   - any Zed repo is "just a registry" (drop a registry.json at the root),
  *   - tooling that already understands shadcn registries can read ours,
  *   - and we get namespaces / `include` / `registryDependencies` for free.
  *
- * What we add on top is a Kortix **item-type vocabulary** (skills, agents,
+ * What we add on top is a Zed **item-type vocabulary** (skills, agents,
  * commands, tools, triggers, connectors, whole projects, bundles) and a set of
- * Kortix **target placeholders** (`@skills/…`, `@agents/…`, …). The install
+ * Zed **target placeholders** (`@skills/…`, `@agents/…`, …). The install
  * mechanics are uniform: every item is ultimately a set of files copied to
  * `target` paths, exactly like shadcn's `registry:file`. The richer type is
  * metadata that drives categorization, icons, and validation.
@@ -34,29 +34,29 @@ export const SHADCN_ITEM_TYPES = [
   'registry:item',
 ] as const;
 
-/** Kortix-native item types layered on top of the shadcn vocabulary. */
-export const KORTIX_ITEM_TYPES = [
+/** Zed-native item types layered on top of the shadcn vocabulary. */
+export const ZED_ITEM_TYPES = [
   'registry:skill', // an OpenCode SKILL.md (+ its reference files)
   'registry:agent', // an agent persona .md
   'registry:command', // an OpenCode slash command .md
   'registry:tool', // a custom OpenCode tool (.ts) or plugin
-  'registry:trigger', // a kortix.yaml triggers: block (declarative)
+  'registry:trigger', // a zed.yaml triggers: block (declarative)
   'registry:connector', // a connector definition (Pipedream/MCP/HTTP)
   'registry:rules', // AGENTS.md / rules files
   'registry:memory', // seed memory files
-  'registry:project', // a whole Kortix project (full repo scaffold)
+  'registry:project', // a whole Zed project (full repo scaffold)
   'registry:bundle', // a curated set of other items (a "starter"/use-case)
   'registry:template', // an installable use-case: a bundle + declared inputs
 ] as const;
 
-export const ALL_ITEM_TYPES = [...SHADCN_ITEM_TYPES, ...KORTIX_ITEM_TYPES] as const;
+export const ALL_ITEM_TYPES = [...SHADCN_ITEM_TYPES, ...ZED_ITEM_TYPES] as const;
 
 export type ShadcnItemType = (typeof SHADCN_ITEM_TYPES)[number];
-export type KortixItemType = (typeof KORTIX_ITEM_TYPES)[number];
+export type ZedItemType = (typeof ZED_ITEM_TYPES)[number];
 export type RegistryItemType = (typeof ALL_ITEM_TYPES)[number];
 
-/** Item types that the Kortix gallery treats as first-class agent primitives. */
-export const KORTIX_PRIMITIVE_TYPES: readonly KortixItemType[] = [
+/** Item types that the Zed gallery treats as first-class agent primitives. */
+export const ZED_PRIMITIVE_TYPES: readonly ZedItemType[] = [
   'registry:skill',
   'registry:agent',
   'registry:command',
@@ -68,8 +68,8 @@ export const KORTIX_PRIMITIVE_TYPES: readonly KortixItemType[] = [
 /**
  * Target placeholders. A file's `target` may start with one of these aliases;
  * the installer expands it against the consuming project's resolved layout
- * (the OpenCode config dir comes from `opencode.config_dir` in kortix.yaml,
- * defaulting to `.kortix/opencode`).
+ * (the OpenCode config dir comes from `opencode.config_dir` in zed.yaml,
+ * defaulting to `.zed/opencode`).
  *
  *   ~/<path>            → repo root, relative                (shadcn-compatible)
  *   @opencode/<path>    → <configDir>/<path>
@@ -77,7 +77,7 @@ export const KORTIX_PRIMITIVE_TYPES: readonly KortixItemType[] = [
  *   @agents/<path>      → <configDir>/agents/<path>
  *   @commands/<path>    → <configDir>/commands/<path>
  *   @tools/<path>       → <configDir>/tools/<path>
- *   @memory/<path>      → .kortix/memory/<path>
+ *   @memory/<path>      → .zed/memory/<path>
  *   <relative path>     → repo root, relative                (no alias)
  */
 export const TARGET_ALIASES = [
@@ -145,8 +145,8 @@ export interface RegistryItem {
   /**
    * Other registry items this item needs. Each entry is an item address:
    *   "deep-research"                  (same registry)
-   *   "@kortix/web-search"             (a namespaced registry)
-   *   "kortix-ai/skills/pdf"           (a GitHub registry item)
+   *   "@zed/web-search"             (a namespaced registry)
+   *   "zed-ai/skills/pdf"           (a GitHub registry item)
    *   "https://host/r/editor.json"     (a direct item URL)
    */
   registryDependencies?: string[];
@@ -164,9 +164,9 @@ export interface RegistryItem {
   /** Install-time documentation shown to the user. */
   docs?: string;
   /**
-   * Arbitrary metadata. Kortix reads:
+   * Arbitrary metadata. Zed reads:
    *   icon         — gallery icon id/url
-   *   source       — provenance ("kortix-ai/skills")
+   *   source       — provenance ("zed-ai/skills")
    *   homepage     — link
    *   visibility   — "global" | "company" | "repo" (gallery scoping hint)
    */
@@ -193,7 +193,7 @@ export interface RegistryJson {
 // ---------------------------------------------------------------------------
 
 export interface RegistryLockEntry {
-  /** The Kortix item type at install time. */
+  /** The Zed item type at install time. */
   type: RegistryItemType;
   /** The address the item was installed from. */
   source: string;

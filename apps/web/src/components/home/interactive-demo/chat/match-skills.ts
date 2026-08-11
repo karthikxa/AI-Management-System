@@ -5,7 +5,7 @@ const ALL_SKILLS = [...CORE_SKILLS, ...GKW_SKILLS];
 const PROMPT_RULES: { test: RegExp; skills: string[] }[] = [
   {
     test: /\b(slack|#\w+|thread|reply)\b/i,
-    skills: ['kortix-slack', 'response-drafting'],
+    skills: ['zed-slack', 'response-drafting'],
   },
   {
     test: /\b(board\s*deck|q3|financials?|metrics\.q3)\b/i,
@@ -85,7 +85,7 @@ export function matchSkillsFromPrompt(text: string, explicit?: string[]): string
   const scored = scoreByOverlap(trimmed);
   if (scored.length > 0) return scored;
 
-  return ['kortix-connectors'];
+  return ['zed-connectors'];
 }
 
 export function skillDescription(name: string): string | undefined {

@@ -1,6 +1,6 @@
-# ── prod environment — api.kortix.com on ECS Fargate (autoscaled, HA) ─────────
+# ── prod environment — api.zed.com on ECS Fargate (autoscaled, HA) ─────────
 #
-#   api.kortix.com → Cloudflare (proxied, Full strict) → ALB → ECS Fargate
+#   api.zed.com → Cloudflare (proxied, Full strict) → ALB → ECS Fargate
 #   service (autoscaled on CPU/memory, min 3 tasks across 2 AZs) in private
 #   subnets, egress via per-AZ NAT.
 #
@@ -37,12 +37,12 @@ provider "cloudflare" {
 }
 
 locals {
-  name   = "kortix-prod"
+  name   = "zed-prod"
   domain = var.api_domain
   # Cloudflare record name = the subdomain label(s) before the zone apex. For
-  # "new-api.kortix.com" → "new-api"; for "api.kortix.com" → "api". (Single-label
-  # subdomain on the kortix.com zone, which is all we use here.)
-  dns_record_name = replace(var.api_domain, ".kortix.com", "")
+  # "new-api.zed.com" → "new-api"; for "api.zed.com" → "api". (Single-label
+  # subdomain on the zed.com zone, which is all we use here.)
+  dns_record_name = replace(var.api_domain, ".zed.com", "")
   # Cloudflare's published IPv4 edge ranges. Lock the public ALB to these so the
   # origin can only be reached THROUGH Cloudflare — no direct-to-origin bypass of
   # the WAF / rate limiting. Mirrors the EKS chart inboundCidrs and the
@@ -55,7 +55,7 @@ locals {
   ]
   tags = {
     Environment = "prod"
-    Service     = "kortix-api"
+    Service     = "zed-api"
     ManagedBy   = "terraform"
   }
 }
@@ -86,7 +86,7 @@ module "acm" {
 # application expands it before any configuration module reads process.env.
 # Looked up by name so the random ARN suffix is never hard-coded.
 data "aws_secretsmanager_secret" "env" {
-  name = "kortix-prod-env"
+  name = "zed-prod-env"
 }
 
 module "api" {
@@ -133,11 +133,11 @@ module "api" {
 }
 
 # ── Gateway (LLM proxy) — its own ECS Fargate service + CF-validated cert ─────
-# The prod gateway leaves EKS onto Fargate too. eu-west-2 has no *.kortix.com
+# The prod gateway leaves EKS onto Fargate too. eu-west-2 has no *.zed.com
 # wildcard, so it gets a dedicated cert for its ECS origin hostname
-# (gateway-ecs-fargate.kortix.com) — required for Cloudflare Full(strict). Unlike
+# (gateway-ecs-fargate.zed.com) — required for Cloudflare Full(strict). Unlike
 # dev/staging it runs on-demand (NOT Spot — it's the LLM path) with an HA floor of
-# 2 across AZs. gateway.kortix.com stays the Worker's hostname (not managed here).
+# 2 across AZs. gateway.zed.com stays the Worker's hostname (not managed here).
 module "acm_gateway" {
   source      = "../../modules/acm-cloudflare"
   domain_name = var.gateway_domain
@@ -163,7 +163,7 @@ module "gateway" {
   container_port    = 8090
   health_check_path = "/health/live"
   certificate_arn   = module.acm_gateway.certificate_arn
-  environment       = merge(var.gateway_environment, { KORTIX_API_URL = "https://api.kortix.com" })
+  environment       = merge(var.gateway_environment, { ZED_API_URL = "https://api.zed.com" })
   secrets           = var.api_secrets
   secrets_blob_arn  = data.aws_secretsmanager_secret.env.arn
 
@@ -181,8 +181,8 @@ module "gateway" {
 }
 
 # DNS for the public API hostname. Gated by manage_dns so the stack (VPC/ALB/
-# ECS/cert) can be built and validated WITHOUT touching the live api.kortix.com
-# record — the cutover (repoint api.kortix.com → this ALB) is done deliberately
+# ECS/cert) can be built and validated WITHOUT touching the live api.zed.com
+# record — the cutover (repoint api.zed.com → this ALB) is done deliberately
 # once the new stack is verified against the prod DB, and is instantly
 # reversible. ACM validation records (in module.acm) are unique and always created.
 module "dns" {
@@ -202,8 +202,8 @@ module "dns" {
 }
 
 # Extra public API hostnames → the ALB. Used to expose the new stack under an
-# UNLOCKED hostname (e.g. api-prod.kortix.com) while the canonical
-# api.kortix.com record stays tunnel-locked on the old box. Each is a proxied
+# UNLOCKED hostname (e.g. api-prod.zed.com) while the canonical
+# api.zed.com record stays tunnel-locked on the old box. Each is a proxied
 # CNAME and is covered by the cert via var.extra_api_hostnames (the ACM SANs).
 module "dns_extra" {
   source  = "../../modules/cloudflare-dns"
@@ -211,8 +211,8 @@ module "dns_extra" {
   zone_id = var.cloudflare_zone_id
 
   records = {
-    for h in var.extra_api_hostnames : replace(h, ".kortix.com", "") => {
-      name    = replace(h, ".kortix.com", "")
+    for h in var.extra_api_hostnames : replace(h, ".zed.com", "") => {
+      name    = replace(h, ".zed.com", "")
       type    = "CNAME"
       value   = module.api.alb_dns_name
       proxied = true

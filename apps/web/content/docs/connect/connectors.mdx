@@ -6,11 +6,11 @@ description: How connectors and connections give agents scoped access to externa
 import { Steps, Step } from 'fumadocs-ui/components/steps';
 
 A connector links a project to an external tool or service. The agent
-calls it as a tool. Kortix brokers each call, so the sandbox never holds the
+calls it as a tool. Zed brokers each call, so the sandbox never holds the
 connector credential.
 
-You declare most connectors in `kortix.yaml`. See the
-[manifest reference](/docs/project/manifest) for every field. Kortix declares
+You declare most connectors in `zed.yaml`. See the
+[manifest reference](/docs/project/manifest) for every field. Zed declares
 channel and computer connectors when you connect a chat platform or a
 machine.
 
@@ -56,8 +56,8 @@ A connection authenticates with:
 - OAuth through Pipedream, a channel install, or a native OAuth2 grant
 - an API key or token entered through the dashboard or SDK
 
-Kortix encrypts connection data and resolves it server-side for each tool
-call. The agent requests an action. Kortix attaches the credential, checks the
+Zed encrypts connection data and resolves it server-side for each tool
+call. The agent requests an action. Zed attaches the credential, checks the
 agent grant and connector-connection policy, calls the external API, and returns
 the result.
 
@@ -77,11 +77,11 @@ returns `202 pending_approval` with `approval_url`, `approval_summary`, and
 `execution_id`. It does not keep an HTTP request open.
 
 Share `approval_url` with any teammate. The URL identifies the request but does
-not grant authority. The page requires a signed-in Kortix account. Kortix then
+not grant authority. The page requires a signed-in Zed account. Zed then
 verifies that the account can access and approve actions in the project.
 
 The approval page shows the redacted parameters that the connector will receive.
-Approve or deny the call once. Kortix sends the decision back into the session
+Approve or deny the call once. Zed sends the decision back into the session
 through a durable callback. An approval applies only to the exact request
 digest. A changed recipient, subject, body, channel, URL, or other parameter
 requires a new decision.
@@ -109,7 +109,7 @@ connection owned by the acting project member.
 <Step>
 ### Complete authorization
 
-Complete the OAuth flow. Kortix stores the connected account as a connection.
+Complete the OAuth flow. Zed stores the connected account as a connection.
 
 </Step>
 </Steps>
@@ -130,7 +130,7 @@ For authorization code, enter the authorization URL and token URL. For device
 authorization, enter the device-authorization URL and token URL. An RFC 8414
 discovery URL can provide these endpoints.
 
-Kortix encrypts the OAuth2 configuration and tokens. It refreshes access tokens
+Zed encrypts the OAuth2 configuration and tokens. It refreshes access tokens
 before expiry. Revoking the connection blocks the next connector call.
 
 For Microsoft Graph, use:
@@ -174,14 +174,14 @@ connectors:
 <Step>
 ### Merge the change request
 
-Kortix reads the manifest from the default branch. The connector becomes
+Zed reads the manifest from the default branch. The connector becomes
 active after the change request merges.
 
 </Step>
 <Step>
 ### Add the connection
 
-Open the connector and set its credential. Kortix stores the value
+Open the connector and set its credential. Zed stores the value
 encrypted. It does not write the value to the manifest.
 
 </Step>
@@ -232,10 +232,10 @@ the next tool call without restarting the session.
 Inside a session, use the Connector CLI:
 
 ```text
-kortix connectors ls
-kortix connectors call stripe-read <action> '<json-args>'
+zed connectors ls
+zed connectors call stripe-read <action> '<json-args>'
 ```
 
 `connectors` lists the connectors in scope. `call` runs one action.
 
-Slack and Microsoft Teams connect from the dashboard the same way as OAuth apps. Connecting Slack writes a `channel` connector to `kortix.yaml` for you. See [Slack & channels](/docs/connect/slack).
+Slack and Microsoft Teams connect from the dashboard the same way as OAuth apps. Connecting Slack writes a `channel` connector to `zed.yaml` for you. See [Slack & channels](/docs/connect/slack).

@@ -7,7 +7,7 @@
  * writes into the same query cache this hook reads.
  */
 
-import { useRuntimeSessionTodo } from '@kortix/sdk/react';
+import { useRuntimeSessionTodo } from '@zed/sdk/react';
 import { CaretRightIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
@@ -80,7 +80,7 @@ function PlanPie({
   className?: string;
 }) {
   const { sweep, state } = planPieState(done, total, running);
-  const fill = state === 'running' ? 'text-kortix-orange' : 'text-emerald-600';
+  const fill = state === 'running' ? 'text-zed-orange' : 'text-emerald-600';
 
   return (
     <span

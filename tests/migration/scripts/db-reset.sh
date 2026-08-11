@@ -17,9 +17,9 @@ source "${SCRIPT_DIR}/env.sh"
 log "Resetting test database ${TEST_DB_NAME}"
 
 psql_exec -c "
-DROP SCHEMA IF EXISTS kortix CASCADE;
+DROP SCHEMA IF EXISTS zed CASCADE;
 DROP SCHEMA IF EXISTS basejump CASCADE;
-DROP SCHEMA IF EXISTS kortix_migrations CASCADE;
+DROP SCHEMA IF EXISTS zed_migrations CASCADE;
 DROP TABLE IF EXISTS public.daily_refresh_tracking CASCADE;
 DROP TABLE IF EXISTS public.renewal_processing CASCADE;
 DO \$\$

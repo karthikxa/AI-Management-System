@@ -1,18 +1,18 @@
-import type { ProjectSession } from '@kortix/sdk';
+import type { ProjectSession } from '@zed/sdk';
 import { loadAuth, loadAuthForHost } from '../api/auth.ts';
 import { ApiError } from '../api/client.ts';
 import { hasEnvTokenHost } from '../api/config.ts';
-import { kortixFromAuth, unwrapRuntime, withKortixScope } from '../api/sdk.ts';
+import { zedFromAuth, unwrapRuntime, withZedScope } from '../api/sdk.ts';
 import type { MeResponse, ProjectSummary } from '../api/types.ts';
 import { resolveProjectContext, takeFlagBool, takeFlagValue } from '../command-helpers.ts';
 import { loadLink } from '../project-link.ts';
 import { C, help, status } from '../style.ts';
 
-const HELP = help`Usage: kortix doctor [options]
+const HELP = help`Usage: zed doctor [options]
 
 End-to-end smoke test: confirms login → project resolves → optionally
 spins up a throwaway session, sends a message, and asserts the agent
-replies. Designed so coding agents can verify Kortix end-to-end before
+replies. Designed so coding agents can verify Zed end-to-end before
 they start orchestrating real work.
 
 Options:
@@ -22,7 +22,7 @@ Options:
   --prompt "<text>"    Test prompt (default: "ping").
   --timeout <seconds>  How long to wait for the reply (default: 180).
   --project <id>       Operate on this project (default: linked).
-  --host <name>        Operate against a non-default Kortix host.
+  --host <name>        Operate against a non-default Zed host.
   -h, --help           Show this help.
 
 Exit codes:
@@ -53,7 +53,7 @@ export async function runDoctor(argv: string[]): Promise<number> {
     return 0;
   }
 
-  process.stdout.write(`\n  ${C.bold}kortix doctor${C.reset}\n\n`);
+  process.stdout.write(`\n  ${C.bold}zed doctor${C.reset}\n\n`);
 
   let failures = 0;
 
@@ -63,7 +63,7 @@ export async function runDoctor(argv: string[]): Promise<number> {
   const hostName = flags.host ?? hostFromLink;
   const auth = hostName ? loadAuthForHost(hostName) : loadAuth();
   if (!auth?.token) {
-    process.stdout.write(`${status.err('not logged in — run `kortix login`')}\n`);
+    process.stdout.write(`${status.err('not logged in — run `zed login`')}\n`);
     return 1;
   }
   process.stdout.write(
@@ -103,15 +103,15 @@ export async function runDoctor(argv: string[]): Promise<number> {
   process.stdout.write(`  ${C.dim}creating session…${C.reset}\n`);
   let session: ProjectSession;
   try {
-    session = await withKortixScope(auth, () =>
-      kortixFromAuth(auth).project(ctx.projectId).sessions.create(),
+    session = await withZedScope(auth, () =>
+      zedFromAuth(auth).project(ctx.projectId).sessions.create(),
     );
   } catch (err) {
     process.stdout.write(`${status.err(`session create failed: ${describe(err)}`)}\n`);
     return 1;
   }
   const sessionId = session.session_id;
-  const handle = kortixFromAuth(auth).session(ctx.projectId, sessionId);
+  const handle = zedFromAuth(auth).session(ctx.projectId, sessionId);
   process.stdout.write(
     `${status.ok(`session ${C.bold}${shortId(sessionId)}${C.reset} created`)}\n`,
   );
@@ -119,7 +119,7 @@ export async function runDoctor(argv: string[]): Promise<number> {
   const cleanup = async () => {
     if (flags.keepSession) return;
     try {
-      await withKortixScope(auth, () => handle.delete());
+      await withZedScope(auth, () => handle.delete());
       process.stdout.write(`  ${C.dim}cleaned up session${C.reset}\n`);
     } catch {
       /* best effort */
@@ -131,7 +131,7 @@ export async function runDoctor(argv: string[]): Promise<number> {
     process.stdout.write(`  ${C.dim}waiting for sandbox to come up…${C.reset}\n`);
     let opencodeSessionId: string;
     try {
-      const ready = await withKortixScope(auth, () =>
+      const ready = await withZedScope(auth, () =>
         handle.ensureReady({ readyTimeoutMs: flags.timeoutSec * 1000 }),
       );
       opencodeSessionId = ready.opencodeSessionId;
@@ -150,7 +150,7 @@ export async function runDoctor(argv: string[]): Promise<number> {
     process.stdout.write(`  ${C.dim}prompt: "${flags.prompt}"${C.reset}\n`);
     const sendStart = Date.now();
     try {
-      const reply = await withKortixScope(auth, async () =>
+      const reply = await withZedScope(auth, async () =>
         unwrapRuntime(await handle.send(flags.prompt)),
       );
       const text = reply.parts

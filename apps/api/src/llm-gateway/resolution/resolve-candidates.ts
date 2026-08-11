@@ -2,7 +2,7 @@ import {
   type AuthedPrincipal,
   GatewayResolutionError,
   type UpstreamDescriptor,
-} from '@kortix/llm-gateway';
+} from '@zed/llm-gateway';
 import { accountMayUseManagedModels, getCachedAccountTier } from '../../billing/services/entitlements';
 import { isPaidTier } from '../../billing/services/tiers';
 import { config } from '../../config';
@@ -57,12 +57,12 @@ export const resolveCachedManagedModels = accountMayUseManagedModels;
 // A managed model to fall over to when a BYOK key hits a limit (429/402/403).
 // Gated on the managed gateway being on + the managed provider being on (CLOUD-
 // ONLY) + a configured, resolvable fallback model. getRuntimeManagedModel()/
-// managedCandidates() are themselves empty when KORTIX_MANAGED_PROVIDER_ENABLED
+// managedCandidates() are themselves empty when ZED_MANAGED_PROVIDER_ENABLED
 // is off, so a self-host naturally has no managed fallback — the explicit check
-// here is redundant belt-and-suspenders (never a silent fallback to Kortix's
+// here is redundant belt-and-suspenders (never a silent fallback to Zed's
 // shared credentials), not load-bearing on its own.
 function byokFallbackCandidates(): UpstreamDescriptor[] {
-  if (!config.LLM_GATEWAY_ENABLED || !config.KORTIX_MANAGED_PROVIDER_ENABLED) return [];
+  if (!config.LLM_GATEWAY_ENABLED || !config.ZED_MANAGED_PROVIDER_ENABLED) return [];
   const fallbackId = config.LLM_GATEWAY_BYOK_FALLBACK_MODEL;
   if (!fallbackId) return [];
   const managed = getRuntimeManagedModel(fallbackId);
@@ -181,7 +181,7 @@ export async function resolveCandidates(
       consumer: 'llm_gateway',
     });
     if (keys.length > 0) {
-      const tier = config.KORTIX_BILLING_INTERNAL_ENABLED
+      const tier = config.ZED_BILLING_INTERNAL_ENABLED
         ? await resolveCachedAccountTier(principal.accountId)
         : 'self-hosted';
       // TWO DIFFERENT QUESTIONS. Conflating them is what let a credit plan reach
@@ -189,7 +189,7 @@ export async function resolveCandidates(
       //
       // 1. Does this account pay the BYOK platform fee? Free accounts do not;
       //    every paid account does, including the v3 credit plans.
-      const isFreeTier = config.KORTIX_BILLING_INTERNAL_ENABLED && tier === 'free';
+      const isFreeTier = config.ZED_BILLING_INTERNAL_ENABLED && tier === 'free';
       // 2. May this account use MANAGED inference at all? `models: []` says no
       //    for Starter/Team/Scale even though they are paid, so this cannot be a
       //    `tier === 'free'` check — it has to be the same entitlement predicate
@@ -230,7 +230,7 @@ export async function resolveCandidates(
         apiKey: value,
         credentialRef: identifier,
         billingMode:
-          config.KORTIX_BILLING_INTERNAL_ENABLED && !isFreeTier ? 'platform-fee' : 'none',
+          config.ZED_BILLING_INTERNAL_ENABLED && !isFreeTier ? 'platform-fee' : 'none',
         markup: isFreeTier ? 0 : PLATFORM_FEE_MARKUP,
         resolvedModel: invokeModelId,
         // Bedrock-only: the id used to INVOKE stays the full cross-region
@@ -249,7 +249,7 @@ export async function resolveCandidates(
       }));
       // Queue a managed model behind the BYOK key: if the user's key hits a
       // rate-limit / quota / billing error, the failover loop falls over to it
-      // (billed as Kortix credits) so the turn doesn't die.
+      // (billed as Zed credits) so the turn doesn't die.
       //
       // Only for accounts entitled to managed models. Otherwise a plan that
       // includes no inference could reach it by having its own key rate-limit —
@@ -269,17 +269,17 @@ export async function resolveCandidates(
     );
   }
 
-  // The platform's MANAGED route (Bedrock or OpenRouter on KORTIX'S OWN shared
+  // The platform's MANAGED route (Bedrock or OpenRouter on ZED'S OWN shared
   // credentials — decided inside managedDescriptor by transport). CLOUD-ONLY:
-  // getRuntimeManagedModel() only ever matches when KORTIX_MANAGED_PROVIDER_ENABLED
+  // getRuntimeManagedModel() only ever matches when ZED_MANAGED_PROVIDER_ENABLED
   // is on (RUNTIME_MANAGED_MODELS is empty otherwise — see managed-models.ts), so
   // a self-host never reaches this branch for an explicitly-named managed model;
   // it falls through to the checks below → a clear "model not available on this
-  // deployment" error, never a silent fallback to Kortix credits. A BYOK catalog
+  // deployment" error, never a silent fallback to Zed credits. A BYOK catalog
   // model (bare `provider/model`) is handled above and requires the user's own
   // key; it never falls through here.
   const managed = getRuntimeManagedModel(effectiveModel);
-  if (managed && config.LLM_GATEWAY_ENABLED && config.KORTIX_MANAGED_PROVIDER_ENABLED) {
+  if (managed && config.LLM_GATEWAY_ENABLED && config.ZED_MANAGED_PROVIDER_ENABLED) {
     if (principal.freeModelsOnly) {
       throw new GatewayResolutionError(
         'plan_upgrade_required',
@@ -287,7 +287,7 @@ export async function resolveCandidates(
         PLAN_UPGRADE_SUGGESTION,
       );
     }
-    if (config.KORTIX_BILLING_INTERNAL_ENABLED) {
+    if (config.ZED_BILLING_INTERNAL_ENABLED) {
       if (!(await resolveCachedManagedModels(principal.accountId))) {
         // A v3 credit plan lands here too — it pays, it just doesn't bundle
         // managed inference. Telling that customer to "upgrade" is wrong.
@@ -299,7 +299,7 @@ export async function resolveCandidates(
     if (candidates.length) return candidates;
     // managed=true and every gate passed, but managedCandidates() itself found
     // no usable transport credential (an operator-side misconfiguration, e.g.
-    // KORTIX_MANAGED_PROVIDER_ENABLED on without AWS_BEDROCK_API_KEY/
+    // ZED_MANAGED_PROVIDER_ENABLED on without AWS_BEDROCK_API_KEY/
     // OPENROUTER_API_KEY set) — falls through to the deployment-disabled
     // message below, which is the closest accurate reason a caller can act on.
   }
@@ -310,12 +310,12 @@ export async function resolveCandidates(
 
   // The model id is a genuine managed-model id (checked against the BUNDLED
   // catalog, which — unlike RUNTIME_MANAGED_MODELS — is never gated by
-  // KORTIX_MANAGED_PROVIDER_ENABLED) but didn't resolve above: either the
+  // ZED_MANAGED_PROVIDER_ENABLED) but didn't resolve above: either the
   // managed provider is off on this deployment, or it's misconfigured.
   if (isKnownManagedModelId(effectiveModel)) {
     throw new GatewayResolutionError(
       'model_disabled_on_deployment',
-      `The "${effectiveModel}" model requires Kortix's managed provider, which is disabled on this deployment.`,
+      `The "${effectiveModel}" model requires Zed's managed provider, which is disabled on this deployment.`,
       'Connect your own API key for a BYOK-compatible model, or ask your deployment operator to enable the managed provider.',
     );
   }

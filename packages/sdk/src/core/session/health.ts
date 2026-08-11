@@ -1,5 +1,5 @@
 /**
- * Session runtime health — `GET /kortix/health` on the session's runtime.
+ * Session runtime health — `GET /zed/health` on the session's runtime.
  *
  * The host asks a session whether its runtime is ready; it never reasons about
  * "the sandbox" directly. This is the liveness probe used to gate "runtime
@@ -8,7 +8,7 @@
  * HTTP status — it surfaces `status`/`ok` so the caller applies its own failure
  * thresholds.
  *
- * NOTE: the legacy `GET /kortix/ports` endpoint is intentionally NOT wrapped —
+ * NOTE: the legacy `GET /zed/ports` endpoint is intentionally NOT wrapped —
  * the current agent server (rewritten 2026-05) serves no such route; port
  * mappings come from the platform API, and live port access is the
  * `/proxy/:port/*` reverse proxy (see `./url`).
@@ -51,7 +51,7 @@ export function isRuntimeReady(health: SessionHealthResponse | null): boolean {
 }
 
 /**
- * `GET /kortix/health` — returns the HTTP status plus the parsed body. Never
+ * `GET /zed/health` — returns the HTTP status plus the parsed body. Never
  * throws on a non-ok status; callers decide what a given status means.
  *
  * `runtimeUrl` OMITTED (`undefined`) falls back to the module-global "active"
@@ -59,7 +59,7 @@ export function isRuntimeReady(health: SessionHealthResponse | null): boolean {
  * or `''` EXPLICITLY means "this session has no resolved runtime yet" and
  * short-circuits to the graceful `{ status: 0, ok: false }` shape WITHOUT
  * falling back to the active runtime — a per-session handle (e.g.
- * `kortix.session(pid, sid).health()`) must never silently probe whichever
+ * `zed.session(pid, sid).health()`) must never silently probe whichever
  * DIFFERENT session's sandbox happens to be globally active.
  */
 export async function getSessionHealth(
@@ -69,7 +69,7 @@ export async function getSessionHealth(
   const url = (runtimeUrl === undefined ? getActiveOpenCodeUrl() : runtimeUrl) || null;
   if (!url) return { status: 0, ok: false, health: null, body: '' };
   const res = await authenticatedFetch(
-    `${url}/kortix/health`,
+    `${url}/zed/health`,
     { method: 'GET', ...init },
     { retryOnAuthError: false },
   );

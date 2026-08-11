@@ -4,7 +4,7 @@ import type {
   GatewayHooks,
   GatewayTrace,
   UsageEvent,
-} from '@kortix/llm-gateway';
+} from '@zed/llm-gateway';
 import { assertBillingActive, BillingGateError } from '../billing/services/billing-gate';
 import { deductForLlmUsage, grantCredits } from '../billing/services/credits';
 import { accountMayUseManagedModels, getCachedAccountTier } from '../billing/services/entitlements';
@@ -76,11 +76,11 @@ async function resolvePrincipal(token: string): Promise<AuthedPrincipal | null> 
  * Attach the resolved billing tier + `freeModelsOnly` flag to a principal once,
  * at authentication, so they travel with it everywhere — including across the
  * RPC boundary to the out-of-process gateway pod — and decide whether managed
- * Kortix models are visible without a second tier lookup. When internal billing
+ * Zed models are visible without a second tier lookup. When internal billing
  * is off (self-host) every account sees the full lineup.
  */
 async function withResolvedTier(principal: AuthedPrincipal): Promise<AuthedPrincipal> {
-  const tiered: AuthedPrincipal = config.KORTIX_BILLING_INTERNAL_ENABLED
+  const tiered: AuthedPrincipal = config.ZED_BILLING_INTERNAL_ENABLED
     ? await (async () => {
         // Both reads share the entitlements tier-snapshot cache: one DB read,
         // one wall-clock instant, no tier-vs-managed skew. `freeModelsOnly`
@@ -181,7 +181,7 @@ export async function authorizeRequest(token: string): Promise<AuthorizeResult> 
 
 /**
  * Apply the LLM wallet gate only to accounts that can spend wallet credits on
- * Kortix-managed models. Free-tier wallets fund sandbox compute only.
+ * Zed-managed models. Free-tier wallets fund sandbox compute only.
  */
 export async function assertLlmBillingActive(
   accountId: string,
@@ -189,7 +189,7 @@ export async function assertLlmBillingActive(
   // Accounts without the managed-models entitlement (BYOK-only, whether by
   // tier, trial, or operator override) never spend wallet credits on managed
   // inference — their wallets fund sandbox compute only, so skip the LLM gate.
-  if (config.KORTIX_BILLING_INTERNAL_ENABLED) {
+  if (config.ZED_BILLING_INTERNAL_ENABLED) {
     if (!(await accountMayUseManagedModels(accountId))) return;
   }
   return assertBillingActive(accountId);
@@ -272,7 +272,7 @@ export async function recordGatewayUsage(event: UsageEvent): Promise<void> {
         },
       });
 
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return;
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return;
 
   if (event.billingHoldUsd != null) {
     const { toDeduct, toRefund } = reconcileBillingHold(event.finalCost, event.billingHoldUsd);
@@ -345,18 +345,18 @@ export function emitGatewayGenAiSpan(trace: GatewayTrace): void {
         'gen_ai.response.model': resolvedModel,
         'gen_ai.usage.input_tokens': trace.usage.promptTokens,
         'gen_ai.usage.output_tokens': trace.usage.completionTokens,
-        'kortix.cost_usd': trace.finalCost,
-        'kortix.upstream_cost_usd': trace.upstreamCost,
-        'kortix.provider': trace.provider,
-        'kortix.cached_tokens': trace.usage.cachedTokens,
-        'kortix.cache_write_tokens': trace.usage.cacheWriteTokens,
-        'kortix.streaming': trace.streaming,
-        'kortix.billing_mode': trace.billingMode,
-        'kortix.request_id': trace.requestId,
-        'kortix.attempts': trace.attempts,
-        'kortix.gateway_status': trace.status,
-        'kortix.ok': trace.ok,
-        ...(trace.errorCode ? { 'kortix.error_code': trace.errorCode } : {}),
+        'zed.cost_usd': trace.finalCost,
+        'zed.upstream_cost_usd': trace.upstreamCost,
+        'zed.provider': trace.provider,
+        'zed.cached_tokens': trace.usage.cachedTokens,
+        'zed.cache_write_tokens': trace.usage.cacheWriteTokens,
+        'zed.streaming': trace.streaming,
+        'zed.billing_mode': trace.billingMode,
+        'zed.request_id': trace.requestId,
+        'zed.attempts': trace.attempts,
+        'zed.gateway_status': trace.status,
+        'zed.ok': trace.ok,
+        ...(trace.errorCode ? { 'zed.error_code': trace.errorCode } : {}),
       },
     }).catch((error) => {
       console.warn(

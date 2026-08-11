@@ -8,8 +8,8 @@ import { errorToast, successToast } from '@/components/ui/toast';
 import { ErrorState } from '@/features/layout/section/error-state';
 import { getEnv } from '@/lib/env-config';
 import { useDeploymentCliInstallCommand } from '@/lib/use-deployment-cli-install-command';
-import { getProjectDetail, type KortixProject, type ProjectGitConnection } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+import { getProjectDetail, type ZedProject, type ProjectGitConnection } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowClockwiseIcon as RefreshCw,
@@ -26,7 +26,7 @@ import { useState } from 'react';
 import CustomizeSectionWrapper from '../component/section-wrapper';
 import { providerLabel, repositoryWebUrl } from './git-view-helpers';
 
-type ProjectWithOrigin = KortixProject & { git_origin_url?: string };
+type ProjectWithOrigin = ZedProject & { git_origin_url?: string };
 
 function proxyUrl(project: ProjectWithOrigin): string {
   if (project.git_origin_url) return project.git_origin_url;
@@ -76,7 +76,7 @@ function CopyValue({ value, label }: { value: string; label: string }) {
                 className="absolute inset-0 inline-flex items-center justify-center"
               >
                 {copied ? (
-                  <Check className="text-kortix-green size-3.5" />
+                  <Check className="text-zed-green size-3.5" />
                 ) : (
                   <Copy className="size-3.5" />
                 )}
@@ -223,24 +223,24 @@ export function GitView({ projectId }: { projectId: string }) {
             <div>
               <h3 className="text-foreground text-sm font-medium">Develop locally</h3>
               <p className="text-muted-foreground mt-0.5 text-xs">
-                Install the CLI, then clone through the authenticated Kortix proxy. Tokens are never
+                Install the CLI, then clone through the authenticated Zed proxy. Tokens are never
                 saved in the URL or Git config.
               </p>
             </div>
             <CopyValue value={installCommand} label="Install command" />
-            <CopyValue value={`kortix projects clone ${projectId}`} label="Clone command" />
+            <CopyValue value={`zed projects clone ${projectId}`} label="Clone command" />
             <p className="text-muted-foreground text-xs">
-              Then run <code className="text-foreground font-mono">kortix init --force</code> and{' '}
-              <code className="text-foreground font-mono">kortix env pull</code> inside the cloned
+              Then run <code className="text-foreground font-mono">zed init --force</code> and{' '}
+              <code className="text-foreground font-mono">zed env pull</code> inside the cloned
               directory.
             </p>
           </section>
 
           <section className="space-y-3">
             <div>
-              <h3 className="text-foreground text-sm font-medium">Kortix proxy origin</h3>
+              <h3 className="text-foreground text-sm font-medium">Zed proxy origin</h3>
               <p className="text-muted-foreground mt-0.5 text-xs">
-                Sessions and the Kortix CLI use this stable URL; Kortix resolves the current
+                Sessions and the Zed CLI use this stable URL; Zed resolves the current
                 provider credential just in time.
               </p>
             </div>

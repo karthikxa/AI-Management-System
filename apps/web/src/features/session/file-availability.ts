@@ -26,7 +26,7 @@
  * verdict has normally landed; `probeNow` covers the case where it has not.
  */
 
-import { readRuntimeTextFile } from '@kortix/sdk/react';
+import { readRuntimeTextFile } from '@zed/sdk/react';
 
 import { resolveRuntimePath } from './use-oc-file-open';
 
@@ -36,7 +36,7 @@ export type FileAvailability = 'unknown' | 'available' | 'missing';
  * The two I/O calls a probe makes, injectable.
  *
  * Injected rather than mocked because `mock.module` in this workspace is
- * PROCESS-WIDE: swapping `@kortix/sdk/react` for one suite silently replaces
+ * PROCESS-WIDE: swapping `@zed/sdk/react` for one suite silently replaces
  * it for every sibling suite in the same run, and the first one to import a
  * key the fake omits dies with a `SyntaxError` from a file it never touched.
  * A default parameter costs nothing and cannot leak.

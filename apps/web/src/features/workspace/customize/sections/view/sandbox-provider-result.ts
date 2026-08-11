@@ -1,12 +1,12 @@
 import type { QueryClient } from '@tanstack/react-query';
 import {
   getProjectSandboxProviderTransition,
-  type KortixProject,
+  type ZedProject,
   type ProjectDetail,
   type SandboxProviderTransitionState,
   type UpdateProjectSandboxProviderResult,
-} from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 
 /**
  * A provider-migration transition never changes again once it reaches one of
@@ -46,9 +46,9 @@ export function applySandboxProviderResult(
   result: UpdateProjectSandboxProviderResult,
 ): 'project' | 'preparation' {
   if (result.kind !== 'project') return 'preparation';
-  // Strip the discriminant so the cached value is a pure KortixProject.
+  // Strip the discriminant so the cached value is a pure ZedProject.
   const { kind: _kind, ...project } = result;
-  const cached = project as KortixProject;
+  const cached = project as ZedProject;
   queryClient.setQueryData(qk.project.summary(projectId), cached);
   queryClient.setQueryData<ProjectDetail | undefined>(qk.project.detail(projectId), (c) =>
     c ? { ...c, project: cached } : c,

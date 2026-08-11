@@ -41,7 +41,7 @@ onlyBuiltDependencies:
   - bufferutil
   - utf-8-validate
   - unrs-resolver
-  # @kortix/desktop-electron — Electron's postinstall downloads the platform
+  # @zed/desktop-electron — Electron's postinstall downloads the platform
   # binary; without this allow-list `electron .` has no runtime to launch.
   - electron
 

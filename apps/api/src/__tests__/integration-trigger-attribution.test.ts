@@ -12,7 +12,7 @@
  */
 import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import { and, eq, sql } from 'drizzle-orm';
-import { projectSessions, serviceAccounts } from '@kortix/db';
+import { projectSessions, serviceAccounts } from '@zed/db';
 import { db } from '../shared/db';
 import { attributeFiredTriggerSession } from '../projects/lib/triggers';
 import type { ProjectRow } from '../projects/lib/serializers';
@@ -24,7 +24,7 @@ const AGENT_NAME = `trigger-attr-agent-${crypto.randomUUID().slice(0, 8)}`;
 
 beforeAll(async () => {
   const rows = (await db.execute(
-    sql`select project_id, account_id from kortix.projects limit 1`,
+    sql`select project_id, account_id from zed.projects limit 1`,
   )) as unknown as Array<{ project_id: string; account_id: string }>;
   if (!rows[0]) return;
   ctx = { projectId: rows[0].project_id, accountId: rows[0].account_id };

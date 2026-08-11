@@ -1,7 +1,7 @@
 /**
  * Local-dev schema convenience: delegates to packages/db/scripts/migrate.ts.
  *
- * Tracking lives in `kortix_migrations.pgmigrations` (node-pg-migrate); each
+ * Tracking lives in `zed_migrations.pgmigrations` (node-pg-migrate); each
  * file is applied once, transactionally. ONLY local dev auto-applies at
  * boot. Every deployed env (incl. preview branches sharing the dev DB) is
  * warn-only — deployed migrations run from the deploy pipeline BEFORE the new
@@ -18,7 +18,7 @@ export async function ensureSchema(): Promise<void> {
     return;
   }
 
-  const isLocalDev = process.env.KORTIX_LOCAL_DEV === '1' || process.env.ENV_MODE === 'local';
+  const isLocalDev = process.env.ZED_LOCAL_DEV === '1' || process.env.ENV_MODE === 'local';
 
   // Only LOCAL development auto-applies at boot — its database is private to the
   // developer. Every DEPLOYED environment must NOT migrate from app boot, even
@@ -27,11 +27,11 @@ export async function ensureSchema(): Promise<void> {
   // depends on, and concurrent pods would race a half-applied state. Deployed
   // migrations run once, in the CI/CD pipeline, before the new code serves
   // traffic. At boot we only surface drift loudly — we never mutate the DB.
-  if (!isLocalDev || process.env.KORTIX_SKIP_ENSURE_SCHEMA === '1') {
+  if (!isLocalDev || process.env.ZED_SKIP_ENSURE_SCHEMA === '1') {
     const reason =
-      process.env.KORTIX_SKIP_ENSURE_SCHEMA === '1'
-        ? 'KORTIX_SKIP_ENSURE_SCHEMA=1'
-        : `deployed env (INTERNAL_KORTIX_ENV=${config.INTERNAL_KORTIX_ENV})`;
+      process.env.ZED_SKIP_ENSURE_SCHEMA === '1'
+        ? 'ZED_SKIP_ENSURE_SCHEMA=1'
+        : `deployed env (INTERNAL_ZED_ENV=${config.INTERNAL_ZED_ENV})`;
     console.log(
       `[schema] ${reason} — not auto-applying (migrations are managed by the deploy pipeline). Checking for drift...`,
     );
@@ -64,7 +64,7 @@ export async function ensureSchema(): Promise<void> {
 }
 
 /**
- * When KORTIX_SKIP_ENSURE_SCHEMA=1 is set, probe a small set of
+ * When ZED_SKIP_ENSURE_SCHEMA=1 is set, probe a small set of
  * IAM-critical tables and log a single grouped warning if any are
  * missing. Operators usually set the flag to manage migrations
  * out-of-band; this helps them spot "I forgot to apply migration N"
@@ -74,7 +74,7 @@ async function warnIfCriticalTablesMissing(): Promise<void> {
   if (!config.DATABASE_URL) return;
   // Critical tables for IAM + auth + vault paths. Keep this list
   // small and stable — extending it for every new migration would be
-  // noise. We check only tables in the `kortix` schema (no tuple
+  // noise. We check only tables in the `zed` schema (no tuple
   // joins, no driver-specific helpers) so the query stays portable.
   const required = [
     'account_groups',
@@ -92,13 +92,13 @@ async function warnIfCriticalTablesMissing(): Promise<void> {
     const rows = (await db`
       SELECT table_name
       FROM information_schema.tables
-      WHERE table_schema = 'kortix' AND table_name IN ${db(required)}
+      WHERE table_schema = 'zed' AND table_name IN ${db(required)}
     `) as Array<{ table_name: string }>;
     const present = new Set(rows.map((r) => r.table_name));
     const missing = required.filter((n) => !present.has(n));
     if (missing.length > 0) {
-      console.warn('[schema] ⚠ KORTIX_SKIP_ENSURE_SCHEMA=1 but critical tables are missing:');
-      for (const m of missing) console.warn(`[schema]   • kortix.${m}`);
+      console.warn('[schema] ⚠ ZED_SKIP_ENSURE_SCHEMA=1 but critical tables are missing:');
+      for (const m of missing) console.warn(`[schema]   • zed.${m}`);
       console.warn('[schema] Run `pnpm migrate` or remove the env flag to auto-apply.');
     }
   } catch (err) {

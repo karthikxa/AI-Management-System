@@ -21,7 +21,7 @@ row() {
     printf "  ✗ %-5s missing %s\n" "$label" "$file"; fail=1; return
   fi
   local db stripe env front; db="$(get DATABASE_URL "$file")"
-  stripe="$(get STRIPE_SECRET_KEY "$file")"; env="$(get INTERNAL_KORTIX_ENV "$file")"
+  stripe="$(get STRIPE_SECRET_KEY "$file")"; env="$(get INTERNAL_ZED_ENV "$file")"
   front="$(get FRONTEND_URL "$file")"
   if [ -z "$db" ] || [[ "$db" == encrypted:* ]]; then
     printf "  ✗ %-5s did NOT decrypt (run dotenvx-armor login / pull)\n" "$label"; fail=1; return

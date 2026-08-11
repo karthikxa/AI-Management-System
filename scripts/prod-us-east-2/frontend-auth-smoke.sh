@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-TARGET_SECRET_ID="${TARGET_SECRET_ID:-kortix/prod-us-east-2-migration}"
+TARGET_SECRET_ID="${TARGET_SECRET_ID:-zed/prod-us-east-2-migration}"
 TARGET_AWS_REGION="${TARGET_AWS_REGION:-us-east-2}"
-TARGET_FRONTEND_URL="${TARGET_FRONTEND_URL:-https://us.kortix.com}"
-TARGET_API_URL="${TARGET_API_URL:-https://api-use2-shadow.kortix.com/v1}"
+TARGET_FRONTEND_URL="${TARGET_FRONTEND_URL:-https://us.zed.com}"
+TARGET_API_URL="${TARGET_API_URL:-https://api-use2-shadow.zed.com/v1}"
 TARGET_AUTH_SEQUENCE_HEADROOM="${TARGET_AUTH_SEQUENCE_HEADROOM:-100000000}"
 REPOSITORY_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
@@ -48,7 +48,7 @@ target_service_role_key="$(
     <<<"$target_secret_json"
 )"
 
-smoke_email="use2-browser-smoke-$(date +%s)-$(openssl rand -hex 4)@invalid.kortix.test"
+smoke_email="use2-browser-smoke-$(date +%s)-$(openssl rand -hex 4)@invalid.zed.test"
 smoke_password="$(openssl rand -base64 36 | tr -d '\n')aA1!"
 smoke_user_id=""
 smoke_account_ids="{}"
@@ -84,11 +84,11 @@ SELECT COALESCE(
 )
 FROM (
   SELECT account_id
-  FROM kortix.account_members
+  FROM zed.account_members
   WHERE user_id = :'smoke_user_id'::uuid
   UNION
   SELECT account_id
-  FROM kortix.accounts
+  FROM zed.accounts
   WHERE account_id = :'smoke_user_id'::uuid
 ) AS smoke_accounts;
 SQL
@@ -106,16 +106,16 @@ SQL
     -v smoke_account_ids="$smoke_account_ids" \
     -v sequence_headroom="$TARGET_AUTH_SEQUENCE_HEADROOM" \
     >/dev/null <<'SQL' || true
-DELETE FROM kortix.audit_events
+DELETE FROM zed.audit_events
 WHERE actor_user_id = :'smoke_user_id'::uuid;
 
-DELETE FROM kortix.credit_ledger
+DELETE FROM zed.credit_ledger
 WHERE account_id = ANY(:'smoke_account_ids'::uuid[]);
 
-DELETE FROM kortix.credit_accounts
+DELETE FROM zed.credit_accounts
 WHERE account_id = ANY(:'smoke_account_ids'::uuid[]);
 
-DELETE FROM kortix.accounts
+DELETE FROM zed.accounts
 WHERE account_id = ANY(:'smoke_account_ids'::uuid[]);
 
 DELETE FROM auth.audit_log_entries
@@ -132,8 +132,8 @@ WHERE user_id = :'smoke_user_id'::uuid;
 
 DELETE FROM auth.flow_state
 WHERE user_id = :'smoke_user_id'::uuid
-   OR referrer LIKE '%kortix_use2_oauth_smoke%'
-   OR referrer LIKE '%kortix_use2_github_oauth_smoke%';
+   OR referrer LIKE '%zed_use2_oauth_smoke%'
+   OR referrer LIKE '%zed_use2_github_oauth_smoke%';
 
 DELETE FROM auth.identities
 WHERE user_id = :'smoke_user_id'::uuid;
@@ -173,7 +173,7 @@ create_body="$(
       email: $email,
       password: $password,
       email_confirm: true,
-      user_metadata: {kortix_use2_browser_smoke: true}
+      user_metadata: {zed_use2_browser_smoke: true}
     }'
 )"
 create_response="$(
@@ -218,15 +218,15 @@ SELECT
     WHERE id = :'smoke_user_id'::uuid)
   + (SELECT count(*) FROM auth.flow_state
     WHERE user_id = :'smoke_user_id'::uuid)
-  + (SELECT count(*) FROM kortix.audit_events
+  + (SELECT count(*) FROM zed.audit_events
     WHERE actor_user_id = :'smoke_user_id'::uuid)
-  + (SELECT count(*) FROM kortix.accounts
+  + (SELECT count(*) FROM zed.accounts
     WHERE account_id = ANY(:'smoke_account_ids'::uuid[]))
-  + (SELECT count(*) FROM kortix.account_members
+  + (SELECT count(*) FROM zed.account_members
     WHERE account_id = ANY(:'smoke_account_ids'::uuid[]))
-  + (SELECT count(*) FROM kortix.credit_accounts
+  + (SELECT count(*) FROM zed.credit_accounts
     WHERE account_id = ANY(:'smoke_account_ids'::uuid[]))
-  + (SELECT count(*) FROM kortix.credit_ledger
+  + (SELECT count(*) FROM zed.credit_ledger
     WHERE account_id = ANY(:'smoke_account_ids'::uuid[]));
 SQL
   )"

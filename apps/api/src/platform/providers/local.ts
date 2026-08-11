@@ -36,7 +36,7 @@ interface LocalSandbox {
 }
 
 const providerName: ProviderName = 'local';
-const workspaceRoot = process.env.KORTIX_LOCAL_SANDBOX_ROOT || join(tmpdir(), 'kortix-local');
+const workspaceRoot = process.env.ZED_LOCAL_SANDBOX_ROOT || join(tmpdir(), 'zed-local');
 const sandboxes = new Map<string, LocalSandbox>();
 
 async function allocatePort(): Promise<number> {
@@ -60,7 +60,7 @@ function repoRoot(): string {
 }
 
 function sandboxIdFor(opts: CreateSandboxOpts): string {
-  const fromEnv = opts.envVars?.KORTIX_SESSION_ID?.trim();
+  const fromEnv = opts.envVars?.ZED_SESSION_ID?.trim();
   if (fromEnv) return fromEnv;
   return opts.name.replace(/^session-/, 'local-');
 }
@@ -82,7 +82,7 @@ function isAlive(pid: number | undefined): boolean {
 }
 
 function localRuntimeReadyTimeoutMs(): number {
-  const raw = Number(process.env.KORTIX_LOCAL_RUNTIME_READY_TIMEOUT_MS);
+  const raw = Number(process.env.ZED_LOCAL_RUNTIME_READY_TIMEOUT_MS);
   if (Number.isFinite(raw) && raw > 0) return raw;
   return 10 * 60_000;
 }
@@ -98,7 +98,7 @@ async function waitForHealth(
       throw new Error(sandbox.error ?? 'Local sandbox daemon is not running');
     }
     try {
-      const res = await fetch(`http://127.0.0.1:${sandbox.port}/kortix/health`);
+      const res = await fetch(`http://127.0.0.1:${sandbox.port}/zed/health`);
       const body = (await res.json()) as Record<string, unknown>;
       sandbox.lastHealth = body;
       if (body.boot_error) lastError = String(body.boot_error);
@@ -123,16 +123,16 @@ export class LocalProvider implements SandboxProvider {
     const id = sandboxIdFor(opts);
     const dir = join(workspaceRoot, id);
     const port = await allocatePort();
-    const opencodeConfigDir = join(dir, '.kortix', 'opencode');
+    const opencodeConfigDir = join(dir, '.zed', 'opencode');
     const env = {
       ...(opts.envVars ?? {}),
-      KORTIX_SERVICE_PORT: String(port),
-      KORTIX_WORKSPACE: dir,
-      KORTIX_PROJECT_TARGET: dir,
-      KORTIX_OPENCODE_INTERNAL_PORT: String(await allocatePort()),
-      KORTIX_OPENCODE_STANDBY_PORT: String(await allocatePort()),
-      KORTIX_STATIC_PORT: String(await allocatePort()),
-      KORTIX_DEFAULT_OPENCODE_CONFIG_DIR: opencodeConfigDir,
+      ZED_SERVICE_PORT: String(port),
+      ZED_WORKSPACE: dir,
+      ZED_PROJECT_TARGET: dir,
+      ZED_OPENCODE_INTERNAL_PORT: String(await allocatePort()),
+      ZED_OPENCODE_STANDBY_PORT: String(await allocatePort()),
+      ZED_STATIC_PORT: String(await allocatePort()),
+      ZED_DEFAULT_OPENCODE_CONFIG_DIR: opencodeConfigDir,
       OPENCODE_HOME: join(dir, '.opencode'),
     };
 
@@ -142,7 +142,7 @@ export class LocalProvider implements SandboxProvider {
     // This avoids the need for git auth in local dev mode.
     try {
       execSync('git init', { cwd: dir, stdio: 'ignore', timeout: 5000 });
-      execSync('git config user.email "local@kortix.dev"', { cwd: dir, stdio: 'ignore', timeout: 5000 });
+      execSync('git config user.email "local@zed.dev"', { cwd: dir, stdio: 'ignore', timeout: 5000 });
       execSync('git config user.name "Local Dev"', { cwd: dir, stdio: 'ignore', timeout: 5000 });
       // Create an initial commit so the repo has content
       const readmePath = join(dir, 'README.md');
@@ -155,8 +155,8 @@ export class LocalProvider implements SandboxProvider {
 
     // Override env to disable auto-clone and remote repo URL
     // The daemon will use the local git repo we just initialized
-    env.KORTIX_PROJECT_AUTO_CLONE = '0';
-    env.KORTIX_REPO_URL = '';
+    env.ZED_PROJECT_AUTO_CLONE = '0';
+    env.ZED_REPO_URL = '';
 
     // Create opencode config directory so the daemon can write its config
     await mkdir(opencodeConfigDir, { recursive: true });
@@ -220,9 +220,9 @@ export class LocalProvider implements SandboxProvider {
     } catch {}
 
     const entry =
-      process.env.KORTIX_SANDBOX_AGENT_SERVER_ENTRY ||
-      join(repoRoot(), 'apps', 'kortix-sandbox-agent-server', 'src', 'main.ts');
-    const logDir = join(sandbox.dir, '.kortix-local');
+      process.env.ZED_SANDBOX_AGENT_SERVER_ENTRY ||
+      join(repoRoot(), 'apps', 'zed-sandbox-agent-server', 'src', 'main.ts');
+    const logDir = join(sandbox.dir, '.zed-local');
     await mkdir(logDir, { recursive: true });
     const stdout = createWriteStream(join(logDir, 'daemon.stdout.log'), { flags: 'a' });
     const stderr = createWriteStream(join(logDir, 'daemon.stderr.log'), { flags: 'a' });

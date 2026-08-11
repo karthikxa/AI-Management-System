@@ -4,7 +4,7 @@
 // the existing IAM engine token-path handles authorisation unchanged.
 
 import { and, asc, eq, inArray, isNull, isNotNull } from 'drizzle-orm';
-import { serviceAccounts, iamPolicies } from '@kortix/db';
+import { serviceAccounts, iamPolicies } from '@zed/db';
 import { db } from '../shared/db';
 import {
   generateServiceAccountSecret,
@@ -143,13 +143,13 @@ export async function listAgentServiceAccounts(
 }
 
 /**
- * Get-or-create the auto-provisioned STANDING IDENTITY for a kortix.yaml
+ * Get-or-create the auto-provisioned STANDING IDENTITY for a zed.yaml
  * `agents:` agent. Idempotent per (account, project, agent) via the partial
  * unique index. The returned SA id is stamped onto the session's account_token
  * (service_account_id) so the agent authorizes AS this identity.
  *
  * Identity-ONLY: a bearer secret is generated and the plaintext DISCARDED, so
- * the kortix_sa_ credential is unusable — the agent never presents it; it acts
+ * the zed_sa_ credential is unusable — the agent never presents it; it acts
  * via its session token. An admin assigns this SA a role in the Roles UI.
  */
 export async function ensureAgentServiceAccount(args: {
@@ -274,7 +274,7 @@ export async function validateServiceAccountToken(
     return { isValid: false, error: 'API_KEY_SECRET not configured' };
   }
   if (!isServiceAccountToken(secret)) {
-    return { isValid: false, error: 'Invalid SA format — expected kortix_sa_ prefix' };
+    return { isValid: false, error: 'Invalid SA format — expected zed_sa_ prefix' };
   }
   try {
     const secretHashes = candidateSecretKeyHashes(secret);

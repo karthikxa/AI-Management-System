@@ -4,7 +4,7 @@ import { basename } from 'node:path';
 import { loadAuth, loadAuthForHost, type Auth } from '../api/auth.ts';
 import { activeHostName, hasEnvTokenHost } from '../api/config.ts';
 import { ApiError, clientFromAuth, type ApiClient } from '../api/client.ts';
-import { isKortixProject, loadLink, saveLink, resolveProjectId } from '../project-link.ts';
+import { isZedProject, loadLink, saveLink, resolveProjectId } from '../project-link.ts';
 import { takeFlagValue, takeFlagBool } from '../command-helpers.ts';
 import { selectFromList } from '../tui-select.ts';
 import { confirm, prompt, promptSecret } from '../prompts.ts';
@@ -24,14 +24,14 @@ import type {
   ProjectSecretsResponse,
 } from '../api/types.ts';
 
-const HELP = help`Usage: kortix ship [options]
+const HELP = help`Usage: zed ship [options]
 
 Stage everything, commit, and push your current branch to the project's git
 repo — in one command. Run it once to create the project, then run it again
 any time to sync. It's the everyday "save my work to the cloud" command.
 
 Every run:
-  1. verify kortix.yaml parses + validates   (skip with --no-verify)
+  1. verify zed.yaml parses + validates   (skip with --no-verify)
   2. git add -A + commit                      (skipped if nothing changed)
   3. offer to set any [env] secret not yet set (prompts you; skip with --no-env)
   4. push the branch you're on → the same-named branch on the project's repo
@@ -39,11 +39,11 @@ Every run:
 
 First ship vs. after:
   * First ship   creates the cloud project + a git repo, links this folder
-                 (.kortix/link.json), then pushes.
+                 (.zed/link.json), then pushes.
   * Every ship   after that sees the link, skips setup, and just commits +
                  pushes. Continuous by design — re-run as often as you like.
-                 The link travels in .kortix/link.json, so a teammate who
-                 clones a linked repo can \`kortix ship\` from it too.
+                 The link travels in .zed/link.json, so a teammate who
+                 clones a linked repo can \`zed ship\` from it too.
 
 Branches:
   Ship pushes whatever branch you're on to the matching remote branch — on
@@ -51,13 +51,13 @@ Branches:
 
 Where it backs the project (origin is inferred, never asked):
   * Existing GitHub \`origin\` (e.g. github.com/you/repo) → links it directly,
-    GitHub-backed. If the Kortix GitHub App isn't installed yet, ship prints a
+    GitHub-backed. If the Zed GitHub App isn't installed yet, ship prints a
     one-click install link (same as the web UI import); or pass
     --github-token <PAT> to link without the app. Sessions clone/push the real
     repo, so \`git push\` stays synced.
   * Other existing \`origin\` remote                       → registered + pushed.
   * No \`origin\` remote                                    → creates a managed
-    Kortix git repo and pushes to it. No GitHub needed.
+    Zed git repo and pushes to it. No GitHub needed.
 
 Accounts:
   On first ship, if you belong to more than one account you're asked which to
@@ -67,19 +67,19 @@ Options:
   --name <project>     Display name for a new project (default: folder name).
   --account <id|slug>  Account to create the project under (first ship only).
   --origin <value>     Override origin choice:
-                         managed      force a managed Kortix repo
+                         managed      force a managed Zed repo
                          <git-url>    register + push to this remote
   --github-token <pat> Link a GitHub origin with this token instead of the
                        GitHub App (App-free import; needs repo Contents R/W).
-  -m, --message <msg>  Commit message for the sync (default: "kortix: ship").
+  -m, --message <msg>  Commit message for the sync (default: "zed: ship").
   --no-commit          Don't commit. Fail if the working tree is dirty.
-  --no-verify          Skip the kortix.yaml validation (compile) check.
+  --no-verify          Skip the zed.yaml validation (compile) check.
   --no-env             Skip the [env] secret check + prompts.
   --no-connect         Skip the connector connect/credential prompts.
   -y, --yes            Don't prompt; use the active account, skip secret prompts.
   -n, --dry-run        Print what would happen, do nothing.
   --project <id>       Operate on this project id (default: linked).
-  --host <name>        Operate against a non-default Kortix host.
+  --host <name>        Operate against a non-default Zed host.
   -h, --help           Show this help.
 `;
 
@@ -138,17 +138,17 @@ export async function runShip(argv: string[]): Promise<number> {
   }
 
   // ── Guards ───────────────────────────────────────────────────────────────
-  if (!isKortixProject()) {
+  if (!isZedProject()) {
     process.stderr.write(
-      `${status.err(`Not a Kortix project — no .kortix/ or kortix.yaml in ${process.cwd()}.`)}\n` +
-        `  ${C.dim}Run ${C.reset}${C.cyan}kortix init${C.reset}${C.dim} here first.${C.reset}\n`,
+      `${status.err(`Not a Zed project — no .zed/ or zed.yaml in ${process.cwd()}.`)}\n` +
+        `  ${C.dim}Run ${C.reset}${C.cyan}zed init${C.reset}${C.dim} here first.${C.reset}\n`,
     );
     return 1;
   }
   if (!run('git', ['rev-parse', '--is-inside-work-tree']).ok) {
     process.stderr.write(
       `${status.err('Not inside a git repository.')}\n` +
-        `  ${C.dim}Run ${C.reset}${C.cyan}kortix init${C.reset}${C.dim} (it runs git init for you).${C.reset}\n`,
+        `  ${C.dim}Run ${C.reset}${C.cyan}zed init${C.reset}${C.dim} (it runs git init for you).${C.reset}\n`,
     );
     return 1;
   }
@@ -161,17 +161,17 @@ export async function runShip(argv: string[]): Promise<number> {
     if (hostName) {
       process.stderr.write(
         `${status.err(`Host "${hostName}" is not logged in.`)} Run ` +
-          `${C.cyan}kortix login --host ${hostName}${C.reset}.\n`,
+          `${C.cyan}zed login --host ${hostName}${C.reset}.\n`,
       );
     } else {
-      process.stderr.write(`${status.err('Not logged in.')} Run ${C.cyan}kortix login${C.reset}.\n`);
+      process.stderr.write(`${status.err('Not logged in.')} Run ${C.cyan}zed login${C.reset}.\n`);
     }
     return 1;
   }
   const client = clientFromAuth(auth);
 
   // ── Verify the manifest "compiles" before we touch the cloud ──────────────
-  // Parse + validate kortix.yaml locally so a broken config fails fast — long
+  // Parse + validate zed.yaml locally so a broken config fails fast — long
   // before we create a project, commit, or push. Also yields the env: spec
   // we use to make sure required secrets are set.
   const prepared = prepareManifest(flags);
@@ -190,7 +190,7 @@ export async function runShip(argv: string[]): Promise<number> {
 }
 
 /**
- * Parse + statically validate the local kortix.yaml (the "compile" check).
+ * Parse + statically validate the local zed.yaml (the "compile" check).
  * Returns `ok:false` to abort the ship, plus the parsed `env:` spec so the
  * caller can reconcile required secrets. A YAML syntax error or a schema
  * error blocks the ship unless `--no-verify` is passed; warnings never block.
@@ -205,19 +205,19 @@ function prepareManifest(flags: ShipFlags): { ok: boolean; env: EnvSpec } {
     const detail = (err as Error).message;
     if (flags.noVerify) {
       process.stdout.write(
-        `  ${status.warn(`kortix.yaml has a syntax error (ignored via --no-verify)`)}\n`,
+        `  ${status.warn(`zed.yaml has a syntax error (ignored via --no-verify)`)}\n`,
       );
       return { ok: true, env: empty };
     }
     process.stderr.write(
-      `\n${status.err("kortix.yaml doesn't parse — fix it before shipping.")}\n` +
+      `\n${status.err("zed.yaml doesn't parse — fix it before shipping.")}\n` +
         `  ${C.dim}${detail.split('\n').join('\n  ')}${C.reset}\n` +
         `  ${C.dim}Bypass with ${C.reset}${C.cyan}--no-verify${C.reset}${C.dim}.${C.reset}\n\n`,
     );
     return { ok: false, env: empty };
   }
 
-  // No kortix.yaml at all (a `.kortix/`-only project) — nothing to verify.
+  // No zed.yaml at all (a `.zed/`-only project) — nothing to verify.
   if (!manifest) return { ok: true, env: empty };
 
   if (!flags.noVerify) {
@@ -226,7 +226,7 @@ function prepareManifest(flags: ShipFlags): { ok: boolean; env: EnvSpec } {
     if (errors.length > 0) {
       process.stderr.write(
         `\n${status.err(
-          `kortix.yaml has ${errors.length} error${errors.length === 1 ? '' : 's'}:`,
+          `zed.yaml has ${errors.length} error${errors.length === 1 ? '' : 's'}:`,
         )}\n`,
       );
       for (const e of errors) process.stderr.write(`  ${C.dim}•${C.reset} ${e}\n`);
@@ -235,7 +235,7 @@ function prepareManifest(flags: ShipFlags): { ok: boolean; env: EnvSpec } {
       );
       return { ok: false, env: manifest.env };
     }
-    process.stdout.write(`  ${status.ok('kortix.yaml verified')}\n`);
+    process.stdout.write(`  ${status.ok('zed.yaml verified')}\n`);
   }
 
   return { ok: true, env: manifest.env };
@@ -244,7 +244,7 @@ function prepareManifest(flags: ShipFlags): { ok: boolean; env: EnvSpec } {
 /**
  * Make sure the env vars the manifest declares (`[env]` required + optional)
  * are set on the cloud project. Missing ones are prompted for (masked) and
- * uploaded in place — so a single `kortix ship` leaves the project ready to
+ * uploaded in place — so a single `zed ship` leaves the project ready to
  * run. Required and optional are both offered (blank skips); skipping a
  * required one warns but never hard-fails (required is advisory at boot).
  * Non-interactive / --yes / --no-env: skip prompts, warn only about missing
@@ -289,7 +289,7 @@ async function ensureProjectEnv(
       const plural = requiredMissing.length === 1 ? '' : 's';
       process.stdout.write(
         `  ${status.warn(`${requiredMissing.length} required secret${plural} not set: ${requiredMissing.join(', ')}`)}\n` +
-          `  ${C.dim}Set ${requiredMissing.length === 1 ? 'it' : 'them'} with ${C.reset}${C.cyan}kortix secrets set ${requiredMissing[0]}=…${C.reset}${C.dim} or re-run ship interactively.${C.reset}\n`,
+          `  ${C.dim}Set ${requiredMissing.length === 1 ? 'it' : 'them'} with ${C.reset}${C.cyan}zed secrets set ${requiredMissing[0]}=…${C.reset}${C.dim} or re-run ship interactively.${C.reset}\n`,
       );
     }
     return;
@@ -345,7 +345,7 @@ interface ShipConnector {
  * manifest and walk the user through connecting anything that still needs auth —
  * Pipedream apps via an auto-finalizing one-click connection URL, and
  * HTTP/OpenAPI/GraphQL/MCP connectors via their credential secret. Mirrors
- * `ensureProjectEnv` so a single `kortix ship` leaves the project ready to run.
+ * `ensureProjectEnv` so a single `zed ship` leaves the project ready to run.
  * Skipped with --no-connect; non-interactive / --yes only nags with the slugs
  * left to connect. Never hard-fails the ship.
  */
@@ -381,7 +381,7 @@ async function ensureConnectorsConnected(
     const slugs = pending.map((c) => c.slug).join(', ');
     process.stdout.write(
       `  ${status.warn(`${pending.length} connector${pending.length === 1 ? '' : 's'} not connected: ${slugs}`)}\n` +
-        `  ${C.dim}Connect ${pending.length === 1 ? 'it' : 'them'} with ${C.reset}${C.cyan}kortix connectors connect <slug>${C.reset}${C.dim} (or re-run ship interactively).${C.reset}\n`,
+        `  ${C.dim}Connect ${pending.length === 1 ? 'it' : 'them'} with ${C.reset}${C.cyan}zed connectors connect <slug>${C.reset}${C.dim} (or re-run ship interactively).${C.reset}\n`,
     );
     return;
   }
@@ -524,16 +524,16 @@ export async function linkGitHubBackedProject(
       if (!installUrl) throw err;
 
       process.stdout.write(
-        `\n  ${status.warn('Kortix GitHub App not installed for this repo yet.')}\n` +
+        `\n  ${status.warn('Zed GitHub App not installed for this repo yet.')}\n` +
           `  ${C.dim}One-click install (authorize access to your repo):${C.reset}\n` +
           `  ${C.cyan}${installUrl}${C.reset}\n\n` +
-          `  ${C.dim}Or skip the app with a token: ${C.reset}${C.cyan}kortix ship --github-token <PAT>${C.reset}\n\n`,
+          `  ${C.dim}Or skip the app with a token: ${C.reset}${C.cyan}zed ship --github-token <PAT>${C.reset}\n\n`,
       );
       if (opts.yes) {
         throw new Error('GitHub App install required — re-run without -y after installing, or pass --github-token <PAT>.');
       }
       const again = await confirm('Installed it? Retry the link', true);
-      if (!again) throw new Error('Aborted — install the Kortix GitHub App (or use --github-token) then run `kortix ship` again.');
+      if (!again) throw new Error('Aborted — install the Zed GitHub App (or use --github-token) then run `zed ship` again.');
     }
   }
   throw new Error('GitHub App still not detected after several tries — install it, or use --github-token <PAT>.');
@@ -569,7 +569,7 @@ async function shipFirstTime(
   if (byoUrl) {
     const github = isGitHubUrl(byoUrl);
     process.stdout.write(
-      `\n  ${C.bold}kortix ship${C.reset}  ${C.dim}new project → your git${C.reset}\n` +
+      `\n  ${C.bold}zed ship${C.reset}  ${C.dim}new project → your git${C.reset}\n` +
         `  ${C.dim}origin  ${C.reset}${byoUrl}${github ? `  ${C.faded}(GitHub)${C.reset}` : ''}\n\n`,
     );
     if (flags.dryRun) {
@@ -592,7 +592,7 @@ async function shipFirstTime(
     if (explicitUrl) setOrigin(explicitUrl);
   } else {
     process.stdout.write(
-      `\n  ${C.bold}kortix ship${C.reset}  ${C.dim}new project → managed Kortix git${C.reset}\n` +
+      `\n  ${C.bold}zed ship${C.reset}  ${C.dim}new project → managed Zed git${C.reset}\n` +
         `  ${C.dim}name    ${C.reset}${name}\n\n`,
     );
     if (flags.dryRun) {
@@ -613,8 +613,8 @@ async function shipFirstTime(
     // project quota until creation started 403ing on the limit.
     bindShippedFolder(project, hostName, auth);
     gitTarget = resolveProvisionShipGitTarget(prov);
-    if (gitTarget.credentialMode === 'kortix-token') {
-      // Proxy origin — we push with our own Kortix token; the API resolves the
+    if (gitTarget.credentialMode === 'zed-token') {
+      // Proxy origin — we push with our own Zed token; the API resolves the
       // upstream + host credential server-side. No provider token is exported.
       pushToken = auth.token;
     } else {
@@ -632,7 +632,7 @@ async function shipFirstTime(
       }
     }
     setOrigin(gitTarget.repoUrl);
-    if (gitTarget.credentialMode === 'kortix-token') {
+    if (gitTarget.credentialMode === 'zed-token') {
       configureProjectGitAuth(process.cwd(), gitTarget.repoUrl);
     }
   }
@@ -670,11 +670,11 @@ async function shipExisting(
   }
   const target = resolveExistingShipGitTarget(project);
   const mintsProviderToken = target.credentialMode === 'managed-git-token';
-  const kortixOwnsOrigin = target.credentialMode !== 'none';
+  const zedOwnsOrigin = target.credentialMode !== 'none';
   const repoUrl = target.repoUrl;
 
   process.stdout.write(
-    `\n  ${C.bold}kortix ship${C.reset}  ${C.dim}sync${C.reset}\n` +
+    `\n  ${C.bold}zed ship${C.reset}  ${C.dim}sync${C.reset}\n` +
       `  ${C.dim}project ${C.reset}${project.name} ${C.faded}(${project.project_id})${C.reset}\n` +
       `  ${C.dim}branch  ${C.reset}${currentBranch()}\n\n`,
   );
@@ -686,28 +686,28 @@ async function shipExisting(
     return 0;
   }
 
-  // Push credential: through the proxy we authenticate with our own Kortix
+  // Push credential: through the proxy we authenticate with our own Zed
   // token; a proxy-less host mints a fresh repo-scoped provider token per ship
   // (never persisted in .git/config).
   let pushToken: string | null = null;
   let pushUsername = 'x-access-token';
-  if (target.credentialMode === 'kortix-token') {
+  if (target.credentialMode === 'zed-token') {
     pushToken = auth.token;
   } else if (mintsProviderToken) {
     const tok = await client.post<GitTokenResponse>(`/projects/${projectId}/git-token`);
     pushToken = tok.push_token;
     pushUsername = tok.git_username ?? pushUsername;
   }
-  // Kortix owns the remote URL for proxy + managed projects, so keep origin
+  // Zed owns the remote URL for proxy + managed projects, so keep origin
   // aligned with the target the credential above matches. BYO repos may have
   // lost their remote (fresh clone of a linked repo); heal only when missing so
   // user-managed credentials stay untouched.
-  if (kortixOwnsOrigin) setOrigin(repoUrl);
+  if (zedOwnsOrigin) setOrigin(repoUrl);
   else ensureOrigin(repoUrl);
   // Leave the repo able to `git push` on its own afterwards, same as a
-  // `kortix projects clone` — the helper hands git a Kortix token on demand
+  // `zed projects clone` — the helper hands git a Zed token on demand
   // without ever writing one into .git/config.
-  if (target.credentialMode === 'kortix-token') configureProjectGitAuth(process.cwd(), repoUrl);
+  if (target.credentialMode === 'zed-token') configureProjectGitAuth(process.cwd(), repoUrl);
 
   const committed = commitIfNeeded(flags);
   if (committed === 'error') return 1;
@@ -724,7 +724,7 @@ async function shipExisting(
   return 0;
 }
 
-/** Write `.kortix/link.json` so this folder is bound to the cloud project.
+/** Write `.zed/link.json` so this folder is bound to the cloud project.
  *  Called the moment the project exists — see the note at its first-ship call
  *  site for why ordering matters. */
 function bindShippedFolder(
@@ -743,7 +743,7 @@ function bindShippedFolder(
 
 // ── git helpers ─────────────────────────────────────────────────────────────
 
-/** The display name from kortix.yaml's project.name, if present. Lets a
+/** The display name from zed.yaml's project.name, if present. Lets a
  *  first ship honor the manifest instead of defaulting to the folder name. */
 function manifestProjectName(): string | undefined {
   try {
@@ -794,7 +794,7 @@ function commitIfNeeded(flags: ShipFlags): 'ok' | 'error' {
     );
     return 'error';
   }
-  const msg = flags.message ?? 'kortix: ship';
+  const msg = flags.message ?? 'zed: ship';
   const add = run('git', ['add', '-A']);
   if (!add.ok) {
     const detail = (add.stderr || add.stdout).trim();
@@ -884,7 +884,7 @@ async function pushProjectBranch(
   pushToken: string | null,
   pushUsername: string,
 ): Promise<string | null> {
-  const canRetry = target.credentialMode === 'kortix-token' && projectIsManaged(project);
+  const canRetry = target.credentialMode === 'zed-token' && projectIsManaged(project);
   const pushed = pushCurrentBranch(target.repoUrl, pushToken, pushUsername, {
     quietOnFailure: canRetry,
   });
@@ -1015,7 +1015,7 @@ function parseFlags(argv: string[]): ShipFlags {
   flags.yes = takeFlagBool(rest, ['-y', '--yes']);
   flags.dryRun = takeFlagBool(rest, ['-n', '--dry-run']);
   flags.help = takeFlagBool(rest, ['-h', '--help']);
-  if (rest.length > 0) throw new Error(`kortix ship: unknown option "${rest[0]}"`);
+  if (rest.length > 0) throw new Error(`zed ship: unknown option "${rest[0]}"`);
   return flags;
 }
 
@@ -1036,10 +1036,10 @@ function explainLinkedProjectError(err: unknown, projectId: string, auth: Auth):
       `\n${status.err("This folder is linked to a project on an account you can't access.")}\n` +
         `  ${C.dim}linked project ${C.reset}${projectId}${linkedAccount}\n` +
         `  ${C.dim}logged in as   ${C.reset}account ${auth.account_id.slice(0, 8)} ${C.faded}(host "${host}")${C.reset} — no access to that account\n\n` +
-        `  ${C.dim}The link lives in ${C.reset}.kortix/link.json${C.dim}. Fix it one way:${C.reset}\n` +
-        `    ${C.dim}• Log in with the account that has access:${C.reset}  ${C.cyan}kortix logout && kortix login${C.reset}\n` +
+        `  ${C.dim}The link lives in ${C.reset}.zed/link.json${C.dim}. Fix it one way:${C.reset}\n` +
+        `    ${C.dim}• Log in with the account that has access:${C.reset}  ${C.cyan}zed logout && zed login${C.reset}\n` +
         `    ${C.dim}• Or get invited / granted access to that project, then retry.${C.reset}\n` +
-        `    ${C.dim}• Or register this folder as a new project:${C.reset}  ${C.cyan}kortix projects unlink${C.reset}${C.dim} then ${C.reset}${C.cyan}kortix ship${C.reset}\n\n`,
+        `    ${C.dim}• Or register this folder as a new project:${C.reset}  ${C.cyan}zed projects unlink${C.reset}${C.dim} then ${C.reset}${C.cyan}zed ship${C.reset}\n\n`,
     );
     return 1;
   }
@@ -1049,8 +1049,8 @@ function explainLinkedProjectError(err: unknown, projectId: string, auth: Auth):
       `\n${status.err('The linked project no longer exists (or was archived).')}\n` +
         `  ${C.dim}linked project ${C.reset}${projectId} ${C.faded}(host "${host}")${C.reset}\n\n` +
         `  ${C.dim}Re-point this folder:${C.reset}\n` +
-        `    ${C.dim}• New project under your account:${C.reset}  ${C.cyan}kortix projects unlink${C.reset}${C.dim} then ${C.reset}${C.cyan}kortix ship${C.reset}\n` +
-        `    ${C.dim}• Existing project:${C.reset}  ${C.cyan}kortix projects link <id>${C.reset}\n\n`,
+        `    ${C.dim}• New project under your account:${C.reset}  ${C.cyan}zed projects unlink${C.reset}${C.dim} then ${C.reset}${C.cyan}zed ship${C.reset}\n` +
+        `    ${C.dim}• Existing project:${C.reset}  ${C.cyan}zed projects link <id>${C.reset}\n\n`,
     );
     return 1;
   }
@@ -1061,15 +1061,15 @@ function explainLinkedProjectError(err: unknown, projectId: string, auth: Auth):
 function surface(err: unknown): number {
   if (err instanceof ApiError) {
     if (err.status === 401) {
-      process.stderr.write(`${status.err('Token rejected. Run `kortix login`.')}\n`);
+      process.stderr.write(`${status.err('Token rejected. Run `zed login`.')}\n`);
     } else if (err.status === 503) {
       // Don't diagnose — the server owns the reason. The one thing we DO know
       // is that a stale CLI is a common cause (older builds pushed to the raw
-      // upstream with a minted provider token instead of the Kortix git proxy,
+      // upstream with a minted provider token instead of the Zed git proxy,
       // which a token-configured host can't hand out), so say that and stop.
       process.stderr.write(
         `${status.err(err.message)}\n` +
-          `  ${C.dim}Update first — ${C.reset}${C.cyan}kortix update${C.reset}${C.dim} — then retry. Still failing? ` +
+          `  ${C.dim}Update first — ${C.reset}${C.cyan}zed update${C.reset}${C.dim} — then retry. Still failing? ` +
           `Pass ${C.reset}${C.cyan}--origin <git-url>${C.reset}${C.dim} to push to your own remote instead.${C.reset}\n`,
       );
     } else {

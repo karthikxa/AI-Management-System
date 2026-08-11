@@ -1,5 +1,5 @@
 #!/bin/sh
-# Kortix self-host auto-updater. Runs inside the `kortix-updater` Compose
+# Zed self-host auto-updater. Runs inside the `zed-updater` Compose
 # service (image: docker:cli, docker socket mounted). Once a day, at a fixed
 # local clock time, it pulls this stack's published image tags and, if
 # anything actually changed, rolls the stack forward with ZERO downtime: a
@@ -19,7 +19,7 @@
 #      `set -e` for that call (see the main loop at the bottom). No future
 #      nightly is ever silently skipped because today's run errored.
 #   3. Every run's outcome (ok/degraded/failed/skipped) is stamped to
-#      $STATUS_FILE as JSON — see write_status() — surfaced by `kortix
+#      $STATUS_FILE as JSON — see write_status() — surfaced by `zed
 #      self-host status` and the `report`/`status` subcommands below.
 #   4. Drift (declared version vs. what's actually running) is detected
 #      explicitly, both as a post-run log check (check_drift) and on demand
@@ -31,7 +31,7 @@
 #      changes on disk, so a CLI-shipped fix reaches an already-running
 #      container without a manual recreate.
 #   7. A lock file (flock) is shared between the nightly scheduler and a
-#      manual `kortix self-host update`/`reconcile` run; the loser reports
+#      manual `zed self-host update`/`reconcile` run; the loser reports
 #      who currently holds it instead of silently no-op'ing.
 #   8. A stateful service (e.g. supabase-db) recreated in place is health-
 #      gated post-start with an explicit go/no-go log line, never assumed
@@ -56,41 +56,41 @@ STATUS_FILE="$STATE_DIR/update-status.json"
 # gets resolved by the `docker compose` CLI running in here, and that
 # resolved absolute path is what actually gets sent to the host daemon to
 # satisfy. It only works if that path also exists on the real host — which is
-# exactly what KORTIX_INSTANCE_DIR is: the instance directory bind-mounted at
+# exactly what ZED_INSTANCE_DIR is: the instance directory bind-mounted at
 # the SAME absolute path inside this container as on the host (see the
-# kortix-updater service comment in kortix-compose.yml), with working_dir set
+# zed-updater service comment in zed-compose.yml), with working_dir set
 # to match. Falls back to the historical /workspace only as a defensive
 # default; writeCompose()/normalizeFullSupabaseEnv() (commands/self-host.ts)
-# always set KORTIX_INSTANCE_DIR before this container ever runs, so that
+# always set ZED_INSTANCE_DIR before this container ever runs, so that
 # fallback should never actually be exercised.
-WORKDIR="${KORTIX_INSTANCE_DIR:-/workspace}"
+WORKDIR="${ZED_INSTANCE_DIR:-/workspace}"
 COMPOSE_FILE="$WORKDIR/docker-compose.yml"
 SCRIPT_FILE="$WORKDIR/updater.sh"
-PROJECT_NAME="${KORTIX_COMPOSE_PROJECT:-kortix}"
+PROJECT_NAME="${ZED_COMPOSE_PROJECT:-zed}"
 COMPOSE="docker compose --project-name $PROJECT_NAME --env-file $WORKDIR/.env -f $COMPOSE_FILE"
 
 # The stateless app-tier services rolled start-first, in order. Must match
 # ROLLING_APP_SERVICES in compose-assets.ts.
-ROLL_SERVICES="kortix-api llm-gateway frontend"
-MIGRATE_SERVICE="kortix-migrate"
+ROLL_SERVICES="zed-api llm-gateway frontend"
+MIGRATE_SERVICE="zed-migrate"
 
 # Target replica count is decided once, at render time, by whether a domain
 # (and therefore Caddy) is configured — see applyReplicaTopology() in
 # compose-assets.ts. We just read it back so this script never has to
 # re-derive prod-vs-laptop topology itself.
-TARGET_REPLICAS="${KORTIX_APP_REPLICAS:-1}"
+TARGET_REPLICAS="${ZED_APP_REPLICAS:-1}"
 
-ROLLOUT_TIMEOUT="${KORTIX_ROLLOUT_TIMEOUT:-300}" # seconds to wait for new replicas to go healthy
+ROLLOUT_TIMEOUT="${ZED_ROLLOUT_TIMEOUT:-300}" # seconds to wait for new replicas to go healthy
 HEALTH_POLL_S=3
-CRASH_WATCH_S="${KORTIX_CRASH_WATCH_S:-20}"      # post-swap window to catch a crash-loop
-MIN_FREE_DISK_MB="${KORTIX_MIN_FREE_DISK_MB:-2048}"
-UPDATE_TIME="${KORTIX_UPDATE_TIME:-02:00}"       # HH:MM, 24h, local to KORTIX_UPDATE_TZ
-export TZ="${KORTIX_UPDATE_TZ:-America/New_York}"
+CRASH_WATCH_S="${ZED_CRASH_WATCH_S:-20}"      # post-swap window to catch a crash-loop
+MIN_FREE_DISK_MB="${ZED_MIN_FREE_DISK_MB:-2048}"
+UPDATE_TIME="${ZED_UPDATE_TIME:-02:00}"       # HH:MM, 24h, local to ZED_UPDATE_TZ
+export TZ="${ZED_UPDATE_TZ:-America/New_York}"
 
 mkdir -p "$STATE_DIR"
 
 log() {
-  echo "[kortix-updater] $(date -u +%Y-%m-%dT%H:%M:%SZ) $*"
+  echo "[zed-updater] $(date -u +%Y-%m-%dT%H:%M:%SZ) $*"
 }
 
 json_escape() {
@@ -108,7 +108,7 @@ image_id_of_ref() {
 # `$COMPOSE config --images <svc>` for this: on the compose builds shipped in
 # the docker:cli updater image it prints the service's whole dependency
 # closure (its depends_on graph), in graph order — `head -n1` then returns a
-# DEPENDENCY's image (caddy "expected" kortix-api, kortix-api "expected"
+# DEPENDENCY's image (caddy "expected" zed-api, zed-api "expected"
 # kong, …), which made every service look drifted, stamped every update
 # DEGRADED, and needlessly recreated stateful Supabase services on each run.
 # Parse the service's own `image:` line out of the rendered config instead
@@ -134,14 +134,14 @@ restart_count() {
   docker inspect --format '{{.RestartCount}}' "$1" 2>/dev/null || echo 0
 }
 
-# Dev mode: `kortix self-host init --local-images` sets KORTIX_IMAGE_PULL=never
+# Dev mode: `zed self-host init --local-images` sets ZED_IMAGE_PULL=never
 # in the instance .env for a locally-built image that isn't on any registry —
 # `docker compose pull` would just fail (or silently no-op) against it, so skip
 # it entirely and roll using whatever image is already in the local Docker
 # engine. Read straight from "$WORKDIR/.env", same as write_status below —
 # this script never sees CLI flags, only the env file.
 image_pull_mode() {
-  grep '^KORTIX_IMAGE_PULL=' "$WORKDIR/.env" 2>/dev/null | tail -n1 | cut -d= -f2-
+  grep '^ZED_IMAGE_PULL=' "$WORKDIR/.env" 2>/dev/null | tail -n1 | cut -d= -f2-
 }
 
 # healthy|running (both count as "up"), or anything else counts as not-ready.
@@ -308,9 +308,9 @@ run_migrate() {
 # Escape hatch for a release whose migration is NOT backward-compatible: the
 # old app must not run against the new schema even briefly, so this trades a
 # short, honest downtime window for correctness. Opt-in only
-# (KORTIX_ALLOW_DOWNTIME=1) — intended for a planned maintenance window.
+# (ZED_ALLOW_DOWNTIME=1) — intended for a planned maintenance window.
 downtime_swap() {
-  log "KORTIX_ALLOW_DOWNTIME=1: stopping the app tier for a brief maintenance window"
+  log "ZED_ALLOW_DOWNTIME=1: stopping the app tier for a brief maintenance window"
   # shellcheck disable=SC2086
   $COMPOSE rm --stop --force $ROLL_SERVICES
   run_migrate || return 1
@@ -331,7 +331,7 @@ reconcile_stateful_services() {
   all_ok=0
   for svc in $($COMPOSE config --services 2>/dev/null); do
     case "$svc" in
-      kortix-api | llm-gateway | frontend | kortix-migrate | kortix-updater) continue ;;
+      zed-api | llm-gateway | frontend | zed-migrate | zed-updater) continue ;;
     esac
     service_up_to_date "$svc" && continue
     log "$svc: pinned image changed; recreating (brief blip acceptable)"
@@ -355,7 +355,7 @@ reconcile_stateful_services() {
 check_drift() {
   drifted=0
   for svc in $($COMPOSE config --services 2>/dev/null); do
-    case "$svc" in kortix-updater | kortix-migrate) continue ;; esac
+    case "$svc" in zed-updater | zed-migrate) continue ;; esac
     ref=$(service_image_ref "$svc")
     [ -z "$ref" ] && continue
     desired=$(image_id_of_ref "$ref")
@@ -376,7 +376,7 @@ drift_report_json() {
   printf '['
   first=1
   for svc in $($COMPOSE config --services 2>/dev/null); do
-    case "$svc" in kortix-updater | kortix-migrate) continue ;; esac
+    case "$svc" in zed-updater | zed-migrate) continue ;; esac
     ref=$(service_image_ref "$svc")
     [ -z "$ref" ] && continue
     desired=$(image_id_of_ref "$ref")
@@ -404,7 +404,7 @@ drift_report_json() {
 # refusing up front with a clear, stamped error. Checked against $WORKDIR
 # rather than the host's real Docker data-root: this container only ever has
 # the instance directory bind-mounted at its real host path (see the
-# KORTIX_INSTANCE_DIR comment above), and `df` on a bind mount reports the
+# ZED_INSTANCE_DIR comment above), and `df` on a bind mount reports the
 # underlying HOST filesystem's free space for that mount — an honest proxy on
 # the overwhelming majority of self-host boxes (single disk), though not exact
 # if an operator deliberately put Docker's data-root on a separate volume.
@@ -416,7 +416,7 @@ disk_preflight() {
   fi
   avail_mb=$((avail_kb / 1024))
   if [ "$avail_mb" -lt "$MIN_FREE_DISK_MB" ]; then
-    log "ERROR: only ${avail_mb}MB free at $WORKDIR (floor ${MIN_FREE_DISK_MB}MB, override with KORTIX_MIN_FREE_DISK_MB) — aborting before pulling new images"
+    log "ERROR: only ${avail_mb}MB free at $WORKDIR (floor ${MIN_FREE_DISK_MB}MB, override with ZED_MIN_FREE_DISK_MB) — aborting before pulling new images"
     return 1
   fi
   log "disk preflight ok (${avail_mb}MB free at $WORKDIR, floor ${MIN_FREE_DISK_MB}MB)"
@@ -443,7 +443,7 @@ sanity_check_images() {
 # Keeps this stack's own images tidy after a fully successful run only —
 # never after a degraded one, so a service still needing a rollback target
 # never has it pulled out from under it. Keeps the currently-deployed image
-# refs plus the immediately-previous run's, so `kortix self-host rollback
+# refs plus the immediately-previous run's, so `zed self-host rollback
 # --release <previous>` never needs to re-pull; everything else this stack
 # owns and nothing is still running on is fair game.
 gc_images() {
@@ -496,12 +496,12 @@ watch_for_crash_loop() {
     fi
   done
   if [ -n "$crashed" ]; then
-    # PROJECT_NAME is always "kortix-<instance>" (see composeProject() in
+    # PROJECT_NAME is always "zed-<instance>" (see composeProject() in
     # commands/self-host.ts) — strip the fixed prefix back off instead of
     # requiring a dedicated instance-name env var just for this message.
-    instance_hint="${PROJECT_NAME#kortix-}"
+    instance_hint="${PROJECT_NAME#zed-}"
     [ "$instance_hint" = "$PROJECT_NAME" ] && instance_hint="default"
-    log "ERROR: crash-loop detected in:$crashed — rollback with: kortix self-host update --release <previous-version> --instance $instance_hint"
+    log "ERROR: crash-loop detected in:$crashed — rollback with: zed self-host update --release <previous-version> --instance $instance_hint"
     return 1
   fi
   return 0
@@ -511,7 +511,7 @@ watch_for_crash_loop() {
 
 # The version this run started FROM: the "to" of the last recorded run (or
 # "from" if that run never got that far), read back from the status file this
-# same script writes. .env's KORTIX_VERSION has ALREADY been rewritten to the
+# same script writes. .env's ZED_VERSION has ALREADY been rewritten to the
 # TARGET version by the CLI (writeEnv) by the time this script ever runs, so
 # it can only ever tell us where we're going, never where we came from.
 current_version() {
@@ -526,10 +526,10 @@ current_version() {
 }
 
 pending_version() {
-  grep '^KORTIX_VERSION=' "$WORKDIR/.env" 2>/dev/null | tail -n1 | cut -d= -f2-
+  grep '^ZED_VERSION=' "$WORKDIR/.env" 2>/dev/null | tail -n1 | cut -d= -f2-
 }
 
-# Stamps this run's outcome as JSON — the single source of truth `kortix
+# Stamps this run's outcome as JSON — the single source of truth `zed
 # self-host status` reads. outcome is one of: ok | degraded | failed |
 # skipped. `services` carries the per-service "svc=ok|failed|unchanged"
 # breakdown so a degraded run says exactly which service(s) are still stale.
@@ -548,7 +548,7 @@ write_status() {
 }
 
 # Optional, one env var, no vendor connector: if the operator sets
-# KORTIX_UPDATE_WEBHOOK_URL, POST this run's status JSON (the exact contents
+# ZED_UPDATE_WEBHOOK_URL, POST this run's status JSON (the exact contents
 # of $STATUS_FILE) to it after every run — success, degraded, failed, or
 # skipped-by-lock alike — so an operator who wants a push notification can
 # wire it to whatever they already use (a generic webhook relay, a Slack
@@ -556,10 +556,10 @@ write_status() {
 # or caring which. Best-effort: a failed POST (unreachable URL, timeout) is
 # logged but never fails the update itself.
 notify_webhook() {
-  url="${KORTIX_UPDATE_WEBHOOK_URL:-}"
+  url="${ZED_UPDATE_WEBHOOK_URL:-}"
   [ -z "$url" ] && return 0
   if ! wget -q -O /dev/null -T 10 --header 'Content-Type: application/json' --post-file "$STATUS_FILE" "$url" >/dev/null 2>&1; then
-    log "WARN: KORTIX_UPDATE_WEBHOOK_URL POST failed (non-fatal; update outcome above is unaffected)"
+    log "WARN: ZED_UPDATE_WEBHOOK_URL POST failed (non-fatal; update outcome above is unaffected)"
   fi
 }
 
@@ -574,7 +574,7 @@ perform_update() {
   fi
 
   if [ "$(image_pull_mode)" = "never" ]; then
-    log "skipping registry pull (KORTIX_IMAGE_PULL=never)"
+    log "skipping registry pull (ZED_IMAGE_PULL=never)"
   else
     log "pulling images"
     if ! $COMPOSE pull --quiet; then
@@ -612,7 +612,7 @@ perform_update() {
   to_version=$(pending_version)
   overall_ok=0
 
-  if [ "${KORTIX_ALLOW_DOWNTIME:-0}" = "1" ]; then
+  if [ "${ZED_ALLOW_DOWNTIME:-0}" = "1" ]; then
     if downtime_swap; then
       for svc in $ROLL_SERVICES; do service_results="$service_results $svc=ok"; done
     else
@@ -669,7 +669,7 @@ perform_update() {
     return 0
   else
     write_status "degraded" "$from_version" "$to_version" "swap" "$service_results"
-    log "update finished DEGRADED ($from_version -> $to_version); the next scheduled run (or a manual \`kortix self-host update\`) will retry the stale service(s) automatically"
+    log "update finished DEGRADED ($from_version -> $to_version); the next scheduled run (or a manual \`zed self-host update\`) will retry the stale service(s) automatically"
     return 1
   fi
 }
@@ -684,7 +684,7 @@ next_run_epoch() {
   today=$(date +%Y-%m-%d)
   target=$(date -d "${today} ${UPDATE_TIME}:00" +%s 2>/dev/null) || target=""
   if [ -z "$target" ]; then
-    log "WARN: could not parse KORTIX_UPDATE_TIME='${UPDATE_TIME}'; defaulting to 02:00"
+    log "WARN: could not parse ZED_UPDATE_TIME='${UPDATE_TIME}'; defaulting to 02:00"
     UPDATE_TIME="02:00"
     target=$(date -d "${today} ${UPDATE_TIME}:00" +%s)
   fi
@@ -695,7 +695,7 @@ next_run_epoch() {
   echo "$target"
 }
 
-# Single-flight lock shared by the nightly scheduler and a manual `kortix
+# Single-flight lock shared by the nightly scheduler and a manual `zed
 # self-host update`/`reconcile` run (both ultimately call this). $1 is a
 # label ("nightly"/"manual") only used for the holder-info file, so the loser
 # of a race can say who currently holds it instead of quietly no-op'ing.
@@ -737,8 +737,8 @@ self_hash() {
 # container start (the entrypoint's `exec ... ./updater.sh`). Without this
 # check, a CLI-shipped fix to this very script only reaches an already-running
 # instance the next time its container is recreated — never on its own. A
-# plain `kortix self-host update` always rewrites this file from the CLI's
-# embedded copy first (see writeKortixRuntimeAssets in compose-assets.ts), so
+# plain `zed self-host update` always rewrites this file from the CLI's
+# embedded copy first (see writeZedRuntimeAssets in compose-assets.ts), so
 # comparing the on-disk hash at the top of every loop iteration and re-exec'ing
 # into the current file when it changed is enough to pick that up immediately.
 maybe_reexec_self() {
@@ -750,9 +750,9 @@ maybe_reexec_self() {
 }
 
 # `updater.sh once` runs a single update pass right now and exits — this is
-# what `kortix self-host update`/`reconcile` shells out to, so a manual,
+# what `zed self-host update`/`reconcile` shells out to, so a manual,
 # on-demand update goes through the exact same zero-downtime start-first path
-# as the nightly schedule (and ignores KORTIX_AUTO_UPDATE: an explicit manual
+# as the nightly schedule (and ignores ZED_AUTO_UPDATE: an explicit manual
 # request always runs).
 if [ "${1:-}" = "once" ]; then
   log "manual run (once)"
@@ -762,7 +762,7 @@ if [ "${1:-}" = "once" ]; then
 fi
 
 # `updater.sh status` / `updater.sh report`: read-only, no lock needed — used
-# by `kortix self-host status` to surface the last outcome plus a live drift
+# by `zed self-host status` to surface the last outcome plus a live drift
 # check without running an update.
 if [ "${1:-}" = "status" ]; then
   cat "$STATUS_FILE" 2>/dev/null || echo '{"outcome":"never-run"}'
@@ -783,12 +783,12 @@ if [ "${1:-}" = "report" ]; then
 fi
 
 CURRENT_HASH=$(self_hash "$SCRIPT_FILE")
-log "starting (schedule=${UPDATE_TIME} ${TZ}, auto_update=${KORTIX_AUTO_UPDATE:-true})"
+log "starting (schedule=${UPDATE_TIME} ${TZ}, auto_update=${ZED_AUTO_UPDATE:-true})"
 while true; do
   maybe_reexec_self "$@"
-  if [ "${KORTIX_AUTO_UPDATE:-true}" != "true" ]; then
-    log "KORTIX_AUTO_UPDATE is not true; idling (manual updater.sh once / kortix self-host update still works)"
-    sleep "${KORTIX_IDLE_POLL_S:-3600}"
+  if [ "${ZED_AUTO_UPDATE:-true}" != "true" ]; then
+    log "ZED_AUTO_UPDATE is not true; idling (manual updater.sh once / zed self-host update still works)"
+    sleep "${ZED_IDLE_POLL_S:-3600}"
     continue
   fi
   next=$(next_run_epoch)
@@ -801,7 +801,7 @@ while true; do
   # kill the standing scheduler on any nonzero exit from a bare statement — the
   # `||` below is load-bearing, not decorative. This is the single fix for
   # "one bad night = no future nightlies, silently".
-  run_locked nightly || log "scheduled run did not complete cleanly (see \`kortix self-host status\`); will retry at the next scheduled window"
+  run_locked nightly || log "scheduled run did not complete cleanly (see \`zed self-host status\`); will retry at the next scheduled window"
   # Guard against a run that returns fast (e.g. a parse error) turning this
   # into a tight loop: always land back at the top of the daily wait.
   sleep 1

@@ -12,8 +12,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
 
 import { FilterBar, FilterBarItem } from '@/components/ui/tabs';
-import { listProjectSessions } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+import { listProjectSessions } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import {
   useGatewayBreakdown,
   useGatewayErrors,
@@ -73,7 +73,7 @@ export function GatewayOverview({ projectId }: { projectId: string }) {
   const { data: errorData } = useGatewayErrors(projectId, days);
 
   // Resolve session ids → human names so spend reads as "Fix login bug", not a
-  // raw uuid. Map both the kortix and opencode ids since the gateway may key on
+  // raw uuid. Map both the zed and opencode ids since the gateway may key on
   // either.
   const { data: projectSessions } = useQuery({
     queryKey: qk.project.sessions(projectId),
@@ -125,7 +125,7 @@ export function GatewayOverview({ projectId }: { projectId: string }) {
             value={fmtUsd(cost)}
             sub={`over ${days} days`}
             icon={DollarSign}
-            accent="var(--kortix-blue)"
+            accent="var(--zed-blue)"
             spark={sparkSeries}
             sparkKey="cost"
             index={0}
@@ -135,7 +135,7 @@ export function GatewayOverview({ projectId }: { projectId: string }) {
             value={requests.toLocaleString()}
             sub={`${(requests / Math.max(1, days)).toFixed(0)}/day avg`}
             icon={Zap}
-            accent="var(--kortix-blue)"
+            accent="var(--zed-blue)"
             spark={sparkSeries}
             sparkKey="requests"
             index={1}
@@ -157,7 +157,7 @@ export function GatewayOverview({ projectId }: { projectId: string }) {
             value={fmtCompact(inTokens + outTokens)}
             sub={`${fmtCompact(inTokens)} in · ${fmtCompact(outTokens)} out`}
             icon={Coins}
-            accent="var(--kortix-blue)"
+            accent="var(--zed-blue)"
             spark={sparkSeries}
             sparkKey="tokens"
             index={3}
@@ -242,7 +242,7 @@ export function GatewayOverview({ projectId }: { projectId: string }) {
                             </span>
                           )}
                           <span className="inline-flex items-center gap-1">
-                            <Sparkles className="text-kortix-blue size-3" />
+                            <Sparkles className="text-zed-blue size-3" />
                             {fmtUsd(s.llm_cost)}
                           </span>
                           <span className="inline-flex items-center gap-1">
@@ -255,7 +255,7 @@ export function GatewayOverview({ projectId }: { projectId: string }) {
                         </>
                       }
                       segments={[
-                        { pct: (s.llm_cost / maxSessionCost) * 100, color: 'var(--kortix-blue)' },
+                        { pct: (s.llm_cost / maxSessionCost) * 100, color: 'var(--zed-blue)' },
                         {
                           pct: (s.compute_cost / maxSessionCost) * 100,
                           color: 'var(--muted-foreground)',

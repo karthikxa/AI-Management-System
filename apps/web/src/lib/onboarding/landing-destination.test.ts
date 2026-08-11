@@ -91,7 +91,7 @@ describe('resolveDefaultLandingPath', () => {
 });
 
 describe('navigationMayCreateProject (CWE-352 gate)', () => {
-  const origin = 'https://app.kortix.com';
+  const origin = 'https://app.zed.com';
 
   // Save/restore the real globals. Bun runs many test FILES in one process, so
   // leaving a stub `document`/`window` behind here breaks every DOM-touching
@@ -131,8 +131,8 @@ describe('navigationMayCreateProject (CWE-352 gate)', () => {
     const { navigationMayCreateProject } = await import('./ensure-first-project');
     for (const hostile of [
       'https://evil.example.com/bait',
-      'http://app.kortix.com/',
-      'https://app.kortix.com.evil.example.com/',
+      'http://app.zed.com/',
+      'https://app.zed.com.evil.example.com/',
     ]) {
       withNavigation(hostile);
       expect({ hostile, allowed: navigationMayCreateProject() }).toEqual({

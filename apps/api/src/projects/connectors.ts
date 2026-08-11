@@ -1,6 +1,6 @@
 /**
- * `connectors` list parsing for the project manifest (`kortix.yaml`; a legacy
- * v1 project may instead declare `[[connectors]]` in `kortix.toml`).
+ * `connectors` list parsing for the project manifest (`zed.yaml`; a legacy
+ * v1 project may instead declare `[[connectors]]` in `zed.toml`).
  *
  * A connector is one named external system the connector gateway can call — Pipedream,
  * MCP, OpenAPI, Postman, GraphQL, or raw HTTP. The manifest holds the *definition*
@@ -10,7 +10,7 @@
  * Connectors are project-wide visible — the only access gate is which AGENTS
  * may call it (`agents.<name>.connectors`, declared on the agent, in git).
  *
- * Example (kortix.yaml):
+ * Example (zed.yaml):
  *
  *   connectors:
  *     - slug: stripe
@@ -42,7 +42,7 @@ import {
   RESERVED_SLUG_PROVIDERS,
   SLUG_RE,
   parseConnectorHeaders,
-} from '@kortix/manifest-schema';
+} from '@zed/manifest-schema';
 import {
   type PolicyArgCondition,
   areValidConditions,
@@ -81,22 +81,22 @@ export type ConnectorAuthorizationStrategy = (typeof CONNECTOR_AUTHORIZATION_STR
  * AND at CRUD via RESERVED_CONNECTOR_SLUGS, which also blocks the public `slack`
  * NAME so a Pipedream Slack can't be added (the picker already hides it).
  *
- *  - `kortix_slack` → channel only (the Slack channel materializes under it; see
+ *  - `zed_slack` → channel only (the Slack channel materializes under it; see
  *    connector/channels.ts SLACK_CHANNEL_CONNECTOR_SLUG).
  *  - `computer`     → computer only (default Computers profile slug).
  * Additional Computers profile slugs are created through the connector API.
  * They never pass through manifest parsing because machine ids are account
  * control-plane identities, not repository configuration.
- * See KORTIX-206 + docs/specs/computer-connector.md. The pairs themselves are
- * canonically defined in `@kortix/manifest-schema` (imported above) — this
+ * See ZED-206 + docs/specs/computer-connector.md. The pairs themselves are
+ * canonically defined in `@zed/manifest-schema` (imported above) — this
  * `export` just preserves this module's existing public surface, since
  * connector/manifest-crud.ts imports `RESERVED_SLUG_PROVIDERS` from here.
  */
 export { RESERVED_SLUG_PROVIDERS };
 /** The reserved slug the built-in Slack channel materializes under. */
-export const SLACK_RESERVED_SLUG = 'kortix_slack';
-export const EMAIL_RESERVED_SLUG = 'kortix_email';
-export const VOICE_RESERVED_SLUG = 'kortix_voice';
+export const SLACK_RESERVED_SLUG = 'zed_slack';
+export const EMAIL_RESERVED_SLUG = 'zed_email';
+export const VOICE_RESERVED_SLUG = 'zed_voice';
 export const RESERVED_CONNECTOR_SLUGS = new Set<string>([
   'slack',
   'email',
@@ -163,7 +163,7 @@ export interface ConnectorPolicySpec {
 export interface ConnectorSpec {
   /** URL-safe slug — unique per project. Also the tool namespace. */
   slug: string;
-  /** e.g. `kortix.yaml#connectors.<slug>` (or the project's actual manifest filename) for UI / error reporting. */
+  /** e.g. `zed.yaml#connectors.<slug>` (or the project's actual manifest filename) for UI / error reporting. */
   path: string;
   /** Human label; defaults to slug. */
   name: string;
@@ -297,8 +297,8 @@ export function extractConnectors(manifest: ParsedManifest): LoadedConnectors {
 
 /**
  * Convert a ConnectorSpec back to the raw object that lives in
- * `manifest.raw.connectors` (serialized as YAML for `kortix.yaml`, or TOML
- * for a legacy v1 `kortix.toml`). Inverse of `parseConnectorEntry`. Used by
+ * `manifest.raw.connectors` (serialized as YAML for `zed.yaml`, or TOML
+ * for a legacy v1 `zed.toml`). Inverse of `parseConnectorEntry`. Used by
  * the CRUD path to round-trip a dashboard edit before committing.
  */
 export function connectorSpecToTomlEntry(spec: ConnectorSpec): Record<string, unknown> {
@@ -389,7 +389,7 @@ export function manifestHashForConnector(spec: ConnectorSpec): string {
     // Static headers change what every outbound request looks like, and they
     // are persisted in the connector's materialized `config` — which is only
     // rewritten when this hash changes. Leaving them out would let a header
-    // edit commit to kortix.yaml and never reach the gateway.
+    // edit commit to zed.yaml and never reach the gateway.
     headers: spec.headers,
   });
   return createHash('sha256').update(canonical).digest('hex');
@@ -601,7 +601,7 @@ function parseProviderFields(
     // API. Tunnel ids must not enter repository configuration.
     return err(
       slug,
-      'provider="computer" is managed through the connector API (Computers) — it cannot be declared in kortix.yaml',
+      'provider="computer" is managed through the connector API (Computers) — it cannot be declared in zed.yaml',
       filename,
     );
   }
@@ -709,7 +709,7 @@ function parseAuth(
  *         X-Tenant-Id: acme
  *
  * The rules (RFC 7230 token names, no CR/LF in values, caps, no
- * transport-owned names) live in `@kortix/manifest-schema` so the CR-merge
+ * transport-owned names) live in `@zed/manifest-schema` so the CR-merge
  * gate, this parser and the connector can never drift. Values are NOT secrets —
  * they sit in git in plaintext; the credential goes in `auth`.
  */

@@ -8,7 +8,7 @@ import { ActivityBurst } from '@/features/session/turn/activity-burst';
 import { PlanCard } from '@/features/session/turn/plan-card';
 import { UserMessage } from '@/features/session/turn/user-message';
 import type { MessageWithParts, Part } from '@/ui';
-import { beginOptimisticSend } from '@kortix/sdk/react';
+import { beginOptimisticSend } from '@zed/sdk/react';
 
 /**
  * /debug/turn
@@ -364,7 +364,7 @@ const BURSTS: Array<{ label: string; parts: Part[]; working: boolean }> = [
           ].join('\n'),
         },
         2400,
-        'suna | TypeScript | 2026-07-31\nkortix-sdk | TypeScript | 2026-07-29\ndotfiles | Shell | 2026-06-02',
+        'suna | TypeScript | 2026-07-31\nzed-sdk | TypeScript | 2026-07-29\ndotfiles | Shell | 2026-06-02',
       ),
       tool('bash', { command: 'pnpm build' }, 8200),
     ],

@@ -3,8 +3,8 @@ import type {
   ConnectorAuthorizationStrategy,
   ConnectorDraftInput,
   ConnectorSyncResult,
-} from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 
 const MAX_CONNECTOR_SLUG_LENGTH = 128;
 

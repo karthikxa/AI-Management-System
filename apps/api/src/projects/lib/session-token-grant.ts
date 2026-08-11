@@ -2,7 +2,7 @@
  * Reconcile a live session token's agent grant with the current manifest.
  *
  * `account_tokens.agent_grant` starts from the session's create-time agent.
- * The connector and Kortix-CLI gates (`agentMayUseConnector`,
+ * The connector and Zed-CLI gates (`agentMayUseConnector`,
  * `agentMayPerform`) read that row at call time. The row must therefore follow
  * both in-session agent switches and same-agent manifest edits:
  *
@@ -19,7 +19,7 @@
  * every subsequent call.
  */
 
-import { type AgentGrant, accountTokens, projectSessions, projects } from '@kortix/db';
+import { type AgentGrant, accountTokens, projectSessions, projects } from '@zed/db';
 import { and, eq, isNull } from 'drizzle-orm';
 import { config } from '../../config';
 import { db } from '../../shared/db';
@@ -189,7 +189,7 @@ async function applyResolvedGrant(
  * Re-point a session token's grant at the agent a prompt actually runs.
  *
  * Resolve on every prompt. The manifest can change while the session remains
- * active, including through `kortix connectors add --apply`. Comparing only
+ * active, including through `zed connectors add --apply`. Comparing only
  * agent names leaves the token frozen at its create-time connector and CLI
  * lists.
  *
@@ -224,7 +224,7 @@ export async function remintGrantForAgentSwitch(input: {
   const running = await resolveCurrentGrant({
     ...input,
     runningAgent,
-    enforceGrantLock: config.KORTIX_ENFORCE_AGENT_SECRET_GRANT_LOCK,
+    enforceGrantLock: config.ZED_ENFORCE_AGENT_SECRET_GRANT_LOCK,
     forceRefresh: true,
   });
   return applyResolvedGrant(input.sessionId, stored, running);
@@ -234,8 +234,8 @@ export async function remintGrantForAgentSwitch(input: {
  * Resolve the grant represented by an existing session token from the current
  * project manifest.
  *
- * Connector and Kortix CLI requests can occur after the session changes
- * `kortix.yaml` in the same turn. The prompt hook cannot observe that later
+ * Connector and Zed CLI requests can occur after the session changes
+ * `zed.yaml` in the same turn. The prompt hook cannot observe that later
  * mutation. Gateway authorization therefore calls this function before it
  * evaluates the stored grant.
  *

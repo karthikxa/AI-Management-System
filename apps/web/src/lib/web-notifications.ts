@@ -17,7 +17,7 @@ import { useWebNotificationStore } from '@/stores/web-notification-store';
 import { openTabAndNavigate, useTabStore } from '@/stores/tab-store';
 import { toast } from '@/lib/toast';
 import { logger } from '@/lib/logger';
-import { normalizeAppPathname } from '@kortix/sdk/instance-routes';
+import { normalizeAppPathname } from '@zed/sdk/instance-routes';
 import { playSound } from '@/lib/sounds';
 import type { SoundEvent } from '@/stores/sound-store';
 
@@ -339,7 +339,7 @@ export function notifySessionError(
 }
 
 /**
- * Notify that Kortix is asking the user a question.
+ * Notify that Zed is asking the user a question.
  */
 export function notifyQuestion(
   sessionId: string,
@@ -360,7 +360,7 @@ export function notifyQuestion(
 }
 
 /**
- * Notify that Kortix needs a permission grant.
+ * Notify that Zed needs a permission grant.
  */
 export function notifyPermissionRequest(
   sessionId: string,

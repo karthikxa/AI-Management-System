@@ -98,7 +98,7 @@ describe('EntityAvatar — what the tile shows', () => {
   });
 
   test('null — what the SDK returns for "no icon" — falls through to the initial', () => {
-    // `KortixProject.icon` is `string | null | undefined`, so the prop takes
+    // `ZedProject.icon` is `string | null | undefined`, so the prop takes
     // null and the card passes it straight through. A truthiness check is what
     // makes this work; `emoji !== undefined` would render an empty span here
     // and the initial would vanish for every project that never set an icon.

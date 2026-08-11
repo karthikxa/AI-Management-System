@@ -294,7 +294,7 @@ export function useAdminRevokeTrial() {
 
 /**
  * Set the account's managed-models override. Tri-state: `null` restores "the
- * effective tier decides", `true` forces managed (Kortix-credential) models on,
+ * effective tier decides", `true` forces managed (Zed-credential) models on,
  * `false` forces BYOK-only.
  */
 export function useAdminSetManagedModels() {

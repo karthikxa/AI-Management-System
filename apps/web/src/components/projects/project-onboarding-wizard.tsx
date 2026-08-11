@@ -14,8 +14,8 @@ import { useProjectOnboarding } from '@/hooks/projects/use-project-onboarding';
 import { usePersonalContactTier } from '@/hooks/use-show-personal-contact';
 import { isConnectorsEnabled } from '@/lib/config';
 import { useComposerPrefillStore } from '@/stores/composer-prefill-store';
-import { listConnectors } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+import { listConnectors } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 
 import { slideVariants } from './onboarding/motion';
 import {
@@ -32,8 +32,8 @@ import { ToolsStep } from './onboarding/steps/tools-step';
 import { UseCaseStep } from './onboarding/steps/use-case-step';
 import { useOnboardingAnswers } from './onboarding/use-onboarding-answers';
 
-const CAL_LINK = 'team/kortix/demo';
-const CAL_NAMESPACE = 'kortix-onboarding-wizard';
+const CAL_LINK = 'team/zed/demo';
+const CAL_NAMESPACE = 'zed-onboarding-wizard';
 
 function AnimatedStep({
   children,

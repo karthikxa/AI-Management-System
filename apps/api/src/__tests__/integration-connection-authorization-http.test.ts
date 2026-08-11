@@ -23,7 +23,7 @@ import {
   projectSessionPublicShares,
   projectSessions,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { eq, sql } from 'drizzle-orm';
 import { completeAuthorizationCodeSession } from '../connectors/oauth2-store';
 import { PROJECT_ACTIONS } from '../iam';
@@ -72,18 +72,18 @@ function git(args: string[], cwd: string): void {
 }
 
 beforeAll(async () => {
-  fixtureRoot = await mkdtemp(join(tmpdir(), 'kortix-session-scope-http-'));
-  previousGitCacheDir = process.env.KORTIX_GIT_CACHE_DIR;
-  process.env.KORTIX_GIT_CACHE_DIR = join(fixtureRoot, 'git-cache');
+  fixtureRoot = await mkdtemp(join(tmpdir(), 'zed-session-scope-http-'));
+  previousGitCacheDir = process.env.ZED_GIT_CACHE_DIR;
+  process.env.ZED_GIT_CACHE_DIR = join(fixtureRoot, 'git-cache');
   const repository = join(fixtureRoot, 'repository');
   mkdirSync(repository, { recursive: true });
   git(['init', '-b', 'main'], repository);
-  git(['config', 'user.email', 'session-scope@kortix.test'], repository);
+  git(['config', 'user.email', 'session-scope@zed.test'], repository);
   git(['config', 'user.name', 'Session Scope Test'], repository);
   writeFileSync(
-    join(repository, 'kortix.yaml'),
+    join(repository, 'zed.yaml'),
     [
-      'kortix_version: 2',
+      'zed_version: 2',
       'default_agent: scope_worker',
       'project:',
       '  name: Session scope HTTP',
@@ -91,20 +91,20 @@ beforeAll(async () => {
       '  scope_worker:',
       '    connectors: all',
       '    secrets: all',
-      '    kortix_cli: all',
+      '    zed_cli: all',
       '',
     ].join('\n'),
     'utf8',
   );
-  git(['add', 'kortix.yaml'], repository);
+  git(['add', 'zed.yaml'], repository);
   git(['commit', '-m', 'initial'], repository);
 
   await db.execute(
-    sql`alter table kortix.account_tokens add column if not exists agent_grant jsonb`,
+    sql`alter table zed.account_tokens add column if not exists agent_grant jsonb`,
   );
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists session_id text`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists session_id text`);
   await db.execute(
-    sql`alter table kortix.account_tokens add column if not exists service_account_id uuid`,
+    sql`alter table zed.account_tokens add column if not exists service_account_id uuid`,
   );
   await db.insert(accounts).values({ accountId: ACCOUNT, name: 'connection-owner-http' });
   await db.insert(projects).values({
@@ -112,7 +112,7 @@ beforeAll(async () => {
     accountId: ACCOUNT,
     name: 'connection-owner-http',
     repoUrl: repository,
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
   });
   await db.insert(accountMembers).values([
     { accountId: ACCOUNT, userId: MANAGER, accountRole: 'member' },
@@ -291,7 +291,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   for (const tokenId of minted) {
-    await db.execute(sql`delete from kortix.account_tokens where token_id = ${tokenId}`);
+    await db.execute(sql`delete from zed.account_tokens where token_id = ${tokenId}`);
   }
   await db.delete(projectSessions).where(eq(projectSessions.projectId, PROJECT));
   await db
@@ -299,8 +299,8 @@ afterAll(async () => {
     .where(eq(connectorConnections.projectId, PROJECT));
   await db.delete(projects).where(eq(projects.projectId, PROJECT));
   await db.delete(accounts).where(eq(accounts.accountId, ACCOUNT));
-  if (previousGitCacheDir === undefined) delete process.env.KORTIX_GIT_CACHE_DIR;
-  else process.env.KORTIX_GIT_CACHE_DIR = previousGitCacheDir;
+  if (previousGitCacheDir === undefined) delete process.env.ZED_GIT_CACHE_DIR;
+  else process.env.ZED_GIT_CACHE_DIR = previousGitCacheDir;
   if (fixtureRoot) await rm(fixtureRoot, { recursive: true, force: true });
 });
 

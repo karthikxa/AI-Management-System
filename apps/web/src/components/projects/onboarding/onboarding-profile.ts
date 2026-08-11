@@ -7,7 +7,7 @@
  */
 
 import { emailDomain, isWorkEmail } from '@/lib/personal-email';
-import type { OnboardingCompanySize, OnboardingUseCase } from '@kortix/sdk';
+import type { OnboardingCompanySize, OnboardingUseCase } from '@zed/sdk';
 import type { IconWeight } from '@phosphor-icons/react';
 
 export type StepId = 'use-case' | 'company' | 'tools' | 'slack' | 'plan' | 'done';

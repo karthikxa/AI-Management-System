@@ -46,7 +46,7 @@ let mockAccountDeleteAllowed = true;
 mock.module('../middleware/auth', () => ({
   supabaseAuth: async (c: any, next: any) => {
     c.set('userId', TEST_USER_ID);
-    c.set('userEmail', 'test@kortix.dev');
+    c.set('userEmail', 'test@zed.dev');
     await next();
   },
   apiKeyAuth: async (c: any, next: any) => { await next(); },
@@ -170,10 +170,10 @@ mock.module('../shared/stripe', () => ({
 mock.module('../config', () => ({
   config: {
     STRIPE_WEBHOOK_SECRET: 'whsec_test',
-    INTERNAL_KORTIX_ENV: 'staging',
+    INTERNAL_ZED_ENV: 'staging',
     DATABASE_URL: '',
     FRONTEND_URL: 'http://localhost:3000',
-    KORTIX_BILLING_INTERNAL_ENABLED: true,
+    ZED_BILLING_INTERNAL_ENABLED: true,
     ALLOWED_SANDBOX_PROVIDERS: ['daytona'],
     isDaytonaEnabled: () => false,
     getDefaultProvider: () => 'daytona',
@@ -182,7 +182,7 @@ mock.module('../config', () => ({
 
 // Customers repository mock
 mock.module('../billing/repositories/customers', () => ({
-  getCustomerByAccountId: async () => ({ id: 'cus_test_123', accountId: TEST_USER_ID, email: 'test@kortix.dev', provider: 'stripe', active: true }),
+  getCustomerByAccountId: async () => ({ id: 'cus_test_123', accountId: TEST_USER_ID, email: 'test@zed.dev', provider: 'stripe', active: true }),
   getCustomerByStripeId: async () => null,
   listAccountStripeCustomerIds: async () => ['cus_test_123'],
   upsertCustomer: async () => {},

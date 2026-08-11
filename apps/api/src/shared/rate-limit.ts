@@ -177,7 +177,7 @@ export function createInviteAcceptRateLimitMiddleware() {
       inviteAcceptLimiter,
       clientIp(c),
       {
-        limit: positiveInt((config as any).KORTIX_INVITE_ACCEPT_REQS_PER_MIN, 20),
+        limit: positiveInt((config as any).ZED_INVITE_ACCEPT_REQS_PER_MIN, 20),
         windowMs: 60_000,
       },
       {
@@ -200,7 +200,7 @@ export function createSandboxProxyRateLimitMiddleware() {
       sandboxProxyLimiter,
       sandboxId,
       {
-        limit: positiveInt((config as any).KORTIX_PROXY_REQS_PER_MIN, 600),
+        limit: positiveInt((config as any).ZED_PROXY_REQS_PER_MIN, 600),
         windowMs: 60_000,
       },
       {
@@ -241,7 +241,7 @@ export function createPublicSessionShareRateLimitMiddleware() {
       publicSessionShareLimiter,
       shareId,
       {
-        limit: positiveInt((config as any).KORTIX_PUBLIC_SESSION_SHARE_REQS_PER_MIN, 60),
+        limit: positiveInt((config as any).ZED_PUBLIC_SESSION_SHARE_REQS_PER_MIN, 60),
         windowMs: 60_000,
       },
       {
@@ -269,7 +269,7 @@ export function createDemoRequestRateLimitMiddleware() {
       demoRequestLimiter,
       clientIp(c),
       {
-        limit: positiveInt((config as any).KORTIX_DEMO_REQUEST_REQS_PER_MIN, 10),
+        limit: positiveInt((config as any).ZED_DEMO_REQUEST_REQS_PER_MIN, 10),
         windowMs: 60_000,
       },
       {
@@ -301,7 +301,7 @@ export function createVoiceJoinLinkRateLimitMiddleware() {
       voiceJoinLinkLimiter,
       clientIp(c),
       {
-        limit: positiveInt((config as any).KORTIX_VOICE_JOIN_LINK_REQS_PER_MIN, 30),
+        limit: positiveInt((config as any).ZED_VOICE_JOIN_LINK_REQS_PER_MIN, 30),
         windowMs: 60_000,
       },
       {
@@ -334,7 +334,7 @@ export function createVoiceTranscriptPollRateLimitMiddleware() {
       voiceTranscriptPollLimiter,
       clientIp(c),
       {
-        limit: positiveInt((config as any).KORTIX_VOICE_TRANSCRIPT_REQS_PER_MIN, 120),
+        limit: positiveInt((config as any).ZED_VOICE_TRANSCRIPT_REQS_PER_MIN, 120),
         windowMs: 60_000,
       },
       {
@@ -364,7 +364,7 @@ export function createCheckEmailRateLimitMiddleware() {
       checkEmailLimiter,
       clientIp(c),
       {
-        limit: positiveInt((config as any).KORTIX_CHECK_EMAIL_REQS_PER_MIN, 60),
+        limit: positiveInt((config as any).ZED_CHECK_EMAIL_REQS_PER_MIN, 60),
         windowMs: 60_000,
       },
       {
@@ -388,7 +388,7 @@ export function createProjectWebhookRateLimitMiddleware() {
   return async (c: Context, next: Next) => {
     const projectId = c.req.param('projectId') || 'unknown';
     const result = projectWebhookLimiter.check(`${projectId}:${clientIp(c)}`, {
-      limit: positiveInt((config as any).KORTIX_PROJECT_WEBHOOK_REQS_PER_MIN, 120),
+      limit: positiveInt((config as any).ZED_PROJECT_WEBHOOK_REQS_PER_MIN, 120),
       windowMs: 60_000,
     });
     setHeaders(c, result);

@@ -1,4 +1,4 @@
-import { PublicSessionShareError } from '@kortix/sdk';
+import { PublicSessionShareError } from '@zed/sdk';
 
 export interface ShareLoadError {
   status: number | null;

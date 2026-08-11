@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { GatewayResolutionError } from '@kortix/llm-gateway';
+import { GatewayResolutionError } from '@zed/llm-gateway';
 
 import { ApiUnavailableError, type FetchLike, createApiClient } from './api-client';
 

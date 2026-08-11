@@ -117,7 +117,7 @@ import {
   resendAccountInvite,
   updateAccountMemberRole,
   updateAccountName,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import type { Icon as IconType, Icon as LucideIcon } from '@phosphor-icons/react';
 import {
   GearSixIcon as CogOne,
@@ -260,7 +260,7 @@ async function copyInviteLink(url: string) {
 
 function rememberGitHubSetupReturn(path: string) {
   try {
-    window.localStorage.setItem('kortix:github_setup_return', path);
+    window.localStorage.setItem('zed:github_setup_return', path);
   } catch {
     // Non-critical: the setup page falls back to the project import flow.
   }
@@ -748,7 +748,7 @@ function GitHubConnectionCard({
         <div className="space-y-0.5">
           <span className="flex items-center gap-1">
             <p className="text-foreground text-sm font-medium">GitHub connections</p>
-            <Hint label="Kortix stores the GitHub App installation on the account, not on individual members — Git credentials are platform credentials.">
+            <Hint label="Zed stores the GitHub App installation on the account, not on individual members — Git credentials are platform credentials.">
               <Button
                 type="button"
                 variant="ghost"
@@ -1463,7 +1463,7 @@ function MembersCard({
                           {member.is_super_admin ? (
                             <Badge
                               size="sm"
-                              className="bg-kortix-orange/15 text-kortix-orange border-transparent"
+                              className="bg-zed-orange/15 text-zed-orange border-transparent"
                               title="Super admin — bypasses every IAM check"
                             >
                               Super

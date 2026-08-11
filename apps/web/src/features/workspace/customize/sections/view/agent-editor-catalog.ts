@@ -29,16 +29,16 @@ export const THEME_COLORS = [
  * What each theme colour looks like, for the swatch picker. The manifest stores
  * the NAME (`success`), not a hex — the runtime resolves it against the active
  * theme. These classes are a preview of that resolution, mapped onto the
- * `kortix-*` brand tokens so the picker shows colour instead of seven words.
+ * `zed-*` brand tokens so the picker shows colour instead of seven words.
  */
 export const THEME_COLOR_SWATCH: Record<(typeof THEME_COLORS)[number], string> = {
   primary: 'bg-foreground',
   secondary: 'bg-muted-foreground',
-  accent: 'bg-kortix-purple',
-  success: 'bg-kortix-green',
-  warning: 'bg-kortix-orange',
-  error: 'bg-kortix-red',
-  info: 'bg-kortix-blue',
+  accent: 'bg-zed-purple',
+  success: 'bg-zed-green',
+  warning: 'bg-zed-orange',
+  error: 'bg-zed-red',
+  info: 'bg-zed-blue',
 };
 export const WORKSPACE_MODES = ['runtime', 'read', 'branch'] as const;
 /** Display names — see AGENT_MODE_LABEL. */
@@ -138,8 +138,8 @@ export const PERMISSION_KEY_HELP: Record<string, string> = {
 };
 
 /**
- * The grantable `kortix_cli` action catalog, grouped for the picker. MUST stay
- * in sync with `GRANTABLE_KORTIX_CLI_ACTIONS` in @kortix/manifest-schema (=
+ * The grantable `zed_cli` action catalog, grouped for the picker. MUST stay
+ * in sync with `GRANTABLE_ZED_CLI_ACTIONS` in @zed/manifest-schema (=
  * PROJECT_ACTIONS in apps/api iam/actions.ts — every project-scoped action,
  * including the manager-tier leaves project.delete / project.members.manage /
  * project.gateway.keys.manage, still reachable via a project's `manager`
@@ -147,7 +147,7 @@ export const PERMISSION_KEY_HELP: Record<string, string> = {
  * packages aren't in the web bundle — same mirror discipline as
  * apps/web/src/lib/project-actions.ts. Kept in sync by
  * agent-editor.test.tsx's drift guard against the real
- * `GRANTABLE_KORTIX_CLI_ACTIONS` constant.
+ * `GRANTABLE_ZED_CLI_ACTIONS` constant.
  *
  * Account-scoped admin actions (member.*, billing.*, token.*, project.create,
  * …) are ALSO absent — but that omission is a UX curation choice, not the
@@ -156,7 +156,7 @@ export const PERMISSION_KEY_HELP: Record<string, string> = {
  * project-bound token before an agent's grant is even consulted (see
  * `iam/engine-v2.ts`'s `computeTokenScope`).
  */
-export const KORTIX_CLI_CATALOG: { group: string; actions: string[] }[] = [
+export const ZED_CLI_CATALOG: { group: string; actions: string[] }[] = [
   { group: 'Project', actions: ['project.read', 'project.write', 'project.delete'] },
   { group: 'Change requests', actions: ['project.cr.open', 'project.cr.merge'] },
   {

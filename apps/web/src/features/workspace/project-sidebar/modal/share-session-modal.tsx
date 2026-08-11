@@ -21,7 +21,7 @@ import {
   selectionToIntent,
   type SharingSelection,
 } from '@/features/workspace/shared/sharing-picker';
-import { setProjectSessionSharing, type ProjectSession } from '@kortix/sdk';
+import { setProjectSessionSharing, type ProjectSession } from '@zed/sdk';
 import {
   GlobeIcon as Globe,
   LockIcon as LockSolid,
@@ -68,7 +68,7 @@ export function SessionVisibilityBadge({ session }: { session: ProjectSession })
     !session.is_owner && session.owner_email ? `Shared by ${session.owner_email}` : null;
   return (
     <Hint side="bottom" label={sharedBy ?? `${meta.label} · who can access this session`}>
-      <Badge variant="kortix" size="sm" className="gap-2">
+      <Badge variant="zed" size="sm" className="gap-2">
         <Icon className="size-3" />
         {meta.label}
       </Badge>

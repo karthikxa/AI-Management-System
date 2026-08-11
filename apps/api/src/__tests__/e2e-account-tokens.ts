@@ -5,7 +5,7 @@
  *
  * Steps:
  *   1. Find an existing user/account in the DB.
- *   2. Mint a kortix_pat_... token and insert it into account_tokens.
+ *   2. Mint a zed_pat_... token and insert it into account_tokens.
  *   3. Hit GET /v1/accounts/me + GET /v1/projects with that token.
  *   4. Revoke the token; confirm /me now returns 401.
  *   5. Clean up the test row.
@@ -21,7 +21,7 @@ import {
   hashSecretKey,
 } from '../shared/crypto';
 
-const API_BASE = process.env.KORTIX_API_URL ?? 'http://localhost:8008';
+const API_BASE = process.env.ZED_API_URL ?? 'http://localhost:8008';
 
 function ok(msg: string) {
   process.stdout.write(`  \x1b[0;32m✓\x1b[0m  ${msg}\n`);
@@ -41,12 +41,12 @@ interface RawRow extends Record<string, unknown> {
 
 async function pickUserAndAccount(): Promise<RawRow> {
   const result = await db.execute<RawRow>(
-    sql`select user_id, account_id from kortix.account_members order by joined_at limit 1`,
+    sql`select user_id, account_id from zed.account_members order by joined_at limit 1`,
   );
   const rows = (result as unknown as { rows?: RawRow[] }).rows
     ?? (result as unknown as RawRow[]);
   const row = rows[0];
-  if (!row) die('No rows in kortix.account_members. Seed a user first.');
+  if (!row) die('No rows in zed.account_members. Seed a user first.');
   return row;
 }
 
@@ -68,7 +68,7 @@ async function callApi<T>(token: string, path: string): Promise<{ status: number
 }
 
 async function main() {
-  process.stdout.write('\n  \x1b[1mKortix CLI E2E\x1b[0m  (account tokens → /accounts/me → /projects)\n');
+  process.stdout.write('\n  \x1b[1mZed CLI E2E\x1b[0m  (account tokens → /accounts/me → /projects)\n');
   dim('api', API_BASE);
 
   const { user_id, account_id } = await pickUserAndAccount();
@@ -79,7 +79,7 @@ async function main() {
   const { publicKey, secretKey } = generateAccountTokenPair();
   const secretKeyHash = hashSecretKey(secretKey);
   await db.execute(sql`
-    insert into kortix.account_tokens
+    insert into zed.account_tokens
       (account_id, user_id, name, public_key, secret_key_hash)
     values
       (${account_id}, ${user_id}, 'e2e-cli-test', ${publicKey}, ${secretKeyHash})
@@ -106,7 +106,7 @@ async function main() {
 
   // Revoke + verify 401
   await db.execute(sql`
-    update kortix.account_tokens
+    update zed.account_tokens
     set status = 'revoked', revoked_at = now()
     where secret_key_hash = ${secretKeyHash}
   `);
@@ -116,7 +116,7 @@ async function main() {
 
   // Cleanup
   await db.execute(sql`
-    delete from kortix.account_tokens where secret_key_hash = ${secretKeyHash}
+    delete from zed.account_tokens where secret_key_hash = ${secretKeyHash}
   `);
 
   process.stdout.write('\n  \x1b[0;32mAll E2E checks passed.\x1b[0m\n\n');

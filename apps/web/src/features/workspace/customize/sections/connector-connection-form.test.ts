@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { qk } from '@kortix/sdk/react';
+import { qk } from '@zed/sdk/react';
 
 import {
   connectionOwnerTypeForStrategy,

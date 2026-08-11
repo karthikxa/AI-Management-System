@@ -39,9 +39,9 @@ import {
   useIsActionPanelOpen,
   useReadyChip,
   useToggleActionPanel,
-} from '@/stores/kortix-computer-store';
-import { listProjectSessions, restartProjectSession, stopProjectSession } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+} from '@/stores/zed-computer-store';
+import { listProjectSessions, restartProjectSession, stopProjectSession } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import {
   ArrowsClockwiseIcon,
   CaretDoubleLeftIcon,
@@ -422,7 +422,7 @@ export function SessionSiteHeader({
                         informational. `setIsActionPanelOpen` clears it. */}
                     {readyChip?.sessionId === sessionId && !isActionPanelOpen && (
                       <span
-                        className="bg-kortix-green ring-background absolute -top-1 -right-1 size-2 rounded-full ring-2"
+                        className="bg-zed-green ring-background absolute -top-1 -right-1 size-2 rounded-full ring-2"
                         aria-hidden
                       />
                     )}
@@ -436,7 +436,7 @@ export function SessionSiteHeader({
 
       <ExportTranscriptModal
         sessionId={sessionId}
-        kortixSessionScope={isProjectSession ? `${projectId}/${projectSessionId}` : undefined}
+        zedSessionScope={isProjectSession ? `${projectId}/${projectSessionId}` : undefined}
         open={exportOpen}
         onOpenChange={setExportOpen}
       />

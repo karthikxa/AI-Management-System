@@ -2,11 +2,11 @@
 
 Status: working document
 Date: 2026-07-24
-Owner: Kortix product/infra
+Owner: Zed product/infra
 Related:
 `docs/specs/2026-06-28-token-session-agent-identity.md`,
 `docs/specs/2026-06-28-project-authorization-runtime-governance.md`,
-`docs/specs/2026-07-08-one-kortix-token-and-cli-centric-platform.md`,
+`docs/specs/2026-07-08-one-zed-token-and-cli-centric-platform.md`,
 `docs/specs/2026-07-05-agent-first-config-unification.md`,
 `docs/specs/2026-07-14-trigger-session-strategy.md`
 
@@ -51,7 +51,7 @@ document is normative and describes the target, not the current build.
 | Term | Definition |
 |---|---|
 | Project | A git repository that constitutes the organization's configuration and accumulated state. The unit of ownership, isolation, and billing. |
-| Manifest | `kortix.yaml` at the project root. The declarative definition of the project's agents, grants, connectors, required secrets, triggers, policy, and runtime image. (Channel routing is live project state; `channels:` is rejected in v2.) |
+| Manifest | `zed.yaml` at the project root. The declarative definition of the project's agents, grants, connectors, required secrets, triggers, policy, and runtime image. (Channel routing is live project state; `channels:` is rejected in v2.) |
 | Agent | A named principal defined by a behavior file (`.md`) and a governance entry in the manifest. |
 | Session | One bounded unit of agent execution: one sandbox, one branch, one agent, one token. |
 | Sandbox | The isolated Linux machine a session executes in. |
@@ -185,7 +185,7 @@ each independently scoped:
 |---|---|
 | `connectors` | Which external systems the agent may reach. |
 | `secrets` | Which project secrets are materialized into the sandbox and readable via the secrets interface. |
-| `kortix_cli` | Which project-scoped platform actions the agent may perform. |
+| `zed_cli` | Which project-scoped platform actions the agent may perform. |
 | `skills` | Which procedural artifacts are loaded into the session. |
 
 R-4.2 — Each dimension MUST accept an explicit list, `all`, or `none`.
@@ -236,7 +236,7 @@ R-4.11 — Authorization MUST be enforced in at least two independent layers:
    action before the agent's grant is loaded. Account-scoped administrative
    actions (member, billing, token, role, policy, project creation) MUST be
    structurally ungrantable to an agent.
-2. **Declarative.** The agent's `kortix_cli` grant restricts the project-scoped
+2. **Declarative.** The agent's `zed_cli` grant restricts the project-scoped
    action set.
 
 R-4.12 — The grantable-action catalog is a curation and validation surface. It

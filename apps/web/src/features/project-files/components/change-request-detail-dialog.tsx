@@ -165,7 +165,7 @@ export function ChangeRequestDetailDialog({ crId, onClose }: ChangeRequestDetail
 
   const projectId = useProjectContext()?.projectId ?? '';
   const { version: manifestVersion } = useProjectManifestVersion(projectId);
-  const manifestFilename = manifestVersion === 2 ? 'kortix.yaml' : 'kortix.toml';
+  const manifestFilename = manifestVersion === 2 ? 'zed.yaml' : 'zed.toml';
 
   const mergeMutation = useMergeChangeRequest();
   const closeMutation = useCloseChangeRequest();
@@ -398,7 +398,7 @@ export function ChangeRequestDetailDialog({ crId, onClose }: ChangeRequestDetail
                     {'·'}
                   </span>
                   <span className="shrink-0">into</span>
-                  <Badge variant="kortix" size="xs" className="max-w-[10rem] truncate">
+                  <Badge variant="zed" size="xs" className="max-w-[10rem] truncate">
                     {cr.base_ref}
                   </Badge>
                 </div>

@@ -1,7 +1,7 @@
-/** Session synchronization through the framework-free @kortix/sdk controller. */
+/** Session synchronization through the framework-free @zed/sdk controller. */
 
 import { getAuthToken } from '@/api/config';
-import { createHttpSessionSyncController, type SessionSyncMessage } from '@kortix/sdk';
+import { createHttpSessionSyncController, type SessionSyncMessage } from '@zed/sdk';
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { useSyncStore } from './sync-store';
 import type { MessageWithParts } from './types';

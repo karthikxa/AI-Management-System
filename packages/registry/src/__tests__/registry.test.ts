@@ -9,20 +9,20 @@ import { loadItem, loadRegistry } from '../fetch';
 
 describe('parseItemAddress', () => {
   test('github owner/repo/item', () => {
-    const a = parseItemAddress('kortix-ai/skills/pdf');
-    expect(a.registry).toEqual({ kind: 'github', owner: 'kortix-ai', repo: 'skills', ref: undefined, subdir: undefined });
+    const a = parseItemAddress('zed-ai/skills/pdf');
+    expect(a.registry).toEqual({ kind: 'github', owner: 'zed-ai', repo: 'skills', ref: undefined, subdir: undefined });
     expect(a.item).toBe('pdf');
   });
 
   test('github with scheme + pinned ref', () => {
-    const a = parseItemAddress('github:kortix-ai/skills@v1/pdf');
-    expect(a.registry).toMatchObject({ kind: 'github', owner: 'kortix-ai', repo: 'skills', ref: 'v1' });
+    const a = parseItemAddress('github:zed-ai/skills@v1/pdf');
+    expect(a.registry).toMatchObject({ kind: 'github', owner: 'zed-ai', repo: 'skills', ref: 'v1' });
     expect(a.item).toBe('pdf');
   });
 
   test('namespace', () => {
-    const a = parseItemAddress('@kortix/pdf');
-    expect(a.registry).toEqual({ kind: 'namespace', namespace: '@kortix' });
+    const a = parseItemAddress('@zed/pdf');
+    expect(a.registry).toEqual({ kind: 'namespace', namespace: '@zed' });
     expect(a.item).toBe('pdf');
   });
 
@@ -46,7 +46,7 @@ describe('parseItemAddress', () => {
   });
 
   test('a 2-segment github address is a registry, not an item', () => {
-    expect(() => parseItemAddress('kortix-ai/skills')).toThrow();
+    expect(() => parseItemAddress('zed-ai/skills')).toThrow();
   });
 });
 
@@ -103,18 +103,18 @@ describe('validateRegistry', () => {
 // --- target expansion ------------------------------------------------------
 
 describe('expandTarget', () => {
-  const ctx = { configDir: '.kortix/opencode' };
+  const ctx = { configDir: '.zed/opencode' };
   test('~ maps to repo root', () => {
     expect(expandTarget('~/AGENTS.md', ctx)).toBe('AGENTS.md');
   });
   test('@skills alias', () => {
-    expect(expandTarget('@skills/pdf/SKILL.md', ctx)).toBe('.kortix/opencode/skills/pdf/SKILL.md');
+    expect(expandTarget('@skills/pdf/SKILL.md', ctx)).toBe('.zed/opencode/skills/pdf/SKILL.md');
   });
   test('@agents alias', () => {
-    expect(expandTarget('@agents/researcher.md', ctx)).toBe('.kortix/opencode/agents/researcher.md');
+    expect(expandTarget('@agents/researcher.md', ctx)).toBe('.zed/opencode/agents/researcher.md');
   });
   test('@memory alias', () => {
-    expect(expandTarget('@memory/MEMORY.md', ctx)).toBe('.kortix/memory/MEMORY.md');
+    expect(expandTarget('@memory/MEMORY.md', ctx)).toBe('.zed/memory/MEMORY.md');
   });
   test('respects a custom config dir', () => {
     expect(expandTarget('@skills/pdf/SKILL.md', { configDir: '.agent' })).toBe('.agent/skills/pdf/SKILL.md');
@@ -146,12 +146,12 @@ describe('buildRegistry', () => {
     const { registry, counts } = buildRegistry({
       name: 'test',
       source: memSource({
-        '.kortix/opencode/skills/pdf/SKILL.md': '---\nname: pdf\ndescription: PDFs\n---\nbody',
-        '.kortix/opencode/skills/pdf/libraries/reportlab.md': 'ref',
-        '.kortix/opencode/skills/GROUP/research/SKILL.md': '---\nname: research\n---\nx',
-        '.kortix/opencode/agents/kortix.md': '---\nname: kortix\nmode: primary\n---\n',
-        '.kortix/opencode/commands/review.md': '---\ndescription: review\n---\n',
-        '.kortix/opencode/tools/web_search.ts': 'export const x = 1',
+        '.zed/opencode/skills/pdf/SKILL.md': '---\nname: pdf\ndescription: PDFs\n---\nbody',
+        '.zed/opencode/skills/pdf/libraries/reportlab.md': 'ref',
+        '.zed/opencode/skills/GROUP/research/SKILL.md': '---\nname: research\n---\nx',
+        '.zed/opencode/agents/zed.md': '---\nname: zed\nmode: primary\n---\n',
+        '.zed/opencode/commands/review.md': '---\ndescription: review\n---\n',
+        '.zed/opencode/tools/web_search.ts': 'export const x = 1',
       }),
     });
     expect(counts).toMatchObject({ skill: 2, agent: 1, command: 1, tool: 1 });
@@ -172,7 +172,7 @@ describe('buildRegistry', () => {
     const { registry } = buildRegistry({
       name: 'test',
       source: memSource({
-        'kortix.registry.json': JSON.stringify({
+        'zed.registry.json': JSON.stringify({
           items: [{ name: 'docs', type: 'registry:file', files: [{ path: 'docs', type: 'registry:file', target: '~/docs' }] }],
         }),
         'docs/a.md': 'a',

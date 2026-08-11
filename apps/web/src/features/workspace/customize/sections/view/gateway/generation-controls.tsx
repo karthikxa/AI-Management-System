@@ -35,8 +35,8 @@ import {
   generationControlCapabilities,
   getManagedModel,
   pricingRefLookupCandidates,
-} from '@kortix/llm-catalog';
-import type { GatewayModelGenerationConfig } from '@kortix/sdk';
+} from '@zed/llm-catalog';
+import type { GatewayModelGenerationConfig } from '@zed/sdk';
 
 /** See the module doc comment — this is the client-side mirror of
  *  apps/api's `catalogModelForWireModel`. Kept in lockstep deliberately:
@@ -85,7 +85,7 @@ const EMPTY_CONFIG: GatewayModelGenerationConfig = {};
 /**
  * Compact, capability-gated generation-controls panel for a single model.
  * Renders NOTHING for a control the model doesn't support — driven entirely
- * off `generationControlCapabilities` (`@kortix/llm-catalog`), never a
+ * off `generationControlCapabilities` (`@zed/llm-catalog`), never a
  * per-model id check. Returns `null` (no panel at all) when the model
  * supports none of the four controls.
  */

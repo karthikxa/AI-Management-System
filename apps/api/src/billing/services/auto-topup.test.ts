@@ -13,7 +13,7 @@ mock.module('../../config', () => ({
     {},
     {
       get: (target: Record<PropertyKey, unknown>, key) => {
-        if (key === 'KORTIX_BILLING_INTERNAL_ENABLED') return true;
+        if (key === 'ZED_BILLING_INTERNAL_ENABLED') return true;
         return target[key];
       },
     },

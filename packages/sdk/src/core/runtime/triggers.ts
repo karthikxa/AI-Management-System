@@ -1,9 +1,9 @@
 /**
- * Sandbox triggers client — the daemon `/kortix/triggers...` endpoints, owned
+ * Sandbox triggers client — the daemon `/zed/triggers...` endpoints, owned
  * by the SDK. The host resolves which sandbox base URL to talk to (it may
  * differ from the globally active runtime — e.g. a specific trigger's owning
  * sandbox, or a freshly-provisioned default sandbox) and calls through here
- * instead of `authenticatedFetch('/kortix/triggers...')` directly.
+ * instead of `authenticatedFetch('/zed/triggers...')` directly.
  *
  * The trigger payload/response shapes are host-defined (cron/webhook trigger
  * CRUD, executions) rather than part of the OpenCode protocol, so this stays a
@@ -12,7 +12,7 @@
 import { authenticatedFetch } from '../http/auth';
 
 /**
- * JSON request against `${baseUrl}/kortix/triggers${path}`, surfacing the
+ * JSON request against `${baseUrl}/zed/triggers${path}`, surfacing the
  * daemon's error body on non-2xx responses.
  */
 export async function triggersRequest<T>(
@@ -22,7 +22,7 @@ export async function triggersRequest<T>(
 ): Promise<T> {
   let base = baseUrl;
   while (base.endsWith('/')) base = base.slice(0, -1);
-  const response = await authenticatedFetch(`${base}/kortix/triggers${path}`, {
+  const response = await authenticatedFetch(`${base}/zed/triggers${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',

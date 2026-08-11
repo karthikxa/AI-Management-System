@@ -7,7 +7,7 @@ const dockerAvailable =
     stderr: 'ignore',
   }).exitCode === 0;
 
-const container = `kortix-connector-bindings-configured-${crypto.randomUUID().slice(0, 8)}`;
+const container = `zed-connector-bindings-configured-${crypto.randomUUID().slice(0, 8)}`;
 const migrationDirectory = resolve(import.meta.dir, '..', 'migrations');
 const migrationNames = Array.from(
   new Bun.Glob('*_project_session_connector_bindings_configured.sql').scanSync({
@@ -69,11 +69,11 @@ describe.skipIf(!dockerAvailable)(
         );
         if (probe.exitCode === 0) {
           dockerPsql(`
-            CREATE SCHEMA kortix;
-            CREATE TABLE kortix.project_sessions (
+            CREATE SCHEMA zed;
+            CREATE TABLE zed.project_sessions (
               session_id text PRIMARY KEY
             );
-            INSERT INTO kortix.project_sessions (session_id) VALUES ('existing');
+            INSERT INTO zed.project_sessions (session_id) VALUES ('existing');
           `);
           return;
         }
@@ -97,15 +97,15 @@ describe.skipIf(!dockerAvailable)(
 
       dockerPsql(`
         ${migration}
-        INSERT INTO kortix.project_sessions (session_id) VALUES ('defaulted');
-        INSERT INTO kortix.project_sessions (session_id, connector_bindings_configured)
+        INSERT INTO zed.project_sessions (session_id) VALUES ('defaulted');
+        INSERT INTO zed.project_sessions (session_id, connector_bindings_configured)
         VALUES ('configured', true);
       `);
 
       expect(
         dockerPsql(`
           SELECT session_id || ':' || connector_bindings_configured::text
-          FROM kortix.project_sessions
+          FROM zed.project_sessions
           ORDER BY session_id;
         `),
       ).toBe('configured:true\ndefaulted:false\nexisting:false');
@@ -114,7 +114,7 @@ describe.skipIf(!dockerAvailable)(
         dockerPsql(`
           SELECT is_nullable || ':' || column_default
           FROM information_schema.columns
-          WHERE table_schema = 'kortix'
+          WHERE table_schema = 'zed'
             AND table_name = 'project_sessions'
             AND column_name = 'connector_bindings_configured';
         `),

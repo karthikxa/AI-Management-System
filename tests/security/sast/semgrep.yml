@@ -1,5 +1,5 @@
 rules:
-  - id: kortix-no-child-process-shell-true
+  - id: zed-no-child-process-shell-true
     languages: [typescript, javascript]
     severity: ERROR
     message: >-
@@ -17,7 +17,7 @@ rules:
                   metavariable: $CP
                   regex: ^(child_process|childProcess|childproc|cp|proc)$
 
-  - id: kortix-no-eval-dynamic-code
+  - id: zed-no-eval-dynamic-code
     languages: [typescript, javascript]
     severity: ERROR
     message: >-
@@ -28,7 +28,7 @@ rules:
           - pattern: eval(...)
           - pattern: new Function(...)
 
-  - id: kortix-no-disabled-tls-verification
+  - id: zed-no-disabled-tls-verification
     languages: [typescript, javascript]
     severity: ERROR
     message: >-
@@ -40,7 +40,7 @@ rules:
           - pattern: 'rejectUnauthorized: false'
           - pattern: process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
-  - id: kortix-no-weak-hash-for-secrets
+  - id: zed-no-weak-hash-for-secrets
     languages: [typescript, javascript]
     severity: WARNING
     message: >-
@@ -52,7 +52,7 @@ rules:
           metavariable: $ALGO
           regex: (?i)^["'](md5|sha1)["']$
 
-  - id: kortix-no-math-random-for-secrets
+  - id: zed-no-math-random-for-secrets
     languages: [typescript, javascript]
     severity: WARNING
     message: >-

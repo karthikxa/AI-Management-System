@@ -33,7 +33,7 @@ describe('GitHub repository branches', () => {
     }) as typeof fetch;
 
     const branches = await listRepositoryBranches({
-      owner: 'Kortix AI',
+      owner: 'Zed AI',
       repo: 'suna/web',
       auth: { token: 'test-token' },
     });
@@ -42,8 +42,8 @@ describe('GitHub repository branches', () => {
     expect(branches[0]).toEqual({ name: 'branch-0', protected: true });
     expect(branches[100]).toEqual({ name: 'release/next', protected: true });
     expect(requests).toEqual([
-      'https://api.github.com/repos/Kortix%20AI/suna%2Fweb/branches?per_page=100&page=1',
-      'https://api.github.com/repos/Kortix%20AI/suna%2Fweb/branches?per_page=100&page=2',
+      'https://api.github.com/repos/Zed%20AI/suna%2Fweb/branches?per_page=100&page=1',
+      'https://api.github.com/repos/Zed%20AI/suna%2Fweb/branches?per_page=100&page=2',
     ]);
   });
 
@@ -55,7 +55,7 @@ describe('GitHub repository branches', () => {
     }) as typeof fetch;
 
     const branch = await getRepositoryBranch({
-      owner: 'kortix',
+      owner: 'zed',
       repo: 'suna',
       branch: 'release/next',
       auth: { token: 'test-token' },
@@ -63,7 +63,7 @@ describe('GitHub repository branches', () => {
 
     expect(branch).toEqual({ name: 'release/next', protected: false });
     expect(requested).toBe(
-      'https://api.github.com/repos/kortix/suna/branches/release%2Fnext',
+      'https://api.github.com/repos/zed/suna/branches/release%2Fnext',
     );
   });
 
@@ -72,7 +72,7 @@ describe('GitHub repository branches', () => {
       Response.json({ message: 'Service unavailable' }, { status: 503 })) as unknown as typeof fetch;
 
     const request = getRepositoryBranch({
-      owner: 'kortix',
+      owner: 'zed',
       repo: 'suna',
       branch: 'dev',
       auth: { token: 'test-token' },
@@ -149,7 +149,7 @@ describe('listOwnerRepositories — the managed-git PAT backend\'s repo lister',
 
   test('a personal (User) owner lists via GET /user/repos, filtered back down to that owner', async () => {
     let requested = '';
-    const ownRepo = repo('agent-kortix', 'demo');
+    const ownRepo = repo('agent-zed', 'demo');
     globalThis.fetch = (async (input: string | URL | Request) => {
       requested = String(input instanceof Request ? input.url : input);
       // A classic PAT's /user/repos can include repos under OTHER owners
@@ -159,7 +159,7 @@ describe('listOwnerRepositories — the managed-git PAT backend\'s repo lister',
     }) as typeof fetch;
 
     const repos = await listOwnerRepositories({
-      owner: 'agent-kortix',
+      owner: 'agent-zed',
       ownerType: 'User',
       auth: { token: 'pat-token' },
     });
@@ -177,15 +177,15 @@ describe('listOwnerRepositories — the managed-git PAT backend\'s repo lister',
       const url = String(input instanceof Request ? input.url : input);
       requests.push(url);
       if (url.match(/\/users\/[^/]+$/)) return Response.json({ type: 'User' });
-      return Response.json([repo('agent-kortix', 'demo')]);
+      return Response.json([repo('agent-zed', 'demo')]);
     }) as typeof fetch;
 
     const repos = await listOwnerRepositories({
-      owner: 'agent-kortix',
+      owner: 'agent-zed',
       auth: { token: 'pat-token' },
     });
 
-    expect(repos.map((r) => r.full_name)).toEqual(['agent-kortix/demo']);
-    expect(requests[0]).toBe('https://api.github.com/users/agent-kortix');
+    expect(repos.map((r) => r.full_name)).toEqual(['agent-zed/demo']);
+    expect(requests[0]).toBe('https://api.github.com/users/agent-zed');
   });
 });

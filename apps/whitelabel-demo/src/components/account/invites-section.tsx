@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { relativeTime } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { MailWarning } from 'lucide-react';
@@ -15,7 +15,7 @@ import { MailWarning } from 'lucide-react';
 export function InvitesSection({ accountId }: { accountId: string }) {
   const invites = useQuery({
     queryKey: ['account-invites', accountId],
-    queryFn: () => kortix.accounts.invites(accountId),
+    queryFn: () => zed.accounts.invites(accountId),
   });
 
   const items = invites.data ?? [];

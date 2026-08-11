@@ -41,12 +41,12 @@ import {
 import { useCurrentAccountStore } from '@/stores/current-account-store';
 import { type ProjectsViewMode, useProjectsViewStore } from '@/stores/projects-view-store';
 import {
-  type KortixProject,
+  type ZedProject,
   archiveProject,
   listAccounts,
   listProjectsForAccount,
-} from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import { FolderPlusIcon as FolderPlus, MagnifyingGlassIcon as Search } from '@phosphor-icons/react';
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -104,8 +104,8 @@ export default function ProjectsPage() {
   const { viewMode, setViewMode } = useProjectsViewStore();
   const [query, setQuery] = useState('');
   const [archivingId, setArchivingId] = useState<string | null>(null);
-  const [editTarget, setEditTarget] = useState<KortixProject | null>(null);
-  const [archiveTarget, setArchiveTarget] = useState<KortixProject | null>(null);
+  const [editTarget, setEditTarget] = useState<ZedProject | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<ZedProject | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [createAccountId, setCreateAccountId] = useState<string | null>(null);
   const [cloneSourceItemId, setCloneSourceItemId] = useState<string | null>(null);
@@ -197,7 +197,7 @@ export default function ProjectsPage() {
   });
 
   const filterProjects = useCallback(
-    (items: KortixProject[]) => {
+    (items: ZedProject[]) => {
       const q = query.trim().toLowerCase();
       if (!q) return items;
       return items.filter((project) =>

@@ -1,4 +1,4 @@
-import { projectSessions } from '@kortix/db';
+import { projectSessions } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 
 import { PROJECT_ACTIONS } from '../../iam/actions';

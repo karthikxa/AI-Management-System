@@ -35,8 +35,8 @@ import {
   listProjectSecrets,
   pollProjectProviderOAuth,
   startProjectProviderOAuth,
-} from '@kortix/sdk';
-import { contract, qk, refreshProjectProviderState } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk, refreshProjectProviderState } from '@zed/sdk/react';
 
 export const CODEX_AUTH_JSON_SECRET_NAME = 'CODEX_AUTH_JSON';
 export const LEGACY_RUNTIME_AUTH_JSON_SECRET_NAME = 'OPENCODE_AUTH_JSON';

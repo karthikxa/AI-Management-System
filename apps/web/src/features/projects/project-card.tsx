@@ -10,8 +10,8 @@ import {
 import { EntityAvatar } from '@/components/ui/entity-avatar';
 import Loading from '@/components/ui/loading';
 import { useIsMobile } from '@/hooks/utils';
-import { relativeTime } from '@/lib/kortix/task-meta';
-import { KortixProject } from '@kortix/sdk';
+import { relativeTime } from '@/lib/zed/task-meta';
+import { ZedProject } from '@zed/sdk';
 import {
   ArrowUpRightIcon as ArrowUpRight,
   DotsThreeIcon as MoreHorizontal,
@@ -27,7 +27,7 @@ const ProjectCard = ({
   onArchive,
   archiving,
 }: {
-  project: KortixProject;
+  project: ZedProject;
   onOpen: () => void;
   onEdit: () => void;
   onArchive: () => void;

@@ -1,6 +1,6 @@
-# Kortix Self-Host
+# Zed Self-Host
 
-Run your own private instance of Kortix — the full stack (frontend, API, LLM
+Run your own private instance of Zed — the full stack (frontend, API, LLM
 gateway, and the official Supabase distribution) as one Docker Compose
 project, on any box you control. Agent sessions still run on a cloud sandbox
 provider (Daytona, E2B, or Platinum) — sandboxes are managed compute, not part
@@ -11,7 +11,7 @@ provisioning an AWS/EC2 box declaratively, plus this README. For the full
 day-to-day operator reference (troubleshooting, every CLI flag, backup/restore
 mechanics, the auto-updater's internals) see
 [`docs/runbooks/self-hosting.md`](../docs/runbooks/self-hosting.md) in the
-main Kortix repo — this page is intentionally the tight version.
+main Zed repo — this page is intentionally the tight version.
 
 ## 1. Any VPS — quickstart
 
@@ -26,21 +26,21 @@ for real use) running Linux, and a domain you control.
 2. **Run the bootstrap command** on the box (as root, or a user with sudo):
 
    ```sh
-   curl -fsSL https://raw.githubusercontent.com/kortix-ai/suna/main/scripts/kortix-selfhost-up.sh \
-     | bash -s -- --domain kortix.example.com --email ops@example.com
+   curl -fsSL https://raw.githubusercontent.com/zed-ai/suna/main/scripts/zed-selfhost-up.sh \
+     | bash -s -- --domain zed.example.com --email ops@example.com
    ```
 
-   This is [`scripts/kortix-selfhost-up.sh`](../scripts/kortix-selfhost-up.sh)
-   in the main repo: it installs Docker if missing, installs the `kortix` CLI
-   (the one-click installer at `kortix.com/install`), and drives the same
+   This is [`scripts/zed-selfhost-up.sh`](../scripts/zed-selfhost-up.sh)
+   in the main repo: it installs Docker if missing, installs the `zed` CLI
+   (the one-click installer at `zed.com/install`), and drives the same
    `init`/`start` flow described below. Re-running it is safe — every step is
    idempotent.
 
    Or drive it by hand once the CLI is installed:
 
    ```sh
-   curl -fsSL https://kortix.com/install | bash
-   kortix self-host init --domain app.example.com
+   curl -fsSL https://zed.com/install | bash
+   zed self-host init --domain app.example.com
    ```
 
    `init` is a short guided flow (skippable non-interactively with flags or
@@ -61,10 +61,10 @@ for real use) running Linux, and a domain you control.
 3. **Start the stack:**
 
    ```sh
-   kortix self-host start
+   zed self-host start
    ```
 
-   This pulls images and brings the stack up. `kortix self-host status` /
+   This pulls images and brings the stack up. `zed self-host status` /
    `logs` / `doctor` are your friends while it comes up.
 
 4. **Finish in the dashboard.** Open `https://app.example.com` and sign up
@@ -75,22 +75,22 @@ for real use) running Linux, and a domain you control.
    - **Settings → Model** — connect your own model key (BYOK: Anthropic,
      OpenAI, OpenRouter, etc.).
 
-That's a complete, working instance. From here on, use the main `kortix` CLI
-against it like you would against Kortix Cloud:
+That's a complete, working instance. From here on, use the main `zed` CLI
+against it like you would against Zed Cloud:
 
 ```sh
-kortix hosts use selfhost   # already registered + pointed at your instance by `init`/`start`
-kortix login
-kortix whoami
-kortix projects ls
-cd your-project && kortix ship
+zed hosts use selfhost   # already registered + pointed at your instance by `init`/`start`
+zed login
+zed whoami
+zed projects ls
+cd your-project && zed ship
 ```
 
 See
 [`docs/runbooks/self-hosting.md`](../docs/runbooks/self-hosting.md) for the
 no-public-domain Cloudflare-tunnel evaluation path, SMTP, using the CLI
 from a different machine than the one you self-hosted on, uninstalling, and
-the full `kortix self-host` command reference.
+the full `zed self-host` command reference.
 
 ## 2. Want something more robust on AWS? There's a Terraform for that
 
@@ -107,7 +107,7 @@ doesn't have out of the box:
 Use [`terraform/`](terraform/) — a thin root module that instantiates
 `selfhost-ec2` (EC2 instance, a durable encrypted EBS data volume, a security
 group, an Elastic IP, optional Route53 records). It provisions the box
-**once**; after that, cloud-init runs the *exact same* `kortix self-host init`
+**once**; after that, cloud-init runs the *exact same* `zed self-host init`
 / `start` described above, and Terraform never redeploys the running app.
 
 ```sh
@@ -121,7 +121,7 @@ Minimal `terraform.tfvars`:
 
 ```hcl
 aws_region      = "us-east-1"
-domain          = "kortix.example.com"
+domain          = "zed.example.com"
 admin_email     = "admin@example.com"
 route53_zone_id = "Z0123456789ABCDEFGHIJ"   # optional — see "Domain / DNS" below
 ```
@@ -133,7 +133,7 @@ network, backup schedule, update channel, ...).
 
 The domain **must** end up resolving to the box's Elastic IP — that's not
 optional (ACME can't issue a cert otherwise, and agent sandboxes need a real
-public `KORTIX_URL`). Two ways to get there, either is fine:
+public `ZED_URL`). Two ways to get there, either is fine:
 
 1. **Terraform manages it** — set `route53_zone_id` to your domain's Route53
    hosted zone ID. `apply` creates the `A` records for `domain` and its API
@@ -167,12 +167,12 @@ Name=tag:SnapshotOf,Values=<name>-data`.
 
 ### Automatic daily zero-downtime updates
 
-Every instance runs an in-compose `kortix-updater` service — not a Terraform
+Every instance runs an in-compose `zed-updater` service — not a Terraform
 concern — that checks for new images on the configured channel and, when one's
 found, pulls it, runs any new database migrations, and rolls the stack forward
 with zero downtime (`docker compose up -d --wait`). This is **on by default**
 (`auto_update = "on"`); the time/timezone for the daily check comes from the
-guided `init` flow (`kortix self-host configure` to change it later) —
+guided `init` flow (`zed self-host configure` to change it later) —
 Terraform only sets the initial channel/on-off policy, not the clock.
 
 ## 3. Day-2 operations
@@ -182,13 +182,13 @@ All of these run on the box itself (SSH, or `aws ssm start-session --target
 exact command, no SSH key or open port required):
 
 ```sh
-kortix self-host update            # pull the newest image on your channel now, migrate, roll forward
-kortix self-host env ls            # list every value, grouped by service (secrets masked)
-kortix self-host env set KEY=VALUE ...   # set a value (sandbox key, GitHub token, SMTP, ...); restarts affected services only
-kortix self-host env rotate KEY    # regenerate a rotatable generated secret (or --all-generated)
-kortix self-host logs [service]    # tail Compose logs
-kortix self-host status            # container status
-kortix self-host uninstall         # stop + permanently delete this instance's data and config
+zed self-host update            # pull the newest image on your channel now, migrate, roll forward
+zed self-host env ls            # list every value, grouped by service (secrets masked)
+zed self-host env set KEY=VALUE ...   # set a value (sandbox key, GitHub token, SMTP, ...); restarts affected services only
+zed self-host env rotate KEY    # regenerate a rotatable generated secret (or --all-generated)
+zed self-host logs [service]    # tail Compose logs
+zed self-host status            # container status
+zed self-host uninstall         # stop + permanently delete this instance's data and config
 ```
 
 **Restoring from a snapshot** (disaster recovery / cloning an instance):
@@ -201,8 +201,8 @@ kortix self-host uninstall         # stop + permanently delete this instance's d
 3. Stop the instance, detach the current data volume, attach the restored one
    at the same device (`/dev/sdf`), start the instance — cloud-init already
    handles "volume has an existing filesystem" on boot, so it mounts as-is and
-   `kortix self-host` reconciles against the restored state.
-4. `kortix self-host start` to bring the stack back up.
+   `zed self-host` reconciles against the restored state.
+4. `zed self-host start` to bring the stack back up.
 
 Full detail (whole-directory `tar` backups, logical `pg_dump` backups, and
 every troubleshooting scenario) lives in
@@ -211,17 +211,17 @@ every troubleshooting scenario) lives in
 ## 4. Run a specific version or your own build
 
 ```sh
-kortix self-host init --channel latest             # track the bleeding-edge moving tag instead of stable
-kortix self-host init --version 0.10.1             # pin an exact released version
-kortix self-host init --version dev-a1b2c3d         # pin a published dev build (e.g. from a branch's CI)
+zed self-host init --channel latest             # track the bleeding-edge moving tag instead of stable
+zed self-host init --version 0.10.1             # pin an exact released version
+zed self-host init --version dev-a1b2c3d         # pin a published dev build (e.g. from a branch's CI)
 ```
 
 Testing a locally-built image (never pushed to any registry):
 
 ```sh
-docker build -t kortix/kortix-api:mytest apps/api
-kortix self-host init --version mytest --local-images
-kortix self-host start
+docker build -t zed/zed-api:mytest apps/api
+zed self-host init --version mytest --local-images
+zed self-host start
 ```
 
 `--local-images` skips `docker compose pull` (a locally-built tag isn't on

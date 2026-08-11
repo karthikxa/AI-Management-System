@@ -9,7 +9,7 @@ const { hashOauthToken, legacyHashOauthToken, oauthTokenHashCandidates } = await
 
 describe('oauth token hashing', () => {
   // Obviously-fake literal; the trailing marker exempts it from secret scanning.
-  const token = 'kortix_oat_FAKE_TEST_TOKEN'; // gitleaks:allow
+  const token = 'zed_oat_FAKE_TEST_TOKEN'; // gitleaks:allow
 
   test('new tokens hash under the peppered-scrypt scheme, not bare sha256', () => {
     const hash = hashOauthToken(token);
@@ -37,6 +37,6 @@ describe('oauth token hashing', () => {
   });
 
   test('distinct tokens produce distinct hashes', () => {
-    expect(hashOauthToken('kortix_oat_one')).not.toBe(hashOauthToken('kortix_oat_two'));
+    expect(hashOauthToken('zed_oat_one')).not.toBe(hashOauthToken('zed_oat_two'));
   });
 });

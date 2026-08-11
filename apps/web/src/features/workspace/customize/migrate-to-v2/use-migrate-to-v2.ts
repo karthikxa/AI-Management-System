@@ -18,7 +18,7 @@
 
 import { useCallback } from 'react';
 
-import type { StartStash } from '@kortix/sdk/react';
+import type { StartStash } from '@zed/sdk/react';
 
 import { MIGRATE_TO_V2_PROMPT } from './migration-prompt';
 import { buildUpgradeStash, useRunUpgrade } from './use-run-upgrade';

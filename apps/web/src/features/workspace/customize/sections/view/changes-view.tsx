@@ -7,7 +7,7 @@ import Loading from '@/components/ui/loading';
 import { Skeleton } from '@/components/ui/skeleton';
 import { errorToast, successToast } from '@/components/ui/toast';
 import { UserAvatar } from '@/components/ui/user-avatar';
-import { Kortix } from '@/features/icon/icons/kortix';
+import { Zed } from '@/features/icon/icons/zed';
 import { EmptyState } from '@/features/layout/section/empty-state';
 import { ErrorState } from '@/features/layout/section/error-state';
 import { ProjectFilesProvider } from '@/features/project-files';
@@ -24,8 +24,8 @@ import { useCommits } from '@/features/project-files/hooks/use-commits';
 import { PROJECT_ACTIONS } from '@/lib/project-actions';
 import { useProjectCan } from '@/lib/use-project-can';
 import { cn } from '@/lib/utils';
-import { getProjectDetail, type ProjectCommit } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+import { getProjectDetail, type ProjectCommit } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import {
   CheckIcon as Check,
   CheckCircleIcon as CheckCircleSolid,
@@ -43,7 +43,7 @@ import {
   buildTimeline,
   commitTime,
   groupTimeline,
-  isKortixAgent,
+  isZedAgent,
   type TimelineItem,
 } from './changes-timeline';
 
@@ -85,7 +85,7 @@ function CheckpointRow({
   index: number;
   onOpen: (sha: string) => void;
 }) {
-  const byAgent = isKortixAgent(commit);
+  const byAgent = isZedAgent(commit);
   return (
     <li
       className="animate-in fade-in-0 slide-in-from-bottom-1 fill-mode-both"
@@ -96,8 +96,8 @@ function CheckpointRow({
         onClick={() => onOpen(commit.hash)}
         className="group hover:bg-muted/40 active:bg-muted/50 flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors"
       >
-        <span className="bg-kortix-blue/15 flex size-9 shrink-0 items-center justify-center rounded-sm">
-          <History className="text-kortix-blue size-5" />
+        <span className="bg-zed-blue/15 flex size-9 shrink-0 items-center justify-center rounded-sm">
+          <History className="text-zed-blue size-5" />
         </span>
 
         <span className="min-w-0 flex-1">
@@ -107,7 +107,7 @@ function CheckpointRow({
           <span className="text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs">
             {byAgent ? (
               <span className="bg-foreground flex size-5 shrink-0 items-center justify-center rounded-sm border">
-                <Kortix className="text-background size-3" />
+                <Zed className="text-background size-3" />
               </span>
             ) : (
               <UserAvatar
@@ -177,18 +177,18 @@ function ChangeRequestRow({
         className={cn(
           'flex size-9 shrink-0 items-center justify-center rounded-sm',
           cr.status === 'merged'
-            ? 'bg-kortix-green/15'
+            ? 'bg-zed-green/15'
             : cr.status === 'closed'
-              ? 'bg-kortix-red/15'
-              : 'bg-kortix-blue/15',
+              ? 'bg-zed-red/15'
+              : 'bg-zed-blue/15',
         )}
       >
         {cr.status === 'merged' ? (
-          <CheckCircleSolid weight="fill" className="text-kortix-green size-5" />
+          <CheckCircleSolid weight="fill" className="text-zed-green size-5" />
         ) : cr.status === 'closed' ? (
-          <XCircleSolid weight="fill" className="text-kortix-red size-5" />
+          <XCircleSolid weight="fill" className="text-zed-red size-5" />
         ) : (
-          <FileDiff className="text-kortix-blue size-5" />
+          <FileDiff className="text-zed-blue size-5" />
         )}
       </span>
 
@@ -201,7 +201,7 @@ function ChangeRequestRow({
           <span className="shrink-0">{crStatusLabel(cr)}</span>
           <span className="text-muted-foreground/40">&bull;</span>
           <span className="shrink-0">into</span>
-          <Badge variant="kortix" size="xs">
+          <Badge variant="zed" size="xs">
             {cr.base_ref}
           </Badge>
         </span>

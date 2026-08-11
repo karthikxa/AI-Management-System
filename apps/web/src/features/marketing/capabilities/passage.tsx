@@ -47,9 +47,9 @@ import type { Passage as PassageContent } from './content';
    the brand rules. Keeping the copy in `content.ts` as plain strings (rather
    than JSX) is what lets it stay reviewable and, later, translatable — so the
    markup is applied here, from one explicit list. Ordered longest-first so
-   `kortix.yaml` can never be eaten by a shorter alternative. */
+   `zed.yaml` can never be eaten by a shorter alternative. */
 const MONO =
-  /(\{\{ [a-z._*]+ \}\}|kortix\.yaml|kortix init|kortix ship|SKILL\.md|\/workspace|git revert|AES-256-GCM|HMAC-SHA256|\bgrep\b|\bmain\b)/g;
+  /(\{\{ [a-z._*]+ \}\}|zed\.yaml|zed init|zed ship|SKILL\.md|\/workspace|git revert|AES-256-GCM|HMAC-SHA256|\bgrep\b|\bmain\b)/g;
 
 function withMono(text: string): ReactNode[] {
   return text.split(MONO).map((part, i) =>

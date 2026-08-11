@@ -1,4 +1,4 @@
-import type { ManagedModel } from '@kortix/llm-catalog';
+import type { ManagedModel } from '@zed/llm-catalog';
 import { config } from '../../config';
 import { managedTransportAvailable } from '../resolution/descriptors';
 import {

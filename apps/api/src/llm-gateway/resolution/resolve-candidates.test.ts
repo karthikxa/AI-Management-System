@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { GatewayResolutionError } from '@kortix/llm-gateway';
+import { GatewayResolutionError } from '@zed/llm-gateway';
 import * as realTiers from '../../billing/services/tiers';
 
 let tierByAccount: Record<string, string> = {};
@@ -27,7 +27,7 @@ const getCachedAccountTier = mock(async (accountId: string, now: number = Date.n
 // true with NO tier lookup (the "no tier lookup when billing is disabled"
 // test below asserts exactly that).
 const accountMayUseManagedModels = mock(async (accountId: string, now: number = Date.now()) => {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return true;
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return true;
   return !realTiers.accountIsFreeTierForModels(await getCachedAccountTier(accountId, now));
 });
 mock.module('../../billing/services/entitlements', () => ({
@@ -126,7 +126,7 @@ mock.module('./descriptors', () => ({
   },
   managedCandidates: (managed: { id: string }) => [
     {
-      provider: 'kortix-managed',
+      provider: 'zed-managed',
       kind: 'bedrock',
       baseUrl: 'https://managed.test',
       apiKey: 'm',
@@ -178,8 +178,8 @@ beforeEach(() => {
   for (const key of Object.keys(config)) delete config[key];
   Object.assign(config, {
     LLM_GATEWAY_ENABLED: true,
-    KORTIX_MANAGED_PROVIDER_ENABLED: true,
-    KORTIX_BILLING_INTERNAL_ENABLED: true,
+    ZED_MANAGED_PROVIDER_ENABLED: true,
+    ZED_BILLING_INTERNAL_ENABLED: true,
     LLM_GATEWAY_BYOK_FALLBACK_MODEL: 'anthropic/claude-sonnet-4.6',
   });
   resolvedSecret = null;
@@ -220,7 +220,7 @@ describe('resolveCandidates — BYOK billingMode / free-tier / managed-fallback'
       apiKey: 'sk-user-key',
       credentialRef: 'ANTHROPIC_API_KEY',
     });
-    expect(candidates[1]).toMatchObject({ provider: 'kortix-managed' });
+    expect(candidates[1]).toMatchObject({ provider: 'zed-managed' });
   });
 
   test('queues every provider credential before the managed fallback', async () => {
@@ -272,7 +272,7 @@ describe('resolveCandidates — BYOK billingMode / free-tier / managed-fallback'
   // its own AWS_BEARER_TOKEN_BEDROCK resolves to a `kind:'bedrock'` descriptor
   // carrying that key and the bare Bedrock model id — routed through the bedrock
   // transport exactly like the managed Bedrock path, just with the user's own
-  // credentials. KORTIX_MANAGED_PROVIDER_ENABLED is irrelevant here.
+  // credentials. ZED_MANAGED_PROVIDER_ENABLED is irrelevant here.
   //
   // Regression coverage: the region MUST come from the project's OWN
   // AWS_REGION secret, never from deployment/operator config — an earlier
@@ -405,7 +405,7 @@ describe('resolveCandidates — BYOK billingMode / free-tier / managed-fallback'
   });
 
   test('self-hosted (billing disabled): no tier lookup, still gets the platform markup and a managed fallback', async () => {
-    config.KORTIX_BILLING_INTERNAL_ENABLED = false;
+    config.ZED_BILLING_INTERNAL_ENABLED = false;
     catalogUpstream = {
       baseUrl: 'https://api.anthropic.com/v1',
       envVar: 'ANTHROPIC_API_KEY',
@@ -505,11 +505,11 @@ describe('resolveCandidates — managed model tier gating', () => {
 
     const candidates = await resolveCandidates(p, 'glm-5.2');
     expect(candidates).toHaveLength(1);
-    expect(candidates[0]).toMatchObject({ provider: 'kortix-managed' });
+    expect(candidates[0]).toMatchObject({ provider: 'zed-managed' });
   });
 
   test('a known managed model with the provider disabled throws model_disabled_on_deployment', async () => {
-    config.KORTIX_MANAGED_PROVIDER_ENABLED = false;
+    config.ZED_MANAGED_PROVIDER_ENABLED = false;
     runtimeManagedModel = { id: 'glm-5.2' };
     knownManagedModelId = 'glm-5.2';
 

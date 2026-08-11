@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { EntityAvatar, type EntityAvatarSize } from '@/components/ui/entity-avatar';
 import { cn } from '@/lib/utils';
 
@@ -51,7 +51,7 @@ function faviconHost(sourceUrl?: string, id?: string): string | undefined {
 
 /**
  * Identity tile for a marketplace source, in priority order:
- *   1. the Kortix mark for the official source,
+ *   1. the Zed mark for the official source,
  *   2. the GitHub owner's avatar for an `owner/repo` source,
  *   3. a Google favicon for a URL-hosted registry,
  *   4. a deterministic monogram via EntityAvatar + chalkColors.
@@ -78,7 +78,7 @@ export function MarketplaceAvatar({
   // Reset the broken-image fallback when this tile is recycled to a new source.
   useEffect(() => setFailed(0), [id, owner, sourceUrl]);
 
-  if (id === 'kortix') {
+  if (id === 'zed') {
     return (
       <div
         className={cn(
@@ -87,7 +87,7 @@ export function MarketplaceAvatar({
           className,
         )}
       >
-        <KortixLogo variant="symbol" size={LOGO_PX[size]} />
+        <ZedLogo variant="symbol" size={LOGO_PX[size]} />
       </div>
     );
   }

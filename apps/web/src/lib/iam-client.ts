@@ -1,1 +1,1 @@
-export * from '@kortix/sdk';
+export * from '@zed/sdk';

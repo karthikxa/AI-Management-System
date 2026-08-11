@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  Kortix — Dependency chaos via Toxiproxy (OSS, shopify/toxiproxy)             ║
+# ║  Zed — Dependency chaos via Toxiproxy (OSS, shopify/toxiproxy)             ║
 # ║                                                                               ║
 # ║  Steady-state hypothesis:                                                     ║
 # ║    "When a backing dependency (DB/Redis) becomes slow or partitioned, the     ║

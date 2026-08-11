@@ -41,7 +41,7 @@
  *  3. The star count is READ LIVE from `/api/github-stars` via
  *     `useGitHubStars`. Nothing here hardcodes it, and no other repo metric
  *     (forks, contributors, downloads) is claimed — none is read.
- *  4. "Air-gapped" is NOT what `kortix self-host start` gives you: it pulls
+ *  4. "Air-gapped" is NOT what `zed self-host start` gives you: it pulls
  *     images from docker.io and reaches a sandbox provider over egress. This
  *     section now makes no self-hosting claim at all; if one comes back, it
  *     stops at "hardware you control" and is never upgraded to "offline",
@@ -51,13 +51,13 @@
  *  6. Do not claim blanket "microVM isolation" — true for Platinum, not for
  *     Daytona, which is the default. This section names no isolation boundary.
  *  7. Any CLI command put back here must be a shipped one. The two that used to
- *     sit in this file were `kortix self-host start`
- *     (`apps/cli/src/commands/self-host.ts`) and `kortix hosts use <host>`
+ *     sit in this file were `zed self-host start`
+ *     (`apps/cli/src/commands/self-host.ts`) and `zed hosts use <host>`
  *     (`apps/cli/src/commands/hosts.ts:240`, which prints the exact string
  *     "Active host is now <host>"). This section now shows neither.
  *  8. Do NOT claim you can fork someone else's company / project, or publish
  *     your own. The `registry:project` machinery ships, but the catalog holds
- *     exactly one project item — Kortix's own starter
+ *     exactly one project item — Zed's own starter
  *     (`apps/api/src/marketplace/catalog.ts:487` `buildStarterKitProjectItem`;
  *     `packages/starter/src/index.test.ts:459` pins the template list to `[]`),
  *     and there is no publish route at all
@@ -77,7 +77,7 @@ export const openSource = {
   /** The one number on this section. Read live; never hardcoded. */
   stars: {
     /** Sits under the digits, and is the accessible label with them. */
-    caption: 'GitHub stars on kortix-ai/suna',
+    caption: 'GitHub stars on zed-ai/suna',
   },
 
   /**
@@ -92,5 +92,5 @@ export const openSource = {
 
   /** Secondary: the proof the number is about something real. */
   repoLabel: 'Read the source',
-  repoHref: 'https://github.com/kortix-ai/suna',
+  repoHref: 'https://github.com/zed-ai/suna',
 } as const;

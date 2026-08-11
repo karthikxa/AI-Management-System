@@ -33,7 +33,7 @@ bun bin/ke2e.ts run --id SYS-3
 bun bin/ke2e.ts run --grep logout
 
 # point at another environment
-KE2E_API_URL=https://dev-api.kortix.com/v1 bun bin/ke2e.ts run --domain auth
+KE2E_API_URL=https://dev-api.zed.com/v1 bun bin/ke2e.ts run --domain auth
 
 # override the default 4 API workers and 4 sandbox workers
 bun bin/ke2e.ts run --api-workers 12 --sandbox-workers 4
@@ -91,7 +91,7 @@ bun test api/example.api.test.ts \
   --reporter=junit --reporter-outfile=test-results/api/junit.xml
 
 # against another environment
-API_BASE_URL=https://dev-api.kortix.com/v1 bun test api/example.api.test.ts
+API_BASE_URL=https://dev-api.zed.com/v1 bun test api/example.api.test.ts
 ```
 
 | Variable | Default | Description |

@@ -1,11 +1,11 @@
 # Cloudflare Worker that fronts the public API and routes to the active backend.
 # Deploy:
-#   wrangler deploy --env prod    # api.kortix.com      → api-kortix-router
-#   wrangler deploy --env staging # staging-api.kortix.com → staging-api-kortix-router
-#   wrangler deploy --env dev     # dev-api.kortix.com  → dev-api-kortix-router
+#   wrangler deploy --env prod    # api.zed.com      → api-zed-router
+#   wrangler deploy --env staging # staging-api.zed.com → staging-api-zed-router
+#   wrangler deploy --env dev     # dev-api.zed.com  → dev-api-zed-router
 #
 # Auth: a scoped CLOUDFLARE_API_TOKEN (Workers Scripts:Edit + Workers Routes:Edit
-# + DNS:Edit on kortix.com). CI also supports CLOUDFLARE_EMAIL +
+# + DNS:Edit on zed.com). CI also supports CLOUDFLARE_EMAIL +
 # CLOUDFLARE_GLOBAL_API_KEY for the REST API fallback used by deploy-staging.
 #
 # Flip a backend live WITHOUT redeploying code:
@@ -20,61 +20,61 @@ compatibility_date = "2026-06-01"
 workers_dev = false
 account_id = "9785405a992435bb0c7bd19f9b6d26d5"
 
-# ── PROD: api.kortix.com + gateway.kortix.com ─────────────────────────────────
+# ── PROD: api.zed.com + gateway.zed.com ─────────────────────────────────
 [env.prod]
-name = "api-kortix-router"
+name = "api-zed-router"
 routes = [
-  { pattern = "api.kortix.com", custom_domain = true },
-  { pattern = "gateway.kortix.com/*", zone_name = "kortix.com" },
+  { pattern = "api.zed.com", custom_domain = true },
+  { pattern = "gateway.zed.com/*", zone_name = "zed.com" },
 ]
 
 [env.prod.vars]
 # ECS Fargate (eu-west-2) is the ONLY prod backend. EKS was decommissioned
 # 2026-08-02 (was costing ~$937/mo as an unused warm standby).
 ACTIVE_BACKEND = "ecs-fargate"
-BACKEND_ECS_FARGATE = "https://api-ecs-fargate.kortix.com"
-BACKEND_US_EAST_2 = "https://api-use2-shadow.kortix.com"
+BACKEND_ECS_FARGATE = "https://api-ecs-fargate.zed.com"
+BACKEND_US_EAST_2 = "https://api-use2-shadow.zed.com"
 GATEWAY_ACTIVE_BACKEND = "ecs-fargate"
-GATEWAY_BACKEND_ECS_FARGATE = "https://gateway-ecs-fargate.kortix.com"
-GATEWAY_BACKEND_US_EAST_2 = "https://gateway-use2-shadow.kortix.com"
+GATEWAY_BACKEND_ECS_FARGATE = "https://gateway-ecs-fargate.zed.com"
+GATEWAY_BACKEND_US_EAST_2 = "https://gateway-use2-shadow.zed.com"
 # Vercel Edge Config is exposed through this web route. The Worker caches it
 # for two seconds and blocks mutating API/gateway requests at the edge when the
 # level is "blocking". The API origin and database are not part of this read.
-MAINTENANCE_STATE_URL = "https://kortix.com/api/maintenance/edge"
+MAINTENANCE_STATE_URL = "https://zed.com/api/maintenance/edge"
 # The cutover workflow sets this to "blocking" before the final database drain.
 # It keeps the edge write gate closed if Vercel is unavailable during cutover.
 MAINTENANCE_LEVEL_OVERRIDE = "none"
 MAINTENANCE_TITLE_OVERRIDE = "Scheduled maintenance"
-MAINTENANCE_MESSAGE_OVERRIDE = "Kortix is moving production services to US East 2."
+MAINTENANCE_MESSAGE_OVERRIDE = "Zed is moving production services to US East 2."
 
-# ── STAGING: staging-api.kortix.com + gateway-staging.kortix.com ──────────────
+# ── STAGING: staging-api.zed.com + gateway-staging.zed.com ──────────────
 [env.staging]
-name = "staging-api-kortix-router"
+name = "staging-api-zed-router"
 # staging-api is a Worker ROUTE over a proxied (cfargotunnel) record — NOT a
 # custom domain like dev/prod — so keep it a route to avoid clobbering that DNS.
 routes = [
-  { pattern = "staging-api.kortix.com/*", zone_name = "kortix.com" },
-  { pattern = "gateway-staging.kortix.com/*", zone_name = "kortix.com" },
+  { pattern = "staging-api.zed.com/*", zone_name = "zed.com" },
+  { pattern = "gateway-staging.zed.com/*", zone_name = "zed.com" },
 ]
 
 [env.staging.vars]
 # ECS Fargate is the ONLY staging backend. EKS was decommissioned 2026-08-02.
 ACTIVE_BACKEND = "ecs-fargate"
-BACKEND_ECS_FARGATE = "https://staging-api-ecs-fargate.kortix.com"
+BACKEND_ECS_FARGATE = "https://staging-api-ecs-fargate.zed.com"
 GATEWAY_ACTIVE_BACKEND = "ecs-fargate"
-GATEWAY_BACKEND_ECS_FARGATE = "https://gateway-staging-ecs-fargate.kortix.com"
+GATEWAY_BACKEND_ECS_FARGATE = "https://gateway-staging-ecs-fargate.zed.com"
 
-# ── DEV: dev-api.kortix.com + gateway-dev.kortix.com ──────────────────────────
+# ── DEV: dev-api.zed.com + gateway-dev.zed.com ──────────────────────────
 [env.dev]
-name = "dev-api-kortix-router"
+name = "dev-api-zed-router"
 routes = [
-  { pattern = "dev-api.kortix.com", custom_domain = true },
-  { pattern = "gateway-dev.kortix.com/*", zone_name = "kortix.com" },
+  { pattern = "dev-api.zed.com", custom_domain = true },
+  { pattern = "gateway-dev.zed.com/*", zone_name = "zed.com" },
 ]
 
 [env.dev.vars]
 # ECS Fargate is the ONLY dev backend. EKS was decommissioned 2026-08-02.
 ACTIVE_BACKEND = "ecs-fargate"
-BACKEND_ECS_FARGATE = "https://dev-api-ecs-fargate.kortix.com"
+BACKEND_ECS_FARGATE = "https://dev-api-ecs-fargate.zed.com"
 GATEWAY_ACTIVE_BACKEND = "ecs-fargate"
-GATEWAY_BACKEND_ECS_FARGATE = "https://gateway-dev-ecs-fargate.kortix.com"
+GATEWAY_BACKEND_ECS_FARGATE = "https://gateway-dev-ecs-fargate.zed.com"

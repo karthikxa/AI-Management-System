@@ -16,7 +16,7 @@ import { Download } from 'lucide-react';
 import { useState } from 'react';
 
 /**
- * Import a project that already exists on the Kortix account.
+ * Import a project that already exists on the Zed account.
  *
  * The project list is deliberately narrowed to what this end-user provisioned
  * through the demo — one server-held key can reach every project in the account,

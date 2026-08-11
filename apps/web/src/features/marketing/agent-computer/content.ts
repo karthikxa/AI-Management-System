@@ -118,12 +118,12 @@ export const parallel = {
 export const declared = {
   eyebrow: 'Declared in the repo',
   title: 'The machine is a file in your project.',
-  sub: 'The sandbox image, its CPU and memory, and which agent gets which machine are declared in kortix.yaml. Change the file, open a change request, and every session started after it boots the new machine.',
+  sub: 'The sandbox image, its CPU and memory, and which agent gets which machine are declared in zed.yaml. Change the file, open a change request, and every session started after it boots the new machine.',
   yaml: {
-    title: 'kortix.yaml',
+    title: 'zed.yaml',
     lines: [
       '# the machine every session of this project boots',
-      'kortix_version: 2',
+      'zed_version: 2',
       'runtime: opencode',
       '',
       'sandbox:',
@@ -159,13 +159,13 @@ export const declared = {
       '',
       '# only what it commits survives the machine',
       '$ git commit -am "add the q3 revenue report"',
-      '$ kortix cr',
+      '$ zed cr',
       '→ change request opened toward main',
     ],
   },
   notes: [
     'One image per project, or a named image per agent.',
-    'The default image already carries the Kortix runtime layer.',
+    'The default image already carries the Zed runtime layer.',
     'Change the image the way you change any other file: in a change request.',
   ],
 } as const;
@@ -176,8 +176,8 @@ export const files = {
   sub: 'Agents, skills, memory, connectors and triggers are not rows in a database you cannot see. They are files and config in the repo the machine cloned — readable by a person, editable by an agent, versioned like code.',
   tree: [
     { path: 'your-company/', note: '', depth: 0 },
-    { path: 'kortix.yaml', note: 'sandbox image, triggers, channels, connectors, secrets', depth: 1 },
-    { path: '.kortix/opencode/', note: 'the runtime your agents think in', depth: 1 },
+    { path: 'zed.yaml', note: 'sandbox image, triggers, channels, connectors, secrets', depth: 1 },
+    { path: '.zed/opencode/', note: 'the runtime your agents think in', depth: 1 },
     { path: 'agents/', note: 'one OpenCode agent per file', depth: 2 },
     { path: 'skills/', note: 'how this company does a specific job', depth: 2 },
     { path: 'commands/', note: 'the shortcuts everyone shares', depth: 2 },
@@ -205,7 +205,7 @@ export const isolation = {
     {
       id: 'machine',
       k: 'One machine per session',
-      v: 'Sessions never share a filesystem, a process table, or a network namespace. On Kortix’s own Platinum compute the boundary is a Cloud Hypervisor microVM; Daytona and E2B are also supported, and we will tell you which one you are on.',
+      v: 'Sessions never share a filesystem, a process table, or a network namespace. On Zed’s own Platinum compute the boundary is a Cloud Hypervisor microVM; Daytona and E2B are also supported, and we will tell you which one you are on.',
     },
     {
       id: 'secrets',
@@ -228,7 +228,7 @@ export const isolation = {
 export const closing = {
   eyebrow: 'Get a computer',
   title: 'Start a session. Get a computer.',
-  sub: 'Open source and self-hostable. Any model, your keys. Kortix Cloud, your own VPC, or fully on-prem.',
+  sub: 'Open source and self-hostable. Any model, your keys. Zed Cloud, your own VPC, or fully on-prem.',
   ctaPrimary: 'Start a session',
   ctaPrimaryHref: '/auth',
   ctaSecondary: 'Talk to us about enterprise',

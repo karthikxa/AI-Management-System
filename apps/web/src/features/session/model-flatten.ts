@@ -1,7 +1,7 @@
 import { LLM_PROVIDER_BY_ID } from '@/lib/llm-providers';
-import type { GatewayCatalogModel } from '@kortix/sdk';
-import { normalizeProviderList } from '@kortix/sdk/react';
-import type { ProviderListResponse } from '@kortix/sdk/react';
+import type { GatewayCatalogModel } from '@zed/sdk';
+import { normalizeProviderList } from '@zed/sdk/react';
+import type { ProviderListResponse } from '@zed/sdk/react';
 
 // ============================================================================
 // Flat model list helper
@@ -40,7 +40,7 @@ export interface FlatModel {
    * served model (`GatewayModel.provider`, apps/api's catalog-models.ts, typed
    * on the wire as `GatewayCatalogModel.provider`) so the picker never has to
    * recover it by string-splitting `modelID`. Every gateway model is
-   * registered under `providerID: 'kortix'`; this is the field that identifies
+   * registered under `providerID: 'zed'`; this is the field that identifies
    * who ACTUALLY serves it. Falls back to undefined for providers/models
    * predating this field (e.g. a stale baked catalog on an old sandbox image)
    * — consumers should still fall back to splitting `modelID` in that case.
@@ -90,7 +90,7 @@ interface OpencodeCatalogModel {
 /**
  * A provider's `models` map holds either opencode's canonical model shape
  * (native providers) or the flatter, models.dev-ish `GatewayCatalogModel`
- * served by the synthetic `kortix` gateway provider. The two are structurally
+ * served by the synthetic `zed` gateway provider. The two are structurally
  * overlapping and every field is optional on the wire, so this is modelled as
  * an intersection of both shapes rather than a discriminated union — a union
  * cannot be narrowed by a `capabilities` check (both members have only
@@ -113,7 +113,7 @@ function hasCapabilities(
 function catalogModelFor(providerID: string, modelID: string) {
   let lookupProviderID = providerID;
   let lookupModelID = modelID;
-  if (providerID === 'kortix') {
+  if (providerID === 'zed') {
     const slash = modelID.indexOf('/');
     if (slash !== -1) {
       lookupProviderID = modelID.slice(0, slash);

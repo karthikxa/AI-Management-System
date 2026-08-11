@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 // The emoji picker (components/ui/emoji-picker.tsx) is built on frimousse, which
 // fetches the emojibase dataset in the browser the first time the picker opens.
 // Left at its default it fetches from `https://cdn.jsdelivr.net/npm/emojibase-data`
-// — a third-party CDN, at runtime, in the user's browser. Kortix ships
+// — a third-party CDN, at runtime, in the user's browser. Zed ships
 // self-hosted, and frimousse has no error slot: it exposes `Loading` and
 // `Empty`, its cold-cache load path does not catch, and a first open with the
 // CDN unreachable leaves the popover spinning forever with no message. So an

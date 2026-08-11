@@ -16,11 +16,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ExperimentalFeatureView, KortixProject } from '@kortix/sdk';
+import type { ExperimentalFeatureView, ZedProject } from '@zed/sdk';
 import { ExternalLink, GitBranch } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -91,26 +91,26 @@ function GeneralTab() {
   const router = useRouter();
   const project = useQuery({
     queryKey: qk.project(projectId),
-    queryFn: () => kortix.project(projectId).get(),
+    queryFn: () => zed.project(projectId).get(),
   });
   const detail = useQuery({
     queryKey: qk.projectDetail(projectId),
-    queryFn: () => kortix.project(projectId).detail(),
+    queryFn: () => zed.project(projectId).detail(),
   });
   const health = useQuery({
     queryKey: ['project-sandbox-health', projectId],
-    queryFn: () => kortix.project(projectId).sandboxHealth(),
+    queryFn: () => zed.project(projectId).sandboxHealth(),
     retry: false,
   });
   const catalog = useQuery({
     queryKey: ['project-llm-catalog', projectId],
-    queryFn: () => kortix.project(projectId).llmCatalog(),
+    queryFn: () => zed.project(projectId).llmCatalog(),
     retry: false,
   });
   const [name, setName] = useState('');
 
   const rename = useMutation({
-    mutationFn: () => kortix.project(projectId).update({ name: name.trim() }),
+    mutationFn: () => zed.project(projectId).update({ name: name.trim() }),
     onSuccess: (updated) => {
       qc.setQueryData(qk.project(projectId), updated);
       qc.invalidateQueries({ queryKey: qk.projects });
@@ -119,7 +119,7 @@ function GeneralTab() {
     onError: () => toast.error('Could not rename'),
   });
   const archive = useMutation({
-    mutationFn: () => kortix.project(projectId).archive(),
+    mutationFn: () => zed.project(projectId).archive(),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.projects });
       toast.success('Project archived');
@@ -225,7 +225,7 @@ function ExperimentalFeatures({
   project,
 }: {
   projectId: string;
-  project: KortixProject;
+  project: ZedProject;
 }) {
   const features = (project.experimental_features ?? []).filter((feature) => feature.available);
 
@@ -236,7 +236,7 @@ function ExperimentalFeatures({
       <div className="border-b border-border px-5 py-3">
         <div className="text-sm font-medium">Experimental features</div>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Project-scoped capabilities supplied by the Kortix server.
+          Project-scoped capabilities supplied by the Zed server.
         </p>
       </div>
       <div className="divide-y divide-border">
@@ -258,7 +258,7 @@ function ExperimentalFeatureRow({
   const qc = useQueryClient();
   const mutation = useMutation({
     mutationFn: (enabled: boolean) =>
-      kortix.project(projectId).updateExperimentalFeature(feature.key, enabled),
+      zed.project(projectId).updateExperimentalFeature(feature.key, enabled),
     onSuccess: (updated) => {
       qc.setQueryData(qk.project(projectId), updated);
       qc.invalidateQueries({ queryKey: qk.projects });

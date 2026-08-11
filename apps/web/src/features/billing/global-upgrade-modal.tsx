@@ -26,7 +26,7 @@ import {
   useCreatePerSeatCheckout,
   useCreatePortalSession,
 } from '@/hooks/billing';
-import type { AccountState, BillingState } from '@kortix/sdk';
+import type { AccountState, BillingState } from '@zed/sdk';
 import {
   accountHasLiveSubscription,
   billingStateNeedsTopUp,
@@ -41,7 +41,7 @@ import {
   CreditCardIcon as CreditCardPlusSolid,
   UserPlusIcon as UserPlus,
 } from '@phosphor-icons/react';
-import { formatCredits } from '@kortix/shared';
+import { formatCredits } from '@zed/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
@@ -189,7 +189,7 @@ export function UpgradePlansModal({
         <ModalHeader className="space-y-2 px-6 pt-6 pb-4">
           <ModalTitle className="text-2xl font-medium tracking-tight">
             {tI18nHardcoded.raw(
-              'autoFeaturesBillingTeamPlanCheckoutJsxTextSubscribeToKortix28a9093d',
+              'autoFeaturesBillingTeamPlanCheckoutJsxTextSubscribeToZed28a9093d',
             )}
           </ModalTitle>
           <ModalDescription className="text-base">
@@ -306,8 +306,8 @@ function CreditTopUpModal({
       <ModalContent className="lg:max-w-lg">
         <ModalHeader className="gap-3">
           <div className="flex items-center gap-3">
-            <span className="bg-kortix-orange/15 flex size-9 shrink-0 items-center justify-center rounded-sm">
-              <CreditCardPlusSolid className="text-kortix-orange size-5" />
+            <span className="bg-zed-orange/15 flex size-9 shrink-0 items-center justify-center rounded-sm">
+              <CreditCardPlusSolid className="text-zed-orange size-5" />
             </span>
             <div className="space-y-0.5">
               <ModalTitle className="text-lg font-medium tracking-tight">
@@ -333,7 +333,7 @@ function CreditTopUpModal({
                 <span
                   className={cn(
                     'text-lg font-medium tabular-nums',
-                    isNegative ? 'text-kortix-red' : 'text-foreground',
+                    isNegative ? 'text-zed-red' : 'text-foreground',
                   )}
                 >
                   {walletLabel}

@@ -24,7 +24,7 @@ export function triggerBadgeState(enabled: boolean, type: 'cron' | 'webhook'): T
   return {
     status: 'active',
     icon: type === 'cron' ? 'clock' : 'webhook',
-    className: 'bg-kortix-green/10 text-kortix-green',
+    className: 'bg-zed-green/10 text-zed-green',
     label: 'Active',
   };
 }

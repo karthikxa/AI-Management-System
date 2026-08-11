@@ -6,8 +6,8 @@
  * apps/voice-agent worker doing STT/LLM/TTS); this file never touches audio.
  * What it owns is the two hand-offs either side of that conversation:
  *
- *   worker ──ask_kortix (MCP)──► askKortix ──► continueSession   (send_prompt)
- *   Kortix turn ──► promptVoiceAgent ──► room data channel ──► worker  (say)
+ *   worker ──ask_zed (MCP)──► askZed ──► continueSession   (send_prompt)
+ *   Zed turn ──► promptVoiceAgent ──► room data channel ──► worker  (say)
  *
  * The worker is a SEPARATE PROCESS (apps/voice-agent, not part of apps/api),
  * dispatched into the room by name and bootstrapped entirely from the room's
@@ -16,9 +16,9 @@
  * MCP — mcp.ts / routes.ts) implements.
  *
  * The single most important property, unchanged from the realtime-provider
- * version this replaces: `askKortix` (the MCP's `ask_kortix` tool, called by
+ * version this replaces: `askZed` (the MCP's `ask_zed` tool, called by
  * the worker's own `send_prompt` tool) answers in milliseconds and NEVER
- * waits for the agent turn. A Kortix turn runs 30s-10min; a conversation that
+ * waits for the agent turn. A Zed turn runs 30s-10min; a conversation that
  * blocks that long is broken. The answer comes back later as unsolicited
  * speech, driven by answer-watch.ts — see its header for why the API watches
  * for the answer instead of the sandbox relaying it.
@@ -30,7 +30,7 @@
  * have to hit the one process that happened to run `voice_spawn`.
  */
 import { and, asc, count, desc, eq, gt, inArray } from 'drizzle-orm';
-import { projectSessions, voiceCallTurns } from '@kortix/db';
+import { projectSessions, voiceCallTurns } from '@zed/db';
 import { continueSession } from '../../projects/session-lifecycle';
 import { config } from '../../config';
 import { db } from '../../shared/db';
@@ -45,7 +45,7 @@ import {
 import {
   createRoom,
   deleteRoom,
-  KORTIX_REPLY_TOPIC,
+  ZED_REPLY_TOPIC,
   roomCallbackUrl,
   roomHasAgent,
   roomNameForCall,
@@ -53,7 +53,7 @@ import {
 } from './livekit';
 import { speakAnswerWhenReady } from './answer-watch';
 import { revokeJoinLinksForCall } from './join-links';
-import { KORTIX_SPEAKER, type KortixUtterance, kortixSay } from './utterance';
+import { ZED_SPEAKER, type ZedUtterance, zedSay } from './utterance';
 import { mintCallApiToken } from './worker-token';
 
 /**
@@ -103,12 +103,12 @@ export interface VoiceRoomMetadata {
   project_id: string;
   session_id: string;
   call_id: string;
-  kortix_api_url: string;
+  zed_api_url: string;
   bot_name: string;
 }
 
 export interface VoiceWorkerMetadata extends VoiceRoomMetadata {
-  kortix_api_token: string;
+  zed_api_token: string;
 }
 
 export interface StartCallInput {
@@ -145,10 +145,10 @@ export async function startCall(input: StartCallInput): Promise<VoiceCall> {
   // made it (emptyTimeout is 30min), and its metadata carries the callback URL
   // and per-call token the worker authenticates with. Reusing a live room whose
   // metadata names a DEAD api url gives you an agent that joins, greets, listens
-  // — and then answers every real request with "I couldn't reach Kortix",
+  // — and then answers every real request with "I couldn't reach Zed",
   // because its hand-off is POSTing into the void. Rebuilding is cheap; a call
-  // that cannot reach Kortix is worthless.
-  if ((await roomHasAgent(room)) && (await roomCallbackUrl(room)) === config.KORTIX_URL) {
+  // that cannot reach Zed is worthless.
+  if ((await roomHasAgent(room)) && (await roomCallbackUrl(room)) === config.ZED_URL) {
     return call;
   }
 
@@ -156,12 +156,12 @@ export async function startCall(input: StartCallInput): Promise<VoiceCall> {
     project_id: input.projectId,
     session_id: input.sessionId,
     call_id: input.callId,
-    kortix_api_url: config.KORTIX_URL,
+    zed_api_url: config.ZED_URL,
     bot_name: input.botName,
   };
   const workerMetadata: VoiceWorkerMetadata = {
     ...roomMetadata,
-    kortix_api_token: mintCallApiToken(input.callId),
+    zed_api_token: mintCallApiToken(input.callId),
   };
 
   // Create the room, dispatched to the worker, BEFORE anything tries to join
@@ -178,16 +178,16 @@ export async function startCall(input: StartCallInput): Promise<VoiceCall> {
  *
  * The skill pointer is the important line, and it mirrors what Slack and Teams
  * already do (channels/slack/session.ts, channels/teams/session.ts): the full
- * surface — the `kortix_voice` connector's actions, one-call-per-session, the
- * cursor loop, how a human gets a join link — lives in the `kortix-voice`
+ * surface — the `zed_voice` connector's actions, one-call-per-session, the
+ * cursor loop, how a human gets a join link — lives in the `zed-voice`
  * skill, not in this prompt. Without the pointer the agent only ever learned
  * the tone rules below and had no idea it could read the room or speak into it
  * unprompted, which is exactly how it behaved.
  */
 const TURN_INSTRUCTIONS = [
   'How to work:',
-  '- First, load the `kortix-voice` skill via the `skill` tool — the canonical reference for',
-  '  working a live call (the `kortix_voice` connector: read_transcript, send_prompt, end_call).',
+  '- First, load the `zed-voice` skill via the `skill` tool — the canonical reference for',
+  '  working a live call (the `zed_voice` connector: read_transcript, send_prompt, end_call).',
   '- Whatever you report back is SPOKEN ALOUD, so answer in plain spoken language — no markdown,',
   '  no bullet lists, no raw URLs, no code. A couple of sentences unless more was asked for.',
   '- You can also talk into the call yourself at any time with `send_prompt`, and read what is',
@@ -264,7 +264,7 @@ export async function settleAsk(callId: string, outcome: string): Promise<void> 
     // `<tool>: <detail>` — the same shape every other tool row uses, so the call
     // page's splitter (apps/web .../call-record.ts `interpretTool`) strips the
     // redundant prefix and renders just the outcome, with no change needed
-    // there. `ask_kortix → answered` would have rendered the tool name twice.
+    // there. `ask_zed → answered` would have rendered the tool name twice.
     await appendTurn(
       { callId, projectId, sessionId: callId },
       'tool',
@@ -277,8 +277,8 @@ export async function settleAsk(callId: string, outcome: string): Promise<void> 
 }
 
 /**
- * The mirror of the old `ask_kortix` tool-call handler, now driven by the
- * worker's `ask_kortix` MCP tool call (mcp.ts / routes.ts) instead of an
+ * The mirror of the old `ask_zed` tool-call handler, now driven by the
+ * worker's `ask_zed` MCP tool call (mcp.ts / routes.ts) instead of an
  * in-process SDK callback. Answers FIRST, then delivers — the caller (the
  * MCP route) returns immediately after this resolves, well before
  * `continueSession` has done anything at all.
@@ -288,7 +288,7 @@ export async function settleAsk(callId: string, outcome: string): Promise<void> 
  * every ask must pass through, and because the ledger they read is written here
  * too — see ask-ledger.ts.
  */
-export async function askKortix(
+export async function askZed(
   call: VoiceCall,
   request: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -339,11 +339,11 @@ export async function askKortix(
   })
     .then((outcome) => {
       if (outcome !== 'delivered') {
-        console.error('[voice] ask_kortix not delivered', { outcome, sessionId: call.sessionId });
+        console.error('[voice] ask_zed not delivered', { outcome, sessionId: call.sessionId });
         // The conversation would otherwise hang on a promise nobody kept.
         void promptVoiceAgent(
           call.callId,
-          kortixSay("I couldn't reach the agent session just now, so that request didn't go through."),
+          zedSay("I couldn't reach the agent session just now, so that request didn't go through."),
           { projectId: call.projectId },
         );
         // And it would hold the hand-off slot until the timeout expires. The
@@ -353,7 +353,7 @@ export async function askKortix(
       }
     })
     .catch((err) => {
-      console.error('[voice] ask_kortix delivery failed', err);
+      console.error('[voice] ask_zed delivery failed', err);
       void settleAsk(call.callId, 'delivery failed');
     });
 
@@ -362,7 +362,7 @@ export async function askKortix(
 
 export async function appendTurn(
   call: Pick<VoiceCall, 'callId' | 'projectId' | 'sessionId'>,
-  // 'tool' = a record of an ask_kortix/run_command call the worker made
+  // 'tool' = a record of an ask_zed/run_command call the worker made
   // through the voice MCP (mcp.ts's callTool) — not spoken, but part of what
   // "what did the voice agent DO" needs to show.
   role: 'user' | 'agent' | 'tool',
@@ -480,13 +480,13 @@ export async function endCall(callId: string): Promise<boolean> {
 }
 
 /**
- * Kortix prompting the voice agent — the mirror of `askKortix`. Rides the
+ * Zed prompting the voice agent — the mirror of `askZed`. Rides the
  * LiveKit room data channel (RELIABLE) rather than a new HTTP callback: the
  * worker is already paying for that connection to do STT/TTS, so this needs
  * no new transport, and unlike an HTTP POST from here TO the worker, it
  * doesn't require knowing which machine the worker process is on. Topic and
  * payload shape are fixed by apps/voice-agent's `inbound-replies.ts` — see
- * `KORTIX_REPLY_TOPIC`'s doc comment.
+ * `ZED_REPLY_TOPIC`'s doc comment.
  *
  * Fire-and-forget, so callers (turn.ts) never block a turn on it — but it does
  * confirm a worker is actually in the room first. Nothing acks the data message,
@@ -496,41 +496,41 @@ export async function endCall(callId: string): Promise<boolean> {
  * shape of failure for an agent-facing tool, because the caller has no reason to
  * doubt it.
  *
- * Takes a `KortixUtterance` (utterance.ts), never a bare string, for one
+ * Takes a `ZedUtterance` (utterance.ts), never a bare string, for one
  * reason: the wire needs the INSTRUCTION and the transcript needs the PAYLOAD,
  * and a signature that only carries the instruction is a signature where
  * recording the utterance is impossible without re-deriving it from a prompt.
- * That is exactly how everything Kortix said into a call went unrecorded.
+ * That is exactly how everything Zed said into a call went unrecorded.
  */
 export async function promptVoiceAgent(
   callId: string,
-  utterance: KortixUtterance,
+  utterance: ZedUtterance,
   opts: { projectId?: string | null } = {},
 ): Promise<{ delivered: boolean; reason?: string }> {
   const room = roomNameForCall(callId);
   if (!(await roomHasAgent(room))) {
     return { delivered: false, reason: 'no voice agent is connected to the call' };
   }
-  await sendRoomData(room, KORTIX_REPLY_TOPIC, {
-    type: 'kortix_reply',
+  await sendRoomData(room, ZED_REPLY_TOPIC, {
+    type: 'zed_reply',
     call_id: callId,
     text: utterance.instruction,
   });
   // Record HERE, at the moment the room is given something to hear — not when
-  // the worker echoes it back. See `recordKortixUtterance`.
-  await recordKortixUtterance(callId, utterance, opts.projectId ?? null);
+  // the worker echoes it back. See `recordZedUtterance`.
+  await recordZedUtterance(callId, utterance, opts.projectId ?? null);
   return { delivered: true };
 }
 
 /**
- * Writes the transcript line for something Kortix just put into the call.
+ * Writes the transcript line for something Zed just put into the call.
  *
  * WHY SERVER-SIDE. The worker does record the agent side of the conversation,
  * from `AgentSessionEventTypes.ConversationItemAdded`
  * (apps/voice-agent/src/transcripts.ts) — but that is a client-side event in a
  * process we do not control, and it was observed NOT firing for a programmatic
  * `generateReply` when nobody else was in the room. The result was the bug this
- * exists to close: the Kortix agent called `send_prompt`, the room heard it, and
+ * exists to close: the Zed agent called `send_prompt`, the room heard it, and
  * `voice_call_turns` had no trace of it, so the call page showed a conversation
  * with half the speakers missing. A message the room was given must not be
  * absent from the record because an event in someone else's process did not
@@ -541,32 +541,32 @@ export async function promptVoiceAgent(
  * worker's session has already closed it drops the message (inbound-replies.ts)
  * and this line will claim something the room never heard. That is strictly
  * better than the alternative, which loses everything the room DID hear, and it
- * is why the two sides are labelled differently: `speaker: 'kortix'` is what
- * Kortix put into the call, the bot's own name is what the voice actually said.
+ * is why the two sides are labelled differently: `speaker: 'zed'` is what
+ * Zed put into the call, the bot's own name is what the voice actually said.
  *
  * Never throws: a transcript write failing must not turn a delivered utterance
  * into a reported failure, which would make an agent re-say things the room
  * already heard.
  */
-async function recordKortixUtterance(
+async function recordZedUtterance(
   callId: string,
-  utterance: KortixUtterance,
+  utterance: ZedUtterance,
   projectId: string | null,
 ): Promise<void> {
   try {
     const resolved = projectId ?? (await projectIdForSession(callId));
     if (!resolved) {
-      console.error('[voice] cannot record kortix utterance — no project for call', { callId });
+      console.error('[voice] cannot record zed utterance — no project for call', { callId });
       return;
     }
     await appendTurn(
       { callId, projectId: resolved, sessionId: callId },
       'agent',
       utterance.transcript,
-      KORTIX_SPEAKER,
+      ZED_SPEAKER,
     );
   } catch (err) {
-    console.error('[voice] failed to record kortix utterance', { callId, kind: utterance.kind }, err);
+    console.error('[voice] failed to record zed utterance', { callId, kind: utterance.kind }, err);
   }
 }
 

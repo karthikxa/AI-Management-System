@@ -13,8 +13,8 @@ import {
 import { TextShimmer } from '@/components/ui/text-shimmer';
 import { errorToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
-import { restartProjectSession, sessionStartKey, type SessionStartStage } from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+import { restartProjectSession, sessionStartKey, type SessionStartStage } from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 import {
   CheckCircleIcon as CheckCircleSolid,
   ArrowCounterClockwiseIcon as RotateCcw,
@@ -25,7 +25,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * The ONE loader shown while a session's Kortix Computer comes up — full-screen
+ * The ONE loader shown while a session's Zed Computer comes up — full-screen
  * for resumes, and dead-center in the side panel while a fresh session boots.
  * All the heavy lifting (provision / wake / OpenCode readiness + pin) is
  * server-side behind POST /sessions/:id/start; this just reports the real stage.
@@ -171,7 +171,7 @@ function useBootProgress(stage: SessionStartStage): { active: number; now: numbe
 }
 
 /**
- * The dotted-ring glyph in two states: `spinning` (kortix-green, rotating, with
+ * The dotted-ring glyph in two states: `spinning` (zed-green, rotating, with
  * a solid center) and idle (muted, static). Colour and the centre dot CROSSFADE
  * rather than snap, so a pending row waking up is a settle, not a pop. Shared by
  * the checklist's active/pending rows so the in-progress indicator is
@@ -187,7 +187,7 @@ function StepRing({ spinning }: { spinning: boolean }) {
       className={cn(
         'relative flex shrink-0 items-center justify-center transition-colors duration-300',
         spinning
-          ? 'text-kortix-green animate-spin motion-reduce:animate-none'
+          ? 'text-zed-green animate-spin motion-reduce:animate-none'
           : 'text-muted-foreground/60',
       )}
       aria-hidden
@@ -213,7 +213,7 @@ function StepRing({ spinning }: { spinning: boolean }) {
 }
 
 /**
- * The in-progress step's label. The kortix shimmer marks WHICH row is live —
+ * The in-progress step's label. The zed shimmer marks WHICH row is live —
  * under reduced motion that job falls back to colour alone, since a looping
  * sweep is exactly the kind of ambient movement to drop.
  */
@@ -252,7 +252,7 @@ function StepGlyph({ done, current }: { done: boolean; current: boolean }) {
         >
           {done ? (
             <CheckCircleSolid
-              className="text-kortix-green bg-background size-3.5"
+              className="text-zed-green bg-background size-3.5"
               strokeWidth={2.5}
             />
           ) : (
@@ -371,7 +371,7 @@ function BootStepList({ active }: { active: number }) {
               <StepperIndicator className="flex size-3.5 shrink-0 items-center justify-center rounded-none bg-none text-current">
                 <StepGlyph done={done} current={current} />
               </StepperIndicator>
-              <StepperSeparator className="bg-border group-data-[state=completed]/step:bg-kortix-green/40 m-0 my-0.5 group-data-[orientation=vertical]/stepper:min-h-3" />
+              <StepperSeparator className="bg-border group-data-[state=completed]/step:bg-zed-green/40 m-0 my-0.5 group-data-[orientation=vertical]/stepper:min-h-3" />
             </StepperItem>
             <div className="flex h-4 min-w-0 items-center">
               {current ? (
@@ -610,12 +610,12 @@ export function SessionStartingLoader({
         <div className="flex w-full flex-col gap-3">
           <div className="flex items-center gap-2">
             <span
-              className="bg-kortix-green size-2 shrink-0 animate-pulse rounded-full motion-reduce:animate-none"
+              className="bg-zed-green size-2 shrink-0 animate-pulse rounded-full motion-reduce:animate-none"
               aria-hidden
             />
             <h2 className="text-foreground text-[13px] font-medium tracking-tight">
               {tI18nHardcoded.raw(
-                'autoFeaturesSessionSessionStartingLoaderJsxTextKortixComputerIs7c42f59a',
+                'autoFeaturesSessionSessionStartingLoaderJsxTextZedComputerIs7c42f59a',
               )}
             </h2>
           </div>
@@ -625,7 +625,7 @@ export function SessionStartingLoader({
             // Longer + ease-in-out than the primitive's default: this is an
             // on-screen move between two known points, not an enter, so it
             // should accelerate and settle rather than snap.
-            indicatorClassName="bg-kortix-green duration-700 ease-in-out"
+            indicatorClassName="bg-zed-green duration-700 ease-in-out"
             aria-label="Session startup progress"
           />
         </div>

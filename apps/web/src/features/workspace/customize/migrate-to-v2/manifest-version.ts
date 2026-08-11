@@ -2,22 +2,22 @@
 
 /**
  * v1-vs-v2 detection for the "Migrate to v2" surfaces. `ProjectConfigSummary`
- * doesn't carry a parsed `kortix_version` field, so we read it straight out
+ * doesn't carry a parsed `zed_version` field, so we read it straight out
  * of the raw manifest text the project-detail endpoint already returns
  * (`config.manifest_raw`) — a plain regex works because both TOML
- * (`kortix_version = 1`) and YAML (`kortix_version: 2`) write it as a bare
+ * (`zed_version = 1`) and YAML (`zed_version: 2`) write it as a bare
  * `key <sep> value` line at the top of the file. Missing/unparsable defaults
  * to v1 (the schema itself treats an absent version as invalid-but-legacy —
  * treating it as "not yet migrated" is the safer UI default).
  */
 
-import { getProjectDetail } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+import { getProjectDetail } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import { useQuery } from '@tanstack/react-query';
 
 export type ManifestVersion = 1 | 2;
 
-const VERSION_RE = /kortix_version\s*[:=]\s*"?(\d+)"?/;
+const VERSION_RE = /zed_version\s*[:=]\s*"?(\d+)"?/;
 
 export function detectManifestVersion(manifestRaw: string | null | undefined): ManifestVersion {
   if (!manifestRaw) return 1;

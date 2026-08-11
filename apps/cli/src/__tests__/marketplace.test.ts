@@ -7,17 +7,17 @@ import { runMarketplace } from '../commands/marketplace.ts';
 const JSON_HEADERS = { 'content-type': 'application/json' };
 
 const ORIGINAL_FETCH = globalThis.fetch;
-const ORIGINAL_CONFIG_FILE = process.env.KORTIX_CONFIG_FILE;
+const ORIGINAL_CONFIG_FILE = process.env.ZED_CONFIG_FILE;
 const ORIGINAL_STDOUT_WRITE = process.stdout.write;
 const ORIGINAL_STDERR_WRITE = process.stderr.write;
 const ORIGINAL_SANDBOX_ENV = {
-  KORTIX_API_URL: process.env.KORTIX_API_URL,
-  KORTIX_CLI_TOKEN: process.env.KORTIX_CLI_TOKEN,
-  KORTIX_FRONTEND_URL: process.env.KORTIX_FRONTEND_URL,
-  KORTIX_PROJECT_ID: process.env.KORTIX_PROJECT_ID,
-  KORTIX_TOKEN: process.env.KORTIX_TOKEN,
+  ZED_API_URL: process.env.ZED_API_URL,
+  ZED_CLI_TOKEN: process.env.ZED_CLI_TOKEN,
+  ZED_FRONTEND_URL: process.env.ZED_FRONTEND_URL,
+  ZED_PROJECT_ID: process.env.ZED_PROJECT_ID,
+  ZED_TOKEN: process.env.ZED_TOKEN,
   BASH_ENV: process.env.BASH_ENV,
-  KORTIX_DISABLE_SANDBOX_ENV_FILE: process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE,
+  ZED_DISABLE_SANDBOX_ENV_FILE: process.env.ZED_DISABLE_SANDBOX_ENV_FILE,
 };
 
 let tmp: string;
@@ -44,7 +44,7 @@ function writeTestConfig() {
     }),
     'utf8',
   );
-  process.env.KORTIX_CONFIG_FILE = path;
+  process.env.ZED_CONFIG_FILE = path;
 }
 
 function captureOutput() {
@@ -61,13 +61,13 @@ function captureOutput() {
 }
 
 function clearSandboxEnvOverrides() {
-  delete process.env.KORTIX_API_URL;
-  delete process.env.KORTIX_CLI_TOKEN;
-  delete process.env.KORTIX_FRONTEND_URL;
-  delete process.env.KORTIX_PROJECT_ID;
-  delete process.env.KORTIX_TOKEN;
+  delete process.env.ZED_API_URL;
+  delete process.env.ZED_CLI_TOKEN;
+  delete process.env.ZED_FRONTEND_URL;
+  delete process.env.ZED_PROJECT_ID;
+  delete process.env.ZED_TOKEN;
   delete process.env.BASH_ENV;
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
 }
 
 function restoreSandboxEnvOverrides() {
@@ -77,10 +77,10 @@ function restoreSandboxEnvOverrides() {
   }
 }
 
-describe('kortix marketplace', () => {
+describe('zed marketplace', () => {
   beforeEach(() => {
     clearSandboxEnvOverrides();
-    tmp = mkdtempSync(join(tmpdir(), 'kortix-marketplace-test-'));
+    tmp = mkdtempSync(join(tmpdir(), 'zed-marketplace-test-'));
     writeTestConfig();
     captureOutput();
     requests = [];
@@ -90,8 +90,8 @@ describe('kortix marketplace', () => {
     globalThis.fetch = ORIGINAL_FETCH;
     (process.stdout as any).write = ORIGINAL_STDOUT_WRITE;
     (process.stderr as any).write = ORIGINAL_STDERR_WRITE;
-    if (ORIGINAL_CONFIG_FILE === undefined) delete process.env.KORTIX_CONFIG_FILE;
-    else process.env.KORTIX_CONFIG_FILE = ORIGINAL_CONFIG_FILE;
+    if (ORIGINAL_CONFIG_FILE === undefined) delete process.env.ZED_CONFIG_FILE;
+    else process.env.ZED_CONFIG_FILE = ORIGINAL_CONFIG_FILE;
     restoreSandboxEnvOverrides();
     rmSync(tmp, { recursive: true, force: true });
   });
@@ -100,12 +100,12 @@ describe('kortix marketplace', () => {
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       requests.push({ url, authorization: String(init?.headers && (init.headers as Record<string, string>).Authorization) });
-      expect(url).toBe('https://api.test/v1/marketplace/items?query=pdf&source=kortix');
+      expect(url).toBe('https://api.test/v1/marketplace/items?query=pdf&source=zed');
       return new Response(
         JSON.stringify({
           items: [{
-            id: 'kortix-starter:pdf',
-            registry: 'kortix-starter',
+            id: 'zed-starter:pdf',
+            registry: 'zed-starter',
             name: 'pdf',
             type: 'registry:skill',
             title: 'PDF',
@@ -115,20 +115,20 @@ describe('kortix marketplace', () => {
             dependencies: [],
             fileCount: 1,
             external: false,
-            marketplaceId: 'kortix',
-            marketplaceLabel: 'Kortix',
+            marketplaceId: 'zed',
+            marketplaceLabel: 'Zed',
           }],
         }),
         { status: 200, headers: JSON_HEADERS },
       );
     }) as typeof fetch;
 
-    const code = await runMarketplace(['search', 'pdf', '--source', 'kortix', '--json']);
+    const code = await runMarketplace(['search', 'pdf', '--source', 'zed', '--json']);
 
     expect(code).toBe(0);
     expect(requests).toHaveLength(1);
     expect(requests[0].authorization).toBe('Bearer tok_test');
-    expect(JSON.parse(stdout).items[0].id).toBe('kortix-starter:pdf');
+    expect(JSON.parse(stdout).items[0].id).toBe('zed-starter:pdf');
     expect(stderr).toBe('');
   });
 
@@ -143,8 +143,8 @@ describe('kortix marketplace', () => {
         return new Response(
           JSON.stringify({
             items: [{
-              id: 'kortix-starter:pdf',
-              registry: 'kortix-starter',
+              id: 'zed-starter:pdf',
+              registry: 'zed-starter',
               name: 'pdf',
               type: 'registry:skill',
               title: 'PDF',
@@ -154,18 +154,18 @@ describe('kortix marketplace', () => {
               dependencies: [],
               fileCount: 1,
               external: false,
-              marketplaceId: 'kortix',
-              marketplaceLabel: 'Kortix',
+              marketplaceId: 'zed',
+              marketplaceLabel: 'Zed',
             }],
           }),
           { status: 200, headers: JSON_HEADERS },
         );
       }
-      if (url === 'https://api.test/v1/marketplace/items/kortix-starter%3Apdf') {
+      if (url === 'https://api.test/v1/marketplace/items/zed-starter%3Apdf') {
         return new Response(
           JSON.stringify({
-            id: 'kortix-starter:pdf',
-            registry: 'kortix-starter',
+            id: 'zed-starter:pdf',
+            registry: 'zed-starter',
             name: 'pdf',
             type: 'registry:skill',
             title: 'PDF',
@@ -175,8 +175,8 @@ describe('kortix marketplace', () => {
             dependencies: [],
             fileCount: 1,
             external: false,
-            marketplaceId: 'kortix',
-            marketplaceLabel: 'Kortix',
+            marketplaceId: 'zed',
+            marketplaceLabel: 'Zed',
           }),
           { status: 200, headers: JSON_HEADERS },
         );
@@ -190,10 +190,10 @@ describe('kortix marketplace', () => {
     expect(requests.map((r) => r.url)).toEqual([
       'https://api.test/v1/marketplace/items/pdf',
       'https://api.test/v1/marketplace/items?query=pdf',
-      'https://api.test/v1/marketplace/items/kortix-starter%3Apdf',
+      'https://api.test/v1/marketplace/items/zed-starter%3Apdf',
     ]);
     expect(stdout).toContain('PDF');
-    expect(stdout).toContain('kortix-starter:pdf');
+    expect(stdout).toContain('zed-starter:pdf');
     expect(stderr).toBe('');
   });
 
@@ -202,7 +202,7 @@ describe('kortix marketplace', () => {
       const url = String(input);
       expect(url).toBe('https://api.test/v1/projects/project-1/marketplace/install-session');
       expect(init?.method).toBe('POST');
-      expect(JSON.parse(String(init?.body))).toEqual({ id: 'kortix-starter:pdf' });
+      expect(JSON.parse(String(init?.body))).toEqual({ id: 'zed-starter:pdf' });
       return new Response(
         JSON.stringify({ session_id: 'session-install-1', project_id: 'project-1' }),
         { status: 201, headers: JSON_HEADERS },
@@ -211,7 +211,7 @@ describe('kortix marketplace', () => {
 
     const code = await runMarketplace([
       'install',
-      'kortix-starter:pdf',
+      'zed-starter:pdf',
       '--project',
       'project-1',
       '--json',

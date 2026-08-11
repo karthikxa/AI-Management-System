@@ -2,7 +2,7 @@
 #   terraform init && terraform apply
 
 aws_region  = "us-east-1"
-domain      = "kortix.example.com"
+domain      = "zed.example.com"
 admin_email = "admin@example.com"
 
 # Optional — leave unset to manage DNS yourself (see the public_ip output).
@@ -13,5 +13,5 @@ admin_email = "admin@example.com"
 # data_volume_size_gb     = 100
 # backup_interval_hours   = 24   # 1, 2, 3, 4, 6, 8, 12, or 24
 # backup_retention_count  = 7
-# kortix_channel          = "stable"
+# zed_channel          = "stable"
 # auto_update             = "on"

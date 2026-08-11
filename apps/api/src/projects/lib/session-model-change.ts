@@ -1,7 +1,7 @@
 /**
  * Changing the model a RUNNING session uses.
  *
- * `opencode_model` was create-only: the sandbox reads `KORTIX_OPENCODE_MODEL`
+ * `opencode_model` was create-only: the sandbox reads `ZED_OPENCODE_MODEL`
  * when it builds opencode's config at spawn, and nothing re-pushed it, so a live
  * box kept its boot-time model forever. Worse, the stored value was reachable
  * through `PATCH /sessions/{id}` metadata WITHOUT the create-time validation, so

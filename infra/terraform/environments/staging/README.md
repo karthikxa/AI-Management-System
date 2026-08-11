@@ -1,9 +1,9 @@
-# dev environment — `dev-api.kortix.com` on ECS Fargate (autoscaled)
+# dev environment — `dev-api.zed.com` on ECS Fargate (autoscaled)
 
 | Surface | Where it runs | Managed by |
 |---|---|---|
-| `dev-api.kortix.com` | Cloudflare (proxied) → ALB → **ECS Fargate** (autoscaled, private subnets, NAT egress) | **this Terraform** |
-| `dev.kortix.com` (frontend) | Vercel | Vercel's own Git integration |
+| `dev-api.zed.com` | Cloudflare (proxied) → ALB → **ECS Fargate** (autoscaled, private subnets, NAT egress) | **this Terraform** |
+| `dev.zed.com` (frontend) | Vercel | Vercel's own Git integration |
 
 The **same module set prod uses** (`../prod`) — dev just runs smaller numbers
 and Fargate Spot. App code still ships via CI (`deploy-dev.yml`); Terraform owns
@@ -36,7 +36,7 @@ export AWS_PROFILE=...                          # us-west-2 creds
 export TF_VAR_cloudflare_api_token=...           # = CLOUDFLARE_API_TOKEN secret
 export TF_VAR_cloudflare_zone_id=$(curl -s \
   -H "Authorization: Bearer $TF_VAR_cloudflare_api_token" \
-  'https://api.cloudflare.com/client/v4/zones?name=kortix.com' | jq -r '.result[0].id')
+  'https://api.cloudflare.com/client/v4/zones?name=zed.com' | jq -r '.result[0].id')
 
 cp terraform.tfvars.example terraform.tfvars     # fill in image + secret ARNs
 terraform init                                   # bootstrap S3 state first (../../scripts/bootstrap-state.sh)
@@ -54,7 +54,7 @@ the port the image binds (it's also injected as `PORT`).
 
 ### Image
 
-`api_image` defaults to `ghcr.io/kortix-ai/kortix-api:latest`. For a private
+`api_image` defaults to `ghcr.io/zed-ai/zed-api:latest`. For a private
 GHCR image, add `repositoryCredentials` to the task def or mirror into ECR. Pin
 to a tag/sha for reproducible deploys.
 
@@ -65,5 +65,5 @@ to a tag/sha for reproducible deploys.
 
 - `.terraform/`, `*.tfstate`, lockfile, and `*.tfvars` are gitignored
   (`terraform.tfvars.example` is committed).
-- Logs: CloudWatch `/ecs/kortix-dev`. Scaling activity: the ECS service's
+- Logs: CloudWatch `/ecs/zed-dev`. Scaling activity: the ECS service's
   Deployments/events + Application Auto Scaling history.

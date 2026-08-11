@@ -27,7 +27,7 @@ import {
   asStringOrUndefined,
   looksLikeAbortError,
   readSessionInfo,
-  refetchKortixSessionMirrors,
+  refetchZedSessionMirrors,
   scheduleProjectMetadataRefetch,
 } from './helpers';
 import type { NormalizeDiagnosticPaths, OpenCodeEvent } from './types';
@@ -47,9 +47,9 @@ export function createEventHandler(deps: {
   fetchLspDiagnosticsDebounced: RefObject<() => void>;
   reconcileSessionTail?: (sessionID: string, reason: SessionSyncReason) => Promise<void>;
   /** The route-scoped project this SSE connection belongs to — see
-   *  `refetchKortixSessionMirrors`'s doc comment for why this can't default
+   *  `refetchZedSessionMirrors`'s doc comment for why this can't default
    *  to "every project". Optional only so existing test harnesses that don't
-   *  care about the Kortix-session-mirror refetch keep compiling; production
+   *  care about the Zed-session-mirror refetch keep compiling; production
    *  always passes it (`use-opencode-events/index.ts`). */
   projectId?: string | null;
 }) {
@@ -136,7 +136,7 @@ export function createEventHandler(deps: {
             return [info, ...old].sort((a, b) => b.time.updated - a.time.updated);
           });
           queryClient.setQueryData(opencodeKeys.runtimeSession(info.id), info);
-          refetchKortixSessionMirrors(queryClient, projectId);
+          refetchZedSessionMirrors(queryClient, projectId);
         }
         break;
       }
@@ -170,7 +170,7 @@ export function createEventHandler(deps: {
             next[idx] = info;
             return next.sort((a, b) => b.time.updated - a.time.updated);
           });
-          if (titleChanged) refetchKortixSessionMirrors(queryClient, projectId);
+          if (titleChanged) refetchZedSessionMirrors(queryClient, projectId);
         }
         break;
       }
@@ -370,7 +370,7 @@ export function createEventHandler(deps: {
           addQuestion(props);
           // Fire browser notification for questions needing user input
           const questionText =
-            props.questions[0]?.question || props.questions[0]?.header || 'Kortix needs your input';
+            props.questions[0]?.question || props.questions[0]?.header || 'Zed needs your input';
           notifyQuestion(props.sessionID, questionText, getSessionTitle(props.sessionID));
         }
         break;

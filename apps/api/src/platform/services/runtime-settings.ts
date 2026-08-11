@@ -1,6 +1,6 @@
 /**
  * DB-backed runtime toggles operators flip from the admin Providers panel —
- * NOT env vars. Stored in kortix.platform_settings (key -> jsonb value),
+ * NOT env vars. Stored in zed.platform_settings (key -> jsonb value),
  * mirroring provider_distribution (provider-balancer.ts).
  *
  * Read through a SYNC accessor backed by a 30s-TTL cache that refreshes in the
@@ -50,7 +50,7 @@ export async function refreshRuntimeSettings(): Promise<void> {
   try {
     const { hasDatabase, db } = await import('../../shared/db');
     if (hasDatabase) {
-      const { platformSettings } = await import('@kortix/db');
+      const { platformSettings } = await import('@zed/db');
       const { inArray } = await import('drizzle-orm');
       const rows = await db
         .select({ key: platformSettings.key, value: platformSettings.value })

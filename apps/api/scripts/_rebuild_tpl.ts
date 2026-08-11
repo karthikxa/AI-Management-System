@@ -1,6 +1,6 @@
 import { ensureSandboxImage } from '../src/snapshots/builder';
 import { db } from '../src/shared/db';
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import { eq } from 'drizzle-orm';
 
 const PID = '6ad48932-59dd-40cd-a8c7-9c58988b36cd';

@@ -1,4 +1,4 @@
-// Kortix desktop shell — auto-update (electron-updater + GitHub Releases).
+// Zed desktop shell — auto-update (electron-updater + GitHub Releases).
 //
 // Until now the desktop app had NO update path: users had to notice a new
 // version and manually re-download from the web /download route. This wires up
@@ -76,9 +76,9 @@ async function promptRestart(info) {
     defaultId: 0,
     cancelId: 1,
     title: 'Update ready',
-    message: version ? `Kortix ${version} is ready to install.` : 'A Kortix update is ready to install.',
+    message: version ? `Zed ${version} is ready to install.` : 'A Zed update is ready to install.',
     detail:
-      'Restart Kortix to finish updating. It only takes a moment — your work lives on the web, so nothing is lost.',
+      'Restart Zed to finish updating. It only takes a moment — your work lives on the web, so nothing is lost.',
   };
   const { response } = win && !win.isDestroyed()
     ? await dialog.showMessageBox(win, opts)
@@ -95,7 +95,7 @@ function registerHandlers() {
   });
 
   autoUpdater.on('update-available', (info) => {
-    console.log('[kortix-updater] update available:', info && info.version);
+    console.log('[zed-updater] update available:', info && info.version);
     setSplashStatus('Downloading update…');
   });
 
@@ -108,7 +108,7 @@ function registerHandlers() {
         type: 'info',
         buttons: ['OK'],
         title: 'You’re up to date',
-        message: `Kortix ${app.getVersion()} is the latest version.`,
+        message: `Zed ${app.getVersion()} is the latest version.`,
       };
       win && !win.isDestroyed() ? dialog.showMessageBox(win, opts) : dialog.showMessageBox(opts);
     }
@@ -120,7 +120,7 @@ function registerHandlers() {
   });
 
   autoUpdater.on('update-downloaded', (info) => {
-    console.log('[kortix-updater] update downloaded:', info && info.version);
+    console.log('[zed-updater] update downloaded:', info && info.version);
     updateReady = true;
     interactive = false;
     setSplashStatus('');
@@ -128,7 +128,7 @@ function registerHandlers() {
   });
 
   autoUpdater.on('error', (err) => {
-    console.log('[kortix-updater] error:', (err && err.message) || err);
+    console.log('[zed-updater] error:', (err && err.message) || err);
     setSplashStatus('');
     if (interactive) {
       interactive = false;
@@ -155,7 +155,7 @@ function setupAutoUpdates({ getSplashWindow: gs, getMainWindow: gm }) {
 
   if (!supported()) {
     console.log(
-      `[kortix-updater] disabled (packaged=${app.isPackaged} channel=${channel()})`,
+      `[zed-updater] disabled (packaged=${app.isPackaged} channel=${channel()})`,
     );
     return;
   }
@@ -169,7 +169,7 @@ function setupAutoUpdates({ getSplashWindow: gs, getMainWindow: gm }) {
 
   autoUpdater
     .checkForUpdates()
-    .catch((e) => console.log('[kortix-updater] initial check failed:', (e && e.message) || e));
+    .catch((e) => console.log('[zed-updater] initial check failed:', (e && e.message) || e));
 
   // Re-check periodically so a long-running window eventually picks up a release.
   setInterval(() => {
@@ -201,7 +201,7 @@ function checkForUpdatesInteractive() {
   interactive = true;
   autoUpdater.checkForUpdates().catch((e) => {
     // The 'error' handler shows the dialog; this guards the rejected promise.
-    console.log('[kortix-updater] manual check failed:', (e && e.message) || e);
+    console.log('[zed-updater] manual check failed:', (e && e.message) || e);
   });
 }
 

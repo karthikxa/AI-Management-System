@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Hint from '@/components/ui/hint';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Kortix } from '@/features/icon/icons/kortix';
+import { Zed } from '@/features/icon/icons/zed';
 import { Slack } from '@/features/icon/icons/slack';
 import { ComposerChatInput, type ComposerOptions } from '@/features/session/composer-chat-input';
 import type { AttachedFile } from '@/features/session/session-chat-input';
@@ -51,9 +51,9 @@ import {
   type SandboxTemplate,
   listProjectAccessRequests,
   listProjectSandboxes,
-} from '@kortix/sdk';
-import { contract, qk, useProjectName, type Command } from '@kortix/sdk/react';
-import { META_SANDBOX_SLUG, chalkColors, isMetaAgentName } from '@kortix/shared';
+} from '@zed/sdk';
+import { contract, qk, useProjectName, type Command } from '@zed/sdk/react';
+import { META_SANDBOX_SLUG, chalkColors, isMetaAgentName } from '@zed/shared';
 import { SquaresFourIcon as HiOutlineViewGrid } from '@phosphor-icons/react';
 
 export interface ProjectHomeSendOptions extends ComposerOptions {
@@ -355,9 +355,9 @@ function SandboxPicker({
   const ActiveIcon = active.is_default ? Container : active.has_image ? Package : FileCode;
   const activeStateTone =
     active.daytona_state === 'active'
-      ? 'bg-kortix-green'
+      ? 'bg-zed-green'
       : ['pulling', 'building'].includes(active.daytona_state)
-        ? 'bg-kortix-blue'
+        ? 'bg-zed-blue'
         : active.daytona_state === 'missing'
           ? 'bg-muted-foreground/40'
           : 'bg-destructive';
@@ -409,9 +409,9 @@ function SandboxPicker({
               : `Dockerfile: ${tpl.dockerfile_path}`;
           const stateTone =
             tpl.daytona_state === 'active'
-              ? 'text-kortix-green'
+              ? 'text-zed-green'
               : ['pulling', 'building'].includes(tpl.daytona_state)
-                ? 'text-kortix-blue'
+                ? 'text-zed-blue'
                 : tpl.daytona_state === 'missing'
                   ? 'text-muted-foreground'
                   : 'text-destructive';
@@ -497,7 +497,7 @@ const PROJECT_SETUP_TILES: SetupTile[] = [
     section: 'members',
   },
   {
-    icon: Kortix,
+    icon: Zed,
     title: 'Agent',
     desc: 'Shape how your agent thinks and acts.',
     // 'agent' (the route segment), not the old 'agents' overlay section —

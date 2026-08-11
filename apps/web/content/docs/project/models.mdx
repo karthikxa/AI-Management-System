@@ -1,12 +1,12 @@
 ---
 title: Models
-description: How Kortix picks a model, and how billing works for managed vs. your-own-key models.
+description: How Zed picks a model, and how billing works for managed vs. your-own-key models.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Kortix runs each [session](/docs/work/sessions) on a model. This page
-explains managed models vs. your own provider key (BYOK), how Kortix picks a
+Zed runs each [session](/docs/work/sessions) on a model. This page
+explains managed models vs. your own provider key (BYOK), how Zed picks a
 model automatically, and two billing gotchas to know.
 
 This page applies to projects with the LLM Gateway on. LLM Gateway is an
@@ -17,8 +17,8 @@ toggle it in Customize → Feature flags.
 
 A model id has one of three shapes:
 
-- **Managed** — a bare id, like `claude-opus-4.8` or `glm-5.2`. Kortix
-  supplies the credentials. Cloud accounts pay with Kortix credits.
+- **Managed** — a bare id, like `claude-opus-4.8` or `glm-5.2`. Zed
+  supplies the credentials. Cloud accounts pay with Zed credits.
 - **BYOK** — a `provider/model` id, like `anthropic/claude-opus-4-8`. You
   supply the key. Your provider account pays.
 - **ChatGPT** — a `codex/<id>` id. You connect your ChatGPT plan once through
@@ -29,7 +29,7 @@ provider's env var directly as a [secret](/docs/project/secrets).
 
 ## How auto picks a model
 
-Set no model, and Kortix resolves one through five layers, in order. (The
+Set no model, and Zed resolves one through five layers, in order. (The
 id `auto` covers this same behavior, but it is not yet a selectable option
 in the model picker.)
 
@@ -39,7 +39,7 @@ in the model picker.)
 4. The account's default.
 5. The platform default.
 
-Kortix uses the first layer that has a value it can still serve. A saved
+Zed uses the first layer that has a value it can still serve. A saved
 default that stops working — a disconnected key, a retired model — is
 skipped automatically. A session never dies from a stale default. See the
 [manifest reference](/docs/project/manifest) for the trigger `model:`
@@ -48,10 +48,10 @@ field.
 <Callout type="warn" title="Billing surprises on BYOK">
 Two costs are easy to miss on a paid cloud account:
 
-- **Platform fee.** Kortix adds a 10% fee, billed as credits, on top of what
+- **Platform fee.** Zed adds a 10% fee, billed as credits, on top of what
   your own provider charges. Free-tier and self-hosted accounts are exempt.
 - **Silent failover.** If your BYOK key hits a rate limit or billing error
-  mid-turn, Kortix retries on a managed model and bills your credits instead
+  mid-turn, Zed retries on a managed model and bills your credits instead
   of failing the session.
 
 If you see credit charges on a BYOK-only project, check these two causes
@@ -61,7 +61,7 @@ before reporting a billing bug.
 ## Per-project model enablement
 
 The project controls which models its pickers offer. By default, the newest
-model of each family is offered automatically. Kortix-managed models and any
+model of each family is offered automatically. Zed-managed models and any
 model your project's defaults or routing policy reference are always offered —
 a guard never prunes them.
 

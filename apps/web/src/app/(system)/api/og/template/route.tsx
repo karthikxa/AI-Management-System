@@ -2,12 +2,12 @@ import { getHardcodedUiServerText } from '@/lib/hardcoded-ui-server';
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 import { getServerPublicEnv } from '@/lib/public-env-server';
-import { getPublicTemplate } from '@kortix/sdk';
+import { getPublicTemplate } from '@zed/sdk';
 
 export const runtime = 'edge';
 
 interface PublicTemplateOgData {
-  is_kortix_team?: boolean;
+  is_zed_team?: boolean;
   name: string;
   description?: string | null;
   creator_name?: string | null;
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
               textAlign: 'center',
             }}
           >
-            {template.is_kortix_team && (
+            {template.is_zed_team && (
               <div
                 style={{
                   display: 'flex',
@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
                 bottom: '40px',
               }}
             >
-              <span style={{ color: '#64748b', fontSize: '20px' }}>Kortix</span>
+              <span style={{ color: '#64748b', fontSize: '20px' }}>Zed</span>
               <span style={{ color: '#334155', fontSize: '20px' }}>•</span>
               <span style={{ color: '#64748b', fontSize: '20px' }}>{tHardcodedUi.raw('appApiOgTemplateRoute.line174JsxTextAiAgentMarketplace')}</span>
             </div>
@@ -234,7 +234,7 @@ export async function GET(request: NextRequest) {
                 fontSize: '20px',
                 color: '#94a3b8',
               }}
-            >{tHardcodedUi.raw('appApiOgTemplateRoute.line233JsxTextDiscoverPowerfulAiAgentsOnKortix')}</p>
+            >{tHardcodedUi.raw('appApiOgTemplateRoute.line233JsxTextDiscoverPowerfulAiAgentsOnZed')}</p>
           </div>
         </div>
       ),

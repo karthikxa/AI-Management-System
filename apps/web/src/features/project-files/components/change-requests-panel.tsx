@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsListCompact, TabsTriggerCompact } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { formatRelative } from '@kortix/shared';
+import { formatRelative } from '@zed/shared';
 import {
   WarningCircleIcon as AlertCircle,
   CheckCircleIcon as CheckCircle2,
@@ -87,11 +87,11 @@ function groupByDate(crs: ChangeRequest[]) {
 // ---------------------------------------------------------------------------
 
 function CrIcon({ status }: { status: ChangeRequestStatus }) {
-  if (status === 'merged') return <CheckCircle2 className="text-kortix-purple h-3.5 w-3.5" />;
+  if (status === 'merged') return <CheckCircle2 className="text-zed-purple h-3.5 w-3.5" />;
   if (status === 'closed') {
     return <XCircle className="text-muted-foreground h-3.5 w-3.5" />;
   }
-  return <FileDiff className="text-kortix-green h-3.5 w-3.5" />;
+  return <FileDiff className="text-zed-green h-3.5 w-3.5" />;
 }
 
 function CrListItem({

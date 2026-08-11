@@ -7,12 +7,12 @@ process.env.DATABASE_URL ??= 'postgresql://postgres:postgres@127.0.0.1:54322/pos
 process.env.SUPABASE_URL ??= 'http://127.0.0.1:54321';
 process.env.SUPABASE_SERVICE_ROLE_KEY ??= 'test-service-role-key';
 process.env.API_KEY_SECRET ??= 'test-api-key-secret';
-process.env.KORTIX_URL ??= 'http://127.0.0.1:8008';
+process.env.ZED_URL ??= 'http://127.0.0.1:8008';
 process.env.TUNNEL_ENABLED = 'false';
-delete process.env.KORTIX_ENFORCE_AGENT_SECRET_GRANT_LOCK;
+delete process.env.ZED_ENFORCE_AGENT_SECRET_GRANT_LOCK;
 
 const { config } = await import('./config');
 
 test('agent secret-grant switching is allowed when the lock is not explicitly enabled', () => {
-  expect(config.KORTIX_ENFORCE_AGENT_SECRET_GRANT_LOCK).toBe(false);
+  expect(config.ZED_ENFORCE_AGENT_SECRET_GRANT_LOCK).toBe(false);
 });

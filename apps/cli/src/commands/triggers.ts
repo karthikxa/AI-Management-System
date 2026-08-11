@@ -17,18 +17,18 @@ import type {
   TriggerFireResponse,
 } from '../api/types.ts';
 
-const HELP = help`Usage: kortix triggers <subcommand> [options]
+const HELP = help`Usage: zed triggers <subcommand> [options]
 
-Manage the [[triggers]] declared in your project's kortix.yaml — cron
-schedules and webhooks. add/rm/enable/disable edit the LOCAL kortix.yaml
-(the source of truth); \`kortix ship\` applies them. ls/fire/info read live
+Manage the [[triggers]] declared in your project's zed.yaml — cron
+schedules and webhooks. add/rm/enable/disable edit the LOCAL zed.yaml
+(the source of truth); \`zed ship\` applies them. ls/fire/info read live
 state from the cloud. pause/resume are a SERVER-SIDE activation switch
 (cloud state, not the manifest).
 
 Subcommands:
   ls [--json]              List triggers + runtime state.
   add <slug> [options]     Append a [[triggers]] block (cron or webhook).
-  rm <slug>                Remove a trigger from kortix.yaml.
+  rm <slug>                Remove a trigger from zed.yaml.
   fire <slug>              Manually fire a trigger now.
   enable <slug>            Set enabled = true on a trigger.
   disable <slug>           Set enabled = false on a trigger.
@@ -141,12 +141,12 @@ async function triggersLs(opts: CtxOpts, json = false): Promise<number> {
 
   if (resp.triggers_paused) {
     process.stdout.write(
-      `\n  ${status.warn('Triggers are PAUSED server-side for this project')} ${C.dim}— crons + webhooks won't auto-run (manual \`fire\` still works). \`kortix triggers resume\` to re-activate.${C.reset}\n`,
+      `\n  ${status.warn('Triggers are PAUSED server-side for this project')} ${C.dim}— crons + webhooks won't auto-run (manual \`fire\` still works). \`zed triggers resume\` to re-activate.${C.reset}\n`,
     );
   }
 
   if (resp.triggers.length === 0) {
-    process.stdout.write(`  ${C.dim}No triggers declared. Add [[triggers]] to kortix.yaml.${C.reset}\n`);
+    process.stdout.write(`  ${C.dim}No triggers declared. Add [[triggers]] to zed.yaml.${C.reset}\n`);
   } else {
     const slugW = Math.max(...resp.triggers.map((t) => t.slug.length), 4);
     const nameW = Math.max(...resp.triggers.map((t) => t.name.length), 4);
@@ -228,7 +228,7 @@ async function triggersActivation(opts: CtxOpts, paused: boolean): Promise<numbe
   return 0;
 }
 
-// add/rm a [[triggers]] block in the LOCAL kortix.yaml (source of truth).
+// add/rm a [[triggers]] block in the LOCAL zed.yaml (source of truth).
 function triggersAddLocal(
   slug: string | undefined,
   tf: Record<string, string | undefined>,
@@ -253,7 +253,7 @@ function triggersAddLocal(
   }
   try {
     if (arrayEntryExists('triggers', 'slug', slug)) {
-      process.stderr.write(`${status.err(`A [[triggers]] "${slug}" already exists in kortix.yaml.`)}\n`);
+      process.stderr.write(`${status.err(`A [[triggers]] "${slug}" already exists in zed.yaml.`)}\n`);
       return 1;
     }
     const fields: Record<string, unknown> = { slug };
@@ -270,7 +270,7 @@ function triggersAddLocal(
     fields.prompt = tf.prompt;
     appendArrayBlock('triggers', fields);
     process.stdout.write(
-      `${status.ok(`Added [[triggers]] ${C.bold}${slug}${C.reset} (${type}) to kortix.yaml`)} ${C.dim}— \`kortix ship\` to apply.${C.reset}\n`,
+      `${status.ok(`Added [[triggers]] ${C.bold}${slug}${C.reset} (${type}) to zed.yaml`)} ${C.dim}— \`zed ship\` to apply.${C.reset}\n`,
     );
     return 0;
   } catch (err) {
@@ -286,11 +286,11 @@ function triggersRmLocal(slug: string | undefined): number {
   }
   try {
     if (!removeArrayBlock('triggers', 'slug', slug)) {
-      process.stderr.write(`${status.err(`No [[triggers]] "${slug}" in kortix.yaml.`)}\n`);
+      process.stderr.write(`${status.err(`No [[triggers]] "${slug}" in zed.yaml.`)}\n`);
       return 1;
     }
     process.stdout.write(
-      `${status.ok(`Removed [[triggers]] ${C.bold}${slug}${C.reset}`)} ${C.dim}— \`kortix ship\` to apply.${C.reset}\n`,
+      `${status.ok(`Removed [[triggers]] ${C.bold}${slug}${C.reset}`)} ${C.dim}— \`zed ship\` to apply.${C.reset}\n`,
     );
     return 0;
   } catch (err) {
@@ -299,8 +299,8 @@ function triggersRmLocal(slug: string | undefined): number {
   }
 }
 
-// enabled is config — toggle it in the LOCAL kortix.yaml `[[triggers]]` block
-// (the source of truth), preserving the block's comments. `kortix ship` applies.
+// enabled is config — toggle it in the LOCAL zed.yaml `[[triggers]]` block
+// (the source of truth), preserving the block's comments. `zed ship` applies.
 function triggersToggle(slug: string | undefined, enabled: boolean): number {
   if (!slug) {
     process.stderr.write(`${status.err('Pass a trigger slug.')}\n`);
@@ -308,7 +308,7 @@ function triggersToggle(slug: string | undefined, enabled: boolean): number {
   }
   try {
     if (!arrayEntryExists('triggers', 'slug', slug)) {
-      process.stderr.write(`${status.err(`No [[triggers]] "${slug}" in kortix.yaml.`)}\n`);
+      process.stderr.write(`${status.err(`No [[triggers]] "${slug}" in zed.yaml.`)}\n`);
       return 1;
     }
     setScalarInArrayBlock('triggers', 'slug', slug, 'enabled', enabled);
@@ -317,7 +317,7 @@ function triggersToggle(slug: string | undefined, enabled: boolean): number {
     return 1;
   }
   process.stdout.write(
-    `${status.ok(`${enabled ? 'Enabled' : 'Disabled'} ${C.bold}${slug}${C.reset}`)} ${C.dim}— \`kortix ship\` to apply.${C.reset}\n`,
+    `${status.ok(`${enabled ? 'Enabled' : 'Disabled'} ${C.bold}${slug}${C.reset}`)} ${C.dim}— \`zed ship\` to apply.${C.reset}\n`,
   );
   return 0;
 }

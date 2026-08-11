@@ -6,7 +6,7 @@ import {
 } from '@/components/approvals/approval-request';
 import Loading from '@/components/ui/loading';
 import { errorToast, successToast } from '@/components/ui/toast';
-import { type ApprovalLinkDetails, getApprovalLink, resolveApproval } from '@kortix/sdk';
+import { type ApprovalLinkDetails, getApprovalLink, resolveApproval } from '@zed/sdk';
 import { WarningIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
@@ -66,7 +66,7 @@ export function ApprovalDecision({ token }: { token: string }) {
   if (!details) {
     return (
       <div className="flex flex-col items-center gap-2 py-8 text-center">
-        <span className="bg-kortix-red/15 text-kortix-red flex size-10 items-center justify-center rounded-sm">
+        <span className="bg-zed-red/15 text-zed-red flex size-10 items-center justify-center rounded-sm">
           <WarningIcon className="size-5" />
         </span>
         <p className="text-foreground text-sm font-medium">This approval cannot be opened</p>

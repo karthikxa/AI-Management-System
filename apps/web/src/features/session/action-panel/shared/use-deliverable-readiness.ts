@@ -14,8 +14,8 @@
  */
 
 import { track } from '@/lib/track';
-import { useKortixComputerStore, useIsSidePanelOpen } from '@/stores/kortix-computer-store';
-import { useRuntimePendingStore } from '@kortix/sdk/react';
+import { useZedComputerStore, useIsSidePanelOpen } from '@/stores/zed-computer-store';
+import { useRuntimePendingStore } from '@zed/sdk/react';
 import type { MessageWithParts } from '@/ui';
 import { useEffect, useMemo, useRef } from 'react';
 import { deriveIsRunning } from '../easy/easy-panel-logic';
@@ -94,7 +94,7 @@ export function useDeliverableReadiness(
     );
     if (chip) {
       track('ready_chip_shown', { outcome: chip.outcome });
-      useKortixComputerStore.getState().setReadyChip(chip);
+      useZedComputerStore.getState().setReadyChip(chip);
     }
   }, [isRunning, isPanelOpen, messages, parts, steps, sessionId, pendingForSession]);
 
@@ -107,7 +107,7 @@ export function useDeliverableReadiness(
     // question after that must still count as a new episode.
     if (pendingForSession === 0) needsInputReported.delete(sessionId);
     if (isPanelOpen) return;
-    const store = useKortixComputerStore.getState();
+    const store = useZedComputerStore.getState();
     if (pendingForSession > 0) {
       // One `ready_chip_shown` per pending-input episode — see
       // `needsInputReported` for why the memory is module-scope, not the

@@ -66,7 +66,7 @@ async function ensureMirrorAccess(project: GitBackedProject): Promise<ResolvedMi
 }
 
 function cacheRoot() {
-  return process.env.KORTIX_GIT_CACHE_DIR || '/tmp/kortix/git-cache';
+  return process.env.ZED_GIT_CACHE_DIR || '/tmp/zed/git-cache';
 }
 
 export function repoCachePath(project: GitBackedProject) {
@@ -75,7 +75,7 @@ export function repoCachePath(project: GitBackedProject) {
 }
 
 function sessionBranchWorkRoot() {
-  return process.env.KORTIX_GIT_BRANCH_WORK_DIR || join(dirname(cacheRoot()), 'git-session-branches');
+  return process.env.ZED_GIT_BRANCH_WORK_DIR || join(dirname(cacheRoot()), 'git-session-branches');
 }
 
 export async function makeSessionBranchRepo(projectId: string) {
@@ -130,7 +130,7 @@ const GIT_DEFAULT_TIMEOUT_MS = 30_000;
  * stderr a killed `git clone`/`git fetch` leaves behind. Surfacing them as the
  * Error message hides the real cause (timeout / signal / `fatal:`) and produced
  * the recurring opaque Better Stack pattern `8d0cffbb…`
- * ("Cloning into bare repository '/tmp/kortix/git-cache/….git'…"). Strip them
+ * ("Cloning into bare repository '/tmp/zed/git-cache/….git'…"). Strip them
  * so a surfaced git error shows its actual `fatal:` line (or nothing, when the
  * process was killed before emitting one).
  */
@@ -330,13 +330,13 @@ export async function runGitCapture(
 export { spawn };
 
 function refreshIntervalMs() {
-  const value = Number(process.env.KORTIX_GIT_REFRESH_INTERVAL_MS || 60_000);
+  const value = Number(process.env.ZED_GIT_REFRESH_INTERVAL_MS || 60_000);
   return Number.isFinite(value) && value >= 0 ? value : 60_000;
 }
 
 /** Per-op timeout (ms) for a cold bare `git clone --bare` of a project mirror. */
 function bareCloneTimeoutMs(): number {
-  const value = Number(process.env.KORTIX_GIT_BARE_CLONE_TIMEOUT_MS || 90_000);
+  const value = Number(process.env.ZED_GIT_BARE_CLONE_TIMEOUT_MS || 90_000);
   return Number.isFinite(value) && value > 0 ? value : 90_000;
 }
 
@@ -387,7 +387,7 @@ async function doRefreshMirror(project: GitBackedProject, force = false) {
   // Nothing to do over the network — serve the warm cache without touching git.
   if (!needsClone && !needsFetch) return repoPath;
 
-  if (process.env.KORTIX_LOCAL_DEV === '1') {
+  if (process.env.ZED_LOCAL_DEV === '1') {
     if (needsClone) {
       try {
         await execFileAsync('git', ['init', '--bare', '-b', project.defaultBranch || 'main', repoPath], { env: process.env });
@@ -475,7 +475,7 @@ export async function refreshMirror(project: GitBackedProject, force = false) {
 }
 
 function gitCacheMaxBytes(): number {
-  const raw = Number(process.env.KORTIX_GIT_CACHE_MAX_BYTES);
+  const raw = Number(process.env.ZED_GIT_CACHE_MAX_BYTES);
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 4 * 1024 * 1024 * 1024;
 }
 
@@ -628,7 +628,7 @@ export async function materializeRepoContext(
   const fs = await import('node:fs/promises');
   const os = await import('node:os');
   const path = await import('node:path');
-  const target = await fs.mkdtemp(path.join(os.tmpdir(), 'kortix-snap-'));
+  const target = await fs.mkdtemp(path.join(os.tmpdir(), 'zed-snap-'));
 
   async function assertNoSymlinks(dir: string): Promise<void> {
     const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -678,12 +678,12 @@ async function scrubGeneratedSnapshotFiles(root: string): Promise<void> {
   };
 
   await Promise.all([
-    removeIfPresent('.kortix/opencode/node_modules'),
-    removeIfPresent('.kortix/opencode/package-lock.json'),
-    removeIfPresent('.kortix/opencode/npm-shrinkwrap.json'),
-    removeIfPresent('.kortix/opencode/pnpm-lock.yaml'),
-    removeIfPresent('.kortix/opencode/yarn.lock'),
-    removeIfPresent('.kortix/opencode/bun.lockb'),
+    removeIfPresent('.zed/opencode/node_modules'),
+    removeIfPresent('.zed/opencode/package-lock.json'),
+    removeIfPresent('.zed/opencode/npm-shrinkwrap.json'),
+    removeIfPresent('.zed/opencode/pnpm-lock.yaml'),
+    removeIfPresent('.zed/opencode/yarn.lock'),
+    removeIfPresent('.zed/opencode/bun.lockb'),
   ]);
 
   async function walk(dir: string): Promise<void> {

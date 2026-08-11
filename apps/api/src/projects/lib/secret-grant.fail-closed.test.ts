@@ -16,14 +16,14 @@ const PROJECT = {
   projectId: 'p1',
   repoUrl: 'https://github.com/acme/repo',
   defaultBranch: 'main',
-  manifestPath: 'kortix.yaml',
+  manifestPath: 'zed.yaml',
 };
 
 const MANIFEST = [
-  'kortix_version: 2',
-  'default_agent: kortix',
+  'zed_version: 2',
+  'default_agent: zed',
   'agents:',
-  '  kortix:',
+  '  zed:',
   '    secrets:',
   '      - STRIPE_KEY',
 ].join('\n');
@@ -37,7 +37,7 @@ describe('resolveSessionSecretGrant fails closed through the real manifest loade
     readManifestFromRepoImpl = async () => {
       throw new Error('git-proxy 429');
     };
-    await expect(resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'kortix' })).rejects.toThrow(
+    await expect(resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'zed' })).rejects.toThrow(
       SecretGrantResolutionError,
     );
   });
@@ -53,8 +53,8 @@ describe('resolveSessionSecretGrant fails closed through the real manifest loade
 
   test('an unparseable manifest refuses rather than resolving default to unrestricted', async () => {
     readManifestFromRepoImpl = async () => ({
-      path: 'kortix.yaml',
-      content: 'kortix_version: 2\nagents:\n  - [unbalanced\n',
+      path: 'zed.yaml',
+      content: 'zed_version: 2\nagents:\n  - [unbalanced\n',
     });
     await expect(
       resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'default' }),
@@ -63,20 +63,20 @@ describe('resolveSessionSecretGrant fails closed through the real manifest loade
 
   test('a genuinely absent manifest is still the unrestricted back-compat path', async () => {
     readManifestFromRepoImpl = async () => null;
-    await expect(resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'kortix' })).resolves.toBe(
+    await expect(resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'zed' })).resolves.toBe(
       'all',
     );
   });
 
   test('a readable manifest resolves its declared narrow grant', async () => {
-    readManifestFromRepoImpl = async () => ({ path: 'kortix.yaml', content: MANIFEST });
+    readManifestFromRepoImpl = async () => ({ path: 'zed.yaml', content: MANIFEST });
     await expect(
-      resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'kortix' }),
+      resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'zed' }),
     ).resolves.toEqual(['STRIPE_KEY']);
   });
 
   test('the declared narrow grant is not widened for a default-sentinel session', async () => {
-    readManifestFromRepoImpl = async () => ({ path: 'kortix.yaml', content: MANIFEST });
+    readManifestFromRepoImpl = async () => ({ path: 'zed.yaml', content: MANIFEST });
     await expect(
       resolveSessionSecretGrant({ ...PROJECT, sessionAgent: 'default' }),
     ).resolves.toEqual(['STRIPE_KEY']);

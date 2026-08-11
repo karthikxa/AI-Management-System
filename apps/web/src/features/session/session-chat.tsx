@@ -95,14 +95,14 @@ import { playSound } from '@/lib/sounds';
 import { track } from '@/lib/track';
 import { cn } from '@/lib/utils';
 import {
-  type KortixSystemMessage,
+  type ZedSystemMessage,
   type SessionReport,
-  extractKortixSystemMessages,
+  extractZedSystemMessages,
   extractSessionReport,
-  stripKortixSystemTags,
-} from '@/lib/utils/kortix-system-tags';
+  stripZedSystemTags,
+} from '@/lib/utils/zed-system-tags';
 import { useChatSendStore } from '@/stores/chat-send-store';
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import { useMessageJumpStore } from '@/stores/message-jump-store';
 import {
   type WebQueuedMessage,
@@ -149,10 +149,10 @@ import {
   isToolPart,
   shouldShowToolPart,
 } from '@/ui';
-import { updateProjectSession } from '@kortix/sdk';
-import type { ProviderListResponse } from '@kortix/sdk/react';
+import { updateProjectSession } from '@zed/sdk';
+import type { ProviderListResponse } from '@zed/sdk/react';
 import {
-  type KortixSendError,
+  type ZedSendError,
   type ModelKey,
   type UseSessionResult,
   abandonOptimisticSend,
@@ -188,7 +188,7 @@ import {
   useSessionModelSelection,
   useSessionStateStore,
   useSessionSync,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 import { SandboxUrlDetector } from './sandbox-url-detector';
 import { sessionComposerReadiness } from './session-composer-readiness';
 import { captureTurnScrollAnchor, restoreTurnScrollAnchor } from './session-history-scroll';
@@ -312,22 +312,22 @@ function formatCommandError(errorLike: unknown): string {
 }
 
 /**
- * Classify a send/command failure onto the SDK's typed `KortixSendError`
+ * Classify a send/command failure onto the SDK's typed `ZedSendError`
  * layer (billing vs runtime-not-ready vs runtime-error) so the banner can key
  * off `.kind` instead of regexing the message — while keeping this file's
  * richer message formatting (`formatCommandError` special-cases things like
  * `ProviderModelNotFoundError` that the SDK's generic formatter doesn't know
  * about).
  */
-function classifySessionError(err: unknown): KortixSendError {
+function classifySessionError(err: unknown): ZedSendError {
   return { ...classifySendError(err), message: formatCommandError(err) };
 }
 
 // ============================================================================
-// System message indicator — subtle inline pill for kortix_system messages
+// System message indicator — subtle inline pill for zed_system messages
 // ============================================================================
 
-function SystemMessageIndicator({ messages }: { messages: KortixSystemMessage[] }) {
+function SystemMessageIndicator({ messages }: { messages: ZedSystemMessage[] }) {
   if (messages.length === 0) return null;
 
   // Combine all messages into a single line: "Goal · iteration 3/50"
@@ -467,7 +467,7 @@ function isNotificationOnlyMessage(parts: Part[]): boolean {
   ) as TextPart[];
   if (textParts.length === 0) return false;
   const raw = textParts.map((p) => p.text || '').join('\n');
-  const { cleanText, notifications } = parseSystemNotifications(stripKortixSystemTags(raw));
+  const { cleanText, notifications } = parseSystemNotifications(stripZedSystemTags(raw));
   return notifications.length > 0 && !cleanText.trim();
 }
 
@@ -486,7 +486,7 @@ function NotificationTurn({ turn }: { turn: Turn }) {
   }, [turn.userMessage.parts]);
 
   const { notifications } = useMemo(
-    () => parseSystemNotifications(stripKortixSystemTags(rawText)),
+    () => parseSystemNotifications(stripZedSystemTags(rawText)),
     [rawText],
   );
 
@@ -564,13 +564,13 @@ export function SessionReportCard({
       <span
         className={cn(
           'flex size-8 shrink-0 items-center justify-center rounded-sm',
-          complete ? 'bg-kortix-green/15' : 'bg-kortix-red/15',
+          complete ? 'bg-zed-green/15' : 'bg-zed-red/15',
         )}
       >
         {complete ? (
-          <CheckCircle className="text-kortix-green size-4" />
+          <CheckCircle className="text-zed-green size-4" />
         ) : (
-          <AlertTriangle className="text-kortix-red size-4" />
+          <AlertTriangle className="text-zed-red size-4" />
         )}
       </span>
 
@@ -952,12 +952,12 @@ function SessionTurn({
   }, [turn.userMessage.parts]);
   const [sessionReportModalOpen, setSessionReportModalOpen] = useState(false);
 
-  // Extract kortix_system messages for inline rendering (goal continuations, etc.)
-  const systemMessages = useMemo<KortixSystemMessage[]>(() => {
-    const msgs: KortixSystemMessage[] = [];
+  // Extract zed_system messages for inline rendering (goal continuations, etc.)
+  const systemMessages = useMemo<ZedSystemMessage[]>(() => {
+    const msgs: ZedSystemMessage[] = [];
     for (const p of turn.userMessage.parts) {
       if (isTextPart(p) && (p as TextPart).text) {
-        msgs.push(...extractKortixSystemMessages((p as TextPart).text!));
+        msgs.push(...extractZedSystemMessages((p as TextPart).text!));
       }
     }
     return msgs;
@@ -976,7 +976,7 @@ function SessionTurn({
         isTextPart(p) &&
         !(p as TextPart).synthetic &&
         !(p as any).ignored &&
-        !!stripKortixSystemTags((p as TextPart).text || '').trim(),
+        !!stripZedSystemTags((p as TextPart).text || '').trim(),
     );
     if (hasVisibleText) return true;
     // Has any attachment (image/PDF)?
@@ -1167,7 +1167,7 @@ function SessionTurn({
   //
   // Structure:
   //   1. User message + actions
-  //   2. Kortix logo
+  //   2. Zed logo
   //   3. Steps trigger (spinner/chevron + status + duration) — if working || hasSteps
   //   4. Collapsible steps (if expanded): all parts EXCEPT response part
   //   5. Answered question parts (if collapsed + has answered questions)
@@ -1199,7 +1199,7 @@ function SessionTurn({
         </>
       )}
 
-      {/* ── System message indicator — shown for kortix_system-only messages ── */}
+      {/* ── System message indicator — shown for zed_system-only messages ── */}
       {!hasVisibleUserContent && !sessionReport && systemMessages.length > 0 && (
         <SystemMessageIndicator messages={systemMessages} />
       )}
@@ -1471,7 +1471,7 @@ function SessionTurn({
 
 interface SessionChatProps {
   sessionId: string;
-  /** Durable Kortix project session id used by project-session APIs. */
+  /** Durable Zed project session id used by project-session APIs. */
   projectSessionId?: string;
   /** Complete SDK state for the root session. Omit for a read-only child session. */
   sessionState?: UseSessionResult;
@@ -1521,7 +1521,7 @@ export function SessionChat({
 
   // Clicking a tool call in the chat opens the side panel (Actions view)
   // focused on that tool's large preview — instead of expanding inline.
-  const focusToolCall = useKortixComputerStore((s) => s.focusToolCall);
+  const focusToolCall = useZedComputerStore((s) => s.focusToolCall);
   const setSidePanelView = useSessionBrowserStore((s) => s.setView);
   const handleToolActivate = useCallback(
     (callID: string) => {
@@ -1532,7 +1532,7 @@ export function SessionChat({
       // "already open". This callback is the only point in the flow where
       // the PRE-open state is still observable, so the `panel_opened` event
       // is tracked here instead, gated on that read.
-      const wasOpen = useKortixComputerStore.getState().isSidePanelOpen;
+      const wasOpen = useZedComputerStore.getState().isSidePanelOpen;
       setSidePanelView(sessionId, 'actions');
       focusToolCall(callID);
       if (!wasOpen) track('panel_opened', { source: 'chat_tool' });
@@ -1614,12 +1614,12 @@ export function SessionChat({
     window.getSelection()?.removeAllRanges();
   }, [selectionPopup]);
 
-  // ---- KortixComputer side panel ----
+  // ---- ZedComputer side panel ----
   // No `isSidePanelOpen` subscription here any more. The header's toggle was
   // the only thing that needed it, and the chat was re-rendering in full on
   // every open and close of a panel beside it for a value it no longer reads.
   // The action panel column owns its own flag and subscribes to it itself.
-  const openFileInComputer = useKortixComputerStore((s) => s.openFileInComputer);
+  const openFileInComputer = useZedComputerStore((s) => s.openFileInComputer);
 
   // ---- Hooks ----
   // runtimeReady gates the session query (it's disabled until the sandbox
@@ -1670,7 +1670,7 @@ export function SessionChat({
     boundAgentName,
     defaultAgentName: projectConfig?.open_code_default_agent,
   });
-  // Session agent-lock is DISABLED (mirrors the backend KORTIX_ENFORCE_SESSION_AGENT_LOCK,
+  // Session agent-lock is DISABLED (mirrors the backend ZED_ENFORCE_SESSION_AGENT_LOCK,
   // default off): the picker still defaults to the session's agent (seeded via
   // useRuntimeLocal's boundAgentName) but stays switchable — sends use the current
   // pick, not a forced lock. Flip to true to restore the hard lock once per-agent
@@ -1722,7 +1722,7 @@ export function SessionChat({
     name: string;
     description?: string;
   } | null>(null);
-  const [commandError, setCommandError] = useState<KortixSendError | null>(null);
+  const [commandError, setCommandError] = useState<ZedSendError | null>(null);
   // The last prompt handed to the runtime, verbatim. Only read by the
   // connector-refusal card, to re-send exactly what was refused.
   const lastSubmittedRef = useRef<{ parts: unknown[]; options: Record<string, unknown> } | null>(
@@ -1768,7 +1768,7 @@ export function SessionChat({
   const lastSendTimeRef = useRef<number>(0);
   // ---- Optimistic prompt (from dashboard/project page) ----
   // Backed by the SDK's start-stash (`readStartStash`/`clearStartStash`), which
-  // understands both the modern `kortix:start:<id>` shape and every legacy
+  // understands both the modern `zed:start:<id>` shape and every legacy
   // producer's bare `opencode_pending_prompt:<id>` + `opencode_pending_options:<id>`
   // pair — so pushState navigation still works with no `?new=true` dependency,
   // and no web code needs to know the storage key names directly.
@@ -3715,8 +3715,8 @@ export function SessionChat({
                         <div className="flex items-center gap-3">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src="/kortix-logomark-white.svg"
-                            alt="Kortix"
+                            src="/zed-logomark-white.svg"
+                            alt="Zed"
                             className="h-[14px] w-auto flex-shrink-0 invert dark:invert-0"
                           />
                           <div className="text-muted-foreground text-sm">

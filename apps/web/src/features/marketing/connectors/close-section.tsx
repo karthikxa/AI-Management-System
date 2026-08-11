@@ -1,9 +1,9 @@
 'use client';
 
 import { Reveal } from '@/components/home/reveal';
-import { KortixAsterisk } from '@/components/ui/kortix-asterisk';
+import { ZedAsterisk } from '@/components/ui/zed-asterisk';
 import { Button } from '@/components/ui/marketing/button';
-import KortixGrid from '@/components/ui/marketing/gridder';
+import ZedGrid from '@/components/ui/marketing/gridder';
 import Link from 'next/link';
 import { close } from './content';
 import { Section } from './shared';
@@ -29,7 +29,7 @@ export function CloseSection() {
                     key={point}
                     className="text-muted-foreground flex items-start gap-3 text-sm leading-relaxed"
                   >
-                    <KortixAsterisk index={i} />
+                    <ZedAsterisk index={i} />
                     <span>{point}</span>
                   </li>
                 ))}
@@ -45,7 +45,7 @@ export function CloseSection() {
               </div>
             </div>
             <div className="col-span-7 mask-y-from-90% mask-x-from-90%">
-              <KortixGrid count={58} seed={7211} />
+              <ZedGrid count={58} seed={7211} />
             </div>
           </div>
         </div>

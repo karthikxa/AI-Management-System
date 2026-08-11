@@ -18,19 +18,19 @@ const RELEASE_DATE_FORMAT: Intl.DateTimeFormatOptions = {
 export const metadata: Metadata = {
   title: 'Changelog',
   description:
-    'Every Kortix release, straight from the source. New features, fixes, and improvements — versioned and dated.',
+    'Every Zed release, straight from the source. New features, fixes, and improvements — versioned and dated.',
   openGraph: {
-    title: 'Kortix Changelog',
-    description: 'Every Kortix release, straight from the source.',
+    title: 'Zed Changelog',
+    description: 'Every Zed release, straight from the source.',
     url: `${CANONICAL_ORIGIN}/changelog`,
-    siteName: 'Kortix',
+    siteName: 'Zed',
     type: 'website',
-    images: [{ url: '/banner.png', width: 1200, height: 630, alt: 'Kortix Changelog' }],
+    images: [{ url: '/banner.png', width: 1200, height: 630, alt: 'Zed Changelog' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kortix Changelog',
-    description: 'Every Kortix release, straight from the source.',
+    title: 'Zed Changelog',
+    description: 'Every Zed release, straight from the source.',
     images: ['/banner.png'],
   },
   alternates: { canonical: `${CANONICAL_ORIGIN}/changelog` },
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 // Rebuild hourly so new releases show up without a deploy.
 export const revalidate = 3600;
 
-const REPO = 'kortix-ai/suna';
+const REPO = 'zed-ai/suna';
 
 interface GitHubRelease {
   tag_name: string;
@@ -58,7 +58,7 @@ const SEMVER_TAG = /^v\d+\.\d+\.\d+$/;
 async function getReleases(): Promise<GitHubRelease[]> {
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github+json',
-    'User-Agent': 'kortix-web',
+    'User-Agent': 'zed-web',
   };
   // Optional — lifts the 60/hr unauthenticated rate limit if a token is set.
   if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;

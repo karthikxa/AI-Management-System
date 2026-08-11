@@ -87,7 +87,7 @@ function refreshBody(): string {
   // every assertion below passes vacuously.
   const body = SOURCE.split('async function refreshSandboxWorkspace(')[1]?.split('\n}\n')[0];
   expect(body).toBeTruthy();
-  expect(body).toContain('/kortix/refresh');
+  expect(body).toContain('/zed/refresh');
   return body as string;
 }
 
@@ -101,7 +101,7 @@ describe('the reload never hard-resets the session branch', () => {
 
   test('it uses the plain refresh, which is git pull --ff-only', () => {
     // --ff-only is the whole safety property: it refuses rather than discards.
-    expect(refreshBody()).toContain('/kortix/refresh?restart=0');
+    expect(refreshBody()).toContain('/zed/refresh?restart=0');
   });
 
   test('it does not resolve a base sha at all — nothing on this path needs one', () => {

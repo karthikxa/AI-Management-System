@@ -1,7 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import postgres from 'postgres';
 import { db } from '../shared/db';
-import { accessRequests } from '@kortix/db';
+import { accessRequests } from '@zed/db';
 import { areSignupsEnabled, canSignUp } from '../shared/access-control-cache';
 import { config } from '../config';
 import { getSsoProviderByDomain } from '../repositories/sso';

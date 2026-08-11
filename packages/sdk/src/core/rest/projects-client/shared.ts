@@ -56,19 +56,19 @@ export function unwrap<T>(
 // ── Explicit-token server fetch ─────────────────────────────────────────────
 //
 // Next.js server actions and route handlers run per-request, before (or
-// without ever wiring) the SDK's process-wide `configureKortix()` seam — and
-// even where the host app has called `configureKortix()`, that singleton
+// without ever wiring) the SDK's process-wide `configureZed()` seam — and
+// even where the host app has called `configureZed()`, that singleton
 // must not be trusted to carry one request's bearer token across concurrent
-// requests on the same server process (the last `configureKortix()` call
+// requests on the same server process (the last `configureZed()` call
 // wins for every other in-flight request). These callers already resolved
 // the caller's access token themselves (e.g. from a Supabase server
 // session), so they fetch with it directly instead of going through
 // `backendApi`.
 //
-// A general-purpose fix for this class of problem — any "Kortix as a
-// Backend" server wrapping Kortix on behalf of multiple concurrent
+// A general-purpose fix for this class of problem — any "Zed as a
+// Backend" server wrapping Zed on behalf of multiple concurrent
 // users/tenants, not just this one explicit-token pattern — lives at
-// `@kortix/sdk/server`: `runWithKortix(config, fn)` / `createScopedKortix(config)`
+// `@zed/sdk/server`: `runWithZed(config, fn)` / `createScopedZed(config)`
 // isolate each call's config in a Node `AsyncLocalStorage` context instead of
 // the shared global, so concurrent requests with different tokens never
 // clobber each other. Prefer that over hand-rolling more explicit-token

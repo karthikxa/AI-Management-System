@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Separator } from '@/components/ui/separator';
 import { Github } from '@/features/icon/icons/github';
 import { cn } from '@/lib/utils';
-import type { GitHubRepository, GitHubRepositoryBranch } from '@kortix/sdk';
+import type { GitHubRepository, GitHubRepositoryBranch } from '@zed/sdk';
 import {
   CheckCircleIcon as CheckCircleSolid,
   CaretUpDownIcon as ChevronsUpDown,
@@ -152,7 +152,7 @@ function SearchPicker({
                       weight="fill"
                       aria-hidden="true"
                       className={cn(
-                        'text-kortix-green size-4 shrink-0 transition-[opacity,filter,scale] duration-300 ease-[cubic-bezier(0.2,0,0,1)]',
+                        'text-zed-green size-4 shrink-0 transition-[opacity,filter,scale] duration-300 ease-[cubic-bezier(0.2,0,0,1)]',
                         active
                           ? 'blur-0 scale-100 opacity-100'
                           : 'scale-[0.25] opacity-0 blur-[4px]',

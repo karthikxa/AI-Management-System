@@ -1,8 +1,8 @@
-# Kortix Enterprise Appliance — single-EC2, 100% Docker
+# Zed Enterprise Appliance — single-EC2, 100% Docker
 
 > **Superseded by the generic self-host refactor.** The signed TUF `stable`
 > channel, AWS Terraform (`--target aws-vpc`), and the on-box systemd updater
-> binary described below were all removed. `kortix self-host` is now ONE
+> binary described below were all removed. `zed self-host` is now ONE
 > generic Docker Compose system — no target flag, no Terraform, no TUF/signing,
 > no SSM — identical on a laptop, any VPS, or a cloud VM. Read
 > `docs/runbooks/self-hosting.md` for current operations and
@@ -14,7 +14,7 @@ Date: 2026-07-14. Status: EXECUTING. Supersedes the ECS runtime half of
 dff20292d). Everything release-side from that spec stands unchanged: TUF
 `stable` channel, Promote Enterprise Stable (copy+sign, never rebuild),
 compatibility contracts with enforced `rollback_from`, digest pinning, image
-mirroring, account pinning, secret generation, `kortix self-host` CLI surface.
+mirroring, account pinning, secret generation, `zed self-host` CLI surface.
 
 ## Decision
 
@@ -26,14 +26,14 @@ light. One box, vertically sized, is the honest architecture — and the same
 artifact deploys on ANY VPS or cloud, unifying enterprise AWS-VPC with plain
 Docker self-hosting into ONE system.
 
-Sentence: **a signed release manifest and one box running Caddy + the Kortix
+Sentence: **a signed release manifest and one box running Caddy + the Zed
 containers + official Supabase Docker, updated by a systemd timer, deployed by
 one CLI command.**
 
 ## Host layout (identical on AWS EC2 and any VPS)
 
 ```
-/opt/kortix/
+/opt/zed/
 ├── supabase/          official Supabase Docker Compose (EXISTS today — the
 │                      signed supabase bundle, unchanged mechanism)
 ├── app/               NEW signed app bundle:
@@ -41,11 +41,11 @@ one CLI command.**
 │   │                        every image digest-pinned from the manifest
 │   ├── Caddyfile            TLS termination + routing (below)
 │   └── .env                 rendered from the runtime secret (0600, root)
-└── bin/kortix-updater       slim deployer binary (TUF verify → compare running
+└── bin/zed-updater       slim deployer binary (TUF verify → compare running
                              digests → compose pull/up → health → breadcrumb)
-systemd: kortix-supabase.service (exists) · kortix-app.service ·
-         kortix-updater.{service,timer} (daily; no-op when digests match)
-Data:    /var/lib/kortix/* on the encrypted data volume (EBS on AWS)
+systemd: zed-supabase.service (exists) · zed-app.service ·
+         zed-updater.{service,timer} (daily; no-op when digests match)
+Data:    /var/lib/zed/* on the encrypted data volume (EBS on AWS)
 ```
 
 Caddy owns what the ALB owned — one routing table, all platforms:
@@ -61,7 +61,7 @@ Caddy owns what the ALB owned — one routing table, all platforms:
 
 1. Verify pinned account (AWS) / instance identity. TUF-verify `stable`.
 2. No-op check: running container image digests (`docker inspect`) + release
-   breadcrumb (`/var/lib/kortix/release.json`, plus SSM param on AWS) vs
+   breadcrumb (`/var/lib/zed/release.json`, plus SSM param on AWS) vs
    manifest. A deploy already in progress (lockfile + `flock`) → exit 0.
 3. Pull digest-pinned images (from customer ECR mirror on AWS; Docker Hub by
    digest elsewhere). Mirroring stays for AWS (air-gap-friendly); plain pulls
@@ -93,10 +93,10 @@ timer). ACM cert resources go (Caddy owns TLS).
 
 ## CLI unification (ONE self-host system)
 
-`kortix self-host --target aws-vpc`: init/doctor/plan/deploy keep their shape;
-`deploy` = terraform apply → SSM RunCommand "run kortix-updater now";
+`zed self-host --target aws-vpc`: init/doctor/plan/deploy keep their shape;
+`deploy` = terraform apply → SSM RunCommand "run zed-updater now";
 status/version read the SSM breadcrumb + `docker ps` via SSM.
-`kortix self-host` (docker target): converges on the SAME app bundle + updater
+`zed self-host` (docker target): converges on the SAME app bundle + updater
 binary — a VPS is "appliance minus Terraform" (operator runs a bootstrap
 script; updater timer handles updates identically). One bundle format, one
 updater, one runtime — two provisioning paths (Terraform vs bootstrap script).

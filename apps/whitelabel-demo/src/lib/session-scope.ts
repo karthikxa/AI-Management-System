@@ -3,7 +3,7 @@ import type {
   SessionConnectorBindings,
   SessionScope,
   SessionScopeInput as SessionScopeReplacement,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 /**
  * What THIS session is actually scoped to, and what can still move.
@@ -118,8 +118,8 @@ export function sessionScopeRows(
       badge: 'Per message',
       value: agentLabel,
       detail: agent
-        ? `Messages run as ${agent} unless another agent is picked in the composer. A switch re-scopes future secret delivery, connector access, and Kortix CLI access to the selected agent.`
-        : "Messages run as the project's default agent unless another is picked in the composer. A switch re-scopes future secret delivery, connector access, and Kortix CLI access to the selected agent.",
+        ? `Messages run as ${agent} unless another agent is picked in the composer. A switch re-scopes future secret delivery, connector access, and Zed CLI access to the selected agent.`
+        : "Messages run as the project's default agent unless another is picked in the composer. A switch re-scopes future secret delivery, connector access, and Zed CLI access to the selected agent.",
       control: null,
     },
     {

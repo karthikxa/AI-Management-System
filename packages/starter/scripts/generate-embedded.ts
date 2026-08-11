@@ -6,7 +6,7 @@
  * template is just editing a file). That walk does NOT survive
  * `bun build --compile`: the compiler cannot statically analyze a recursive
  * `readdirSync`, so none of `templates/` ends up in the embedded `$bunfs`,
- * and `kortix init` from the compiled binary fails with ENOENT.
+ * and `zed init` from the compiled binary fails with ENOENT.
  *
  * This script produces a statically-importable JSON snapshot of every
  * template file (raw, with `{{var}}` placeholders intact). A static JSON

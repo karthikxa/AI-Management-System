@@ -17,7 +17,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // Named to avoid "KEY": gitleaks' generic-api-key rule matches on a *_KEY
 // identifier plus value entropy, and flagged this localStorage name as a
 // credential.
-const MUTE_PREFERENCE_ID = 'kortix.a1o.muted';
+const MUTE_PREFERENCE_ID = 'zed.a1o.muted';
 
 function prefersReducedMotion() {
   if (typeof window === 'undefined') return false;

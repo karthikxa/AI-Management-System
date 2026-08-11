@@ -24,7 +24,7 @@
  *    attachment.
  *  - Naming opencode / Codex / Claude Code / Pi under Product / Eng describes
  *    ecosystem fluency wanted in a CANDIDATE. It must never read as a claim
- *    that Kortix supports those harnesses. OpenCode is the Kortix harness, and
+ *    that Zed supports those harnesses. OpenCode is the Zed harness, and
  *    the same opening says so.
  *  - Competitor names, exactly: **Claude Cowork** (one word, lowercase `w`) and
  *    **ChatGPT Work** (two words).
@@ -40,7 +40,7 @@ export const hero = {
   title: 'Open positions.',
   lead: 'Belgrade, Serbia and San Francisco.',
   ctaPrimary: 'Apply',
-  ctaSecondary: 'Why Kortix exists',
+  ctaSecondary: 'Why Zed exists',
   ctaSecondaryHref: '/about',
 } as const;
 
@@ -50,7 +50,7 @@ export const openings = [
     id: 'marketing',
     name: 'Marketing / Content',
     summary:
-      'Make Kortix the instant answer to "what is the open-source Claude Cowork or ChatGPT Work?"',
+      'Make Zed the instant answer to "what is the open-source Claude Cowork or ChatGPT Work?"',
     bullets: [
       'Build the content baseline, and the system that keeps producing it.',
       'Daily platform and feature explainers.',
@@ -102,8 +102,8 @@ export const openings = [
       'Can recruit.',
     ],
     /** Guards the coding-agent bullet: fluency in a candidate, never a claim
-     *  about what Kortix runs. */
-    note: 'Kortix runs on the OpenCode harness. That bullet is about your fluency in the ecosystem, not about what the platform supports.',
+     *  about what Zed runs. */
+    note: 'Zed runs on the OpenCode harness. That bullet is about your fluency in the ecosystem, not about what the platform supports.',
   },
   {
     id: 'rnd',
@@ -166,7 +166,7 @@ export const apply = {
   cta: 'Apply',
   directLead: 'Or write to me directly:',
   links: [
-    { id: 'email', label: 'marko@kortix.com', href: 'mailto:marko@kortix.com', external: false },
+    { id: 'email', label: 'marko@zed.com', href: 'mailto:marko@zed.com', external: false },
     { id: 'x', label: '@markokraemer', href: 'https://x.com/markokraemer', external: true },
     {
       id: 'linkedin',
@@ -179,7 +179,7 @@ export const apply = {
 
 /** Copy for `ApplyModal`. Short, and one open question carries the weight. */
 export const applyForm = {
-  title: 'Apply to Kortix',
+  title: 'Apply to Zed',
   description: 'Short. One open question does the work.',
   areaLabel: 'Which opening',
   areaPlaceholder: 'Pick the closest one',

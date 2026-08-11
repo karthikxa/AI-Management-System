@@ -20,7 +20,7 @@ import { useSessionPublicShares } from '@/hooks/use-session-public-shares';
 import { INTERACTIVE_PREVIEW_IFRAME_SANDBOX } from '@/lib/security/iframe-sandbox';
 import { cn } from '@/lib/utils';
 import { focusWithoutScroll } from '@/lib/utils/focus-without-scroll';
-import { isKortixAppUrl } from '@/features/session/kortix-app-url';
+import { isZedAppUrl } from '@/features/session/zed-app-url';
 import {
   buildWebProxyUrl,
   isExternalUrl,
@@ -33,7 +33,7 @@ import {
 } from '@/lib/utils/sandbox-url';
 import { recentDisplayLabel, useBrowserRecentsStore } from '@/stores/browser-recents-store';
 import { useTabStore } from '@/stores/tab-store';
-import type { CreateSessionPublicShareInput } from '@kortix/sdk';
+import type { CreateSessionPublicShareInput } from '@zed/sdk';
 import {
   WarningIcon as AlertTriangle,
   ArrowLeftIcon as ArrowLeft,
@@ -211,7 +211,7 @@ export function BrowserPanel({ tabId, projectId, projectSessionId }: PreviewTabC
     (url: string) => {
       const externalUrl = normalizeExternalInput(url);
       if (externalUrl && isExternalUrl(externalUrl)) {
-        const newProxyUrl = isKortixAppUrl(externalUrl)
+        const newProxyUrl = isZedAppUrl(externalUrl)
           ? externalUrl
           : buildWebProxyUrl(externalUrl, subdomainOpts);
         if (!newProxyUrl) return;
@@ -515,7 +515,7 @@ export function BrowserPanel({ tabId, projectId, projectSessionId }: PreviewTabC
             className={cn(
               'group/address hover:bg-input focus-within:bg-input focus-within:border-border relative flex h-7 w-full items-center rounded-sm border border-transparent bg-transparent px-3 text-xs tracking-tight transition-colors',
               addressError &&
-                'border-kortix-red/60 focus-within:border-kortix-red/60 animate-shake',
+                'border-zed-red/60 focus-within:border-zed-red/60 animate-shake',
             )}
           >
             <Input
@@ -566,7 +566,7 @@ export function BrowserPanel({ tabId, projectId, projectSessionId }: PreviewTabC
               </span>
             )}
             {addressError && (
-              <span className="text-kortix-red ml-2 shrink-0 text-xs">Sandbox ports only</span>
+              <span className="text-zed-red ml-2 shrink-0 text-xs">Sandbox ports only</span>
             )}
           </div>
         </form>
@@ -637,8 +637,8 @@ export function BrowserPanel({ tabId, projectId, projectSessionId }: PreviewTabC
           {hasError && (
             <div className="bg-background absolute inset-0 z-10 flex items-center justify-center">
               <div className="flex max-w-sm flex-col items-center gap-4 text-center">
-                <span className="bg-kortix-orange/15 flex size-9 items-center justify-center rounded-sm">
-                  <AlertTriangle className="text-kortix-orange size-5" />
+                <span className="bg-zed-orange/15 flex size-9 items-center justify-center rounded-sm">
+                  <AlertTriangle className="text-zed-orange size-5" />
                 </span>
                 <div>
                   <p className="text-sm font-medium">

@@ -1,7 +1,7 @@
 import {
   createActiveSandboxProxyContext,
   type ActiveSandboxProxyContext,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 import {
   getProxyBaseUrl,
   proxyLocalhostUrl,

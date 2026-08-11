@@ -22,7 +22,7 @@
  */
 
 import type { UpgradeReason } from '@/stores/upgrade-dialog-store';
-import type { AccountState, BillingState } from '@kortix/sdk';
+import type { AccountState, BillingState } from '@zed/sdk';
 
 export type { BillingState };
 
@@ -139,7 +139,7 @@ export function billingGateCopy(state: Exclude<BillingState, 'active'>): Billing
       return {
         title: 'Subscribe to start sessions',
         message:
-          'Your team isn’t on a plan yet. Subscribe to Kortix Team to run sessions, with LLM compute and AI Computers for every teammate.',
+          'Your team isn’t on a plan yet. Subscribe to Zed Team to run sessions, with LLM compute and AI Computers for every teammate.',
         ctaLabel: 'Subscribe to Team plan',
         dialogReason: 'subscription_required',
       };

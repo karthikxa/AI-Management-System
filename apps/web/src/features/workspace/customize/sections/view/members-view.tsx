@@ -106,8 +106,8 @@ import {
   type ProjectResourceGrant,
   type ProjectRole,
   type ResourceGrantType,
-} from '@kortix/sdk';
-import { contract, invalidateProject, qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, invalidateProject, qk } from '@zed/sdk/react';
 import { UsersIcon as UsersSolid } from '@phosphor-icons/react';
 import CustomizeSectionWrapper from '../component/section-wrapper';
 import { sortByRoleThenLabel } from '../member-sort';
@@ -472,7 +472,7 @@ function InviteMemberCard({ projectId }: { projectId: string }) {
             <Field className="gap-1.5 p-0">
               <FieldLabel htmlFor="invite-email">Emails</FieldLabel>
               <InputGroup
-                className="border-border bg-popover focus-within:border-kortix-blue flex h-auto min-h-9 flex-wrap items-center gap-1.5 rounded-md border py-0 pr-2 pl-0 transition-[color] focus-within:outline-none"
+                className="border-border bg-popover focus-within:border-zed-blue flex h-auto min-h-9 flex-wrap items-center gap-1.5 rounded-md border py-0 pr-2 pl-0 transition-[color] focus-within:outline-none"
                 onClick={(e) => {
                   if ((e.target as HTMLElement).closest('button')) return;
                   e.currentTarget
@@ -792,7 +792,7 @@ function ProjectAccessCard({
                                 : 'No project access'}
                         </span>
                         {member.expires_at ? (
-                          <span className="text-kortix-yellow">
+                          <span className="text-zed-yellow">
                             Expires {formatDate(member.expires_at)}
                           </span>
                         ) : null}
@@ -1094,7 +1094,7 @@ function PendingAccessRequestsCard({ projectId }: { projectId: string }) {
             const busy = busyIds.has(request.request_id);
             return (
               <li key={request.request_id} className={MEMBER_ROW}>
-                <span className="bg-kortix-yellow/10 text-kortix-yellow inline-flex size-8 shrink-0 items-center justify-center rounded-sm border">
+                <span className="bg-zed-yellow/10 text-zed-yellow inline-flex size-8 shrink-0 items-center justify-center rounded-sm border">
                   <MessageSquare className="size-4" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -1243,7 +1243,7 @@ function PendingInvitesCard({ projectId }: { projectId: string }) {
               const busy = pendingInviteIds.has(invite.invite_id);
               return (
                 <li key={invite.invite_id} className={MEMBER_ROW}>
-                  <span className="bg-kortix-orange/10 text-kortix-orange inline-flex size-8 shrink-0 items-center justify-center rounded-sm border">
+                  <span className="bg-zed-orange/10 text-zed-orange inline-flex size-8 shrink-0 items-center justify-center rounded-sm border">
                     <Mail className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -1260,7 +1260,7 @@ function PendingInvitesCard({ projectId }: { projectId: string }) {
                         <span>Invited {formatDate(invite.created_at)}</span>
                         {invite.invited_by_email && <span>by {invite.invited_by_email}</span>}
                         {invite.invite_expired ? (
-                          <span className="text-kortix-orange">
+                          <span className="text-zed-orange">
                             {tHardcodedUi.raw(
                               'autoComponentsProjectsCustomizeSectionsMembersViewJsxTextInviteLinkef92ef7c',
                             )}
@@ -1614,7 +1614,7 @@ function ProjectGroupGrantsCard({
                         )}
                         {typeof g.override_count === 'number' && g.override_count > 0 && (
                           <span
-                            className="text-kortix-orange"
+                            className="text-zed-orange"
                             title={tHardcodedUi.raw(
                               'autoComponentsProjectsCustomizeSectionsMembersViewJsxAttrTitleAccount2914778b',
                             )}
@@ -1627,7 +1627,7 @@ function ProjectGroupGrantsCard({
                         )}
                         {groupsWithCustomRole.has(g.group_id) && (
                           <span
-                            className="text-kortix-orange font-medium"
+                            className="text-zed-orange font-medium"
                             title="This group also has a custom role assigned on this project. Built-in role grants WIN over custom roles (allow-only / highest-wins), so this grant overrides the custom role's limits. Detach it to let the custom role apply."
                           >
                             ⚠ overrides an assigned custom role
@@ -2067,7 +2067,7 @@ function ResourceAccessCard({
                           <Badge
                             variant="outline"
                             size="sm"
-                            className="border-kortix-orange/30 text-kortix-orange"
+                            className="border-zed-orange/30 text-zed-orange"
                             title={`This ${g.resource_type} no longer exists (renamed or deleted). The grant is inert — the restriction has lapsed. Remove it or re-grant the current ${g.resource_type}.`}
                           >
                             renamed / removed
@@ -2521,7 +2521,7 @@ function ProjectRoleAssignmentsCard({
                               <Badge
                                 variant="outline"
                                 size="sm"
-                                className="border-kortix-orange/30 text-kortix-orange"
+                                className="border-zed-orange/30 text-zed-orange"
                                 title="This agent no longer exists (deleted or renamed). The binding is stale — remove it or re-assign the current agent."
                               >
                                 removed

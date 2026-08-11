@@ -5,8 +5,8 @@
  * The point of this module is that EVERY non-Hono edge accepts the same set of
  * credentials as combinedAuth. These tests lock that matrix in — in particular
  * the two token types that the old per-edge validators silently rejected:
- *   - CLI Personal Access Tokens (kortix_pat_…)   [subdomain used to reject]
- *   - Service-account tokens      (kortix_sa_…)    [subdomain + WS rejected]
+ *   - CLI Personal Access Tokens (zed_pat_…)   [subdomain used to reject]
+ *   - Service-account tokens      (zed_sa_…)    [subdomain + WS rejected]
  */
 
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
@@ -20,9 +20,9 @@ let mockSupabaseUser: { id: string } | null = null;
 const actualCrypto = await import('../shared/crypto');
 mock.module('../shared/crypto', () => ({
   ...actualCrypto,
-  isAccountToken: (t: string) => t.startsWith('kortix_pat_'),
-  isServiceAccountToken: (t: string) => t.startsWith('kortix_sa_'),
-  isKortixToken: (t: string) => t.startsWith('kortix_'),
+  isAccountToken: (t: string) => t.startsWith('zed_pat_'),
+  isServiceAccountToken: (t: string) => t.startsWith('zed_sa_'),
+  isZedToken: (t: string) => t.startsWith('zed_'),
 }));
 
 // mock.module REPLACES the module wholesale — any export omitted here becomes a
@@ -35,8 +35,8 @@ const unmocked = (name: string) => () => {
 };
 mock.module('../repositories/api-keys', () => ({
   validateSecretKey: async (t: string) => {
-    if (t === 'kortix_owner') return { isValid: true, accountId: 'acct-owner' };
-    if (t === 'kortix_other') return { isValid: true, accountId: 'acct-other' };
+    if (t === 'zed_owner') return { isValid: true, accountId: 'acct-owner' };
+    if (t === 'zed_other') return { isValid: true, accountId: 'acct-other' };
     return { isValid: false, error: 'invalid' };
   },
   createApiKey: unmocked('api-keys.createApiKey'),
@@ -47,8 +47,8 @@ mock.module('../repositories/api-keys', () => ({
 
 mock.module('../repositories/account-tokens', () => ({
   validateAccountToken: async (t: string) => {
-    if (t === 'kortix_pat_owner') return { isValid: true, userId: 'pat-user-owner' };
-    if (t === 'kortix_pat_other') return { isValid: true, userId: 'pat-user-other' };
+    if (t === 'zed_pat_owner') return { isValid: true, userId: 'pat-user-owner' };
+    if (t === 'zed_pat_other') return { isValid: true, userId: 'pat-user-other' };
     return { isValid: false, error: 'invalid' };
   },
   createAccountToken: unmocked('account-tokens.createAccountToken'),
@@ -59,7 +59,7 @@ mock.module('../repositories/account-tokens', () => ({
 
 mock.module('../repositories/service-accounts', () => ({
   validateServiceAccountToken: async (t: string) => {
-    if (t === 'kortix_sa_owner') {
+    if (t === 'zed_sa_owner') {
       return { isValid: true, serviceAccountId: 'sa-owner', accountId: 'acct-owner' };
     }
     return { isValid: false, error: 'invalid' };
@@ -131,38 +131,38 @@ describe('authenticatePreviewPrincipal', () => {
     expect(await authenticatePreviewPrincipal('', SANDBOX_ID)).toBeNull();
   });
 
-  // ── PAT (kortix_pat_) — was rejected by the subdomain edge before ──────────
+  // ── PAT (zed_pat_) — was rejected by the subdomain edge before ──────────
   test('accepts a PAT for an owner and returns the user id', async () => {
-    expect(await authenticatePreviewPrincipal('kortix_pat_owner', SANDBOX_ID)).toBe('pat-user-owner');
+    expect(await authenticatePreviewPrincipal('zed_pat_owner', SANDBOX_ID)).toBe('pat-user-owner');
   });
   test('rejects a valid PAT that lacks sandbox access', async () => {
-    expect(await authenticatePreviewPrincipal('kortix_pat_other', SANDBOX_ID)).toBeNull();
+    expect(await authenticatePreviewPrincipal('zed_pat_other', SANDBOX_ID)).toBeNull();
   });
   test('rejects an invalid PAT', async () => {
-    expect(await authenticatePreviewPrincipal('kortix_pat_bad', SANDBOX_ID)).toBeNull();
+    expect(await authenticatePreviewPrincipal('zed_pat_bad', SANDBOX_ID)).toBeNull();
   });
 
-  // ── Service-account (kortix_sa_) — was rejected by subdomain AND WS ────────
+  // ── Service-account (zed_sa_) — was rejected by subdomain AND WS ────────
   test('accepts a service-account token for an owner and returns the SA id', async () => {
-    expect(await authenticatePreviewPrincipal('kortix_sa_owner', SANDBOX_ID)).toBe('sa-owner');
+    expect(await authenticatePreviewPrincipal('zed_sa_owner', SANDBOX_ID)).toBe('sa-owner');
   });
   test('rejects an invalid service-account token', async () => {
-    expect(await authenticatePreviewPrincipal('kortix_sa_bad', SANDBOX_ID)).toBeNull();
+    expect(await authenticatePreviewPrincipal('zed_sa_bad', SANDBOX_ID)).toBeNull();
   });
   test('rejects a valid SA token without sandbox access', async () => {
     allowedUsers.delete('sa-owner');
-    expect(await authenticatePreviewPrincipal('kortix_sa_owner', SANDBOX_ID)).toBeNull();
+    expect(await authenticatePreviewPrincipal('zed_sa_owner', SANDBOX_ID)).toBeNull();
   });
 
-  // ── Kortix API token — ownership checked by account ────────────────────────
-  test('accepts a kortix token for the owning account and returns the account id', async () => {
-    expect(await authenticatePreviewPrincipal('kortix_owner', SANDBOX_ID)).toBe('acct-owner');
+  // ── Zed API token — ownership checked by account ────────────────────────
+  test('accepts a zed token for the owning account and returns the account id', async () => {
+    expect(await authenticatePreviewPrincipal('zed_owner', SANDBOX_ID)).toBe('acct-owner');
   });
-  test('rejects a kortix token for another account', async () => {
-    expect(await authenticatePreviewPrincipal('kortix_other', SANDBOX_ID)).toBeNull();
+  test('rejects a zed token for another account', async () => {
+    expect(await authenticatePreviewPrincipal('zed_other', SANDBOX_ID)).toBeNull();
   });
-  test('rejects an invalid kortix token', async () => {
-    expect(await authenticatePreviewPrincipal('kortix_bad', SANDBOX_ID)).toBeNull();
+  test('rejects an invalid zed token', async () => {
+    expect(await authenticatePreviewPrincipal('zed_bad', SANDBOX_ID)).toBeNull();
   });
 
   // ── Supabase JWT ───────────────────────────────────────────────────────────
@@ -189,11 +189,11 @@ describe('extractPreviewToken', () => {
   const u = new URL('http://p3000-sbx.localhost:8008/x');
 
   test('prefers Authorization: Bearer', () => {
-    const req = new Request(u, { headers: { Authorization: 'Bearer tok-bearer', 'X-Kortix-Token': 'tok-kx' } });
+    const req = new Request(u, { headers: { Authorization: 'Bearer tok-bearer', 'X-Zed-Token': 'tok-kx' } });
     expect(extractPreviewToken(req, new URL(req.url))).toBe('tok-bearer');
   });
-  test('falls back to X-Kortix-Token', () => {
-    const req = new Request(u, { headers: { 'X-Kortix-Token': 'tok-kx' } });
+  test('falls back to X-Zed-Token', () => {
+    const req = new Request(u, { headers: { 'X-Zed-Token': 'tok-kx' } });
     expect(extractPreviewToken(req, new URL(req.url))).toBe('tok-kx');
   });
   test('falls back to ?token=', () => {
@@ -237,19 +237,19 @@ describe('authenticatePreviewPrincipalDetailed — session binding', () => {
   test('a sandbox PAT reports the session it is bound to', async () => {
     // This is what separates one KaaB end-user from another: every session
     // shares the wrapper's userId, so only the token's own sessionId can.
-    const p = await authenticatePreviewPrincipalDetailed('kortix_pat_owner', SANDBOX_ID);
+    const p = await authenticatePreviewPrincipalDetailed('zed_pat_owner', SANDBOX_ID);
     expect(p?.userId).toBe('pat-user-owner');
     expect(p).toHaveProperty('sessionId');
   });
 
   test('non-PAT credentials report no session binding', async () => {
-    expect((await authenticatePreviewPrincipalDetailed('kortix_sa_owner', SANDBOX_ID))?.sessionId).toBeNull();
-    expect((await authenticatePreviewPrincipalDetailed('kortix_owner', SANDBOX_ID))?.sessionId).toBeNull();
+    expect((await authenticatePreviewPrincipalDetailed('zed_sa_owner', SANDBOX_ID))?.sessionId).toBeNull();
+    expect((await authenticatePreviewPrincipalDetailed('zed_owner', SANDBOX_ID))?.sessionId).toBeNull();
     expect((await authenticatePreviewPrincipalDetailed('jwt-owner', SANDBOX_ID))?.sessionId).toBeNull();
   });
 
   test('the string wrapper still behaves exactly as before', async () => {
-    expect(await authenticatePreviewPrincipal('kortix_pat_owner', SANDBOX_ID)).toBe('pat-user-owner');
-    expect(await authenticatePreviewPrincipal('kortix_pat_bad', SANDBOX_ID)).toBeNull();
+    expect(await authenticatePreviewPrincipal('zed_pat_owner', SANDBOX_ID)).toBe('pat-user-owner');
+    expect(await authenticatePreviewPrincipal('zed_pat_bad', SANDBOX_ID)).toBeNull();
   });
 });

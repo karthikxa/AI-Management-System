@@ -6,7 +6,7 @@
  * TWO surfaces exist and they point in OPPOSITE directions — the flows below
  * only touch the second, because the first is not an HTTP route at all:
  *
- *  - The Kortix agent's side is the `kortix_voice` CONNECTOR (spawn_room /
+ *  - The Zed agent's side is the `zed_voice` CONNECTOR (spawn_room /
  *    read_transcript / send_prompt / end_call, plus the declared-but-
  *    unimplemented join_gmeet / join_zoom) — connector/channels.ts. It runs
  *    through the connector gateway like every other connector, so it has no
@@ -14,11 +14,11 @@
  *    `POST /projects/:id/mcp/voice`; that route is GONE.
  *  - The LiveKit worker's side is the voice MCP,
  *    `POST /projects/:id/sessions/:sid/mcp/voice` — channels/voice/routes.ts,
- *    serving ask_kortix / run_command / post_turn.
+ *    serving ask_zed / run_command / post_turn.
  *
  * What is asserted here is deliberately the shape of the contract, not a live
  * call: spawning one costs realtime-provider minutes and needs a live worker
- * to talk back. The behaviours that actually break things — a Kortix
+ * to talk back. The behaviours that actually break things — a Zed
  * principal being able to drive the worker MCP, an anonymous join link
  * honouring a session or project id, a transcript read that skips its project
  * gate — are all checkable without one.
@@ -42,7 +42,7 @@ flow(
     await ctx.step('OWNER sets the name → 200', async () => {
       const r = await ctx.client
         .as(ctx.P.OWNER)
-        .put('/v1/projects/:projectId/channels/meet/name', { name: 'Kortix QA' }, {
+        .put('/v1/projects/:projectId/channels/meet/name', { name: 'Zed QA' }, {
           params: { projectId: p.id },
         });
       r.status(200).body().exists('$.bot_name');
@@ -68,12 +68,12 @@ flow(
 
 // VOICE-2 — the worker MCP's auth boundary.
 //
-// This route is authed ONLY by the per-call `kortix_api_token`: an HMAC over
+// This route is authed ONLY by the per-call `zed_api_token`: an HMAC over
 // the call id, minted server-side in startCall and handed to the LiveKit
 // worker in the room metadata (channels/voice/worker-token.ts). No black-box
-// client can hold one, so the TOOL half (ask_kortix / run_command /
+// client can hold one, so the TOOL half (ask_zed / run_command /
 // post_turn) is not reachable from out here — but the boundary is the part
-// worth asserting and it IS fully reachable: nothing a normal Kortix caller
+// worth asserting and it IS fully reachable: nothing a normal Zed caller
 // can present may open this door.
 //
 // It matters because the route is mounted BEFORE projectsApp specifically so

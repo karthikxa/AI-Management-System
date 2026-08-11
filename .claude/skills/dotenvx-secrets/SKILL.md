@@ -9,8 +9,8 @@ API secrets are **encrypted in git** with [dotenvx](https://dotenvx.com); the de
 
 ## Armor organization and operational boundary
 
-All API and web profiles belong to the single Armor organization **`kortix`**.
-Always pass `--team kortix` when pushing or pulling. Never rely on the CLI's
+All API and web profiles belong to the single Armor organization **`zed`**.
+Always pass `--team zed` when pushing or pulling. Never rely on the CLI's
 personal-team default.
 
 Production uses the same organization and access token as non-production.
@@ -24,9 +24,9 @@ There are **four environments**, each a separate encrypted file with its **own k
 | `pnpm` command         | Env         | File                    | API talks to                                                                                      | private key in `.env.keys`   |
 | ---------------------- | ----------- | ----------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------- |
 | `pnpm dev`             | **local**   | `apps/api/.env`         | 100% local stack (local Supabase in Docker, test Stripe) + runs web + tunnel                      | `DOTENV_PRIVATE_KEY`         |
-| `pnpm dev:dev-env`     | **dev**     | `apps/api/.env.dev`     | the **dev** stack — dev Supabase DB, **test** Stripe, dev keys (`dev-api.kortix.com`)             | `DOTENV_PRIVATE_KEY_DEV`     |
-| `pnpm dev:staging-env` | **staging** | `apps/api/.env.staging` | the **staging** stack — staging Supabase DB, test Stripe, staging keys (`staging-api.kortix.com`) | `DOTENV_PRIVATE_KEY_STAGING` |
-| `pnpm dev:prod-env`    | **prod**    | `apps/api/.env.prod`    | the **prod** stack — prod Supabase DB, **LIVE** Stripe, prod keys (`api.kortix.com`)              | `DOTENV_PRIVATE_KEY_PROD`    |
+| `pnpm dev:dev-env`     | **dev**     | `apps/api/.env.dev`     | the **dev** stack — dev Supabase DB, **test** Stripe, dev keys (`dev-api.zed.com`)             | `DOTENV_PRIVATE_KEY_DEV`     |
+| `pnpm dev:staging-env` | **staging** | `apps/api/.env.staging` | the **staging** stack — staging Supabase DB, test Stripe, staging keys (`staging-api.zed.com`) | `DOTENV_PRIVATE_KEY_STAGING` |
+| `pnpm dev:prod-env`    | **prod**    | `apps/api/.env.prod`    | the **prod** stack — prod Supabase DB, **LIVE** Stripe, prod keys (`api.zed.com`)              | `DOTENV_PRIVATE_KEY_PROD`    |
 
 - `pnpm dev` runs the **full local stack** (web + API + local Supabase + tunnel) via `scripts/dev-local.sh`.
 - `pnpm dev:dev-env` / `pnpm dev:staging-env` / `pnpm dev:prod-env` run the **API only**, locally, against the selected remote backend (`dotenvx run -f apps/api/.env.<environment> -- bun run --hot src/index.ts`). They do not start local Supabase.
@@ -67,10 +67,10 @@ This re-encrypts the file in place (value becomes `KEY=encrypted:…`). Then com
 | Verify all 4 envs decrypt + are separated    | `pnpm test:envs`                                                                                                                              |
 | Read a secret                                | `dotenvx get KEY -f apps/api/.env` (or `.env.dev` / `.env.staging` / `.env.prod`)                                                             |
 | Add / change a secret                        | `dotenvx set KEY value -f apps/api/.env` (or `.env.dev` / `.env.staging` / `.env.prod`), then commit                                          |
-| First time / new machine (non-prod profiles) | `dotenvx armor login` then, from each app directory, `for f in .env .env.dev .env.staging; do dotenvx armor pull --team kortix -f "$f"; done` |
-| Pull prod (explicitly)                       | From each app directory: `dotenvx armor pull --team kortix -f .env.prod`                                                                      |
-| Share a NEW profile / rotated key            | Push every profile with `--team kortix`                                                                                                       |
-| Remove a key from the cloud                  | `dotenvx armor down --team kortix -f <file>`                                                                                                  |
+| First time / new machine (non-prod profiles) | `dotenvx armor login` then, from each app directory, `for f in .env .env.dev .env.staging; do dotenvx armor pull --team zed -f "$f"; done` |
+| Pull prod (explicitly)                       | From each app directory: `dotenvx armor pull --team zed -f .env.prod`                                                                      |
+| Share a NEW profile / rotated key            | Push every profile with `--team zed`                                                                                                       |
+| Remove a key from the cloud                  | `dotenvx armor down --team zed -f <file>`                                                                                                  |
 
 ## Armor login security
 
@@ -96,7 +96,7 @@ token, making an authorization check look broader than the automation token
 really is. Verify token scope with an explicit team pull instead:
 
 ```sh
-dotenvx armor pull --token "$DOTENV_ARMOR_TOKEN" --team kortix -f <file>
+dotenvx armor pull --token "$DOTENV_ARMOR_TOKEN" --team zed -f <file>
 dotenvx run --no-armor -f <file> -- <command>
 ```
 
@@ -113,7 +113,7 @@ login/push/pull use the current global CLI.
 `rotate --no-armor` deliberately leaves a transitional `old,new` value in
 `.env.keys`. Armor accepts exactly one private key, so **never push that combined
 value**. After proving the new ciphertext decrypts, retain only the new private
-key, push it explicitly to the `kortix` organization, then prove a clean Armor
+key, push it explicitly to the `zed` organization, then prove a clean Armor
 pull matches the local key before merging. Remove the old armored key only after
 the rotated ciphertext is merged and available to every authorized consumer.
 
@@ -137,9 +137,9 @@ If a guard fires, the fix is to **encrypt the value**, never to bypass it.
 
 ## The web app (apps/web) — same setup
 
-`apps/web` has the **same four encrypted profiles** (`apps/web/.env` / `.env.dev` / `.env.staging` / `.env.prod`) and its own keypairs in `apps/web/.env.keys`. All keys live in the `kortix` Armor organization. Decrypted the same way: `pnpm dev` (via `load_local_env`) and the environment-specific web scripts.
+`apps/web` has the **same four encrypted profiles** (`apps/web/.env` / `.env.dev` / `.env.staging` / `.env.prod`) and its own keypairs in `apps/web/.env.keys`. All keys live in the `zed` Armor organization. Decrypted the same way: `pnpm dev` (via `load_local_env`) and the environment-specific web scripts.
 
-Maintenance flags are **DB-backed** now (was Vercel Edge Config): stored in `kortix.platform_settings['maintenance_config']`, read via public `GET /v1/system/maintenance`, written via admin-only `PUT /v1/system/maintenance`, set from `/admin/utils`. The `EDGE_CONFIG`/`EDGE_CONFIG_ID`/`VERCEL_API_TOKEN` secrets + the `@vercel/edge-config` dep are gone.
+Maintenance flags are **DB-backed** now (was Vercel Edge Config): stored in `zed.platform_settings['maintenance_config']`, read via public `GET /v1/system/maintenance`, written via admin-only `PUT /v1/system/maintenance`, set from `/admin/utils`. The `EDGE_CONFIG`/`EDGE_CONFIG_ID`/`VERCEL_API_TOKEN` secrets + the `@vercel/edge-config` dep are gone.
 
 ## Out of scope (not dotenvx-managed)
 

@@ -21,7 +21,7 @@ import {
   accounts,
   projectGroupGrants,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { db } from '../shared/db';
 import { syncSsoMembership } from '../iam/sso-sync';
 import { authorizeV2 } from '../iam/engine-v2';
@@ -94,7 +94,7 @@ describe('Azure AD directory-sync → authorization', () => {
     const gm = await db.select().from(accountGroupMembers).where(and(eq(accountGroupMembers.groupId, MKT_GROUP), eq(accountGroupMembers.userId, user)));
     expect(gm.length).toBe(1);
 
-    // Full chain authorizes: Entra group → mapping → Kortix group → project grant.
+    // Full chain authorizes: Entra group → mapping → Zed group → project grant.
     expect(await canWrite(user)).toBe(true);
 
     // Entra removes the user from the group → claim disappears on next login →

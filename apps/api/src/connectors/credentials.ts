@@ -1,5 +1,5 @@
-import { connectorConnections, connectors, connectionCredentials } from '@kortix/db';
-import type { OAuth2ClientCredentials } from '@kortix/api-contract';
+import { connectorConnections, connectors, connectionCredentials } from '@zed/db';
+import type { OAuth2ClientCredentials } from '@zed/api-contract';
 /**
  * Connector credentials. A connector is project-wide visible — the only
  * ACCESS gate is the agent-side `[[agents]].connectors` grant (iam/agent-scope.ts),

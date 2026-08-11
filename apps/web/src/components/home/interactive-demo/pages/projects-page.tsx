@@ -15,7 +15,7 @@ import { useTranslations } from 'next-intl';
 import { PageHead } from '../primitives';
 import type { ProjectCard } from '../types';
 
-/* The Projects tab — driven by the CLI: `kortix init` adds a `draft`, `kortix
+/* The Projects tab — driven by the CLI: `zed init` adds a `draft`, `zed
  * ship` flips it `shipping` → `live`. Shared by the standalone hero section and
  * the modular demo (where it renders its empty state). */
 
@@ -56,7 +56,7 @@ function ProjectRow({ project }: { project: ProjectCard }) {
         className={cn(
           'flex size-9 shrink-0 items-center justify-center rounded-lg border transition-colors',
           live
-            ? 'border-kortix-green/20 bg-kortix-green/10 text-kortix-green'
+            ? 'border-zed-green/20 bg-zed-green/10 text-zed-green'
             : 'border-border bg-background text-muted-foreground',
         )}
       >
@@ -118,7 +118,7 @@ export function ProjectsPage({ projects }: { projects: ProjectCard[] }) {
               Run{' '}
               <span className="text-foreground font-mono">
                 {tI18nHardcoded.raw(
-                  'autoComponentsHomeInteractiveDemoPagesProjectsPageJsxTextKortixa20df451',
+                  'autoComponentsHomeInteractiveDemoPagesProjectsPageJsxTextZeda20df451',
                 )}
               </span>{' '}
               {tI18nHardcoded.raw(

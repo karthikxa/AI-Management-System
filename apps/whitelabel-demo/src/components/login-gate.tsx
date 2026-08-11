@@ -55,7 +55,7 @@ export function LoginGate({ onReady }: { onReady: () => void }) {
         <BrandMark className="mb-5" />
         <h1 className="text-lg font-semibold tracking-tight">Sign in to {BRAND.name}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          {BRAND.name} runs its own login here — your Kortix account stays on the server.
+          {BRAND.name} runs its own login here — your Zed account stays on the server.
         </p>
         <form className="mt-5 space-y-3" onSubmit={submit}>
           <div className="space-y-1.5">

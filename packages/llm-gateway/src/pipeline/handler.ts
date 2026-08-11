@@ -614,7 +614,7 @@ export async function handleChatCompletions(
   // completion can still have consumed real upstream tokens (prompt processing,
   // or a fully-generated-but-badly-shaped response) — most providers report
   // `usage` even then. Accumulated here and folded into the eventually-chosen
-  // candidate's usage at settle() so Kortix doesn't eat upstream cost with zero
+  // candidate's usage at settle() so Zed doesn't eat upstream cost with zero
   // corresponding customer charge. Purely additive: never changes what's
   // relayed to the caller, only what gets billed.
   let discardedUsage: TokenCounts = {
@@ -760,7 +760,7 @@ export async function handleChatCompletions(
         nonStreamBody = data;
         break;
       }
-      // Empty/malformed, but the upstream may have already billed Kortix for it
+      // Empty/malformed, but the upstream may have already billed Zed for it
       // (a real generation that came back badly shaped) — capture any usage
       // before discarding the body.
       accumulateDiscardedUsage(extractUsageFromJson(data));
@@ -879,7 +879,7 @@ export async function handleChatCompletions(
     ).toString();
     // Fold in any usage from candidates the dispatch loop discarded before this
     // one settled (empty-completion retries, failed-over attempts) — the
-    // upstream may have already charged Kortix for those even though nothing
+    // upstream may have already charged Zed for those even though nothing
     // usable came back. Purely additive to what's billed; never touches what
     // was relayed to the caller.
     const counts: TokenCounts = {

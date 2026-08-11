@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import { eq, sql } from 'drizzle-orm';
-import { accountMembers, accounts, projectMembers, projects } from '@kortix/db';
+import { accountMembers, accounts, projectMembers, projects } from '@zed/db';
 import { db } from '../shared/db';
 import { app } from '../index';
 import { createAccountToken } from '../repositories/account-tokens';
@@ -18,9 +18,9 @@ const EDITOR = crypto.randomUUID();
 const minted: string[] = [];
 
 beforeAll(async () => {
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists agent_grant jsonb`);
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists session_id text`);
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists service_account_id uuid`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists agent_grant jsonb`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists session_id text`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists service_account_id uuid`);
 
   await db.insert(accounts).values({ accountId: ACCOUNT, name: 'leaf-gate-http-test' });
   await db.insert(projects).values({
@@ -45,7 +45,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   for (const tokenId of minted) {
-    await db.execute(sql`delete from kortix.account_tokens where token_id = ${tokenId}`);
+    await db.execute(sql`delete from zed.account_tokens where token_id = ${tokenId}`);
   }
   await db.delete(projects).where(eq(projects.accountId, ACCOUNT));
   await db.delete(accounts).where(eq(accounts.accountId, ACCOUNT));
@@ -136,8 +136,8 @@ const EDITOR_TIER_READ_CASES: Case[] = [
 describe('HTTP enforcement — project read-leaf gates (agent-grant fold now reachable)', () => {
   for (const c of CASES) {
     describe(c.name, () => {
-      test('agent granted an UNRELATED capability → 403 (leaf missing from kortix_cli)', async () => {
-        const secret = await mintToken({ agent: 'scoped-bot', kortixCli: ['project.trigger.fire'], connectors: [] });
+      test('agent granted an UNRELATED capability → 403 (leaf missing from zed_cli)', async () => {
+        const secret = await mintToken({ agent: 'scoped-bot', zedCli: ['project.trigger.fire'], connectors: [] });
         const res = await getReq(c.path(), secret);
         expect(res.status).toBe(403);
         const body = await res.json().catch(() => ({}));
@@ -145,7 +145,7 @@ describe('HTTP enforcement — project read-leaf gates (agent-grant fold now rea
       });
 
       test('agent granted the exact leaf → passes the gate (not 403)', async () => {
-        const secret = await mintToken({ agent: 'scoped-bot', kortixCli: [c.leaf], connectors: [] });
+        const secret = await mintToken({ agent: 'scoped-bot', zedCli: [c.leaf], connectors: [] });
         const res = await getReq(c.path(), secret);
         expect(res.status).not.toBe(403);
       });
@@ -161,7 +161,7 @@ describe('HTTP enforcement — project read-leaf gates (agent-grant fold now rea
 
 describe('HTTP enforcement — gateway playground spend gate', () => {
   test('agent granted an UNRELATED capability → 403 before upstream dispatch', async () => {
-    const secret = await mintToken({ agent: 'scoped-bot', kortixCli: ['project.trigger.fire'], connectors: [] });
+    const secret = await mintToken({ agent: 'scoped-bot', zedCli: ['project.trigger.fire'], connectors: [] });
     const res = await postReq(`/v1/projects/${PROJECT}/gateway/playground`, secret, {
       prompt: 'hello',
       models: ['not-a-real-model'],
@@ -190,7 +190,7 @@ describe('HTTP enforcement — editor-tier read gates (file.read / secret.read m
       });
 
       test('agent (editor) granted the exact leaf → passes the gate (not 403)', async () => {
-        const secret = await mintEditorToken({ agent: 'scoped-bot', kortixCli: [c.leaf], connectors: [] });
+        const secret = await mintEditorToken({ agent: 'scoped-bot', zedCli: [c.leaf], connectors: [] });
         const res = await getReq(c.path(), secret);
         expect(res.status).not.toBe(403);
       });
@@ -243,8 +243,8 @@ describe('HTTP enforcement — send-primitive gates (Slack upload / meet speak)'
         expect(res.status).not.toBe(403);
       });
 
-      test('scoped agent launched by an editor but missing connector.write in kortix_cli → 403', async () => {
-        const secret = await mintEditorToken({ agent: 'scoped-bot', kortixCli: ['project.trigger.fire'], connectors: [] });
+      test('scoped agent launched by an editor but missing connector.write in zed_cli → 403', async () => {
+        const secret = await mintEditorToken({ agent: 'scoped-bot', zedCli: ['project.trigger.fire'], connectors: [] });
         const res = await postReq(c.path(), secret, {});
         expect(res.status).toBe(403);
         const body = await res.json().catch(() => ({}));
@@ -252,7 +252,7 @@ describe('HTTP enforcement — send-primitive gates (Slack upload / meet speak)'
       });
 
       test('scoped agent launched by an editor AND granted connector.write → passes the gate (not 403)', async () => {
-        const secret = await mintEditorToken({ agent: 'scoped-bot', kortixCli: [c.leaf], connectors: [] });
+        const secret = await mintEditorToken({ agent: 'scoped-bot', zedCli: [c.leaf], connectors: [] });
         const res = await postReq(c.path(), secret, {});
         expect(res.status).not.toBe(403);
       });

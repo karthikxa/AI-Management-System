@@ -11,7 +11,7 @@ describe('new project git provider default', () => {
     expect(source).toContain('createProjectRepo');
     expect(source).toContain('Create in your GitHub');
     expect(source).not.toContain('Code Storage');
-    expect(source).not.toMatch(/<GitFork className="size-4" \/> Managed by Kortix/);
+    expect(source).not.toMatch(/<GitFork className="size-4" \/> Managed by Zed/);
   });
 
   test('keeps a selected marketplace template on the managed path', () => {
@@ -48,7 +48,7 @@ describe('new project git provider default', () => {
   test('explains how to link an existing GitHub App installation', () => {
     expect(source).toContain('Link a GitHub account');
     expect(source).toContain(
-      'Select Configure in GitHub when the Kortix App is already installed.',
+      'Select Configure in GitHub when the Zed App is already installed.',
     );
     expect(source).toContain("isConnectingGitHub ? 'Connecting' : 'Link GitHub'");
   });
@@ -83,7 +83,7 @@ describe('new project dialog: simplified default state', () => {
     expect(source).not.toContain('Managed repository');
     expect(source).not.toContain('Starter skills');
     expect(source).not.toContain('Starter pack');
-    expect(source).not.toContain('Kortix creates a private repository and manages its credentials.');
+    expect(source).not.toContain('Zed creates a private repository and manages its credentials.');
   });
 
   test('the account switcher only renders when there is more than one account to choose from', () => {

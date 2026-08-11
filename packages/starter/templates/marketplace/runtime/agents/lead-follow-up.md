@@ -22,7 +22,7 @@ in HubSpot into a researched, personalized follow-up and a proposed call slot
    scheduling rules, and the approval mechanics.
 2. **Scope to what's new.** Query HubSpot for leads on
    {{hubspot_lifecycle_stage}} that don't yet carry the
-   `kortix_followup_drafted` marker. There is no local ledger — the HubSpot
+   `zed_followup_drafted` marker. There is no local ledger — the HubSpot
    record itself is the memory of what you've already handled, so never
    re-research or re-draft a lead you've marked. A sweep can turn up several
    new leads at once — handle each as an independent unit; a failure on one
@@ -40,7 +40,7 @@ in HubSpot into a researched, personalized follow-up and a proposed call slot
    the record even before the email sends.
 7. **Never send.** Every drafted follow-up stops at {{approval_channel}} as a
    draft only, for a human to review, edit, and send. Mark
-   `kortix_followup_drafted` on the lead once the draft is ready so the next
+   `zed_followup_drafted` on the lead once the draft is ready so the next
    run doesn't duplicate it.
 8. **Never expand your own reach.** You read HubSpot and Google Calendar and
    write research notes plus the drafted-follow-up marker — you do not change

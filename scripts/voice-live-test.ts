@@ -19,19 +19,19 @@
  *   dotenvx run -f apps/api/.env -- bun scripts/voice-live-test.ts \
  *     --web http://localhost:3000 [--session <real session id>] [--voice alloy]
  *
- * --session makes send_prompt deliver into a REAL Kortix session. Without it the
+ * --session makes send_prompt deliver into a REAL Zed session. Without it the
  * hand-off still runs and is expected to report 'no-session' — which is itself
  * worth seeing, since that path is what keeps the call from hanging when the
  * session is gone.
  *
  * In another terminal, run the worker so the room actually gets an agent:
- *   dotenvx run -f apps/voice-agent/.env --quiet -- pnpm --filter @kortix/voice-agent dev
+ *   dotenvx run -f apps/voice-agent/.env --quiet -- pnpm --filter @zed/voice-agent dev
  */
 
 import { startCall, endCall, readTurns, promptVoiceAgent } from '../apps/api/src/channels/voice/runtime';
 import { joinPageUrl } from '../apps/api/src/channels/voice/livekit';
 import { mintJoinLink } from '../apps/api/src/channels/voice/join-links';
-import { kortixSay } from '../apps/api/src/channels/voice/utterance';
+import { zedSay } from '../apps/api/src/channels/voice/utterance';
 
 interface Args {
   web?: string;
@@ -72,7 +72,7 @@ async function main() {
   console.log('');
   console.log('NOTE: this only opens the room. For the call to actually talk back,');
   console.log('run the worker in another terminal:');
-  console.log('  dotenvx run -f apps/voice-agent/.env --quiet -- pnpm --filter @kortix/voice-agent dev');
+  console.log('  dotenvx run -f apps/voice-agent/.env --quiet -- pnpm --filter @zed/voice-agent dev');
   console.log('');
 
   console.log('1/3  creating the LiveKit room…');
@@ -80,7 +80,7 @@ async function main() {
     callId,
     projectId,
     sessionId,
-    botName: 'Kortix',
+    botName: 'Zed',
     voice: args.voice ?? null,
   });
   console.log(`     up. room=${call.room} voice=${call.voice}`);
@@ -100,7 +100,7 @@ async function main() {
     try {
       const page = await readTurns(callId, cursor);
       for (const t of page.turns) {
-        console.log(`  ${t.role === 'agent' ? '🔊 kortix' : '🗣  human '}: ${t.text}`);
+        console.log(`  ${t.role === 'agent' ? '🔊 zed' : '🗣  human '}: ${t.text}`);
       }
       cursor = page.cursor;
     } catch (err) {
@@ -112,18 +112,18 @@ async function main() {
   // there's no local `sendToRoom` hook to watch anymore (that lived on the old
   // in-process bridge), so this just waits a fixed grace period for the
   // dispatched worker to connect and greet on its own, then nudges once more
-  // via the same path a real Kortix turn would use.
+  // via the same path a real Zed turn would use.
   setTimeout(async () => {
     const said = await promptVoiceAgent(
       callId,
-      kortixSay(
-        'Say exactly this out loud now, then stop: "Hey, Kortix here. I can hear you — just talk normally."',
+      zedSay(
+        'Say exactly this out loud now, then stop: "Hey, Zed here. I can hear you — just talk normally."',
       ),
     );
     console.log(
       said.delivered
-        ? '  [kortix -> call] intro nudge sent'
-        : `  [kortix -> call] ${said.reason ?? 'call not live'}`,
+        ? '  [zed -> call] intro nudge sent'
+        : `  [zed -> call] ${said.reason ?? 'call not live'}`,
     );
   }, 5000);
 

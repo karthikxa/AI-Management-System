@@ -38,36 +38,36 @@ describe('slack login-state token', () => {
   });
 
   test('buildSlackLoginUrl targets the API tunnel when available', () => {
-    const originalKortixUrl = config.KORTIX_URL;
+    const originalZedUrl = config.ZED_URL;
     try {
-      config.KORTIX_URL = 'https://example-tunnel.trycloudflare.com';
+      config.ZED_URL = 'https://example-tunnel.trycloudflare.com';
       expect(buildSlackLoginUrl({ teamId: 'T9', slackUserId: 'U9' })).toStartWith(
         'https://example-tunnel.trycloudflare.com/v1/channels/slack/identity/login/',
       );
     } finally {
-      config.KORTIX_URL = originalKortixUrl;
+      config.ZED_URL = originalZedUrl;
     }
   });
 
   test('buildSlackLoginUrl falls back to the worktree web port without an https API tunnel', () => {
-    const originalKortixUrl = config.KORTIX_URL;
+    const originalZedUrl = config.ZED_URL;
     const originalFrontend = config.FRONTEND_URL;
-    const originalLocalDev = process.env.KORTIX_LOCAL_DEV;
+    const originalLocalDev = process.env.ZED_LOCAL_DEV;
     const originalPort = process.env.PORT;
     try {
-      config.KORTIX_URL = 'http://localhost:14808';
+      config.ZED_URL = 'http://localhost:14808';
       config.FRONTEND_URL = 'http://localhost:3000';
-      process.env.KORTIX_LOCAL_DEV = '1';
+      process.env.ZED_LOCAL_DEV = '1';
       process.env.PORT = '14808';
 
       expect(buildSlackLoginUrl({ teamId: 'T9', slackUserId: 'U9' })).toStartWith(
         'http://localhost:14800/slack/login/',
       );
     } finally {
-      config.KORTIX_URL = originalKortixUrl;
+      config.ZED_URL = originalZedUrl;
       config.FRONTEND_URL = originalFrontend;
-      if (originalLocalDev === undefined) delete process.env.KORTIX_LOCAL_DEV;
-      else process.env.KORTIX_LOCAL_DEV = originalLocalDev;
+      if (originalLocalDev === undefined) delete process.env.ZED_LOCAL_DEV;
+      else process.env.ZED_LOCAL_DEV = originalLocalDev;
       if (originalPort === undefined) delete process.env.PORT;
       else process.env.PORT = originalPort;
     }

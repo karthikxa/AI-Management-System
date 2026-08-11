@@ -1,5 +1,5 @@
 import { describe, expect, test, afterEach, beforeEach } from 'bun:test';
-import { KORTIX_SCHEMA_BASE_URL } from '@kortix/manifest-schema';
+import { ZED_SCHEMA_BASE_URL } from '@zed/manifest-schema';
 import { runSchema } from '../commands/schema.ts';
 
 const ORIGINAL_STDOUT_WRITE = process.stdout.write;
@@ -26,12 +26,12 @@ afterEach(() => {
   process.stderr.write = ORIGINAL_STDERR_WRITE;
 });
 
-describe('kortix schema', () => {
+describe('zed schema', () => {
   test('with no args prints the combined schema — the single canonical validator reference', () => {
     const code = runSchema([]);
     expect(code).toBe(0);
     const schema = JSON.parse(stdout);
-    expect(schema.$id).toBe(`${KORTIX_SCHEMA_BASE_URL}/kortix.schema.json`);
+    expect(schema.$id).toBe(`${ZED_SCHEMA_BASE_URL}/zed.schema.json`);
     expect(schema.$schema).toBe('https://json-schema.org/draft/2020-12/schema');
   });
 
@@ -39,32 +39,32 @@ describe('kortix schema', () => {
     const code = runSchema(['--version', '1']);
     expect(code).toBe(0);
     const schema = JSON.parse(stdout);
-    expect(schema.$id).toBe(`${KORTIX_SCHEMA_BASE_URL}/kortix.v1.schema.json`);
+    expect(schema.$id).toBe(`${ZED_SCHEMA_BASE_URL}/zed.v1.schema.json`);
   });
 
   test('--version 2 prints only the v2 document', () => {
     const code = runSchema(['--version', '2']);
     expect(code).toBe(0);
     const schema = JSON.parse(stdout);
-    expect(schema.$id).toBe(`${KORTIX_SCHEMA_BASE_URL}/kortix.v2.schema.json`);
+    expect(schema.$id).toBe(`${ZED_SCHEMA_BASE_URL}/zed.v2.schema.json`);
   });
 
   test('--url prints the canonical URL instead of the schema body', () => {
     const code = runSchema(['--url']);
     expect(code).toBe(0);
-    expect(stdout.trim()).toBe(`${KORTIX_SCHEMA_BASE_URL}/kortix.schema.json`);
+    expect(stdout.trim()).toBe(`${ZED_SCHEMA_BASE_URL}/zed.schema.json`);
   });
 
   test('--version 2 --url prints the v2-specific URL', () => {
     const code = runSchema(['--version', '2', '--url']);
     expect(code).toBe(0);
-    expect(stdout.trim()).toBe(`${KORTIX_SCHEMA_BASE_URL}/kortix.v2.schema.json`);
+    expect(stdout.trim()).toBe(`${ZED_SCHEMA_BASE_URL}/zed.v2.schema.json`);
   });
 
   test('--help prints usage and does not print a schema', () => {
     const code = runSchema(['--help']);
     expect(code).toBe(0);
-    expect(stdout).toContain('Usage: kortix schema');
+    expect(stdout).toContain('Usage: zed schema');
   });
 
   test('an invalid --version value fails with a clear error', () => {

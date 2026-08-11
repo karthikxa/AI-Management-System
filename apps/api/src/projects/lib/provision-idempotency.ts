@@ -1,5 +1,5 @@
 import { db } from '../../shared/db';
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import type { ProjectRole } from '../access';
 import { readManagedRepoSeedState } from '../managed-repo-seed';
@@ -173,7 +173,7 @@ export async function findIdempotentProvision(
  * trading a rare wrong `201` for a guaranteed permanent `409`.
  *
  * WHY 120s. It is the longest window any first-party client waits on this exact
- * route: `@kortix/sdk`'s `provisionProject` sends `timeout: 120_000`
+ * route: `@zed/sdk`'s `provisionProject` sends `timeout: 120_000`
  * (`provisionProjectWithToken` uses 90s, and Bun's `idleTimeout: 45` closes the
  * socket even earlier — `/provision` is exempt from the 25s request deadline
  * but not from that). Past 120s no caller is still attached to the original
@@ -201,7 +201,7 @@ export type ProvisionReplayDecision =
  *
  * `in_flight` is gated on `{expected:true, seeded:false}` because that state is
  * exactly the rollback-capable window: a caller that opted out of seeding
- * (`expected:false`, i.e. `kortix ship`) never enters the seed try/catch, so
+ * (`expected:false`, i.e. `zed ship`) never enters the seed try/catch, so
  * nothing can delete its row, and a verified seed (`seeded:true`) is already
  * past the danger. A legacy row with no readable seed state is treated as
  * settled — those projects predate this metadata and nothing is going to roll

@@ -2,7 +2,7 @@ import type { SecretConsumer, SecretEgressPolicy, SecretStrategy } from '../secr
 import { resolveSecretDelivery } from '../secrets/strategy';
 import { isSandboxSecretEnvNameAllowed } from './lib/sandbox-env-names';
 
-export const SECRET_CAPABILITIES_ENV_NAME = 'KORTIX_SECRET_CAPABILITIES';
+export const SECRET_CAPABILITIES_ENV_NAME = 'ZED_SECRET_CAPABILITIES';
 
 type CapabilitySource = {
   identifier: string;
@@ -25,7 +25,7 @@ export type SecretCapability =
     }
   | {
       identifier: string;
-      delivery: 'kortix_service';
+      delivery: 'zed_service';
       consumer: Exclude<SecretConsumer, 'sandbox' | 'network' | 'http_broker'>;
     };
 
@@ -36,7 +36,7 @@ export interface SecretCapabilityCatalog {
   total?: number;
 }
 
-function isKortixServiceConsumer(
+function isZedServiceConsumer(
   value: SecretConsumer | null | undefined,
 ): value is Exclude<SecretConsumer, 'sandbox' | 'network' | 'http_broker'> {
   return (
@@ -70,7 +70,7 @@ export function buildSecretCapabilities(
       row.consumer ??
       (delivery.strategy === 'runtime'
         ? 'sandbox'
-        : row.egressPolicy?.backend === 'kortix_fetch'
+        : row.egressPolicy?.backend === 'zed_fetch'
           ? 'http_broker'
           : (row.egressPolicy?.backend ?? null));
 
@@ -91,20 +91,20 @@ export function buildSecretCapabilities(
       delivery.emit === 'handle' &&
       delivery.strategy === 'broker' &&
       consumer === 'http_broker' &&
-      row.egressPolicy?.backend === 'kortix_fetch'
+      row.egressPolicy?.backend === 'zed_fetch'
     ) {
       capabilities.push({
         identifier: row.identifier,
         delivery: 'https_broker',
-        command: `kortix secrets call ${row.identifier} <https-url> [options]`,
+        command: `zed secrets call ${row.identifier} <https-url> [options]`,
       });
       continue;
     }
 
-    if (delivery.strategy === 'broker' && isKortixServiceConsumer(consumer)) {
+    if (delivery.strategy === 'broker' && isZedServiceConsumer(consumer)) {
       capabilities.push({
         identifier: row.identifier,
-        delivery: 'kortix_service',
+        delivery: 'zed_service',
         consumer,
       });
     }

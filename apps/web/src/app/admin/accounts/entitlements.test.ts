@@ -99,7 +99,7 @@ describe('EnterpriseDemoCard — the self-serve toggle is now admin-only', () =>
   });
 
   test('non-admins get read-only state plus a contact hint, not a switch that 403s', () => {
-    expect(demoCardSource).toMatch(/!isPlatformAdmin \? \([\s\S]*?Contact Kortix to enable/);
+    expect(demoCardSource).toMatch(/!isPlatformAdmin \? \([\s\S]*?Contact Zed to enable/);
     expect(demoCardSource).toMatch(/<Badge variant=\{enabled \? 'success' : 'muted'\}/);
   });
 });

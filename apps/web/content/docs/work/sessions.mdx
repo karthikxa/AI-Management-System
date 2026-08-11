@@ -3,7 +3,7 @@ title: Sessions
 description: A session is a git branch and a sandbox where the agent works.
 ---
 
-A session is one unit of agent work. Kortix cuts a git branch and provisions
+A session is one unit of agent work. Zed cuts a git branch and provisions
 a sandbox for it. The session id, the branch name, and the sandbox id are the
 same value.
 
@@ -13,13 +13,13 @@ A session reaches one of 4 states in practice.
 
 | Status | Meaning |
 |---|---|
-| `provisioning` | Kortix cuts the branch and requests the sandbox. |
+| `provisioning` | Zed cuts the branch and requests the sandbox. |
 | `running` | The sandbox is live and reachable. |
 | `stopped` | The session is paused, by you or by idle auto-stop. |
 | `failed` | Provisioning failed. |
 
 The database defines 3 more values (`queued`, `branching`, `completed`).
-Kortix does not write them for a session today.
+Zed does not write them for a session today.
 
 ## Stop, resume, and idle auto-stop
 
@@ -27,7 +27,7 @@ You can stop a session yourself. Resume brings back the same sandbox with the
 same filesystem and runtime identity. Only the running processes and memory
 reset. The OpenCode conversation remains attached to the session.
 
-Kortix also stops an idle session for you:
+Zed also stops an idle session for you:
 
 - After 15 minutes idle, for a normal session.
 - After 5 minutes idle, for a session a trigger started.
@@ -36,13 +36,13 @@ An open dashboard tab does not keep a session alive. A busy agent turn blocks
 the stop. The maintenance sweep runs every 5 minutes. A normal automatic Stop
 therefore occurs approximately 15 to 20 minutes after the terminal turn.
 
-Self-host operators can set `KORTIX_SANDBOX_AUTOSTOP_MINUTES` to change the
+Self-host operators can set `ZED_SANDBOX_AUTOSTOP_MINUTES` to change the
 normal idle grace. This setting does not change active-turn protection.
 
 ## What stop and delete keep
 
 <Callout type="warn" title="Deletion is permanent">
-Deleting a session destroys its sandbox for good. Kortix keeps the session
+Deleting a session destroys its sandbox for good. Zed keeps the session
 record and the git branch, so you can still recover pushed work. Anything not
 pushed is gone.
 </Callout>
@@ -53,7 +53,7 @@ pushes survives; everything else does not.
 
 ## Runtime
 
-Every session uses OpenCode REST. Kortix stores the selected OpenCode agent and
+Every session uses OpenCode REST. Zed stores the selected OpenCode agent and
 model when the session starts. Restart and resume keep the same session runtime.
 
 ## Sharing a preview
@@ -63,7 +63,7 @@ interactive mode.
 
 ## Providers
 
-Kortix runs sessions on Daytona, Platinum, or E2B Cloud. A project follows
+Zed runs sessions on Daytona, Platinum, or E2B Cloud. A project follows
 the platform default, or requests a provider switch through the SDK — see
 [SDK reference](/docs/sdk/reference). A switch to a different provider is
 durable: the current provider keeps serving while the target warms, then

@@ -7,7 +7,7 @@
  * concurrent callers (SSE, health check, session fetch, etc. all racing for a
  * token on page load), and the install/bootstrap seam are entirely the host
  * app's responsibility, implemented inside the `getToken` it passes to
- * `configureKortix`/`createKortix`. A host that wants the old 30s-TTL +
+ * `configureZed`/`createZed`. A host that wants the old 30s-TTL +
  * inflight-dedup behavior re-implements it in its own `getToken`; the SDK
  * itself does not cache, dedupe, or retry beyond calling `getToken()` again.
  *
@@ -91,7 +91,7 @@ export function setBootstrapAuthToken(token: string | null): void {
 /**
  * Unified auth token getter.
  *
- * Returns the Supabase JWT. All requests go through kortix-api which
+ * Returns the Supabase JWT. All requests go through zed-api which
  * authenticates via Supabase JWT — no additional sandbox lock/key needed.
  */
 export async function getAuthToken(): Promise<string | null> {
@@ -180,7 +180,7 @@ export async function authenticatedFetch(
   const clientSource = platformConfig().clientSource;
   const headers = buildAuthHeaders(input, init, token, clientSource);
   // 30s default timeout for everything EXCEPT the long-lived SSE event
-  // stream (see `withDefaultTimeout`) — a "Kortix as a Backend" wrapper must
+  // stream (see `withDefaultTimeout`) — a "Zed as a Backend" wrapper must
   // never have a hung sandbox/daemon request wedge its handler forever.
   const signal =
     timeoutMs === undefined

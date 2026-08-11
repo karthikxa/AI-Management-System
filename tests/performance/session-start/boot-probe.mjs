@@ -1,5 +1,5 @@
 // Single-session boot probe: create a session, poll /start to ready, then dump
-// the daemon's in-container boot_timeline (from /kortix/health) so the
+// the daemon's in-container boot_timeline (from /zed/health) so the
 // active->ready window is attributed to its in-sandbox steps:
 //   static-web -> git-identity -> repo-materialized -> config-deps
 //   -> opencode-spawned -> proxy-up -> opencode-session-created -> opencode-ready
@@ -34,8 +34,8 @@ async function api(t, m, p, b) {
     await sleep(300);
   }
   if (ext) {
-    const h = await api(t, 'GET', `/p/${ext}/8000/kortix/health`);
-    console.log('\n=== /kortix/health (daemon boot timeline) ===');
+    const h = await api(t, 'GET', `/p/${ext}/8000/zed/health`);
+    console.log('\n=== /zed/health (daemon boot timeline) ===');
     console.log(JSON.stringify(h.j?.boot_timeline ?? h.j, null, 2));
   }
   await api(t, 'DELETE', `/projects/${PROJECT_ID}/sessions/${sid}`);

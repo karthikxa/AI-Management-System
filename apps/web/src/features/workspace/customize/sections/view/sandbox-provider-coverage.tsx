@@ -1,4 +1,4 @@
-import type { SandboxTemplate } from '@kortix/sdk';
+import type { SandboxTemplate } from '@zed/sdk';
 
 import { Badge } from '@/components/ui/badge';
 

@@ -1,7 +1,7 @@
 /**
  * Shared build-context staging for sandbox snapshots.
  *
- * Both providers build the SAME image: the user's Dockerfile + the Kortix
+ * Both providers build the SAME image: the user's Dockerfile + the Zed
  * runtime layer (agent binary + CLI + entrypoint + slack-cli +
  * opencode/agent-browser). Daytona ships this context to its build service via
  * `Image.fromDockerfile(ctx)`; Platinum ships it to `POST /v1/templates/
@@ -32,13 +32,13 @@ import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { createGzip } from 'node:zlib';
-import { AGENT_BROWSER_VERSION, OPENCODE_VERSION } from '@kortix/shared';
-import { buildMetaSandboxDockerfile } from '@kortix/shared/sandbox';
+import { AGENT_BROWSER_VERSION, OPENCODE_VERSION } from '@zed/shared';
+import { buildMetaSandboxDockerfile } from '@zed/shared/sandbox';
 import {
   getManagedSkillFiles,
   getStarterFiles,
-  isKortixManagedSkillName,
-} from '@kortix/starter';
+  isZedManagedSkillName,
+} from '@zed/starter';
 import { gatewayModelCatalog } from '../llm-gateway/models/catalog-models';
 import { appCaddyBinaryPath, appdBinaryPath } from '../apps/runtime-artifacts';
 import { buildStarterFiles, DEFAULT_STARTER_TEMPLATE_ID } from '../projects/starter';
@@ -52,27 +52,27 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '../../../..');
 // These artifact paths are read LAZILY (per call, not as module-load consts).
 // build-context is imported once and shared across the whole `bun test` process;
-// tests override KORTIX_SNAPSHOT_* per suite, so module-load consts let the
+// tests override ZED_SNAPSHOT_* per suite, so module-load consts let the
 // first-imported suite's fixtures win and break sibling suites in a combined run.
 // In production the env is set once, so reading per-call is behaviour-neutral.
-const agentBinPath = () => process.env.KORTIX_SNAPSHOT_AGENT_BIN_PATH
-  || resolve(REPO_ROOT, 'apps/kortix-sandbox-agent-server/dist/kortix-agent');
-const cliBinPath = () => process.env.KORTIX_SNAPSHOT_CLI_BIN_PATH
-  || resolve(REPO_ROOT, 'apps/cli/dist/kortix');
-const cliAttestationPath = () => process.env.KORTIX_SNAPSHOT_CLI_ATTESTATION_PATH
-  || resolve(REPO_ROOT, 'apps/cli/dist/kortix-connectors-runtime.attestation.json');
-const entrypointSrcPath = () => process.env.KORTIX_SNAPSHOT_ENTRYPOINT_PATH
+const agentBinPath = () => process.env.ZED_SNAPSHOT_AGENT_BIN_PATH
+  || resolve(REPO_ROOT, 'apps/zed-sandbox-agent-server/dist/zed-agent');
+const cliBinPath = () => process.env.ZED_SNAPSHOT_CLI_BIN_PATH
+  || resolve(REPO_ROOT, 'apps/cli/dist/zed');
+const cliAttestationPath = () => process.env.ZED_SNAPSHOT_CLI_ATTESTATION_PATH
+  || resolve(REPO_ROOT, 'apps/cli/dist/zed-connectors-runtime.attestation.json');
+const entrypointSrcPath = () => process.env.ZED_SNAPSHOT_ENTRYPOINT_PATH
   || resolve(REPO_ROOT, 'apps/sandbox/entrypoint.sh');
-const slackCliSrcPath = () => process.env.KORTIX_SNAPSHOT_SLACK_CLI_PATH
+const slackCliSrcPath = () => process.env.ZED_SNAPSHOT_SLACK_CLI_PATH
   || resolve(REPO_ROOT, 'apps/sandbox/slack-cli');
-// Canonical starter `.kortix/opencode` surface (pty plugin + standard tools +
+// Canonical starter `.zed/opencode` surface (pty plugin + standard tools +
 // skills). Staged into the context so the layer can warm a real opencode project
 // instance at build time (see dockerfile-layer.ts `opencodeConfigPath`).
-const opencodeConfigSrcPath = () => process.env.KORTIX_SNAPSHOT_OPENCODE_CONFIG_PATH
-  || resolve(REPO_ROOT, 'packages/starter/templates/base/.kortix/opencode');
-const opencodeWarmupSrcPath = () => process.env.KORTIX_SNAPSHOT_OPENCODE_WARMUP_PATH
+const opencodeConfigSrcPath = () => process.env.ZED_SNAPSHOT_OPENCODE_CONFIG_PATH
+  || resolve(REPO_ROOT, 'packages/starter/templates/base/.zed/opencode');
+const opencodeWarmupSrcPath = () => process.env.ZED_SNAPSHOT_OPENCODE_WARMUP_PATH
   || resolve(REPO_ROOT, 'apps/sandbox/opencode-warmup.sh');
-const machineDocSrcPath = () => process.env.KORTIX_SNAPSHOT_MACHINE_DOC_PATH
+const machineDocSrcPath = () => process.env.ZED_SNAPSHOT_MACHINE_DOC_PATH
   || resolve(REPO_ROOT, 'apps/sandbox/MACHINE.md');
 
 function readPositiveIntEnv(name: string, fallback: number): number {
@@ -81,12 +81,12 @@ function readPositiveIntEnv(name: string, fallback: number): number {
 }
 
 /** Default resource spec, shared by every provider when a template omits one. */
-export const DEFAULT_CPU = readPositiveIntEnv('KORTIX_DEFAULT_SANDBOX_CPU', 2);
-export const DEFAULT_MEMORY_GB = readPositiveIntEnv('KORTIX_DEFAULT_SANDBOX_MEMORY_GB', 6);
-export const DEFAULT_DISK_GB = readPositiveIntEnv('KORTIX_DEFAULT_SANDBOX_DISK_GB', 20);
+export const DEFAULT_CPU = readPositiveIntEnv('ZED_DEFAULT_SANDBOX_CPU', 2);
+export const DEFAULT_MEMORY_GB = readPositiveIntEnv('ZED_DEFAULT_SANDBOX_MEMORY_GB', 6);
+export const DEFAULT_DISK_GB = readPositiveIntEnv('ZED_DEFAULT_SANDBOX_DISK_GB', 20);
 
 /** The entrypoint baked into every snapshot (provider default). */
-export const KORTIX_ENTRYPOINT = '/usr/local/bin/kortix-entrypoint';
+export const ZED_ENTRYPOINT = '/usr/local/bin/zed-entrypoint';
 
 export interface StagedContext {
   /** Temp dir holding the composed Dockerfile + staged artifacts. Caller removes it. */
@@ -98,7 +98,7 @@ export interface StagedContext {
 }
 
 /**
- * Stage one provider-neutral Kortix App build context. The user's Dockerfile
+ * Stage one provider-neutral Zed App build context. The user's Dockerfile
  * remains the base. This function adds only the supervisor, ingress binary,
  * and immutable non-secret runtime specification. Provider credentials and App
  * secrets never enter the build context.
@@ -110,15 +110,15 @@ export async function stageAppBuildContext(
 ): Promise<StagedContext> {
   const appdPath = appdBinaryPath();
   const caddyPath = appCaddyBinaryPath();
-  await assertExists(appdPath, 'KORTIX_APPD_BIN_PATH');
-  await assertExists(caddyPath, 'KORTIX_APP_CADDY_BIN_PATH');
+  await assertExists(appdPath, 'ZED_APPD_BIN_PATH');
+  await assertExists(caddyPath, 'ZED_APP_CADDY_BIN_PATH');
 
-  const contextDir = await mkdtemp(join(tmpdir(), 'kortix-app-snap-'));
+  const contextDir = await mkdtemp(join(tmpdir(), 'zed-app-snap-'));
   try {
     if (appContext.sourceDir) {
       const entries = await readdir(appContext.sourceDir);
-      if (entries.includes('.kortix-app-runtime')) {
-        throw new Error('App source contains reserved path .kortix-app-runtime');
+      if (entries.includes('.zed-app-runtime')) {
+        throw new Error('App source contains reserved path .zed-app-runtime');
       }
       for (const entry of entries) {
         await cp(join(appContext.sourceDir, entry), join(contextDir, entry), {
@@ -128,11 +128,11 @@ export async function stageAppBuildContext(
       }
     }
 
-    const runtimeDir = join(contextDir, '.kortix-app-runtime');
+    const runtimeDir = join(contextDir, '.zed-app-runtime');
     await mkdir(runtimeDir, { recursive: true });
-    await copyFile(appdPath, join(runtimeDir, 'kortix-appd'));
+    await copyFile(appdPath, join(runtimeDir, 'zed-appd'));
     await copyFile(caddyPath, join(runtimeDir, 'caddy'));
-    await chmod(join(runtimeDir, 'kortix-appd'), 0o755);
+    await chmod(join(runtimeDir, 'zed-appd'), 0o755);
     await chmod(join(runtimeDir, 'caddy'), 0o755);
     await writeFileFs(
       join(runtimeDir, 'app.json'),
@@ -140,16 +140,16 @@ export async function stageAppBuildContext(
       { mode: 0o644 },
     );
 
-    const dockerfileName = '.kortix-app.Dockerfile';
+    const dockerfileName = '.zed-app.Dockerfile';
     const composedPath = join(contextDir, dockerfileName);
     const composed = `${userDockerfile.trimEnd()}\n\n` +
-      `# Kortix Apps runtime ${snapshotName}\n` +
-      'COPY .kortix-app-runtime/kortix-appd /kortix/bin/kortix-appd\n' +
-      'COPY .kortix-app-runtime/caddy /kortix/bin/caddy\n' +
-      'COPY .kortix-app-runtime/app.json /kortix/config/app.json\n' +
-      'ENV KORTIX_APP_SPEC_PATH=/kortix/config/app.json\n' +
+      `# Zed Apps runtime ${snapshotName}\n` +
+      'COPY .zed-app-runtime/zed-appd /zed/bin/zed-appd\n' +
+      'COPY .zed-app-runtime/caddy /zed/bin/caddy\n' +
+      'COPY .zed-app-runtime/app.json /zed/config/app.json\n' +
+      'ENV ZED_APP_SPEC_PATH=/zed/config/app.json\n' +
       'EXPOSE 7331 8080\n' +
-      'ENTRYPOINT ["/kortix/bin/kortix-appd"]\n';
+      'ENTRYPOINT ["/zed/bin/zed-appd"]\n';
     await writeComposedDockerfile(composedPath, composed);
     console.info(`[apps] ${snapshotName}: App build context staged at ${contextDir}`);
     return { contextDir, composedPath, dockerfileName };
@@ -160,22 +160,22 @@ export async function stageAppBuildContext(
 }
 
 /**
- * Materialize the managed `kortix-*` skills into a build-context directory —
+ * Materialize the managed `zed-*` skills into a build-context directory —
  * the same extraction `packages/starter/scripts/write-managed-skills.ts` runs
- * for the standard sandbox image. The daemon overlays `/opt/kortix/managed-skills`
+ * for the standard sandbox image. The daemon overlays `/opt/zed/managed-skills`
  * into the harness skills dir at boot (`ensureInjectedManagedSkills`), so this
- * is what teaches the meta coordinator the `kortix` CLI.
+ * is what teaches the meta coordinator the `zed` CLI.
  */
 async function stageManagedSkills(outDir: string): Promise<void> {
-  const SKILLS_PREFIX = '.kortix/opencode/skills/';
+  const SKILLS_PREFIX = '.zed/opencode/skills/';
   const files = [
     ...getManagedSkillFiles(),
-    ...getStarterFiles({ projectName: 'Kortix', template: 'general-knowledge-worker' }),
+    ...getStarterFiles({ projectName: 'Zed', template: 'general-knowledge-worker' }),
   ];
   for (const file of files) {
     if (!file.path.startsWith(SKILLS_PREFIX)) continue;
     const name = file.path.slice(SKILLS_PREFIX.length).split('/')[0];
-    if (!name || !isKortixManagedSkillName(name)) continue;
+    if (!name || !isZedManagedSkillName(name)) continue;
     const dest = join(outDir, file.path.slice(SKILLS_PREFIX.length));
     await mkdir(dirname(dest), { recursive: true });
     await writeFileFs(dest, file.content);
@@ -186,17 +186,17 @@ export async function stageMetaBuildContext(): Promise<StagedContext> {
   const agentPath = agentBinPath();
   const cliPath = cliBinPath();
   const entrypointPath = entrypointSrcPath();
-  await assertExists(agentPath, 'KORTIX_SNAPSHOT_AGENT_BIN_PATH');
-  await assertExists(cliPath, 'KORTIX_SNAPSHOT_CLI_BIN_PATH');
-  await assertExists(entrypointPath, 'KORTIX_SNAPSHOT_ENTRYPOINT_PATH');
+  await assertExists(agentPath, 'ZED_SNAPSHOT_AGENT_BIN_PATH');
+  await assertExists(cliPath, 'ZED_SNAPSHOT_CLI_BIN_PATH');
+  await assertExists(entrypointPath, 'ZED_SNAPSHOT_ENTRYPOINT_PATH');
 
-  const contextDir = await mkdtemp(join(tmpdir(), 'kortix-meta-snap-'));
-  await gzipFile(agentPath, join(contextDir, 'kortix-agent.gz'));
-  await gzipFile(cliPath, join(contextDir, 'kortix.gz'));
-  await copyFile(entrypointPath, join(contextDir, 'kortix-entrypoint'));
+  const contextDir = await mkdtemp(join(tmpdir(), 'zed-meta-snap-'));
+  await gzipFile(agentPath, join(contextDir, 'zed-agent.gz'));
+  await gzipFile(cliPath, join(contextDir, 'zed.gz'));
+  await copyFile(entrypointPath, join(contextDir, 'zed-entrypoint'));
   await stageManagedSkills(join(contextDir, 'managed-skills'));
   await writeFileFs(
-    join(contextDir, 'kortix-llm-catalog.json'),
+    join(contextDir, 'zed-llm-catalog.json'),
     JSON.stringify({ models: gatewayModelCatalog('shared-seed') }),
   );
 
@@ -205,10 +205,10 @@ export async function stageMetaBuildContext(): Promise<StagedContext> {
   await writeFileFs(
     composedPath,
     buildMetaSandboxDockerfile({
-      agentBinaryPath: 'kortix-agent.gz',
-      cliBinaryPath: 'kortix.gz',
-      entrypointScriptPath: 'kortix-entrypoint',
-      catalogPath: 'kortix-llm-catalog.json',
+      agentBinaryPath: 'zed-agent.gz',
+      cliBinaryPath: 'zed.gz',
+      entrypointScriptPath: 'zed-entrypoint',
+      catalogPath: 'zed-llm-catalog.json',
       managedSkillsPath: 'managed-skills',
     }),
   );
@@ -272,7 +272,7 @@ export interface WarmRepoContext {
  */
 
 /** Basename (in the build context) of the staged credential-free checkout. */
-export const WARM_REPO_STAGED_DIR = 'kortix-warm-repo';
+export const WARM_REPO_STAGED_DIR = 'zed-warm-repo';
 /**
  * Visible tar archive of `.git`.
  *
@@ -280,7 +280,7 @@ export const WARM_REPO_STAGED_DIR = 'kortix-warm-repo';
  * A directory COPY into `/workspace/.git` can complete without restoring a
  * usable repository. A single visible file crosses that boundary unchanged.
  */
-export const WARM_REPO_STAGED_GIT_ARCHIVE = 'kortix-warm-repo-git.tar';
+export const WARM_REPO_STAGED_GIT_ARCHIVE = 'zed-warm-repo-git.tar';
 
 /**
  * A conservative safe-subset of git branch/ref names: letters, digits, and
@@ -544,7 +544,7 @@ export async function assertCheckoutHasNoCredentials(checkoutDir: string): Promi
  *
  * `isSharedDefault` is the caller's `BuildableTemplate.isShared` — it tells the
  * layer whether /workspace is the platform's to wipe after the opencode warm-up
- * or the user's to leave alone (see `KortixToolchainLayerOpts.isSharedDefault`).
+ * or the user's to leave alone (see `ZedToolchainLayerOpts.isSharedDefault`).
  */
 export async function stageBuildContext(
   snapshotName: string,
@@ -560,12 +560,12 @@ export async function stageBuildContext(
   const OPENCODE_CONFIG_SRC_PATH = opencodeConfigSrcPath();
   const OPENCODE_WARMUP_SRC_PATH = opencodeWarmupSrcPath();
   const MACHINE_DOC_SRC_PATH = machineDocSrcPath();
-  await assertExists(AGENT_BIN_PATH, 'KORTIX_SNAPSHOT_AGENT_BIN_PATH');
-  await assertExists(CLI_BIN_PATH, 'KORTIX_SNAPSHOT_CLI_BIN_PATH');
-  await assertExists(ENTRYPOINT_PATH, 'KORTIX_SNAPSHOT_ENTRYPOINT_PATH');
-  await assertExistsDir(SLACK_CLI_SRC_PATH, 'KORTIX_SNAPSHOT_SLACK_CLI_PATH');
-  await assertExists(OPENCODE_WARMUP_SRC_PATH, 'KORTIX_SNAPSHOT_OPENCODE_WARMUP_PATH');
-  await assertExists(MACHINE_DOC_SRC_PATH, 'KORTIX_SNAPSHOT_MACHINE_DOC_PATH');
+  await assertExists(AGENT_BIN_PATH, 'ZED_SNAPSHOT_AGENT_BIN_PATH');
+  await assertExists(CLI_BIN_PATH, 'ZED_SNAPSHOT_CLI_BIN_PATH');
+  await assertExists(ENTRYPOINT_PATH, 'ZED_SNAPSHOT_ENTRYPOINT_PATH');
+  await assertExistsDir(SLACK_CLI_SRC_PATH, 'ZED_SNAPSHOT_SLACK_CLI_PATH');
+  await assertExists(OPENCODE_WARMUP_SRC_PATH, 'ZED_SNAPSHOT_OPENCODE_WARMUP_PATH');
+  await assertExists(MACHINE_DOC_SRC_PATH, 'ZED_SNAPSHOT_MACHINE_DOC_PATH');
   // Fingerprint/artifact skew guard: the snapshot identity hashes the agent
   // SOURCE (templates.ts AGENT_SRC_DIR), but the image bakes this prebuilt
   // dist binary — an edited src/ with a stale dist/ ships old code under a
@@ -573,14 +573,14 @@ export async function stageBuildContext(
   // daemon fix "rebuilt" into a fresh template whose forks still ran the old
   // binary). Refuse to stage a context whose binary predates the source.
   // Env-overridden binary paths skip this — the caller is pinning on purpose.
-  if (!process.env.KORTIX_SNAPSHOT_AGENT_BIN_PATH) {
+  if (!process.env.ZED_SNAPSHOT_AGENT_BIN_PATH) {
     const binMtime = (await stat(AGENT_BIN_PATH)).mtimeMs;
-    const srcDir = resolve(REPO_ROOT, 'apps/kortix-sandbox-agent-server/src');
+    const srcDir = resolve(REPO_ROOT, 'apps/zed-sandbox-agent-server/src');
     const newestSrc = await newestMtimeMs(srcDir);
     if (newestSrc > binMtime) {
       throw new Error(
-        `kortix-agent dist binary (${AGENT_BIN_PATH}) is older than its source ` +
-        `(${srcDir}) — run \`bun run build\` in apps/kortix-sandbox-agent-server ` +
+        `zed-agent dist binary (${AGENT_BIN_PATH}) is older than its source ` +
+        `(${srcDir}) — run \`bun run build\` in apps/zed-sandbox-agent-server ` +
         `or the image will bake stale code under a fresh content hash`,
       );
     }
@@ -595,22 +595,22 @@ export async function stageBuildContext(
     attestationPath: CLI_ATTESTATION_PATH,
   });
 
-  const contextDir = await mkdtemp(join(tmpdir(), 'kortix-snap-'));
-  await gzipFile(AGENT_BIN_PATH, join(contextDir, 'kortix-agent.gz'));
-  await gzipFile(CLI_BIN_PATH, join(contextDir, 'kortix.gz'));
-  await copyFile(ENTRYPOINT_PATH, join(contextDir, 'kortix-entrypoint'));
-  await copyFile(OPENCODE_WARMUP_SRC_PATH, join(contextDir, 'kortix-opencode-warmup'));
+  const contextDir = await mkdtemp(join(tmpdir(), 'zed-snap-'));
+  await gzipFile(AGENT_BIN_PATH, join(contextDir, 'zed-agent.gz'));
+  await gzipFile(CLI_BIN_PATH, join(contextDir, 'zed.gz'));
+  await copyFile(ENTRYPOINT_PATH, join(contextDir, 'zed-entrypoint'));
+  await copyFile(OPENCODE_WARMUP_SRC_PATH, join(contextDir, 'zed-opencode-warmup'));
   await copyFile(MACHINE_DOC_SRC_PATH, join(contextDir, 'MACHINE.md'));
-  await cp(SLACK_CLI_SRC_PATH, join(contextDir, 'kortix-slack-cli'), { recursive: true });
+  await cp(SLACK_CLI_SRC_PATH, join(contextDir, 'zed-slack-cli'), { recursive: true });
   // Stage the starter opencode config for the build-time instance warm-up.
   // Best effort: if it's missing, skip the warm-up (the build still succeeds and
   // sessions just pay the first-instance cost at runtime as before).
   let opencodeConfigPath: string | undefined;
   if (await isDir(OPENCODE_CONFIG_SRC_PATH)) {
-    await cp(OPENCODE_CONFIG_SRC_PATH, join(contextDir, 'kortix-opencode-config'), {
+    await cp(OPENCODE_CONFIG_SRC_PATH, join(contextDir, 'zed-opencode-config'), {
       recursive: true,
     });
-    opencodeConfigPath = 'kortix-opencode-config';
+    opencodeConfigPath = 'zed-opencode-config';
   }
 
   // PHASE 1: for a per-project COLD warm, clone the repo API-side into a
@@ -626,13 +626,13 @@ export async function stageBuildContext(
   // has no sandbox token / projectId to fetch the catalog at PARK, so without this
   // its opencode picker would fall back to the daemon's minimal (~11) set. Computed
   // server-side at build time → full picker, no token, no runtime fetch. The shared
-  // seed's captureEnv (builder.ts) points KORTIX_LLM_CATALOG_FILE at the COPY target.
+  // seed's captureEnv (builder.ts) points ZED_LLM_CATALOG_FILE at the COPY target.
   await writeFileFs(
-    join(contextDir, 'kortix-llm-catalog.json'),
+    join(contextDir, 'zed-llm-catalog.json'),
     JSON.stringify({ models: gatewayModelCatalog('shared-seed') }),
   );
 
-  // Canonical scaffold repo baked at /opt/kortix/scaffold.git. Built from the
+  // Canonical scaffold repo baked at /opt/zed/scaffold.git. Built from the
   // DEFAULT starter with the SAME pinned commit metadata the project seeder
   // uses (git-backends/seed.ts), so its root SHA equals every seeded project's
   // root — the daemon then materializes a project repo as local-clone +
@@ -641,20 +641,20 @@ export async function stageBuildContext(
   // back to a full fetch through the same code.
   await stageScaffoldRepo(contextDir);
 
-  const dockerfileName = '.kortix-snapshot.Dockerfile';
+  const dockerfileName = '.zed-snapshot.Dockerfile';
   const composedPath = join(contextDir, dockerfileName);
   const composed = buildLayeredDockerfile({
     userDockerfile,
     opencodeVersion: OPENCODE_VERSION,
     agentBrowserVersion: AGENT_BROWSER_VERSION,
-    agentBinaryPath: 'kortix-agent.gz',
-    cliBinaryPath: 'kortix.gz',
-    entrypointScriptPath: 'kortix-entrypoint',
+    agentBinaryPath: 'zed-agent.gz',
+    cliBinaryPath: 'zed.gz',
+    entrypointScriptPath: 'zed-entrypoint',
     machineDocPath: 'MACHINE.md',
-    slackCliPath: 'kortix-slack-cli',
+    slackCliPath: 'zed-slack-cli',
     opencodeConfigPath,
-    opencodeWarmupScriptPath: 'kortix-opencode-warmup',
-    catalogPath: 'kortix-llm-catalog.json',
+    opencodeWarmupScriptPath: 'zed-opencode-warmup',
+    catalogPath: 'zed-llm-catalog.json',
     isSharedDefault,
     warmRepo: warmRepoBake,
   });
@@ -696,28 +696,28 @@ export async function stageWarmFromBaseContext(
 ): Promise<StagedContext> {
   const OPENCODE_CONFIG_SRC_PATH = opencodeConfigSrcPath();
   const OPENCODE_WARMUP_SRC_PATH = opencodeWarmupSrcPath();
-  await assertExists(OPENCODE_WARMUP_SRC_PATH, 'KORTIX_SNAPSHOT_OPENCODE_WARMUP_PATH');
-  const contextDir = await mkdtemp(join(tmpdir(), 'kortix-snap-warm-'));
-  await copyFile(OPENCODE_WARMUP_SRC_PATH, join(contextDir, 'kortix-opencode-warmup'));
+  await assertExists(OPENCODE_WARMUP_SRC_PATH, 'ZED_SNAPSHOT_OPENCODE_WARMUP_PATH');
+  const contextDir = await mkdtemp(join(tmpdir(), 'zed-snap-warm-'));
+  await copyFile(OPENCODE_WARMUP_SRC_PATH, join(contextDir, 'zed-opencode-warmup'));
   let opencodeConfigPath: string | undefined;
   if (await isDir(OPENCODE_CONFIG_SRC_PATH)) {
-    await cp(OPENCODE_CONFIG_SRC_PATH, join(contextDir, 'kortix-opencode-config'), {
+    await cp(OPENCODE_CONFIG_SRC_PATH, join(contextDir, 'zed-opencode-config'), {
       recursive: true,
     });
-    opencodeConfigPath = 'kortix-opencode-config';
+    opencodeConfigPath = 'zed-opencode-config';
   }
 
   // PHASE 1: sanitized, credential-free repo checkout — cloned API-side, only
   // COPY'd by the rendered Dockerfile (no git auth header in the image).
   const { stagedPath, stagedGitPath } = await stageWarmRepoCheckout(contextDir, warmRepo);
 
-  const dockerfileName = '.kortix-snapshot.Dockerfile';
+  const dockerfileName = '.zed-snapshot.Dockerfile';
   const composedPath = join(contextDir, dockerfileName);
   const composed = buildPerProjectWarmFromBaseDockerfile({
     baseImageRef,
     warmRepo: { stagedPath, stagedGitPath, branch: warmRepo.branch },
     opencodeConfigPath,
-    opencodeWarmupScriptPath: 'kortix-opencode-warmup',
+    opencodeWarmupScriptPath: 'zed-opencode-warmup',
   });
 
   await guardBuildahPortable(composed);
@@ -776,16 +776,16 @@ async function assertContextComplete(
 ): Promise<void> {
   const required = [
     'scaffold.git',
-    'kortix-agent.gz',
-    'kortix-opencode-warmup',
+    'zed-agent.gz',
+    'zed-opencode-warmup',
     'MACHINE.md',
     // The baked model catalog is what keeps `opencode serve` off the network at
-    // boot: the daemon reads /opt/kortix/llm-catalog.json instead of fetching
+    // boot: the daemon reads /opt/zed/llm-catalog.json instead of fetching
     // the gateway's ~400KB /models. If it silently fails to stage, the image
     // still builds and every session on it pays a synchronous cross-region
     // fetch that gates opencode's port bind. That is invisible in build logs and
     // shows up only as "boot got slower", so assert it here.
-    'kortix-llm-catalog.json',
+    'zed-llm-catalog.json',
     dockerfileName,
   ];
   // A per-project warm bake COPYs the staged checkout — verify it (and its
@@ -825,7 +825,7 @@ async function assertExists(path: string, envVarHint: string): Promise<void> {
   } catch (err) {
     if (err instanceof Error && err.message.includes(envVarHint)) throw err;
     throw new Error(
-      `Required artifact missing: ${path}. Set ${envVarHint} or run \`bun run build\` in apps/kortix-sandbox-agent-server.`,
+      `Required artifact missing: ${path}. Set ${envVarHint} or run \`bun run build\` in apps/zed-sandbox-agent-server.`,
     );
   }
 }
@@ -862,21 +862,21 @@ async function gzipFile(sourcePath: string, targetPath: string): Promise<void> {
 }
 
 /**
- * Gzip ONLY the kortix-agent binary to a temp .gz — for the Platinum agent-swap
+ * Gzip ONLY the zed-agent binary to a temp .gz — for the Platinum agent-swap
  * fast path, which ships just the agent (not a whole build context) and has the
  * host debugfs-swap it into the predecessor's rootfs. Caller cleans up.
  */
 export async function stageAgentBinaryGz(): Promise<{ gzPath: string; cleanup: () => Promise<void> }> {
   const AGENT_BIN_PATH = agentBinPath();
-  await assertExists(AGENT_BIN_PATH, 'KORTIX_SNAPSHOT_AGENT_BIN_PATH');
+  await assertExists(AGENT_BIN_PATH, 'ZED_SNAPSHOT_AGENT_BIN_PATH');
   // Refuse an empty/truncated dist (e.g. an interrupted `bun build`) at the source.
   // The host re-validates (ELF/size + post-swap size match), but failing here keeps
   // a dead agent from ever being uploaded + swapped into a template.
   if ((await stat(AGENT_BIN_PATH)).size === 0) {
     throw new Error(`agent binary ${AGENT_BIN_PATH} is empty — refusing to stage for agent-swap`);
   }
-  const dir = await mkdtemp(join(tmpdir(), 'kortix-agent-swap-'));
-  const gzPath = join(dir, 'kortix-agent.gz');
+  const dir = await mkdtemp(join(tmpdir(), 'zed-agent-swap-'));
+  const gzPath = join(dir, 'zed-agent.gz');
   await gzipFile(AGENT_BIN_PATH, gzPath);
   return { gzPath, cleanup: async () => { await rm(dir, { recursive: true, force: true }).catch(() => {}); } };
 }
@@ -884,7 +884,7 @@ export async function stageAgentBinaryGz(): Promise<{ gzPath: string; cleanup: (
 async function stageScaffoldRepo(contextDir: string): Promise<void> {
   const work = join(contextDir, '.scaffold-work');
   await mkdir(work, { recursive: true });
-  const files = buildStarterFiles({ projectName: 'kortix-project', repoFullName: 'kortix/kortix-project', template: DEFAULT_STARTER_TEMPLATE_ID });
+  const files = buildStarterFiles({ projectName: 'zed-project', repoFullName: 'zed/zed-project', template: DEFAULT_STARTER_TEMPLATE_ID });
   for (const f of files) {
     const full = join(work, f.path);
     await mkdir(dirname(full), { recursive: true });
@@ -892,16 +892,16 @@ async function stageScaffoldRepo(contextDir: string): Promise<void> {
   }
   const env = {
     ...process.env, GIT_TERMINAL_PROMPT: '0',
-    GIT_AUTHOR_NAME: 'Kortix', GIT_AUTHOR_EMAIL: 'noreply@kortix.ai',
-    GIT_COMMITTER_NAME: 'Kortix', GIT_COMMITTER_EMAIL: 'noreply@kortix.ai',
+    GIT_AUTHOR_NAME: 'Zed', GIT_AUTHOR_EMAIL: 'noreply@zed.ai',
+    GIT_COMMITTER_NAME: 'Zed', GIT_COMMITTER_EMAIL: 'noreply@zed.ai',
     GIT_AUTHOR_DATE: '2026-01-01T00:00:00Z', GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z',
   };
   const g = (args: string[], cwd: string) => execFileAsyncBC('git', args, { cwd, env, timeout: 60_000 });
   await g(['init', '-b', 'main'], work);
-  await g(['config', 'user.name', 'Kortix'], work);
-  await g(['config', 'user.email', 'noreply@kortix.ai'], work);
+  await g(['config', 'user.name', 'Zed'], work);
+  await g(['config', 'user.email', 'noreply@zed.ai'], work);
   await g(['add', '-A'], work);
-  await g(['commit', '-m', 'chore: scaffold Kortix project'], work);
+  await g(['commit', '-m', 'chore: scaffold Zed project'], work);
   const scaffoldGit = join(contextDir, 'scaffold.git');
   await rename(join(work, '.git'), scaffoldGit);
   await g(['--git-dir', scaffoldGit, 'config', 'core.bare', 'true'], contextDir);

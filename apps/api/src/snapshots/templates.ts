@@ -2,9 +2,9 @@
  * Sandbox template service.
  *
  * The durable identity for "what kind of sandbox a session can boot from."
- * Templates live in `kortix.sandbox_templates`. The platform default is a
+ * Templates live in `zed.sandbox_templates`. The platform default is a
  * shared row (project_id NULL, is_shared=true) that any project can boot
- * from. Custom templates can be defined either in `kortix.yaml` (synced to
+ * from. Custom templates can be defined either in `zed.yaml` (synced to
  * the DB on first read for a project) or directly via the UI/CRUD API.
  *
  * Provider-agnostic: each template carries the provider of its most recent
@@ -13,7 +13,7 @@
  */
 
 import { and, eq, isNull, ne, or } from 'drizzle-orm';
-import { sandboxTemplates, projects } from '@kortix/db';
+import { sandboxTemplates, projects } from '@zed/db';
 import {
   AGENT_BROWSER_VERSION,
   ANYDOC_VERSION,
@@ -30,7 +30,7 @@ import {
   UV_SHA256_AMD64,
   UV_SHA256_ARM64,
   UV_VERSION,
-} from '@kortix/shared';
+} from '@zed/shared';
 type DbSandboxTemplate = typeof sandboxTemplates.$inferSelect;
 import { db } from '../shared/db';
 import { isWarmBuildSlug, templateSlugFromBuildSlug } from './ppwarm-names';
@@ -58,24 +58,24 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '../../../..');
-const AGENT_SRC_DIR = resolve(REPO_ROOT, 'apps/kortix-sandbox-agent-server/src');
-const AGENT_PKG_JSON = resolve(REPO_ROOT, 'apps/kortix-sandbox-agent-server/package.json');
-const ENTRYPOINT_PATH = process.env.KORTIX_SNAPSHOT_ENTRYPOINT_PATH
+const AGENT_SRC_DIR = resolve(REPO_ROOT, 'apps/zed-sandbox-agent-server/src');
+const AGENT_PKG_JSON = resolve(REPO_ROOT, 'apps/zed-sandbox-agent-server/package.json');
+const ENTRYPOINT_PATH = process.env.ZED_SNAPSHOT_ENTRYPOINT_PATH
   || resolve(REPO_ROOT, 'apps/sandbox/entrypoint.sh');
-const OPENCODE_WARMUP_PATH = process.env.KORTIX_SNAPSHOT_OPENCODE_WARMUP_PATH
+const OPENCODE_WARMUP_PATH = process.env.ZED_SNAPSHOT_OPENCODE_WARMUP_PATH
   || resolve(REPO_ROOT, 'apps/sandbox/opencode-warmup.sh');
-const MACHINE_DOC_PATH = process.env.KORTIX_SNAPSHOT_MACHINE_DOC_PATH
+const MACHINE_DOC_PATH = process.env.ZED_SNAPSHOT_MACHINE_DOC_PATH
   || resolve(REPO_ROOT, 'apps/sandbox/MACHINE.md');
-const SLACK_CLI_SRC_PATH = process.env.KORTIX_SNAPSHOT_SLACK_CLI_PATH
+const SLACK_CLI_SRC_PATH = process.env.ZED_SNAPSHOT_SLACK_CLI_PATH
   || resolve(REPO_ROOT, 'apps/sandbox/slack-cli');
-// Source of the `kortix` CLI binary baked into every sandbox. We fingerprint
+// Source of the `zed` CLI binary baked into every sandbox. We fingerprint
 // the SOURCE (not the compiled binary, which `bun build --compile` produces
 // non-deterministically) so a CLI code change rebuilds snapshots while a
 // rebuild of the identical source does not.
 //
 // Scope: only the files whose change can alter what the CLI does INSIDE a
-// sandbox. The single compiled `kortix` binary bakes ALL of apps/cli/src, but a
-// session only ever invokes `kortix connectors` / `kortix connectors mcp` — the rest
+// sandbox. The single compiled `zed` binary bakes ALL of apps/cli/src, but a
+// session only ever invokes `zed connectors` / `zed connectors mcp` — the rest
 // (`ship`, `cr`, `tunnel`, `self-host`, `accounts`, the whole `init`/scaffold
 // surface, …) is developer-facing and runs on a laptop, never in the sandbox.
 // Hashing the WHOLE tree meant every dev-only CLI edit re-minted every project's
@@ -85,7 +85,7 @@ const SLACK_CLI_SRC_PATH = process.env.KORTIX_SNAPSHOT_SLACK_CLI_PATH
 // in-sandbox connector import-closure instead of `apps/cli/src` wholesale.
 //
 // This closure is asserted complete by snapshots/__tests__/cli-connector-closure
-// .test.ts, which re-derives it from the `kortix connectors` entrypoints and fails
+// .test.ts, which re-derives it from the `zed connectors` entrypoints and fails
 // if a new import escapes the hashed set — so scoping can never silently ship a
 // stale in-sandbox connector. packages/starter (scaffolding) and packages/
 // manifest-schema (only reached by laptop-side `ship`/`validate`) are likewise
@@ -93,16 +93,16 @@ const SLACK_CLI_SRC_PATH = process.env.KORTIX_SNAPSHOT_SLACK_CLI_PATH
 const CLI_ROOT = resolve(REPO_ROOT, 'apps/cli');
 const FINGERPRINT_EXCLUDES = ['node_modules', '.bin', 'dist', '.turbo', '.cache'] as const;
 
-// Bump when the rendered Kortix Dockerfile layer changes (the Dockerfile text
+// Bump when the rendered Zed Dockerfile layer changes (the Dockerfile text
 // itself is not hashed into the snapshot fingerprint, so a layer change needs a
 // manual version bump to invalidate cached images). v2: bake OpenCode config
-// deps into /opt/kortix/opencode-config-deps for offline boot-time install.
+// deps into /opt/zed/opencode-config-deps for offline boot-time install.
 // v10: warm a real opencode project instance at build time (instance-warm) so the
 // one-time first-instance plugin/model/ripgrep cost is cached into the image
 // instead of paid on the session hot path (6–60s → ~2–4s cold start).
 // v11: bake a real Chromium (Playwright, cross-arch) for agent-browser so the
 // browser-automation skill works out of the box with no runtime download.
-// v12: bake the full LLM model catalog (/opt/kortix/llm-catalog.json) so the
+// v12: bake the full LLM model catalog (/opt/zed/llm-catalog.json) so the
 // no-restart warm seed serves the full picker without a PARK-time fetch.
 // v14: bake the COMPLETE config-dir deps (incl. @opencode-ai/plugin + its effect/
 // zod/sdk tree + overrides) instead of a partial hardcoded list.
@@ -110,7 +110,7 @@ const FINGERPRINT_EXCLUDES = ['node_modules', '.bin', 'dist', '.turbo', '.cache'
 // loads the plugin SDK matching its own binary and re-fetches it over the network
 // if the baked tree carries a different version — the stale starter pin left every
 // boot re-installing it, the ~5–8s opencode-session-created gap).
-// v16: ship the `meet` channel CLI + the kortix-meet skill.
+// v16: ship the `meet` channel CLI + the zed-meet skill.
 // v17: `meet chat` (bot talks back in-call) + live-relay skill section.
 // v18: `meet speak` (TTS voice in-call) + voice-reply skill section.
 // v19: natural-conversation relay (debounce + acknowledgement + follow-up) skill notes.
@@ -122,12 +122,12 @@ const FINGERPRINT_EXCLUDES = ['node_modules', '.bin', 'dist', '.turbo', '.cache'
 // starter tool files against it) can't actually be bundled by Bun — a
 // bundle-breaking axios override once shipped silently baked into every
 // sandbox image (bun install succeeded; the runtime bundle did not).
-// v25: bake the `kortix skills` subcommand into the in-sandbox CLI so the
-// seeded kortix-system <live-skills> pointer (`kortix skills get <name>`)
+// v25: bake the `zed skills` subcommand into the in-sandbox CLI so the
+// seeded zed-system <live-skills> pointer (`zed skills get <name>`)
 // resolves — without this rebake, fresh sandboxes run an older baked CLI that
-// hard-errors on `kortix skills`.
+// hard-errors on `zed skills`.
 // v26: layer robustness. (a) The starter Python floor moved OUT of the system
-// interpreter into a `--system-site-packages` venv at /opt/kortix/pyfloor (on the
+// interpreter into a `--system-site-packages` venv at /opt/zed/pyfloor (on the
 // front of PATH): the old `pip install --break-system-packages` fought dpkg for
 // any floor package the USER's Dockerfile had apt-installed — a project's
 // `gdal-bin` pulled dpkg-owned python3-numpy 1.26.4, our `numpy>=1.26` resolved
@@ -176,12 +176,12 @@ const FINGERPRINT_EXCLUDES = ['node_modules', '.bin', 'dist', '.turbo', '.cache'
 // v29: fix the BASE default image rebuild (the gap v27/v28 left open). v27/v28
 // only moved Chromium above the per-project warm-repo clone + instance warm-up,
 // and made per-project bakes inherit Chromium FROM the base — but in the base
-// image's own build (kortixToolchainLayer with no warmRepo) Chromium STILL sat
+// image's own build (zedToolchainLayer with no warmRepo) Chromium STILL sat
 // BELOW the opencode install, the `opencode serve` migration-bake, and the
 // config-deps bun install. The migration-bake writes a sqlite db with live
 // timestamps and the config-deps install churns node_modules mtimes — both
 // non-deterministic — so on a content-addressed provider cache (Daytona) they
-// bust the cache for the Chromium layer chained below them. The kortix-agent
+// bust the cache for the Chromium layer chained below them. The zed-agent
 // SOURCE feeds the snapshot fingerprint (AGENT_RUNTIME_ARTIFACTS below), so any
 // agent-server code change mints a brand-new base snapshot name → a full rebuild
 // on Daytona (no agent-swap) → Chromium re-download → the base image never
@@ -192,7 +192,7 @@ const FINGERPRINT_EXCLUDES = ['node_modules', '.bin', 'dist', '.turbo', '.cache'
 // layer. Chromium's content hash is now stable across agent-source churn — it is
 // fetched at most once per pinned Playwright/agent-browser version and
 // cache-reused for every base rebuild after.
-// v30: run the toolchain and daemon as `kortix`, restore the runtime environment
+// v30: run the toolchain and daemon as `zed`, restore the runtime environment
 // when a provider discards image USER/ENV, extract OpenCode cache warming, and
 // bake the platform machine guide at /MACHINE.md.
 // v31: replace remote installer-script execution with versioned release
@@ -211,15 +211,15 @@ const FINGERPRINT_EXCLUDES = ['node_modules', '.bin', 'dist', '.turbo', '.cache'
 // v39: bake the pinned Python package floor (runtime-versions.json
 // `pythonPackages`) into the managed interpreter — starter skills and bare
 // `python3` run with zero per-script resolution or runtime PyPI downloads.
-// v40: create a private, kortix-owned /var/run/kortix before daemon startup.
-// Platinum replaces /run and starts the image as `kortix`, so that directory
+// v40: create a private, zed-owned /var/run/zed before daemon startup.
+// Platinum replaces /run and starts the image as `zed`, so that directory
 // does not survive provider startup.
-// v41: store durable daemon state under /home/kortix/.local/state/kortix. This
+// v41: store durable daemon state under /home/zed/.local/state/zed. This
 // path remains writable when a provider replaces /run or discards image USER.
 const RUNTIME_LAYER_VERSION = 'verified-runtime-artifacts-v41';
-const DEFAULT_CPU = readPositiveIntEnv('KORTIX_DEFAULT_SANDBOX_CPU', 2);
-const DEFAULT_MEMORY_GB = readPositiveIntEnv('KORTIX_DEFAULT_SANDBOX_MEMORY_GB', 4);
-const DEFAULT_DISK_GB = readPositiveIntEnv('KORTIX_DEFAULT_SANDBOX_DISK_GB', 20);
+const DEFAULT_CPU = readPositiveIntEnv('ZED_DEFAULT_SANDBOX_CPU', 2);
+const DEFAULT_MEMORY_GB = readPositiveIntEnv('ZED_DEFAULT_SANDBOX_MEMORY_GB', 4);
+const DEFAULT_DISK_GB = readPositiveIntEnv('ZED_DEFAULT_SANDBOX_DISK_GB', 20);
 
 function readPositiveIntEnv(name: string, fallback: number): number {
   const raw = Number.parseInt(process.env[name] || '', 10);
@@ -357,7 +357,7 @@ export async function resolveTemplateBySlug(
 
   // Fast path for the platform default — the overwhelming majority of boots.
   // The default template's identity is a constant (PLATFORM_DEFAULT_USER_DOCKERFILE),
-  // so it does NOT depend on the project's kortix.yaml. `listTemplatesForProject`
+  // so it does NOT depend on the project's zed.yaml. `listTemplatesForProject`
   // would run `syncManifestTemplatesForProject` → `readManifest` → a host-side git
   // fetch of the repo (15-30s cold) on every boot once the 60s TTL lapses — and
   // boots are minutes apart, so it lapses every time. Slug "default" is reserved
@@ -611,7 +611,7 @@ export async function computeTemplateIdentity(
   // moves swapKey → the builder rebuilds instead of swapping (never ships stale).
   const nonAgentRuntimeFingerprint = await currentNonAgentRuntimeFingerprint();
   const swapKey = computeSnapshotHash({ ...hashInputs, runtimeFingerprint: nonAgentRuntimeFingerprint }).shortHash;
-  const namePrefix = template.isShared ? 'kortix-default' : 'kortix-tpl';
+  const namePrefix = template.isShared ? 'zed-default' : 'zed-tpl';
   return {
     snapshotName: `${namePrefix}-${hash.shortHash}`,
     contentHash: hash.contentHash,
@@ -689,11 +689,11 @@ export async function recordTemplateBuilt(
 
 /** Managed snapshot namespaces we own and may reap. Anything else (Daytona's
  *  own base/sample images, etc.) is left strictly alone. */
-const REAPABLE_SNAPSHOT_PREFIXES = ['kortix-default-', 'kortix-tpl-', 'kortix-wproj-', 'kortix-ppwarm-'];
+const REAPABLE_SNAPSHOT_PREFIXES = ['zed-default-', 'zed-tpl-', 'zed-wproj-', 'zed-ppwarm-'];
 
 /**
  * Delete a snapshot a template row just stopped pointing at. Best-effort and
- * heavily guarded: gated by KORTIX_SNAPSHOT_REAP_PREDECESSOR, restricted to our
+ * heavily guarded: gated by ZED_SNAPSHOT_REAP_PREDECESSOR, restricted to our
  * managed namespaces, and skipped if ANY other template row still references the
  * name (snapshots are content-addressed, so two projects with byte-identical
  * inputs share one image). Never throws — a failed reap just falls back to the
@@ -706,7 +706,7 @@ async function reapPredecessorSnapshot(
   provider: string,
 ): Promise<void> {
   try {
-    if (!config.KORTIX_SNAPSHOT_REAP_PREDECESSOR) return;
+    if (!config.ZED_SNAPSHOT_REAP_PREDECESSOR) return;
     if (!REAPABLE_SNAPSHOT_PREFIXES.some((p) => snapshotName.startsWith(p))) return;
     // Still referenced by a DIFFERENT template row? Leave it shared.
     const stillUsed = await db
@@ -796,7 +796,7 @@ function rowToResolved(row: DbSandboxTemplate): ResolvedTemplate {
 }
 
 /**
- * Upsert `sandbox.templates` entries from the project's kortix.yaml into the DB.
+ * Upsert `sandbox.templates` entries from the project's zed.yaml into the DB.
  * Best-effort: a broken manifest never blocks the boot path.
  */
 async function syncManifestTemplatesForProject(project: GitBackedProject): Promise<void> {
@@ -897,23 +897,23 @@ function validateTemplateMutation(args: { image?: unknown; dockerfilePath?: unkn
 }
 
 // The runtime layer bakes source artifacts into every template's rootfs. Exactly
-// TWO are the kortix-agent binary; the rest (entrypoint, in-sandbox CLI surface,
+// TWO are the zed-agent binary; the rest (entrypoint, in-sandbox CLI surface,
 // slack-cli, SDK-backed Connector client) are the non-agent runtime. The
 // agent-swap fast path
 // replaces ONLY the agent, so the builder must prove the NON-agent runtime is
 // byte-identical before swapping — hence the split into two artifact sets.
 const AGENT_RUNTIME_ARTIFACTS = [
-  { label: 'kortix-agent-src', path: AGENT_SRC_DIR, excludeNames: FINGERPRINT_EXCLUDES },
-  { label: 'kortix-agent-pkg', path: AGENT_PKG_JSON },
+  { label: 'zed-agent-src', path: AGENT_SRC_DIR, excludeNames: FINGERPRINT_EXCLUDES },
+  { label: 'zed-agent-pkg', path: AGENT_PKG_JSON },
 ];
 const NON_AGENT_RUNTIME_ARTIFACTS = [
-  { label: 'kortix-entrypoint', path: ENTRYPOINT_PATH },
-  { label: 'kortix-opencode-warmup', path: OPENCODE_WARMUP_PATH },
-  { label: 'kortix-machine-doc', path: MACHINE_DOC_PATH },
-  { label: 'kortix-slack-cli', path: SLACK_CLI_SRC_PATH, excludeNames: FINGERPRINT_EXCLUDES },
-  // Only the in-sandbox `kortix connectors` closure (NOT the whole apps/cli/src) —
-  // see CLI_CONNECTOR_RUNTIME_FILES in @kortix/shared. This artifact set also
-  // includes @kortix/sdk because the compiled CLI owns the Connector client.
+  { label: 'zed-entrypoint', path: ENTRYPOINT_PATH },
+  { label: 'zed-opencode-warmup', path: OPENCODE_WARMUP_PATH },
+  { label: 'zed-machine-doc', path: MACHINE_DOC_PATH },
+  { label: 'zed-slack-cli', path: SLACK_CLI_SRC_PATH, excludeNames: FINGERPRINT_EXCLUDES },
+  // Only the in-sandbox `zed connectors` closure (NOT the whole apps/cli/src) —
+  // see CLI_CONNECTOR_RUNTIME_FILES in @zed/shared. This artifact set also
+  // includes @zed/sdk because the compiled CLI owns the Connector client.
   ...cliConnectorRuntimeArtifacts(CLI_ROOT),
 ];
 // Both version strings fold in the layer/opencode/browser/sandbox constants — all
@@ -943,7 +943,7 @@ let nonAgentFingerprintInflight: Promise<string> | null = null;
 /**
  * Cache the runtime artifact fingerprint by the pinned version constants only,
  * NOT by the source dir mtime. Mtime-keyed caching used to invalidate on every
- * file save in `apps/kortix-sandbox-agent-server/src` (and every git checkout),
+ * file save in `apps/zed-sandbox-agent-server/src` (and every git checkout),
  * forcing a ~30 MB tree walk on the session-boot hot path. The version
  * constants are bumped explicitly when the runtime layer actually changes —
  * that's the right invalidation trigger.
@@ -978,7 +978,7 @@ export async function currentRuntimeArtifactFingerprint(): Promise<string> {
 }
 
 /**
- * Fingerprint of the runtime layer EXCLUDING the kortix-agent binary. Changes iff
+ * Fingerprint of the runtime layer EXCLUDING the zed-agent binary. Changes iff
  * a NON-agent runtime input moved — opencode/entrypoint/CLI/slack-cli/SDK/
  * manifest-schema source, or the layer/browser/sandbox version constants. The
  * agent-swap fast path is sound ONLY when this is byte-identical between the

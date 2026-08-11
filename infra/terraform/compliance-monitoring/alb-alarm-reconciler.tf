@@ -9,7 +9,7 @@ data "archive_file" "alb_alarm_reconciler" {
 }
 
 locals {
-  alb_alarm_reconciler_name = "kortix-alb-alarm-reconciler"
+  alb_alarm_reconciler_name = "zed-alb-alarm-reconciler"
 }
 
 resource "aws_cloudwatch_log_group" "usw2_alb_alarm_reconciler" {
@@ -119,7 +119,7 @@ resource "aws_lambda_function" "use2_alb_alarm_reconciler" {
 }
 
 resource "aws_cloudwatch_event_rule" "usw2_alb_alarm_reconcile_schedule" {
-  name                = "kortix-alb-alarm-reconcile-schedule"
+  name                = "zed-alb-alarm-reconcile-schedule"
   description         = "Repair missing or drifted DCF-86 ALB alarms"
   schedule_expression = "rate(5 minutes)"
   tags                = local.tags
@@ -127,7 +127,7 @@ resource "aws_cloudwatch_event_rule" "usw2_alb_alarm_reconcile_schedule" {
 
 resource "aws_cloudwatch_event_rule" "euw2_alb_alarm_reconcile_schedule" {
   provider            = aws.euw2
-  name                = "kortix-alb-alarm-reconcile-schedule"
+  name                = "zed-alb-alarm-reconcile-schedule"
   description         = "Repair missing or drifted DCF-86 ALB alarms"
   schedule_expression = "rate(5 minutes)"
   tags                = local.tags
@@ -135,7 +135,7 @@ resource "aws_cloudwatch_event_rule" "euw2_alb_alarm_reconcile_schedule" {
 
 resource "aws_cloudwatch_event_rule" "use2_alb_alarm_reconcile_schedule" {
   provider            = aws.use2
-  name                = "kortix-alb-alarm-reconcile-schedule"
+  name                = "zed-alb-alarm-reconcile-schedule"
   description         = "Repair missing or drifted DCF-86 ALB alarms"
   schedule_expression = "rate(5 minutes)"
   tags                = local.tags

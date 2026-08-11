@@ -9,7 +9,7 @@ export const MEMORY_VERBS: Record<string, string> = {
 
 export function memoryRelPath(p?: string): string {
   if (!p) return '';
-  const rel = p.replace(/^\.kortix\/memory\/?/, '').replace(/\/$/, '');
+  const rel = p.replace(/^\.zed\/memory\/?/, '').replace(/\/$/, '');
   return rel || 'memory';
 }
 

@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
  * (https://errors.betterstack.com/team/t502678/errors/97669531…).
  *
  * Symptom: GET /v1/accounts/:id/invites (and every other Drizzle `select()`
- * against kortix.account_invitations) 500'd in prod with
+ * against zed.account_invitations) 500'd in prod with
  *   column "accepted_by_user_id" does not exist
  * because the Drizzle schema gained `acceptedByUserId` and the API began
  * projecting it, but the node-pg-migrate migration that actually adds the
@@ -28,7 +28,7 @@ import { resolve } from 'node:path';
 const dockerAvailable =
   Bun.spawnSync(['docker', 'version'], { stdout: 'ignore', stderr: 'ignore' }).exitCode === 0;
 
-const container = `kortix-invite-accept-${crypto.randomUUID().slice(0, 8)}`;
+const container = `zed-invite-accept-${crypto.randomUUID().slice(0, 8)}`;
 
 function dockerPsql(sql: string, allowFailure = false) {
   const result = Bun.spawnSync(
@@ -54,21 +54,21 @@ function dockerPsql(sql: string, allowFailure = false) {
   return { exitCode: result.exitCode, output };
 }
 
-// PRE-migration shape of kortix.account_invitations, taken from the committed
+// PRE-migration shape of zed.account_invitations, taken from the committed
 // baseline (20260621094136410_baseline.sql). Crucially: NO accepted_by_user_id.
 // This is the exact state prod was in when the 500s fired.
 const PRE_MIGRATION_SCHEMA = `
-  CREATE SCHEMA kortix;
-  CREATE TYPE kortix.account_role AS ENUM ('owner', 'admin', 'member');
-  CREATE TABLE kortix.accounts (
+  CREATE SCHEMA zed;
+  CREATE TYPE zed.account_role AS ENUM ('owner', 'admin', 'member');
+  CREATE TABLE zed.accounts (
     account_id uuid PRIMARY KEY
   );
-  CREATE TABLE kortix.account_invitations (
+  CREATE TABLE zed.account_invitations (
     invite_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    account_id uuid NOT NULL REFERENCES kortix.accounts(account_id) ON DELETE CASCADE,
+    account_id uuid NOT NULL REFERENCES zed.accounts(account_id) ON DELETE CASCADE,
     email varchar(255) NOT NULL,
     invited_by uuid,
-    initial_role kortix.account_role NOT NULL DEFAULT 'member',
+    initial_role zed.account_role NOT NULL DEFAULT 'member',
     accepted_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT now(),
     expires_at timestamptz NOT NULL DEFAULT (now() + '14 days'::interval),
@@ -112,7 +112,7 @@ describe.skipIf(!dockerAvailable)('invite_accept_identity migration — real Pos
     // failing SELECT from the error must 42703 BEFORE the migration runs.
     dockerPsql(PRE_MIGRATION_SCHEMA);
     const pre = dockerPsql(
-      `\\set VERBOSITY verbose\nSELECT accepted_by_user_id FROM kortix.account_invitations LIMIT 1;`,
+      `\\set VERBOSITY verbose\nSELECT accepted_by_user_id FROM zed.account_invitations LIMIT 1;`,
       true,
     );
     expect(pre.exitCode).not.toBe(0);
@@ -135,7 +135,7 @@ describe.skipIf(!dockerAvailable)('invite_accept_identity migration — real Pos
 
     const col = dockerPsql(
       `SELECT data_type FROM information_schema.columns
-        WHERE table_schema='kortix' AND table_name='account_invitations'
+        WHERE table_schema='zed' AND table_name='account_invitations'
           AND column_name='accepted_by_user_id';`,
     );
     expect(col.output.trim()).toBe('uuid');
@@ -143,9 +143,9 @@ describe.skipIf(!dockerAvailable)('invite_accept_identity migration — real Pos
 
   test('the exact failing GET /v1/accounts/:id/invites SELECT now succeeds', () => {
     dockerPsql(`
-      INSERT INTO kortix.accounts(account_id) VALUES
+      INSERT INTO zed.accounts(account_id) VALUES
         ('4c66e49f-142f-4cad-af2c-eb24743fc809');
-      INSERT INTO kortix.account_invitations
+      INSERT INTO zed.account_invitations
         (account_id, email, initial_role, expires_at)
       VALUES
         ('4c66e49f-142f-4cad-af2c-eb24743fc809', 'invitee@example.test', 'member',
@@ -159,7 +159,7 @@ describe.skipIf(!dockerAvailable)('invite_accept_identity migration — real Pos
       SELECT invite_id, account_id, email, invited_by, initial_role,
              bootstrap_grants, accepted_at, accepted_by_user_id,
              created_at, expires_at
-        FROM kortix.account_invitations
+        FROM zed.account_invitations
        WHERE account_id = '4c66e49f-142f-4cad-af2c-eb24743fc809'
          AND accepted_at IS NULL
          AND expires_at > now();
@@ -176,12 +176,12 @@ describe.skipIf(!dockerAvailable)('invite_accept_identity migration — real Pos
     // Mirrors the accept handler's persisted identity stamp. The API-level 409
     // guard for a different identity is covered by the accounts contract tests.
     dockerPsql(`
-      UPDATE kortix.account_invitations
+      UPDATE zed.account_invitations
          SET accepted_at = now(), accepted_by_user_id = '00000000-0000-4000-a000-0000000000aa'
        WHERE email = 'invitee@example.test';
     `);
     const row = dockerPsql(
-      `SELECT accepted_by_user_id FROM kortix.account_invitations
+      `SELECT accepted_by_user_id FROM zed.account_invitations
         WHERE email = 'invitee@example.test';`,
     );
     expect(row.output).toContain('00000000-0000-4000-a000-0000000000aa');
@@ -197,7 +197,7 @@ describe.skipIf(!dockerAvailable)('invite_accept_identity migration — real Pos
     expect(() => dockerPsql(up)).not.toThrow();
     const cols = dockerPsql(
       `SELECT count(*) FROM information_schema.columns
-        WHERE table_schema='kortix' AND table_name='account_invitations'
+        WHERE table_schema='zed' AND table_name='account_invitations'
           AND column_name='accepted_by_user_id';`,
     );
     expect(cols.output.trim()).toBe('1');

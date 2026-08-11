@@ -1,12 +1,12 @@
-import type { KortixAccount } from '@kortix/sdk';
+import type { ZedAccount } from '@zed/sdk';
 
 export interface CreateAccountSelection {
   /** Accounts the user may create projects in (owner/admin), sorted by name. */
-  options: KortixAccount[];
+  options: ZedAccount[];
   /** The account id the create/link mutations should target. */
   effectiveAccountId: string | null;
   /** The account to display as the creation target, when resolvable. */
-  currentAccount: KortixAccount | null;
+  currentAccount: ZedAccount | null;
   /** True when there is at least one other account to switch to. */
   canSwitch: boolean;
 }
@@ -16,7 +16,7 @@ export interface CreateAccountSelection {
  *  the account handed in by the opener. Degrades to the plain default id when
  *  the accounts list is unavailable so the modal keeps working without it. */
 export function resolveCreateAccountSelection(
-  accounts: KortixAccount[] | undefined,
+  accounts: ZedAccount[] | undefined,
   defaultAccountId: string | null,
   pickedAccountId: string | null,
 ): CreateAccountSelection {

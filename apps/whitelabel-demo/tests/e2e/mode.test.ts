@@ -17,7 +17,7 @@
  */
 
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { type AppInstance, createTestKortix, startApp } from './harness';
+import { type AppInstance, createTestZed, startApp } from './harness';
 import { wrapperEnv } from './env';
 
 describe('mode bootstrap', () => {
@@ -27,7 +27,7 @@ describe('mode bootstrap', () => {
   beforeAll(async () => {
     [wrapperApp, directApp] = await Promise.all([
       startApp(wrapperEnv()),
-      startApp({ KORTIX_API_KEY: undefined, NEXT_PUBLIC_KORTIX_API_URL: 'https://direct.example/v1' }),
+      startApp({ ZED_API_KEY: undefined, NEXT_PUBLIC_ZED_API_URL: 'https://direct.example/v1' }),
     ]);
   }, 120_000);
 
@@ -35,13 +35,13 @@ describe('mode bootstrap', () => {
     await Promise.all([wrapperApp?.stop(), directApp?.stop()]);
   });
 
-  test('GET /api/mode reports wrapperMode: true when KORTIX_API_KEY is set', async () => {
+  test('GET /api/mode reports wrapperMode: true when ZED_API_KEY is set', async () => {
     const res = await fetch(`${wrapperApp.baseUrl}/api/mode`);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ wrapperMode: true });
   });
 
-  test('GET /api/mode reports wrapperMode: false when KORTIX_API_KEY is unset (direct mode)', async () => {
+  test('GET /api/mode reports wrapperMode: false when ZED_API_KEY is unset (direct mode)', async () => {
     const res = await fetch(`${directApp.baseUrl}/api/mode`);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ wrapperMode: false });
@@ -64,16 +64,16 @@ describe('mode bootstrap', () => {
   });
 
   test('wrapper mode: the SDK reaches the enabled BFF and receives its auth gate', async () => {
-    const kortix = createTestKortix(wrapperApp, 'invalid-wrapper-session');
-    await expect(kortix.projects.list()).rejects.toMatchObject({ status: 401 });
+    const zed = createTestZed(wrapperApp, 'invalid-wrapper-session');
+    await expect(zed.projects.list()).rejects.toMatchObject({ status: 401 });
   });
 
   test('direct mode: the SDK reports that the wrapper BFF is disabled', async () => {
-    const kortix = createTestKortix(directApp, 'direct-mode-key');
-    await expect(kortix.projects.list()).rejects.toMatchObject({
+    const zed = createTestZed(directApp, 'direct-mode-key');
+    await expect(zed.projects.list()).rejects.toMatchObject({
       status: 500,
       details: {
-        error: 'Wrapper mode is not enabled on this server (KORTIX_API_KEY is unset).',
+        error: 'Wrapper mode is not enabled on this server (ZED_API_KEY is unset).',
       },
     });
   });

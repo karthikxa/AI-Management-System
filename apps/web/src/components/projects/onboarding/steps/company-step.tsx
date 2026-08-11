@@ -8,7 +8,7 @@
  * valid http(s) link or hostname, or Continue shakes the input and stays put.
  */
 
-import type { OnboardingCompanySize } from '@kortix/sdk';
+import type { OnboardingCompanySize } from '@zed/sdk';
 import { GlobeIcon, UsersIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 

@@ -6,7 +6,7 @@
  * the session page). Kept as a standalone pure module so it can be unit-tested
  * without importing the 'use client' hook and its React/store dependencies.
  */
-const SYSTEM_DIRECTORIES = new Set(['.opencode', '.kortix', '.git']);
+const SYSTEM_DIRECTORIES = new Set(['.opencode', '.zed', '.git']);
 
 export function isSystemDirectoryPath(filePath: string | null): boolean {
   if (!filePath) return false;

@@ -19,9 +19,9 @@ import { sandboxEnvValue } from './sandbox-env.ts';
 export { DEFAULT_API_BASE };
 
 export interface Auth {
-  /** Base URL of the Kortix API, e.g. https://api.kortix.com */
+  /** Base URL of the Zed API, e.g. https://api.zed.com */
   api_base: string;
-  /** kortix_pat_... token */
+  /** zed_pat_... token */
   token: string;
   /** Identity captured at login time (display only). */
   user_id: string;
@@ -50,8 +50,8 @@ function hostToAuth(host: Host): Auth {
  * silently wiped. `dashboard_url` in particular has no other call site that
  * re-derives it after login (unlike account_slug/default_project, which
  * login.ts re-sets right after via setActiveAccount/ensureDefaultProjectBinding),
- * so without this merge, the very first successful `kortix login` on a
- * `kortix self-host`-registered host would erase the authoritative frontend
+ * so without this merge, the very first successful `zed login` on a
+ * `zed self-host`-registered host would erase the authoritative frontend
  * URL `registerLocalHost` had just stamped on it — reintroducing the
  * API-shape-guessing bug (see web-url.ts) on every login after the first.
  */
@@ -106,7 +106,7 @@ export function authFileLocation(): string {
 
 /** Resolve the API base URL the CLI should use for "no auth yet" calls. */
 export function resolveApiBase(): string {
-  const sandboxApiUrl = sandboxEnvValue('KORTIX_API_URL');
+  const sandboxApiUrl = sandboxEnvValue('ZED_API_URL');
   if (sandboxApiUrl) return sandboxApiUrl;
   const host = activeHost();
   return host?.url ?? DEFAULT_API_BASE;

@@ -9,10 +9,10 @@ import type { GitTriggerSpec } from './triggers';
 function trigger(slug: string, pinnedSessionId: string | null = null): GitTriggerSpec {
   return {
     slug,
-    path: `kortix.yaml#triggers.${slug}`,
+    path: `zed.yaml#triggers.${slug}`,
     name: slug,
     type: 'cron',
-    agent: 'kortix',
+    agent: 'zed',
     model: null,
     enabled: true,
     promptTemplate: 'Run',

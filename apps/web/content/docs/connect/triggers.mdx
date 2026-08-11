@@ -9,14 +9,14 @@ A trigger starts a [session](/docs/work/sessions) with no person present. Use a 
 
 ## Trigger types
 
-Kortix supports two trigger types. There is no third type.
+Zed supports two trigger types. There is no third type.
 
 - **cron** — runs on a schedule you set.
 - **webhook** — runs when an external service sends a signed request to the project's webhook URL.
 
-You define triggers in the project manifest, `kortix.yaml`. Each trigger holds a prompt that renders as the fired session's first message. Runtime state — such as the last fire time and status — lives outside the manifest, in the database. Firing a trigger does not create a commit.
+You define triggers in the project manifest, `zed.yaml`. Each trigger holds a prompt that renders as the fired session's first message. Runtime state — such as the last fire time and status — lives outside the manifest, in the database. Firing a trigger does not create a commit.
 
-Creating, updating, or deleting a trigger through the API, SDK, or dashboard writes directly to the default branch. It does not go through a [change request](/docs/work/change-requests) (CR). Editing `kortix.yaml` inside a session and running `kortix ship` follows the normal branch and CR flow instead.
+Creating, updating, or deleting a trigger through the API, SDK, or dashboard writes directly to the default branch. It does not go through a [change request](/docs/work/change-requests) (CR). Editing `zed.yaml` inside a session and running `zed ship` follows the normal branch and CR flow instead.
 
 ## Set up a cron trigger
 
@@ -26,39 +26,39 @@ Creating, updating, or deleting a trigger through the API, SDK, or dashboard wri
 ### Add the trigger
 
 ```sh
-kortix triggers add daily-digest --type cron \
+zed triggers add daily-digest --type cron \
   --cron "0 0 9 * * 1-5" --timezone America/Los_Angeles \
   --prompt "Summarize yesterday's activity and save it as a daily note."
 ```
 
-`cron` is a 6-field expression: second, minute, hour, day, month, weekday. This command edits your local `kortix.yaml` only.
+`cron` is a 6-field expression: second, minute, hour, day, month, weekday. This command edits your local `zed.yaml` only.
 </Step>
 
 <Step>
 ### Ship it
 
 ```sh
-kortix ship
+zed ship
 ```
 
-`kortix ship` commits `kortix.yaml` and pushes it. The schedule goes live once this lands on your project's default branch.
+`zed ship` commits `zed.yaml` and pushes it. The schedule goes live once this lands on your project's default branch.
 </Step>
 
 <Step>
 ### Confirm it runs
 
 ```sh
-kortix triggers ls
+zed triggers ls
 ```
 
-The list shows each trigger's slug, state, and when it last fired. To fire it now instead of waiting for the schedule, run `kortix triggers fire daily-digest`.
+The list shows each trigger's slug, state, and when it last fired. To fire it now instead of waiting for the schedule, run `zed triggers fire daily-digest`.
 </Step>
 
 </Steps>
 
 ## Set up a webhook trigger
 
-A webhook trigger needs a secret. Kortix uses it to check the signature on every incoming request.
+A webhook trigger needs a secret. Zed uses it to check the signature on every incoming request.
 
 <Steps>
 
@@ -66,7 +66,7 @@ A webhook trigger needs a secret. Kortix uses it to check the signature on every
 ### Add the secret
 
 ```sh
-kortix secrets set WEBHOOK_SECRET=<a-random-value>
+zed secrets set WEBHOOK_SECRET=<a-random-value>
 ```
 
 See [Secrets](/docs/project/secrets) for more on secrets.
@@ -76,7 +76,7 @@ See [Secrets](/docs/project/secrets) for more on secrets.
 ### Add the trigger
 
 ```sh
-kortix triggers add new-lead --type webhook \
+zed triggers add new-lead --type webhook \
   --secret-env WEBHOOK_SECRET \
   --prompt "A new lead arrived: {{ body.name }} ({{ body.email }}). Add it to the CRM."
 ```
@@ -88,20 +88,20 @@ kortix triggers add new-lead --type webhook \
 ### Ship it
 
 ```sh
-kortix ship
+zed ship
 ```
 </Step>
 
 <Step>
 ### Send it a request
 
-Kortix builds the webhook URL from your project id and the trigger's slug:
+Zed builds the webhook URL from your project id and the trigger's slug:
 
 ```
 POST /v1/webhooks/projects/<project-id>/<slug>
 ```
 
-Send a signed `POST` request to this URL from the external service. Kortix checks the signature against `WEBHOOK_SECRET`, then starts a session with the request body available in the prompt. See [Webhook signature](#webhook-signature) below for the exact header and format.
+Send a signed `POST` request to this URL from the external service. Zed checks the signature against `WEBHOOK_SECRET`, then starts a session with the request body available in the prompt. See [Webhook signature](#webhook-signature) below for the exact header and format.
 </Step>
 
 </Steps>
@@ -111,12 +111,12 @@ By default, each fire starts a fresh session on a new branch. A trigger can inst
 ## Config shape
 
 ```yaml
-# kortix.yaml
+# zed.yaml
 triggers:
   - slug: daily-digest # required, lowercase + dashes, unique per project
     name: Daily digest # optional, defaults to slug
     type: cron # "cron" | "webhook", required
-    agent: kortix # optional, defaults to "default"
+    agent: zed # optional, defaults to "default"
     model: anthropic/claude-sonnet-4-5 # optional, resolves at fire time if unset
     enabled: true # optional, default true
     cron: "0 0 9 * * 1-5" # 6-field expression, mutually exclusive with run_at
@@ -127,7 +127,7 @@ triggers:
     prompt: "Summarize {{ body.text }}" # required, template string
 ```
 
-Legacy `kortix.toml` uses the same fields in a different container; see [legacy TOML](/docs/project/legacy-toml).
+Legacy `zed.toml` uses the same fields in a different container; see [legacy TOML](/docs/project/legacy-toml).
 
 ## Fields
 
@@ -153,7 +153,7 @@ A cron trigger needs `cron` or `run_at`, never both. A webhook trigger without `
 
 ## Session strategy
 
-`session_mode` controls which session a fire re-prompts. Kortix tries the modes below in order and falls through on failure at each step.
+`session_mode` controls which session a fire re-prompts. Zed tries the modes below in order and falls through on failure at each step.
 
 1. **`pinned`** — re-prompt the exact `session_id`. If that session is gone or failed, fall through.
 2. **`keyed`** — render `session_key` against the payload, then look up the most recent non-failed session previously stamped with that exact key. If the key renders empty, or no session matches, fall through to a fresh session. It never falls through to another key's session.
@@ -180,10 +180,10 @@ Every fire also gets `{{ trigger.slug }}`, `{{ trigger.type }}`, and `{{ trigger
 
 ## Webhook signature
 
-Fires on `POST /v1/webhooks/projects/{projectId}/{slug}`. Kortix checks the request in this order, with a constant-time comparison:
+Fires on `POST /v1/webhooks/projects/{projectId}/{slug}`. Zed checks the request in this order, with a constant-time comparison:
 
-1. **HMAC signature** — header `X-Kortix-Signature: sha256=<hmac>` (the `sha256=` prefix is optional) or the GitHub-compatible `X-Hub-Signature-256`. HMAC-SHA256 over the raw request body, using the secret named by `secret_env`.
-2. **Static token**, only when no signature header is present, for senders that cannot HMAC-sign a body. Send the secret as `X-Kortix-Token: <secret>`, `Authorization: Bearer <secret>`, or `Authorization: Basic <base64(user:secret)>` (the password half is the token).
+1. **HMAC signature** — header `X-Zed-Signature: sha256=<hmac>` (the `sha256=` prefix is optional) or the GitHub-compatible `X-Hub-Signature-256`. HMAC-SHA256 over the raw request body, using the secret named by `secret_env`.
+2. **Static token**, only when no signature header is present, for senders that cannot HMAC-sign a body. Send the secret as `X-Zed-Token: <secret>`, `Authorization: Bearer <secret>`, or `Authorization: Basic <base64(user:secret)>` (the password half is the token).
 
 | Status | Meaning |
 | --- | --- |
@@ -209,11 +209,11 @@ Fires on `POST /v1/webhooks/projects/{projectId}/{slug}`. Kortix checks the requ
 
 ## Pause and resume
 
-A project-level switch stops every trigger in the project at once, independent of each trigger's own `enabled` field. While paused, the scheduler skips the project and inbound webhooks return `200` with `{ status: "skipped" }` — no session fires. A manual fire still works. Use this when the same repository runs on two control planes (for example, dev and production) so cron does not fire twice. CLI: `kortix triggers pause` and `kortix triggers resume`. See [CLI](/docs/cli) for the full `kortix triggers` command group.
+A project-level switch stops every trigger in the project at once, independent of each trigger's own `enabled` field. While paused, the scheduler skips the project and inbound webhooks return `200` with `{ status: "skipped" }` — no session fires. A manual fire still works. Use this when the same repository runs on two control planes (for example, dev and production) so cron does not fire twice. CLI: `zed triggers pause` and `zed triggers resume`. See [CLI](/docs/cli) for the full `zed triggers` command group.
 
 ## Limits and reliability
 
-- The scheduler polls roughly every second (default 1,000 ms; configurable via `KORTIX_TRIGGER_SCHEDULER_INTERVAL_MS`). Cron precision is best-effort to the second, even though the expression has a seconds field.
+- The scheduler polls roughly every second (default 1,000 ms; configurable via `ZED_TRIGGER_SCHEDULER_INTERVAL_MS`). Cron precision is best-effort to the second, even though the expression has a seconds field.
 - Each project allows 3 triggered sessions provisioning at once, by default. The account's plan-tier active-session cap can also apply. A fire past either limit returns `queued` (`202`) instead of failing, and runs once a slot frees up.
 - A manual or webhook fire has a 45-second timeout. Loading the manifest has a 30-second timeout.
 - A cron fire is keyed on the due schedule slot, so a fire that timed out but actually landed does not duplicate on retry. A webhook fire is keyed on the delivery ID header, or a hash of the body and signature when the sender sends no ID.

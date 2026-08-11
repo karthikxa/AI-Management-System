@@ -8,7 +8,7 @@ process.env.ALLOWED_SANDBOX_PROVIDERS = "platinum";
 process.env.PLATINUM_API_KEY = "pt_test_key";
 process.env.PLATINUM_API_URL = "https://api.platinum.dev";
 process.env.PLATINUM_TEMPLATE = "tpl_test";
-process.env.KORTIX_URL ??= "https://api.example.com";
+process.env.ZED_URL ??= "https://api.example.com";
 process.env.DATABASE_URL ??= "postgres://x";
 
 let calls: Array<{
@@ -66,7 +66,7 @@ test("ensureAppRuntimeStarted launches appd daemon directly without user-image s
     method: "POST",
   });
   expect(calls[0]?.body?.timeout_ms).toBe(15_000);
-  expect(calls[0]?.body?.cmd).toEqual(["/kortix/bin/kortix-appd", "--daemon"]);
+  expect(calls[0]?.body?.cmd).toEqual(["/zed/bin/zed-appd", "--daemon"]);
 });
 
 test("ensureAppRuntimeStarted remains idempotent when the hosting layer calls it twice", async () => {

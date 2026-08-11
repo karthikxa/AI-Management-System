@@ -4,7 +4,7 @@ const externalId = Bun.argv[2];
 if (!externalId) { console.error('usage: dump-opencode-schema.ts <external_id>'); process.exit(2); }
 
 const cmd = String.raw`
-D=/opt/kortix/home/.local/share/opencode/opencode.db
+D=/opt/zed/home/.local/share/opencode/opencode.db
 ls -la "$D" 2>&1 | head -1
 echo "=== SCHEMA ==="
 python3 - "$D" <<'PY'

@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { sessionTabTitleFromSession } from './session-tab-title';
-import type { ProjectSession } from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+import type { ProjectSession } from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 
 /**
  * Keeps the tab title correct AFTER the route's metadata has settled — a

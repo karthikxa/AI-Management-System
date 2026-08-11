@@ -3,7 +3,7 @@ import { computeSnapshotHash } from '../snapshots/hash';
 
 const SAMPLE_DOCKERFILE = 'FROM ubuntu:24.04\nRUN apt-get install -y curl\n';
 const SAMPLE_TREE_OID = '1234567890abcdef1234567890abcdef12345678';
-const PINNED_FINGERPRINT = 'kortix-runtime:test-pin';
+const PINNED_FINGERPRINT = 'zed-runtime:test-pin';
 
 describe('computeSnapshotHash', () => {
   test('is deterministic across calls with identical inputs', () => {
@@ -55,12 +55,12 @@ describe('computeSnapshotHash', () => {
     const a = computeSnapshotHash({
       dockerfile: SAMPLE_DOCKERFILE,
       contextTreeOid: SAMPLE_TREE_OID,
-      runtimeFingerprint: 'kortix-runtime:v1',
+      runtimeFingerprint: 'zed-runtime:v1',
     });
     const b = computeSnapshotHash({
       dockerfile: SAMPLE_DOCKERFILE,
       contextTreeOid: SAMPLE_TREE_OID,
-      runtimeFingerprint: 'kortix-runtime:v2',
+      runtimeFingerprint: 'zed-runtime:v2',
     });
     expect(a.contentHash).not.toBe(b.contentHash);
   });
@@ -86,7 +86,7 @@ describe('computeSnapshotHash', () => {
       dockerfile: SAMPLE_DOCKERFILE,
       contextTreeOid: SAMPLE_TREE_OID,
     });
-    expect(a.runtimeFingerprint).toMatch(/^kortix-runtime:/);
+    expect(a.runtimeFingerprint).toMatch(/^zed-runtime:/);
   });
 
   test('an empty / absent spec does not change the hash (no mass rebuild)', () => {

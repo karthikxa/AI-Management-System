@@ -9,7 +9,7 @@
  *   auto-suffix -> mkdir -> rename -> delete -> agent reads the uploaded file
  *
  * Run (with the dev stack up — `pnpm dev`, and after rebuilding the daemon
- * binary: `bun run build` in apps/kortix-sandbox-agent-server so the new
+ * binary: `bun run build` in apps/zed-sandbox-agent-server so the new
  * /file/* write routes are baked into the snapshot):
  *   bun tests/e2e/scripts/file-upload-smoke.ts
  *
@@ -99,7 +99,7 @@ const DB_URL = process.env.E2E_DATABASE_URL || fromEnvFile(API_ENV, 'DATABASE_UR
 // Seed a funded credit account for the given account so billing-gated session
 // creation passes in dev. Idempotent (upsert). Uses psql against the local DB.
 async function seedCredits(accountId: string): Promise<boolean> {
-  const sql = `INSERT INTO kortix.credit_accounts (account_id, balance, tier) VALUES ('${accountId}', 1000, 'free') ON CONFLICT (account_id) DO UPDATE SET balance = 1000;`;
+  const sql = `INSERT INTO zed.credit_accounts (account_id, balance, tier) VALUES ('${accountId}', 1000, 'free') ON CONFLICT (account_id) DO UPDATE SET balance = 1000;`;
   const proc = Bun.spawn(['psql', DB_URL, '-v', 'ON_ERROR_STOP=1', '-c', sql], { stdout: 'pipe', stderr: 'pipe' });
   const code = await proc.exited;
   if (code !== 0) log('   seedCredits stderr:', (await new Response(proc.stderr).text()).slice(0, 200));
@@ -107,7 +107,7 @@ async function seedCredits(accountId: string): Promise<boolean> {
 }
 
 async function main() {
-  log(`=== Kortix file-upload smoke === API=${API}`);
+  log(`=== Zed file-upload smoke === API=${API}`);
 
   // 1. user + JWT
   const email = `e2e-upload-${Date.now()}@example.test`;
@@ -256,7 +256,7 @@ async function main() {
   // 15. the end-to-end purpose: the agent can reference an uploaded file.
   if (OPENROUTER) {
     // upload a file with a known marker word and ask the agent to read it
-    const marker = `KORTIX_MARKER_${Date.now().toString(36).toUpperCase()}`;
+    const marker = `ZED_MARKER_${Date.now().toString(36).toUpperCase()}`;
     const f = new FormData();
     f.append('path', '/workspace/uploads');
     f.append('file', new File([`The secret word is ${marker}.\n`], 'secret.txt', { type: 'text/plain' }));

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import type { CostSeriesPoint } from '@kortix/sdk';
+import type { CostSeriesPoint } from '@zed/sdk';
 
 import { CostChart, formatAxisUsd } from './cost-chart';
 

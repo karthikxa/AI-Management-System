@@ -20,7 +20,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from '@/components/ui/item';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { Label } from '@/components/ui/label';
 import {
   Modal,
@@ -276,7 +276,7 @@ export function GeneralTab({ onClose }: { onClose: () => void }) {
             </Avatar>
             {isUploadingAvatar ? (
               <span className="bg-foreground/20 absolute inset-0 flex items-center justify-center">
-                <KortixLoader size="small" variant="white" />
+                <ZedLoader size="small" variant="white" />
               </span>
             ) : (
               <span

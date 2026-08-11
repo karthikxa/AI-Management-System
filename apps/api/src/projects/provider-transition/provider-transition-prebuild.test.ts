@@ -12,9 +12,9 @@ setTestEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-service-role');
 setTestEnv('API_KEY_SECRET', 'test-api-key-secret');
 setTestEnv('TUNNEL_SIGNING_SECRET', 'test-tunnel-signing-secret');
 setTestEnv('ALLOWED_SANDBOX_PROVIDERS', 'daytona,platinum');
-setTestEnv('KORTIX_URL', 'https://api.example.test');
+setTestEnv('ZED_URL', 'https://api.example.test');
 setTestEnv('FRONTEND_URL', 'http://localhost:3000');
-setTestEnv('INTERNAL_KORTIX_ENV', 'dev');
+setTestEnv('INTERNAL_ZED_ENV', 'dev');
 
 const { chunkForConcurrency, parsePrebuildConfig, runPrebuildMigration, prebuildExitCode } = await import(
   './provider-transition-prebuild'

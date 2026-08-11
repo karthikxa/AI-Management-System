@@ -6,26 +6,26 @@ describe('package index re-exports', () => {
     expect(typeof db.createDb).toBe('function');
   });
 
-  test('exposes the kortix schema namespace object', () => {
+  test('exposes the zed schema namespace object', () => {
     expect(db.schema).toBeDefined();
-    expect(db.schema.kortixSchema).toBeDefined();
+    expect(db.schema.zedSchema).toBeDefined();
   });
 
-  test('re-exports the core kortix tables', () => {
+  test('re-exports the core zed tables', () => {
     const expected = [
       'accounts',
       'accountMembers',
       'projects',
       'projectMembers',
       'sandboxes',
-      'kortixApiKeys',
+      'zedApiKeys',
     ] as const;
     for (const name of expected) {
       expect(db[name]).toBeDefined();
     }
   });
 
-  test('re-exports the kortix enums', () => {
+  test('re-exports the zed enums', () => {
     const expected = [
       'sandboxStatusEnum',
       'projectStatusEnum',
@@ -46,8 +46,8 @@ describe('package index re-exports', () => {
     expect(db.accounts).toBe(db.schema.accounts);
   });
 
-  test('does not collide the public apiKeys with the kortix kortixApiKeys', () => {
-    expect(db.apiKeys).not.toBe(db.kortixApiKeys);
+  test('does not collide the public apiKeys with the zed zedApiKeys', () => {
+    expect(db.apiKeys).not.toBe(db.zedApiKeys);
   });
 
   test('does not export the retired hosted-deployment schema surface', () => {

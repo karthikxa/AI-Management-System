@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
 
-import type { PermissionRequest, QuestionRequest } from '@kortix/sdk';
+import type { PermissionRequest, QuestionRequest } from '@zed/sdk';
 
-import { useRuntimePendingStore } from '@kortix/sdk/react';
+import { useRuntimePendingStore } from '@zed/sdk/react';
 
 const q = (id: string, sessionID = 'ses_1'): QuestionRequest =>
   ({

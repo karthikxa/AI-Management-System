@@ -1,4 +1,4 @@
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { ChatGPT } from '@/features/icon/icons/chat-gpt';
 import { Claude } from '@/features/icon/icons/claude';
 import { Github } from '@/features/icon/icons/github';
@@ -10,9 +10,9 @@ import type { ComponentType, ReactNode } from 'react';
 export type CoverLogo = { domain: string; name: string };
 
 /**
- * A unique, on-brand cover for each post — a crisp logo lockup on the Kortix
+ * A unique, on-brand cover for each post — a crisp logo lockup on the Zed
  * gradient. Real brand marks (the official SVGs already shipped in the app) +
- * the Kortix symbol; an official favicon only as a fallback for brands we don't
+ * the Zed symbol; an official favicon only as a fallback for brands we don't
  * ship an SVG for. Never an AI-drawn logo. No competitor logos → a brand mark.
  */
 // Inline xAI mark (from the repo's own /provider-icons/xai.svg) so it inherits
@@ -73,11 +73,11 @@ function LogoChip({ domain, name }: CoverLogo) {
 
 export function BlogCover({
   logos = [],
-  withKortix = true,
+  withZed = true,
   className,
 }: {
   logos?: CoverLogo[];
-  withKortix?: boolean;
+  withZed?: boolean;
   className?: string;
 }) {
   const brandOnly = logos.length === 0;
@@ -93,17 +93,17 @@ export function BlogCover({
         aria-hidden
       />
       {brandOnly ? (
-        <KortixLogo size={56} variant="logomark" className="text-foreground relative" />
+        <ZedLogo size={56} variant="logomark" className="text-foreground relative" />
       ) : (
         <div className="relative flex items-center gap-3 sm:gap-5">
           {logos.map((logo) => (
             <LogoChip key={logo.name} {...logo} />
           ))}
-          {withKortix && (
+          {withZed && (
             <>
               <span className="text-muted-foreground/40 text-2xl font-light">×</span>
               <Chip>
-                <KortixLogo size={30} variant="symbol" className="text-foreground" />
+                <ZedLogo size={30} variant="symbol" className="text-foreground" />
               </Chip>
             </>
           )}

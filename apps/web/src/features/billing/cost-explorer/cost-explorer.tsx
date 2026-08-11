@@ -13,7 +13,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { resolvePreset, type CostRange, type CostRangePreset } from '@/components/ui/date-range-picker';
-import { IconChevronLeft } from '@/components/ui/kortix-icons';
+import { IconChevronLeft } from '@/components/ui/zed-icons';
 import { useCostSummary } from '@/hooks/billing/use-cost-explorer';
 import { useSessionCostDetail, useSessionCostProjects } from '@/hooks/billing/use-session-costs';
 import { cn } from '@/lib/utils';

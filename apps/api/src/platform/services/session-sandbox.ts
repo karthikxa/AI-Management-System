@@ -1,9 +1,9 @@
 /**
  * session-sandbox.ts
  *
- * Provision a sandbox row in `kortix.session_sandboxes` keyed by the caller-
+ * Provision a sandbox row in `zed.session_sandboxes` keyed by the caller-
  * supplied UUID (== project session id). Decoupled from the legacy
- * `kortix.sandboxes` /instances table: no billing fields, no sandbox_members
+ * `zed.sandboxes` /instances table: no billing fields, no sandbox_members
  * roster, no team-membership coupling — project ACL is enforced via
  * `project_members`.
  *
@@ -13,8 +13,8 @@
  */
 
 import { and, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
-import { projectSessions, sessionSandboxes } from '@kortix/db';
-import { isMetaAgentName, META_SANDBOX_SLUG } from '@kortix/shared';
+import { projectSessions, sessionSandboxes } from '@zed/db';
+import { isMetaAgentName, META_SANDBOX_SLUG } from '@zed/shared';
 import { db } from '../../shared/db';
 import { PROVISIONING_SESSION_STATUSES } from '../../projects/lib/session-status';
 import { notifySessionProvisioningFailed } from '../../shared/session-failure-notifier';
@@ -69,12 +69,12 @@ import { platformMetaAgentGrant } from '../../projects/lib/platform-meta-agent';
  * the call site for the measured cost of it being unbounded.
  */
 const BEFORE_ACTIVE_HOOK_TIMEOUT_MS = configuredTimeoutMs(
-  'KORTIX_BEFORE_ACTIVE_HOOK_TIMEOUT_MS',
+  'ZED_BEFORE_ACTIVE_HOOK_TIMEOUT_MS',
   20_000,
   1_000,
 );
 
-// Fallback spec for sandboxes that don't declare `sandbox:` in kortix.yaml.
+// Fallback spec for sandboxes that don't declare `sandbox:` in zed.yaml.
 // Mirrors the platform default sandbox size (2 vCPU / 4 GB / 20 GB).
 const DEFAULT_METERING_SPEC = { cpuCores: 2, memoryGb: 4, diskGb: 20, gpuCount: 0 };
 
@@ -190,11 +190,11 @@ async function mintConnectorToken(opts: {
 /**
  * FIX-A kill-switch. Default ON: boot by the activated pinned template id, with
  * a name-boot fallback ONLY on a definitive GC'd-pin 404. Set
- * `KORTIX_SESSION_BOOT_BY_TEMPLATE_ID=0` (or off/false/no) to revert to the
+ * `ZED_SESSION_BOOT_BY_TEMPLATE_ID=0` (or off/false/no) to revert to the
  * name-only boot — the safe escape hatch for the first rollout.
  */
 export function sessionBootByTemplateIdEnabled(): boolean {
-  const raw = (process.env.KORTIX_SESSION_BOOT_BY_TEMPLATE_ID ?? '').trim().toLowerCase();
+  const raw = (process.env.ZED_SESSION_BOOT_BY_TEMPLATE_ID ?? '').trim().toLowerCase();
   if (raw === '') return true; // default ON
   return !(raw === '0' || raw === 'off' || raw === 'false' || raw === 'no');
 }
@@ -256,7 +256,7 @@ export async function provisionSessionSandbox(opts: {
   /**
    * Extra env vars injected into the sandbox at provider create-time. These
    * land in the Daytona snapshot's environment so its boot script can read
-   * them (e.g. `KORTIX_PROJECT_REPO_URL`, `KORTIX_PROJECT_BRANCH`).
+   * them (e.g. `ZED_PROJECT_REPO_URL`, `ZED_PROJECT_BRANCH`).
    */
   extraEnvVars?: Record<string, string>;
   /**
@@ -406,7 +406,7 @@ export async function provisionSessionSandbox(opts: {
       title: 'Sandbox Token',
       type: 'sandbox',
     }),
-    // Resolve the per-agent grant from kortix.yaml's `agents:` overlay and mint
+    // Resolve the per-agent grant from zed.yaml's `agents:` overlay and mint
     // the connector/CLI account token carrying it (best-effort — see helper).
     mintConnectorToken({
       accountId,
@@ -437,10 +437,10 @@ export async function provisionSessionSandbox(opts: {
   void grantWarmPoolLifetime(sandboxId, sandbox.metadata);
   tl.mark('row+tokens');
 
-  const kortixOrigin = config.KORTIX_URL.replace(/\/+$/, '');
-  const llmBaseUrl = resolveLlmGatewayBaseUrl(kortixOrigin);
+  const zedOrigin = config.ZED_URL.replace(/\/+$/, '');
+  const llmBaseUrl = resolveLlmGatewayBaseUrl(zedOrigin);
 
-  // The sandbox's OpenCode `kortix` provider only mounts when KORTIX_LLM_* is
+  // The sandbox's OpenCode `zed` provider only mounts when ZED_LLM_* is
   // injected (otherwise OpenCode falls back to showing only its built-in Zen
   // catalog). It authenticates the gateway with the per-session connector PAT,
   // which the gateway resolves via validateAccountToken and meters.
@@ -452,7 +452,7 @@ export async function provisionSessionSandbox(opts: {
   //
   // Enablement is a three-part gate: operator availability, per-project
   // experimental opt-in, and account entitlement. If any part is off we inject
-  // no KORTIX_LLM_* env, so OpenCode stays on its native provider behavior.
+  // no ZED_LLM_* env, so OpenCode stays on its native provider behavior.
   // accountEntitledToLlmGateway gates on the resolved TIER, not billing_model,
   // so legacy paying customers are no longer wrongly stripped to the Zen-only
   // catalog. Per-request affordability stays in the gateway's own billing gate.
@@ -468,28 +468,28 @@ export async function provisionSessionSandbox(opts: {
     envVars: {
       ...(opts.extraEnvVars ?? {}),
       // ── Sandbox token model — TWO credentials, two principals ──────────────
-      // 1) The SANDBOX credential (`kortix_sb_…`): the daemon's identity. It is
-      //    the HMAC key the API signs `X-Kortix-User-Context` with (the daemon
+      // 1) The SANDBOX credential (`zed_sb_…`): the daemon's identity. It is
+      //    the HMAC key the API signs `X-Zed-User-Context` with (the daemon
       //    verifies it) AND the bearer for the 3 sandbox-identity routes
       //    (/git/clone-credential, /turn-stream, /turn-question). It carries NO
       //    user identity, so project-scoped routes reject it. Injected under the
-      //    self-documenting `KORTIX_SANDBOX_TOKEN`; `KORTIX_TOKEN` is kept as a
+      //    self-documenting `ZED_SANDBOX_TOKEN`; `ZED_TOKEN` is kept as a
       //    back-compat alias for daemons baked before the rename.
-      // 2) The SESSION credential (`kortix_pat_…`, `connectorToken`): acts AS the
+      // 2) The SESSION credential (`zed_pat_…`, `connectorToken`): acts AS the
       //    launching user, scoped by the agent grant. It backs the Connector
-      //    gateway AND the in-sandbox `kortix` CLI. Injected under
-      //    `KORTIX_CLI_TOKEN`.
+      //    gateway AND the in-sandbox `zed` CLI. Injected under
+      //    `ZED_CLI_TOKEN`.
       // The agent never needs the sandbox credential — see apps/cli config.ts
       // (activeHost() resolves only the session token).
-      KORTIX_SANDBOX_TOKEN: sandboxKey.secretKey,
-      KORTIX_TOKEN: sandboxKey.secretKey,
+      ZED_SANDBOX_TOKEN: sandboxKey.secretKey,
+      ZED_TOKEN: sandboxKey.secretKey,
       ...(connectorToken
-        ? { KORTIX_CLI_TOKEN: connectorToken }
+        ? { ZED_CLI_TOKEN: connectorToken }
         : {}),
       ...(gatewayLlmKey
         ? {
-            KORTIX_LLM_API_KEY: gatewayLlmKey,
-            KORTIX_LLM_BASE_URL: llmBaseUrl,
+            ZED_LLM_API_KEY: gatewayLlmKey,
+            ZED_LLM_BASE_URL: llmBaseUrl,
           }
         : {}),
     },

@@ -9,7 +9,7 @@ import OAIIcon from '@/assets/images/models/OAI.svg';
 import GeminiIcon from '@/assets/images/models/Gemini.svg';
 import GrokIcon from '@/assets/images/models/Grok.svg';
 import MoonshotIcon from '@/assets/images/models/Moonshot.svg';
-import KortixSymbolIcon from '@/assets/brand/kortix-symbol.svg';
+import ZedSymbolIcon from '@/assets/brand/zed-symbol.svg';
 import type { SvgProps } from 'react-native-svg';
 import type React from 'react';
 
@@ -21,13 +21,13 @@ export type ModelProvider =
   | 'moonshotai'
   | 'bedrock'
   | 'openrouter'
-  | 'kortix';
+  | 'zed';
 
 /**
- * Check if a model ID corresponds to a Kortix mode (Basic or Advanced)
+ * Check if a model ID corresponds to a Zed mode (Basic or Advanced)
  */
-export function isKortixMode(modelId: string): boolean {
-  const id = modelId.startsWith('kortix/') ? modelId.slice('kortix/'.length) : modelId;
+export function isZedMode(modelId: string): boolean {
+  const id = modelId.startsWith('zed/') ? modelId.slice('zed/'.length) : modelId;
   return (
     id === 'auto' ||
     id === 'claude-opus-4.8' ||
@@ -43,9 +43,9 @@ export function isKortixMode(modelId: string): boolean {
  * Get the provider from a model ID
  */
 export function getModelProvider(modelId: string): ModelProvider {
-  // Check for Kortix modes first
-  if (isKortixMode(modelId)) {
-    return 'kortix';
+  // Check for Zed modes first
+  if (isZedMode(modelId)) {
+    return 'zed';
   }
   if (modelId.includes('anthropic') || modelId.includes('claude')) {
     return 'anthropic';
@@ -82,7 +82,7 @@ export function getModelProvider(modelId: string): ModelProvider {
         'moonshotai',
         'bedrock',
         'openrouter',
-        'kortix',
+        'zed',
       ].includes(provider)
     ) {
       return provider as ModelProvider;
@@ -99,7 +99,7 @@ export function getModelProviderName(modelId: string): string {
   const provider = getModelProvider(modelId);
 
   const nameMap: Record<ModelProvider, string> = {
-    kortix: 'Kortix',
+    zed: 'Zed',
     anthropic: 'Anthropic',
     openai: 'OpenAI',
     google: 'Google',
@@ -119,7 +119,7 @@ export function getModelProviderIcon(modelId: string): React.FC<SvgProps> {
   const provider = getModelProvider(modelId);
 
   const iconMap: Record<ModelProvider, React.FC<SvgProps>> = {
-    kortix: KortixSymbolIcon, // Kortix modes use the Kortix symbol
+    zed: ZedSymbolIcon, // Zed modes use the Zed symbol
     anthropic: AnthropicIcon,
     openai: OAIIcon,
     google: GeminiIcon,

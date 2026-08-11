@@ -4,12 +4,12 @@
  *
  * Run (from packages/sdk):  bun run playground/review/22-review-and-changes.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("review-and-changes", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
-  const project = kortix.project(projectId);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
+  const project = zed.project(projectId);
 
   const changeRequests = await project.changeRequests.list();
   console.log(

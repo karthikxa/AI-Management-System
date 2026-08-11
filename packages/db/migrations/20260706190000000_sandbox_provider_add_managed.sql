@@ -8,4 +8,4 @@
 -- adding enum values (executor_connector_provider 'channel'/'computer'). MUST run
 -- before code that writes 'managed' deploys; the deploy pipeline applies pending
 -- migrations before the API rollout, so ordering holds. Non-destructive + idempotent.
-ALTER TYPE "kortix"."sandbox_provider" ADD VALUE IF NOT EXISTS 'managed';
+ALTER TYPE "zed"."sandbox_provider" ADD VALUE IF NOT EXISTS 'managed';

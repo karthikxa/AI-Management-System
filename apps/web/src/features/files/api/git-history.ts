@@ -6,7 +6,7 @@
  * it, and return structured data.
  */
 
-import { runPtyCommand } from '@kortix/sdk/react';
+import { runPtyCommand } from '@zed/sdk/react';
 import type { GitCommit, FileHistoryResult, FileCommitDiff } from '@/features/file-browser/types';
 
 // ---------------------------------------------------------------------------

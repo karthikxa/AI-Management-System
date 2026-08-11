@@ -14,7 +14,7 @@ export type Auth =
   | { mode: 'none' }
   | { mode: 'bearer'; token: string }
   | { mode: 'query-token'; token: string } // ?token= (preview proxy / WS)
-  | { mode: 'header-token'; token: string } // X-Kortix-Token
+  | { mode: 'header-token'; token: string } // X-Zed-Token
   | { mode: 'cookie'; cookie: string }; // raw Cookie header
 
 export interface Identity {
@@ -66,8 +66,8 @@ const SENSITIVE_HEADERS = new Set([
   'apikey',
   'cookie',
   'set-cookie',
-  'x-kortix-token',
-  'x-kortix-signature',
+  'x-zed-token',
+  'x-zed-signature',
   'x-hub-signature',
   'x-hub-signature-256',
   'stripe-signature',
@@ -116,7 +116,7 @@ function redactBodyText(text: string | undefined): string | undefined {
   } catch {
     // Not JSON — best-effort mask of obvious token-looking substrings.
     return text.replace(
-      /(kortix_[a-z]*_?[A-Za-z0-9]{6,}|sk-[A-Za-z0-9]{6,}|eyJ[A-Za-z0-9_.-]{10,})/g,
+      /(zed_[a-z]*_?[A-Za-z0-9]{6,}|sk-[A-Za-z0-9]{6,}|eyJ[A-Za-z0-9_.-]{10,})/g,
       (m) => mask(m),
     );
   }
@@ -275,7 +275,7 @@ export class Client {
         headers.set('authorization', `Bearer ${a.token}`);
         break;
       case 'header-token':
-        headers.set('x-kortix-token', a.token);
+        headers.set('x-zed-token', a.token);
         break;
       case 'cookie':
         headers.set('cookie', a.cookie);

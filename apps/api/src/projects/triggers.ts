@@ -1,13 +1,13 @@
 /**
- * Kortix trigger DSL — lives inside the project manifest (kortix.yaml; a
- * legacy v1 project may instead use kortix.toml) as a `triggers:` list of
+ * Zed trigger DSL — lives inside the project manifest (zed.yaml; a
+ * legacy v1 project may instead use zed.toml) as a `triggers:` list of
  * entries. The manifest at the repo root is THE source of truth for
  * trigger config; runtime state (last_fired_at, executions) stays in the
  * `project_trigger_runtime` DB table.
  *
- * Example shape (kortix.yaml):
+ * Example shape (zed.yaml):
  *
- *   kortix_version: 2
+ *   zed_version: 2
  *
  *   project:
  *     name: example
@@ -39,23 +39,23 @@ import {
   manifestFormatForPath,
   parseManifestText,
   serializeManifestObject,
-} from '@kortix/manifest-schema';
+} from '@zed/manifest-schema';
 import { type GitBackedProject, readManifestFromRepo } from './git';
 import { validateTriggerCron, validateTriggerTimezone } from './trigger-schedule';
 
 /** Where the manifest lives. Same path the rest of the platform looks for.
- *  A project may instead use `kortix.yaml` ({@link MANIFEST_FILENAME_YAML}) —
+ *  A project may instead use `zed.yaml` ({@link MANIFEST_FILENAME_YAML}) —
  *  reads prefer it if present; this stays the canonical name for breadcrumbs
  *  and the toml/legacy default. */
-export const MANIFEST_FILENAME = 'kortix.toml';
+export const MANIFEST_FILENAME = 'zed.toml';
 export { MANIFEST_FILENAME_YAML };
 
 /**
  * Schema version of the manifest. Bumped when we make a breaking change to
- * how the file is parsed. Manifests without `kortix_version` are treated as
+ * how the file is parsed. Manifests without `zed_version` are treated as
  * v1 (backward compat). `KNOWN_SCHEMA_VERSION` deliberately stays `1` — it is
  * the version every v1 test fixture across this package stamps into its
- * `kortix_version` header and the version `parseAgentEntry`/`extractTriggers`'
+ * `zed_version` header and the version `parseAgentEntry`/`extractTriggers`'
  * v1 code paths were authored against; changing its VALUE would silently flip
  * every one of those v1-shaped fixtures onto the v2 reader below. See
  * `MAX_SCHEMA_VERSION` for the actual acceptance ceiling.
@@ -65,10 +65,10 @@ export const KNOWN_SCHEMA_VERSION = 1;
 /**
  * Highest schema version this reader (the one the session/trigger/grant
  * pipeline actually reads through — `readManifest`/`parseManifestString`)
- * accepts without throwing. `kortix_version: 2` (the `agents:` map + full
+ * accepts without throwing. `zed_version: 2` (the `agents:` map + full
  * OpenCode `AgentConfig` parity + deny-by-default grants — see
- * `@kortix/manifest-schema`'s `ManifestV2`) is validated at write time by
- * `kortix validate` / the CR-merge gate; THIS reader must not also reject it,
+ * `@zed/manifest-schema`'s `ManifestV2`) is validated at write time by
+ * `zed validate` / the CR-merge gate; THIS reader must not also reject it,
  * or every v2 project's session grant resolution would fail closed/open
  * instead of reading the agent's declared grant (the runtime-wiring gap
  * fixed by docs/specs/2026-07-05-agent-first-config-unification.md §2.1/§2.2 —
@@ -92,8 +92,8 @@ export interface GitTriggerSpec {
   slug: string;
   /**
    * Where the entry is sourced from. Always `<manifest-file>#triggers.<slug>`
-   * now that triggers are centralized — `kortix.yaml` for v2 projects,
-   * `kortix.toml` for legacy v1 ones. The hash is just a hint for the UI;
+   * now that triggers are centralized — `zed.yaml` for v2 projects,
+   * `zed.toml` for legacy v1 ones. The hash is just a hint for the UI;
    * the platform doesn't use it for routing.
    */
   path: string;
@@ -197,7 +197,7 @@ export interface ParsedManifest {
    *  same format on commit. Required so every construction site is explicit. */
   format: ManifestFormat;
   /** The repo-relative file the manifest was read from (or should be written to
-   *  for a synthesized one) — e.g. `kortix.yaml` or `kortix.toml`. Lets the
+   *  for a synthesized one) — e.g. `zed.yaml` or `zed.toml`. Lets the
    *  commit path write to the exact same file, honoring `.yml` and custom dirs. */
   path: string;
   /** Git blob SHA observed with this manifest, or null when the file was absent. */
@@ -216,11 +216,11 @@ export interface LoadedTriggers {
 
 /**
  * Read + parse the project's manifest. Returns null if no manifest file is
- * present (so the caller can treat the repo as "not a Kortix project yet").
+ * present (so the caller can treat the repo as "not a Zed project yet").
  * Throws on parse errors so the caller can surface them up — we don't
  * silently swallow a malformed manifest.
  *
- * DUAL-FORMAT: prefers `kortix.yaml` over `kortix.toml` when both exist, else
+ * DUAL-FORMAT: prefers `zed.yaml` over `zed.toml` when both exist, else
  * falls back to whichever is present (honoring a custom `manifest_path`). The
  * resolved file + format ride along on the ParsedManifest so the commit path
  * writes back to the exact same file in the same format.
@@ -231,8 +231,8 @@ export async function readManifest(
 ): Promise<ParsedManifest | null> {
   let found: Awaited<ReturnType<typeof readManifestFromRepo>>;
   try {
-    // manifest_path can still say kortix.toml (an older project, or a stale
-    // default) even when the file actually on disk is kortix.yaml — so we
+    // manifest_path can still say zed.toml (an older project, or a stale
+    // default) even when the file actually on disk is zed.yaml — so we
     // can't rely on it to point at the right format. We actively probe the
     // .yaml/.yml siblings first (manifestCandidatePaths), which also keeps
     // per-agent env/connector scoping ON for a yaml-only project (a missing
@@ -265,10 +265,10 @@ export async function readManifest(
 
 /**
  * The agent name a synthesized (no-manifest-yet) v2 manifest declares as its
- * default — same name `@kortix/starter`'s `base` template seeds (see
- * packages/starter/templates/base/kortix.yaml's `default_agent: kortix` +
- * `agents.kortix`). Keeping the two in sync means a blank managed-git project
- * (provisioned WITHOUT `seed_starter:true`, so no kortix.yaml ever lands on
+ * default — same name `@zed/starter`'s `base` template seeds (see
+ * packages/starter/templates/base/zed.yaml's `default_agent: zed` +
+ * `agents.zed`). Keeping the two in sync means a blank managed-git project
+ * (provisioned WITHOUT `seed_starter:true`, so no zed.yaml ever lands on
  * disk) self-heals into the exact shape a seeded one would already have.
  *
  * Exported (not file-local) because more than one reader needs the SAME
@@ -280,20 +280,20 @@ export async function readManifest(
  * literal `null` and 400'd AGENT_NOT_DECLARED on a blank project's very
  * first session).
  */
-export const SYNTHESIZED_DEFAULT_AGENT_NAME = 'kortix';
+export const SYNTHESIZED_DEFAULT_AGENT_NAME = 'zed';
 
 /**
- * Build the synthesized v2 manifest for a project with no kortix.yaml/
- * kortix.toml committed yet. Pure (no I/O) — callers decide when a `null`
+ * Build the synthesized v2 manifest for a project with no zed.yaml/
+ * zed.toml committed yet. Pure (no I/O) — callers decide when a `null`
  * `readManifest` result should be treated as this shape.
  *
- * MUST embed `kortix_version` INSIDE `raw` (not just carry it on the
+ * MUST embed `zed_version` INSIDE `raw` (not just carry it on the
  * `schemaVersion` wrapper) — `applyDefaultAgentV2`/`applyAgentBlockV2`
  * (lib/agent-config-v2.ts) call `validateManifest(manifest.raw, format)`
  * directly on this raw object (not through `serializeManifest`, which
- * re-injects `kortix_version` from `schemaVersion` on the way out). Without
+ * re-injects `zed_version` from `schemaVersion` on the way out). Without
  * the key present here, `validateRoot` reads the raw object as schema-version-
- * less and rejects it with "kortix_version is required" before ever reaching
+ * less and rejects it with "zed_version is required" before ever reaching
  * the v2 body validators — the exact 400 a blank project's first
  * PUT /default-agent hit.
  */
@@ -307,7 +307,7 @@ export function synthesizeBlankManifest(project: {
   return {
     schemaVersion: 2,
     raw: {
-      kortix_version: 2,
+      zed_version: 2,
       project: { name: project.name ?? '', description: '' },
       env: { required: [], optional: [] },
       default_agent: SYNTHESIZED_DEFAULT_AGENT_NAME,
@@ -315,7 +315,7 @@ export function synthesizeBlankManifest(project: {
         [SYNTHESIZED_DEFAULT_AGENT_NAME]: {
           connectors: 'all',
           secrets: 'all',
-          kortix_cli: 'all',
+          zed_cli: 'all',
           skills: 'all',
         },
       },
@@ -330,7 +330,7 @@ export function synthesizeBlankManifest(project: {
 /**
  * Synchronous parse from a manifest string. Exported so the CRUD path can
  * round-trip (read existing string, parse, mutate, serialize) without touching
- * the network. `format`/`path` default to TOML/kortix.toml so an existing
+ * the network. `format`/`path` default to TOML/zed.toml so an existing
  * caller passing only a string is unchanged.
  */
 export function parseManifestString(
@@ -342,14 +342,14 @@ export function parseManifestString(
 ): ParsedManifest {
   const parsed = parseManifestText(raw, format);
   const version =
-    typeof parsed.kortix_version === 'number'
-      ? parsed.kortix_version
-      : typeof parsed.kortix_version === 'string'
-        ? Number(parsed.kortix_version)
+    typeof parsed.zed_version === 'number'
+      ? parsed.zed_version
+      : typeof parsed.zed_version === 'string'
+        ? Number(parsed.zed_version)
         : KNOWN_SCHEMA_VERSION;
 
   if (!Number.isFinite(version) || version < 1) {
-    throw new Error('kortix_version must be a positive integer');
+    throw new Error('zed_version must be a positive integer');
   }
   if (Math.floor(version) > MAX_SCHEMA_VERSION) {
     throw new Error(
@@ -370,11 +370,11 @@ export function parseManifestString(
 
 /** Serialize a parsed manifest back to text (in its own format) for committing. */
 export function serializeManifest(manifest: ParsedManifest): string {
-  // Ensure kortix_version is the FIRST key so the manifest is self-describing at
+  // Ensure zed_version is the FIRST key so the manifest is self-describing at
   // a glance. Both smol-toml and the yaml package emit keys in insertion order.
-  const out: Record<string, unknown> = { kortix_version: manifest.schemaVersion };
+  const out: Record<string, unknown> = { zed_version: manifest.schemaVersion };
   for (const [key, value] of Object.entries(manifest.raw)) {
-    if (key === 'kortix_version') continue;
+    if (key === 'zed_version') continue;
     out[key] = value;
   }
   return serializeManifestObject(out, manifest.format);
@@ -450,7 +450,7 @@ export async function loadProjectTriggers(project: GitBackedProject): Promise<Lo
     // The manifest failed to parse before we learned which candidate file it
     // actually was (.yaml/.yml/.toml) — fall back to the project's configured
     // manifestPath (best-effort; may be stale for a project that switched
-    // format by hand without updating it) rather than always naming kortix.toml.
+    // format by hand without updating it) rather than always naming zed.toml.
     return {
       specs: [],
       errors: [
@@ -471,7 +471,7 @@ export async function loadProjectTriggers(project: GitBackedProject): Promise<Lo
 /**
  * Convert a TriggerSpec back to the raw object that goes into the `triggers`
  * array — the shape is format-agnostic (same object serializes to either a
- * kortix.yaml list entry or a legacy kortix.toml `[[triggers]]` table).
+ * zed.yaml list entry or a legacy zed.toml `[[triggers]]` table).
  * Inverse of `parseTriggerEntry`. Used by the CRUD path to write back to the
  * project manifest after a UI edit.
  */
@@ -488,7 +488,7 @@ export function triggerSpecToTomlEntry(spec: GitTriggerSpec): Record<string, unk
   // `keyed` is written as `session_key` alone: the key implies the mode on read
   // (see parseTriggerEntry), so emitting both would be redundant in the file a
   // human actually reads. It also keeps the manifest valid against the
-  // `session_mode` enum in @kortix/manifest-schema, which the `kortix validate`
+  // `session_mode` enum in @zed/manifest-schema, which the `zed validate`
   // / CR-merge gate gets to before it learns about new modes.
   const keyedByKey = spec.sessionMode === 'keyed' && !!spec.sessionKey;
   // Only emit session_mode when it deviates from the default ('fresh') so

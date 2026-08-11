@@ -8,7 +8,7 @@
  * (~5.3 MB of path data) into the bundle instead of the 202 we use (~704 KB
  * raw, well under budget gzipped).
  *
- * The catalogue in @kortix/shared is the source of truth for WHICH names exist;
+ * The catalogue in @zed/shared is the source of truth for WHICH names exist;
  * this file is the source of truth for what each one DRAWS. glyph-registry.test
  * asserts the two agree in both directions, so a name added to one and not the
  * other fails CI rather than shipping a blank tile.

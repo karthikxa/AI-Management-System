@@ -12,7 +12,7 @@ import { stripAnsi } from '../style.ts';
 
 const JSON_HEADERS = { 'content-type': 'application/json' };
 
-// The host-centric auth surface: `kortix hosts login/logout/whoami` and the
+// The host-centric auth surface: `zed hosts login/logout/whoami` and the
 // thin top-level `login`/`logout`/`whoami` aliases must delegate to the SAME
 // shared helpers (performLogin/performLogout/performWhoami) and behave
 // identically. These lock that in against the real config store (per-host
@@ -23,15 +23,15 @@ const ORIGINAL_STDOUT_WRITE = process.stdout.write;
 const ORIGINAL_STDERR_WRITE = process.stderr.write;
 
 const ENV_KEYS = [
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_FRONTEND_URL',
-  'KORTIX_PROJECT_ID',
+  'ZED_CLI_TOKEN',
+  'ZED_TOKEN',
+  'ZED_API_URL',
+  'ZED_FRONTEND_URL',
+  'ZED_PROJECT_ID',
   'BASH_ENV',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_AUTH_FILE',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CONFIG_FILE',
+  'ZED_AUTH_FILE',
 ] as const;
 
 let saved: Record<string, string | undefined>;
@@ -43,7 +43,7 @@ let requests: string[] = [];
 
 const ACCOUNTS = [
   { account_id: 'account_1', slug: 'personal', name: 'Personal', role: 'owner' },
-  { account_id: 'account_2', slug: 'kortix', name: 'Kortix', role: 'owner' },
+  { account_id: 'account_2', slug: 'zed', name: 'Zed', role: 'owner' },
 ];
 
 /** Write a config whose active `test` host is optionally already signed in. */
@@ -66,7 +66,7 @@ function writeConfig(token = 'tok_test'): void {
     }),
     'utf8',
   );
-  process.env.KORTIX_CONFIG_FILE = file;
+  process.env.ZED_CONFIG_FILE = file;
 }
 
 function captureOutput() {
@@ -90,7 +90,7 @@ function mockApi(
     session_id: string | null;
     agent: string | null;
     connectors: string[] | 'all' | null;
-    kortix_cli: string[] | 'all' | null;
+    zed_cli: string[] | 'all' | null;
     env: string[] | 'all' | null;
   },
 ) {
@@ -118,9 +118,9 @@ beforeEach(() => {
     saved[key] = process.env[key];
     delete process.env[key];
   }
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
   originalCwd = process.cwd();
-  tmp = mkdtempSync(join(tmpdir(), 'kortix-hosts-auth-'));
+  tmp = mkdtempSync(join(tmpdir(), 'zed-hosts-auth-'));
   process.chdir(tmp);
   writeConfig();
   captureOutput();
@@ -139,15 +139,15 @@ afterEach(() => {
   rmSync(tmp, { recursive: true, force: true });
 });
 
-describe('kortix hosts login', () => {
+describe('zed hosts login', () => {
   test('--token authenticates the active host (defaults to active)', async () => {
     writeConfig(''); // logged out
     mockApi();
-    const code = await runHosts(['login', '--token', 'kortix_pat_new', '--no-project']);
+    const code = await runHosts(['login', '--token', 'zed_pat_new', '--no-project']);
     expect(code).toBe(0);
     expect(requests).toEqual(['https://api.test/v1/accounts/me']);
     const host = getHost('test');
-    expect(host?.token).toBe('kortix_pat_new');
+    expect(host?.token).toBe('zed_pat_new');
     expect(host?.user_email).toBe('user@example.test');
     expect(stripAnsi(stdout)).toContain('Logged in to host test');
   });
@@ -156,7 +156,7 @@ describe('kortix hosts login', () => {
     const code = await runHosts(['login', '--help']);
     expect(code).toBe(0);
     expect(requests).toEqual([]);
-    expect(stripAnsi(stdout)).toContain('Usage: kortix hosts login');
+    expect(stripAnsi(stdout)).toContain('Usage: zed hosts login');
   });
 
   test('an unknown <name> is registered and signed in (add + login)', async () => {
@@ -165,7 +165,7 @@ describe('kortix hosts login', () => {
       'login',
       'fresh',
       '--token',
-      'kortix_pat_new',
+      'zed_pat_new',
       '--api',
       'https://fresh.test',
       '--no-project',
@@ -174,12 +174,12 @@ describe('kortix hosts login', () => {
     expect(requests).toEqual(['https://fresh.test/v1/accounts/me']);
     const host = getHost('fresh');
     expect(host?.url).toBe('https://fresh.test');
-    expect(host?.token).toBe('kortix_pat_new');
+    expect(host?.token).toBe('zed_pat_new');
     // Signing in a new host makes it active.
     expect(loadConfig().active).toBe('fresh');
   });
 
-  test('rejects a token without the kortix_pat_ prefix', async () => {
+  test('rejects a token without the zed_pat_ prefix', async () => {
     writeConfig('');
     mockApi();
     const code = await runHosts(['login', '--token', 'nope', '--no-project']);
@@ -190,9 +190,9 @@ describe('kortix hosts login', () => {
   test('the top-level `login` alias delegates identically to the active host', async () => {
     writeConfig('');
     mockApi();
-    const code = await runLogin(['--token', 'kortix_pat_alias', '--no-project']);
+    const code = await runLogin(['--token', 'zed_pat_alias', '--no-project']);
     expect(code).toBe(0);
-    expect(getHost('test')?.token).toBe('kortix_pat_alias');
+    expect(getHost('test')?.token).toBe('zed_pat_alias');
   });
 
   test('labels an agent session token and its initiating user', async () => {
@@ -203,11 +203,11 @@ describe('kortix hosts login', () => {
       session_id: 'session_1',
       agent: 'veyris-internal',
       connectors: 'all',
-      kortix_cli: 'all',
+      zed_cli: 'all',
       env: 'all',
     });
 
-    const code = await runLogin(['--token', 'kortix_pat_agent', '--no-project']);
+    const code = await runLogin(['--token', 'zed_pat_agent', '--no-project']);
 
     expect(code).toBe(0);
     expect(stripAnsi(stdout)).toContain(
@@ -216,11 +216,11 @@ describe('kortix hosts login', () => {
   });
 });
 
-describe('kortix login — the account step of the funnel', () => {
+describe('zed login — the account step of the funnel', () => {
   test('exactly one account is auto-selected (no prompt)', async () => {
     writeConfig('');
     mockApi([ACCOUNTS[0]]); // single account
-    const code = await runHosts(['login', '--token', 'kortix_pat_new', '--no-project']);
+    const code = await runHosts(['login', '--token', 'zed_pat_new', '--no-project']);
     expect(code).toBe(0);
     expect(getHost('test')?.account_id).toBe('account_1');
     expect(stripAnsi(stdout)).toContain('Active account: Personal');
@@ -229,11 +229,11 @@ describe('kortix login — the account step of the funnel', () => {
   test('multiple accounts without a TTY keep the first (never blocks CI)', async () => {
     writeConfig('');
     mockApi(); // two accounts; test runner stdin is not a TTY
-    const code = await runHosts(['login', '--token', 'kortix_pat_new', '--no-project']);
+    const code = await runHosts(['login', '--token', 'zed_pat_new', '--no-project']);
     expect(code).toBe(0);
     expect(getHost('test')?.account_id).toBe('account_1');
     // Non-TTY hint points the user at the switch verb.
-    expect(stripAnsi(stdout)).toContain('kortix accounts use');
+    expect(stripAnsi(stdout)).toContain('zed accounts use');
   });
 
   test('--account <slug> picks the active account non-interactively', async () => {
@@ -242,14 +242,14 @@ describe('kortix login — the account step of the funnel', () => {
     const code = await runHosts([
       'login',
       '--token',
-      'kortix_pat_new',
+      'zed_pat_new',
       '--account',
-      'kortix',
+      'zed',
       '--no-project',
     ]);
     expect(code).toBe(0);
     expect(getHost('test')?.account_id).toBe('account_2');
-    expect(stripAnsi(stdout)).toContain('Active account: Kortix');
+    expect(stripAnsi(stdout)).toContain('Active account: Zed');
   });
 
   test('an unknown --account warns and falls back to the first account', async () => {
@@ -258,7 +258,7 @@ describe('kortix login — the account step of the funnel', () => {
     const code = await runHosts([
       'login',
       '--token',
-      'kortix_pat_new',
+      'zed_pat_new',
       '--account',
       'nope',
       '--no-project',
@@ -271,13 +271,13 @@ describe('kortix login — the account step of the funnel', () => {
   test('the top-level `login --account` alias behaves identically', async () => {
     writeConfig('');
     mockApi();
-    const code = await runLogin(['--token', 'kortix_pat_new', '--account', 'kortix', '--no-project']);
+    const code = await runLogin(['--token', 'zed_pat_new', '--account', 'zed', '--no-project']);
     expect(code).toBe(0);
     expect(getHost('test')?.account_id).toBe('account_2');
   });
 });
 
-describe('kortix hosts logout', () => {
+describe('zed hosts logout', () => {
   test('clears the active host token (default)', async () => {
     const code = await runHosts(['logout']);
     expect(code).toBe(0);
@@ -288,10 +288,10 @@ describe('kortix hosts logout', () => {
 
   test('clears a named host', async () => {
     // Give `cloud` a token, then log it out by name while `test` stays active.
-    const cfgPath = process.env.KORTIX_CONFIG_FILE!;
+    const cfgPath = process.env.ZED_CONFIG_FILE!;
     const cfg = JSON.parse(readFileSync(cfgPath, 'utf8'));
     cfg.hosts.cloud = {
-      url: 'https://api.kortix.com',
+      url: 'https://api.zed.com',
       token: 'tok_cloud',
       user_id: 'u',
       user_email: 'c@example.test',
@@ -315,7 +315,7 @@ describe('kortix hosts logout', () => {
   });
 });
 
-describe('kortix hosts whoami', () => {
+describe('zed hosts whoami', () => {
   test('prints the signed-in user for the active host (default)', async () => {
     mockApi();
     const code = await runHosts(['whoami']);
@@ -346,11 +346,11 @@ describe('kortix hosts whoami', () => {
     const code = await runHosts(['whoami', 'selfhost']);
     expect(code).toBe(1);
     expect(stripAnsi(stderr)).toContain('not logged in');
-    expect(stripAnsi(stderr)).toContain('kortix hosts login selfhost');
+    expect(stripAnsi(stderr)).toContain('zed hosts login selfhost');
   });
 });
 
-describe('kortix hosts ls', () => {
+describe('zed hosts ls', () => {
   test('rows show signed-in vs not-signed-in status', async () => {
     const code = await runHosts(['ls']);
     expect(code).toBe(0);

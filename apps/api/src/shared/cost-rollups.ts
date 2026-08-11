@@ -1,4 +1,4 @@
-import { gatewayRequestLogs, projectSessions, projects, sandboxComputeSessions } from '@kortix/db';
+import { gatewayRequestLogs, projectSessions, projects, sandboxComputeSessions } from '@zed/db';
 import { and, desc, eq, gte, lt, sql } from 'drizzle-orm';
 
 import type { CostSort, CostWindow } from './cost-window';

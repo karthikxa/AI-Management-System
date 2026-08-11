@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { parse } from 'yaml';
 
-// Black-box tests for the generic (Docker-only) `kortix self-host` CLI: no
+// Black-box tests for the generic (Docker-only) `zed self-host` CLI: no
 // "target" flag, no AWS coordinates — `init`/`env set` only ever write a
 // docker-compose.yml + .env for this machine. These exercise the real CLI
 // entrypoint so they catch wiring mistakes a unit test on an unexported
@@ -23,18 +23,18 @@ const CLI_ENTRY = resolve(import.meta.dir, '..', '..', 'index.ts');
 // remain individually capped at 3s.
 setDefaultTimeout(15_000);
 
-describe('kortix self-host (generic Docker CLI)', () => {
+describe('zed self-host (generic Docker CLI)', () => {
   let tmp: string;
   let configRoot: string;
   let instance: string;
 
   beforeEach(() => {
-    tmp = mkdtempSync(join(tmpdir(), 'kortix-self-host-cli-'));
+    tmp = mkdtempSync(join(tmpdir(), 'zed-self-host-cli-'));
     configRoot = join(tmp, 'self-host');
     // Compose project identity is based only on --instance. Never let a test
     // that exercises `env set` inspect or recreate a developer's real
-    // `kortix-default` services merely because its files use a temp root.
-    instance = `kortixtest${randomUUID().replaceAll('-', '')}`;
+    // `zed-default` services merely because its files use a temp root.
+    instance = `zedtest${randomUUID().replaceAll('-', '')}`;
   });
 
   afterEach(() => rmSync(tmp, { recursive: true, force: true }));
@@ -45,9 +45,9 @@ describe('kortix self-host (generic Docker CLI)', () => {
       cwd: tmp,
       env: {
         ...process.env,
-        KORTIX_SELF_HOST_CONFIG_DIR: configRoot,
-        KORTIX_CONFIG_FILE: join(tmp, 'cli-config.json'),
-        KORTIX_NO_UPDATE_CHECK: '1',
+        ZED_SELF_HOST_CONFIG_DIR: configRoot,
+        ZED_CONFIG_FILE: join(tmp, 'cli-config.json'),
+        ZED_NO_UPDATE_CHECK: '1',
         NO_COLOR: '1',
         FORCE_COLOR: '0',
         ...extraEnv,
@@ -87,48 +87,48 @@ describe('kortix self-host (generic Docker CLI)', () => {
     expect(env.DISABLE_SIGNUP).toBe('false');
     expect(env.ENABLE_EMAIL_SIGNUP).toBe('true');
     expect(env.ENABLE_EMAIL_AUTOCONFIRM).toBe('true');
-    expect(env.KORTIX_PUBLIC_AUTH_METHODS).toBe('password');
+    expect(env.ZED_PUBLIC_AUTH_METHODS).toBe('password');
     expect(env.ALLOWED_SANDBOX_PROVIDERS).toBe('daytona');
     expect(env.DAYTONA_SERVER_URL).toBe('https://app.daytona.io/api');
 
     // Default channel is "stable" — a plain moving Docker tag, no signing/TUF.
-    expect(env.KORTIX_CHANNEL).toBe('stable');
-    expect(env.KORTIX_VERSION).toBe('stable');
-    expect(env.FRONTEND_IMAGE).toBe('kortix/kortix-frontend:stable');
-    expect(env.API_IMAGE).toBe('kortix/kortix-api:stable');
-    expect(env.GATEWAY_IMAGE).toBe('kortix/kortix-gateway:stable');
-    expect(env.KORTIX_AUTO_UPDATE).toBe('true');
-    expect(env.KORTIX_UPDATE_TIME).toBe('02:00');
-    expect(env.KORTIX_UPDATE_TZ).toBe('America/New_York');
-    expect(env.KORTIX_ALLOW_DOWNTIME).toBe('0');
+    expect(env.ZED_CHANNEL).toBe('stable');
+    expect(env.ZED_VERSION).toBe('stable');
+    expect(env.FRONTEND_IMAGE).toBe('zed/zed-frontend:stable');
+    expect(env.API_IMAGE).toBe('zed/zed-api:stable');
+    expect(env.GATEWAY_IMAGE).toBe('zed/zed-gateway:stable');
+    expect(env.ZED_AUTO_UPDATE).toBe('true');
+    expect(env.ZED_UPDATE_TIME).toBe('02:00');
+    expect(env.ZED_UPDATE_TZ).toBe('America/New_York');
+    expect(env.ZED_ALLOW_DOWNTIME).toBe('0');
     expect(env.CONNECTOR_AUTH_PROVIDER).toBe('pipedream');
-    expect(env.KORTIX_SELF_HOST_CONNECTIONS_REVIEWED).toBe('false');
+    expect(env.ZED_SELF_HOST_CONNECTIONS_REVIEWED).toBe('false');
     expect(env.INTEGRATION_AUTH_PROVIDER).toBeUndefined();
-    expect(env.KORTIX_SELF_HOST_INTEGRATIONS_REVIEWED).toBeUndefined();
+    expect(env.ZED_SELF_HOST_INTEGRATIONS_REVIEWED).toBeUndefined();
 
     // Laptop mode (no domain): single replica, no LB needed.
-    expect(env.KORTIX_APP_REPLICAS).toBe('1');
+    expect(env.ZED_APP_REPLICAS).toBe('1');
 
     // No local-source-build leftovers.
-    expect(env.KORTIX_LOCAL_IMAGES).toBeUndefined();
+    expect(env.ZED_LOCAL_IMAGES).toBeUndefined();
   });
 
   test('--channel latest tracks the :latest tag instead of :stable', async () => {
     const { code } = await run(['init', '--yes', '--channel', 'latest']);
     expect(code).toBe(0);
     const env = readEnv();
-    expect(env.KORTIX_CHANNEL).toBe('latest');
-    expect(env.API_IMAGE).toBe('kortix/kortix-api:latest');
+    expect(env.ZED_CHANNEL).toBe('latest');
+    expect(env.API_IMAGE).toBe('zed/zed-api:latest');
   });
 
   test('--tag pins an explicit version regardless of channel', async () => {
     const { code } = await run(['init', '--yes', '--tag', '0.9.72']);
     expect(code).toBe(0);
     const env = readEnv();
-    expect(env.KORTIX_VERSION).toBe('0.9.72');
-    expect(env.API_IMAGE).toBe('kortix/kortix-api:0.9.72');
+    expect(env.ZED_VERSION).toBe('0.9.72');
+    expect(env.API_IMAGE).toBe('zed/zed-api:0.9.72');
     // Pinning an explicit version doesn't invent a channel name for it.
-    expect(env.KORTIX_CHANNEL).toBe('stable');
+    expect(env.ZED_CHANNEL).toBe('stable');
   });
 
   // Auto-update defaults ON everywhere, including a pinned --version/--tag —
@@ -141,46 +141,46 @@ describe('kortix self-host (generic Docker CLI)', () => {
     const { code } = await run(['init', '--yes', '--version', 'dev-a1b2c3d']);
     expect(code).toBe(0);
     const env = readEnv();
-    expect(env.KORTIX_VERSION).toBe('dev-a1b2c3d');
-    expect(env.API_IMAGE).toBe('kortix/kortix-api:dev-a1b2c3d');
-    expect(env.FRONTEND_IMAGE).toBe('kortix/kortix-frontend:dev-a1b2c3d');
-    expect(env.KORTIX_AUTO_UPDATE).toBe('true');
+    expect(env.ZED_VERSION).toBe('dev-a1b2c3d');
+    expect(env.API_IMAGE).toBe('zed/zed-api:dev-a1b2c3d');
+    expect(env.FRONTEND_IMAGE).toBe('zed/zed-frontend:dev-a1b2c3d');
+    expect(env.ZED_AUTO_UPDATE).toBe('true');
   });
 
   test('--channel latest (channel tracking) also keeps auto-update on by default', async () => {
     const { code } = await run(['init', '--yes', '--channel', 'latest']);
     expect(code).toBe(0);
-    expect(readEnv().KORTIX_AUTO_UPDATE).toBe('true');
+    expect(readEnv().ZED_AUTO_UPDATE).toBe('true');
   });
 
   test('an explicit --auto-update off wins even without --local-images', async () => {
     const { code } = await run(['init', '--yes', '--version', '0.9.99', '--auto-update', 'off']);
     expect(code).toBe(0);
-    expect(readEnv().KORTIX_AUTO_UPDATE).toBe('false');
+    expect(readEnv().ZED_AUTO_UPDATE).toBe('false');
   });
 
-  test('--local-images (dev mode): sets KORTIX_IMAGE_PULL=never and forces auto-update off, even over --auto-update on', async () => {
+  test('--local-images (dev mode): sets ZED_IMAGE_PULL=never and forces auto-update off, even over --auto-update on', async () => {
     const { code } = await run([
       'init', '--yes',
       '--version', 'branch-local', '--local-images', '--auto-update', 'on',
     ]);
     expect(code).toBe(0);
     const env = readEnv();
-    expect(env.KORTIX_IMAGE_PULL).toBe('never');
-    expect(env.KORTIX_AUTO_UPDATE).toBe('false');
-    expect(env.API_IMAGE).toBe('kortix/kortix-api:branch-local');
+    expect(env.ZED_IMAGE_PULL).toBe('never');
+    expect(env.ZED_AUTO_UPDATE).toBe('false');
+    expect(env.API_IMAGE).toBe('zed/zed-api:branch-local');
   });
 
   test('--no-pull is an alias for --local-images', async () => {
     const { code } = await run(['init', '--yes', '--no-pull']);
     expect(code).toBe(0);
-    expect(readEnv().KORTIX_IMAGE_PULL).toBe('never');
+    expect(readEnv().ZED_IMAGE_PULL).toBe('never');
   });
 
-  test('without --local-images, KORTIX_IMAGE_PULL stays unset (normal pull behavior)', async () => {
+  test('without --local-images, ZED_IMAGE_PULL stays unset (normal pull behavior)', async () => {
     const { code } = await run(['init', '--yes']);
     expect(code).toBe(0);
-    expect(readEnv().KORTIX_IMAGE_PULL).toBe('');
+    expect(readEnv().ZED_IMAGE_PULL).toBe('');
   });
 
   test('rejects an invalid --channel value', async () => {
@@ -193,8 +193,8 @@ describe('kortix self-host (generic Docker CLI)', () => {
     const { code } = await run(['init', '--yes', '--update-time', '03:30', '--update-tz', 'UTC']);
     expect(code).toBe(0);
     const env = readEnv();
-    expect(env.KORTIX_UPDATE_TIME).toBe('03:30');
-    expect(env.KORTIX_UPDATE_TZ).toBe('UTC');
+    expect(env.ZED_UPDATE_TIME).toBe('03:30');
+    expect(env.ZED_UPDATE_TZ).toBe('UTC');
   });
 
   test('rejects an invalid --update-time value', async () => {
@@ -203,69 +203,69 @@ describe('kortix self-host (generic Docker CLI)', () => {
     expect(stderr).toContain('--update-time must be HH:MM');
   });
 
-  // There is deliberately no `--allow-downtime` flag: KORTIX_ALLOW_DOWNTIME is
+  // There is deliberately no `--allow-downtime` flag: ZED_ALLOW_DOWNTIME is
   // env-only — a release that needs a brief downtime window says so, and the
-  // operator sets it directly (`env set KORTIX_ALLOW_DOWNTIME=1`).
-  test('KORTIX_ALLOW_DOWNTIME defaults off and is set directly via env set', async () => {
+  // operator sets it directly (`env set ZED_ALLOW_DOWNTIME=1`).
+  test('ZED_ALLOW_DOWNTIME defaults off and is set directly via env set', async () => {
     await run(['init', '--yes']);
-    expect(readEnv().KORTIX_ALLOW_DOWNTIME).toBe('0');
-    const { code } = await run(['env', 'set', 'KORTIX_ALLOW_DOWNTIME=1']);
+    expect(readEnv().ZED_ALLOW_DOWNTIME).toBe('0');
+    const { code } = await run(['env', 'set', 'ZED_ALLOW_DOWNTIME=1']);
     expect(code).toBe(0);
-    expect(readEnv().KORTIX_ALLOW_DOWNTIME).toBe('1');
+    expect(readEnv().ZED_ALLOW_DOWNTIME).toBe('1');
     // A later plain re-init must not reset it.
     const reinit = await run(['init', '--yes']);
     expect(reinit.code).toBe(0);
-    expect(readEnv().KORTIX_ALLOW_DOWNTIME).toBe('1');
+    expect(readEnv().ZED_ALLOW_DOWNTIME).toBe('1');
   });
 
-  test('KORTIX_APP_REPLICAS flips to 2 once a domain is configured, back to 1 without one', async () => {
+  test('ZED_APP_REPLICAS flips to 2 once a domain is configured, back to 1 without one', async () => {
     await run(['init', '--yes']);
-    expect(readEnv().KORTIX_APP_REPLICAS).toBe('1');
+    expect(readEnv().ZED_APP_REPLICAS).toBe('1');
 
-    await run(['env', 'set', 'KORTIX_DOMAIN=kortix.example.com']);
-    expect(readEnv().KORTIX_APP_REPLICAS).toBe('2');
+    await run(['env', 'set', 'ZED_DOMAIN=zed.example.com']);
+    expect(readEnv().ZED_APP_REPLICAS).toBe('2');
 
-    await run(['env', 'set', 'KORTIX_DOMAIN=']);
-    expect(readEnv().KORTIX_APP_REPLICAS).toBe('1');
+    await run(['env', 'set', 'ZED_DOMAIN=']);
+    expect(readEnv().ZED_APP_REPLICAS).toBe('1');
   });
 
-  test('KORTIX_INSTANCE_DIR is the absolute instance directory and is wired into the rendered kortix-updater service (DinD self-referential mount)', async () => {
+  test('ZED_INSTANCE_DIR is the absolute instance directory and is wired into the rendered zed-updater service (DinD self-referential mount)', async () => {
     // Regression coverage for the "mounts denied" self-host update bug: the
-    // in-compose kortix-updater runs `docker compose` against the HOST daemon
+    // in-compose zed-updater runs `docker compose` against the HOST daemon
     // over the mounted socket, so any relative bind mount elsewhere in this
     // compose file only resolves correctly if the updater container sees the
     // instance directory at the SAME absolute path the host does. That path
-    // is KORTIX_INSTANCE_DIR — recomputed from the real on-disk instance dir
+    // is ZED_INSTANCE_DIR — recomputed from the real on-disk instance dir
     // on every render (see normalizeFullSupabaseEnv in commands/self-host.ts).
     await run(['init', '--yes']);
     const instanceDir = join(configRoot, instance);
-    expect(readEnv().KORTIX_INSTANCE_DIR).toBe(instanceDir);
+    expect(readEnv().ZED_INSTANCE_DIR).toBe(instanceDir);
 
     const compose = readCompose() as { services: Record<string, {
       volumes?: string[];
       working_dir?: string;
     }> };
-    const updater = compose.services['kortix-updater'];
-    expect(updater?.working_dir).toBe('${KORTIX_INSTANCE_DIR}');
-    expect(updater?.volumes).toContain('${KORTIX_INSTANCE_DIR}:${KORTIX_INSTANCE_DIR}');
+    const updater = compose.services['zed-updater'];
+    expect(updater?.working_dir).toBe('${ZED_INSTANCE_DIR}');
+    expect(updater?.volumes).toContain('${ZED_INSTANCE_DIR}:${ZED_INSTANCE_DIR}');
   });
 
-  test('the rendered compose has no Caddy service until KORTIX_DOMAIN is set', async () => {
+  test('the rendered compose has no Caddy service until ZED_DOMAIN is set', async () => {
     await run(['init', '--yes']);
     const before = readCompose();
     expect(before.services).not.toHaveProperty('caddy');
-    expect(before.services).toHaveProperty('kortix-updater');
+    expect(before.services).toHaveProperty('zed-updater');
 
-    const { code } = await run(['env', 'set', 'KORTIX_DOMAIN=kortix.example.com']);
+    const { code } = await run(['env', 'set', 'ZED_DOMAIN=zed.example.com']);
     expect(code).toBe(0);
 
     const after = readCompose();
     expect(after.services).toHaveProperty('caddy');
 
     const env = readEnv();
-    expect(env.KORTIX_API_DOMAIN).toBe('api.kortix.example.com');
-    expect(env.PUBLIC_URL).toBe('https://kortix.example.com');
-    expect(env.API_PUBLIC_URL).toBe('https://api.kortix.example.com');
+    expect(env.ZED_API_DOMAIN).toBe('api.zed.example.com');
+    expect(env.PUBLIC_URL).toBe('https://zed.example.com');
+    expect(env.API_PUBLIC_URL).toBe('https://api.zed.example.com');
   });
 
   test('no AWS/target concepts remain reachable from the CLI', async () => {
@@ -282,11 +282,11 @@ describe('kortix self-host (generic Docker CLI)', () => {
       expect(code).toBe(0);
       const env = readEnv();
       // Self-host is an app deployment, not a marketing site — the marketing
-      // landing page is DISABLED by default (unlike Kortix Cloud).
-      expect(env.KORTIX_PUBLIC_DISABLE_LANDING_PAGE).toBe('true');
+      // landing page is DISABLED by default (unlike Zed Cloud).
+      expect(env.ZED_PUBLIC_DISABLE_LANDING_PAGE).toBe('true');
       expect(env.ENTERPRISE_LICENSE_AVAILABLE).toBe('false');
-      expect(env.KORTIX_BILLING_INTERNAL_ENABLED).toBe('false');
-      expect(env.KORTIX_PUBLIC_BILLING_ENABLED).toBe('false');
+      expect(env.ZED_BILLING_INTERNAL_ENABLED).toBe('false');
+      expect(env.ZED_PUBLIC_BILLING_ENABLED).toBe('false');
     });
 
     // Account-creation restriction is the one feature flag that defaults ON
@@ -297,16 +297,16 @@ describe('kortix self-host (generic Docker CLI)', () => {
       const { code } = await run(['init', '--yes']);
       expect(code).toBe(0);
       const env = readEnv();
-      expect(env.KORTIX_RESTRICT_ACCOUNT_CREATION).toBe('true');
-      expect(env.KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION).toBe('true');
+      expect(env.ZED_RESTRICT_ACCOUNT_CREATION).toBe('true');
+      expect(env.ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION).toBe('true');
     });
 
     test('--no-restrict-account-creation opts out of the default (both vars)', async () => {
       const { code } = await run(['init', '--yes', '--no-restrict-account-creation']);
       expect(code).toBe(0);
       const env = readEnv();
-      expect(env.KORTIX_RESTRICT_ACCOUNT_CREATION).toBe('false');
-      expect(env.KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION).toBe('false');
+      expect(env.ZED_RESTRICT_ACCOUNT_CREATION).toBe('false');
+      expect(env.ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION).toBe('false');
     });
 
     test('--restrict-account-creation and --no-restrict-account-creation together is a usage error', async () => {
@@ -322,12 +322,12 @@ describe('kortix self-host (generic Docker CLI)', () => {
 
     test('a re-run of init without the flag does not reset a previously opted-out account-creation restriction', async () => {
       await run(['init', '--yes', '--no-restrict-account-creation']);
-      expect(readEnv().KORTIX_RESTRICT_ACCOUNT_CREATION).toBe('false');
+      expect(readEnv().ZED_RESTRICT_ACCOUNT_CREATION).toBe('false');
 
       const { code } = await run(['init', '--yes']);
       expect(code).toBe(0);
-      expect(readEnv().KORTIX_RESTRICT_ACCOUNT_CREATION).toBe('false');
-      expect(readEnv().KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION).toBe('false');
+      expect(readEnv().ZED_RESTRICT_ACCOUNT_CREATION).toBe('false');
+      expect(readEnv().ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION).toBe('false');
     });
 
     // There is deliberately no `--landing`/`--no-landing` flag: the landing
@@ -336,16 +336,16 @@ describe('kortix self-host (generic Docker CLI)', () => {
     // operator can flip directly if they genuinely want it back.
     test('re-enabling the landing page is a plain `env set`, no dedicated flag', async () => {
       await run(['init', '--yes']);
-      expect(readEnv().KORTIX_PUBLIC_DISABLE_LANDING_PAGE).toBe('true');
+      expect(readEnv().ZED_PUBLIC_DISABLE_LANDING_PAGE).toBe('true');
 
-      const { code } = await run(['env', 'set', 'KORTIX_PUBLIC_DISABLE_LANDING_PAGE=false']);
+      const { code } = await run(['env', 'set', 'ZED_PUBLIC_DISABLE_LANDING_PAGE=false']);
       expect(code).toBe(0);
-      expect(readEnv().KORTIX_PUBLIC_DISABLE_LANDING_PAGE).toBe('false');
+      expect(readEnv().ZED_PUBLIC_DISABLE_LANDING_PAGE).toBe('false');
 
       // A later plain re-init must not silently flip it back off.
       const reinit = await run(['init', '--yes']);
       expect(reinit.code).toBe(0);
-      expect(readEnv().KORTIX_PUBLIC_DISABLE_LANDING_PAGE).toBe('false');
+      expect(readEnv().ZED_PUBLIC_DISABLE_LANDING_PAGE).toBe('false');
     });
 
     test('--enterprise-license sets ENTERPRISE_LICENSE_AVAILABLE', async () => {
@@ -364,7 +364,7 @@ describe('kortix self-host (generic Docker CLI)', () => {
       expect(readEnv().ENTERPRISE_LICENSE_AVAILABLE).toBe('true');
     });
 
-    // Note: `kortix self-host update` shells out to a real `docker compose`
+    // Note: `zed self-host update` shells out to a real `docker compose`
     // (zero-downtime rollout) and isn't exercised by this black-box CLI
     // harness for that reason — same scope limit as the rest of this file,
     // which never invokes `start`/`update` either. Preservation across a
@@ -376,69 +376,69 @@ describe('kortix self-host (generic Docker CLI)', () => {
 
     test('env set also works directly and survives a later plain init', async () => {
       await run(['init', '--yes']);
-      await run(['env', 'set', 'KORTIX_BILLING_INTERNAL_ENABLED=true', 'KORTIX_PUBLIC_BILLING_ENABLED=true']);
-      expect(readEnv().KORTIX_BILLING_INTERNAL_ENABLED).toBe('true');
+      await run(['env', 'set', 'ZED_BILLING_INTERNAL_ENABLED=true', 'ZED_PUBLIC_BILLING_ENABLED=true']);
+      expect(readEnv().ZED_BILLING_INTERNAL_ENABLED).toBe('true');
 
       const { code } = await run(['init', '--yes']);
       expect(code).toBe(0);
       const env = readEnv();
-      expect(env.KORTIX_BILLING_INTERNAL_ENABLED).toBe('true');
-      expect(env.KORTIX_PUBLIC_BILLING_ENABLED).toBe('true');
+      expect(env.ZED_BILLING_INTERNAL_ENABLED).toBe('true');
+      expect(env.ZED_PUBLIC_BILLING_ENABLED).toBe('true');
     });
 
     test('the rendered compose passes the flags through as runtime env, not hard-coded literals', async () => {
       await run(['init', '--yes']);
       const compose = readCompose();
       const frontendEnv = (compose.services.frontend as any).environment;
-      expect(frontendEnv.KORTIX_PUBLIC_BILLING_ENABLED).toBe('${KORTIX_PUBLIC_BILLING_ENABLED}');
-      expect(frontendEnv.KORTIX_PUBLIC_DISABLE_LANDING_PAGE).toBe('${KORTIX_PUBLIC_DISABLE_LANDING_PAGE}');
-      expect(frontendEnv.KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION).toBe('${KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION}');
+      expect(frontendEnv.ZED_PUBLIC_BILLING_ENABLED).toBe('${ZED_PUBLIC_BILLING_ENABLED}');
+      expect(frontendEnv.ZED_PUBLIC_DISABLE_LANDING_PAGE).toBe('${ZED_PUBLIC_DISABLE_LANDING_PAGE}');
+      expect(frontendEnv.ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION).toBe('${ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION}');
 
-      // kortix-api gets these via `env_file: .env` (loads every .env key) —
+      // zed-api gets these via `env_file: .env` (loads every .env key) —
       // no explicit `environment:` entry, since one would win over env_file
       // and re-introduce the old "billing hard-pinned false" bug.
-      const apiEnv = (compose.services['kortix-api'] as any).environment;
-      expect(apiEnv.KORTIX_BILLING_INTERNAL_ENABLED).toBeUndefined();
+      const apiEnv = (compose.services['zed-api'] as any).environment;
+      expect(apiEnv.ZED_BILLING_INTERNAL_ENABLED).toBeUndefined();
       expect(apiEnv.ENTERPRISE_LICENSE_AVAILABLE).toBeUndefined();
-      expect(apiEnv.KORTIX_RESTRICT_ACCOUNT_CREATION).toBeUndefined();
-      expect((compose.services['kortix-api'] as any).env_file).toContain('.env');
+      expect(apiEnv.ZED_RESTRICT_ACCOUNT_CREATION).toBeUndefined();
+      expect((compose.services['zed-api'] as any).env_file).toContain('.env');
     });
   });
 
-  describe('reachability (KORTIX_URL, --domain, --tunnel)', () => {
-    test('the rendered compose templates KORTIX_URL instead of hard-coding the internal Docker hostname', async () => {
+  describe('reachability (ZED_URL, --domain, --tunnel)', () => {
+    test('the rendered compose templates ZED_URL instead of hard-coding the internal Docker hostname', async () => {
       await run(['init', '--yes']);
       const compose = readCompose();
-      const apiEnv = (compose.services['kortix-api'] as any).environment;
-      expect(apiEnv.KORTIX_URL).toBe('${KORTIX_URL}');
-      expect(apiEnv.KORTIX_URL).not.toContain('kortix-api:8008');
+      const apiEnv = (compose.services['zed-api'] as any).environment;
+      expect(apiEnv.ZED_URL).toBe('${ZED_URL}');
+      expect(apiEnv.ZED_URL).not.toContain('zed-api:8008');
     });
 
-    test('default (local-only) mode: KORTIX_URL mirrors the loopback API_PUBLIC_URL, not the internal hostname', async () => {
+    test('default (local-only) mode: ZED_URL mirrors the loopback API_PUBLIC_URL, not the internal hostname', async () => {
       const { code } = await run(['init', '--yes']);
       expect(code).toBe(0);
       const env = readEnv();
-      expect(env.KORTIX_URL).toBe(env.API_PUBLIC_URL);
-      expect(env.KORTIX_URL).toStartWith('http://localhost:');
-      expect(env.KORTIX_REACHABILITY_MODE).toBe('local');
+      expect(env.ZED_URL).toBe(env.API_PUBLIC_URL);
+      expect(env.ZED_URL).toStartWith('http://localhost:');
+      expect(env.ZED_REACHABILITY_MODE).toBe('local');
       expect(readCompose().services).not.toHaveProperty('cloudflared');
     });
 
-    test('--domain sets KORTIX_DOMAIN and KORTIX_URL follows API_PUBLIC_URL (https://api.<domain>)', async () => {
-      const { code } = await run(['init', '--yes', '--domain', 'kortix.example.com']);
+    test('--domain sets ZED_DOMAIN and ZED_URL follows API_PUBLIC_URL (https://api.<domain>)', async () => {
+      const { code } = await run(['init', '--yes', '--domain', 'zed.example.com']);
       expect(code).toBe(0);
       const env = readEnv();
-      expect(env.KORTIX_DOMAIN).toBe('kortix.example.com');
-      expect(env.API_PUBLIC_URL).toBe('https://api.kortix.example.com');
-      expect(env.KORTIX_URL).toBe('https://api.kortix.example.com');
-      expect(env.KORTIX_REACHABILITY_MODE).toBe('domain');
+      expect(env.ZED_DOMAIN).toBe('zed.example.com');
+      expect(env.API_PUBLIC_URL).toBe('https://api.zed.example.com');
+      expect(env.ZED_URL).toBe('https://api.zed.example.com');
+      expect(env.ZED_REACHABILITY_MODE).toBe('domain');
       expect(readCompose().services).toHaveProperty('caddy');
       expect(readCompose().services).not.toHaveProperty('cloudflared');
     });
 
     test('--domain= clears a previously configured domain, falling back out of "domain" mode', async () => {
-      await run(['init', '--yes', '--domain', 'kortix.example.com']);
-      expect(readEnv().KORTIX_DOMAIN).toBe('kortix.example.com');
+      await run(['init', '--yes', '--domain', 'zed.example.com']);
+      expect(readEnv().ZED_DOMAIN).toBe('zed.example.com');
 
       // The `--flag=value` form (not `--flag value`) is required to pass an
       // explicit empty string — takeFlagValue treats a bare falsy next-arg as
@@ -447,35 +447,35 @@ describe('kortix self-host (generic Docker CLI)', () => {
       const { code } = await run(['init', '--yes', '--domain=']);
       expect(code).toBe(0);
       const env = readEnv();
-      expect(env.KORTIX_DOMAIN).toBe('');
-      // KORTIX_URL always mirrors API_PUBLIC_URL outside tunnel mode — whatever
+      expect(env.ZED_DOMAIN).toBe('');
+      // ZED_URL always mirrors API_PUBLIC_URL outside tunnel mode — whatever
       // that resolves to (API_PUBLIC_URL/PUBLIC_URL are otherwise-sticky
       // operator-configurable values, unrelated to this feature, that are not
-      // reset to loopback just because KORTIX_DOMAIN was cleared).
-      expect(env.KORTIX_URL).toBe(env.API_PUBLIC_URL);
+      // reset to loopback just because ZED_DOMAIN was cleared).
+      expect(env.ZED_URL).toBe(env.API_PUBLIC_URL);
       expect(readCompose().services).not.toHaveProperty('caddy');
     });
 
-    test('--tunnel cloudflare renders the cloudflared service and defers KORTIX_URL to the live capture step', async () => {
+    test('--tunnel cloudflare renders the cloudflared service and defers ZED_URL to the live capture step', async () => {
       const { code } = await run(['init', '--yes', '--tunnel', 'cloudflare']);
       expect(code).toBe(0);
       const env = readEnv();
-      expect(env.KORTIX_REACHABILITY_MODE).toBe('tunnel');
-      expect(env.KORTIX_DOMAIN).toBe('');
+      expect(env.ZED_REACHABILITY_MODE).toBe('tunnel');
+      expect(env.ZED_DOMAIN).toBe('');
       const compose = readCompose();
       expect(compose.services).toHaveProperty('cloudflared');
       expect(compose.services).not.toHaveProperty('caddy');
-      // init never runs docker compose, so KORTIX_URL can't be the real tunnel
+      // init never runs docker compose, so ZED_URL can't be the real tunnel
       // URL yet — reconcileTunnelReachability() (part of `start`/`update`)
       // captures and rewrites it after the cloudflared container boots.
-      expect(env.KORTIX_URL).toBeTruthy();
+      expect(env.ZED_URL).toBeTruthy();
     });
 
     test('a re-init does not reset an already-configured reachability mode', async () => {
       await run(['init', '--yes', '--tunnel', 'cloudflare']);
       const { code } = await run(['init', '--yes']);
       expect(code).toBe(0);
-      expect(readEnv().KORTIX_REACHABILITY_MODE).toBe('tunnel');
+      expect(readEnv().ZED_REACHABILITY_MODE).toBe('tunnel');
       expect(readCompose().services).toHaveProperty('cloudflared');
     });
 
@@ -490,12 +490,12 @@ describe('kortix self-host (generic Docker CLI)', () => {
       const { code } = await run([
         'env', 'set',
         'CLOUDFLARE_TUNNEL_TOKEN=faketoken',
-        'CLOUDFLARE_TUNNEL_HOSTNAME=kortix-tunnel.example.com',
+        'CLOUDFLARE_TUNNEL_HOSTNAME=zed-tunnel.example.com',
       ]);
       expect(code).toBe(0);
       const env = readEnv();
       expect(env.CLOUDFLARE_TUNNEL_TOKEN).toBe('faketoken');
-      expect(env.CLOUDFLARE_TUNNEL_HOSTNAME).toBe('kortix-tunnel.example.com');
+      expect(env.CLOUDFLARE_TUNNEL_HOSTNAME).toBe('zed-tunnel.example.com');
     });
 
     test('setting CLOUDFLARE_TUNNEL_TOKEN via env set before tunnel mode is selected does not error (stack not running)', async () => {
@@ -511,10 +511,10 @@ describe('kortix self-host (generic Docker CLI)', () => {
     // path — the help example is that path.
     const { code, stdout } = await run(['--help']);
     expect(code).toBe(0);
-    expect(stdout).toContain('env set KORTIX_PLATFORM_ADMIN_EMAILS=');
+    expect(stdout).toContain('env set ZED_PLATFORM_ADMIN_EMAILS=');
   });
 
-  test('doctor flags a stale KORTIX_INSTANCE_DIR (instance directory moved since the last render) and passes it fresh otherwise', async () => {
+  test('doctor flags a stale ZED_INSTANCE_DIR (instance directory moved since the last render) and passes it fresh otherwise', async () => {
     await run(['init', '--yes']);
 
     const fresh = await run(['doctor', '--json']);
@@ -523,16 +523,16 @@ describe('kortix self-host (generic Docker CLI)', () => {
     expect(freshCheck?.ok).toBe(true);
 
     // Simulate the instance directory having moved on disk (or
-    // KORTIX_SELF_HOST_CONFIG_DIR having changed) since the last
+    // ZED_SELF_HOST_CONFIG_DIR having changed) since the last
     // init/start/update/configure/env-set render — hand-edit .env the way
     // `env set` itself refuses to (see secrets.test.ts's updater-managed
-    // refusal coverage for KORTIX_INSTANCE_DIR).
+    // refusal coverage for ZED_INSTANCE_DIR).
     const envFile = join(configRoot, instance, '.env');
     writeFileSync(
       envFile,
       readFileSync(envFile, 'utf8').replace(
-        /^KORTIX_INSTANCE_DIR=.*$/m,
-        'KORTIX_INSTANCE_DIR=/tmp/stale-path-from-before-a-move',
+        /^ZED_INSTANCE_DIR=.*$/m,
+        'ZED_INSTANCE_DIR=/tmp/stale-path-from-before-a-move',
       ),
     );
 

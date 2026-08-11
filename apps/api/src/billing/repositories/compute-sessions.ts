@@ -1,4 +1,4 @@
-import { sandboxComputeSessions } from '@kortix/db';
+import { sandboxComputeSessions } from '@zed/db';
 import { and, asc, desc, eq, isNull, lte, sql } from 'drizzle-orm';
 import { db } from '../../shared/db';
 

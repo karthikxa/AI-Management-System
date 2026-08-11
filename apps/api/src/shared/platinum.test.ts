@@ -27,14 +27,14 @@ beforeEach(() => {
   // Below the code's own 1000ms floor (Math.max(1000, …)) would just get
   // clamped up — use a value comfortably above it so this actually exercises
   // the configured override, not the floor.
-  process.env.KORTIX_PLATINUM_CALL_TIMEOUT_MS = '1500';
+  process.env.ZED_PLATINUM_CALL_TIMEOUT_MS = '1500';
   mockPlatinumApiKey = 'pt_test_key';
 });
 
 afterEach(() => {
   server?.stop(true);
   server = null;
-  delete process.env.KORTIX_PLATINUM_CALL_TIMEOUT_MS;
+  delete process.env.ZED_PLATINUM_CALL_TIMEOUT_MS;
 });
 
 test('platinumJson gives up on a stalled connection instead of hanging forever', async () => {

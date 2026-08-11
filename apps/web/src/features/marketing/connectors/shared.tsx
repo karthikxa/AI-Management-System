@@ -41,7 +41,7 @@ export function SectionHeader({
   return (
     <Reveal>
       <div className={cn('max-w-3xl', className)}>
-        <Badge variant="kortix" className="rounded">
+        <Badge variant="zed" className="rounded">
           {eyebrow}
         </Badge>
         <h2 className="text-foreground mt-6 text-3xl font-medium tracking-tight text-balance sm:text-4xl">

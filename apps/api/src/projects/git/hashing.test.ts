@@ -38,9 +38,9 @@ describe('hashBlobs', () => {
   let tempDir = '';
 
   beforeEach(async () => {
-    repoPath = await mkdtemp(join(tmpdir(), 'kortix-hash-blobs-repo-'));
+    repoPath = await mkdtemp(join(tmpdir(), 'zed-hash-blobs-repo-'));
     execFileSync('git', ['init', '--bare', repoPath], { encoding: 'utf8' });
-    tempDir = await mkdtemp(join(tmpdir(), 'kortix-hash-blobs-tmp-'));
+    tempDir = await mkdtemp(join(tmpdir(), 'zed-hash-blobs-tmp-'));
     concurrent = 0;
     maxConcurrent = 0;
   });

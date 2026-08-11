@@ -5,25 +5,25 @@
  * Run (from packages/sdk):  bun run playground/github/29-github.ts
  */
 import { ApiError } from "../../src/index";
-import { makeKortix, run } from "../_shared";
+import { makeZed, run } from "../_shared";
 
 run("github", async () => {
-  const kortix = makeKortix();
+  const zed = makeZed();
 
-  const accounts = await kortix.accounts.list();
+  const accounts = await zed.accounts.list();
   const accountId = accounts[0]?.account_id;
   if (!accountId) {
     console.error("no accounts visible to this token");
     process.exit(1);
   }
 
-  const installations = await kortix.github.listInstallations(accountId);
+  const installations = await zed.github.listInstallations(accountId);
   console.log(
     `✓ github.listInstallations(): ${JSON.stringify(installations).slice(0, 250)}`,
   );
 
   try {
-    const repositories = await kortix.github.listRepositories(accountId);
+    const repositories = await zed.github.listRepositories(accountId);
     console.log(
       `✓ github.listRepositories(): ${JSON.stringify(repositories).slice(0, 250)}`,
     );

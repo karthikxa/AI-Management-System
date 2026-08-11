@@ -3,21 +3,21 @@
 import { pathToFileURL } from 'node:url';
 
 export const EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF = 'jbriwassebxdwoieikga';
-export const EXPECTED_PRODUCTION_SUPABASE_URL = 'https://supa.kortix.com';
-export const EXPECTED_PRODUCTION_BACKEND_URL = 'https://api.kortix.com/v1';
+export const EXPECTED_PRODUCTION_SUPABASE_URL = 'https://supa.zed.com';
+export const EXPECTED_PRODUCTION_BACKEND_URL = 'https://api.zed.com/v1';
 
 const EXPECTED_NATIVE_URL = `https://${EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF}.supabase.co`;
 const ALLOWED_PRODUCTION_URLS = new Set([EXPECTED_PRODUCTION_SUPABASE_URL, EXPECTED_NATIVE_URL]);
 const URL_VARIABLES = [
   'NEXT_PUBLIC_SUPABASE_URL',
-  'KORTIX_PUBLIC_SUPABASE_URL',
+  'ZED_PUBLIC_SUPABASE_URL',
   'SUPABASE_PUBLIC_URL',
   'SUPABASE_URL',
   'SUPABASE_SERVER_URL',
 ];
 const KEY_VARIABLES = [
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-  'KORTIX_PUBLIC_SUPABASE_ANON_KEY',
+  'ZED_PUBLIC_SUPABASE_ANON_KEY',
   'SUPABASE_ANON_KEY',
 ];
 
@@ -50,7 +50,7 @@ async function assertSupabaseAcceptsKey(url, key, fetchImpl) {
     response = await fetchImpl(`${url}/auth/v1/settings`, {
       headers: {
         apikey: key,
-        'user-agent': 'kortix-production-supabase-release-guard',
+        'user-agent': 'zed-production-supabase-release-guard',
       },
       signal: AbortSignal.timeout(15_000),
     });
@@ -120,7 +120,7 @@ export async function validateProductionSupabaseEnv(env, { fetchImpl = globalThi
 }
 
 export function parseRuntimeConfigScript(source) {
-  const startMarker = 'window.__KORTIX_RUNTIME_CONFIG=';
+  const startMarker = 'window.__ZED_RUNTIME_CONFIG=';
   const endMarker = ';window.__RUNTIME_ENV=';
   const start = source.indexOf(startMarker);
   const end = source.indexOf(endMarker, start + startMarker.length);
@@ -142,7 +142,7 @@ export async function validateDeployedProductionSupabase(
   const response = await fetchImpl(runtimeUrl, {
     headers: {
       'cache-control': 'no-cache',
-      'user-agent': 'kortix-production-supabase-release-guard',
+      'user-agent': 'zed-production-supabase-release-guard',
     },
     signal: AbortSignal.timeout(15_000),
   });

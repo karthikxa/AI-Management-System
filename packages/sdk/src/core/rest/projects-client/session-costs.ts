@@ -353,7 +353,7 @@ export function costExportUrl(
 
 export interface CostExportResult {
   blob: Blob;
-  /** Parsed `x-kortix-row-cap` response header — `CSV_ROW_CAP` in
+  /** Parsed `x-zed-row-cap` response header — `CSV_ROW_CAP` in
    *  `apps/api/src/shared/cost-csv.ts` — or `null` when the header is absent
    *  or unparseable. Both CSV export routes always set it, but the header is
    *  not part of either route's JSON response schema, so a caller needing to
@@ -402,7 +402,7 @@ export async function fetchCostExportCsv(
     throw new Error(text || `Failed to export CSV (HTTP ${res.status})`);
   }
 
-  const rowCapHeader = res.headers.get('x-kortix-row-cap');
+  const rowCapHeader = res.headers.get('x-zed-row-cap');
   const parsedRowCap = rowCapHeader != null ? Number(rowCapHeader) : NaN;
   const blob = await res.blob();
   return { blob, rowCap: Number.isFinite(parsedRowCap) ? parsedRowCap : null };

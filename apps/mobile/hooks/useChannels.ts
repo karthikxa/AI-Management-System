@@ -62,7 +62,7 @@ export interface UpdateChannelData {
 
 async function sandboxChannelFetch<T>(sandboxUrl: string, path: string, options?: RequestInit): Promise<T> {
   const token = await getAuthToken();
-  const res = await fetch(`${sandboxUrl}/kortix/channels${path}`, {
+  const res = await fetch(`${sandboxUrl}/zed/channels${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

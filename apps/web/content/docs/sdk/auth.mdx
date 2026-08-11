@@ -3,15 +3,15 @@ title: Authentication
 description: Authenticate the SDK with a personal access token or a service account.
 ---
 
-Kortix accepts one bearer token per request. Pass it through `getToken` in
-`createKortix`. The SDK sends it as `Authorization: Bearer <token>`.
+Zed accepts one bearer token per request. Pass it through `getToken` in
+`createZed`. The SDK sends it as `Authorization: Bearer <token>`.
 
 ```ts
-import { createKortix } from '@kortix/sdk';
+import { createZed } from '@zed/sdk';
 
-const kortix = createKortix({
-  backendUrl: 'https://api.kortix.com/v1',
-  getToken: async () => process.env.KORTIX_API_KEY!,
+const zed = createZed({
+  backendUrl: 'https://api.zed.com/v1',
+  getToken: async () => process.env.ZED_API_KEY!,
 });
 ```
 
@@ -25,7 +25,7 @@ surface. It does not change the authenticated actor or their permissions.
 ## Personal access tokens
 
 A personal access token (PAT) is the credential for the SDK, the CLI, and CI.
-Create one at **User settings → API keys**. The key starts with `kortix_pat_`
+Create one at **User settings → API keys**. The key starts with `zed_pat_`
 and shows only once, at creation. Store it as a secret.
 
 A PAT acts as the user who created it. Its scope is fixed at creation:
@@ -36,13 +36,13 @@ A PAT acts as the user who created it. Its scope is fixed at creation:
 | Project | One project only; every other project returns `403` |
 
 Choose the project scope for CI and other narrow-purpose credentials.
-`kortix login` mints a PAT and stores it locally — it is the same credential
+`zed login` mints a PAT and stores it locally — it is the same credential
 type, not a separate token kind.
 
 ## Service accounts
 
 A service account is a separate credential family for non-human callers,
-prefixed `kortix_sa_`. Create one at **Account settings → Service accounts**.
+prefixed `zed_sa_`. Create one at **Account settings → Service accounts**.
 
 <Callout type="warn">
   A new service account has no project access. If you point `getToken` at one
@@ -53,7 +53,7 @@ prefixed `kortix_sa_`. Create one at **Account settings → Service accounts**.
 
 ## Supabase JWT
 
-If your app uses Kortix's own sign-in, return the live session token instead
+If your app uses Zed's own sign-in, return the live session token instead
 of a PAT:
 
 ```ts
@@ -69,6 +69,6 @@ automatically.
 | You are building | Use |
 |---|---|
 | A backend, script, or CI job | A personal access token, account-wide or project-scoped |
-| The Kortix CLI | `kortix login` (mints a personal access token) |
-| A web app on Kortix sign-in | A Supabase JWT |
+| The Zed CLI | `zed login` (mints a personal access token) |
+| A web app on Zed sign-in | A Supabase JWT |
 | An automated caller with a granted project | A service account |

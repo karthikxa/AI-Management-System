@@ -32,14 +32,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { errorToast } from '@/components/ui/toast';
 import { ModelSelector } from '@/features/session/model-selector';
 import CustomizeSectionWrapper from '@/features/workspace/customize/sections/component/section-wrapper';
-import { modelKeyToWire, wireToModelKey } from '@kortix/sdk/react';
+import { modelKeyToWire, wireToModelKey } from '@zed/sdk/react';
 import { useGatewayPlayground } from '@/hooks/projects/use-project-gateway';
 import type {
   GatewayModelGenerationConfig,
   GatewayPlaygroundResult,
 } from '@/lib/projects-gateway-client';
 import { cn } from '@/lib/utils';
-import { useProjectModels } from '@kortix/sdk/react';
+import { useProjectModels } from '@zed/sdk/react';
 
 import { fmtUsd } from './_metrics';
 import { displayModel } from './_shared';

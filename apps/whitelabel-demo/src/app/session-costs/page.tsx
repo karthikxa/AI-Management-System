@@ -84,7 +84,7 @@ function SessionCostsDashboard() {
           </h1>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Each row represents one Kortix session. The wrapper applies its
+          Each row represents one Zed session. The wrapper applies its
           configured markup to that session&apos;s recorded cost.
         </p>
 
@@ -106,7 +106,7 @@ function SessionCostsDashboard() {
             <div className="mt-6 grid grid-cols-2 gap-3">
               <Card className="p-4">
                 <div className="text-xs text-muted-foreground">
-                  Raw Kortix cost
+                  Raw Zed cost
                 </div>
                 <div className="mt-1 text-2xl font-semibold tracking-tight tabular-nums">
                   {usd(data.totals.raw)}

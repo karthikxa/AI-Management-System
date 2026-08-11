@@ -30,11 +30,11 @@ mock.module('../config', () => ({
   config: {
     STRIPE_WEBHOOK_SECRET: 'whsec_test',
     REVENUECAT_WEBHOOK_SECRET: 'rc_test',
-    INTERNAL_KORTIX_ENV: 'prod',
+    INTERNAL_ZED_ENV: 'prod',
   },
 }));
 
-mock.module('@kortix/shared', () => ({
+mock.module('@zed/shared', () => ({
   AUTO_TOPUP_DEFAULT_AMOUNT: 20,
   AUTO_TOPUP_DEFAULT_THRESHOLD: 5,
 }));

@@ -16,7 +16,7 @@ describe('GET /v1/skills', () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as any;
     expect(body.count).toBe(body.skills.length);
-    expect(body.skills.map((s: any) => s.name)).toContain('kortix-system');
+    expect(body.skills.map((s: any) => s.name)).toContain('zed-system');
     for (const s of body.skills) {
       expect(typeof s.description).toBe('string');
       expect(s.description.length).toBeGreaterThan(0);
@@ -28,11 +28,11 @@ describe('GET /v1/skills', () => {
 
 describe('GET /v1/skills/:name', () => {
   test('returns the complete SKILL.md body plus reference paths, no contents', async () => {
-    const res = await get('/v1/skills/kortix-system');
+    const res = await get('/v1/skills/zed-system');
     expect(res.status).toBe(200);
     const body = (await res.json()) as any;
-    expect(body.name).toBe('kortix-system');
-    expect(body.body).toContain('<skill name="kortix-system">');
+    expect(body.name).toBe('zed-system');
+    expect(body.body).toContain('<skill name="zed-system">');
     expect(body.references.length).toBeGreaterThan(0);
     for (const f of body.references) {
       expect(typeof f.path).toBe('string');
@@ -42,7 +42,7 @@ describe('GET /v1/skills/:name', () => {
   });
 
   test('?full=1 inlines every reference file', async () => {
-    const res = await get('/v1/skills/kortix-system?full=1');
+    const res = await get('/v1/skills/zed-system?full=1');
     expect(res.status).toBe(200);
     const body = (await res.json()) as any;
     for (const f of body.references) {
@@ -52,7 +52,7 @@ describe('GET /v1/skills/:name', () => {
   });
 
   test('a skill with no references still returns an array, not undefined', async () => {
-    const res = await get('/v1/skills/kortix-cli');
+    const res = await get('/v1/skills/zed-cli');
     expect(res.status).toBe(200);
     const body = (await res.json()) as any;
     expect(Array.isArray(body.references)).toBe(true);
@@ -73,9 +73,9 @@ describe('GET /v1/skills/:name', () => {
 
 describe('GET /v1/skills/:name/file', () => {
   test('returns one reference file by its listed path', async () => {
-    const detail = (await (await get('/v1/skills/kortix-system')).json()) as any;
+    const detail = (await (await get('/v1/skills/zed-system')).json()) as any;
     const target = detail.references[0].path;
-    const res = await get(`/v1/skills/kortix-system/file?path=${encodeURIComponent(target)}`);
+    const res = await get(`/v1/skills/zed-system/file?path=${encodeURIComponent(target)}`);
     expect(res.status).toBe(200);
     const body = (await res.json()) as any;
     expect(body.path).toBe(target);
@@ -83,21 +83,21 @@ describe('GET /v1/skills/:name/file', () => {
   });
 
   test('missing path is a 400, not a 500', async () => {
-    const res = await get('/v1/skills/kortix-system/file');
+    const res = await get('/v1/skills/zed-system/file');
     expect(res.status).toBe(400);
   });
 
   test('traversal attempts 404 instead of escaping the skill', async () => {
     const res = await get(
-      `/v1/skills/kortix-system/file?path=${encodeURIComponent('../../../../etc/passwd')}`,
+      `/v1/skills/zed-system/file?path=${encodeURIComponent('../../../../etc/passwd')}`,
     );
     expect(res.status).toBe(404);
   });
 
   test('the /file route is not shadowed by the /:name route', async () => {
-    const res = await get('/v1/skills/kortix-system/file?path=SKILL.md');
+    const res = await get('/v1/skills/zed-system/file?path=SKILL.md');
     expect(res.status).toBe(200);
     const body = (await res.json()) as any;
-    expect(body.content).toContain('<skill name="kortix-system">');
+    expect(body.content).toContain('<skill name="zed-system">');
   });
 });

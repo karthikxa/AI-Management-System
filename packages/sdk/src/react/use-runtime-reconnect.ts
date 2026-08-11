@@ -143,7 +143,7 @@ export function nextPollDelay(status: SandboxConnectionStatus, healthy: boolean 
  * mid-session (see `react/opencode.ts` for how this fits alongside the
  * server-truth boot readiness and the SSE heartbeat).
  *
- * Probes `getSessionHealth` (the SDK's `/kortix/health`) and maps the result
+ * Probes `getSessionHealth` (the SDK's `/zed/health`) and maps the result
  * into the shared `sandbox-connection-store`. Behaviour:
  *   - On first failure, immediately switches to fast polling.
  *   - If the user was previously connected, the first failure moves to

@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * /presentation — the Kortix sales deck (follows the official "Kortix pres ENG"
+ * /presentation — the Zed sales deck (follows the official "Zed pres ENG"
  * narrative). Shares the deck engine; links across to the full product deck.
  */
 

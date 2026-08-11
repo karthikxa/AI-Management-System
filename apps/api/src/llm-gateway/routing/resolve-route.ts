@@ -5,8 +5,8 @@ import {
   type ModelGenerationDefaults,
   type ModelRouteInput,
   type ModelRoutePlan,
-} from '@kortix/llm-gateway';
-import { type CatalogModel, clampGenerationConfig } from '@kortix/llm-catalog';
+} from '@zed/llm-gateway';
+import { type CatalogModel, clampGenerationConfig } from '@zed/llm-catalog';
 import type { ProjectModelGenerationConfig, ProjectRoutingFallback, ProjectRoutingRule } from './project-policy';
 
 export interface ResolvedProjectRoutingPolicy {

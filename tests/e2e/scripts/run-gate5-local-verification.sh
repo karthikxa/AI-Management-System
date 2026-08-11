@@ -82,9 +82,9 @@ run_check() {
     }' >"$RESULT_DIR/$name.json"
 }
 
-run_check api_typecheck pnpm --filter kortix-api typecheck
-run_check web_typecheck pnpm --filter Kortix-Computer-Frontend exec tsc --noEmit
-run_check api_tests pnpm --filter kortix-api test
+run_check api_typecheck pnpm --filter zed-api typecheck
+run_check web_typecheck pnpm --filter Zed-Computer-Frontend exec tsc --noEmit
+run_check api_tests pnpm --filter zed-api test
 run_check api_billing_tests bash -lc '
   set -euo pipefail
   for test_file in \
@@ -97,16 +97,16 @@ run_check api_billing_tests bash -lc '
     bun test "$test_file"
   done
 '
-run_check api_accounts_contract_tests pnpm --filter kortix-api exec bun test src/__tests__/e2e-accounts-contract.test.ts
-run_check api_projects_contract_tests pnpm --filter kortix-api exec bun test src/__tests__/e2e-projects-contract.test.ts
-run_check api_project_session_contract_tests pnpm --filter kortix-api exec bun test src/__tests__/e2e-project-session-contract.test.ts
-run_check api_project_triggers_contract_tests pnpm --filter kortix-api exec bun test src/__tests__/e2e-project-triggers.test.ts
+run_check api_accounts_contract_tests pnpm --filter zed-api exec bun test src/__tests__/e2e-accounts-contract.test.ts
+run_check api_projects_contract_tests pnpm --filter zed-api exec bun test src/__tests__/e2e-projects-contract.test.ts
+run_check api_project_session_contract_tests pnpm --filter zed-api exec bun test src/__tests__/e2e-project-session-contract.test.ts
+run_check api_project_triggers_contract_tests pnpm --filter zed-api exec bun test src/__tests__/e2e-project-triggers.test.ts
 run_check api_rate_limit_tests bun test apps/api/src/__tests__/e2e-rate-limits.test.ts
-run_check api_proxy_contract_tests pnpm --filter kortix-api exec bun test src/__tests__/e2e-preview-proxy.test.ts
+run_check api_proxy_contract_tests pnpm --filter zed-api exec bun test src/__tests__/e2e-preview-proxy.test.ts
 run_check api_audit_tests bun test apps/api/src/__tests__/e2e-audit-events.test.ts
 run_check api_usage_tests bun test apps/api/src/__tests__/e2e-session-llm-router.test.ts
 run_check api_github_app_tests bun test apps/api/src/__tests__/e2e-github-app-projects.test.ts
-run_check api_create_repo_starter_tests pnpm --filter kortix-api exec bun test src/__tests__/e2e-create-repo-starter.test.ts
+run_check api_create_repo_starter_tests pnpm --filter zed-api exec bun test src/__tests__/e2e-create-repo-starter.test.ts
 
 legacy_test_database_url="${TEST_DATABASE_URL:-${GATE5_LOCAL_DATABASE_URL:-${DATABASE_URL:-$(env_file_value DATABASE_URL)}}}"
 legacy_test_database_url="$(normalize_host_database_url "$legacy_test_database_url")"
@@ -116,7 +116,7 @@ if [ -z "$legacy_test_database_url" ]; then
   jq -n \
     --arg name legacy_migration_tooling \
     --arg status failed \
-    --arg command "TEST_DATABASE_URL=<required> KORTIX_TEST_DB_CONFIRM=I_UNDERSTAND_THIS_DELETES_TEST_DATA INTERNAL_KORTIX_ENV=dev bun test apps/api/src/__tests__/e2e-legacy-sandbox-migration.test.ts" \
+    --arg command "TEST_DATABASE_URL=<required> ZED_TEST_DB_CONFIRM=I_UNDERSTAND_THIS_DELETES_TEST_DATA INTERNAL_ZED_ENV=dev bun test apps/api/src/__tests__/e2e-legacy-sandbox-migration.test.ts" \
     --arg log "logs/legacy_migration_tooling.log" \
     --argjson exit_code 1 \
     '{
@@ -130,13 +130,13 @@ if [ -z "$legacy_test_database_url" ]; then
 else
   run_check legacy_migration_tooling env \
     TEST_DATABASE_URL="$legacy_test_database_url" \
-    KORTIX_TEST_DB_CONFIRM=I_UNDERSTAND_THIS_DELETES_TEST_DATA \
-    INTERNAL_KORTIX_ENV=dev \
+    ZED_TEST_DB_CONFIRM=I_UNDERSTAND_THIS_DELETES_TEST_DATA \
+    INTERNAL_ZED_ENV=dev \
     bun test apps/api/src/__tests__/e2e-legacy-sandbox-migration.test.ts
 fi
-run_check sandbox_daemon_auth bun test apps/kortix-sandbox-agent-server/src/__tests__/proxy-auth.test.ts
-run_check sandbox_image_build docker build -f apps/sandbox/Dockerfile -t kortix/sandbox:dev .
-run_check api_image_build docker build --build-arg SERVICE=apps/api -f apps/api/Dockerfile -t kortix/kortix-api:latest .
+run_check sandbox_daemon_auth bun test apps/zed-sandbox-agent-server/src/__tests__/proxy-auth.test.ts
+run_check sandbox_image_build docker build -f apps/sandbox/Dockerfile -t zed/sandbox:dev .
+run_check api_image_build docker build --build-arg SERVICE=apps/api -f apps/api/Dockerfile -t zed/zed-api:latest .
 run_check gate5_scripts_syntax bash -n \
   tests/e2e/scripts/run-gate5-target-rehearsal.sh \
   tests/e2e/scripts/record-gate5-runbook-drill.sh \
@@ -186,7 +186,7 @@ run_check v1_playwright_spec_guards bash -lc '
   grep -q "Provisioning session" "apps/web/src/app/projects/[id]/sessions/[sessionId]/page.tsx"
   grep -q "Provisioning session" tests/e2e/specs/10-production-golden-paths.spec.ts
   grep -q "sidebarSessionLink.click" tests/e2e/specs/10-production-golden-paths.spec.ts
-  grep -q "getByRole.*link.*Kortix" tests/e2e/specs/08-accounts-project-access.spec.ts
+  grep -q "getByRole.*link.*Zed" tests/e2e/specs/08-accounts-project-access.spec.ts
   grep -q "ownerSession.user.email" tests/e2e/specs/08-accounts-project-access.spec.ts
   grep -q "uiInvitedEmail" tests/e2e/specs/08-accounts-project-access.spec.ts
   grep -q "Invite sent to" tests/e2e/specs/08-accounts-project-access.spec.ts
@@ -204,7 +204,7 @@ run_check v1_legacy_script_guards bash -lc '
     [ ! -e "$retired_path" ]
   done
 
-  if git grep -n -E "core/startup|core/docker|raw.githubusercontent.com/kortix-ai/suna/main/core" -- scripts apps/api; then
+  if git grep -n -E "core/startup|core/docker|raw.githubusercontent.com/zed-ai/suna/main/core" -- scripts apps/api; then
     exit 1
   fi
 
@@ -221,14 +221,14 @@ run_check v1_tree_cleanup_guards bash -lc '
 
   [ ! -e core ]
   [ ! -e packages/voice ]
-  [ ! -e packages/kortix-ocx-registry ]
+  [ ! -e packages/zed-ocx-registry ]
 
   packages="$(find packages -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort | tr "\n" " ")"
   [ "$packages" = "agent-tunnel db shared " ]
   grep -q "Deleted from the v1 workspace path" docs/SPEC.md
   grep -q "Only \`packages/agent-tunnel\`, \`packages/db\`, and \`packages/shared\` remain" docs/SPEC.md
 
-  if git grep -n -E "core/docker|dev:core|packages/voice|packages/kortix-ocx-registry|kortix/computer" -- \
+  if git grep -n -E "core/docker|dev:core|packages/voice|packages/zed-ocx-registry|zed/computer" -- \
     package.json \
     pnpm-workspace.yaml \
     .github/workflows \
@@ -237,7 +237,7 @@ run_check v1_tree_cleanup_guards bash -lc '
     exit 1
   fi
 
-  if git grep -n -E "justavpsOrigins|justavps\\.com|JustAVPS|kortix/computer" -- \
+  if git grep -n -E "justavpsOrigins|justavps\\.com|JustAVPS|zed/computer" -- \
     apps/api/src/index.ts \
     .github/workflows \
     README.md \

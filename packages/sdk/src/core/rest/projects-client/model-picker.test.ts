@@ -1,6 +1,6 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
 
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { getProjectModelPicker } from './projects';
 
 let calls: Array<{ url: string; method: string }> = [];
@@ -18,7 +18,7 @@ beforeEach(() => {
   ) as unknown as typeof fetch;
 });
 
-configureKortix({
+configureZed({
   backendUrl: 'http://test.local',
   getToken: async () => 'tok',
 });

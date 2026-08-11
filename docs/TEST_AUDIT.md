@@ -1,4 +1,4 @@
-# Test Suite Audit — Kortix Platform
+# Test Suite Audit — Zed Platform
 
 **Audit date:** 2026-06-21
 **Branch:** `test-suite`
@@ -11,7 +11,7 @@
 
 ## 1. Executive Summary
 
-Kortix is a **TypeScript / Bun + pnpm monorepo** (Hono API, Next.js web, React Native mobile, Tauri desktop, Rust-bundled CLI, Drizzle/Supabase/Postgres, Stripe). The test estate is **far more mature than a typical greenfield audit** — there is a deliberate 17-category strategy documented in `TESTING.md`, a custom **`ke2e` API-flow framework** (`tests/src`, ~10,677 LOC, ~283 flows, route-coverage gate), Playwright e2e + visual + a11y, k6 performance, Toxiproxy/Pumba chaos, Semgrep/Trivy/ZAP/gitleaks security lanes, Pact contracts, Stryker mutation, and an Allure portal published to `qa.kortix.com` via S3 + Argo.
+Zed is a **TypeScript / Bun + pnpm monorepo** (Hono API, Next.js web, React Native mobile, Tauri desktop, Rust-bundled CLI, Drizzle/Supabase/Postgres, Stripe). The test estate is **far more mature than a typical greenfield audit** — there is a deliberate 17-category strategy documented in `TESTING.md`, a custom **`ke2e` API-flow framework** (`tests/src`, ~10,677 LOC, ~283 flows, route-coverage gate), Playwright e2e + visual + a11y, k6 performance, Toxiproxy/Pumba chaos, Semgrep/Trivy/ZAP/gitleaks security lanes, Pact contracts, Stryker mutation, and an Allure portal published to `qa.zed.com` via S3 + Argo.
 
 The problem is **not absence of testing — it is integrity of the testing that exists.** The headline strategy is undermined by gaps that an enterprise buyer's technical due-diligence would find immediately:
 
@@ -92,7 +92,7 @@ The problem is **not absence of testing — it is integrity of the testing that 
 | `tests/mutation` | config only | stryker | yes | **mutates only `_support` examples** |
 | `apps/web` | 19 | bun:test + node:test | **NO** | hydration/i18n/auth/security helpers — orphaned |
 | `apps/cli` | 6 | bun:test | **NO** | agents/manifest/sandbox-auth — orphaned |
-| `apps/kortix-sandbox-agent-server` | 9 | bun:test | **NO** | proxy-auth/env-file/git-cred — orphaned |
+| `apps/zed-sandbox-agent-server` | 9 | bun:test | **NO** | proxy-auth/env-file/git-cred — orphaned |
 | `apps/mobile` | 9 | bun:test + node:test | **NO** | auth/billing/cache — orphaned |
 | `packages/agent-tunnel` | 3 | bun:test | **NO** | orphaned |
 | `packages/registry` | 1 | bun:test | **Yes** | only package with a real `test` script |
@@ -213,7 +213,7 @@ Severity: **P0** = blocks an enterprise sale / silently hides failures · **P1**
 - **`tests/_support` + `tests/src/fixtures`** factory/seeder layers.
 - **Env-driven configuration everywhere** — localhost fallbacks, no hardcoded prod URLs or real secrets (sampled fixtures only: `whsec_test`, `sk_test_*`).
 - **Quality-gates aggregator** (`tests/scripts/quality-gates.sh`) unifying JUnit + coverage + SARIF + k6.
-- **Allure portal** (`qa.kortix.com`) with trend history via S3 + Argo.
+- **Allure portal** (`qa.zed.com`) with trend history via S3 + Argo.
 - **Tiered CI cadence** (`qa-pr` → `qa-staging` → `qa-nightly` → `qa-release`) — the right shape; it just needs the gates made real.
 
 ---

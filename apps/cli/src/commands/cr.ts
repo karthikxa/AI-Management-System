@@ -10,10 +10,10 @@ import type {
   ChangeRequestsListResponse,
 } from '../api/types.ts';
 
-const HELP = help`Usage: kortix cr <subcommand> [options]
+const HELP = help`Usage: zed cr <subcommand> [options]
 
-Open, review, and merge Kortix change requests. A CR proposes merging one
-version (branch) into another inside a project. The CR layer is Kortix-
+Open, review, and merge Zed change requests. A CR proposes merging one
+version (branch) into another inside a project. The CR layer is Zed-
 native — it works on top of any git host (GitHub, GitLab, plain
 git) without a per-host adapter.
 
@@ -32,12 +32,12 @@ Subcommands:
 
 Global options:
   --project <id>     Operate on this project id (default: linked).
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   -h, --help         Show this help.
 
-Inside an agent sandbox the CLI reads KORTIX_CLI_TOKEN and KORTIX_PROJECT_ID
+Inside an agent sandbox the CLI reads ZED_CLI_TOKEN and ZED_PROJECT_ID
 from the environment automatically — you don't need to log in or link.
-(KORTIX_TOKEN is the sandbox service key, not a CLI token.)
+(ZED_TOKEN is the sandbox service key, not a CLI token.)
 `;
 
 export async function runCr(argv: string[]): Promise<number> {
@@ -387,13 +387,13 @@ async function crOpen(argv: string[], opts: CtxOpts): Promise<number> {
   }
 
   // Inside a sandbox the agent already knows the branch and session it's on.
-  // Fall back to those env vars so `kortix cr open --title "..."` from inside
+  // Fall back to those env vars so `zed cr open --title "..."` from inside
   // a session JUST WORKS.
-  if (!headRef) headRef = process.env.KORTIX_BRANCH_NAME || process.env.KORTIX_HEAD_REF;
-  if (!sessionId) sessionId = process.env.KORTIX_SESSION_ID;
+  if (!headRef) headRef = process.env.ZED_BRANCH_NAME || process.env.ZED_HEAD_REF;
+  if (!sessionId) sessionId = process.env.ZED_SESSION_ID;
 
   if (!headRef) {
-    process.stderr.write(`${status.err('--head <version> is required (or set KORTIX_BRANCH_NAME).')}\n`);
+    process.stderr.write(`${status.err('--head <version> is required (or set ZED_BRANCH_NAME).')}\n`);
     return 2;
   }
   if (!title) {

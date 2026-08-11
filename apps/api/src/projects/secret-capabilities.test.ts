@@ -17,7 +17,7 @@ describe('buildSecretCapabilities', () => {
           strategy: 'broker',
           consumer: 'http_broker',
           egressPolicy: {
-            backend: 'kortix_fetch',
+            backend: 'zed_fetch',
             rules: [{ host: 'api.weather.test', methods: ['GET'], path: '/v1/*' }],
             inject: {
               kind: 'header',
@@ -46,7 +46,7 @@ describe('buildSecretCapabilities', () => {
       capabilities: [
         {
           identifier: 'CRM_TOKEN',
-          delivery: 'kortix_service',
+          delivery: 'zed_service',
           consumer: 'connector',
         },
         {
@@ -57,7 +57,7 @@ describe('buildSecretCapabilities', () => {
         {
           identifier: 'WEATHER_API',
           delivery: 'https_broker',
-          command: 'kortix secrets call WEATHER_API <https-url> [options]',
+          command: 'zed secrets call WEATHER_API <https-url> [options]',
         },
       ],
     });
@@ -120,7 +120,7 @@ describe('buildSecretCapabilities', () => {
           strategy: 'broker',
           consumer: 'http_broker',
           egressPolicy: {
-            backend: 'kortix_fetch',
+            backend: 'zed_fetch',
             rules: [{ host: 'api.example.test' }],
             inject: { kind: 'query', name: 'api_key' },
           },
@@ -137,7 +137,7 @@ describe('buildSecretCapabilities', () => {
       version: 1 as const,
       capabilities: Array.from({ length: 1_000 }, (_, index) => ({
         identifier: `SERVICE_${index.toString().padStart(4, '0')}_${'x'.repeat(100)}`,
-        delivery: 'kortix_service' as const,
+        delivery: 'zed_service' as const,
         consumer: 'connector' as const,
       })),
     };

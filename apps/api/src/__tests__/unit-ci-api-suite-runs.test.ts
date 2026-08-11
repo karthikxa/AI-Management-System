@@ -11,7 +11,7 @@ const envTest = read('apps/api/scripts/test.env');
 
 const apiJob = workflow.slice(workflow.indexOf('\n  api:'));
 
-describe('the kortix-api suite actually runs on pull requests', () => {
+describe('the zed-api suite actually runs on pull requests', () => {
   test('no step in the api job is gated on a secret being present', () => {
     const gated = apiJob
       .split('\n')
@@ -31,7 +31,7 @@ describe('the kortix-api suite actually runs on pull requests', () => {
   });
 
   test('a suite that discovers no files refuses to report success', () => {
-    expect(testScript).toContain('KORTIX_MIN_TEST_FILES');
+    expect(testScript).toContain('ZED_MIN_TEST_FILES');
     expect(testScript).toContain('exit 1');
   });
 

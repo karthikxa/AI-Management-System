@@ -2,7 +2,7 @@ import { parseRuntimeEnv, type RuntimeEnv } from '@/lib/env-schema'
 
 declare global {
   interface Window {
-    __KORTIX_RUNTIME_CONFIG?: Partial<RuntimeEnv>
+    __ZED_RUNTIME_CONFIG?: Partial<RuntimeEnv>
     __RUNTIME_ENV?: Partial<RuntimeEnv>
     __ENV_LOGGED__?: boolean
   }
@@ -10,8 +10,8 @@ declare global {
 
 function readRawEnv(): Partial<RuntimeEnv> {
   if (typeof window !== 'undefined') {
-    if (window.__KORTIX_RUNTIME_CONFIG) {
-      return window.__KORTIX_RUNTIME_CONFIG
+    if (window.__ZED_RUNTIME_CONFIG) {
+      return window.__ZED_RUNTIME_CONFIG
     }
     if (window.__RUNTIME_ENV) {
       return window.__RUNTIME_ENV
@@ -26,19 +26,19 @@ function readRawEnv(): Partial<RuntimeEnv> {
   // server-side Supabase clients (supabase/server.ts, middleware.ts) prefer the
   // absolute process.env.SUPABASE_URL.
   return {
-    SUPABASE_URL: process.env.SUPABASE_URL || process.env.SUPABASE_PUBLIC_URL || process.env.KORTIX_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
-    SUPABASE_ANON_KEY: process.env.KORTIX_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY,
-    BACKEND_URL: process.env.KORTIX_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL,
-    WEBHOOK_BASE_URL: process.env.KORTIX_PUBLIC_WEBHOOK_BASE_URL || process.env.NEXT_PUBLIC_WEBHOOK_BASE_URL || process.env.KORTIX_URL,
-    BILLING_ENABLED: (process.env.KORTIX_PUBLIC_BILLING_ENABLED || process.env.NEXT_PUBLIC_BILLING_ENABLED) === 'true',
-    MANAGED_PROVIDER_ENABLED: (process.env.KORTIX_PUBLIC_MANAGED_PROVIDER_ENABLED || process.env.NEXT_PUBLIC_MANAGED_PROVIDER_ENABLED) === 'true',
-    CONNECTORS_ENABLED: (process.env.KORTIX_PUBLIC_CONNECTORS_ENABLED || process.env.NEXT_PUBLIC_CONNECTORS_ENABLED) !== 'false',
-    DISABLE_LANDING_PAGE: (process.env.KORTIX_PUBLIC_DISABLE_LANDING_PAGE || process.env.NEXT_PUBLIC_DISABLE_LANDING_PAGE) === 'true',
-    RESTRICT_ACCOUNT_CREATION: (process.env.KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION || process.env.NEXT_PUBLIC_RESTRICT_ACCOUNT_CREATION) === 'true',
-    APP_URL: process.env.KORTIX_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_URL || process.env.PUBLIC_URL,
-    SANDBOX_ID: process.env.KORTIX_PUBLIC_SANDBOX_ID || process.env.NEXT_PUBLIC_SANDBOX_ID || undefined,
-    AUTH_PROVIDERS: process.env.KORTIX_PUBLIC_AUTH_PROVIDERS || process.env.NEXT_PUBLIC_AUTH_PROVIDERS || undefined,
-    AUTH_METHODS: process.env.KORTIX_PUBLIC_AUTH_METHODS || process.env.NEXT_PUBLIC_AUTH_METHODS || undefined,
+    SUPABASE_URL: process.env.SUPABASE_URL || process.env.SUPABASE_PUBLIC_URL || process.env.ZED_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_ANON_KEY: process.env.ZED_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY,
+    BACKEND_URL: process.env.ZED_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL,
+    WEBHOOK_BASE_URL: process.env.ZED_PUBLIC_WEBHOOK_BASE_URL || process.env.NEXT_PUBLIC_WEBHOOK_BASE_URL || process.env.ZED_URL,
+    BILLING_ENABLED: (process.env.ZED_PUBLIC_BILLING_ENABLED || process.env.NEXT_PUBLIC_BILLING_ENABLED) === 'true',
+    MANAGED_PROVIDER_ENABLED: (process.env.ZED_PUBLIC_MANAGED_PROVIDER_ENABLED || process.env.NEXT_PUBLIC_MANAGED_PROVIDER_ENABLED) === 'true',
+    CONNECTORS_ENABLED: (process.env.ZED_PUBLIC_CONNECTORS_ENABLED || process.env.NEXT_PUBLIC_CONNECTORS_ENABLED) !== 'false',
+    DISABLE_LANDING_PAGE: (process.env.ZED_PUBLIC_DISABLE_LANDING_PAGE || process.env.NEXT_PUBLIC_DISABLE_LANDING_PAGE) === 'true',
+    RESTRICT_ACCOUNT_CREATION: (process.env.ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION || process.env.NEXT_PUBLIC_RESTRICT_ACCOUNT_CREATION) === 'true',
+    APP_URL: process.env.ZED_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_URL || process.env.PUBLIC_URL,
+    SANDBOX_ID: process.env.ZED_PUBLIC_SANDBOX_ID || process.env.NEXT_PUBLIC_SANDBOX_ID || undefined,
+    AUTH_PROVIDERS: process.env.ZED_PUBLIC_AUTH_PROVIDERS || process.env.NEXT_PUBLIC_AUTH_PROVIDERS || undefined,
+    AUTH_METHODS: process.env.ZED_PUBLIC_AUTH_METHODS || process.env.NEXT_PUBLIC_AUTH_METHODS || undefined,
   }
 }
 
@@ -46,7 +46,7 @@ function logRuntimeEnv(env: RuntimeEnv) {
   if (typeof window === 'undefined' || window.__ENV_LOGGED__) return
   window.__ENV_LOGGED__ = true
   console.info('[runtime-env]', {
-    source: window.__KORTIX_RUNTIME_CONFIG || window.__RUNTIME_ENV ? 'runtime-script' : 'fallback',
+    source: window.__ZED_RUNTIME_CONFIG || window.__RUNTIME_ENV ? 'runtime-script' : 'fallback',
     supabaseUrl: env.SUPABASE_URL,
     backendUrl: env.BACKEND_URL,
     billingEnabled: env.BILLING_ENABLED,

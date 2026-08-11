@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-SOURCE_SECRET_ID="${SOURCE_SECRET_ID:-kortix-prod-env}"
+SOURCE_SECRET_ID="${SOURCE_SECRET_ID:-zed-prod-env}"
 SOURCE_AWS_REGION="${SOURCE_AWS_REGION:-eu-west-2}"
-TARGET_SECRET_ID="${TARGET_SECRET_ID:-kortix/prod-us-east-2-migration}"
+TARGET_SECRET_ID="${TARGET_SECRET_ID:-zed/prod-us-east-2-migration}"
 TARGET_AWS_REGION="${TARGET_AWS_REGION:-us-east-2}"
-PUBLICATION="${PUBLICATION:-kortix_us_east_2_20260725}"
-SUBSCRIPTION="${SUBSCRIPTION:-kortix_us_east_2_20260725}"
-AUTH_SUBSCRIPTION="${AUTH_SUBSCRIPTION:-kortix_use2_auth_20260725}"
+PUBLICATION="${PUBLICATION:-zed_us_east_2_20260725}"
+SUBSCRIPTION="${SUBSCRIPTION:-zed_us_east_2_20260725}"
+AUTH_SUBSCRIPTION="${AUTH_SUBSCRIPTION:-zed_use2_auth_20260725}"
 SHADOW_AUDIT_START_AT="${SHADOW_AUDIT_START_AT:-2026-07-25 00:00:00+00}"
 
 require_command() {
@@ -56,48 +56,48 @@ prepare_source() {
     printf "\\set replication_password '%s'\n" "${replication_password//\'/\'\'}"
     cat <<'SQL'
 SELECT format(
-  'CREATE ROLE kortix_use2_repl WITH LOGIN REPLICATION PASSWORD %L',
+  'CREATE ROLE zed_use2_repl WITH LOGIN REPLICATION PASSWORD %L',
   :'replication_password'
 )
 WHERE NOT EXISTS (
   SELECT 1
   FROM pg_roles
-  WHERE rolname = 'kortix_use2_repl'
+  WHERE rolname = 'zed_use2_repl'
 )
 \gexec
 SELECT format(
-  'ALTER ROLE kortix_use2_repl WITH LOGIN REPLICATION PASSWORD %L',
+  'ALTER ROLE zed_use2_repl WITH LOGIN REPLICATION PASSWORD %L',
   :'replication_password'
 )
 \gexec
-ALTER ROLE kortix_use2_repl SET statement_timeout = 0;
-ALTER ROLE kortix_use2_repl BYPASSRLS;
-GRANT CONNECT ON DATABASE postgres TO kortix_use2_repl;
-GRANT USAGE ON SCHEMA kortix, public TO kortix_use2_repl;
-GRANT SELECT ON ALL TABLES IN SCHEMA kortix TO kortix_use2_repl;
+ALTER ROLE zed_use2_repl SET statement_timeout = 0;
+ALTER ROLE zed_use2_repl BYPASSRLS;
+GRANT CONNECT ON DATABASE postgres TO zed_use2_repl;
+GRANT USAGE ON SCHEMA zed, public TO zed_use2_repl;
+GRANT SELECT ON ALL TABLES IN SCHEMA zed TO zed_use2_repl;
 GRANT SELECT ON
   public.daily_refresh_tracking,
   public.renewal_processing,
   public.contact_forms,
   public.webhook_config
-TO kortix_use2_repl;
+TO zed_use2_repl;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres
-  IN SCHEMA kortix
-  GRANT SELECT ON TABLES TO kortix_use2_repl;
+  IN SCHEMA zed
+  GRANT SELECT ON TABLES TO zed_use2_repl;
 SQL
   } | psql "$source_database_url" -X -v ON_ERROR_STOP=1
 
   psql "$source_database_url" -X -v ON_ERROR_STOP=1 -v publication="$PUBLICATION" <<'SQL'
 SET lock_timeout = '5s';
-SELECT set_config('kortix.migration_publication', :'publication', false);
+SELECT set_config('zed.migration_publication', :'publication', false);
 
-ALTER TABLE kortix.account_members
+ALTER TABLE zed.account_members
   REPLICA IDENTITY USING INDEX idx_account_members_user_account;
-ALTER TABLE kortix.project_members
+ALTER TABLE zed.project_members
   REPLICA IDENTITY USING INDEX idx_project_members_project_user;
-ALTER TABLE kortix.sandbox_members
+ALTER TABLE zed.sandbox_members
   REPLICA IDENTITY USING INDEX idx_sandbox_members_unique;
-ALTER TABLE kortix.sandbox_member_scopes
+ALTER TABLE zed.sandbox_member_scopes
   REPLICA IDENTITY USING INDEX idx_sandbox_member_scopes_unique;
 
 SELECT format(
@@ -114,14 +114,14 @@ WHERE NOT EXISTS (
 
 DO $do$
 DECLARE
-  publication_name text := current_setting('kortix.migration_publication');
+  publication_name text := current_setting('zed.migration_publication');
   relation record;
 BEGIN
   FOR relation IN
     WITH selected_tables AS (
       SELECT table_schema, table_name
       FROM information_schema.tables
-      WHERE table_schema = 'kortix'
+      WHERE table_schema = 'zed'
         AND table_type = 'BASE TABLE'
         AND table_name NOT IN (
           'channel_configs',
@@ -150,7 +150,7 @@ BEGIN
         ', ' ORDER BY columns.ordinal_position
       ) FILTER (
         WHERE NOT (
-          selected_tables.table_schema = 'kortix'
+          selected_tables.table_schema = 'zed'
           AND selected_tables.table_name = 'accounts'
           AND columns.column_name = 'personal_account'
         )
@@ -202,7 +202,7 @@ start_subscription() {
       SELECT count(*)
       FROM (
         SELECT account_id
-        FROM kortix.account_deletion_requests
+        FROM zed.account_deletion_requests
         WHERE is_cancelled = false
           AND is_deleted = false
         GROUP BY account_id
@@ -213,7 +213,7 @@ start_subscription() {
 
   if [[ "$duplicate_active_deletions" -gt 0 ]]; then
     psql "$target_database_url" -X -v ON_ERROR_STOP=1 -c \
-      'DROP INDEX IF EXISTS kortix.unique_active_deletion_request'
+      'DROP INDEX IF EXISTS zed.unique_active_deletion_request'
   fi
 
   source_replication_url="$(
@@ -426,7 +426,7 @@ repair_public_rls_tables() {
   local caught_up=false
   local subscription_disabled=false
 
-  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/kortix-use2-public-repair.XXXXXX")"
+  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/zed-use2-public-repair.XXXXXX")"
 
   coproc SOURCE_SESSION {
     psql "$source_database_url" -X -qAt -v ON_ERROR_STOP=1
@@ -555,7 +555,7 @@ repair_shadow_mutations() {
   local subscription_was_enabled
   local cleanup_trap
   local credit_account_columns
-  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/kortix-use2-shadow-repair.XXXXXX")"
+  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/zed-use2-shadow-repair.XXXXXX")"
   subscription_was_enabled="$(
     psql "$target_database_url" -X -qAt -v ON_ERROR_STOP=1 \
       -v subscription="$SUBSCRIPTION" <<'SQL'
@@ -595,26 +595,26 @@ SQL
     psql "$source_database_url" -X -qAt -v ON_ERROR_STOP=1 <<'SQL'
 SELECT string_agg(format('%I', column_name), ', ' ORDER BY ordinal_position)
 FROM information_schema.columns
-WHERE table_schema = 'kortix'
+WHERE table_schema = 'zed'
   AND table_name = 'credit_accounts'
   AND is_generated = 'NEVER';
 SQL
   )"
 
   psql "$source_database_url" -X -q -v ON_ERROR_STOP=1 \
-    -c "\\copy (SELECT key_id, last_used_at FROM kortix.api_keys ORDER BY key_id) TO '$temporary_directory/api_keys.csv' WITH (FORMAT csv)"
+    -c "\\copy (SELECT key_id, last_used_at FROM zed.api_keys ORDER BY key_id) TO '$temporary_directory/api_keys.csv' WITH (FORMAT csv)"
   psql "$source_database_url" -X -q -v ON_ERROR_STOP=1 \
-    -c "\\copy (SELECT $credit_account_columns FROM kortix.credit_accounts ORDER BY account_id) TO '$temporary_directory/credit_accounts.csv' WITH (FORMAT csv)"
+    -c "\\copy (SELECT $credit_account_columns FROM zed.credit_accounts ORDER BY account_id) TO '$temporary_directory/credit_accounts.csv' WITH (FORMAT csv)"
   psql "$source_database_url" -X -q -v ON_ERROR_STOP=1 \
-    -c "\\copy (SELECT id FROM kortix.credit_ledger ORDER BY id) TO '$temporary_directory/credit_ledger_ids.csv' WITH (FORMAT csv)"
+    -c "\\copy (SELECT id FROM zed.credit_ledger ORDER BY id) TO '$temporary_directory/credit_ledger_ids.csv' WITH (FORMAT csv)"
   psql "$source_database_url" -X -q -v ON_ERROR_STOP=1 \
-    -c "\\copy (SELECT session_id, last_used_at, metadata, updated_at FROM kortix.session_sandboxes ORDER BY session_id COLLATE \"C\") TO '$temporary_directory/session_sandboxes.csv' WITH (FORMAT csv)"
+    -c "\\copy (SELECT session_id, last_used_at, metadata, updated_at FROM zed.session_sandboxes ORDER BY session_id COLLATE \"C\") TO '$temporary_directory/session_sandboxes.csv' WITH (FORMAT csv)"
   psql "$source_database_url" -X -q -v ON_ERROR_STOP=1 \
     -v shadow_audit_start_at="$SHADOW_AUDIT_START_AT" \
     >"$temporary_directory/audit_event_ids.csv" <<'SQL'
 COPY (
   SELECT event_id
-  FROM kortix.audit_events
+  FROM zed.audit_events
   WHERE occurred_at >= :'shadow_audit_start_at'::timestamptz
   ORDER BY event_id
 ) TO STDOUT WITH (FORMAT csv);
@@ -642,7 +642,7 @@ CREATE TEMP TABLE repair_audit_event_ids (
   event_id uuid PRIMARY KEY
 ) ON COMMIT DROP;
 SQL
-    printf "CREATE TEMP TABLE repair_credit_accounts AS SELECT %s FROM kortix.credit_accounts WITH NO DATA;\n" \
+    printf "CREATE TEMP TABLE repair_credit_accounts AS SELECT %s FROM zed.credit_accounts WITH NO DATA;\n" \
       "$credit_account_columns"
     printf "\\copy repair_api_keys FROM '%s/api_keys.csv' WITH (FORMAT csv)\n" "$temporary_directory"
     printf "\\copy repair_credit_accounts FROM '%s/credit_accounts.csv' WITH (FORMAT csv)\n" "$temporary_directory"
@@ -650,7 +650,7 @@ SQL
     printf "\\copy repair_session_sandboxes FROM '%s/session_sandboxes.csv' WITH (FORMAT csv)\n" "$temporary_directory"
     printf "\\copy repair_audit_event_ids FROM '%s/audit_event_ids.csv' WITH (FORMAT csv)\n" "$temporary_directory"
     cat <<'SQL'
-UPDATE kortix.api_keys AS target
+UPDATE zed.api_keys AS target
 SET last_used_at = source.last_used_at
 FROM repair_api_keys AS source
 WHERE target.key_id = source.key_id
@@ -676,7 +676,7 @@ BEGIN
     AND NOT attisdropped;
 
   EXECUTE format(
-	    'UPDATE kortix.credit_accounts AS target
+	    'UPDATE zed.credit_accounts AS target
 	       SET (%1$s) = (%2$s)
 	      FROM repair_credit_accounts AS source
 	     WHERE target.account_id = source.account_id
@@ -688,7 +688,7 @@ BEGIN
 END
 $do$;
 
-UPDATE kortix.credit_accounts AS target
+UPDATE zed.credit_accounts AS target
 SET
   balance_precise = source.balance,
   lifetime_granted_precise = source.lifetime_granted,
@@ -717,21 +717,21 @@ WHERE target.account_id = source.account_id
     source.daily_credits_balance
   );
 
-	DELETE FROM kortix.credit_accounts AS target
+	DELETE FROM zed.credit_accounts AS target
 	WHERE NOT EXISTS (
 	  SELECT 1
 	  FROM repair_credit_accounts AS source
 	  WHERE source.account_id = target.account_id
 	);
 
-DELETE FROM kortix.credit_ledger AS target
+DELETE FROM zed.credit_ledger AS target
 WHERE NOT EXISTS (
   SELECT 1
   FROM repair_credit_ledger_ids AS source
   WHERE source.id = target.id
 );
 
-UPDATE kortix.session_sandboxes AS target
+UPDATE zed.session_sandboxes AS target
 SET
   last_used_at = source.last_used_at,
   metadata = source.metadata,
@@ -748,7 +748,7 @@ WHERE target.session_id = source.session_id
     source.updated_at
   );
 
-DELETE FROM kortix.audit_events AS target
+DELETE FROM zed.audit_events AS target
 WHERE target.occurred_at >= :'shadow_audit_start_at'::timestamptz
   AND target.occurred_at < now() - interval '15 minutes'
   AND NOT EXISTS (
@@ -784,16 +784,16 @@ backfill_target_precision_columns() {
 BEGIN;
 SET LOCAL statement_timeout = 0;
 
-ALTER TABLE kortix.credit_accounts
+ALTER TABLE zed.credit_accounts
   ENABLE ALWAYS TRIGGER sync_credit_account_precision_columns;
-ALTER TABLE kortix.credit_ledger
+ALTER TABLE zed.credit_ledger
   ENABLE ALWAYS TRIGGER sync_credit_ledger_precision_columns;
-ALTER TABLE kortix.gateway_request_logs
+ALTER TABLE zed.gateway_request_logs
   ENABLE ALWAYS TRIGGER sync_gateway_request_log_cost_precision;
-ALTER TABLE kortix.usage_events
+ALTER TABLE zed.usage_events
   ENABLE ALWAYS TRIGGER sync_usage_event_cost_precision;
 
-UPDATE kortix.credit_accounts
+UPDATE zed.credit_accounts
 SET
   balance_precise = balance,
   lifetime_granted_precise = lifetime_granted,
@@ -820,21 +820,21 @@ WHERE ROW(
   daily_credits_balance
 );
 
-UPDATE kortix.credit_ledger
+UPDATE zed.credit_ledger
 SET
   amount_precise = amount,
   balance_after_precise = balance_after
 WHERE ROW(amount_precise, balance_after_precise)
   IS DISTINCT FROM ROW(amount, balance_after);
 
-UPDATE kortix.gateway_request_logs
+UPDATE zed.gateway_request_logs
 SET
   upstream_cost_precise = upstream_cost,
   final_cost_precise = final_cost
 WHERE ROW(upstream_cost_precise, final_cost_precise)
   IS DISTINCT FROM ROW(upstream_cost, final_cost);
 
-UPDATE kortix.usage_events
+UPDATE zed.usage_events
 SET cost_usd_precise = cost_usd
 WHERE cost_usd_precise IS DISTINCT FROM cost_usd;
 
@@ -843,7 +843,7 @@ COMMIT;
 SELECT relation, mismatches
 FROM (
   SELECT
-    'kortix.credit_accounts' AS relation,
+    'zed.credit_accounts' AS relation,
     count(*) FILTER (
       WHERE ROW(
         balance_precise,
@@ -863,30 +863,30 @@ FROM (
         daily_credits_balance
       )
     ) AS mismatches
-  FROM kortix.credit_accounts
+  FROM zed.credit_accounts
   UNION ALL
   SELECT
-    'kortix.credit_ledger',
+    'zed.credit_ledger',
     count(*) FILTER (
       WHERE ROW(amount_precise, balance_after_precise)
         IS DISTINCT FROM ROW(amount, balance_after)
     )
-  FROM kortix.credit_ledger
+  FROM zed.credit_ledger
   UNION ALL
   SELECT
-    'kortix.gateway_request_logs',
+    'zed.gateway_request_logs',
     count(*) FILTER (
       WHERE ROW(upstream_cost_precise, final_cost_precise)
         IS DISTINCT FROM ROW(upstream_cost, final_cost)
     )
-  FROM kortix.gateway_request_logs
+  FROM zed.gateway_request_logs
   UNION ALL
   SELECT
-    'kortix.usage_events',
+    'zed.usage_events',
     count(*) FILTER (
       WHERE cost_usd_precise IS DISTINCT FROM cost_usd
     )
-  FROM kortix.usage_events
+  FROM zed.usage_events
 ) AS precision_state
 ORDER BY relation;
 SQL
@@ -910,16 +910,16 @@ CREATE TEMP TABLE migration_counts (
 ) ON COMMIT DROP;
 
 SELECT
-  set_config('kortix.migration_database_side', :'database_side', true),
-  set_config('kortix.migration_publication', :'publication', true),
-  set_config('kortix.migration_subscription', :'subscription', true)
+  set_config('zed.migration_database_side', :'database_side', true),
+  set_config('zed.migration_publication', :'publication', true),
+  set_config('zed.migration_subscription', :'subscription', true)
 \gset
 
 DO $do$
 DECLARE
-  database_side text := current_setting('kortix.migration_database_side');
-  publication_name text := current_setting('kortix.migration_publication');
-  subscription_name text := current_setting('kortix.migration_subscription');
+  database_side text := current_setting('zed.migration_database_side');
+  publication_name text := current_setting('zed.migration_publication');
+  subscription_name text := current_setting('zed.migration_subscription');
   relation record;
 BEGIN
   FOR relation IN
@@ -975,7 +975,7 @@ SQL
 }
 
 reconcile_counts() {
-  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/kortix-use2-counts.XXXXXX")"
+  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/zed-use2-counts.XXXXXX")"
   source_counts="$temporary_directory/source.tsv"
   target_counts="$temporary_directory/target.tsv"
   cleanup_counts() {
@@ -1021,16 +1021,16 @@ CREATE TEMP TABLE migration_key_hashes (
 ) ON COMMIT DROP;
 
 SELECT
-  set_config('kortix.migration_database_side', :'database_side', true),
-  set_config('kortix.migration_publication', :'publication', true),
-  set_config('kortix.migration_subscription', :'subscription', true)
+  set_config('zed.migration_database_side', :'database_side', true),
+  set_config('zed.migration_publication', :'publication', true),
+  set_config('zed.migration_subscription', :'subscription', true)
 \gset
 
 DO $do$
 DECLARE
-  database_side text := current_setting('kortix.migration_database_side');
-  publication_name text := current_setting('kortix.migration_publication');
-  subscription_name text := current_setting('kortix.migration_subscription');
+  database_side text := current_setting('zed.migration_database_side');
+  publication_name text := current_setting('zed.migration_publication');
+  subscription_name text := current_setting('zed.migration_subscription');
   relation record;
 BEGIN
   FOR relation IN
@@ -1182,7 +1182,7 @@ BEGIN
         )
       ) AS row_columns
     FROM information_schema.columns
-    WHERE information_schema.columns.table_schema = 'kortix'
+    WHERE information_schema.columns.table_schema = 'zed'
       AND information_schema.columns.is_generated = 'NEVER'
       AND information_schema.columns.table_name IN (
         'account_members',
@@ -1277,7 +1277,7 @@ reconcile_hashes() {
       ;;
   esac
 
-  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/kortix-use2-hashes.XXXXXX")"
+  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/zed-use2-hashes.XXXXXX")"
   source_hashes="$temporary_directory/source.tsv"
   target_hashes="$temporary_directory/target.tsv"
   cleanup_hashes() {
@@ -1335,7 +1335,7 @@ JOIN pg_namespace AS table_namespace
 WHERE sequence_class.relkind = 'S'
   AND (
     (
-      table_namespace.nspname = 'kortix'
+      table_namespace.nspname = 'zed'
       AND table_class.relname NOT IN (
         'channel_configs',
         'integration_credentials',
@@ -1364,7 +1364,7 @@ SQL
 }
 
 reconcile_sequences() {
-  sequence_state_file="$(mktemp "${TMPDIR:-/tmp}/kortix-use2-sequences.XXXXXX")"
+  sequence_state_file="$(mktemp "${TMPDIR:-/tmp}/zed-use2-sequences.XXXXXX")"
   cleanup_sequence_state() {
     [[ -f "$sequence_state_file" ]] && unlink "$sequence_state_file"
   }
@@ -1466,7 +1466,7 @@ SQL
     printf "\\set replication_password '%s'\n" "${new_password//\'/\'\'}"
     cat <<'SQL'
 SELECT format(
-  'ALTER ROLE kortix_use2_repl WITH LOGIN REPLICATION PASSWORD %L',
+  'ALTER ROLE zed_use2_repl WITH LOGIN REPLICATION PASSWORD %L',
   :'replication_password'
 )
 \gexec

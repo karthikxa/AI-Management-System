@@ -50,8 +50,8 @@ function InsufficientCreditsCard({
 }) {
   const balance = parseBalance(errorText);
   const message = balance
-    ? `Your balance is ${balance}. Top up on kortix.com to continue.`
-    : 'Top up on kortix.com to continue.';
+    ? `Your balance is ${balance}. Top up on zed.com to continue.`
+    : 'Top up on zed.com to continue.';
 
   return (
     <View

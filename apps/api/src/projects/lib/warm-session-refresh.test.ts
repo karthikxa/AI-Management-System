@@ -5,7 +5,7 @@ const project = {
   projectId: 'project-1',
   repoUrl: 'https://git.example.test/project-1.git',
   defaultBranch: 'main',
-  manifestPath: 'kortix.yaml',
+  manifestPath: 'zed.yaml',
 };
 
 const workspace = {

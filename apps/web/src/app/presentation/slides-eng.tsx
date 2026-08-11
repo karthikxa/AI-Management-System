@@ -2,19 +2,19 @@
 
 import { useTranslations } from 'next-intl';
 /**
- * The Kortix deck — content & structure follow the official "Kortix pres ENG"
+ * The Zed deck — content & structure follow the official "Zed pres ENG"
  * sales narrative (origin → what it is → interface → shared machine →
  * connect/configure/deploy → no model lock-in → Slack/Teams → use cases →
  * thanks), rendered in the marketing-site visual style (home / developers /
  * enterprise): marketing Badge, mono eyebrows, font-medium tracking-tight
- * titles, rounded-sm thin-border cards, KortixAsterisk bullets, KortixGrid /
- * KortixLetterField motifs, real product screenshots.
+ * titles, rounded-sm thin-border cards, ZedAsterisk bullets, ZedGrid /
+ * ZedLetterField motifs, real product screenshots.
  */
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { Badge } from '@/components/ui/badge';
-import KortixGrid from '@/components/ui/marketing/gridder';
-import { KortixLetterField } from '@/components/ui/marketing/kortix-letter-field';
+import ZedGrid from '@/components/ui/marketing/gridder';
+import { ZedLetterField } from '@/components/ui/marketing/zed-letter-field';
 import { cn } from '@/lib/utils';
 import {
   CubeIcon as Boxes,
@@ -105,7 +105,7 @@ function StatBlock({
 function LetterBg({ seed = 3382 }: { seed?: number }) {
   return (
     <div className="pointer-events-none absolute inset-0 z-0 mask-y-to-95%" aria-hidden>
-      <KortixLetterField seed={seed} />
+      <ZedLetterField seed={seed} />
     </div>
   );
 }
@@ -124,7 +124,7 @@ export function useSlides(): SlideDef[] {
         <Slide className="overflow-hidden">
           <LetterBg seed={3382} />
           <div className="relative z-10 max-w-4xl space-y-7">
-            <KortixLogo variant="logomark" size={30} className="text-foreground" />
+            <ZedLogo variant="logomark" size={30} className="text-foreground" />
             <Badge variant="update" className="rounded">
               {tI18nHardcoded.raw(
                 'autoAppPresentationSlidesEngJsxTextAutonomousCompanyOperatingSystem84a0b7da',
@@ -186,16 +186,16 @@ export function useSlides(): SlideDef[] {
       ),
     },
 
-    /* 3 — WHAT IS KORTIX TODAY ───────────────────────────────────────────── */
+    /* 3 — WHAT IS ZED TODAY ───────────────────────────────────────────── */
     {
       id: 'what',
-      label: 'What is Kortix',
+      label: 'What is Zed',
       node: (
         <Slide>
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div className="space-y-5">
               <Eyebrow>
-                {tI18nHardcoded.raw('autoAppPresentationSlidesEngJsxTextSoWhatIsKortixf6e68e29')}
+                {tI18nHardcoded.raw('autoAppPresentationSlidesEngJsxTextSoWhatIsZedf6e68e29')}
               </Eyebrow>
               <h2 className="text-foreground text-3xl font-medium tracking-tight sm:text-4xl">
                 {tI18nHardcoded.raw(
@@ -213,7 +213,7 @@ export function useSlides(): SlideDef[] {
                 ]}
               />
             </div>
-            <Shot src={`${SHOT}/01-command-center.png`} alt="The Kortix command center" />
+            <Shot src={`${SHOT}/01-command-center.png`} alt="The Zed command center" />
           </div>
         </Slide>
       ),
@@ -411,16 +411,16 @@ export function useSlides(): SlideDef[] {
       ),
     },
 
-    /* 8 — WHERE KORTIX LIVES ────────────────────────────────────────────── */
+    /* 8 — WHERE ZED LIVES ────────────────────────────────────────────── */
     {
       id: 'lives',
-      label: 'Where Kortix lives',
+      label: 'Where Zed lives',
       node: (
         <Slide>
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div className="space-y-5">
               <Eyebrow>
-                {tI18nHardcoded.raw('autoAppPresentationSlidesEngJsxTextWhereKortixLives366879fa')}
+                {tI18nHardcoded.raw('autoAppPresentationSlidesEngJsxTextWhereZedLives366879fa')}
               </Eyebrow>
               <h2 className="text-foreground text-3xl font-medium tracking-tight sm:text-4xl">
                 {tI18nHardcoded.raw(
@@ -428,7 +428,7 @@ export function useSlides(): SlideDef[] {
                 )}
               </h2>
               <Lead>
-                {tI18nHardcoded.raw('autoAppPresentationSlidesEngJsxTextInstallKortixAsA355cd3e1')}
+                {tI18nHardcoded.raw('autoAppPresentationSlidesEngJsxTextInstallZedAsA355cd3e1')}
               </Lead>
               <div className="flex flex-wrap gap-2">
                 <Pill>Slack</Pill>
@@ -440,7 +440,7 @@ export function useSlides(): SlideDef[] {
                 </Pill>
               </div>
             </div>
-            <Shot src={`${SHOT}/06-channels.png`} alt="Kortix inside Slack and Teams" />
+            <Shot src={`${SHOT}/06-channels.png`} alt="Zed inside Slack and Teams" />
           </div>
         </Slide>
       ),
@@ -504,10 +504,10 @@ export function useSlides(): SlideDef[] {
       node: (
         <Slide className="overflow-hidden">
           <div className="pointer-events-none absolute inset-0 z-0 mask-y-from-80% mask-x-from-90% opacity-60">
-            <KortixGrid count={58} seed={4228} />
+            <ZedGrid count={58} seed={4228} />
           </div>
           <div className="relative z-10 space-y-8">
-            <KortixLogo variant="symbol" size={44} className="text-foreground" />
+            <ZedLogo variant="symbol" size={44} className="text-foreground" />
             <h2 className="text-foreground text-6xl font-medium tracking-tight">Grazie.</h2>
             <div className="space-y-3">
               <Eyebrow>
@@ -515,12 +515,12 @@ export function useSlides(): SlideDef[] {
               </Eyebrow>
               <p className="text-foreground text-xl font-medium tracking-tight">
                 {tI18nHardcoded.raw('autoAppPresentationSlidesEngJsxTextTextMeAt7199731f')}
-                <Mono className="text-kortix-blue">
-                  {tI18nHardcoded.raw('autoAppPresentationSlidesEngJsxTextDomKortixAi2c244da6')}
+                <Mono className="text-zed-blue">
+                  {tI18nHardcoded.raw('autoAppPresentationSlidesEngJsxTextDomZedAi2c244da6')}
                 </Mono>{' '}
                 {tI18nHardcoded.raw('autoAppPresentationSlidesEngJsxTextOrOnLinkedIn13b1c035')}
               </p>
-              <p className="text-muted-foreground font-mono text-sm">kortix.com</p>
+              <p className="text-muted-foreground font-mono text-sm">zed.com</p>
             </div>
           </div>
         </Slide>

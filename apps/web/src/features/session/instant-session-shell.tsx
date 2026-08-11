@@ -13,17 +13,17 @@ import { useSessionWallpaperLayer } from '@/features/session/session-wallpaper-l
 import { SessionWelcome } from '@/features/session/session-welcome';
 import { buildOptimisticPromptTextWithUploads } from '@/features/session/uploaded-file-refs';
 import { ProjectHomeWelcomeBody } from '@/features/workspace/project-layout/project-home';
-import type { Command } from '@kortix/sdk/react';
-import { readStartStash, useRuntimeAgents, writeStartStash } from '@kortix/sdk/react';
+import type { Command } from '@zed/sdk/react';
+import { readStartStash, useRuntimeAgents, writeStartStash } from '@zed/sdk/react';
 import { playSound } from '@/lib/sounds';
 import { cn } from '@/lib/utils';
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import {
   useMessageQueueStore,
   type WebQueuedMessage,
 } from '@/stores/message-queue-store';
 import { usePendingFilesStore } from '@/stores/session-composer-handoff-store';
-import type { SessionStartStage } from '@kortix/sdk';
+import type { SessionStartStage } from '@zed/sdk';
 
 /** Stable empty list, so a session with nothing queued does not hand the
  *  zustand selector a fresh array on every render. */
@@ -80,7 +80,7 @@ export function InstantSessionShell({
   // across the crossfade — an unclickable mention renders as a plain span and
   // would visibly gain an underline the moment the real chat took over.
   // Attachment clicks live inside MessageAttachments (computer store / lightbox).
-  const openFileInComputer = useKortixComputerStore((s) => s.openFileInComputer);
+  const openFileInComputer = useZedComputerStore((s) => s.openFileInComputer);
   // Same reason: an `@agent` mention only renders as an agent chip when the
   // renderer can recognise the name. Without this list it would fall through to
   // "file" and pick up an underline the real chat does not give it. The catalog
@@ -121,7 +121,7 @@ export function InstantSessionShell({
       playSound('send');
 
       // Hand the message to the real chat: it auto-sends from this stash once
-      // the runtime is healthy. `sessionId` here is the route/Kortix-session
+      // the runtime is healthy. `sessionId` here is the route/Zed-session
       // id, not the eventual OpenCode pin (`useCanonicalRuntimeSession`
       // resolves those independently — see `ensureOpencodeSessionPin` in
       // apps/api/src/projects/routes/shared.ts); the session page's

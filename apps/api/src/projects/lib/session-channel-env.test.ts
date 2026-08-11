@@ -23,18 +23,18 @@ describe('sessionChannelEnvFromMetadata', () => {
       SLACK_CHANNEL_ID: 'channel-1',
       SLACK_THREAD_TS: 'thread-1',
       SLACK_USER_ID: 'user-1',
-      KORTIX_CONNECTORS_MCP_ENABLED: '1',
-      KORTIX_EMAIL_INBOX_ID: 'inbox-1',
-      KORTIX_EMAIL_THREAD_ID: 'thread-email-1',
-      KORTIX_EMAIL_MESSAGE_ID: 'message-1',
-      KORTIX_EMAIL_ADDRESS: 'agent@example.com',
+      ZED_CONNECTORS_MCP_ENABLED: '1',
+      ZED_EMAIL_INBOX_ID: 'inbox-1',
+      ZED_EMAIL_THREAD_ID: 'thread-email-1',
+      ZED_EMAIL_MESSAGE_ID: 'message-1',
+      ZED_EMAIL_ADDRESS: 'agent@example.com',
     });
   });
 
   test('uses legacy email metadata as the MCP upgrade marker', () => {
     expect(sessionChannelEnvFromMetadata({ email: { inbox_id: 'inbox-legacy' } })).toEqual({
-      KORTIX_CONNECTORS_MCP_ENABLED: '1',
-      KORTIX_EMAIL_INBOX_ID: 'inbox-legacy',
+      ZED_CONNECTORS_MCP_ENABLED: '1',
+      ZED_EMAIL_INBOX_ID: 'inbox-legacy',
     });
   });
 

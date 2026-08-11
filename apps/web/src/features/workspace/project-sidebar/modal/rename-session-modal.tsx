@@ -13,9 +13,9 @@ import {
   ModalTitle,
 } from '@/components/ui/modal';
 import { errorToast, successToast } from '@/components/ui/toast';
-import type { ProjectSession } from '@kortix/sdk';
-import { updateProjectSession } from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+import type { ProjectSession } from '@zed/sdk';
+import { updateProjectSession } from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';

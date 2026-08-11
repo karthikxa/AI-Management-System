@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import type { AccountRole } from '@kortix/sdk';
+import type { AccountRole } from '@zed/sdk';
 import { QuestionIcon as HelpCircle } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import {
@@ -87,8 +87,8 @@ export function PermissionsHelpPopover({
           </p>
         </section>
 
-        <section className="border-kortix-yellow bg-kortix-yellow/5 space-y-1 rounded-md border p-2.5">
-          <h3 className="text-kortix-yellow text-xs font-semibold">
+        <section className="border-zed-yellow bg-zed-yellow/5 space-y-1 rounded-md border p-2.5">
+          <h3 className="text-zed-yellow text-xs font-semibold">
             {tI18nHardcoded.raw(
               'autoComponentsIamPermissionsHelpPopoverJsxTextOverrideRule60f7c767',
             )}

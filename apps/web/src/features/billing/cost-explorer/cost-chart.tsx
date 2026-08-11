@@ -2,7 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
-import type { CostSeriesPoint } from '@kortix/sdk';
+import type { CostSeriesPoint } from '@zed/sdk';
 
 import {
   ChartContainer,
@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 import { formatSessionCostUsd } from '../session-cost-format';
 
-// Monochrome + one accent per the Kortix palette law: llm_cost and
+// Monochrome + one accent per the Zed palette law: llm_cost and
 // compute_cost are two shades of the same warm chart ramp (--chart-1 /
 // --chart-2), not two unrelated colours competing for attention.
 const chartConfig = {

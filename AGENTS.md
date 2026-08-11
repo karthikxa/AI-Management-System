@@ -1,4 +1,4 @@
-# Kortix project
+# Zed project
 
 ## Linear tracking
 
@@ -104,7 +104,7 @@ giving you a high level thing and come back, it's going to be done good, ideally
 better than I would've done it.
 
 Most people are shit at their jobs, some are decent/good, but only people who are
-exceptional should be at Kortix.
+exceptional should be at Zed.
 
 Being exceptional on paper is simple — it's a combination of Ownership, Agency
 and actual Merit/Skill. It's hard, because you have to not only be very smart but
@@ -188,8 +188,8 @@ non-trivial change through this full lifecycle:
    alone is not deployment proof. If a newer push cancels or supersedes the run,
    verify its path filters still rebuild every affected artifact. Manually
    dispatch the workflow when necessary to avoid a skipped component.
-5. Re-run the user-visible behavior against `https://dev.kortix.com` and/or
-   `https://dev-api.kortix.com`. Prefer the real Kortix CLI configured for the
+5. Re-run the user-visible behavior against `https://dev.zed.com` and/or
+   `https://dev-api.zed.com`. Prefer the real Zed CLI configured for the
    dev API for CLI/project/session flows, and direct authenticated HTTP calls for
    API contracts. For web behavior, drive the deployed UI and assert its network
    request plus visible result.
@@ -199,10 +199,10 @@ not replace the deployed check, and a dev smoke test does not replace focused
 local tests. Record the PR, merge SHA, deploy run, deployed SHA evidence, and
 exact dev command or interaction in the final response.
 
-## Architecture: `@kortix/sdk` is the source of truth
+## Architecture: `@zed/sdk` is the source of truth
 
-`@kortix/sdk` is the **single source of truth** for everything that talks to the
-Kortix backend — projects, accounts, sessions, files, secrets, triggers, the
+`@zed/sdk` is the **single source of truth** for everything that talks to the
+Zed backend — projects, accounts, sessions, files, secrets, triggers, the
 session runtime, OpenCode REST compatibility, SSE streaming, model state,
 and auth-token plumbing. The apps
 (`apps/web`, `apps/whitelabel-demo`, `apps/mobile`) are **thin consumers**. Treat
@@ -219,13 +219,13 @@ these as standing rules whenever you touch the data/runtime layer:
 > three synchronized edits; and the framework-free core is enforced by a static
 > import-graph tripwire.
 
-- **Logic lives in the SDK, never in a host.** No raw `fetch` to the Kortix API,
+- **Logic lives in the SDK, never in a host.** No raw `fetch` to the Zed API,
   no `@opencode-ai/sdk` imports, no transport / runtime / data-state code written
   in app code. New data or runtime behavior is added to the SDK and exposed
   through its public surface — not hand-rolled or duplicated in a host. If you
   need something the SDK doesn't expose, add it to the SDK.
-- **One client per host.** Create it once via `createKortix({ backendUrl,
-  getToken })` and read everything through `@kortix/sdk` + `@kortix/sdk/react`.
+- **One client per host.** Create it once via `createZed({ backendUrl,
+  getToken })` and read everything through `@zed/sdk` + `@zed/sdk/react`.
   Auth is just `getToken` — an API key / PAT for programmatic use, or a Supabase
   JWT for the logged-in web app. Hosts never instantiate a second client.
 - **A whole session is one hook.** `useSession(projectId, sessionId)` owns the
@@ -235,12 +235,12 @@ these as standing rules whenever you touch the data/runtime layer:
   hand-roll the mount, drive a server-store "switch", or mount a separate event
   provider.
 - **Session-scoped + provider-agnostic.** The public API is session-scoped
-  (`kortix.session(pid, sid).health() / .previewUrl() / .restart() / …`).
+  (`zed.session(pid, sid).health() / .previewUrl() / .restart() / …`).
   The sandbox provider is a server-side concern. Every session uses the
   OpenCode REST runtime. Host code must not implement a second transport.
 - **`apps/web` data modules are shims.** Files such as
   `apps/web/src/stores/server-store`, `lib/projects-client`, and
-  `hooks/opencode/use-*` are thin re-exports (`export * from '@kortix/sdk/...'`).
+  `hooks/opencode/use-*` are thin re-exports (`export * from '@zed/sdk/...'`).
   Keep them as shims; put the real logic in the SDK. When a merge conflict lands
   on one of these, **keep the shim (`--ours`) and port any new host-side logic
   into the SDK** — do not revert to a host-local implementation.
@@ -298,7 +298,7 @@ mocked internals when a real surface exists.
   reached through `http://localhost:8008/v1/p/<external_id>/8000/...`.
   OpenCode REST uses the compatibility proxy.
 - **Tunnel** — `scripts/dev-local.sh` (`pnpm dev`) auto-starts a cloudflared
-  quick tunnel so cloud sandboxes can call back to the local API (`KORTIX_URL`).
+  quick tunnel so cloud sandboxes can call back to the local API (`ZED_URL`).
 
 Bring it up with `pnpm dev` from `suna/` (it loads `apps/api/.env` +
 `apps/web/.env`, starts Supabase, the API, the web app, and the tunnel). Check
@@ -330,14 +330,14 @@ Mint a real JWT against local Supabase, then call the API with it:
 See `tests/e2e/helpers/auth.ts` for the exact calls.
 
 ### End-to-end harnesses
-- `pnpm --filter @kortix/tests test:e2e` — Playwright UI specs.
-- `pnpm --filter @kortix/tests test:e2e:gate5:local` — local Gate 5 verifier.
-- `pnpm --filter @kortix/tests test:e2e:gate5:target` — target Gate 5 rehearsal.
+- `pnpm --filter @zed/tests test:e2e` — Playwright UI specs.
+- `pnpm --filter @zed/tests test:e2e:gate5:local` — local Gate 5 verifier.
+- `pnpm --filter @zed/tests test:e2e:gate5:target` — target Gate 5 rehearsal.
 - `tests/README.md` indexes the current E2E and Gate 5 harnesses.
 
 ### End-to-end tests — `ke2e` (the canonical API suite + source of truth)
 - `suna/tests/` is the **one** black-box REST e2e suite (`ke2e` runner). It hits
-  a **live deployed API** over HTTP (`staging-api.kortix.com` / `dev-api.kortix.com` / local / prod) with
+  a **live deployed API** over HTTP (`staging-api.zed.com` / `dev-api.zed.com` / local / prod) with
   **real services** — no mocking. Every test maps 1:1 to a flow ID in
   `tests/spec/end-to-end.md`; a coverage gate checks that mapping against the
   authoritative route manifest (`tests/spec/routes.generated.json`).
@@ -357,13 +357,13 @@ See `tests/e2e/helpers/auth.ts` for the exact calls.
 
 ### Release topology — dev, staging, prod
 - **`main` = dev trunk.** It is the repo default branch and deploys to
-  `dev.kortix.com` / `dev-api.kortix.com`. Direct pushes are allowed; breaking or
+  `dev.zed.com` / `dev-api.zed.com`. Direct pushes are allowed; breaking or
   incomplete development can live here while it is being shaken out.
 - **`staging` = release-candidate branch.** Nothing should land on staging unless
   it is intended to be production-ready. Human/code changes enter staging by PR:
   `main` -> `staging` for the full dev candidate, or a targeted branch ->
   `staging` for a selective release candidate. Staging deploys to
-  `staging.kortix.com` / `staging-api.kortix.com` and must use the staging data
+  `staging.zed.com` / `staging-api.zed.com` and must use the staging data
   plane, not dev or prod.
 - Staging deploys must apply pending DB migrations against `STAGING_DATABASE_URL`
   before the staging EKS rollout. If that secret is missing or points at dev/prod,
@@ -371,8 +371,8 @@ See `tests/e2e/helpers/auth.ts` for the exact calls.
 - **`prod` = production.** Production moves only through **Promote to Production**,
   which uses `staging` as the source, opens a reviewed release PR into `prod`,
   publishes the release artifacts, and rolls production after merge.
-- If `qa-staging` or a staging runtime check points at `dev.kortix.com` or
-  `dev-api.kortix.com`, treat that as a broken staging setup, not a passing
+- If `qa-staging` or a staging runtime check points at `dev.zed.com` or
+  `dev-api.zed.com`, treat that as a broken staging setup, not a passing
   staging gate.
 
 ### Driving the real UI (chrome-devtools MCP)
@@ -401,14 +401,14 @@ See `tests/e2e/helpers/auth.ts` for the exact calls.
   app currently reports ~455 warnings, mostly `react-hooks/*` React Compiler
   rules pending a dedicated audit — expected until that audit lands.
 
-### Frontend design standard — Jay/Kortix bar
+### Frontend design standard — Jay/Zed bar
 
 When touching any visual surface in `apps/web`, treat brand fit as a release
 gate, not polish:
 
-- Read `.claude/skills/kortix-design-system/SKILL.md` first and compose existing
+- Read `.claude/skills/zed-design-system/SKILL.md` first and compose existing
   primitives from `@/components/ui/*` before inventing local chrome.
-- Match the current Jay Suthar / Kortix product aesthetic: calm neutral surfaces,
+- Match the current Jay Suthar / Zed product aesthetic: calm neutral surfaces,
   dense-but-legible UI, black/white plus one earned accent, token-driven spacing,
   and no decorative color, glow, or one-off rounded boxes.
 - Use recent product surfaces as references before editing: `/design-system`,

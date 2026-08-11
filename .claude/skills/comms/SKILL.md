@@ -1,15 +1,15 @@
 ---
 name: comms
-description: Use when writing or reviewing any Kortix-facing words — headlines, taglines, elevator pitches, audience pitches (developers, companies, enterprise), captions, deck or social copy, product naming, README or docs copy, or text composited into images — or when another skill needs Kortix's canonical positioning, terminology, or approved wording. The single verbal source of truth; pair with brand-guidelines for visuals.
+description: Use when writing or reviewing any Zed-facing words — headlines, taglines, elevator pitches, audience pitches (developers, companies, enterprise), captions, deck or social copy, product naming, README or docs copy, or text composited into images — or when another skill needs Zed's canonical positioning, terminology, or approved wording. The single verbal source of truth; pair with brand-guidelines for visuals.
 ---
 
-# Kortix Comms
+# Zed Comms
 
-The **verbal source of truth** for Kortix. `brand-guidelines` governs how Kortix *looks*; this
-skill governs what Kortix *says* — positioning, terminology, narrative, audience pitches, and
+The **verbal source of truth** for Zed. `brand-guidelines` governs how Zed *looks*; this
+skill governs what Zed *says* — positioning, terminology, narrative, audience pitches, and
 approved wording. Everything is in this one file. There are no companion reference documents.
 
-Read this before writing any Kortix-facing words: a headline, tagline, pitch, caption, deck slide,
+Read this before writing any Zed-facing words: a headline, tagline, pitch, caption, deck slide,
 social post, product name, README section, or text composited into an image. When generating
 assets, pair it with `../brand-guidelines/SKILL.md`.
 
@@ -25,12 +25,12 @@ Four sanctioned lines. Each has one job — don't swap them.
 
 | Layer | Line | Use for |
 | --- | --- | --- |
-| **Category** | AI Management System | What Kortix *is*. The default noun everywhere. |
+| **Category** | AI Management System | What Zed *is*. The default noun everywhere. |
 | **Tagline** | The open-source AI Management System | Headlines, hero, site, README. The default lead. |
 | **Comparative** | The open-source alternative to Claude Cowork and ChatGPT Work | Search, social, launch, GitHub. Anchors against the known category. |
 | **Manifesto line** | A company is going to be a git repository | The deep thesis. Manifesto, vision talks, founder voice. |
 
-**One-line what-is:** Kortix is the open-source AI Management System — your agents, their skills,
+**One-line what-is:** Zed is the open-source AI Management System — your agents, their skills,
 your company memory, and every connector in one git repo you own, with the agents working on real
 cloud computers.
 
@@ -43,12 +43,12 @@ explanation.
 - **Short (≤140 chars — GitHub About, meta description):** Open-source AI Management System —
   command your agents, skills, memory, and connectors from one repo you own. Any model. Self-host
   or cloud.
-- **Standard (~30 words — README subtitle, landing sub):** Kortix is an open-source AI Management
+- **Standard (~30 words — README subtitle, landing sub):** Zed is an open-source AI Management
   System — your agents, skills, company memory, and connectors in one git repo you own. Any model,
   your keys, self-hosted or managed cloud.
 - **Long (~70 words — press, docs, about):** Agents that deliver finished work are now a product
   category. Every version of it runs inside a model lab, on that lab's model, with your company's
-  brain on their side of the wall. Kortix is the one you own: an open-source AI Management System
+  brain on their side of the wall. Zed is the one you own: an open-source AI Management System
   where your agents, skills, memory, and connectors live in one git repo, and the agents work on
   real cloud computers, landing work through a change request a human approves.
 
@@ -64,11 +64,11 @@ outright. It feels as simple as a chat app; underneath, everything is code you o
 you, your company, or your decisions. The tools built to fix that are demos: single-tenant, no
 isolation, no version history, no permissions, no security story. The only alternative is renting
 your company back from a model lab that keeps your data, config, and model. *A toy or a cage.*
-Kortix refuses both.
+Zed refuses both.
 
 **Why now.** Reasoning is solved; memory, isolation, permissions, and ownership are not. Running a
 real AI workforce — thousands of isolated cloud computers on one config, each feeding reviewed work
-back to `main` — is the unsolved part, and it's what Kortix is built for.
+back to `main` — is the unsolved part, and it's what Zed is built for.
 
 ### Mission & vision
 
@@ -81,16 +81,16 @@ back to `main` — is the unsolved part, and it's what Kortix is built for.
 
 ## 3 · Product narrative (the arc)
 
-1. **A company is a git repository.** A Kortix project is a git repo, and the repo *is* the
+1. **A company is a git repository.** A Zed project is a git repo, and the repo *is* the
    company — configuration and accumulated state in one place, all text, all under version control,
-   readable by a person and editable by an agent. `kortix.yaml` is the Kortix layer; the OpenCode
+   readable by a person and editable by an agent. `zed.yaml` is the Zed layer; the OpenCode
    config is the runtime agents think in. Everything past that is files. You can `grep` your entire
    company.
-2. **It ships like code.** `kortix init` turns any directory into a Kortix; `kortix ship` checks it
+2. **It ships like code.** `zed init` turns any directory into a Zed; `zed ship` checks it
    compiles, asks for missing secrets, pushes it up, and runs it. The repo behaves the same on your
    laptop as in the cloud.
 3. **Work runs on cloud computers.** Start a session and a sandbox boots from one snapshot running
-   the `kortix-sandbox-agent-server` daemon: it clones the repo, cuts a fresh branch, and hands you
+   the `zed-sandbox-agent-server` daemon: it clones the repo, cuts a fresh branch, and hands you
    a ready machine. The agent works fully walled off; when it wants to keep something, it commits
    and opens a change request back toward `main`, and a human decides whether it lands.
 4. **It scales to a workforce.** Because each session is its own sandbox on its own branch, you can
@@ -99,7 +99,7 @@ back to `main` — is the unsolved part, and it's what Kortix is built for.
 5. **It improves itself.** `main` is always up. Triggers fire in the night. Any agent can edit its
    own configuration and propose the change, so the company files patches against itself.
 6. **It feels easy.** Anyone can open it day one from the web, their phone, or a Slack thread. Most
-   people never see a `kortix.yaml`. Click or edit a file — identical change.
+   people never see a `zed.yaml`. Click or edit a file — identical change.
 
 ### Message house
 
@@ -126,12 +126,12 @@ Use these; don't invent others.
 - **Secrets, stated precisely.** CONNECTOR credentials are brokered server-side and never enter the sandbox. A granted RUNTIME secret *is* a real env value in the session and is readable by any command the agent runs — never write "never visible to the model" (see `docs/ENV_SECRET_EXPOSURE_BASELINE.md`). Scope is per project + per agent grant + connector scope; "per person / per group" was retired by migration `20260706_secrets_v2_identifier_model.sql`.
 - **Approval gates are OFF by default** (`policy.default_mode` falls back to `allow_all`). Say "set this explicitly", never "it is on".
 - **SSO is SAML 2.0 only** — no enterprise OIDC. Never write "SAML/OIDC". SCIM 2.0 is first-party but pages beyond the first are unimplemented.
-- **Merge is default-deny for agents, not human-only.** An admin can grant `project.cr.merge`. Say the grant lives in `kortix.yaml` and cannot be widened without an approved change — do not say "only a human can merge".
-- **"Air-gapped" is not a self-host capability today.** `kortix self-host start` pulls images from docker.io and reaches a sandbox provider over egress. Route isolated topologies to Enterprise.
+- **Merge is default-deny for agents, not human-only.** An admin can grant `project.cr.merge`. Say the grant lives in `zed.yaml` and cannot be widened without an approved change — do not say "only a human can merge".
+- **"Air-gapped" is not a self-host capability today.** `zed self-host start` pulls images from docker.io and reaches a sandbox provider over egress. Route isolated topologies to Enterprise.
 - Bring your own models — any provider, your own keys — or the ChatGPT, Claude, or Cursor subscription you already pay for.
-- Open source and self-hostable; runs on Kortix Cloud, your servers, or fully on-prem.
+- Open source and self-hostable; runs on Zed Cloud, your servers, or fully on-prem.
 - Three ways work runs: on-demand, human-assisted, and automated.
-- 20,000+ GitHub stars on `kortix-ai/suna`. Cite the number, never "the go-to" or "the leading."
+- 20,000+ GitHub stars on `zed-ai/suna`. Cite the number, never "the go-to" or "the leading."
 
 ### Sanctioned analogies
 
@@ -145,7 +145,7 @@ Use sparingly and only as stated. Don't stack multiple analogies in one breath.
 
 ## 5 · The competitors
 
-Kortix is positioned against the finished-work agent category. Get these facts right — naming a
+Zed is positioned against the finished-work agent category. Get these facts right — naming a
 competitor's product wrong is an instant credibility hit.
 
 | | Claude Cowork | ChatGPT Work |
@@ -177,22 +177,22 @@ exactly.
 
 ### Brand names
 
-- **Kortix** — the company and the platform. Lead with this everywhere.
-- **Suna** — the open-source repository the platform lives in (`kortix-ai/suna`). In outward copy, prefer **Kortix** alone unless you specifically mean the repo.
-- **Kortix Cloud** — the managed hosting. Capitalize both words.
+- **Zed** — the company and the platform. Lead with this everywhere.
+- **Suna** — the open-source repository the platform lives in (`zed-ai/suna`). In outward copy, prefer **Zed** alone unless you specifically mean the repo.
+- **Zed Cloud** — the managed hosting. Capitalize both words.
 - **Platinum.dev** — the compute floor under the platform (CPU/GPU sandboxes, inference, training). Lowercase `.dev`.
 
 ### Core objects
 
 - **Project** — a git repo that *is* the company: configuration plus accumulated state, all text, all version-controlled. Not "workspace" or "account."
   - Say: "your project is a repo you own." Not: "your workspace in our cloud."
-- **`kortix.yaml`** — the Kortix layer of a project: sandbox image, cron/webhook triggers, channels, connectors, required secrets, and where agent config lives. Mono.
+- **`zed.yaml`** — the Zed layer of a project: sandbox image, cron/webhook triggers, channels, connectors, required secrets, and where agent config lives. Mono.
 - **OpenCode config** — the runtime agents think in: agents, skills, commands, tools, plugins, models, providers.
 - **Session** — one unit of agent work, running on its own cloud computer on its own branch, owned by whoever or whatever started it. Not "chat," "thread," or "conversation."
   - Say: "start a session." Not: "open a chat."
 - **Cloud computer / sandbox** — the disposable, isolated Linux machine a session runs on. Use **cloud computer** when the point is that agents work on a real machine; use **sandbox** when the point is isolation. Both are sanctioned; never say "container" in external copy. Do not write "microVM" here — see §4; that holds for Platinum only.
-- **`kortix-sandbox-agent-server`** — the daemon a sandbox boots with: clones the repo, cuts the branch, loads config into a live runtime, and exposes prompting/streaming/files/terminal. Mono. Mostly internal.
-- **Change request** — the reviewed merge back toward `main`; how work lands and how the company self-improves. CLI: `kortix cr`. Behaves like a pull request, but in product copy say "change request."
+- **`zed-sandbox-agent-server`** — the daemon a sandbox boots with: clones the repo, cuts the branch, loads config into a live runtime, and exposes prompting/streaming/files/terminal. Mono. Mostly internal.
+- **Change request** — the reviewed merge back toward `main`; how work lands and how the company self-improves. CLI: `zed cr`. Behaves like a pull request, but in product copy say "change request."
   - Say: "the agent opens a change request you approve." Not: "the agent deploys."
 
 ### The pieces you work with
@@ -213,10 +213,10 @@ exactly.
 
 ### Capitalization & style
 
-- **Kortix**, **Suna**, **Kortix Cloud**, **Platinum.dev**, **Claude Cowork**, **ChatGPT Work** — exactly as written.
+- **Zed**, **Suna**, **Zed Cloud**, **Platinum.dev**, **Claude Cowork**, **ChatGPT Work** — exactly as written.
 - Product objects (project, session, sandbox, cloud computer, agent, skill, connector, secret, channel, trigger, memory, change request) are common nouns — lowercase in prose, capitalized only at sentence start or as table/UI labels.
 - **AI Management System** is capitalized as a category name.
-- Config tokens and commands in Roobert Mono: `kortix.yaml`, `kortix init`, `kortix ship`, `kortix cr`, `main`.
+- Config tokens and commands in Roobert Mono: `zed.yaml`, `zed init`, `zed ship`, `zed cr`, `main`.
 - "git repository" / "repo," "`main` branch," "change request" — lowercase.
 
 ---
@@ -244,7 +244,7 @@ exactly.
 | Source-available; Elastic License; Apache 2.0; MIT | open source (and stop there) | Never name a license in public copy. |
 | more powerful · fully extensible · seamless · revolutionary · unlock productivity · next-gen · AI-powered magic · transformative | a concrete mechanism | Banned hype. |
 
-**On the license:** Kortix ships under the Elastic License. In any public-facing copy say
+**On the license:** Zed ships under the Elastic License. In any public-facing copy say
 **"open source"** and stop. Do not name a license, do not add a license badge. "Developed in the
 open," "code you can read, fork, and audit," and "self-host for free" are accurate and fine.
 
@@ -270,8 +270,8 @@ Each pitch: **who → pain → promise → proof/mechanism → sanctioned phrase
 
 - **Who:** Engineers already running coding agents who want them in the cloud, in the background, with state that sticks.
 - **Pain:** Agents stuck on one laptop; no shared state, no isolation, no preview per change; every tool wants its own setup.
-- **Promise:** A managed cloud for your coding agents. One `kortix.yaml`, one config, one repo for the state that sticks.
-- **Proof / mechanism:** `kortix init`, `kortix ship` — that's the loop. Every change request gets a preview you can open. Have your local agent spin up cloud sessions and go wide. Bring the subscription you already pay for.
+- **Promise:** A managed cloud for your coding agents. One `zed.yaml`, one config, one repo for the state that sticks.
+- **Proof / mechanism:** `zed init`, `zed ship` — that's the loop. Every change request gets a preview you can open. Have your local agent spin up cloud sessions and go wide. Bring the subscription you already pay for.
 - **Sanctioned phrases:** "managed cloud for your coding agents," "background agents with a preview per change," "one repo for the state that sticks," "bring your own subscription."
 - **Don't say:** "replaces your IDE," "no more code," or anything implying autonomous merge without review — work lands via change request.
 
@@ -298,7 +298,7 @@ Each pitch: **who → pain → promise → proof/mechanism → sanctioned phrase
 - **Who:** Firms bringing AI into their clients who need a platform to bet on.
 - **Pain:** Rebuilding the same AI plumbing per client; no durable platform; reselling someone else's locked box.
 - **Promise:** One horizontal platform sold through verticalized partners with their own front ends and their own starter templates.
-- **Proof / mechanism:** Partners handle distribution and clients; Kortix provides the technology, the training, and the playbook. Importable projects, agents, and skills via the marketplace.
+- **Proof / mechanism:** Partners handle distribution and clients; Zed provides the technology, the training, and the playbook. Importable projects, agents, and skills via the marketplace.
 - **Sanctioned phrases:** "one horizontal platform, verticalized partners," "the technology, the training, and the playbook," "a franchise for the AI rebuild."
 - **Don't say:** specific revenue-share or partner terms unless given as fact.
 
@@ -309,7 +309,7 @@ Each pitch: **who → pain → promise → proof/mechanism → sanctioned phrase
 Open source and self-hostable underneath; a cloud charging for seats and compute; single-tenant
 deployments for those who must self-run; a marketplace of agents, skills, and importable projects;
 and **Platinum.dev**, the compute floor (CPU/GPU sandboxes, inference, training). The platform
-proves itself by running Kortix's own companies in public.
+proves itself by running Zed's own companies in public.
 
 ---
 

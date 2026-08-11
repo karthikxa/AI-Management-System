@@ -1,4 +1,4 @@
-import type { SessionScope, SessionScopeInput } from '@kortix/sdk';
+import type { SessionScope, SessionScopeInput } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 
 import { createScopedSession } from './create-scoped-session';

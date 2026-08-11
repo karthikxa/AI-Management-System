@@ -119,7 +119,7 @@ describe('uploadTargetsFor', () => {
 
 describe('validateUploadSources', () => {
   test('accepts regular files', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'kortix-cli-upload-'));
+    const dir = await mkdtemp(join(tmpdir(), 'zed-cli-upload-'));
     temporaryDirectories.push(dir);
     const file = join(dir, 'report.txt');
     await writeFile(file, 'report');
@@ -129,7 +129,7 @@ describe('validateUploadSources', () => {
   });
 
   test('rejects directories before session provisioning', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'kortix-cli-upload-'));
+    const dir = await mkdtemp(join(tmpdir(), 'zed-cli-upload-'));
     temporaryDirectories.push(dir);
     const nested = join(dir, 'folder');
     await mkdir(nested);
@@ -181,10 +181,10 @@ describe('sessionPromptDefaults', () => {
   test('resolves the persisted model and agent from the session row', () => {
     expect(
       sessionPromptDefaults({
-        agent_name: 'kortix',
-        metadata: { opencode_model: 'kortix/glm-5.2' },
+        agent_name: 'zed',
+        metadata: { opencode_model: 'zed/glm-5.2' },
       }),
-    ).toEqual({ agent: 'kortix', model: { providerID: 'kortix', modelID: 'glm-5.2' } });
+    ).toEqual({ agent: 'zed', model: { providerID: 'zed', modelID: 'glm-5.2' } });
   });
 
   test('omits missing pieces instead of guessing', () => {
@@ -199,23 +199,23 @@ describe('sessionPromptDefaults', () => {
 
 describe('writeSessionFile', () => {
   test('uploads to a temporary path before replacing the target', async () => {
-    const { ops, calls } = mockFiles({ uploadedPath: 'out/.data.bin.kortix-cp-uploaded' });
+    const { ops, calls } = mockFiles({ uploadedPath: 'out/.data.bin.zed-cp-uploaded' });
     const result = await writeSessionFile(ops, '/workspace/out/data.bin', new Blob(['hello']));
     expect(result.path).toBe('/workspace/out/data.bin');
     expect(calls[0]).toBe('mkdir /workspace/out');
-    expect(calls[1]).toMatch(/^upload \/workspace\/out \.data\.bin\.kortix-cp-/);
+    expect(calls[1]).toMatch(/^upload \/workspace\/out \.data\.bin\.zed-cp-/);
     expect(calls[2]).toMatch(
-      /^rename \/workspace\/out\/data\.bin \/workspace\/out\/data\.bin\.kortix-cp-backup-/,
+      /^rename \/workspace\/out\/data\.bin \/workspace\/out\/data\.bin\.zed-cp-backup-/,
     );
     expect(calls[3]).toBe(
-      'rename /workspace/out/.data.bin.kortix-cp-uploaded /workspace/out/data.bin',
+      'rename /workspace/out/.data.bin.zed-cp-uploaded /workspace/out/data.bin',
     );
-    expect(calls[4]).toMatch(/^remove \/workspace\/out\/data\.bin\.kortix-cp-backup-/);
+    expect(calls[4]).toMatch(/^remove \/workspace\/out\/data\.bin\.zed-cp-backup-/);
   });
 
   test('a missing target tolerates the replacement remove failing', async () => {
     const { ops, calls } = mockFiles({
-      uploadedPath: '.fresh.txt.kortix-cp-uploaded',
+      uploadedPath: '.fresh.txt.zed-cp-uploaded',
       rename: async (from, to) => {
         calls.push(`rename ${from} ${to}`);
         if (from === '/workspace/fresh.txt') throw new Error('not found');
@@ -228,11 +228,11 @@ describe('writeSessionFile', () => {
     });
     const result = await writeSessionFile(ops, '/workspace/fresh.txt', new Blob(['hi']));
     expect(result.path).toBe('/workspace/fresh.txt');
-    expect(calls.some((call) => call.startsWith('upload /workspace .fresh.txt.kortix-cp-'))).toBe(
+    expect(calls.some((call) => call.startsWith('upload /workspace .fresh.txt.zed-cp-'))).toBe(
       true,
     );
     expect(calls.some((call) => call.startsWith('rename /workspace/fresh.txt '))).toBe(true);
-    expect(calls).toContain('rename /workspace/.fresh.txt.kortix-cp-uploaded /workspace/fresh.txt');
+    expect(calls).toContain('rename /workspace/.fresh.txt.zed-cp-uploaded /workspace/fresh.txt');
   });
 
   test('preserves the existing target when upload fails', async () => {
@@ -251,10 +251,10 @@ describe('writeSessionFile', () => {
 
   test('restores the existing target when replacement rename fails', async () => {
     const { ops, calls } = mockFiles({
-      uploadedPath: '.data.bin.kortix-cp-uploaded',
+      uploadedPath: '.data.bin.zed-cp-uploaded',
       rename: async (from, to) => {
         calls.push(`rename ${from} ${to}`);
-        if (from === '/workspace/.data.bin.kortix-cp-uploaded') {
+        if (from === '/workspace/.data.bin.zed-cp-uploaded') {
           throw new Error('rename unavailable');
         }
         return true;
@@ -268,6 +268,6 @@ describe('writeSessionFile', () => {
       ?.split(' ')[2];
     expect(backup).toBeDefined();
     expect(calls).toContain(`rename ${backup} /workspace/data.bin`);
-    expect(calls).toContain('remove /workspace/.data.bin.kortix-cp-uploaded');
+    expect(calls).toContain('remove /workspace/.data.bin.zed-cp-uploaded');
   });
 });

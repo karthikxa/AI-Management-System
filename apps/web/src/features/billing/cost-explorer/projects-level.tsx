@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 
-import type { CostSummary, ProjectCostPage, ProjectCostSort } from '@kortix/sdk';
+import type { CostSummary, ProjectCostPage, ProjectCostSort } from '@zed/sdk';
 import { ReceiptIcon as ReceiptText } from '@phosphor-icons/react';
 
 import { Button } from '@/components/ui/button';

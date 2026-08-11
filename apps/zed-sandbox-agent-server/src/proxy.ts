@@ -1,0 +1,447 @@
+import { Hono } from 'hono'
+import type { ServerWebSocket } from 'bun'
+
+import type { Config } from './config'
+import { logger } from './logger'
+import type { Opencode } from './opencode'
+import { isRepoMaterialized } from './git'
+import { createHealthRouter, type SandboxBootState } from './routes/health'
+import { createRefreshRouter } from './routes/refresh'
+import { createAbortRouter } from './routes/abort'
+import { createEnvRouter } from './routes/env'
+import { createGitRouter } from './routes/git'
+import { createPortProxyRouter } from './routes/port-proxy'
+import { createFilesRouter } from './routes/files'
+import { createFindRouter } from './routes/find'
+import { createPresentationRouter } from './routes/presentation'
+import { createWebProxyRouter } from './routes/web-proxy'
+import { createPtyRegistry, createPtyRouter, type PtyAttachHandle, type PtyRegistry } from './routes/pty'
+import type { ProjectEnvStore } from './project-env'
+import {
+  ZED_USER_CONTEXT_HEADER,
+  verifyZedUserContext,
+} from './zed-user-context'
+
+// Headers that must not be forwarded — they're connection-scoped or set by us.
+const STRIP_REQUEST_HEADERS = new Set([
+  'host',
+  'connection',
+  'content-length',
+  'transfer-encoding',
+])
+
+const STRIP_RESPONSE_HEADERS = new Set(['transfer-encoding', 'connection'])
+
+// The id segment is optional: connecting with no id (or an id the daemon
+// doesn't recognize) still opens a working terminal — see the lookup-or-
+// create handling in the `open` websocket handler below.
+const ZED_PTY_WS_PATH_RE = /^\/zed\/pty(?:\/([^/]+))?\/connect\/?$/
+const ZED_USER_CONTEXT_QUERY_PARAM = '__zed_user_context'
+
+// Bound on waiting for opencode to respond to a proxied request. Applied only
+// to the wait for the response to arrive (headers), never to a streaming body
+// already in flight — an SSE stream like /global/event legitimately stays open
+// for the life of the session, so aborting on a fixed wall clock would sever
+// healthy long-lived connections. A wedged opencode process (hung event loop,
+// deadlock) otherwise leaves this `fetch` unresolved forever: the daemon's own
+// `/zed/health` stays green throughout (it never touches opencode), so
+// nothing else catches it, and the browser just sees the request hang until
+// something upstream (ALB/ingress) eventually resets the connection — which
+// surfaces as a confusing "blocked by CORS" error with no real diagnostic
+// value. Failing fast here instead gives a clean 502 that apps/api's own
+// retry+auto-wake loop can act on immediately.
+const UPSTREAM_RESPONSE_TIMEOUT_MS = 10_000
+
+type OpencodeWsData = {
+  // Absent when the client connects without an id — lookup-or-create then
+  // mints a brand new pty (see `websocket.open` below).
+  ptyId?: string
+  handle?: PtyAttachHandle
+}
+
+function jsonError(status: number, body: Record<string, unknown>): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+// The Zed-native PTY WS upgrade — independent of opencode/repo readiness
+// entirely (it just spawns a shell), unlike the (now removed) opencode-
+// proxied path this replaced: a raw terminal works even while the repo is
+// still cloning or opencode hasn't come up yet.
+function prepareZedPtyWsUpgrade(
+  req: Request,
+  cfg: Config,
+): { ok: true; data: OpencodeWsData } | { ok: false; response: Response } {
+  const url = new URL(req.url)
+  const match = ZED_PTY_WS_PATH_RE.exec(url.pathname)
+  if (!match) {
+    return { ok: false, response: jsonError(404, { error: 'unsupported websocket path' }) }
+  }
+  // Absent when the client connects with no id segment at all (e.g.
+  // `/zed/pty/connect`) — lookup-or-create mints a fresh pty either way.
+  const ptyId = match[1]
+
+  if (!cfg.sandboxToken) {
+    logger.warn('[pty] rejecting websocket: ZED_TOKEN not configured')
+    return {
+      ok: false,
+      response: jsonError(503, { error: 'daemon not configured', detail: 'ZED_TOKEN unset' }),
+    }
+  }
+
+  const header = req.headers.get(ZED_USER_CONTEXT_HEADER) ?? url.searchParams.get(ZED_USER_CONTEXT_QUERY_PARAM)
+  const auth = verifyZedUserContext(header, cfg.sandboxToken)
+  if (!auth.ok) {
+    logger.warn('[pty] reject websocket', { reason: auth.reason, path: url.pathname })
+    return { ok: false, response: jsonError(401, { error: 'unauthorized', reason: auth.reason }) }
+  }
+
+  return { ok: true, data: { ptyId } }
+}
+
+export function buildOpencodeApp(
+  cfg: Config,
+  opencode: Opencode,
+  bootTime: number,
+  bootState: SandboxBootState = { repoMaterializationError: null, timeline: [] },
+  projectEnv?: ProjectEnvStore,
+  staticWebPort: number | null = null,
+  ptyRegistry?: PtyRegistry,
+  agentEnvFile?: string,
+): Hono {
+  const app = new Hono()
+
+  // The daemon owns a small Zed-namespaced control surface. Everything else is
+  // pure passthrough to opencode. Mount at both `/health` and `/health/` so
+  // a trailing slash doesn't fall through to the reverse proxy.
+  // Health bypasses auth — it's how the cloud probes liveness mid-boot.
+  const zedRouter = new Hono()
+  const healthRouter = createHealthRouter(cfg, opencode, bootTime, bootState, staticWebPort)
+  const refreshRouter = createRefreshRouter(cfg, opencode)
+  const abortRouter = createAbortRouter(cfg, opencode)
+  const envRouter = projectEnv
+    ? createEnvRouter(cfg, opencode, projectEnv, { agentEnvFile })
+    : null
+  // NOTE: /zed/git is currently unused by the product (the agent commits +
+  // opens change requests from a chat prompt). Kept as a host-driven primitive.
+  const gitRouter = createGitRouter(cfg)
+  // /zed/pty — Zed's own terminal, independent of opencode entirely
+  // (see routes/pty.ts). `ptyRegistry` is always passed by `startProxy`;
+  // the parameter is optional only so tests can build the app without one.
+  const ptyRouter = createPtyRouter(cfg, ptyRegistry ?? createPtyRegistry(cfg))
+  zedRouter.route('/health', healthRouter)
+  zedRouter.route('/health/', healthRouter)
+  zedRouter.route('/refresh', refreshRouter)
+  zedRouter.route('/refresh/', refreshRouter)
+  zedRouter.route('/abort', abortRouter)
+  zedRouter.route('/abort/', abortRouter)
+  zedRouter.route('/git', gitRouter)
+  zedRouter.route('/git/', gitRouter)
+  zedRouter.route('/pty', ptyRouter)
+  zedRouter.route('/pty/', ptyRouter)
+  if (envRouter) {
+    zedRouter.route('/env', envRouter)
+    zedRouter.route('/env/', envRouter)
+  }
+
+  app.route('/zed', zedRouter)
+
+  // Auth gate for everything except /zed/*. Spec §3.5: the daemon MUST
+  // validate X-Zed-User-Context (HMAC-signed by the API with ZED_TOKEN)
+  // before forwarding to opencode. Without a configured token the daemon is
+  // an open door; we log loudly at boot and reject all proxied requests until
+  // ZED_TOKEN is provided.
+  app.use('*', async (c, next) => {
+    const path = new URL(c.req.url).pathname
+    if (path.startsWith('/zed/')) return next()
+
+    if (!cfg.sandboxToken) {
+      logger.warn('[proxy] rejecting request: ZED_TOKEN not configured')
+      return c.json({ error: 'daemon not configured', detail: 'ZED_TOKEN unset' }, 503)
+    }
+
+    const header = c.req.header(ZED_USER_CONTEXT_HEADER)
+    const result = verifyZedUserContext(header, cfg.sandboxToken)
+    if (!result.ok) {
+      logger.warn('[proxy] reject', { reason: result.reason, path })
+      return c.json({ error: 'unauthorized', reason: result.reason }, 401)
+    }
+
+    return next()
+  })
+
+  // /proxy/{port}/* — per-port reverse proxy to anything bound on localhost
+  // inside the sandbox (the "internal browser" backend). Carried over from
+  // legacy zed-master so any process the agent starts (e.g. `python -m
+  // http.server 8080`) is reachable via /v1/p/{sandboxId}/{port}/* on the API.
+  // The agent server's own port is blocked to prevent recursion; opencode's
+  // internal port is reachable via the catch-all below, not /proxy.
+  const portProxyRouter = createPortProxyRouter({
+    blockedPorts: new Set([cfg.servicePort]),
+  })
+  app.route('/proxy', portProxyRouter)
+
+  // /web-proxy/{scheme}/{host}/{path} — forward proxy that rewrites HTML/CSS
+  // so external sites embed cleanly inside the internal browser iframe.
+  //
+  // Blocked loopback ports keep it off our own control plane: reaching the
+  // daemon or opencode through here would tunnel past every path-keyed control
+  // apps/api applies on the way in (agent authorization, connector gate, run
+  // cap, prompt idempotency, secret-grant re-mint).
+  app.route(
+    '/web-proxy',
+    createWebProxyRouter({
+      // BOTH halves of the opencode port pair. A verified reload swaps which
+      // one is live, and this set is built once — blocking only the current
+      // half would leave the other reachable the moment they trade places.
+      blockedSelfPorts: new Set([
+        cfg.servicePort,
+        cfg.opencodeInternalPort,
+        cfg.opencodeStandbyPort,
+      ]),
+    }),
+  )
+
+  // /file/* — the daemon owns the ENTIRE file API: reads (GET / list,
+  // /content, /raw, /status) and writes (upload, delete, mkdir, rename). We do
+  // NOT forward file reads to OpenCode — its /file/content base64-inlines
+  // images only and returns empty content for every other binary, breaking
+  // Office-doc/PDF previews and downloads. Serving off disk here is correct for
+  // all types. (/project/current + /global/health still fall through.)
+  app.route('/file', createFilesRouter(cfg))
+
+  // /find/* — daemon-served search (file-by-name + ripgrep text search), also
+  // formerly forwarded to OpenCode.
+  app.route('/find', createFindRouter(cfg))
+
+  // /presentation/* — on-demand PDF/PPTX export for the slide-deck viewer's
+  // download buttons. Runs the conversion in the background and answers each
+  // poll fast (202 while generating, 200 + the file when ready) so it never
+  // trips the apps/api preview-proxy's per-attempt timeout. See the router doc.
+  app.route('/presentation', createPresentationRouter(cfg))
+
+  // Reverse-proxy catch-all → OpenCode. Stream both directions so SSE works.
+  // If opencode hasn't bound its port yet (state !== 'ok') we 503 instead of
+  // attempting a fetch — surfaces the situation clearly to the client and
+  // prevents noisy ECONNREFUSED loops.
+  app.all('*', async (c) => {
+    if (bootState.repoMaterializationError) {
+      return c.json(
+        {
+          error: 'sandbox runtime not ready',
+          reason: 'repo_materialization_failed',
+          message: bootState.repoMaterializationError,
+        },
+        503,
+      )
+    }
+
+    if (cfg.autoClone && !(await isRepoMaterialized(cfg.projectTarget))) {
+      return c.json(
+        {
+          error: 'sandbox runtime not ready',
+          reason: 'repo_not_materialized',
+        },
+        503,
+      )
+    }
+
+    if (bootState.initialOpenCodeSessionError) {
+      return c.json(
+        {
+          error: 'sandbox runtime not ready',
+          reason: 'initial_opencode_session_failed',
+          message: bootState.initialOpenCodeSessionError,
+        },
+        503,
+      )
+    }
+
+    if (bootState.initialOpenCodeSessionRequired && !bootState.initialOpenCodeSessionId) {
+      return c.json(
+        {
+          error: 'sandbox runtime not ready',
+          reason: 'initial_opencode_session_pending',
+        },
+        503,
+      )
+    }
+
+    if (opencode.getState() !== 'ok') {
+      return c.json(
+        {
+          error: 'opencode not ready',
+          opencode: opencode.getState(),
+        },
+        503,
+      )
+    }
+
+    const url = new URL(c.req.url)
+    const upstreamUrl = `${opencode.getInternalUrl()}${url.pathname}${url.search}`
+
+    const headers = new Headers()
+    c.req.raw.headers.forEach((value, key) => {
+      if (!STRIP_REQUEST_HEADERS.has(key.toLowerCase())) headers.set(key, value)
+    })
+
+    const method = c.req.method.toUpperCase()
+    const hasBody = method !== 'GET' && method !== 'HEAD'
+
+    // Bound only the wait for opencode's response (headers) — not the abort
+    // controller's whole lifetime — so we can free-run a stream once it starts.
+    // Clearing the timer right after `fetch` resolves means the controller can
+    // never fire again, so a long-lived SSE body already in flight (e.g.
+    // /global/event) is never cut off mid-stream.
+    const controller = new AbortController()
+    const responseTimer = setTimeout(() => controller.abort(), UPSTREAM_RESPONSE_TIMEOUT_MS)
+    try {
+      const fetchInit: RequestInit & { duplex?: 'half' } = {
+        method,
+        headers,
+        body: hasBody ? (c.req.raw.body as ReadableStream | null) : undefined,
+        // duplex: 'half' is required by undici when piping a ReadableStream body;
+        // Bun accepts the extra key too. Not in lib.dom RequestInit yet.
+        duplex: 'half',
+        signal: controller.signal,
+      }
+      const upstream = await fetch(upstreamUrl, fetchInit)
+      clearTimeout(responseTimer)
+
+      const respHeaders = new Headers()
+      upstream.headers.forEach((value, key) => {
+        if (!STRIP_RESPONSE_HEADERS.has(key.toLowerCase())) respHeaders.set(key, value)
+      })
+
+      return new Response(upstream.body, {
+        status: upstream.status,
+        statusText: upstream.statusText,
+        headers: respHeaders,
+      })
+    } catch (err) {
+      clearTimeout(responseTimer)
+      const timedOut = err instanceof Error && (err.name === 'AbortError' || err.name === 'TimeoutError')
+      if (timedOut) {
+        logger.error('[proxy] upstream fetch timed out — opencode unresponsive', {
+          path: url.pathname,
+          timeoutMs: UPSTREAM_RESPONSE_TIMEOUT_MS,
+        })
+      } else {
+        logger.error('[proxy] upstream fetch failed', err)
+      }
+      return c.json({ error: 'upstream unreachable', details: (err as Error).message }, 502)
+    }
+  })
+
+  return app
+}
+
+export type ProxyServer = {
+  stop(): Promise<void>
+  port: number
+  // Rebuild the control surface with a new Config. A warm snapshot seed boots
+  // with seed-time credentials and only learns its forked session cfg after
+  // restore; without this the proxy auth gate + routers keep the seed cfg.
+  reload(next: Config): void
+}
+
+export function startProxy(
+  cfg: Config,
+  opencode: Opencode,
+  bootTime: number,
+  bootState: SandboxBootState = { repoMaterializationError: null, timeline: [] },
+  projectEnv?: ProjectEnvStore,
+  staticWebPort: number | null = null,
+): ProxyServer {
+  // Mutable so restore-time reload() can hot-swap the handler in place; the
+  // indirection below re-reads `app` per request, so reassigning it is enough.
+  let currentCfg = cfg
+  // Constructed once, outside reload() — pty state must survive a config
+  // hot-swap (warm-snapshot restore) exactly like `opencode`/`bootState` do.
+  const ptyRegistry = createPtyRegistry(cfg)
+  let app = buildOpencodeApp(cfg, opencode, bootTime, bootState, projectEnv, staticWebPort, ptyRegistry)
+
+  const server = Bun.serve<OpencodeWsData>({
+    port: cfg.servicePort,
+    hostname: '0.0.0.0',
+    // SSE streams from OpenCode can be long-lived with no traffic; default 10s
+    // kills them. 255s matches zed-master's tuned value.
+    idleTimeout: 255,
+    async fetch(req, srv) {
+      const url = new URL(req.url)
+      const isWsUpgrade = req.headers.get('upgrade')?.toLowerCase() === 'websocket'
+      if (isWsUpgrade && ZED_PTY_WS_PATH_RE.test(url.pathname)) {
+        const prep = prepareZedPtyWsUpgrade(req, currentCfg)
+        if (!prep.ok) return prep.response
+        const upgraded = srv.upgrade(req, { data: prep.data })
+        if (upgraded) return undefined
+        return jsonError(500, { error: 'websocket upgrade failed' })
+      }
+      return app.fetch(req, srv)
+    },
+    websocket: {
+      // Lookup-or-create: a normal "open a terminal" must always succeed
+      // with a working shell. A requested id that names a running pty
+      // reattaches (a genuine reconnect resumes the same shell +
+      // scrollback). A missing/unknown/absent id — the daemon restarted
+      // and forgot its in-memory registry, a stale id survived a reload, or
+      // no id was supplied at all — mints a fresh pty instead of hard-
+      // closing with "pty not found". Only a *known-exited* pty (the shell
+      // itself ended, e.g. the user typed `exit`) closes without recreating
+      // — that's a real end-of-session the client should surface, not
+      // silently paper over.
+      open(ws: ServerWebSocket<OpencodeWsData>) {
+        const state = ws.data
+        const requestedId = state.ptyId
+        const result = ptyRegistry.attachOrCreate(requestedId, {
+          onData: (chunk) => {
+            try { ws.send(chunk) } catch {}
+          },
+          onExit: (exitCode) => {
+            try { ws.close(1000, `pty exited${exitCode === null ? '' : ` (${exitCode})`}`) } catch {}
+          },
+        })
+        if (result.kind === 'exited') {
+          try {
+            ws.close(1000, `pty exited${result.meta.exitCode === undefined ? '' : ` (${result.meta.exitCode})`}`)
+          } catch {}
+          return
+        }
+        state.ptyId = result.meta.id
+        state.handle = result.handle
+        if (result.kind === 'created') {
+          logger.info('[proxy] pty websocket lookup-or-create minted a new pty', {
+            requestedId: requestedId ?? null,
+            id: result.meta.id,
+          })
+        }
+        if (result.handle.replay) {
+          try { ws.send(result.handle.replay) } catch {}
+        }
+      },
+      message(ws: ServerWebSocket<OpencodeWsData>, message: string | Buffer) {
+        ws.data.handle?.write(typeof message === 'string' ? message : message.toString())
+      },
+      close(ws: ServerWebSocket<OpencodeWsData>) {
+        ws.data.handle?.detach()
+      },
+    },
+  })
+
+  const boundPort = server.port ?? cfg.servicePort
+  logger.info('[proxy] listening', { port: boundPort, hostname: '0.0.0.0' })
+
+  return {
+    port: boundPort,
+    reload(next: Config) {
+      currentCfg = next
+      app = buildOpencodeApp(next, opencode, bootTime, bootState, projectEnv, staticWebPort, ptyRegistry)
+      logger.info('[proxy] reloaded with session config', { projectId: next.projectId })
+    },
+    async stop() {
+      server.stop(true)
+    },
+  }
+}

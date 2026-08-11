@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { InfoBanner } from '@/components/ui/info-banner';
 import { cn } from '@/lib/utils';
-import type { ProjectSession } from '@kortix/sdk';
+import type { ProjectSession } from '@zed/sdk';
 import { ArrowSquareOutIcon, WarningIcon } from '@phosphor-icons/react';
 import Link from 'next/link';
 

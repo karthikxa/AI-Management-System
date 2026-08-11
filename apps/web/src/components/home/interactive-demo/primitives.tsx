@@ -140,7 +140,7 @@ export function Toggle({ on, onClick }: { on: boolean; onClick?: () => void }) {
   const tI18nHardcoded = useTranslations('hardcodedUi');
   const className = cn(
     'flex h-5 w-9 items-center rounded-full p-0.5 transition-colors',
-    on ? 'bg-kortix-green justify-end' : 'bg-muted-foreground/20 justify-start',
+    on ? 'bg-zed-green justify-end' : 'bg-muted-foreground/20 justify-start',
     onClick && 'cursor-pointer',
   );
   const knob = <span className="size-4 rounded-full bg-white shadow" />;

@@ -7,7 +7,7 @@
  * Run (from packages/sdk):  bun run playground/commands/11-create-command.ts
  */
 import {
-  makeKortix,
+  makeZed,
   pickOrCreateSessionId,
   pickProjectId,
   retryUntilReady,
@@ -15,7 +15,7 @@ import {
 } from "../_shared";
 
 const COMMAND_NAME = "sdk-test-command";
-const COMMAND_DIR = "/workspace/.kortix/opencode/commands";
+const COMMAND_DIR = "/workspace/.zed/opencode/commands";
 const COMMAND_PATH = `${COMMAND_DIR}/${COMMAND_NAME}.md`;
 const COMMAND_MD = `---
 description: Throwaway command created by the SDK playground to prove command files round-trip.
@@ -25,14 +25,14 @@ Summarize the repository README in one sentence.
 `;
 
 run("create-command", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed);
   const sessionId = await pickOrCreateSessionId(
-    kortix,
+    zed,
     projectId,
     "sdk command test",
   );
-  const session = kortix.session(projectId, sessionId);
+  const session = zed.session(projectId, sessionId);
 
   console.log("readying session…");
   await retryUntilReady(() => session.ensureReady());

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useRuntimeStore } from '@kortix/sdk/react';
+import { useRuntimeStore } from '@zed/sdk/react';
 import { getFileHistory, getFileCommitDiff, getFileAtCommit } from '../api/git-history';
 import type { FileHistoryResult, FileCommitDiff } from '@/features/file-browser/types';
 

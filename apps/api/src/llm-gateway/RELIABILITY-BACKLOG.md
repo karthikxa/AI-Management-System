@@ -1,6 +1,6 @@
 # LLM Gateway — reliability hardening
 
-Code-level review of the server-side Kortix LLM gateway (`packages/llm-gateway`
+Code-level review of the server-side Zed LLM gateway (`packages/llm-gateway`
 core, shared by the in-process `/v1/llm` pipeline and the standalone pod; control
 plane in `apps/api/src/llm-gateway`).
 
@@ -50,7 +50,7 @@ managed fallback with tier gating), real unit tests on the core pipeline.
 
 9. **Correlation ID threaded to the upstream call** — `http/call-upstream.ts` +
    `pipeline/failover.ts`. `callUpstream()` now accepts a `requestId` and sends
-   it as `x-kortix-request-id` on every outbound provider request (all
+   it as `x-zed-request-id` on every outbound provider request (all
    transports — set centrally after `transport.buildRequest()`, not per
    transport, so it can't drift out of sync with them); `runFailover` passes
    its existing `requestId` through. A failed/slow completion can now be

@@ -6,7 +6,7 @@ import {
   convertPresentationToGoogleSlides,
   convertRuntimePresentation,
   getGoogleAuthUrl,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 export enum DownloadFormat {
   PDF = 'pdf',

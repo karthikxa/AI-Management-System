@@ -24,7 +24,7 @@ import { useOptionalSidebar } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/utils';
 import { cn } from '@/lib/utils';
 import { focusWithoutScroll } from '@/lib/utils/focus-without-scroll';
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import type { ToolPart } from '@/ui';
 import {
   CaretLeftIcon as ChevronLeft,
@@ -75,9 +75,9 @@ export function CloseButton({ onClose }: { onClose: () => void }) {
 // `subscribe`, no behavior change in the browser or real SSR.
 function useFullscreenSnapshot(): boolean {
   return useSyncExternalStore(
-    useKortixComputerStore.subscribe,
-    () => useKortixComputerStore.getState().isExpanded,
-    () => useKortixComputerStore.getState().isExpanded,
+    useZedComputerStore.subscribe,
+    () => useZedComputerStore.getState().isExpanded,
+    () => useZedComputerStore.getState().isExpanded,
   );
 }
 
@@ -781,7 +781,7 @@ export function ToolParts({ parts, sessionId }: { parts: ToolPart[]; sessionId: 
         )}
       >
         {failed && (
-          <div className="border-kortix-red/30 bg-kortix-red/5 text-foreground rounded-md border px-3 py-2 text-sm">
+          <div className="border-zed-red/30 bg-zed-red/5 text-foreground rounded-md border px-3 py-2 text-sm">
             This step hit a problem — the details below show what happened.
           </div>
         )}

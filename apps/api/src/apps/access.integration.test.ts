@@ -8,7 +8,7 @@ import {
   createDb,
   projects,
   type Database,
-} from '@kortix/db';
+} from '@zed/db';
 import { eq } from 'drizzle-orm';
 import {
   createAppAccessToken,
@@ -22,8 +22,8 @@ import { invalidateIamCacheForUser } from '../iam/cache-invalidation';
 const CONFIRMATION = 'I_UNDERSTAND_THIS_DELETES_TEST_DATA';
 const HAS_CONFIRMED_TEST_DB = Boolean(
   process.env.TEST_DATABASE_URL &&
-    process.env.KORTIX_TEST_DB_CONFIRM === CONFIRMATION &&
-    process.env.INTERNAL_KORTIX_ENV !== 'prod',
+    process.env.ZED_TEST_DB_CONFIRM === CONFIRMATION &&
+    process.env.INTERNAL_ZED_ENV !== 'prod',
 );
 const describeWithDb = HAS_CONFIRMED_TEST_DB ? describe : describe.skip;
 
@@ -96,7 +96,7 @@ describeWithDb('App access persistence — real PostgreSQL', () => {
     const app = await seedApp();
     const oldCookie = createAppAccessToken({
       appId: APP_ID,
-      kind: 'kortix',
+      kind: 'zed',
       userId: OWNER_ID,
       revision: app.accessRevision,
       expiresAt: new Date(Date.now() + 60_000),
@@ -117,8 +117,8 @@ describeWithDb('App access persistence — real PostgreSQL', () => {
       password_configured: true,
     });
 
-    const request = new Request('https://dev-access-test-bbbbbbbbbbbbbbbb.apps.kortix.com/asset.js', {
-      headers: { cookie: `__Host-kortix_app_access=${oldCookie}` },
+    const request = new Request('https://dev-access-test-bbbbbbbbbbbbbbbb.apps.zed.com/asset.js', {
+      headers: { cookie: `__Host-zed_app_access=${oldCookie}` },
     });
     const denied = await authorizeAppRequest(request, new URL(request.url), updated);
     expect(denied?.status).toBe(401);
@@ -207,7 +207,7 @@ describeWithDb('App access persistence — real PostgreSQL', () => {
     });
   });
 
-  test('Kortix App cookies stop working after account access is revoked', async () => {
+  test('Zed App cookies stop working after account access is revoked', async () => {
     const app = await seedApp();
     await testDb().insert(accountMembers).values({
       accountId: ACCOUNT_ID,
@@ -216,14 +216,14 @@ describeWithDb('App access persistence — real PostgreSQL', () => {
     });
     const token = createAppAccessToken({
       appId: APP_ID,
-      kind: 'kortix',
+      kind: 'zed',
       userId: OWNER_ID,
       revision: app.accessRevision,
       expiresAt: new Date(Date.now() + 60_000),
     });
     const request = new Request(
-      'https://dev-access-test-bbbbbbbbbbbbbbbb.apps.kortix.com/assets/app.js',
-      { headers: { cookie: `__Host-kortix_app_access=${token}` } },
+      'https://dev-access-test-bbbbbbbbbbbbbbbb.apps.zed.com/assets/app.js',
+      { headers: { cookie: `__Host-zed_app_access=${token}` } },
     );
 
     expect(await authorizeAppRequest(request, new URL(request.url), app)).toBeNull();

@@ -13,7 +13,7 @@ let seededRepo: string;
 let emptyRepo: string;
 
 beforeAll(async () => {
-  root = await mkdtemp(join(tmpdir(), 'kortix-remote-branch-'));
+  root = await mkdtemp(join(tmpdir(), 'zed-remote-branch-'));
   emptyRepo = join(root, 'empty.git');
   seededRepo = join(root, 'seeded.git');
   await run('git', ['init', '--bare', '--initial-branch=main', emptyRepo]);
@@ -21,13 +21,13 @@ beforeAll(async () => {
 
   const work = join(root, 'work');
   await run('git', ['init', '-b', 'main', work]);
-  await writeFile(join(work, 'kortix.yaml'), 'kortix_version: 2\n', 'utf8');
+  await writeFile(join(work, 'zed.yaml'), 'zed_version: 2\n', 'utf8');
   const env = {
     ...process.env,
-    GIT_AUTHOR_NAME: 'Kortix',
-    GIT_AUTHOR_EMAIL: 'noreply@kortix.ai',
-    GIT_COMMITTER_NAME: 'Kortix',
-    GIT_COMMITTER_EMAIL: 'noreply@kortix.ai',
+    GIT_AUTHOR_NAME: 'Zed',
+    GIT_AUTHOR_EMAIL: 'noreply@zed.ai',
+    GIT_COMMITTER_NAME: 'Zed',
+    GIT_COMMITTER_EMAIL: 'noreply@zed.ai',
   };
   await run('git', ['add', '-A'], { cwd: work, env });
   await run('git', ['commit', '-m', 'chore: project setup'], { cwd: work, env });
@@ -41,7 +41,7 @@ afterAll(async () => {
 describe('remoteBranchExists', () => {
   test('is true for a repo that carries the default branch', async () => {
     const exists = await remoteBranchExists(
-      { projectId: 'p1', repoUrl: seededRepo, defaultBranch: 'main', manifestPath: 'kortix.yaml' },
+      { projectId: 'p1', repoUrl: seededRepo, defaultBranch: 'main', manifestPath: 'zed.yaml' },
       'main',
     );
     expect(exists).toBe(true);
@@ -49,7 +49,7 @@ describe('remoteBranchExists', () => {
 
   test('is false for a freshly created repo with no refs at all', async () => {
     const exists = await remoteBranchExists(
-      { projectId: 'p2', repoUrl: emptyRepo, defaultBranch: 'main', manifestPath: 'kortix.yaml' },
+      { projectId: 'p2', repoUrl: emptyRepo, defaultBranch: 'main', manifestPath: 'zed.yaml' },
       'main',
     );
     expect(exists).toBe(false);
@@ -57,7 +57,7 @@ describe('remoteBranchExists', () => {
 
   test('is false for a branch name that is absent but does not match a prefix', async () => {
     const exists = await remoteBranchExists(
-      { projectId: 'p3', repoUrl: seededRepo, defaultBranch: 'main', manifestPath: 'kortix.yaml' },
+      { projectId: 'p3', repoUrl: seededRepo, defaultBranch: 'main', manifestPath: 'zed.yaml' },
       'mai',
     );
     expect(exists).toBe(false);
@@ -70,7 +70,7 @@ describe('remoteBranchExists', () => {
           projectId: 'p4',
           repoUrl: seededRepo,
           defaultBranch: 'main',
-          manifestPath: 'kortix.yaml',
+          manifestPath: 'zed.yaml',
         },
         '--upload-pack=touch /tmp/pwned',
       ),

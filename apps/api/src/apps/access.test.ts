@@ -12,8 +12,8 @@ const OWNER_ID = '22222222-2222-4222-8222-222222222222';
 const MEMBER_ID = '33333333-3333-4333-8333-333333333333';
 const SECRET = 'test-app-access-secret-at-least-32-characters';
 
-describe('Kortix App access', () => {
-  test('defaults to owner-only Kortix access and supports every explicit mode', () => {
+describe('Zed App access', () => {
+  test('defaults to owner-only Zed access and supports every explicit mode', () => {
     const owner = { userId: OWNER_ID, groupIds: [] };
     const member = { userId: MEMBER_ID, groupIds: ['44444444-4444-4444-8444-444444444444'] };
 
@@ -36,12 +36,12 @@ describe('Kortix App access', () => {
   test('signs scoped expiring tokens and rejects tampering, expiry, and cross-App reuse', () => {
     const token = createAppAccessToken({
       appId: APP_ID,
-      kind: 'kortix',
+      kind: 'zed',
       userId: OWNER_ID,
       expiresAt: new Date('2030-01-01T00:00:00.000Z'),
     }, SECRET);
     expect(verifyAppAccessToken(token, APP_ID, SECRET, new Date('2029-01-01T00:00:00.000Z'))).toMatchObject({
-      appId: APP_ID, kind: 'kortix', userId: OWNER_ID,
+      appId: APP_ID, kind: 'zed', userId: OWNER_ID,
     });
     expect(verifyAppAccessToken(`${token}x`, APP_ID, SECRET, new Date('2029-01-01T00:00:00.000Z'))).toBeNull();
     expect(verifyAppAccessToken(token, '55555555-5555-4555-8555-555555555555', SECRET, new Date('2029-01-01T00:00:00.000Z'))).toBeNull();
@@ -49,14 +49,14 @@ describe('Kortix App access', () => {
   });
 
   test('uses a host-only secure browser cookie', () => {
-    expect(appAccessCookieName()).toBe('__Host-kortix_app_access');
+    expect(appAccessCookieName()).toBe('__Host-zed_app_access');
     expect(appAccessCookie('token')).toContain('; Secure;');
   });
 
   test('uses a partitioned cookie for an Apps iframe on the trustworthy apps.localhost origin', () => {
-    expect(appAccessCookieName(true)).toBe('kortix_app_access');
+    expect(appAccessCookieName(true)).toBe('zed_app_access');
     const cookie = appAccessCookie('token', 60, true);
-    expect(cookie).toStartWith('kortix_app_access=token;');
+    expect(cookie).toStartWith('zed_app_access=token;');
     expect(cookie).toContain('; HttpOnly;');
     expect(cookie).toContain('; Secure;');
     expect(cookie).toContain('; SameSite=None; Partitioned');

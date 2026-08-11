@@ -61,7 +61,7 @@ flow(
       r.status(200);
     });
 
-    // meet uses the same write path + reconciles the kortix_voice channel connector.
+    // meet uses the same write path + reconciles the zed_voice channel connector.
     // Assert structure (not the effective value — that depends on the project's own
     // target), then clear it.
     await ctx.step("OWNER enables meet → 200 + catalog in body", async () => {

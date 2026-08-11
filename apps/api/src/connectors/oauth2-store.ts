@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
-import type { OAuth2ApplicationInput } from '@kortix/api-contract';
+import type { OAuth2ApplicationInput } from '@zed/api-contract';
 import {
   connectorConnections,
   connectors,
   connectionCredentials,
   connectionOAuthApplications,
   connectionOAuthSessions,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, eq, gt, isNull, sql } from 'drizzle-orm';
 import {
   connectorAuthorizationMatchesStrategy,

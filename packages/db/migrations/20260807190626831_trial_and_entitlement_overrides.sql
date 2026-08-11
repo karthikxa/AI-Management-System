@@ -8,7 +8,7 @@ set lock_timeout = '2s';
 set statement_timeout = '30s';
 
 -- REVIEW THE GENERATED SQL BELOW. drizzle-kit writes it from the diff between
--- kortix.ts and the snapshot; it knows the target shape, not how to reach it
+-- zed.ts and the snapshot; it knows the target shape, not how to reach it
 -- without downtime. Check the same list `migrate:create` prints:
 --   [ ] Bare NOT NULL added to an existing populated table (needs a backfill first).
 --   [ ] Plain CREATE INDEX / DROP INDEX on an EXISTING table -- move it to
@@ -21,8 +21,8 @@ set statement_timeout = '30s';
 --   [ ] Any ALTER TYPE ... ADD VALUE needs:
 -- enum-value-checked: <how you verified every env, including any faked baseline, has this value>
 
-ALTER TABLE "kortix"."credit_accounts" ADD COLUMN "trial_tier" varchar(50);--> statement-breakpoint
-ALTER TABLE "kortix"."credit_accounts" ADD COLUMN "trial_seats" integer;--> statement-breakpoint
-ALTER TABLE "kortix"."credit_accounts" ADD COLUMN "trial_note" text;--> statement-breakpoint
-ALTER TABLE "kortix"."credit_accounts" ADD COLUMN "trial_granted_by" uuid;--> statement-breakpoint
-ALTER TABLE "kortix"."credit_accounts" ADD COLUMN "managed_models_override" boolean;
+ALTER TABLE "zed"."credit_accounts" ADD COLUMN "trial_tier" varchar(50);--> statement-breakpoint
+ALTER TABLE "zed"."credit_accounts" ADD COLUMN "trial_seats" integer;--> statement-breakpoint
+ALTER TABLE "zed"."credit_accounts" ADD COLUMN "trial_note" text;--> statement-breakpoint
+ALTER TABLE "zed"."credit_accounts" ADD COLUMN "trial_granted_by" uuid;--> statement-breakpoint
+ALTER TABLE "zed"."credit_accounts" ADD COLUMN "managed_models_override" boolean;

@@ -1,5 +1,5 @@
 /**
- * Platform & Session Hooks for Kortix Computer Mobile
+ * Platform & Session Hooks for Zed Computer Mobile
  *
  * These hooks provide:
  * 1. Sandbox initialization (ensures user has a sandbox)

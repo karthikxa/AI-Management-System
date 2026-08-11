@@ -17,19 +17,19 @@ import { selectConnectorBindingChoices } from '@/server/bindable-connections';
 import { getRequestSession } from '@/server/auth';
 import { consumeRateLimit } from '@/server/rate-limit';
 import { isOwner, isValidProjectId } from '@/server/users';
-import { createScopedKortix } from '@kortix/sdk/server';
+import { createScopedZed } from '@zed/sdk/server';
 import type { NextRequest } from 'next/server';
 
 function upstreamBase(): string {
   return (
-    process.env.KORTIX_UPSTREAM ??
-    process.env.KORTIX_API_URL ??
-    'https://api.kortix.com/v1'
+    process.env.ZED_UPSTREAM ??
+    process.env.ZED_API_URL ??
+    'https://api.zed.com/v1'
   ).replace(/\/+$/, '');
 }
 
 export async function GET(req: NextRequest) {
-  const apiKey = process.env.KORTIX_API_KEY;
+  const apiKey = process.env.ZED_API_KEY;
   if (!apiKey) return Response.json({ connectors: [] });
 
   const session = getRequestSession(req);
@@ -50,8 +50,8 @@ export async function GET(req: NextRequest) {
     return Response.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const kortix = createScopedKortix({
-    // KORTIX_UPSTREAM first, like the proxy and every other server route: a
+  const zed = createScopedZed({
+    // ZED_UPSTREAM first, like the proxy and every other server route: a
     // deployment that only sets it (the documented setup) was silently sending
     // this lookup to the PUBLIC api, whose failure this route swallows as "no
     // connections" — an empty picker with no error anywhere.
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
   });
 
   try {
-    const result = await kortix
+    const result = await zed
       .project(projectId)
       .connectors.connections.list();
     const connectors = selectConnectorBindingChoices(result.connections).filter(

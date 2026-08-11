@@ -1,1 +1,1 @@
-export { buildPublicTemplateUrl } from '@kortix/sdk';
+export { buildPublicTemplateUrl } from '@zed/sdk';

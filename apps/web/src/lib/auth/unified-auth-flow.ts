@@ -30,7 +30,7 @@ export const SSO_REQUIRED_MESSAGE =
 const WRONG_PASSWORD_MESSAGE =
   'Incorrect password. Try again, or reset it via “Forgot your password?”.';
 
-/** Parse `KORTIX_PUBLIC_AUTH_METHODS` ("magic,password") with a safe default. */
+/** Parse `ZED_PUBLIC_AUTH_METHODS` ("magic,password") with a safe default. */
 export function parseAuthMethods(raw: string | null | undefined): AuthMethod[] {
   const parsed = (raw || 'magic,password')
     .split(',')

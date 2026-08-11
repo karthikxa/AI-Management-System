@@ -381,7 +381,7 @@ export const useDiagnosticsStore = create<DiagnosticsState>()(
   },
 }),
   {
-    name: 'kortix-diagnostics',
+    name: 'zed-diagnostics',
     storage: {
       // Guarded with try/catch (not just `typeof window`): React Native sets a
       // global `window` shim but has no `sessionStorage`, so a bare reference

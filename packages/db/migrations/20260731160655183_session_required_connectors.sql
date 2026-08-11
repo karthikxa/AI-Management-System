@@ -16,4 +16,4 @@ set statement_timeout = '30s';
 --       which is byte-identical to today's behaviour.
 --   [x] No index, constraint validation, drop, rename, or backfill is required.
 
-ALTER TABLE "kortix"."project_sessions" ADD COLUMN "required_connectors" jsonb;
+ALTER TABLE "zed"."project_sessions" ADD COLUMN "required_connectors" jsonb;

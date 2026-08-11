@@ -21,7 +21,7 @@ import type {
   UploadResult,
 } from './types';
 
-// Re-export the file types from the `@kortix/sdk/files` subpath too, so hosts can
+// Re-export the file types from the `@zed/sdk/files` subpath too, so hosts can
 // import both the ops and the types from one place.
 export type * from './types';
 
@@ -58,7 +58,7 @@ async function errorMessage(res: Response): Promise<string> {
 /**
  * GET a daemon JSON endpoint (list/status/find), surfacing the server's error.
  * `baseUrl` defaults to the module-global "active" sandbox for back-compat —
- * pass an explicit one (e.g. from `kortix.session(pid, sid).files`) to hit a
+ * pass an explicit one (e.g. from `zed.session(pid, sid).files`) to hit a
  * SPECIFIC session's own runtime instead.
  */
 async function fetchDaemonJson<T>(relUrl: string, baseUrl: string = getActiveOpenCodeUrl()): Promise<T> {
@@ -71,7 +71,7 @@ async function fetchDaemonJson<T>(relUrl: string, baseUrl: string = getActiveOpe
 
 /**
  * Sandbox filesystem roots the daemon serves (mirrors DEFAULT_ALLOWED_ROOTS in
- * kortix-sandbox-agent-server). The daemon re-validates every path server-side;
+ * zed-sandbox-agent-server). The daemon re-validates every path server-side;
  * this mirror only keeps hosts from mangling non-workspace paths client-side.
  */
 export const SANDBOX_FS_ROOTS = ['/workspace', '/tmp', '/home', '/opt'] as const;
@@ -114,7 +114,7 @@ export const toWorkspaceRelative = toDaemonPath;
 /**
  * List files/directories at a path. Daemon `GET /file`. `baseUrl` defaults to
  * the module-global "active" sandbox; pass one explicitly to target a
- * specific session's runtime (see `kortix.session(pid, sid).files`).
+ * specific session's runtime (see `zed.session(pid, sid).files`).
  */
 export async function listFiles(dirPath: string, baseUrl: string = getActiveOpenCodeUrl()): Promise<FileNode[]> {
   const daemonPath = toDaemonPath(dirPath) || '.';
@@ -180,7 +180,7 @@ export function getFileStatus(baseUrl: string = getActiveOpenCodeUrl()): Promise
  * errors from callers. The only real caller of this SDK export
  * (`apps/web/src/features/files/search/workspace-search-service.ts`) already
  * wraps each call in its own `.catch(() => [])`, and there are no callers
- * under `@kortix/sdk/react`, so removing the internal swallow here is
+ * under `@zed/sdk/react`, so removing the internal swallow here is
  * non-breaking — verified by grepping every `findFiles(` call site in the
  * monorepo before making this change.
  */

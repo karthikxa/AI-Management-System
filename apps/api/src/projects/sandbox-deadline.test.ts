@@ -59,8 +59,8 @@ beforeEach(() => {
   executed = [];
   executeResult = undefined;
   executeThrows = null;
-  delete process.env.KORTIX_SANDBOX_TURN_GRANT_MINUTES;
-  delete process.env.KORTIX_SANDBOX_WARM_GRANT_MINUTES;
+  delete process.env.ZED_SANDBOX_TURN_GRANT_MINUTES;
+  delete process.env.ZED_SANDBOX_WARM_GRANT_MINUTES;
 });
 
 describe('the constants', () => {
@@ -68,7 +68,7 @@ describe('the constants', () => {
     expect(turnGrantMs()).toBe(4 * 3_600_000);
   });
 
-  test('the idle grace reuses KORTIX_SANDBOX_AUTOSTOP_MINUTES, already 15 in prod', () => {
+  test('the idle grace reuses ZED_SANDBOX_AUTOSTOP_MINUTES, already 15 in prod', () => {
     expect(idleGraceMs()).toBe(15 * 60_000);
   });
 
@@ -77,14 +77,14 @@ describe('the constants', () => {
   });
 
   test('the grant is tunable, so it can be tightened without a code change', () => {
-    process.env.KORTIX_SANDBOX_TURN_GRANT_MINUTES = '60';
+    process.env.ZED_SANDBOX_TURN_GRANT_MINUTES = '60';
     expect(turnGrantMs()).toBe(60 * 60_000);
   });
 
   // The documented kill switch: a grant longer than the cap makes every extend
   // clamp at active_since + 24h, neutralising the feature with no rollback.
   test('KILL SWITCH: an absurd grant still cannot exceed the cap', () => {
-    process.env.KORTIX_SANDBOX_TURN_GRANT_MINUTES = '100000';
+    process.env.ZED_SANDBOX_TURN_GRANT_MINUTES = '100000';
     expect(turnGrantMs()).toBeGreaterThan(ABSOLUTE_RUN_CAP_MS);
   });
 });
@@ -226,7 +226,7 @@ describe('grantWarmPoolLifetime — the one box that can never be observed', () 
   });
 
   test('the warm lifetime is tunable', async () => {
-    process.env.KORTIX_SANDBOX_WARM_GRANT_MINUTES = '10';
+    process.env.ZED_SANDBOX_WARM_GRANT_MINUTES = '10';
     await grantWarmPoolLifetime('sb-1', {
       warm_session: { state: 'available' },
     });
@@ -354,13 +354,13 @@ describe('isTurnStartRequest — what the control plane counts as OBSERVING a ru
 // is classified as a control-plane observation, the sandbox can renew its own
 // deadline forever and the self-granted lease this design deletes is rebuilt.
 describe('isSandboxAuthored — the box may never extend its own life', () => {
-  test('the kortix_sb_ sandbox token is sandbox-authored', () => {
+  test('the zed_sb_ sandbox token is sandbox-authored', () => {
     expect(isSandboxAuthored('sandbox', null)).toBe(true);
   });
 
   test('a SESSION-SCOPED PAT is sandbox-authored even though apiKeyType is unset', () => {
-    // `KORTIX_CLI_TOKEN`: injected into every box and used
-    // by the in-box `kortix` CLI. Its auth branch never sets apiKeyType, so a
+    // `ZED_CLI_TOKEN`: injected into every box and used
+    // by the in-box `zed` CLI. Its auth branch never sets apiKeyType, so a
     // gate testing apiKeyType alone let the box hold itself open indefinitely.
     expect(isSandboxAuthored(undefined, 'session-abc')).toBe(true);
     expect(isSandboxAuthored(null, 'session-abc')).toBe(true);

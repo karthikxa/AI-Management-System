@@ -12,6 +12,6 @@ import { config } from '../../config';
  * `env` is a parameter (defaulting to the deployed value) purely so tests can
  * exercise every branch deterministically without module-mocking config.
  */
-export function creditGateExemptEnv(env: string = config.INTERNAL_KORTIX_ENV): boolean {
+export function creditGateExemptEnv(env: string = config.INTERNAL_ZED_ENV): boolean {
   return env === 'dev' || env === 'preview';
 }

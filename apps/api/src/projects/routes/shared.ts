@@ -2,8 +2,8 @@ import type {
   ProjectSessionSandbox,
   SessionStartFailure,
   SessionStartResult,
-} from '@kortix/api-contract';
-import { changeRequests, projectSessions, sessionSandboxes } from '@kortix/db';
+} from '@zed/api-contract';
+import { changeRequests, projectSessions, sessionSandboxes } from '@zed/db';
 import { and, eq, sql } from 'drizzle-orm';
 import {
   markComputeSessionAlive,
@@ -360,13 +360,13 @@ export async function allocateRuntimeOnOpen(
 }
 
 // ── Unified session-open orchestration ──────────────────────────────────────
-// The stage/result wire types live in @kortix/api-contract (the shared wire
+// The stage/result wire types live in @zed/api-contract (the shared wire
 // contract); re-exported here for the existing import sites.
 
 export type {
   SessionStartResult,
   SessionStartStage,
-} from '@kortix/api-contract';
+} from '@zed/api-contract';
 
 /**
  * The relative proxy path a client uses for all OpenCode (port 8000) traffic for

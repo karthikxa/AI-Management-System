@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import Hint from '@/components/ui/hint';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { Modal, ModalBody, ModalClose, ModalContent, ModalTitle } from '@/components/ui/modal';
 import { cn } from '@/lib/utils';
 import {
@@ -471,7 +471,7 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = React.memo(
             <div className="text-muted-foreground mb-2 text-sm">
               🎨 Rendering Mermaid diagram...
             </div>
-            <KortixLoader size="medium" />
+            <ZedLoader size="medium" />
           </div>
         </div>
       );
@@ -578,7 +578,7 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = React.memo(
                   aria-label="Copy diagram source"
                 >
                   {copied ? (
-                    <Check className="text-kortix-green size-3.5" />
+                    <Check className="text-zed-green size-3.5" />
                   ) : (
                     <Copy className="size-3.5" />
                   )}
@@ -657,7 +657,7 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = React.memo(
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
-                    <KortixLoader size="medium" />
+                    <ZedLoader size="medium" />
                   </div>
                 )}
               </div>

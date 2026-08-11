@@ -1,4 +1,4 @@
-import type { ProjectRuntimeSession, ProjectSession } from '@kortix/sdk';
+import type { ProjectRuntimeSession, ProjectSession } from '@zed/sdk';
 
 /**
  * Canonical, framework-free helpers for reading a project session the way the
@@ -43,7 +43,7 @@ export interface SessionSource {
   kind: SessionSourceKind;
   /** Human label, e.g. "Slack", "Scheduled". */
   label: string;
-  /** For trigger-fired sessions: the kortix.yaml trigger slug. */
+  /** For trigger-fired sessions: the zed.yaml trigger slug. */
   triggerSlug: string | null;
 }
 

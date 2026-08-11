@@ -17,7 +17,7 @@ import {
 import { KNOWN_SCHEMA_VERSION, parseManifestString } from '../projects/triggers';
 
 function loadAgents(body: string) {
-  return extractAgents(parseManifestString(`kortix_version = ${KNOWN_SCHEMA_VERSION}\n[project]\nname="t"\n${body}`));
+  return extractAgents(parseManifestString(`zed_version = ${KNOWN_SCHEMA_VERSION}\n[project]\nname="t"\n${body}`));
 }
 
 describe('isProjectSessionPrincipal', () => {
@@ -50,12 +50,12 @@ describe('grantFromLoadedAgents — resolution rule', () => {
 [[agents]]
 name = "release-bot"
 connectors = ["github"]
-kortix_cli = ["project.trigger.create", "project.cr.open"]
+zed_cli = ["project.trigger.create", "project.cr.open"]
 `);
     expect(grantFromLoadedAgents('release-bot', loaded)).toEqual({
       agent: 'release-bot',
       connectors: ['github'],
-      kortixCli: ['project.trigger.create', 'project.cr.open'],
+      zedCli: ['project.trigger.create', 'project.cr.open'],
       env: 'all', // env key omitted → defaults to 'all' (back-compat for the new dimension)
     });
   });
@@ -64,12 +64,12 @@ kortix_cli = ["project.trigger.create", "project.cr.open"]
     const loaded = loadAgents(`
 [[agents]]
 name = "release-bot"
-kortix_cli = ["project.trigger.create"]
+zed_cli = ["project.trigger.create"]
 `);
     expect(grantFromLoadedAgents('some-other-agent', loaded)).toEqual({
       agent: 'some-other-agent',
       connectors: [],
-      kortixCli: [],
+      zedCli: [],
       env: [], // unlisted-but-adopted → default-deny everything, incl. secrets
     });
   });
@@ -79,27 +79,27 @@ kortix_cli = ["project.trigger.create"]
 [[agents]]
 name = "release-bot"
 enabled = false
-kortix_cli = ["project.trigger.create"]
+zed_cli = ["project.trigger.create"]
 `);
     expect(grantFromLoadedAgents('release-bot', loaded)).toEqual({
       agent: 'release-bot',
       connectors: [],
-      kortixCli: [],
+      zedCli: [],
       env: [],
     });
   });
 
-  test('default kortix agent declared with "all" → grants all', () => {
+  test('default zed agent declared with "all" → grants all', () => {
     const loaded = loadAgents(`
 [[agents]]
-name = "kortix"
+name = "zed"
 connectors = "all"
-kortix_cli = "all"
+zed_cli = "all"
 `);
-    expect(grantFromLoadedAgents('kortix', loaded)).toEqual({
-      agent: 'kortix',
+    expect(grantFromLoadedAgents('zed', loaded)).toEqual({
+      agent: 'zed',
       connectors: 'all',
-      kortixCli: 'all',
+      zedCli: 'all',
       env: 'all',
     });
   });
@@ -107,7 +107,7 @@ kortix_cli = "all"
   // Regression: a session that boots with the non-binding `default` sentinel in a
   // GOVERNED project must NOT be default-denied. No agent is ever named `default`
   // — the runtime resolves it to the configured `default_agent` (a GP agent), so
-  // default-denying it stripped every connector and made `kortix connectors
+  // default-denying it stripped every connector and made `zed connectors
   // connectors` return [] (and hid synthetic channel/computer connectors). The
   // sentinel is non-binding → null (no restriction, still capped at the user).
   test('`default` sentinel under governance → null (non-binding), not default-deny', () => {
@@ -115,7 +115,7 @@ kortix_cli = "all"
 [[agents]]
 name = "veyris"
 connectors = "all"
-kortix_cli = "all"
+zed_cli = "all"
 
 [[agents]]
 name = "memory-reflector"
@@ -125,7 +125,7 @@ connectors = []
   });
 
   // The security feature is preserved: an unlisted CONCRETE agent still denies.
-  // Default-deny is total — no connectors, no Kortix-CLI, and (per the secrets-
+  // Default-deny is total — no connectors, no Zed-CLI, and (per the secrets-
   // scoping rule) no project env either.
   test('concrete unlisted agent under governance still default-denies (≠ sentinel)', () => {
     const loaded = loadAgents(`
@@ -136,13 +136,13 @@ connectors = "all"
     expect(grantFromLoadedAgents('rogue-agent', loaded)).toEqual({
       agent: 'rogue-agent',
       connectors: [],
-      kortixCli: [],
+      zedCli: [],
       env: [],
     });
   });
 });
 
-// kortix_version 2 — the manifest's own top-level `default_agent` MUST resolve
+// zed_version 2 — the manifest's own top-level `default_agent` MUST resolve
 // the `default` sentinel to a concrete declared agent's grant (spec §2.1),
 // the opposite of v1's "sentinel is non-binding → null" rule tested above.
 // `loaded.defaultAgent` is what carries this from `extractAgents` — it's
@@ -150,26 +150,26 @@ connectors = "all"
 describe('grantFromLoadedAgents — v2 `default_agent` sentinel resolution', () => {
   function loadAgentsV2(agentsBody: string, opts: { defaultAgent?: string } = {}) {
     const text = [
-      'kortix_version: 2',
+      'zed_version: 2',
       `default_agent: ${opts.defaultAgent ?? 'support'}`,
       'project:',
       '  name: t',
       'agents:',
       agentsBody,
     ].join('\n');
-    return extractAgents(parseManifestString(text, 'yaml', 'kortix.yaml'));
+    return extractAgents(parseManifestString(text, 'yaml', 'zed.yaml'));
   }
 
   test('sentinel resolves to the declared default_agent\'s grant, not null', () => {
     const loaded = loadAgentsV2(`
   support:
     connectors: [github]
-    kortix_cli: [project.cr.open]
+    zed_cli: [project.cr.open]
 `);
     expect(grantFromLoadedAgents('default', loaded)).toEqual({
       agent: 'support',
       connectors: ['github'],
-      kortixCli: ['project.cr.open'],
+      zedCli: ['project.cr.open'],
       env: [], // v2 deny-by-default (secrets omitted)
     });
   });
@@ -184,7 +184,7 @@ describe('grantFromLoadedAgents — v2 `default_agent` sentinel resolution', () 
     expect(grantFromLoadedAgents('billing', loaded)).toEqual({
       agent: 'billing',
       connectors: [],
-      kortixCli: [],
+      zedCli: [],
       env: ['STRIPE_KEY'],
     });
   });
@@ -206,55 +206,55 @@ describe('agentMayUseEnv — per-agent secret gate', () => {
     expect(agentMayUseEnv(null, 'GITHUB_TOKEN')).toBe(true);
   });
   test('missing env (legacy grant) → treated as all', () => {
-    expect(agentMayUseEnv({ agent: 'a', kortixCli: 'all', connectors: 'all' }, 'GITHUB_TOKEN')).toBe(true);
+    expect(agentMayUseEnv({ agent: 'a', zedCli: 'all', connectors: 'all' }, 'GITHUB_TOKEN')).toBe(true);
   });
   test('"all" → every secret allowed', () => {
-    expect(agentMayUseEnv({ agent: 'a', kortixCli: [], connectors: [], env: 'all' }, 'STRIPE_KEY')).toBe(true);
+    expect(agentMayUseEnv({ agent: 'a', zedCli: [], connectors: [], env: 'all' }, 'STRIPE_KEY')).toBe(true);
   });
   test('explicit list → only listed secrets; others denied', () => {
-    const grant = { agent: 'mkt', kortixCli: [], connectors: [], env: ['BRAND_API'] };
+    const grant = { agent: 'mkt', zedCli: [], connectors: [], env: ['BRAND_API'] };
     expect(agentMayUseEnv(grant, 'BRAND_API')).toBe(true);
     expect(agentMayUseEnv(grant, 'STRIPE_KEY')).toBe(false);
   });
   test('empty list → no secrets', () => {
-    expect(agentMayUseEnv({ agent: 'a', kortixCli: [], connectors: [], env: [] }, 'ANY')).toBe(false);
+    expect(agentMayUseEnv({ agent: 'a', zedCli: [], connectors: [], env: [] }, 'ANY')).toBe(false);
   });
   test('case-insensitive: a lowercase allowlist still admits the UPPERCASE secret', () => {
-    // Secrets are canonically UPPERCASE; a hand-written kortix.yaml allowlist may not be.
-    const grant = { agent: 'mkt', kortixCli: [], connectors: [], env: ['openai_api_key'] };
+    // Secrets are canonically UPPERCASE; a hand-written zed.yaml allowlist may not be.
+    const grant = { agent: 'mkt', zedCli: [], connectors: [], env: ['openai_api_key'] };
     expect(agentMayUseEnv(grant, 'OPENAI_API_KEY')).toBe(true);
     expect(agentMayUseEnv(grant, 'STRIPE_KEY')).toBe(false);
   });
 });
 
-describe('agentMayPerform — kortix_cli gate', () => {
+describe('agentMayPerform — zed_cli gate', () => {
   test('null grant (non-agent token) → allowed', () => {
     expect(agentMayPerform(null, 'project.cr.merge')).toBe(true);
   });
   test('"all" → allowed', () => {
-    expect(agentMayPerform({ agent: 'kortix', kortixCli: 'all', connectors: 'all' }, 'project.cr.merge')).toBe(true);
+    expect(agentMayPerform({ agent: 'zed', zedCli: 'all', connectors: 'all' }, 'project.cr.merge')).toBe(true);
   });
   test('granted action → allowed', () => {
-    expect(agentMayPerform({ agent: 'a', kortixCli: ['project.cr.open'], connectors: [] }, 'project.cr.open')).toBe(true);
+    expect(agentMayPerform({ agent: 'a', zedCli: ['project.cr.open'], connectors: [] }, 'project.cr.open')).toBe(true);
   });
   test('non-granted action → denied (the cr.open-but-not-merge case)', () => {
-    const grant = { agent: 'a', kortixCli: ['project.cr.open'], connectors: [] };
+    const grant = { agent: 'a', zedCli: ['project.cr.open'], connectors: [] };
     expect(agentMayPerform(grant, 'project.cr.merge')).toBe(false);
   });
   test('empty grant → everything denied', () => {
-    expect(agentMayPerform({ agent: 'a', kortixCli: [], connectors: [] }, 'project.trigger.create')).toBe(false);
+    expect(agentMayPerform({ agent: 'a', zedCli: [], connectors: [] }, 'project.trigger.create')).toBe(false);
   });
   test('cr.open ≡ gitops.push alias: holding either satisfies the other (no double-gate)', () => {
-    const crOnly = { agent: 'a', kortixCli: ['project.cr.open'], connectors: [] };
+    const crOnly = { agent: 'a', zedCli: ['project.cr.open'], connectors: [] };
     expect(agentMayPerform(crOnly, 'project.gitops.push')).toBe(true); // fold gates the commit as gitops.push
-    const pushOnly = { agent: 'a', kortixCli: ['project.gitops.push'], connectors: [] };
+    const pushOnly = { agent: 'a', zedCli: ['project.gitops.push'], connectors: [] };
     expect(agentMayPerform(pushOnly, 'project.cr.open')).toBe(true); // route gates CR-create as cr.open
     // merge pair is independent — cr.open does NOT unlock merge
     expect(agentMayPerform(crOnly, 'project.gitops.merge')).toBe(false);
     expect(agentMayPerform(crOnly, 'project.cr.merge')).toBe(false);
   });
   test('cr.merge ≡ gitops.merge alias', () => {
-    const mergeOnly = { agent: 'a', kortixCli: ['project.cr.merge'], connectors: [] };
+    const mergeOnly = { agent: 'a', zedCli: ['project.cr.merge'], connectors: [] };
     expect(agentMayPerform(mergeOnly, 'project.gitops.merge')).toBe(true);
   });
 });
@@ -264,10 +264,10 @@ describe('agentMayUseConnector — connector gate', () => {
     expect(agentMayUseConnector(null, 'github')).toBe(true);
   });
   test('"all" → allowed', () => {
-    expect(agentMayUseConnector({ agent: 'k', kortixCli: 'all', connectors: 'all' }, 'salesforce')).toBe(true);
+    expect(agentMayUseConnector({ agent: 'k', zedCli: 'all', connectors: 'all' }, 'salesforce')).toBe(true);
   });
   test('assigned connector → allowed; unassigned → denied', () => {
-    const grant = { agent: 'a', kortixCli: [], connectors: ['github'] };
+    const grant = { agent: 'a', zedCli: [], connectors: ['github'] };
     expect(agentMayUseConnector(grant, 'github')).toBe(true);
     expect(agentMayUseConnector(grant, 'salesforce')).toBe(false);
   });
@@ -278,11 +278,11 @@ describe('assertAgentScope — throws 403 on deny', () => {
     return { get: (k: string) => (k === 'agentGrant' ? grant : undefined) } as any;
   }
   test('throws for a non-granted action', () => {
-    const c = fakeCtx({ agent: 'a', kortixCli: ['project.cr.open'], connectors: [] });
+    const c = fakeCtx({ agent: 'a', zedCli: ['project.cr.open'], connectors: [] });
     expect(() => assertAgentScope(c, 'project.cr.merge')).toThrow();
   });
   test('does not throw for a granted action', () => {
-    const c = fakeCtx({ agent: 'a', kortixCli: ['project.cr.open'], connectors: [] });
+    const c = fakeCtx({ agent: 'a', zedCli: ['project.cr.open'], connectors: [] });
     expect(() => assertAgentScope(c, 'project.cr.open')).not.toThrow();
   });
   test('does not throw when there is no grant (human / laptop CLI)', () => {

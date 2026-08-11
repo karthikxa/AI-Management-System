@@ -28,7 +28,7 @@ import {
 
 describe('generateAppName / generateState', () => {
   test('generateAppName embeds the injected suffix, keeping names globally unique on GitHub', () => {
-    expect(generateAppName(() => 'abc123')).toBe('Kortix Self-Host abc123');
+    expect(generateAppName(() => 'abc123')).toBe('Zed Self-Host abc123');
   });
 
   test('generateState returns whatever the injected token source produces', () => {
@@ -38,9 +38,9 @@ describe('generateAppName / generateState', () => {
 
 describe('buildAppManifest', () => {
   test('wires redirect_url/setup_url to the chosen port and the requested default permissions', () => {
-    const manifest = buildAppManifest({ appName: 'Kortix Self-Host abcd', homepageUrl: 'https://kortix.example.com', port: 54321 });
-    expect(manifest.name).toBe('Kortix Self-Host abcd');
-    expect(manifest.url).toBe('https://kortix.example.com');
+    const manifest = buildAppManifest({ appName: 'Zed Self-Host abcd', homepageUrl: 'https://zed.example.com', port: 54321 });
+    expect(manifest.name).toBe('Zed Self-Host abcd');
+    expect(manifest.url).toBe('https://zed.example.com');
     expect(manifest.redirect_url).toBe('http://127.0.0.1:54321/created');
     expect(manifest.setup_url).toBe('http://127.0.0.1:54321/installed');
     expect(manifest.setup_on_update).toBe(true);
@@ -78,7 +78,7 @@ describe('buildCreateAppUrl', () => {
 
 describe('buildInstallUrl', () => {
   test('targets the App-specific installations/new page by slug', () => {
-    expect(buildInstallUrl('kortix-self-host-abcd')).toBe('https://github.com/apps/kortix-self-host-abcd/installations/new');
+    expect(buildInstallUrl('zed-self-host-abcd')).toBe('https://github.com/apps/zed-self-host-abcd/installations/new');
   });
 });
 
@@ -133,7 +133,7 @@ describe('buildAppCredentialsEnvPatch (env-wiring, step after manifest exchange)
   test('produces exactly the keys apps/api/src/projects/github.ts reads, plus stored credentials', () => {
     const patch = buildAppCredentialsEnvPatch({
       appId: '123456',
-      slug: 'kortix-self-host-abcd',
+      slug: 'zed-self-host-abcd',
       privateKeyPem: '-----BEGIN RSA PRIVATE KEY-----\nfake\n-----END RSA PRIVATE KEY-----',
       clientId: 'Iv1.abcdef',
       clientSecret: 'secret123',
@@ -141,18 +141,18 @@ describe('buildAppCredentialsEnvPatch (env-wiring, step after manifest exchange)
       currentStateSecret: 'already-set',
     });
     expect(patch).toEqual({
-      KORTIX_GITHUB_APP_ID: '123456',
-      KORTIX_GITHUB_APP_SLUG: 'kortix-self-host-abcd',
-      KORTIX_GITHUB_APP_PRIVATE_KEY: '-----BEGIN RSA PRIVATE KEY-----\\nfake\\n-----END RSA PRIVATE KEY-----',
-      KORTIX_GITHUB_APP_CLIENT_ID: 'Iv1.abcdef',
-      KORTIX_GITHUB_APP_CLIENT_SECRET: 'secret123',
-      KORTIX_GITHUB_APP_WEBHOOK_SECRET: 'whsec123',
+      ZED_GITHUB_APP_ID: '123456',
+      ZED_GITHUB_APP_SLUG: 'zed-self-host-abcd',
+      ZED_GITHUB_APP_PRIVATE_KEY: '-----BEGIN RSA PRIVATE KEY-----\\nfake\\n-----END RSA PRIVATE KEY-----',
+      ZED_GITHUB_APP_CLIENT_ID: 'Iv1.abcdef',
+      ZED_GITHUB_APP_CLIENT_SECRET: 'secret123',
+      ZED_GITHUB_APP_WEBHOOK_SECRET: 'whsec123',
     });
     // Already set — must NOT be clobbered/regenerated.
-    expect(patch.KORTIX_GITHUB_APP_STATE_SECRET).toBeUndefined();
+    expect(patch.ZED_GITHUB_APP_STATE_SECRET).toBeUndefined();
   });
 
-  test('generates KORTIX_GITHUB_APP_STATE_SECRET only when unset', () => {
+  test('generates ZED_GITHUB_APP_STATE_SECRET only when unset', () => {
     const patch = buildAppCredentialsEnvPatch({
       appId: '1',
       slug: 'slug',
@@ -163,7 +163,7 @@ describe('buildAppCredentialsEnvPatch (env-wiring, step after manifest exchange)
       currentStateSecret: '',
       generateStateSecret: () => 'freshly-generated-secret',
     });
-    expect(patch.KORTIX_GITHUB_APP_STATE_SECRET).toBe('freshly-generated-secret');
+    expect(patch.ZED_GITHUB_APP_STATE_SECRET).toBe('freshly-generated-secret');
   });
 
   test('treats a whitespace-only current state secret as unset too', () => {
@@ -177,7 +177,7 @@ describe('buildAppCredentialsEnvPatch (env-wiring, step after manifest exchange)
       currentStateSecret: '   ',
       generateStateSecret: () => 'fresh',
     });
-    expect(patch.KORTIX_GITHUB_APP_STATE_SECRET).toBe('fresh');
+    expect(patch.ZED_GITHUB_APP_STATE_SECRET).toBe('fresh');
   });
 });
 
@@ -189,35 +189,35 @@ describe('buildManagedGitEnvPatch (env-wiring, step after install)', () => {
       MANAGED_GIT_GITHUB_OWNER: 'acme-inc',
       MANAGED_GIT_GITHUB_INSTALL_ID: '789',
       MANAGED_GIT_GITHUB_TOKEN: '',
-      KORTIX_GITHUB_TOKEN: '',
-      KORTIX_GITHUB_OWNER: 'acme-inc',
+      ZED_GITHUB_TOKEN: '',
+      ZED_GITHUB_OWNER: 'acme-inc',
     });
   });
 });
 
 describe('renderStartPageHtml / renderClosePageHtml', () => {
   test('the start page POSTs the manifest JSON to the create URL and auto-submits', () => {
-    const manifest = buildAppManifest({ appName: 'Kortix Self-Host abcd', homepageUrl: 'https://kortix.ai', port: 12345 });
+    const manifest = buildAppManifest({ appName: 'Zed Self-Host abcd', homepageUrl: 'https://zed.ai', port: 12345 });
     const createUrl = buildCreateAppUrl({ org: 'my-org', state: 'st4te' });
     const html = renderStartPageHtml({ manifest, createUrl });
     expect(html).toContain(`action="${createUrl}"`);
     expect(html).toContain('method="post"');
     expect(html).toContain('name="manifest"');
-    expect(html).toContain('Kortix Self-Host abcd');
+    expect(html).toContain('Zed Self-Host abcd');
     expect(html).toContain('.submit()');
   });
 
   test('the start page HTML-escapes the manifest JSON so it is a valid attribute value', () => {
-    const manifest = buildAppManifest({ appName: 'Kortix "Quoted" App', homepageUrl: 'https://kortix.ai', port: 1 });
+    const manifest = buildAppManifest({ appName: 'Zed "Quoted" App', homepageUrl: 'https://zed.ai', port: 1 });
     const html = renderStartPageHtml({ manifest, createUrl: 'https://github.com/settings/apps/new?state=s' });
     expect(html).toContain('&quot;');
-    expect(html).not.toContain('value="{"name":"Kortix "Quoted"');
+    expect(html).not.toContain('value="{"name":"Zed "Quoted"');
   });
 
   test('the close page renders the given title and message', () => {
-    const html = renderClosePageHtml('GitHub App installed', 'Kortix received the installation.');
+    const html = renderClosePageHtml('GitHub App installed', 'Zed received the installation.');
     expect(html).toContain('GitHub App installed');
-    expect(html).toContain('Kortix received the installation.');
+    expect(html).toContain('Zed received the installation.');
     expect(html).toContain('close this tab');
   });
 });
@@ -257,7 +257,7 @@ describe('exchangeManifestCode (network call, injected fetch)', () => {
       return new Response(
         JSON.stringify({
           id: 42,
-          slug: 'kortix-self-host-abcd',
+          slug: 'zed-self-host-abcd',
           pem: '-----BEGIN RSA PRIVATE KEY-----\nfake\n-----END RSA PRIVATE KEY-----',
           client_id: 'Iv1.abcdef',
           client_secret: 'secret123',
@@ -274,7 +274,7 @@ describe('exchangeManifestCode (network call, injected fetch)', () => {
     expect((capturedInit?.headers as Record<string, string>).Accept).toBe('application/vnd.github+json');
     expect(result).toEqual({
       id: 42,
-      slug: 'kortix-self-host-abcd',
+      slug: 'zed-self-host-abcd',
       pem: '-----BEGIN RSA PRIVATE KEY-----\nfake\n-----END RSA PRIVATE KEY-----',
       client_id: 'Iv1.abcdef',
       client_secret: 'secret123',

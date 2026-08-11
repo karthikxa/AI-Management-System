@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test';
 
-// checkBillingActive/assertBillingActive read `config.KORTIX_BILLING_INTERNAL_ENABLED`
+// checkBillingActive/assertBillingActive read `config.ZED_BILLING_INTERNAL_ENABLED`
 // and delegate account lookup to getCreditAccount + ensureFreeTierAccountReady.
 // Mocked so this file can drive every branch (no_account / insufficient_credits /
 // subscription_required / ok) without a real DB or Stripe state.
@@ -13,7 +13,7 @@ mock.module('../../config', () => ({
     {
       get: (target: Record<PropertyKey, unknown>, key) => {
         if (Object.hasOwn(target, key)) return target[key];
-        if (key === 'KORTIX_BILLING_INTERNAL_ENABLED') return billingEnabled;
+        if (key === 'ZED_BILLING_INTERNAL_ENABLED') return billingEnabled;
         return target[key];
       },
     },

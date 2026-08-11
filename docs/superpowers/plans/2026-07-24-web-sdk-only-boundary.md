@@ -11,8 +11,8 @@
 
 ## Task 2: Canonical SDK imports
 
-- Replace deprecated SDK subpath imports with `@kortix/sdk` or
-  `@kortix/sdk/react`.
+- Replace deprecated SDK subpath imports with `@zed/sdk` or
+  `@zed/sdk/react`.
 - Replace host-local re-export imports with canonical SDK imports.
 - Delete pure compatibility re-export files from `apps/web`.
 - Keep the static boundary test green for completed categories.
@@ -35,11 +35,11 @@
 
 ## Task 5: Typed platform API coverage
 
-- Inventory browser and Next.js server calls to the Kortix API.
+- Inventory browser and Next.js server calls to the Zed API.
 - Add missing typed SDK functions with failing tests first.
 - Migrate each call site to the SDK.
 - Use request-scoped server SDK clients for server actions and route handlers.
-- Remove host-owned Kortix endpoint paths and response parsing.
+- Remove host-owned Zed endpoint paths and response parsing.
 
 ## Task 6: Remove runtime routing knowledge
 

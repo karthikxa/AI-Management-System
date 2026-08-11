@@ -3,7 +3,7 @@ import { createDb } from '../../packages/db/src/client';
 import { type Ports, computePorts, repoRoot, runMigrate, sh } from '../../scripts/worktree/lib';
 
 const dockerOk = sh(['docker', 'info']).ok;
-const CONTAINER = 'kortix-usage-breakdown-test';
+const CONTAINER = 'zed-usage-breakdown-test';
 const PORT = Number(process.env.USAGE_BREAKDOWN_TEST_PORT || 55443);
 const ROOT = repoRoot();
 const ports: Ports = { ...computePorts(0), sbDb: PORT };
@@ -32,13 +32,13 @@ function pgReady(): boolean {
 
 function newAccount(): string {
   const id = psql('select gen_random_uuid()');
-  psql(`insert into kortix.credit_accounts (account_id) values ('${id}')`);
+  psql(`insert into zed.credit_accounts (account_id) values ('${id}')`);
   return id;
 }
 
 function rpcDebit(accountId: string, amount: string, ledgerType: string, createdAt = PERIOD_START) {
   psql(
-    `insert into kortix.credit_ledger (account_id, amount_precise, type, description, metadata, created_at)
+    `insert into zed.credit_ledger (account_id, amount_precise, type, description, metadata, created_at)
      values ('${accountId}', ${amount}, 'usage', 'Sandbox compute',
              jsonb_build_object('from_daily', 0, 'from_extra', 0, 'from_monthly', ${amount.replace('-', '')}, 'ledger_type', '${ledgerType}'),
              '${createdAt}')`,
@@ -52,7 +52,7 @@ function rawLedger(
   createdAt = PERIOD_START,
 ): void {
   psql(
-    `insert into kortix.credit_ledger (account_id, amount_precise, type, created_at)
+    `insert into zed.credit_ledger (account_id, amount_precise, type, created_at)
      values ('${accountId}', ${amount}, '${type}', '${createdAt}')`,
   );
 }
@@ -124,7 +124,7 @@ suite('usage breakdown reads metadata->>ledger_type (throwaway Postgres)', () =>
   test('atomic_use_credits output is classified without any test-side shaping', async () => {
     const account = newAccount();
     psql(
-      `update kortix.credit_accounts
+      `update zed.credit_accounts
        set non_expiring_credits_precise = 50, balance_precise = 50
        where account_id = '${account}'`,
     );

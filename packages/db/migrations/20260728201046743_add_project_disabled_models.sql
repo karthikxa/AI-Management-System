@@ -10,9 +10,9 @@ set statement_timeout = '30s';
 -- no table rewrite) and add the array CHECK as NOT VALID so it takes no
 -- validating scan / write-blocking lock here; a later migration validates it
 -- (every existing row trivially satisfies it — the DEFAULT '[]' is an array).
-ALTER TABLE "kortix"."project_llm_routing_policies"
+ALTER TABLE "zed"."project_llm_routing_policies"
   ADD COLUMN "disabled_models" jsonb DEFAULT '[]'::jsonb NOT NULL;
 
-ALTER TABLE "kortix"."project_llm_routing_policies"
+ALTER TABLE "zed"."project_llm_routing_policies"
   ADD CONSTRAINT "project_llm_routing_policies_disabled_models_array_check"
   CHECK (jsonb_typeof("disabled_models") = 'array') NOT VALID;

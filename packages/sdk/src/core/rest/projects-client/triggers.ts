@@ -27,7 +27,7 @@ export type ProjectTriggerSessionMode = 'fresh' | 'reuse' | 'pinned' | 'keyed';
 export interface ProjectTrigger {
   /** URL-safe slug (the filename minus `.md`). */
   slug: string;
-  /** Where the entry is sourced from. Always `kortix.yaml#triggers.<slug>`
+  /** Where the entry is sourced from. Always `zed.yaml#triggers.<slug>`
    *  now that triggers are centralized in the manifest. */
   path: string;
   name: string;

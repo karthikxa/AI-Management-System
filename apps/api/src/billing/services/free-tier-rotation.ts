@@ -1,4 +1,4 @@
-import type { CreditAccount } from '@kortix/db';
+import type { CreditAccount } from '@zed/db';
 import {
   getFreeAccountsDueForRotation,
   updateCreditAccount,

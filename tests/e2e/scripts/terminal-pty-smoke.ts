@@ -45,7 +45,7 @@ if (dbClient) await dbClient.connect();
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const deadline = (ms: number) => Date.now() + ms;
-const marker = `KORTIX_PTY_${provider.toUpperCase()}_${Date.now()}`;
+const marker = `ZED_PTY_${provider.toUpperCase()}_${Date.now()}`;
 let token = '';
 let projectId = '';
 let sessionId = '';
@@ -130,7 +130,7 @@ async function waitForRuntime(externalId: string): Promise<void> {
   const end = deadline(2 * 60_000);
   let last = '';
   while (Date.now() < end) {
-    const response = await api(`/p/${externalId}/8000/kortix/health`);
+    const response = await api(`/p/${externalId}/8000/zed/health`);
     last = `${response.status} ${response.text.slice(0, 160)}`;
     if (response.status === 200) return;
     await sleep(3_000);
@@ -156,7 +156,7 @@ async function computeRows(): Promise<ComputeRow[]> {
   return dbQuery<ComputeRow>`
     SELECT id, provider, state, started_at, ended_at, last_billed_at,
            cost_usd, cpu_cores, memory_gb, disk_gb
-    FROM kortix.sandbox_compute_sessions
+    FROM zed.sandbox_compute_sessions
     WHERE session_id = ${sessionId}
     ORDER BY started_at
   `;
@@ -214,7 +214,7 @@ async function assertSettledWindow(row: ComputeRow): Promise<void> {
     SELECT count(*)::int AS count,
            coalesce(sum(abs(amount_precise)), 0)::text AS debit,
            min(idempotency_key) AS idempotency_key
-    FROM kortix.credit_ledger
+    FROM zed.credit_ledger
     WHERE account_id = ${accountId}
       AND metadata->>'ledger_type' = 'compute_debit'
       AND idempotency_key LIKE ${`compute:${row.id}:%`}
@@ -310,7 +310,7 @@ async function main(): Promise<void> {
   accountId = account.account_id;
   if (dbClient) {
     const updated = await dbQuery<{ balance: string }>`
-      UPDATE kortix.credit_accounts
+      UPDATE zed.credit_accounts
       SET billing_model = 'credit', updated_at = now()
       WHERE account_id = ${accountId}
       RETURNING balance::text
@@ -418,7 +418,7 @@ async function main(): Promise<void> {
     await sleep(5_000);
   }
 
-  const createdPty = await api(`/p/${externalId}/8000/kortix/pty`, {
+  const createdPty = await api(`/p/${externalId}/8000/zed/pty`, {
     method: 'POST',
     body: JSON.stringify({ env: { TERM: 'xterm-256color', COLORTERM: 'truecolor' } }),
   });
@@ -429,7 +429,7 @@ async function main(): Promise<void> {
   log('PTY created', { ptyId, pid: createdPty.body.pid });
 
   const wsBase = apiBase.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
-  const wsUrl = `${wsBase}/p/${externalId}/8000/kortix/pty/${encodeURIComponent(ptyId)}/connect?token=${encodeURIComponent(token)}`;
+  const wsUrl = `${wsBase}/p/${externalId}/8000/zed/pty/${encodeURIComponent(ptyId)}/connect?token=${encodeURIComponent(token)}`;
   const first = await attachAndCollect(wsUrl, `printf '${marker}\\n'\n`);
   if (!first.output.includes(marker)) {
     throw new Error(
@@ -444,7 +444,7 @@ async function main(): Promise<void> {
     );
   }
 
-  const listed = await api(`/p/${externalId}/8000/kortix/pty`);
+  const listed = await api(`/p/${externalId}/8000/zed/pty`);
   if (
     !Array.isArray(listed.body) ||
     // biome-ignore lint/suspicious/noExplicitAny: black-box API payload
@@ -453,7 +453,7 @@ async function main(): Promise<void> {
     throw new Error(`PTY list lost running terminal: ${listed.status} ${listed.text}`);
   }
 
-  const removed = await api(`/p/${externalId}/8000/kortix/pty/${encodeURIComponent(ptyId)}`, {
+  const removed = await api(`/p/${externalId}/8000/zed/pty/${encodeURIComponent(ptyId)}`, {
     method: 'DELETE',
   });
   if (removed.status !== 200)

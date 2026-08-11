@@ -1,13 +1,13 @@
 import { defineConfig } from "allure";
 
 export default defineConfig({
-  name: "ke2e — Kortix E2E",
+  name: "ke2e — Zed E2E",
   output: "./test-results/allure-report",
   historyPath: "./test-results/history.jsonl",
   plugins: {
     awesome: {
       options: {
-        reportName: "ke2e — Kortix E2E",
+        reportName: "ke2e — Zed E2E",
         singleFile: true,
         theme: "light",
         groupBy: ["epic", "story"],

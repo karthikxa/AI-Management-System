@@ -56,7 +56,7 @@ import {
   isEnvReference,
   buildCustomProviderConfigUpdate,
   type CustomProviderFormValues,
-} from '@/lib/kortix/custom-provider-config';
+} from '@/lib/zed/custom-provider-config';
 import { Globe } from 'lucide-react-native';
 import { SearchBar } from '@/components/ui/SearchBar';
 import type { PageTab } from '@/stores/tab-store';
@@ -68,7 +68,7 @@ import { useThemeColors, getSheetBg, getToggleTrackBg, getToggleActiveBg } from 
 
 const PROVIDER_LABELS: Record<string, string> = {
   anthropic: 'Anthropic', openai: 'OpenAI', google: 'Google', xai: 'xAI',
-  kortix: 'Kortix', openrouter: 'OpenRouter', 'github-copilot': 'GitHub Copilot',
+  zed: 'Zed', openrouter: 'OpenRouter', 'github-copilot': 'GitHub Copilot',
   vercel: 'Vercel', groq: 'Groq', deepseek: 'DeepSeek', mistral: 'Mistral',
   cohere: 'Cohere', huggingface: 'Hugging Face', cerebras: 'Cerebras',
   togetherai: 'Together AI', fireworks: 'Fireworks', deepinfra: 'DeepInfra',

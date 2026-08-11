@@ -9,13 +9,13 @@ import {
 import { insertLedgerEntry } from '../repositories/transactions';
 import { assertRpcDebitLedgerType } from '../ledger-type-honesty';
 import { MINIMUM_CREDIT_FOR_RUN, TOKEN_PRICE_MULTIPLIER } from './tiers';
-import { getManagedModel } from '@kortix/llm-catalog';
-import { calculateCost as calculateGatewayCost } from '@kortix/llm-gateway';
+import { getManagedModel } from '@zed/llm-catalog';
+import { calculateCost as calculateGatewayCost } from '@zed/llm-gateway';
 import { requireModelPricing } from '../../router/config/models';
 
 const CREDIT_GRANT_DUPLICATE_MARKERS = [
-  'kortix_unique_stripe_event',
-  'idx_kortix_credit_ledger_idempotency',
+  'zed_unique_stripe_event',
+  'idx_zed_credit_ledger_idempotency',
 ];
 
 function errorChainText(error: unknown): string {
@@ -169,7 +169,7 @@ export async function deductForLlmUsage(opts: {
     result.transactionId &&
     (opts.usageEventId || opts.upstreamCostUsd != null)
   ) {
-    const { creditLedger } = await import('@kortix/db');
+    const { creditLedger } = await import('@zed/db');
     const { eq, sql } = await import('drizzle-orm');
     const auditPatch: Record<string, unknown> = {};
     if (opts.usageEventId) auditPatch.usageEventId = opts.usageEventId;

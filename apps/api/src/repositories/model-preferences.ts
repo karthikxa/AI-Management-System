@@ -1,4 +1,4 @@
-import { accountModelPreferences, projectSessions, projects } from '@kortix/db';
+import { accountModelPreferences, projectSessions, projects } from '@zed/db';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import { db } from '../shared/db';
 
@@ -9,13 +9,13 @@ import { db } from '../shared/db';
 //   platform default.
 // Stored `model` values are gateway wire models (bare managed id like 'glm-5.2',
 // a BYOK 'provider/model', or 'codex/<id>') — never the synthetic `auto` and
-// never the opencode-only `kortix/` prefix.
+// never the opencode-only `zed/` prefix.
 //
 // AGENT-SCOPE ROWS ARE PROJECT-SCOPED (see the `project_id` doc comment on
-// `accountModelPreferences` in packages/db/src/schema/kortix.ts for the full
+// `accountModelPreferences` in packages/db/src/schema/zed.ts for the full
 // migration story). Agents are declared per-project (each project's own
-// kortix.yaml), so a pin for agent 'kortix' set from project A must never
-// apply to project B's unrelated 'kortix' agent — every caller that reads or
+// zed.yaml), so a pin for agent 'zed' set from project A must never
+// apply to project B's unrelated 'zed' agent — every caller that reads or
 // writes a scope='agent' preference MUST supply the project id it's acting
 // on. `project_id IS NULL` rows are PRE-migration/legacy pins: they keep
 // applying as an account-wide fallback to every project that hasn't set its
@@ -181,7 +181,7 @@ export async function deleteAccountModelPreference(params: {
  * lands on the `'default'` sentinel whenever session creation didn't resolve a
  * concrete name (see `createProjectSession` in projects/lib/sessions.ts), most
  * commonly because `project.metadata.default_agent` wasn't populated even
- * though the project's kortix.yaml declares one — without this fallback, an
+ * though the project's zed.yaml declares one — without this fallback, an
  * agent-scope model pin keyed by that declared name is silently never applied.
  */
 export async function getSessionAgentContext(

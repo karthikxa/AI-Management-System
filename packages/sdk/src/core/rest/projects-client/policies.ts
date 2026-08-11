@@ -1,10 +1,10 @@
-// Connector policies — kortix.yaml-backed project-wide tool policies.
+// Connector policies — zed.yaml-backed project-wide tool policies.
 
 import { backendApi } from '../../http/api-client';
 import type { ConnectorSyncResult } from './connectors';
 import { unwrap } from './shared';
 
-// ─── Connector policies (kortix.yaml-backed) ────────────────────────────────
+// ─── Connector policies (zed.yaml-backed) ────────────────────────────────
 
 export type PolicyAction = 'always_run' | 'require_approval' | 'block';
 export type PolicyDefaultMode = 'risk' | 'allow_all';

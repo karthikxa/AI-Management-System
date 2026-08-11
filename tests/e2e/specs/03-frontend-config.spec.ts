@@ -20,7 +20,7 @@ test.describe('03 — Frontend runtime configuration', () => {
     const res = await fetch(`${frontendUrl}/auth`);
     const html = await res.text();
 
-    const configMatch = html.match(/__KORTIX_RUNTIME_CONFIG=({[^;]+})/);
+    const configMatch = html.match(/__ZED_RUNTIME_CONFIG=({[^;]+})/);
     expect(configMatch).toBeTruthy();
 
     const config = JSON.parse(configMatch![1]);
@@ -34,7 +34,7 @@ test.describe('03 — Frontend runtime configuration', () => {
 
     expect(html).not.toContain('local-build-placeholder-anon-key');
 
-    const configMatch = html.match(/__KORTIX_RUNTIME_CONFIG=({[^;]+})/);
+    const configMatch = html.match(/__ZED_RUNTIME_CONFIG=({[^;]+})/);
     const config = JSON.parse(configMatch![1]);
     expect(config.SUPABASE_ANON_KEY).toMatch(/^eyJ/); // JWT format
   });

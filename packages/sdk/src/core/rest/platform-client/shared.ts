@@ -13,7 +13,7 @@ import { safeEnv } from '../../http/env';
 import {
   listProjectSessions,
   listProjects,
-  type KortixProject,
+  type ZedProject,
   type ProjectSession,
   type ProjectSessionSandbox,
 } from '../projects-client';
@@ -98,7 +98,7 @@ function normalizeSessionStatus(status: string | undefined): string {
 }
 
 export function projectSessionToSandboxInfo(
-  project: KortixProject,
+  project: ZedProject,
   session: ProjectSession,
   runtime?: ProjectSessionSandbox | null,
 ): SandboxInfo {
@@ -108,7 +108,7 @@ export function projectSessionToSandboxInfo(
     external_id: externalId,
     name: session.name || `${project.name} session`,
     provider: (runtime?.provider as SandboxProviderName | null) || (session.sandbox_provider as SandboxProviderName | null) || 'daytona',
-    base_url: runtime?.base_url || session.sandbox_url || (runtime?.external_id ? `${getPlatformUrl()}/p/${runtime.external_id}/${SANDBOX_PORTS.KORTIX_MASTER}` : ''),
+    base_url: runtime?.base_url || session.sandbox_url || (runtime?.external_id ? `${getPlatformUrl()}/p/${runtime.external_id}/${SANDBOX_PORTS.ZED_MASTER}` : ''),
     status: normalizeSessionStatus(runtime?.status || session.status),
     metadata: {
       ...(session.metadata ?? {}),
@@ -124,14 +124,14 @@ export function projectSessionToSandboxInfo(
 }
 
 export async function listProjectSessionSandboxes(): Promise<Array<{
-  project: KortixProject;
+  project: ZedProject;
   session: ProjectSession;
   runtime: ProjectSessionSandbox | null;
   sandbox: SandboxInfo;
 }>> {
   const projects = await listProjects();
   const rows: Array<{
-    project: KortixProject;
+    project: ZedProject;
     session: ProjectSession;
     runtime: ProjectSessionSandbox | null;
     sandbox: SandboxInfo;
@@ -162,7 +162,7 @@ export async function listProjectSessionSandboxes(): Promise<Array<{
 }
 
 export async function findProjectSessionSandbox(sandboxId?: string): Promise<{
-  project: KortixProject;
+  project: ZedProject;
   session: ProjectSession;
   runtime: ProjectSessionSandbox | null;
   sandbox: SandboxInfo;

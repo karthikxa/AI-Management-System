@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { AnimatedBg } from '@/components/ui/animated-bg';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,7 +19,7 @@ export default function CountryError() {
 
         <div className="relative z-10 flex w-full max-w-[456px] flex-col items-center gap-5 sm:gap-8">
           {/* Logo */}
-          <KortixLogo size={28} className="sm:h-8 sm:w-8" />
+          <ZedLogo size={28} className="sm:h-8 sm:w-8" />
 
           {/* Title */}
           <h1 className="text-foreground text-center text-2xl leading-tight font-normal tracking-tight sm:text-3xl md:text-5xl">
@@ -29,7 +29,7 @@ export default function CountryError() {
           {/* Description */}
           <p className="text-foreground/60 px-2 text-center text-sm leading-relaxed sm:text-base">
             {tHardcodedUi.raw(
-              'appCountryerrorPage.line28JsxTextWeReSorryKortixIsCurrentlyUnavailableIn',
+              'appCountryerrorPage.line28JsxTextWeReSorryZedIsCurrentlyUnavailableIn',
             )}
           </p>
 
@@ -63,7 +63,7 @@ export default function CountryError() {
               className="h-12 w-full rounded-lg font-medium"
             >
               <Link
-                href="mailto:support@kortix.ai"
+                href="mailto:support@zed.ai"
                 className="flex items-center justify-center gap-2"
               >
                 <Mail className="h-4 w-4" />

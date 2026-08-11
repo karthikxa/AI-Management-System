@@ -1,7 +1,7 @@
 import { and, eq, or, sql } from 'drizzle-orm';
 
-import { projectSessions } from '@kortix/db';
-import type { createGateway } from '@kortix/llm-gateway';
+import { projectSessions } from '@zed/db';
+import type { createGateway } from '@zed/llm-gateway';
 import { config } from '../config';
 import { logger as appLogger } from '../lib/logger';
 import {
@@ -15,7 +15,7 @@ import { PLACEHOLDER_TITLE_SQL_PATTERN, isPlaceholderOpencodeTitle } from './lib
 import type { ProjectSessionRow } from './lib/serializers';
 import { projectSessionMetadataMerge } from './lib/session-metadata-merge';
 
-// Kortix-owned session titles — the single source of `metadata.name`.
+// Zed-owned session titles — the single source of `metadata.name`.
 //
 // The title is generated the moment the first user prompt's text is known
 // server-side, which is one of two moments:
@@ -63,7 +63,7 @@ const inFlight = new Set<string>();
 let gatewaySingleton: ReturnType<typeof createGateway> | null = null;
 async function internalGateway(): Promise<ReturnType<typeof createGateway>> {
   if (!gatewaySingleton) {
-    const { createGateway } = await import('@kortix/llm-gateway');
+    const { createGateway } = await import('@zed/llm-gateway');
     const { createInProcessGatewayHooks } = await import('../llm-gateway/hooks');
     gatewaySingleton = createGateway(createInProcessGatewayHooks());
   }
@@ -121,7 +121,7 @@ export interface PromptInfo {
 
 /** Wire form of a prompt-body `model` field, shaped
  *  `{ providerID, modelID }` (opencode's per-send
- *  override) or a bare string. opencode's synthetic `kortix` provider already
+ *  override) or a bare string. opencode's synthetic `zed` provider already
  *  carries the full gateway wire id in `modelID` (e.g. `codex/gpt-5.6-sol`);
  *  any other provider is a BYOK `provider/model` pair. */
 function wireModelFrom(raw: unknown): string | null {
@@ -132,7 +132,7 @@ function wireModelFrom(raw: unknown): string | null {
   const modelId = typeof m.modelID === 'string' ? m.modelID.trim() : '';
   const providerId = typeof m.providerID === 'string' ? m.providerID.trim() : '';
   if (!modelId) return null;
-  return providerId && providerId !== 'kortix' ? `${providerId}/${modelId}` : modelId;
+  return providerId && providerId !== 'zed' ? `${providerId}/${modelId}` : modelId;
 }
 
 /** Parse the OpenCode prompt body once and read the text and selected model. */
@@ -432,7 +432,7 @@ async function generateWithDeadline(
 /**
  * Generate a session's title from its FIRST user prompt via the internal LLM
  * gateway (using the session's own model) and persist it to `metadata.name`.
- * Authoritative and Kortix-owned. Fire-and-forget: idempotent, best-effort,
+ * Authoritative and Zed-owned. Fire-and-forget: idempotent, best-effort,
  * never blocks or fails the prompt.
  */
 export async function generateSessionTitleFromFirstPrompt(

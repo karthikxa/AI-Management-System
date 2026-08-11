@@ -10,7 +10,7 @@ import {
   projectGroupGrants,
   projectMembers,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { eq, sql } from 'drizzle-orm';
 import { PROJECT_ACTIONS } from '../iam';
 import { app } from '../index';
@@ -43,9 +43,9 @@ const GROUP = crypto.randomUUID();
 const minted: string[] = [];
 
 beforeAll(async () => {
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists agent_grant jsonb`);
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists session_id text`);
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists service_account_id uuid`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists agent_grant jsonb`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists session_id text`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists service_account_id uuid`);
 
   await db.insert(accounts).values({ accountId: ACCOUNT, name: 'members-manage-gate-test' });
   await db.insert(creditAccounts).values({
@@ -99,7 +99,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   for (const tokenId of minted) {
-    await db.execute(sql`delete from kortix.account_tokens where token_id = ${tokenId}`);
+    await db.execute(sql`delete from zed.account_tokens where token_id = ${tokenId}`);
   }
   await db.delete(iamPolicies).where(eq(iamPolicies.accountId, ACCOUNT));
   await db.delete(iamRoleActions).where(eq(iamRoleActions.roleId, CUSTOM_ROLE));

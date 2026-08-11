@@ -4,7 +4,7 @@ import { DesktopChrome } from '@/components/desktop/desktop-chrome';
 import { DesktopUrlPrompt } from '@/components/desktop/desktop-url-prompt';
 import { ThemeProvider } from '@/components/home/theme-provider';
 import { I18nProvider } from '@/components/i18n-provider';
-import { KortixProjectScope } from '@/components/kortix-project-scope';
+import { ZedProjectScope } from '@/components/zed-project-scope';
 import { LazyMotionProvider } from '@/components/lazy-motion-provider';
 import { IconProvider } from '@/components/ui/icon-provider';
 import { ThreeShaderErrorSuppressor } from '@/components/three-shader-error-suppressor';
@@ -19,7 +19,7 @@ import '@/lib/polyfills';
 import { getServerPublicEnv } from '@/lib/public-env-server';
 import { siteMetadata } from '@/lib/site-metadata';
 import { cn } from '@/lib/utils';
-import { featureFlags } from '@kortix/sdk/feature-flags';
+import { featureFlags } from '@zed/sdk/feature-flags';
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import { connection } from 'next/server';
@@ -100,9 +100,9 @@ export const metadata: Metadata = {
   },
   description: siteMetadata.description,
   keywords: siteMetadata.keywords,
-  authors: [{ name: 'Kortix Team', url: siteMetadata.url }],
-  creator: 'Kortix Team',
-  publisher: 'Kortix Team',
+  authors: [{ name: 'Zed Team', url: siteMetadata.url }],
+  creator: 'Zed Team',
+  publisher: 'Zed Team',
   applicationName: siteMetadata.name,
   robots: {
     index: true,
@@ -135,8 +135,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: siteMetadata.title,
     description: siteMetadata.description,
-    creator: '@kortix',
-    site: '@kortix',
+    creator: '@zed',
+    site: '@zed',
     images: ['/banner.png'],
   },
   icons: {
@@ -165,7 +165,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const runtimeEnv = getServerPublicEnv();
 
   // Suppress marketing/visitor-tracking scripts inside the desktop app. The
-  // Tauri webview sends a `KortixDesktop` user-agent (see lib/desktop.ts); the
+  // Tauri webview sends a `ZedDesktop` user-agent (see lib/desktop.ts); the
   // website still loads them as normal. Keeps third-party de-anonymization
   // pixels (Vector/Artisan via GTM, plus the hardcoded loader) out of the
   // authenticated native client.
@@ -202,7 +202,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             Docker images get correct env vars regardless of build-time defaults. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.__KORTIX_RUNTIME_CONFIG=${JSON.stringify(runtimeEnv)};window.__RUNTIME_ENV=window.__KORTIX_RUNTIME_CONFIG;`,
+            __html: `window.__ZED_RUNTIME_CONFIG=${JSON.stringify(runtimeEnv)};window.__RUNTIME_ENV=window.__ZED_RUNTIME_CONFIG;`,
           }}
         />
 
@@ -269,7 +269,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <meta
             name="apple-itunes-app"
             content={tHardcodedUi.raw(
-              'appLayout.line214JsxAttrContentAppId6754448524AppArgumentKortix',
+              'appLayout.line214JsxAttrContentAppId6754448524AppArgumentZed',
             )}
           />
         ) : null}
@@ -282,18 +282,18 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               '@type': 'Organization',
               name: siteMetadata.name,
               alternateName: [
-                'Kortix',
-                'Kortix AI',
-                'Kortix – The AI Command Center for Your Company',
+                'Zed',
+                'Zed AI',
+                'Zed – The AI Command Center for Your Company',
               ],
               url: siteMetadata.url,
               logo: `${siteMetadata.url}/favicon.png`,
               description: siteMetadata.description,
               foundingDate: '2024',
               sameAs: [
-                'https://github.com/kortix-ai/suna',
-                'https://x.com/kortix',
-                'https://linkedin.com/company/kortix',
+                'https://github.com/zed-ai/suna',
+                'https://x.com/zed',
+                'https://linkedin.com/company/zed',
               ],
               contactPoint: {
                 '@type': 'ContactPoint',
@@ -311,7 +311,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               '@context': 'https://schema.org',
               '@type': 'SoftwareApplication',
               name: siteMetadata.title,
-              alternateName: [siteMetadata.name, 'Kortix'],
+              alternateName: [siteMetadata.name, 'Zed'],
               applicationCategory: 'BusinessApplication',
               operatingSystem: 'Web, macOS, Windows, Linux',
               description: siteMetadata.description,
@@ -365,11 +365,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                       so every enterprise CTA across the app (accounts settings,
                       billing, IAM) can open it via useRequestDemo(). */}
                       <RequestDemoProvider>
-                        {/* Account-wide MFA: catches the SDK's kortix:mfa-required
+                        {/* Account-wide MFA: catches the SDK's zed:mfa-required
                         event (coded 403) and walks the user through a TOTP
                         step-up so the retried action passes the IAM gate. */}
                         <MfaStepUpProvider>
-                          <KortixProjectScope>{children}</KortixProjectScope>
+                          <ZedProjectScope>{children}</ZedProjectScope>
                         </MfaStepUpProvider>
                       </RequestDemoProvider>
                       {/* Global maintenance/incident banner (info/warning/critical).

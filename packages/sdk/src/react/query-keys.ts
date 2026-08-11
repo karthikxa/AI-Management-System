@@ -1,5 +1,5 @@
 /**
- * The one place a Kortix query key is constructed.
+ * The one place a Zed query key is constructed.
  *
  * Before this existed, `apps/web` hand-typed roughly 176 key literals across
  * 30 `project*` families. One entity therefore had several cache entries (the
@@ -36,20 +36,20 @@
  *     and agents are `config.*` fields of the project detail response, not
  *     separate fetches — they are `select` projections over `detail(id)`.
  *
- * Not to be confused with `kortixKeys` in `use-kortix-master.ts`, which
- * addresses the multi-server Kortix Master surface and means something else.
+ * Not to be confused with `zedKeys` in `use-zed-master.ts`, which
+ * addresses the multi-server Zed Master surface and means something else.
  *
- * The root segment below is `'kx'`, not `'kortix'`. `'kortix'` is already
- * `kortixKeys`'s root (`use-kortix-master.ts:276-279`):
- * `kortixKeys.projects() = ['kortix', 'projects']` and
- * `kortixKeys.project(id) = ['kortix', 'projects', id]`. If this factory also
- * rooted at `'kortix'`, `kortixKeys.project(id)` and `qk.projects.list(id)`
+ * The root segment below is `'kx'`, not `'zed'`. `'zed'` is already
+ * `zedKeys`'s root (`use-zed-master.ts:276-279`):
+ * `zedKeys.projects() = ['zed', 'projects']` and
+ * `zedKeys.project(id) = ['zed', 'projects', id]`. If this factory also
+ * rooted at `'zed'`, `zedKeys.project(id)` and `qk.projects.list(id)`
  * would be the identical array for a matching id — one cache entry standing
- * in for two unrelated concepts — and `kortixKeys.projects()` (used as an
- * `invalidateQueries` prefix at `use-kortix-master.ts:371,384`) would also
+ * in for two unrelated concepts — and `zedKeys.projects()` (used as an
+ * `invalidateQueries` prefix at `use-zed-master.ts:371,384`) would also
  * match every key this factory produces, since TanStack matches query keys by
  * prefix. `'kx'` makes the two factories disjoint at segment 0, so neither
- * can ever prefix-match the other. Do not "tidy" this back to `'kortix'`.
+ * can ever prefix-match the other. Do not "tidy" this back to `'zed'`.
  */
 export const qk = {
   projects: {
@@ -70,7 +70,7 @@ export const qk = {
 
     /**
      * The bare project row — `getProject`, `GET /projects/:id`, a
-     * `KortixProject`. NOT `detail(id)` below: `getProjectDetail` hits
+     * `ZedProject`. NOT `detail(id)` below: `getProjectDetail` hits
      * `GET /projects/:id/detail` and returns a completely different shape,
      * `{ project, config, file_count, files, git_connection }`. An earlier
      * draft of this migration folded the two onto one key because both

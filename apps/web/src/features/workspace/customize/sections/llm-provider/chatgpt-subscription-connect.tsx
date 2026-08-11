@@ -6,8 +6,8 @@ import { InfoBanner } from '@/components/ui/info-banner';
 import Loading from '@/components/ui/loading';
 import { successToast } from '@/components/ui/toast';
 import { ProviderLogo } from '@/features/providers/provider-branding';
-import { pollProjectProviderOAuth, startProjectProviderOAuth } from '@kortix/sdk';
-import { qk, refreshProjectProviderState } from '@kortix/sdk/react';
+import { pollProjectProviderOAuth, startProjectProviderOAuth } from '@zed/sdk';
+import { qk, refreshProjectProviderState } from '@zed/sdk/react';
 import {
   CheckCircleIcon as CheckCircle2,
   WarningIcon as TriangleAlert,
@@ -20,7 +20,7 @@ import type { ChatGptChallenge, ChatGptPhase } from './types';
 import { sleep } from './utils';
 
 // ChatGPT subscription logins connect project-wide, like every other LLM
-// provider credential (kortix policy: no per-user access choice at the LLM
+// provider credential (zed policy: no per-user access choice at the LLM
 // level). The server's default sharing intent is project-wide.
 export function ChatGptSubscriptionConnect({
   projectId,

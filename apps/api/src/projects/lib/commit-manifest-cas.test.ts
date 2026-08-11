@@ -46,7 +46,7 @@ const project = {
   accountId: 'account-cas',
   name: 'CAS project',
   repoUrl: 'https://github.com/example/connectors.git',
-  manifestPath: 'kortix.yaml',
+  manifestPath: 'zed.yaml',
   defaultBranch: 'main',
   metadata: {},
   gitAuthToken: 'test-token',
@@ -68,42 +68,42 @@ describe('manifest compare-and-swap routing', () => {
       {
         schemaVersion: 2,
         format: 'yaml',
-        path: 'kortix.yaml',
+        path: 'zed.yaml',
         revision: 'a'.repeat(40),
-        candidatePaths: ['kortix.yaml', 'kortix.yml', 'kortix.toml'],
-        raw: { kortix_version: 2, connectors: [] },
+        candidatePaths: ['zed.yaml', 'zed.yml', 'zed.toml'],
+        raw: { zed_version: 2, connectors: [] },
       },
       'manifest write',
     );
 
     expect(result).toEqual({ ok: true });
     expect(gitCommit?.options.expectedFileRevision).toEqual({
-      path: 'kortix.yaml',
+      path: 'zed.yaml',
       sha: 'a'.repeat(40),
-      candidatePaths: ['kortix.yaml', 'kortix.yml', 'kortix.toml'],
+      candidatePaths: ['zed.yaml', 'zed.yml', 'zed.toml'],
     });
     expect(contentsWrites).toBe(0);
     expect(shaReads).toBe(0);
   });
 
   test('returns 409 for a generic Git revision conflict', async () => {
-    commitError = new branches.GitFileRevisionConflictError('kortix.yaml');
+    commitError = new branches.GitFileRevisionConflictError('zed.yaml');
 
     const result = await commitManifest(
       project,
       {
         schemaVersion: 2,
         format: 'yaml',
-        path: 'kortix.yaml',
+        path: 'zed.yaml',
         revision: 'a'.repeat(40),
-        candidatePaths: ['kortix.yaml', 'kortix.yml', 'kortix.toml'],
-        raw: { kortix_version: 2, connectors: [] },
+        candidatePaths: ['zed.yaml', 'zed.yml', 'zed.toml'],
+        raw: { zed_version: 2, connectors: [] },
       },
       'stale manifest write',
     );
 
     expect(result).toEqual({
-      error: 'File "kortix.yaml" changed since it was read',
+      error: 'File "zed.yaml" changed since it was read',
       status: 409,
     });
   });
@@ -114,8 +114,8 @@ describe('manifest compare-and-swap routing', () => {
       {
         schemaVersion: 2,
         format: 'yaml',
-        path: 'kortix.yaml',
-        raw: { kortix_version: 2, connectors: [] },
+        path: 'zed.yaml',
+        raw: { zed_version: 2, connectors: [] },
       },
       'unguarded manifest write',
     );
@@ -130,7 +130,7 @@ describe('manifest compare-and-swap routing', () => {
     shaError = new github.GitHubApiError(
       'upstream unavailable',
       500,
-      '/repos/example/connectors/contents/kortix.yaml',
+      '/repos/example/connectors/contents/zed.yaml',
     );
 
     const result = await commitManifest(
@@ -138,14 +138,14 @@ describe('manifest compare-and-swap routing', () => {
       {
         schemaVersion: 2,
         format: 'yaml',
-        path: 'kortix.yaml',
-        raw: { kortix_version: 2, connectors: [] },
+        path: 'zed.yaml',
+        raw: { zed_version: 2, connectors: [] },
       },
       'unguarded manifest write',
     );
 
     expect(result).toEqual({
-      error: 'Failed to commit kortix.yaml: upstream unavailable',
+      error: 'Failed to commit zed.yaml: upstream unavailable',
       status: 502,
     });
     expect(contentsWrites).toBe(0);

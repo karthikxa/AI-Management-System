@@ -8,7 +8,7 @@ import type { Auth } from '../api/auth.ts';
 
 const AUTH: Auth = {
   api_base: 'https://api.example.test/v1',
-  token: 'kortix_pat_test',
+  token: 'zed_pat_test',
   user_id: 'user_1',
   user_email: 'user@example.test',
   account_id: 'account_1',
@@ -16,12 +16,12 @@ const AUTH: Auth = {
 };
 
 const ENV_KEYS = [
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CONFIG_FILE',
+  'ZED_CLI_TOKEN',
+  'ZED_TOKEN',
+  'ZED_API_URL',
+  'ZED_PROJECT_ID',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
 ] as const;
 
 function project(id: string, name: string) {
@@ -31,7 +31,7 @@ function project(id: string, name: string) {
     name,
     repo_url: 'https://git.example.test/r.git',
     default_branch: 'main',
-    manifest_path: 'kortix.yaml',
+    manifest_path: 'zed.yaml',
     status: 'active',
     created_at: '2026-01-01T00:00:00.000Z',
     updated_at: '2026-01-01T00:00:00.000Z',
@@ -49,10 +49,10 @@ describe('ensureDefaultProjectBinding', () => {
   beforeEach(() => {
     for (const k of ENV_KEYS) saved[k] = process.env[k];
     for (const k of ENV_KEYS) delete process.env[k];
-    process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
-    dir = mkdtempSync(join(tmpdir(), 'kortix-bind-'));
+    process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
+    dir = mkdtempSync(join(tmpdir(), 'zed-bind-'));
     configFile = join(dir, 'config.json');
-    process.env.KORTIX_CONFIG_FILE = configFile;
+    process.env.ZED_CONFIG_FILE = configFile;
     writeFileSync(
       configFile,
       JSON.stringify({
@@ -131,7 +131,7 @@ describe('ensureDefaultProjectBinding', () => {
     expect(stderrChunks.join('')).toContain('Default project:');
   });
 
-  it('hints at kortix init and binds nothing when the account has zero projects', async () => {
+  it('hints at zed init and binds nothing when the account has zero projects', async () => {
     mockProjects([]);
 
     const outcome = await ensureDefaultProjectBinding(AUTH);
@@ -139,7 +139,7 @@ describe('ensureDefaultProjectBinding', () => {
     expect(outcome.bound).toBe(false);
     expect(outcome.project).toBeNull();
     expect(storedDefaultProject()).toBeUndefined();
-    expect(stderrChunks.join('')).toContain('kortix init');
+    expect(stderrChunks.join('')).toContain('zed init');
   });
 
   it('says "in this account", not "your first" — the user may have projects elsewhere', async () => {
@@ -152,7 +152,7 @@ describe('ensureDefaultProjectBinding', () => {
 
     const out = stderrChunks.join('');
     expect(out).toContain('No projects in this account');
-    expect(out).toContain('kortix accounts use');
+    expect(out).toContain('zed accounts use');
     expect(out).not.toContain('your first');
   });
 
@@ -206,7 +206,7 @@ describe('ensureDefaultProjectBinding', () => {
     expect(outcome.bound).toBe(false);
     expect(outcome.project).toBeNull();
     expect(storedDefaultProject()).toBeUndefined();
-    expect(stderrChunks.join('')).toContain('kortix projects use');
+    expect(stderrChunks.join('')).toContain('zed projects use');
   });
 
   it('degrades to unbound with the reason on stderr when listing projects fails', async () => {

@@ -1,5 +1,5 @@
 /**
- * `kortix marketplace <subcommand>` - browse the Kortix marketplace. This is
+ * `zed marketplace <subcommand>` - browse the Zed marketplace. This is
  * intentionally a discovery-only surface: no build, validate, or publish
  * commands live here, and no deterministic install/update/remove machinery
  * either — adding a marketplace item to a project is an agent import
@@ -32,8 +32,8 @@ interface CatalogItem {
   external: boolean;
   marketplaceId: string;
   marketplaceLabel: string;
-  managedBy?: 'kortix';
-  updatePolicy?: 'kortix-managed';
+  managedBy?: 'zed';
+  updatePolicy?: 'zed-managed';
   defaultProjectInstall?: boolean;
   defaultProjectInstallOrder?: number;
 }
@@ -53,9 +53,9 @@ interface MarketplaceFlags {
   json: boolean;
 }
 
-const HELP = help`Usage: kortix marketplace <subcommand> [options]
+const HELP = help`Usage: zed marketplace <subcommand> [options]
 
-Browse the Kortix marketplace.
+Browse the Zed marketplace.
 
 Subcommands:
   search [query]       Search marketplace items.
@@ -66,8 +66,8 @@ Subcommands:
 Options:
   --query <text>       Search text (same as search [query]).
   --type <type>        Filter by item type, e.g. skill.
-  --source <source>    Filter by marketplace/source, e.g. kortix.
-  --host <name>        Use a configured Kortix host.
+  --source <source>    Filter by marketplace/source, e.g. zed.
+  --host <name>        Use a configured Zed host.
   --project <id>       Install into this project id (default: linked).
   --json               Machine-readable output.
   -h, --help           Show this help.
@@ -91,7 +91,7 @@ async function marketplaceInstall(argv: string[], flags: MarketplaceFlags): Prom
   const itemId = argv[0];
   if (!itemId || itemId.startsWith('-')) {
     process.stderr.write(
-      `${status.err('pass an item id or name: kortix marketplace install kortix-starter:pdf')}\n`,
+      `${status.err('pass an item id or name: zed marketplace install zed-starter:pdf')}\n`,
     );
     return 2;
   }
@@ -121,10 +121,10 @@ function resolveMarketplaceClient(host?: string): { client: ApiClient; auth: Aut
   if (!auth?.token) {
     if (host) {
       process.stderr.write(
-        `${status.err(`Host "${host}" is not logged in.`)} Run ${C.cyan}kortix login --host ${host}${C.reset}.\n`,
+        `${status.err(`Host "${host}" is not logged in.`)} Run ${C.cyan}zed login --host ${host}${C.reset}.\n`,
       );
     } else {
-      process.stderr.write(`${status.err('Not logged in. Run `kortix login`.')}\n`);
+      process.stderr.write(`${status.err('Not logged in. Run `zed login`.')}\n`);
     }
     return null;
   }
@@ -164,13 +164,13 @@ function printItems(items: CatalogItem[], flags: MarketplaceFlags): void {
   process.stdout.write(`\n  ${C.bold}Marketplace${C.reset} ${C.faded}- ${items.length} item${items.length === 1 ? '' : 's'}${C.reset}\n\n`);
   for (const item of items.slice(0, 40)) {
     const kind = item.type.replace('registry:', '');
-    const managed = item.managedBy === 'kortix' ? ` ${C.faded}[Kortix-managed]${C.reset}` : '';
+    const managed = item.managedBy === 'zed' ? ` ${C.faded}[Zed-managed]${C.reset}` : '';
     process.stdout.write(`  ${C.cyan}${item.name}${C.reset} ${C.faded}${kind}${C.reset}${managed}\n`);
     process.stdout.write(`    ${item.title}${item.marketplaceLabel ? C.faded + ` - ${item.marketplaceLabel}` + C.reset : ''}\n`);
     if (item.description) process.stdout.write(`    ${C.dim}${item.description}${C.reset}\n`);
   }
   if (items.length > 40) process.stdout.write(`\n  ${C.dim}Showing 40 of ${items.length}. Narrow with --query.${C.reset}\n`);
-  process.stdout.write(`\n  ${C.dim}Show details:${C.reset} ${C.cyan}kortix marketplace show <name>${C.reset}\n`);
+  process.stdout.write(`\n  ${C.dim}Show details:${C.reset} ${C.cyan}zed marketplace show <name>${C.reset}\n`);
   process.stdout.write(`  ${C.dim}Add to a project:${C.reset} ${C.dim}start a session and ask the agent to import it${C.reset}\n`);
 }
 
@@ -185,7 +185,7 @@ async function marketplaceSearch(argv: string[], flags: MarketplaceFlags): Promi
 async function marketplaceShow(argv: string[], flags: MarketplaceFlags): Promise<number> {
   const raw = argv.find((a) => !a.startsWith('-'));
   if (!raw) {
-    process.stderr.write(`${status.err('pass an item id or name: kortix marketplace show pdf')}\n`);
+    process.stderr.write(`${status.err('pass an item id or name: zed marketplace show pdf')}\n`);
     return 2;
   }
   const ctx = resolveMarketplaceClient(flags.host);
@@ -228,7 +228,7 @@ async function marketplaceShow(argv: string[], flags: MarketplaceFlags): Promise
   const connectors = item.capabilities?.connectors ?? [];
   if (secrets.length > 0) process.stdout.write(`  ${C.dim}Needs secrets:${C.reset} ${secrets.join(', ')}\n`);
   if (connectors.length > 0) process.stdout.write(`  ${C.dim}Needs connectors:${C.reset} ${connectors.join(', ')}\n`);
-  if (item.managedBy === 'kortix') process.stdout.write(`  ${C.dim}Managed by:${C.reset} Kortix (${item.updatePolicy})\n`);
+  if (item.managedBy === 'zed') process.stdout.write(`  ${C.dim}Managed by:${C.reset} Zed (${item.updatePolicy})\n`);
   process.stdout.write(`\n  ${C.dim}Add to a project:${C.reset} ${C.dim}start a session and ask the agent to import "${item.name}"${C.reset}\n`);
   return 0;
 }

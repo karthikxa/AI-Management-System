@@ -1,5 +1,5 @@
 /**
- * Projects data client — now backed by @kortix/sdk/projects-client.
+ * Projects data client — now backed by @zed/sdk/projects-client.
  *
  * This file used to hand-roll ~1560 lines re-implementing the same REST
  * surface the SDK now exposes (web-aligned, hits the same repo-first backend
@@ -8,7 +8,7 @@
  * (`@/lib/projects/projects-client`) keeps working unchanged — see the SDK
  * adoption report for the function-by-function mapping.
  *
- * Most functions below are thin re-exports of `@kortix/sdk/projects-client`.
+ * Most functions below are thin re-exports of `@zed/sdk/projects-client`.
  * A handful are kept mobile-native because the SDK's equivalent has different
  * error/behavior semantics or doesn't cover the endpoint at all — each is
  * commented with why.
@@ -16,8 +16,8 @@
 
 import { API_URL, getAuthToken } from '@/api/config';
 import { createApiRequestError, getUpgradeGate } from '@/lib/billing/upgrade-gate';
-import { backendApi } from '@kortix/sdk/api-client';
-import * as sdk from '@kortix/sdk/projects-client';
+import { backendApi } from '@zed/sdk/api-client';
+import * as sdk from '@zed/sdk/projects-client';
 
 // ── Generic fetch helper ────────────────────────────────────────────────────
 // Kept mobile-native: this is the shared primitive for endpoints the SDK does
@@ -26,7 +26,7 @@ import * as sdk from '@kortix/sdk/projects-client';
 // iam-client}.ts, all of which import `apiFetch` from this file) as well as
 // the couple of functions below kept mobile-native for behavioral reasons.
 // Uses the same token source (`api/config.ts#getAuthToken`) that's wired into
-// `configureKortix({ getToken })`, so both paths share one auth story.
+// `configureZed({ getToken })`, so both paths share one auth story.
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const token = await getAuthToken();
@@ -54,7 +54,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   return res.json();
 }
 
-/** Unwrap an `@kortix/sdk` `backendApi` response for the handful of endpoints
+/** Unwrap an `@zed/sdk` `backendApi` response for the handful of endpoints
  *  the SDK's `projects-client` doesn't cover (kept local — `unwrap` itself is
  *  an internal SDK helper, not part of its public surface). */
 function unwrapLocal<T>(
@@ -69,10 +69,10 @@ function unwrapLocal<T>(
 
 // ── Accounts ─────────────────────────────────────────────────────────────────
 
-export type { AccountRole, ProjectRole, ConnectorSharing } from '@kortix/sdk/projects-client';
-export type { KortixAccount } from '@kortix/sdk/projects-client';
+export type { AccountRole, ProjectRole, ConnectorSharing } from '@zed/sdk/projects-client';
+export type { ZedAccount } from '@zed/sdk/projects-client';
 
-export { listAccounts } from '@kortix/sdk/projects-client';
+export { listAccounts } from '@zed/sdk/projects-client';
 
 /** Mobile calls this with a bare `name` string; the SDK takes `{ name }`. */
 export function createAccount(name: string) {
@@ -82,13 +82,13 @@ export function createAccount(name: string) {
 // ── Projects ───────────────────────────────────────────────────────────────
 
 export type {
-  KortixProject,
+  ZedProject,
   ExperimentalFeatureKey,
   ExperimentalFeatureView,
   ProjectInput,
   ProvisionProjectInput,
   RepoCollaboratorInvite,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
 export {
   listProjectsForAccount,
@@ -99,19 +99,19 @@ export {
   updateProject,
   updateExperimentalFeature,
   provisionProject,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
 // ── Dev (web parity: customize/sections/dev-view) ─────────────────────────────
 // inviteRepoCollaborator / isManagedGithubProject re-exported above.
 
 // ── Project sessions (one branch + sandbox per row; web-aligned) ────────────
 
-export type { ProjectSessionStatus, ProjectSession } from '@kortix/sdk/projects-client';
+export type { ProjectSessionStatus, ProjectSession } from '@zed/sdk/projects-client';
 /** The SDK's `createProjectSession` takes this as an inline (unnamed) type;
  *  derive the name mobile used to export rather than duplicating the shape. */
 export type CreateProjectSessionInput = NonNullable<Parameters<typeof sdk.createProjectSession>[1]>;
 /** Mobile's own name for the SDK's `ConnectorSharing` reused on sessions. */
-export type { ConnectorSharing as SessionSharing } from '@kortix/sdk/projects-client';
+export type { ConnectorSharing as SessionSharing } from '@zed/sdk/projects-client';
 
 export {
   listProjectSessions,
@@ -120,13 +120,13 @@ export {
   updateProjectSession,
   deleteProjectSession,
   setProjectSessionSharing,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
-export type { SessionStartStage, SessionStartResult } from '@kortix/sdk/projects-client';
+export type { SessionStartStage, SessionStartResult } from '@zed/sdk/projects-client';
 
 /**
  * THE session-open call — kept MOBILE-NATIVE rather than re-exporting
- * `@kortix/sdk/projects-client`'s `startProjectSession`.
+ * `@zed/sdk/projects-client`'s `startProjectSession`.
  *
  * Mismatch found: the SDK's version NEVER throws — on any failure (including
  * a 402 billing gate) it just returns `null` and expects the *page* to have
@@ -154,7 +154,7 @@ export async function startProjectSession(
   }
 }
 
-export type { ProjectSessionSandbox } from '@kortix/sdk/projects-client';
+export type { ProjectSessionSandbox } from '@zed/sdk/projects-client';
 
 // ── Project config detail (agents / skills / commands) ───────────────────────
 // Web parity: GET /projects/:id/detail. The SDK's `ProjectConfigSummary` is a
@@ -162,14 +162,14 @@ export type { ProjectSessionSandbox } from '@kortix/sdk/projects-client';
 // `manifest_raw`, `open_code_raw`, `agent_discovery`, richer `agents[].scope`)
 // — re-exported wholesale; existing consumers only read the fields they
 // already used, extra fields are ignored.
-export type { ProjectConfigSummary, ProjectDetail, ProjectLlmCatalogResponse } from '@kortix/sdk/projects-client';
+export type { ProjectConfigSummary, ProjectDetail, ProjectLlmCatalogResponse } from '@zed/sdk/projects-client';
 /** Derived aliases — mobile used to declare these as standalone interfaces;
  *  they're now just named views into `ProjectConfigSummary`'s array items so
  *  they can never drift from the real detail response. */
 export type ProjectConfigEntry = sdk.ProjectConfigSummary['skills'][number];
 export type ProjectAgentEntry = sdk.ProjectConfigSummary['agents'][number];
 
-export { getProjectDetail, getProjectLlmCatalog } from '@kortix/sdk/projects-client';
+export { getProjectDetail, getProjectLlmCatalog } from '@zed/sdk/projects-client';
 
 // ── Connectors (web parity: connectors-view) ──────────────────────────────────
 
@@ -179,7 +179,7 @@ export type {
   ConnectorsResponse,
   ConnectorSyncResult,
   ConnectorDraftInput,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 /** Mobile's narrower alias for `AdminConnector['provider']`. */
 export type ConnectorProvider = sdk.AdminConnector['provider'];
 
@@ -191,9 +191,9 @@ export {
   createConnector,
   pipedreamFinalize,
   listPipedreamApps,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
-export type { PipedreamApp } from '@kortix/sdk/projects-client';
+export type { PipedreamApp } from '@zed/sdk/projects-client';
 /** Mobile-only page-cursor wrapper type (the SDK's `listPipedreamApps` returns
  *  this same shape inline rather than as a named export). */
 export interface PipedreamAppsPage {
@@ -203,7 +203,7 @@ export interface PipedreamAppsPage {
 }
 
 /**
- * Kept MOBILE-NATIVE: the SDK's `@kortix/sdk/projects-client` has no
+ * Kept MOBILE-NATIVE: the SDK's `@zed/sdk/projects-client` has no
  * `disconnectConnector` — its `connectors.ts` only exposes `setConnectorCredential`
  * (PUT) with no DELETE counterpart. Same endpoint mobile always used
  * (`DELETE /connectors/projects/:id/connectors/:slug/credential`), implemented
@@ -248,7 +248,7 @@ export type {
   ProjectAccessMember,
   ProjectAccessResponse,
   InviteProjectMemberResult,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
 export {
   listProjectAccess,
@@ -256,33 +256,33 @@ export {
   revokeProjectAccess,
   inviteProjectMember,
   isInviteSent,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
-// ── Pending project invites (non-Kortix users not signed up yet) ─────────────
+// ── Pending project invites (non-Zed users not signed up yet) ─────────────
 
-export type { PendingProjectInvite, ResendProjectInviteResult } from '@kortix/sdk/projects-client';
+export type { PendingProjectInvite, ResendProjectInviteResult } from '@zed/sdk/projects-client';
 
 export {
   listPendingProjectInvites,
   revokePendingProjectInvite,
   resendPendingProjectInvite,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
 // ── IAM V2: project ⇄ group attachments (project-scoped) ─────────────────────
 // NOTE: account-LEVEL group listing (`listAccountGroups`, `removeGroupMember`)
 // has no SDK equivalent — the SDK's `access.ts` only covers PROJECT-scoped
 // group grants. Kept mobile-native below via `apiFetch`.
 
-export type { ProjectGroupGrant } from '@kortix/sdk/projects-client';
+export type { ProjectGroupGrant } from '@zed/sdk/projects-client';
 
 export {
   listProjectGroupGrants,
   attachGroupToProject,
   updateProjectGroupGrant,
   detachGroupFromProject,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
-/** Account-level group directory — NOT covered by `@kortix/sdk/projects-client`
+/** Account-level group directory — NOT covered by `@zed/sdk/projects-client`
  *  (its `access.ts` only has project ⇄ group grants, not the account's group
  *  list). Mirrors the type mobile's `lib/accounts/groups-client.ts` re-exports. */
 export interface AccountGroup {
@@ -311,9 +311,9 @@ export function removeGroupMember(accountId: string, groupId: string, userId: st
 
 // ── Connector policies (tool-approval rules) ──────────────────────────────────
 
-export type { PolicyAction, PolicyDefaultMode, ProjectPolicy, ProjectPoliciesResponse } from '@kortix/sdk/projects-client';
+export type { PolicyAction, PolicyDefaultMode, ProjectPolicy, ProjectPoliciesResponse } from '@zed/sdk/projects-client';
 
-export { listProjectPolicies, setProjectPolicies } from '@kortix/sdk/projects-client';
+export { listProjectPolicies, setProjectPolicies } from '@zed/sdk/projects-client';
 
 // ── GitHub import ──────────────────────────────────────────────────────────
 
@@ -324,18 +324,18 @@ export type {
   GitHubInstallationsResponse,
   LinkRepositoryInput,
   LinkRepositoryResponse,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
 export {
   listGitHubInstallations,
   listGitHubRepositories,
   deleteGitHubInstallation,
   linkRepository,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
 // ── Project secrets (web parity: customize/sections/secrets-view) ─────────────
 
-export type { ProjectSecret, ProjectSecretsResponse } from '@kortix/sdk/projects-client';
+export type { ProjectSecret, ProjectSecretsResponse } from '@zed/sdk/projects-client';
 
 /** Keeps the old defensive bare-array fallback on top of the SDK's version
  *  (belt-and-braces against a legacy response shape; harmless if never hit). */
@@ -350,13 +350,13 @@ export {
   deleteProjectSecret,
   setPersonalProjectSecret,
   deletePersonalProjectSecret,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
 // ── Channels — Slack (web parity: customize/sections/channels-view) ───────────
 
-export type { SlackInstallation, SlackMode } from '@kortix/sdk/projects-client';
+export type { SlackInstallation, SlackMode } from '@zed/sdk/projects-client';
 
-export { getSlackInstallation, getSlackMode, connectSlack, disconnectSlack } from '@kortix/sdk/projects-client';
+export { getSlackInstallation, getSlackMode, connectSlack, disconnectSlack } from '@zed/sdk/projects-client';
 
 // ── Triggers — schedules (cron) + webhooks (web parity: triggers-view) ────────
 
@@ -368,7 +368,7 @@ export type {
   CreateProjectTriggerInput,
   UpdateProjectTriggerInput,
   FireProjectTriggerResponse,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
 export {
   listProjectTriggers,
@@ -376,7 +376,7 @@ export {
   updateProjectTrigger,
   deleteProjectTrigger,
   fireProjectTrigger,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
 // ── Change requests (web parity: customize/sections/changes-view) ─────────────
 
@@ -388,14 +388,14 @@ export type {
   ProjectBranch,
   ProjectBranchesResponse,
   VersionDiffPreview,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 /** The SDK's `openChangeRequest` takes this as an inline (unnamed) type;
  *  derive the name mobile used to export rather than duplicating the shape. */
 export type OpenChangeRequestInput = Parameters<typeof sdk.openChangeRequest>[1];
 /** Mobile's name for the SDK's `ChangeRequestDiffResponse`. */
-export type { ChangeRequestDiffResponse as ChangeRequestDiff } from '@kortix/sdk/projects-client';
+export type { ChangeRequestDiffResponse as ChangeRequestDiff } from '@zed/sdk/projects-client';
 /** Mobile's name for the SDK's `ChangeRequestMergeResponse`. */
-export type { ChangeRequestMergeResponse as ChangeRequestMergeResult } from '@kortix/sdk/projects-client';
+export type { ChangeRequestMergeResponse as ChangeRequestMergeResult } from '@zed/sdk/projects-client';
 
 export {
   listChangeRequests,
@@ -406,7 +406,7 @@ export {
   closeChangeRequest,
   reopenChangeRequest,
   listProjectBranches,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
 /** Mobile calls this with a bare `message?: string`; the SDK takes `{ message? }`. */
 export function mergeChangeRequest(projectId: string, crId: string, message?: string) {
@@ -440,12 +440,12 @@ export function getVersionDiff(projectId: string, from: string, into: string) {
 
 // ── Project files (web parity: features/project-files) ────────────────────────
 
-export type { ProjectFileEntry } from '@kortix/sdk/projects-client';
-export type { ProjectCommit, ProjectFileHistoryResponse } from '@kortix/sdk/projects-client';
+export type { ProjectFileEntry } from '@zed/sdk/projects-client';
+export type { ProjectCommit, ProjectFileHistoryResponse } from '@zed/sdk/projects-client';
 /** Mobile's name for the SDK's `ProjectCommitDiffResponse`. */
-export type { ProjectCommitDiffResponse } from '@kortix/sdk/projects-client';
+export type { ProjectCommitDiffResponse } from '@zed/sdk/projects-client';
 
-export { listProjectFiles, getProjectFileHistory, readProjectFile } from '@kortix/sdk/projects-client';
+export { listProjectFiles, getProjectFileHistory, readProjectFile } from '@zed/sdk/projects-client';
 
 /** Mobile calls this with a positional `path?: string`; the SDK's
  *  `getProjectCommitDiff` (in `git-history.ts`) takes `options?: { path? }`. */
@@ -473,7 +473,7 @@ export type {
   ProjectSnapshotsResponse,
   CreateSandboxTemplateInput,
   UpdateSandboxTemplateInput,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';
 
 export {
   listProjectSnapshots,
@@ -483,4 +483,4 @@ export {
   deleteSandboxTemplate,
   rebuildProjectSnapshot,
   fixSandboxWithAgent,
-} from '@kortix/sdk/projects-client';
+} from '@zed/sdk/projects-client';

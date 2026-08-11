@@ -44,15 +44,15 @@ test("reconciliation PL/pgSQL reads psql inputs through transaction settings", (
   for (const body of functions) {
     assert.match(
       body,
-      /set_config\('kortix\.migration_database_side', :'database_side', true\)/,
+      /set_config\('zed\.migration_database_side', :'database_side', true\)/,
     );
     assert.match(
       body,
-      /set_config\('kortix\.migration_publication', :'publication', true\)/,
+      /set_config\('zed\.migration_publication', :'publication', true\)/,
     );
     assert.match(
       body,
-      /set_config\('kortix\.migration_subscription', :'subscription', true\)/,
+      /set_config\('zed\.migration_subscription', :'subscription', true\)/,
     );
 
     const block = body.match(/DO \$do\$([\s\S]*?)\$do\$;/);
@@ -60,15 +60,15 @@ test("reconciliation PL/pgSQL reads psql inputs through transaction settings", (
 
     assert.match(
       block[1],
-      /current_setting\('kortix\.migration_database_side'\)/,
+      /current_setting\('zed\.migration_database_side'\)/,
     );
     assert.match(
       block[1],
-      /current_setting\('kortix\.migration_publication'\)/,
+      /current_setting\('zed\.migration_publication'\)/,
     );
     assert.match(
       block[1],
-      /current_setting\('kortix\.migration_subscription'\)/,
+      /current_setting\('zed\.migration_subscription'\)/,
     );
     assert.doesNotMatch(
       block[1],
@@ -86,16 +86,16 @@ test("shadow repair disables statement timeout and restores the full credit acco
   assert.match(body, /SET LOCAL statement_timeout = 0;/);
   assert.match(
     body,
-    /SELECT \$credit_account_columns FROM kortix\.credit_accounts ORDER BY account_id/,
+    /SELECT \$credit_account_columns FROM zed\.credit_accounts ORDER BY account_id/,
   );
   assert.match(
     body,
-    /CREATE TEMP TABLE repair_credit_accounts AS SELECT %s FROM kortix\.credit_accounts WITH NO DATA/,
+    /CREATE TEMP TABLE repair_credit_accounts AS SELECT %s FROM zed\.credit_accounts WITH NO DATA/,
   );
   assert.match(body, /attname <> 'account_id'/);
   assert.match(body, /ROW\(%3\$s\) IS DISTINCT FROM ROW\(%2\$s\)/);
   assert.match(body, /balance_precise = source\.balance/);
-  assert.doesNotMatch(body, /INSERT INTO kortix\.credit_accounts/);
+  assert.doesNotMatch(body, /INSERT INTO zed\.credit_accounts/);
 });
 
 test("shadow repair deletes credit ledger rows that do not exist on the source", () => {
@@ -106,7 +106,7 @@ test("shadow repair deletes credit ledger rows that do not exist on the source",
 
   assert.match(
     body,
-    /SELECT id FROM kortix\.credit_ledger ORDER BY id/,
+    /SELECT id FROM zed\.credit_ledger ORDER BY id/,
   );
   assert.match(
     body,
@@ -114,7 +114,7 @@ test("shadow repair deletes credit ledger rows that do not exist on the source",
   );
   assert.match(
     body,
-    /DELETE FROM kortix\.credit_ledger AS target\s+WHERE NOT EXISTS \(\s+SELECT 1\s+FROM repair_credit_ledger_ids AS source\s+WHERE source\.id = target\.id\s+\)/,
+    /DELETE FROM zed\.credit_ledger AS target\s+WHERE NOT EXISTS \(\s+SELECT 1\s+FROM repair_credit_ledger_ids AS source\s+WHERE source\.id = target\.id\s+\)/,
   );
 });
 
@@ -139,8 +139,8 @@ test("precision backfill enables replica triggers and verifies all four tables",
   assert.match(body, /ENABLE ALWAYS TRIGGER sync_credit_ledger_precision_columns/);
   assert.match(body, /ENABLE ALWAYS TRIGGER sync_gateway_request_log_cost_precision/);
   assert.match(body, /ENABLE ALWAYS TRIGGER sync_usage_event_cost_precision/);
-  assert.match(body, /'kortix\.credit_accounts' AS relation/);
-  assert.match(body, /'kortix\.credit_ledger'/);
-  assert.match(body, /'kortix\.gateway_request_logs'/);
-  assert.match(body, /'kortix\.usage_events'/);
+  assert.match(body, /'zed\.credit_accounts' AS relation/);
+  assert.match(body, /'zed\.credit_ledger'/);
+  assert.match(body, /'zed\.gateway_request_logs'/);
+  assert.match(body, /'zed\.usage_events'/);
 });

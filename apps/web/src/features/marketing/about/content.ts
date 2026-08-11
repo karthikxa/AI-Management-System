@@ -34,15 +34,15 @@
  */
 
 export const hero = {
-  eyebrow: 'About Kortix',
+  eyebrow: 'About Zed',
   title: 'We are building the open AGI platform.',
   lead: 'Every company should own all of it — every agent, all of their data, every skill, every connector, the memory, the whole configuration.',
   ctaPrimary: 'We are hiring',
   ctaPrimaryHref: '/careers',
   ctaSecondary: 'Read the code',
-  ctaSecondaryHref: 'https://github.com/kortix-ai/suna',
-  imageAlt: 'The Kortix team',
-  starsCaption: 'stars on kortix-ai/suna',
+  ctaSecondaryHref: 'https://github.com/zed-ai/suna',
+  imageAlt: 'The Zed team',
+  starsCaption: 'stars on zed-ai/suna',
 } as const;
 
 /** The three claims the page rests on. One headline, one paragraph, no more. */
@@ -51,7 +51,7 @@ export const statements = [
     id: 'own',
     n: '01',
     title: 'You own all of it.',
-    body: 'On your own infrastructure if you want it there. Kortix does not sit beside the company as one more tool. It becomes the company — where the work, the context and the operations live.',
+    body: 'On your own infrastructure if you want it there. Zed does not sit beside the company as one more tool. It becomes the company — where the work, the context and the operations live.',
   },
   {
     id: 'closed',
@@ -63,7 +63,7 @@ export const statements = [
     id: 'shift',
     n: '03',
     title: 'Autonomy is shifting from humans to agents.',
-    body: 'Every company is already autonomous. Today people drive that autonomy. Agents will. Kortix is where the shift happens.',
+    body: 'Every company is already autonomous. Today people drive that autonomy. Agents will. Zed is where the shift happens.',
   },
 ] as const;
 
@@ -115,5 +115,5 @@ export const closing = {
   ctaPrimary: 'Come build it',
   ctaPrimaryHref: '/careers',
   ctaSecondary: 'Read the code',
-  ctaSecondaryHref: 'https://github.com/kortix-ai/suna',
+  ctaSecondaryHref: 'https://github.com/zed-ai/suna',
 } as const;

@@ -11,7 +11,7 @@
  */
 
 import { ApprovalDecision } from '@/components/setup-links/approval-decision';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { useParams } from 'next/navigation';
 
 export default function ApprovalPage() {
@@ -22,7 +22,7 @@ export default function ApprovalPage() {
     <div className="bg-background flex min-h-screen w-full items-center justify-center px-4 py-10">
       <main className="w-full max-w-lg space-y-6">
         <div className="flex justify-center">
-          <KortixLogo />
+          <ZedLogo />
         </div>
         <header className="space-y-1 text-center">
           <h1 className="text-foreground text-xl font-medium text-balance">

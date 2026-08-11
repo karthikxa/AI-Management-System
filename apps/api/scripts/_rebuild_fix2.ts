@@ -1,17 +1,17 @@
-// Clean rebuild of the SHARED platinum default kortix template, with the
-// correct sandbox-callback KORTIX_URL so the STATEFUL CAPTURE (opencode warm →
+// Clean rebuild of the SHARED platinum default zed template, with the
+// correct sandbox-callback ZED_URL so the STATEFUL CAPTURE (opencode warm →
 // pin root session) can complete. The earlier build failed "capture cmd never
-// exited 0 within 300s" because it ran with KORTIX_URL=localhost:8008 (a fr-par
+// exited 0 within 300s" because it ran with ZED_URL=localhost:8008 (a fr-par
 // sandbox can't reach the dev box). Reset comp's stale trust-the-row first.
 import { ensureSandboxImage, DEFAULT_SANDBOX_SLUG } from '../src/snapshots/builder';
 import { refreshTemplateState } from '../src/snapshots/templates';
 import { db } from '../src/shared/db';
-import { sandboxTemplates } from '@kortix/db';
+import { sandboxTemplates } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 
-console.log('[rebuild2] KORTIX_URL =', process.env.KORTIX_URL);
-if (!process.env.KORTIX_URL || process.env.KORTIX_URL.includes('localhost')) {
-  console.error('[rebuild2] REFUSING: KORTIX_URL must be the public tunnel (sandbox callback) — got', process.env.KORTIX_URL);
+console.log('[rebuild2] ZED_URL =', process.env.ZED_URL);
+if (!process.env.ZED_URL || process.env.ZED_URL.includes('localhost')) {
+  console.error('[rebuild2] REFUSING: ZED_URL must be the public tunnel (sandbox callback) — got', process.env.ZED_URL);
   process.exit(2);
 }
 

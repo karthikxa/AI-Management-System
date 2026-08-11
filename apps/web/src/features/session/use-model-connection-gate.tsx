@@ -13,8 +13,8 @@ import { useProjectCan } from '@/lib/use-project-can';
 import type { ProviderModalTab } from '@/stores/provider-modal-store';
 import { useProviderModalStore } from '@/stores/provider-modal-store';
 import { useUpgradeDialogStore } from '@/stores/upgrade-dialog-store';
-import { getProjectDetail, listProjectSecrets } from '@kortix/sdk';
-import { contract, type ModelKey, qk } from '@kortix/sdk/react';
+import { getProjectDetail, listProjectSecrets } from '@zed/sdk';
+import { contract, type ModelKey, qk } from '@zed/sdk/react';
 import type { FlatModel } from './session-chat-input';
 
 export function projectProviderModalTab(tab: ProviderModalTab): 'connected' | 'catalog' | 'models' {
@@ -57,7 +57,7 @@ export function useModelConnectionGate(models: FlatModel[] = []) {
   );
 
   const baseModels = useMemo(
-    () => (llmGatewayEnabled ? models : models.filter((m) => m.providerID !== 'kortix')),
+    () => (llmGatewayEnabled ? models : models.filter((m) => m.providerID !== 'zed')),
     [models, llmGatewayEnabled],
   );
   const secretsQuery = useQuery({
@@ -76,7 +76,7 @@ export function useModelConnectionGate(models: FlatModel[] = []) {
   // This hook used to recompute entitlement with `hasUsableModel(models, {
   // connectedProviderIds, freeTier })`, where `freeTier` came from the BILLING
   // account state (`tier_key` free/none and no `subscription_id`). The server
-  // computes it as `KORTIX_BILLING_INTERNAL_ENABLED ? accountIsFreeTier(...) :
+  // computes it as `ZED_BILLING_INTERNAL_ENABLED ? accountIsFreeTier(...) :
   // false`, so with billing off the two disagree: `/model-defaults` answers
   // `freeTier: false` and `/model-picker` serves `enabled: true`, while this
   // gate answered "free tier" and reported EVERY managed model unselectable.
@@ -145,7 +145,7 @@ export function useModelConnectionGate(models: FlatModel[] = []) {
     />
   ) : null;
 
-  // Billing off (self-host default): there's no Kortix plan to upgrade to and
+  // Billing off (self-host default): there's no Zed plan to upgrade to and
   // no <GlobalUpgradeModal/> mounted anywhere to respond to openUpgrade() (see
   // app-providers.tsx's `isBillingEnabled() && <GlobalUpgradeModal />`) — an
   // "Upgrade" button would be a dead click. Callers should hide it and only

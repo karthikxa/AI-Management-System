@@ -97,9 +97,9 @@ describe('SessionSiteHeader session title', () => {
 describe('SessionSiteHeader transcript ownership', () => {
   test('keeps the export modal on the canonical project-session cache scope', () => {
     expect(source).toContain(
-      'kortixSessionScope={isProjectSession ? `${projectId}/${projectSessionId}` : undefined}',
+      'zedSessionScope={isProjectSession ? `${projectId}/${projectSessionId}` : undefined}',
     );
-    expect(exportModalSource).toContain('useSessionSync(sessionId, { kortixSessionScope })');
+    expect(exportModalSource).toContain('useSessionSync(sessionId, { zedSessionScope })');
   });
 });
 
@@ -176,7 +176,7 @@ describe('SessionSiteHeader trailing cluster — non-technical resting state', (
 
   test('the ready-chip badge rides on it, and clears with it', () => {
     expect(source).toContain('readyChip?.sessionId === sessionId && !isActionPanelOpen');
-    expect(source).toContain('bg-kortix-green');
+    expect(source).toContain('bg-zed-green');
   });
 });
 
@@ -238,7 +238,7 @@ describe('SessionSiteHeader "more actions" menu — Delete last, technical items
  * bug lives at the mount, so the mount is what gets pinned.
  */
 describe('SessionConfigIndicator wiring', () => {
-  test('the chip gets the Kortix session id, never the OpenCode one', () => {
+  test('the chip gets the Zed session id, never the OpenCode one', () => {
     // The header holds both. `sessionId` is the OpenCode id used by the
     // changes/approvals chips; the config routes are keyed on the project
     // session row's UUID, and passing the wrong one 400s on the id regex.

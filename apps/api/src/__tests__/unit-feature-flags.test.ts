@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { FEATURE_FLAG_KEYS } from '@kortix/api-contract';
+import { FEATURE_FLAG_KEYS } from '@zed/api-contract';
 
 import { config } from '../config';
 import { FEATURE_DISABLED_CODE, featureDisabledBody } from '../feature-flags/gate';

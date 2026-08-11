@@ -461,7 +461,7 @@ export interface PurchaseItem {
   item_name: string;        // e.g., "Plus", "Pro", "Basic"
   coupon?: string;
   discount?: number;
-  item_brand: string;       // "Kortix AI"
+  item_brand: string;       // "Zed AI"
   item_category: string;    // "Plans"
   item_list_id: string;     // "plans_listing"
   item_list_name: string;   // "Plans Listing"
@@ -617,7 +617,7 @@ export interface PlanItemData {
   item_name: string;       // e.g., "Pro Monthly", "Plus Yearly", "Ultra"
   coupon?: string;
   discount?: number;
-  item_brand: string;      // "Kortix AI"
+  item_brand: string;      // "Zed AI"
   item_category: string;   // "Plans"
   item_list_id: string;    // "plans_listing"
   item_list_name: string;  // "Plans Listing"

@@ -1,4 +1,4 @@
-import { type AuthedPrincipal, GatewayResolutionError } from '@kortix/llm-gateway';
+import { type AuthedPrincipal, GatewayResolutionError } from '@zed/llm-gateway';
 import { connectedByokPickerModels } from '../models/picker-catalog';
 import { listProjectSecretNamesForConsumer } from '../../projects/secrets';
 import { DEFAULT_AGENT_SENTINEL } from '../../projects/agents';
@@ -53,7 +53,7 @@ async function cachedAccountDefaults(accountId: string, projectId?: string): Pro
 // sentinel whenever session creation didn't resolve a concrete agent (see
 // `createProjectSession` in projects/lib/sessions.ts) — most commonly because
 // `project.metadata.default_agent` wasn't populated even though the project's
-// kortix.yaml declares one (that mirror is only written by the explicit PUT
+// zed.yaml declares one (that mirror is only written by the explicit PUT
 // /default-agent route; provisioning + a CLI's first push don't always stamp
 // it). Left unresolved, an agent-scope model pin set on the project's REAL
 // default agent name is silently never looked up — the session falls through
@@ -185,8 +185,8 @@ export async function isModelServableForAccount(params: {
   freeModelsOnly: boolean;
   model: string;
 }): Promise<boolean> {
-  if (params.model === 'auto' || params.model === 'kortix/auto') return false;
-  // Accept either the opencode ref (`kortix/<id>`) or the bare wire id — the
+  if (params.model === 'auto' || params.model === 'zed/auto') return false;
+  // Accept either the opencode ref (`zed/<id>`) or the bare wire id — the
   // gateway resolves the bare id, so normalize before probing candidates.
   const wire = toWireModel(params.model);
   try {

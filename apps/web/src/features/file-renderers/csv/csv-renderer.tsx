@@ -1,6 +1,6 @@
 'use client';
 
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { cn } from '@/lib/utils';
 import { FileXlsIcon as FileSpreadsheet } from '@phosphor-icons/react';
 import { lazy, Suspense } from 'react';
@@ -59,7 +59,7 @@ export function CsvRenderer({
       <Suspense
         fallback={
           <div className="flex h-full w-full items-center justify-center">
-            <KortixLoader size="medium" />
+            <ZedLoader size="medium" />
           </div>
         }
       >

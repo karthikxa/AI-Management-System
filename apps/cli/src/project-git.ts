@@ -2,14 +2,14 @@ import { spawnSync } from 'node:child_process';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // How the CLI talks git to a project — ONE resolver, shared by every command
-// that clones, pushes, or answers a git credential prompt (`kortix ship`,
-// `kortix projects clone`, `kortix git-credential`).
+// that clones, pushes, or answers a git credential prompt (`zed ship`,
+// `zed projects clone`, `zed git-credential`).
 //
-// It used to be per-command, and they drifted: clone preferred the Kortix git
+// It used to be per-command, and they drifted: clone preferred the Zed git
 // proxy while ship insisted on minting a raw provider push token for managed
 // repos. On a host whose managed git runs on an org-wide PAT the server refuses
 // to export that token (correctly — it's a server-global credential), so every
-// `kortix ship` to a managed project failed with "Managed git push token export
+// `zed ship` to a managed project failed with "Managed git push token export
 // requires a repo-scoped installation token" even though the proxy sitting next
 // to it could push fine. Keeping the decision in one place is what stops that
 // class of bug coming back.
@@ -17,8 +17,8 @@ import { spawnSync } from 'node:child_process';
 
 /** Which credential a git operation against this project should present. */
 export type ProjectGitCredentialMode =
-  /** Push/clone through the Kortix git proxy with our own Kortix token. */
-  | 'kortix-token'
+  /** Push/clone through the Zed git proxy with our own Zed token. */
+  | 'zed-token'
   /** No proxy on this host — mint a provider push token via /git-token. */
   | 'managed-git-token'
   /** BYO repo — the user's own git credentials (helper/keychain/ssh). */
@@ -37,8 +37,8 @@ export interface ProjectGitRef {
   metadata?: Record<string, unknown> | null;
 }
 
-/** A Kortix git-proxy origin (`https://<host>/v1/git/<projectId>.git`). The
- *  server only advertises one when KORTIX_GIT_PROXY is on; otherwise
+/** A Zed git-proxy origin (`https://<host>/v1/git/<projectId>.git`). The
+ *  server only advertises one when ZED_GIT_PROXY is on; otherwise
  *  `git_origin_url` mirrors the raw upstream and this is false. */
 export function isGitProxyUrl(url: string | undefined | null): boolean {
   return Boolean(url && /\/v1\/git\//.test(url));
@@ -53,9 +53,9 @@ export function projectIsManaged(project: ProjectGitRef): boolean {
 /**
  * Resolve the URL + credential kind for any git operation on a project.
  *
- * The Kortix git proxy is the UNIVERSAL client-facing origin, so it wins for
+ * The Zed git proxy is the UNIVERSAL client-facing origin, so it wins for
  * EVERY project that advertises one — managed repos included. We authenticate
- * with our own Kortix token and the API resolves the real upstream and mints
+ * with our own Zed token and the API resolves the real upstream and mints
  * the host credential server-side, which means:
  *   * no real provider credential ever reaches the client, and
  *   * it works regardless of how the host's managed git is configured (org PAT
@@ -67,7 +67,7 @@ export function projectIsManaged(project: ProjectGitRef): boolean {
 export function resolveProjectGitTarget(project: ProjectGitRef): ProjectGitTarget {
   const proxyUrl = project.git_origin_url;
   if (isGitProxyUrl(proxyUrl)) {
-    return { repoUrl: proxyUrl as string, credentialMode: 'kortix-token' };
+    return { repoUrl: proxyUrl as string, credentialMode: 'zed-token' };
   }
   if (projectIsManaged(project)) {
     return { repoUrl: project.repo_url, credentialMode: 'managed-git-token' };
@@ -85,20 +85,20 @@ function shellQuote(value: string): string {
  * exercised before the CLI is rebuilt and installed.
  */
 export function currentGitCredentialHelperCommand(): string {
-  const override = process.env.KORTIX_GIT_CREDENTIAL_HELPER?.trim();
+  const override = process.env.ZED_GIT_CREDENTIAL_HELPER?.trim();
   if (override) return override.startsWith('!') ? override : `!${override}`;
 
   const entrypoint = process.argv[1];
   if (entrypoint && /\.[cm]?[jt]sx?$/.test(entrypoint) && /bun/i.test(process.execPath)) {
     return `!${shellQuote(process.execPath)} ${shellQuote(entrypoint)} git-credential`;
   }
-  return '!kortix git-credential';
+  return '!zed git-credential';
 }
 
 /**
- * Install a URL-scoped helper for the Kortix proxy. The leading empty helper
+ * Install a URL-scoped helper for the Zed proxy. The leading empty helper
  * resets inherited helpers for this credential context, preventing the user's
- * keychain from persisting the Kortix token returned on demand.
+ * keychain from persisting the Zed token returned on demand.
  */
 export function configureProjectGitAuth(
   repoRoot: string,
@@ -119,7 +119,7 @@ export function configureProjectGitAuth(
     encoding: 'utf8',
   });
   if (add.status !== 0) {
-    throw new Error(add.stderr.trim() || 'Could not configure the Kortix Git credential helper');
+    throw new Error(add.stderr.trim() || 'Could not configure the Zed Git credential helper');
   }
   const pathMode = spawnSync('git', ['config', '--local', 'credential.useHttpPath', 'true'], {
     cwd: repoRoot,

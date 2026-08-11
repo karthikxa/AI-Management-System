@@ -9,7 +9,7 @@
  * is for. Same trust model as a magic link / a Pipedream connect URL.
  */
 import { createHash } from 'node:crypto';
-import { connectors, projectSessions, projects } from '@kortix/db';
+import { connectors, projectSessions, projects } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { type Context, Hono, type Next } from 'hono';
 import { pipedreamConfigured, pipedreamConnectUrl } from '../connectors/pipedream';
@@ -217,7 +217,7 @@ export function secretSubmittedPrompt(saved: string[]): string {
   return (
     `The secret ${plural} for ${saved.join(', ')} ${saved.length === 1 ? 'was' : 'were'} just ` +
     'submitted through the intake link and saved to this project. Sync is in flight — run ' +
-    '`kortix secrets sync` if a variable is not visible in your environment yet, then continue ' +
+    '`zed secrets sync` if a variable is not visible in your environment yet, then continue ' +
     'the task that was blocked on it. Do not mint a new intake link for these names.'
   );
 }

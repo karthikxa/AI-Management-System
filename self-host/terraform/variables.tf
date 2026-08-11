@@ -1,7 +1,7 @@
 # All variables here just pass through to modules/selfhost-ec2 — see that
 # module's variables.tf / README.md for the authoritative description of each.
 # Keeping the full surface here (rather than a handful with everything else
-# hardcoded in main.tf) so a standalone `kortix-selfhost` repo doesn't need to
+# hardcoded in main.tf) so a standalone `zed-selfhost` repo doesn't need to
 # reach into the module for anything a normal deployment would tune.
 
 variable "aws_region" {
@@ -13,12 +13,12 @@ variable "aws_region" {
 # ── Required ────────────────────────────────────────────────────────────────
 
 variable "domain" {
-  description = "Public domain to run this instance on, e.g. kortix.example.com. Its DNS A/AAAA record (and the API subdomain's) must point at the box's public IP for ACME HTTP-01 to issue a cert — either let this module manage it (set route53_zone_id) or point your own DNS at the public_ip output."
+  description = "Public domain to run this instance on, e.g. zed.example.com. Its DNS A/AAAA record (and the API subdomain's) must point at the box's public IP for ACME HTTP-01 to issue a cert — either let this module manage it (set route53_zone_id) or point your own DNS at the public_ip output."
   type        = string
 }
 
 variable "admin_email" {
-  description = "Email granted platform-admin on first boot. Leave empty to configure later via `kortix self-host configure` / the dashboard."
+  description = "Email granted platform-admin on first boot. Leave empty to configure later via `zed self-host configure` / the dashboard."
   type        = string
   default     = ""
 }
@@ -48,13 +48,13 @@ variable "dns_ttl" {
 variable "name" {
   description = "Name prefix for all AWS resources."
   type        = string
-  default     = "kortix-selfhost"
+  default     = "zed-selfhost"
 }
 
 variable "tags" {
   description = "Extra tags applied to every resource this module creates."
   type        = map(string)
-  default     = { Project = "kortix-selfhost" }
+  default     = { Project = "zed-selfhost" }
 }
 
 # ── Instance ────────────────────────────────────────────────────────────────
@@ -143,33 +143,33 @@ variable "snapshot_time" {
   default     = "03:00"
 }
 
-# ── kortix self-host bootstrap ──────────────────────────────────────────────
+# ── zed self-host bootstrap ──────────────────────────────────────────────
 
 variable "instance_name" {
-  description = "The kortix self-host `--instance` name."
+  description = "The zed self-host `--instance` name."
   type        = string
   default     = "default"
 }
 
-variable "kortix_channel" {
+variable "zed_channel" {
   description = "Image channel the stack tracks (`stable` or `latest`)."
   type        = string
   default     = "stable"
 }
 
-variable "kortix_version" {
-  description = "Optional exact image tag to pin instead of tracking a channel (passed as `kortix self-host init --tag`)."
+variable "zed_version" {
+  description = "Optional exact image tag to pin instead of tracking a channel (passed as `zed self-host init --tag`)."
   type        = string
   default     = ""
 }
 
-variable "kortix_cli_install_url" {
-  description = "URL for the one-click kortix CLI installer."
+variable "zed_cli_install_url" {
+  description = "URL for the one-click zed CLI installer."
   type        = string
-  default     = "https://kortix.com/install"
+  default     = "https://zed.com/install"
 }
 
-variable "kortix_cli_channel" {
+variable "zed_cli_channel" {
   description = "Which CLI build the installer fetches: `prod` (default) or `dev` (tracks main — use this if the published prod CLI hasn't caught up yet to flags/behavior this deployment relies on)."
   type        = string
   default     = "prod"

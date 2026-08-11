@@ -1,7 +1,7 @@
 import { describe, expect, mock, test } from 'bun:test';
 import * as realProviders from '../platform/providers';
 import * as realPreviewOwnership from '../shared/preview-ownership';
-import * as realKortixUserContext from '../shared/kortix-user-context';
+import * as realZedUserContext from '../shared/zed-user-context';
 
 let queryCount = 0;
 
@@ -28,10 +28,10 @@ mock.module('../shared/preview-ownership', () => ({
 // in whatever unrelated file imports the missing name next, as
 // `SyntaxError: Export named '…' not found`, attributed to no test at all.
 // Overriding only what this file needs keeps new exports working by default.
-mock.module('../shared/kortix-user-context', () => ({
-  ...realKortixUserContext,
-  KORTIX_USER_CONTEXT_HEADER: 'x-kortix-user-context',
-  encodeKortixUserContext: () => '',
+mock.module('../shared/zed-user-context', () => ({
+  ...realZedUserContext,
+  ZED_USER_CONTEXT_HEADER: 'x-zed-user-context',
+  encodeZedUserContext: () => '',
 }));
 mock.module('../platform/providers', () => ({
   ...realProviders,

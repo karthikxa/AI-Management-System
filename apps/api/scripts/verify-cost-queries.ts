@@ -13,7 +13,7 @@
  * numbers are right — the unit suite owns the arithmetic.
  *
  *   cd apps/api && DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres" \
- *     SUPABASE_URL="http://127.0.0.1:54321" INTERNAL_KORTIX_ENV="dev" \
+ *     SUPABASE_URL="http://127.0.0.1:54321" INTERNAL_ZED_ENV="dev" \
  *     FRONTEND_URL="http://localhost:3000" bun scripts/verify-cost-queries.ts
  *
  * The extra env vars are only there because `config` validates the whole
@@ -29,7 +29,7 @@
  * output states which mode the run used, so a green result is never ambiguous
  * about which of the two it is.
  */
-import { gatewayRequestLogs, projectSessions } from '@kortix/db';
+import { gatewayRequestLogs, projectSessions } from '@zed/db';
 import { desc, eq, sql } from 'drizzle-orm';
 import { getCostSummary, listCostByProject } from '../src/shared/cost-rollups';
 import { db } from '../src/shared/db';
@@ -114,7 +114,7 @@ function describeRejection(error: unknown): string {
 // Asserted rather than trusted: a case list that got trimmed or mis-filtered still
 // prints "N executed / 0 rejected" and exits 0, so a green run would prove almost
 // nothing — the exact failure this script exists to prevent. Same reasoning as
-// KORTIX_MIN_TEST_FILES in test.sh.
+// ZED_MIN_TEST_FILES in test.sh.
 const EXPECTED_CASE_COUNT = 12;
 
 function buildCases(anchor: Anchor): Array<[string, () => Promise<unknown>]> {

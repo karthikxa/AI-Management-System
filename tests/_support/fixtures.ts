@@ -18,8 +18,8 @@ export function buildWorkspace(): Workspace {
 }
 
 export const sampleEnv = {
-  KORTIX_API_URL: 'http://localhost:8008',
-  KORTIX_WEB_URL: 'http://localhost:3000',
+  ZED_API_URL: 'http://localhost:8008',
+  ZED_WEB_URL: 'http://localhost:3000',
 } as const;
 
 export function withEnv<T>(vars: Record<string, string>, run: () => T): T {

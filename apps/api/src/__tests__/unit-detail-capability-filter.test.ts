@@ -6,7 +6,7 @@ import { resolveManifestVerdict } from '../projects/lib/manifest-verdict';
 // {} / [] / null) type as `unknown` at the assertions — otherwise the literal
 // type (e.g. manifest: { name: string }) rejects `.toEqual({})`.
 const sampleConfig: Record<string, unknown> = {
-  is_kortix_repo: true,
+  is_zed_repo: true,
   signals: { manifest: true },
   manifest_raw: 'raw toml',
   manifest: { name: 'x' },
@@ -18,9 +18,9 @@ const sampleConfig: Record<string, unknown> = {
   skills: [{ name: 's' }],
   commands: [{ name: 'c' }],
   manifest_version: resolveManifestVerdict({
-    raw: 'kortix_version = 1\n',
+    raw: 'zed_version = 1\n',
     format: 'toml',
-    path: 'kortix.toml',
+    path: 'zed.toml',
   }),
 };
 const files = [{ path: 'a' }, { path: 'b' }, { path: 'c' }];
@@ -70,7 +70,7 @@ describe('applyDetailCapabilityFilter — /detail per-capability section gating'
     expect(out.config.open_code_raw).toBeNull();
     expect(out.config.open_code_default_agent).toBeNull();
     // Structural signals survive so the workspace shell still renders.
-    expect(out.config.is_kortix_repo).toBe(true);
+    expect(out.config.is_zed_repo).toBe(true);
     expect(out.config.signals).toEqual({ manifest: true });
   });
 
@@ -94,7 +94,7 @@ describe('applyDetailCapabilityFilter — /detail per-capability section gating'
       migration_offered: true,
       target_version: 2,
       unknown_reason: null,
-      path: 'kortix.toml',
+      path: 'zed.toml',
     });
   });
 

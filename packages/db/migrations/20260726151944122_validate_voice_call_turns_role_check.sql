@@ -14,5 +14,5 @@ set statement_timeout = '30s';
 -- allowed set from ('user','agent') to ('user','agent','tool')), so this completes
 -- near-instantly regardless of table size.
 
-ALTER TABLE "kortix"."voice_call_turns"
+ALTER TABLE "zed"."voice_call_turns"
   VALIDATE CONSTRAINT "voice_call_turns_role_check";

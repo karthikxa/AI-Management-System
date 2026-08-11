@@ -4,7 +4,7 @@ import { CubeIcon } from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import { useIsSidePanelOpen } from '@/stores/kortix-computer-store';
+import { useIsSidePanelOpen } from '@/stores/zed-computer-store';
 import type { Turn } from '@/ui';
 
 import { MENU_PANEL } from '@/components/ui/menu-recipe';

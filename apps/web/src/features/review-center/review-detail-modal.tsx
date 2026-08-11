@@ -191,13 +191,13 @@ function ChangeBody({
   return (
     <>
       {requested.length > 0 && (
-        <div className="bg-kortix-orange/[0.06] rounded-lg px-4 py-3.5">
+        <div className="bg-zed-orange/[0.06] rounded-lg px-4 py-3.5">
           <SectionLabel>You asked for changes</SectionLabel>
           <ul className="space-y-1.5">
             {requested.map((r, i) => (
               <li key={r.at ?? `${i}`} className="text-foreground flex items-start gap-2 text-sm">
                 <span
-                  className="bg-kortix-orange mt-1.5 size-1.5 shrink-0 rounded-full"
+                  className="bg-zed-orange mt-1.5 size-1.5 shrink-0 rounded-full"
                   aria-hidden
                 />
                 <span className="text-pretty">{r.text}</span>
@@ -211,7 +211,7 @@ function ChangeBody({
                 actions.openSession?.(item.sessionId as string);
                 onClose();
               }}
-              className="text-kortix-orange hover:text-kortix-orange/80 mt-2.5 inline-flex items-center gap-1 text-xs font-medium transition-colors"
+              className="text-zed-orange hover:text-zed-orange/80 mt-2.5 inline-flex items-center gap-1 text-xs font-medium transition-colors"
             >
               Sent to the agent — see progress
               <ArrowUpRight className="size-3" />
@@ -236,7 +236,7 @@ function ChangeBody({
               <ul className="space-y-1.5">
                 {whatChanged.map((line) => (
                   <li key={line} className="text-foreground flex items-start gap-2 text-sm">
-                    <Check className="text-kortix-green mt-0.5 size-4 shrink-0" />
+                    <Check className="text-zed-green mt-0.5 size-4 shrink-0" />
                     <span className="text-pretty">{line}</span>
                   </li>
                 ))}
@@ -251,10 +251,10 @@ function ChangeBody({
 
       {d.advanced && d.advanced.files.length > 0 && (
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-          <span className="text-kortix-green font-medium tabular-nums">
+          <span className="text-zed-green font-medium tabular-nums">
             +{d.advanced.additions.toLocaleString()}
           </span>
-          <span className="text-kortix-orange font-medium tabular-nums">
+          <span className="text-zed-orange font-medium tabular-nums">
             −{d.advanced.deletions.toLocaleString()}
           </span>
           <span className="text-muted-foreground/40">·</span>
@@ -362,10 +362,10 @@ function ApprovalActionRow({
         <span
           className={cn(
             'flex size-9 shrink-0 items-center justify-center rounded-sm',
-            safe ? 'bg-kortix-green/15' : 'bg-kortix-orange/15',
+            safe ? 'bg-zed-green/15' : 'bg-zed-orange/15',
           )}
         >
-          <Icon className={cn('size-5', safe ? 'text-kortix-green' : 'text-kortix-orange')} />
+          <Icon className={cn('size-5', safe ? 'text-zed-green' : 'text-zed-orange')} />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -574,7 +574,7 @@ function OutputBody({ item }: { item: Extract<ReviewItem, { kind: 'output' }> })
     <>
       <Panel>
         <div className="text-foreground flex items-start gap-2 text-sm text-pretty">
-          <SparklesSolid weight="fill" className="text-kortix-purple mt-0.5 size-4 shrink-0" />
+          <SparklesSolid weight="fill" className="text-zed-purple mt-0.5 size-4 shrink-0" />
           <span>{d.note}</span>
         </div>
       </Panel>
@@ -644,7 +644,7 @@ function DecisionBody({
                 onClose();
               }}
               className={cn(
-                'focus-visible:ring-kortix-blue w-full rounded-md border px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none',
+                'focus-visible:ring-zed-blue w-full rounded-md border px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none',
                 opt.recommended ? 'border-primary/40 bg-primary/[0.03]' : 'bg-popover',
                 !answered && 'hover:border-primary/40 hover:bg-primary/[0.05] active:scale-[0.99]',
                 answered && 'opacity-60',
@@ -653,7 +653,7 @@ function DecisionBody({
               <div className="flex items-center gap-2">
                 <span className="text-foreground text-sm font-medium">{opt.label}</span>
                 {opt.recommended && (
-                  <Badge variant="kortix" size="xs">
+                  <Badge variant="zed" size="xs">
                     Recommended
                   </Badge>
                 )}
@@ -688,9 +688,9 @@ function BatchBody({ item }: { item: Extract<ReviewItem, { kind: 'batch' }> }) {
           {children.map((c) => (
             <li key={c.id} className="flex items-center gap-2.5 px-4 py-2">
               {c.status === 'done' ? (
-                <CheckCircleSolid weight="fill" className="text-kortix-green size-4 shrink-0" />
+                <CheckCircleSolid weight="fill" className="text-zed-green size-4 shrink-0" />
               ) : (
-                <Eye className="dark:text-kortix-yellow size-4 shrink-0 text-yellow-600" />
+                <Eye className="dark:text-zed-yellow size-4 shrink-0 text-yellow-600" />
               )}
               <span className="text-foreground min-w-0 flex-1 truncate text-sm">{c.title}</span>
               {c.status === 'needs_review' && (

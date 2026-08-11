@@ -82,7 +82,7 @@ async function runSession(
   
   try {
     // 1. Clone the repo to a temp directory
-    const dir = await mkdtemp(join(tmpdir(), 'kortix-session-'));
+    const dir = await mkdtemp(join(tmpdir(), 'zed-session-'));
     session.output.push(`Cloning repository to ${dir}...`);
     
     const env = { ...process.env, GIT_TERMINAL_PROMPT: '0' };

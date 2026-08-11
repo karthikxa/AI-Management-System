@@ -72,8 +72,8 @@ import {
   listAccountMembers,
   listProjectsForAccount,
   type ProjectRole,
-} from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 
 // Entity row dialect shared with the customize section views.
 const MEMBER_ROW = 'bg-popover flex items-center gap-3 rounded-md border px-4 py-2.5';
@@ -375,7 +375,7 @@ function GroupMembersCard({
                     {overrides && badgeLabel ? (
                       <Badge
                         size="sm"
-                        className="bg-kortix-orange/15 text-kortix-orange border-transparent capitalize"
+                        className="bg-zed-orange/15 text-zed-orange border-transparent capitalize"
                         title="Account owners and admins always have Manager on every project"
                       >
                         {badgeLabel}
@@ -851,8 +851,8 @@ function GroupProjectGrantsCard({
                         <span
                           className={
                             new Date(g.expires_at).getTime() < Date.now()
-                              ? 'text-kortix-red'
-                              : 'text-kortix-yellow'
+                              ? 'text-zed-red'
+                              : 'text-zed-yellow'
                           }
                           title={new Date(g.expires_at).toLocaleString()}
                         >

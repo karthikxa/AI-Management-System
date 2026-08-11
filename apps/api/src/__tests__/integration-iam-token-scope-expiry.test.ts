@@ -8,7 +8,7 @@
  */
 import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import { eq } from 'drizzle-orm';
-import { accountMembers, accountTokens, accounts, projectMembers, projects } from '@kortix/db';
+import { accountMembers, accountTokens, accounts, projectMembers, projects } from '@zed/db';
 import { db } from '../shared/db';
 import { authorizeV2 } from '../iam/engine-v2';
 import { ACCOUNT_ACTIONS, PROJECT_ACTIONS } from '../iam';

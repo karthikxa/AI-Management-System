@@ -14,7 +14,7 @@ test.describe('17 — OAuth provider initiation', () => {
     const authUrl = new URL('/auth', frontendUrl);
     authUrl.searchParams.set(
       'returnUrl',
-      '/projects?kortix_use2_oauth_smoke=1',
+      '/projects?zed_use2_oauth_smoke=1',
     );
     await page.goto(authUrl.toString());
 
@@ -50,7 +50,7 @@ test.describe('17 — OAuth provider initiation', () => {
     expect(frontendCallback.origin).toBe(frontendUrl);
     expect(frontendCallback.pathname).toBe('/auth/callback');
     expect(frontendCallback.searchParams.get('returnUrl')).toBe(
-      '/projects?kortix_use2_oauth_smoke=1',
+      '/projects?zed_use2_oauth_smoke=1',
     );
 
     const googleUrl = new URL(googleRequest.url());
@@ -79,7 +79,7 @@ test.describe('17 — OAuth provider initiation', () => {
     const frontendCallback = new URL('/auth/callback', frontendUrl);
     frontendCallback.searchParams.set(
       'returnUrl',
-      '/projects?kortix_use2_github_oauth_smoke=1',
+      '/projects?zed_use2_github_oauth_smoke=1',
     );
     const authorizeUrl = new URL('/auth/v1/authorize', supabaseUrl);
     authorizeUrl.searchParams.set('provider', 'github');

@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, mock, test } from 'bun:test';
 
-// Regression guard for "@Kortix goes silent when re-tagged in an existing thread."
+// Regression guard for "@Zed goes silent when re-tagged in an existing thread."
 //
 // Slack does NOT reliably deliver an `app_mention` for a mention made INSIDE an
 // existing thread — notably a thread that predates the bot joining the channel.

@@ -33,7 +33,7 @@ describe('session connector binding security contracts', () => {
   });
 
   test('public email alias canonicalizes and binding input stays typed', () => {
-    expect(canonicalConnectorAlias('email')).toBe('kortix_email');
+    expect(canonicalConnectorAlias('email')).toBe('zed_email');
     expect(parseSessionConnectorBindings({ email: { connection_id: connectionA } }).ok).toBe(true);
     expect(parseSessionConnectorBindings({ email: { connection_id: connectionA, token: 'no' } }).ok).toBe(
       false,
@@ -49,11 +49,11 @@ describe('session connector binding security contracts', () => {
     expect(resolveTokenBoundSessionId(null, 'session-b')).toEqual({ ok: false });
   });
 
-  test('Supabase authentication session identity is not a Kortix project session identity', () => {
+  test('Supabase authentication session identity is not a Zed project session identity', () => {
     expect(projectSessionIdForProjectPrincipal(undefined, 'supabase-auth-session')).toBeNull();
     expect(
-      projectSessionIdForProjectPrincipal('11111111-1111-4111-a111-111111111111', 'kortix-session'),
-    ).toBe('kortix-session');
+      projectSessionIdForProjectPrincipal('11111111-1111-4111-a111-111111111111', 'zed-session'),
+    ).toBe('zed-session');
   });
 
   test('legacy defaults are allowed only when the session has zero durable bindings', () => {
@@ -91,7 +91,7 @@ describe('required-connector pre-flight never strands a backend caller', () => {
   });
 
   test('the public email alias is matched against its canonical binding', async () => {
-    // `require_connectors: ['email']` and a binding stored as `kortix_email` are
+    // `require_connectors: ['email']` and a binding stored as `zed_email` are
     // the same connector. Comparing the raw strings would refuse a session the
     // caller had already bound correctly.
     const res = await resolveRequiredConnectorConnections({

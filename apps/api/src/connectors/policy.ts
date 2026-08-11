@@ -2,7 +2,7 @@
  * Tool-call policy engine — globbed pattern match, first-match-wins, layered
  * resolution. Mirrors connector.sh's model.
  *
- * Two scopes, both declared in kortix.yaml (docs/specs/connector.md §8):
+ * Two scopes, both declared in zed.yaml (docs/specs/connector.md §8):
  *   • project-level `policies:` — patterns are fully-qualified (`<slug>.<path>`),
  *     apply across ALL connectors, evaluated FIRST.
  *   • connector-level `connectors[].policies` — patterns are relative
@@ -15,7 +15,7 @@
  *
  * Pure + unit-tested. Glob grammar (case-insensitive): `*` everywhere, anchored.
  * The UI exposes only three shapes (`*`, `prefix.*`, exact); the engine supports
- * arbitrary `*` positions for power users authoring kortix.yaml by hand.
+ * arbitrary `*` positions for power users authoring zed.yaml by hand.
  */
 export type PolicyAction = 'always_run' | 'require_approval' | 'block';
 export type Risk = 'read' | 'write' | 'destructive';
@@ -322,7 +322,7 @@ export interface EffectiveResolveInput {
   projectPolicies: Policy[];
   connectorPolicies: Policy[];
   risk: Risk;
-  /** Project setting from `policy.default_mode` in kortix.yaml. */
+  /** Project setting from `policy.default_mode` in zed.yaml. */
   defaultMode: DefaultMode;
   /** Connector marked `sensitive` — its reads default to require_approval too. */
   sensitive?: boolean;

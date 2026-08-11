@@ -2,7 +2,7 @@
 
 This is a deepsec scanning workspace. Project `suna` was registered
 (target: `..`). Setup has been completed once; `data/suna/INFO.md`
-now contains Kortix-specific scanner context. Keep this file as the refresh
+now contains Zed-specific scanner context. Keep this file as the refresh
 checklist when the repo shape changes.
 
 ## What to do

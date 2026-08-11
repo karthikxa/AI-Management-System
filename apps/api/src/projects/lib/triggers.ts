@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import type { TriggerList } from '@kortix/api-contract';
-import { connectors, projectSessions, projectTriggerRuntime, projects } from '@kortix/db';
+import type { TriggerList } from '@zed/api-contract';
+import { connectors, projectSessions, projectTriggerRuntime, projects } from '@zed/db';
 import { and, desc, eq, gt, ne, or, sql } from 'drizzle-orm';
 import type { Context } from 'hono';
 import { config } from '../../config';
@@ -46,7 +46,7 @@ import { parseGitHubRepoUrl, resolveProjectGitAuth, withProjectGitAuth } from '.
 import {
   type ProjectRow,
   type RequestAuditContext,
-  deriveKortixApiRoot,
+  deriveZedApiRoot,
   isPlainObject,
   normalizeBoolean,
   normalizeString,
@@ -75,13 +75,13 @@ export function verifyWebhookSignature(
 
 // Pull a static shared-secret token from a webhook request's headers, for
 // sources that can't HMAC-sign the body (e.g. Better Stack error webhooks, which
-// only allow custom headers / basic auth). Order: X-Kortix-Token, then
+// only allow custom headers / basic auth). Order: X-Zed-Token, then
 // Authorization (Bearer <token> or Basic <base64(user:token)> → password).
 export function extractWebhookToken(
-  kortixToken: string | null | undefined,
+  zedToken: string | null | undefined,
   authorization: string | null | undefined,
 ): string | null {
-  if (kortixToken && kortixToken.trim()) return kortixToken.trim();
+  if (zedToken && zedToken.trim()) return zedToken.trim();
   if (authorization && authorization.trim()) {
     const trimmed = authorization.trim();
     const sep = trimmed.indexOf(' ');
@@ -163,7 +163,7 @@ export async function triggerBackpressureState(accountId: string, projectId: str
 export type TriggerSchedulerTimer = ReturnType<typeof setInterval>;
 
 export const globalForProjectTriggers = globalThis as typeof globalThis & {
-  __kortixProjectTriggerSchedulerTimer?: TriggerSchedulerTimer | null;
+  __zedProjectTriggerSchedulerTimer?: TriggerSchedulerTimer | null;
 };
 
 export let triggerSchedulerTimer: TriggerSchedulerTimer | null = null;
@@ -261,31 +261,31 @@ export function initialCatalogBackfillIncomplete(
 
 /** Hard cap on a single trigger fire (createSession/continueSession). */
 export function triggerFireTimeoutMs(): number {
-  const raw = Number(process.env.KORTIX_TRIGGER_FIRE_TIMEOUT_MS);
+  const raw = Number(process.env.ZED_TRIGGER_FIRE_TIMEOUT_MS);
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 45_000;
 }
 
 /** Number of project manifests the connector reconciler processes in parallel. */
 export function connectorProjectConcurrency(): number {
-  const raw = Number(process.env.KORTIX_CONNECTOR_PROJECT_CONCURRENCY);
+  const raw = Number(process.env.ZED_CONNECTOR_PROJECT_CONCURRENCY);
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 6;
 }
 
 /** Maximum wall time for one connector reconciliation. */
 export function connectorProjectTimeoutMs(): number {
-  const raw = Number(process.env.KORTIX_CONNECTOR_PROJECT_TIMEOUT_MS);
+  const raw = Number(process.env.ZED_CONNECTOR_PROJECT_TIMEOUT_MS);
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 120_000;
 }
 
 /** Rotating raw-git discovery batch size. */
 export function manifestDiscoveryBatchSize(): number {
-  const raw = Number(process.env.KORTIX_MANIFEST_DISCOVERY_BATCH_SIZE);
+  const raw = Number(process.env.ZED_MANIFEST_DISCOVERY_BATCH_SIZE);
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 50;
 }
 
 /** Known manifest projects reconciled per connector sweep. */
 export function manifestCatalogBatchSize(): number {
-  const raw = Number(process.env.KORTIX_MANIFEST_CATALOG_BATCH_SIZE);
+  const raw = Number(process.env.ZED_MANIFEST_CATALOG_BATCH_SIZE);
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 100;
 }
 
@@ -386,22 +386,22 @@ export let connectorSweepRunning = false;
 export let lastConnectorSweepAt = 0;
 
 export function connectorSweepIntervalMs() {
-  const raw = Number(process.env.KORTIX_CONNECTOR_SWEEP_INTERVAL_MS);
+  const raw = Number(process.env.ZED_CONNECTOR_SWEEP_INTERVAL_MS);
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 120_000;
 }
 
 export function triggerSchedulerIntervalMs() {
-  const raw = Number((config as any).KORTIX_TRIGGER_SCHEDULER_INTERVAL_MS);
+  const raw = Number((config as any).ZED_TRIGGER_SCHEDULER_INTERVAL_MS);
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 1_000;
 }
 
 export function triggerScheduleClaimLimit(): number {
-  const raw = Number(process.env.KORTIX_TRIGGER_SCHEDULE_CLAIM_LIMIT);
+  const raw = Number(process.env.ZED_TRIGGER_SCHEDULE_CLAIM_LIMIT);
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 250;
 }
 
 export function triggerExecutionConcurrency(): number {
-  const raw = Number(process.env.KORTIX_TRIGGER_EXECUTION_CONCURRENCY);
+  const raw = Number(process.env.ZED_TRIGGER_EXECUTION_CONCURRENCY);
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 8;
 }
 
@@ -410,7 +410,7 @@ export function triggerExecutionConcurrency(): number {
  * When paused, the platform does NOT auto-run any of the project's triggers —
  * the cron sweep skips it and inbound webhooks are ignored — even though each
  * trigger is still `enabled` in the repo. This is how you stop ONE repo
- * deployed to TWO independent control planes (e.g. dev.kortix.com + kortix.com,
+ * deployed to TWO independent control planes (e.g. dev.zed.com + zed.com,
  * separate DBs/schedulers with no cross-platform dedup) from double-firing every
  * cron: pause it on the deployment you don't want firing. A manual
  * `…/triggers/:slug/fire` is an explicit action and still runs. Toggle via
@@ -495,7 +495,7 @@ export async function runProjectTriggerSweep(now = new Date()): Promise<{
 /**
  * Reconcile bounded, rotating batches of manifest projects.
  *
- * UI CRUD and `kortix ship` reconcile inline. The discovery batch catches raw
+ * UI CRUD and `zed ship` reconcile inline. The discovery batch catches raw
  * git pushes. The catalog batch refreshes known trigger and connector projects.
  */
 
@@ -538,7 +538,7 @@ let manifestDiscoveryCursor: string | null = null;
 /**
  * Select one keyset-paginated batch for raw git pushes.
  *
- * CRUD and `kortix ship` reconcile immediately. This rotating batch is the
+ * CRUD and `zed ship` reconcile immediately. This rotating batch is the
  * backstop for pushes that bypass both paths.
  */
 async function selectManifestDiscoveryProjects(): Promise<ProjectRow[]> {
@@ -674,7 +674,7 @@ export async function resolveGitTriggerActor(accountId: string): Promise<string 
  * right after the row exists — "attribution and authorization stop sharing
  * one field" (docs/specs/2026-07-05-agent-first-config-unification.md §2.2).
  * What a run can actually ACCESS is governed by the AGENT's declared scope in
- * kortix.yaml's `agents:` map (secrets + connectors), applied when the session
+ * zed.yaml's `agents:` map (secrets + connectors), applied when the session
  * env is built — not by this stand-in.
  */
 export async function resolveTriggerActor(project: ProjectRow): Promise<string | null> {
@@ -916,7 +916,7 @@ async function enqueueTriggerPrompt(input: {
 }
 
 /**
- * Fire a git-backed trigger. Triggers are file-defined (kortix.yaml), so there
+ * Fire a git-backed trigger. Triggers are file-defined (zed.yaml), so there
  * is no DB trigger/event row — the project_sessions row carries `trigger_slug`
  * in metadata so audits can still reconstruct the firing path.
  */
@@ -1113,7 +1113,7 @@ export async function fireGitTrigger(input: {
 
 export function summarizeTriggerPayload(payload: Record<string, unknown>): Record<string, unknown> {
   // Strip the rendered body from session metadata — sessions already get the
-  // prompt as KORTIX_INITIAL_PROMPT, and we don't want huge payloads in
+  // prompt as ZED_INITIAL_PROMPT, and we don't want huge payloads in
   // postgres jsonb.
   const { rendered_body: _r, ...rest } = payload as Record<string, unknown>;
   return rest;
@@ -1254,9 +1254,9 @@ export async function drainTriggerExecutionQueue(
 }
 
 export function startProjectTriggerScheduler(): void {
-  if ((config as any).KORTIX_TRIGGER_SCHEDULER_ENABLED === false) return;
-  if (globalForProjectTriggers.__kortixProjectTriggerSchedulerTimer) {
-    clearInterval(globalForProjectTriggers.__kortixProjectTriggerSchedulerTimer);
+  if ((config as any).ZED_TRIGGER_SCHEDULER_ENABLED === false) return;
+  if (globalForProjectTriggers.__zedProjectTriggerSchedulerTimer) {
+    clearInterval(globalForProjectTriggers.__zedProjectTriggerSchedulerTimer);
   }
   const tick = () => {
     // Watchdog: if we're the leader but the sweep has stalled (started and never
@@ -1318,7 +1318,7 @@ export function startProjectTriggerScheduler(): void {
   };
   tick();
   triggerSchedulerTimer = setInterval(tick, triggerSchedulerIntervalMs());
-  globalForProjectTriggers.__kortixProjectTriggerSchedulerTimer = triggerSchedulerTimer;
+  globalForProjectTriggers.__zedProjectTriggerSchedulerTimer = triggerSchedulerTimer;
 }
 
 export function stopProjectTriggerScheduler(): void {
@@ -1326,16 +1326,16 @@ export function stopProjectTriggerScheduler(): void {
     clearInterval(triggerSchedulerTimer);
     triggerSchedulerTimer = null;
   }
-  if (globalForProjectTriggers.__kortixProjectTriggerSchedulerTimer) {
-    clearInterval(globalForProjectTriggers.__kortixProjectTriggerSchedulerTimer);
-    globalForProjectTriggers.__kortixProjectTriggerSchedulerTimer = null;
+  if (globalForProjectTriggers.__zedProjectTriggerSchedulerTimer) {
+    clearInterval(globalForProjectTriggers.__zedProjectTriggerSchedulerTimer);
+    globalForProjectTriggers.__zedProjectTriggerSchedulerTimer = null;
   }
 }
 
 // GET /v1/projects
 
 export function buildPublicWebhookUrl(projectId: string, slug: string): string {
-  const root = deriveKortixApiRoot(config.KORTIX_URL);
+  const root = deriveZedApiRoot(config.ZED_URL);
   return `${root}/v1/webhooks/projects/${projectId}/${slug}`;
 }
 
@@ -1633,7 +1633,7 @@ export function draftToSpec(
   return {
     slug: draft.slug,
     // Use the ACTUAL manifest path so a YAML project's trigger spec reports
-    // `kortix.yaml#triggers.<slug>`, not a hardcoded `kortix.toml#…`.
+    // `zed.yaml#triggers.<slug>`, not a hardcoded `zed.toml#…`.
     path: `${manifestPath}#triggers.${draft.slug}`,
     name: draft.name,
     type: draft.type,
@@ -1657,18 +1657,18 @@ export function draftToSpec(
  * repo), synthesize a minimal valid one so the first POST /triggers can
  * scaffold it on save.
  *
- * MUST be kortix_version 2, not KNOWN_SCHEMA_VERSION (which deliberately
+ * MUST be zed_version 2, not KNOWN_SCHEMA_VERSION (which deliberately
  * stays pinned at 1 — see its own doc comment in ../triggers.ts). Every
  * project created through POST /projects/provision (seeded or not) is
  * stamped `metadata.require_declared_agents: true` and reads/writes
  * through the v2-only agent-config API (`applyAgentBlockV2`/
  * `applyDefaultAgentV2` in ./agent-config-v2.ts hard-refuse a v1
- * manifest). A blank project (no `seed_starter`, so no kortix.yaml ever
+ * manifest). A blank project (no `seed_starter`, so no zed.yaml ever
  * got pushed) synthesizing v1 here meant every agent-config write 400'd
- * with "upgrade to kortix_version 2" before it could ever commit a real
+ * with "upgrade to zed_version 2" before it could ever commit a real
  * manifest — a self-inflicted catch-22 that left the project permanently
  * un-declarable (AGENT_NOT_DECLARED on every session-create) short of a
- * force-pushed kortix.yaml or a full re-provision with `seed_starter:true`.
+ * force-pushed zed.yaml or a full re-provision with `seed_starter:true`.
  *
  * Delegates the actual synthesis to `synthesizeBlankManifest` (../triggers.ts)
  * — the SAME shape `loadProjectAgents` (../agents.ts) synthesizes on the
@@ -1726,7 +1726,7 @@ export function removeTriggerFromManifest(manifest: ParsedManifest, slug: string
 
 /**
  * Commit a single file to the project's default branch — the generic engine
- * behind `commitManifest` (kortix.yaml/toml) and the agent-config route's
+ * behind `commitManifest` (zed.yaml/toml) and the agent-config route's
  * `.md` behavior-file writes. One file, one commit per call.
  */
 export async function commitRepoFile(
@@ -1820,8 +1820,8 @@ export async function commitRepoFile(
       content,
       message,
       branch,
-      authorName: 'Kortix',
-      authorEmail: 'noreply@kortix.ai',
+      authorName: 'Zed',
+      authorEmail: 'noreply@zed.ai',
       expectedFileRevision:
         expectedFileRevision === undefined
           ? undefined
@@ -1842,7 +1842,7 @@ export async function commitRepoFile(
 }
 
 /**
- * Commit a new revision of the project manifest (kortix.yaml, or kortix.toml
+ * Commit a new revision of the project manifest (zed.yaml, or zed.toml
  * for a legacy v1 project) to the project's default branch. All trigger CRUD
  * funnels through this — one file, one commit per edit.
  */
@@ -1853,9 +1853,9 @@ export async function commitManifest(
   message: string,
 ): Promise<{ ok: true } | { error: string; status: number }> {
   const content = serializeManifest(manifest);
-  // Write back to the SAME file we read (kortix.yaml or kortix.toml, or a custom
+  // Write back to the SAME file we read (zed.yaml or zed.toml, or a custom
   // path) in its own format — never a hardcoded name, or a yaml project's edits
-  // would silently land in a second kortix.toml the runtime doesn't read.
+  // would silently land in a second zed.toml the runtime doesn't read.
   const manifestFile = manifest.path || project.manifestPath || MANIFEST_FILENAME;
   return commitRepoFile(
     project,

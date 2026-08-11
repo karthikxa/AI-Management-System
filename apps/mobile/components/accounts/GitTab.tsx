@@ -110,7 +110,7 @@ export function GitTab({ account, can, isDark }: { account: AccountDetail; can: 
         ) : installations.length === 0 ? (
           <View style={{ alignItems: 'center', paddingVertical: 30, gap: 12 }}>
             <Github size={26} color={c.muted} />
-            <Text style={{ fontSize: 13.5, color: c.muted, textAlign: 'center' }}>No GitHub connections. Connect the Kortix GitHub App to import repositories.</Text>
+            <Text style={{ fontSize: 13.5, color: c.muted, textAlign: 'center' }}>No GitHub connections. Connect the Zed GitHub App to import repositories.</Text>
           </View>
         ) : (
           <View>
@@ -162,7 +162,7 @@ export function GitTab({ account, can, isDark }: { account: AccountDetail; can: 
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 9 }}>
         <Shield size={15} color={c.muted} style={{ marginTop: 1 }} />
         <Text style={{ flex: 1, fontSize: 12, lineHeight: 17, color: c.muted }}>
-          Kortix stores the GitHub App installation on the account. It's a platform credential — individual projects link to repos through it.
+          Zed stores the GitHub App installation on the account. It's a platform credential — individual projects link to repos through it.
         </Text>
       </View>
     </ScrollView>

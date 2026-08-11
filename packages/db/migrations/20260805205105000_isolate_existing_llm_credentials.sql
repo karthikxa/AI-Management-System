@@ -154,7 +154,7 @@ with llm_secret_names(name) as (
     ('ZENMUX_API_KEY'),
     ('ZHIPU_API_KEY')
 )
-update "kortix"."project_secrets" as secret
+update "zed"."project_secrets" as secret
 set
   "strategy" = 'broker',
   "consumer" = 'llm_gateway',
@@ -167,7 +167,7 @@ where
   secret."name" = llm_secret_names.name
   and (
     secret."strategy" <> 'broker'
-    or secret."consumer" is distinct from 'llm_gateway'::"kortix"."project_secret_consumer"
+    or secret."consumer" is distinct from 'llm_gateway'::"zed"."project_secret_consumer"
     or secret."egress_policy" is not null
     or secret."handle_prefix" is not null
   );

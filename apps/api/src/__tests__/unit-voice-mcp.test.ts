@@ -6,7 +6,7 @@ function ctx(overrides: Partial<VoiceMcpContext> = {}): VoiceMcpContext {
     projectId: 'proj-1',
     sessionId: 'sess-1',
     callId: 'sess-1',
-    askKortix: async () => ({ ok: true }) as const,
+    askZed: async () => ({ ok: true }) as const,
     runCommand: async () => ({ stdout: '', stderr: '', exitCode: 0, timedOut: false }),
     postTurn: async () => {},
     ...overrides,
@@ -20,7 +20,7 @@ async function call(method: string, params?: Record<string, unknown>, c = ctx())
 describe('voice MCP', () => {
   test('initialize advertises tools', async () => {
     const res = await call('initialize');
-    expect(res.result.serverInfo.name).toBe('kortix-voice-worker');
+    expect(res.result.serverInfo.name).toBe('zed-voice-worker');
     expect(res.result.capabilities.tools).toBeDefined();
   });
 
@@ -31,49 +31,49 @@ describe('voice MCP', () => {
   test('exposes exactly the non-blocking (or short-bounded) tool set', async () => {
     const res = await call('tools/list');
     const names = res.result.tools.map((t: { name: string }) => t.name).sort();
-    expect(names).toEqual(['ask_kortix', 'post_turn', 'run_command']);
+    expect(names).toEqual(['ask_zed', 'post_turn', 'run_command']);
     // A follow/tail/stream tool would wedge the single-threaded worker. If
     // one ever appears here, that is the bug this assertion exists to catch.
     // run_command is the one deliberate, SHORT-bounded exception (see mcp.ts).
     expect(names.some((n: string) => /follow|tail|stream|wait/.test(n))).toBe(false);
-    // The old Kortix-facing MCP's `send_prompt` meant "speak into the call" —
-    // the worker's own tool of the same name means "ask Kortix to work". This
+    // The old Zed-facing MCP's `send_prompt` meant "speak into the call" —
+    // the worker's own tool of the same name means "ask Zed to work". This
     // MCP must never expose a `send_prompt` tool name, or that collision is back.
     expect(names).not.toContain('send_prompt');
   });
 
-  test('ask_kortix queues the request and returns immediately, never propagating a slow turn', async () => {
+  test('ask_zed queues the request and returns immediately, never propagating a slow turn', async () => {
     let seen: string | undefined;
     const c = ctx({
-      askKortix: async (request) => {
+      askZed: async (request) => {
         seen = request;
         return { ok: true } as const;
       },
     });
-    const res = await call('tools/call', { name: 'ask_kortix', arguments: { request: 'what is the weather' } }, c);
+    const res = await call('tools/call', { name: 'ask_zed', arguments: { request: 'what is the weather' } }, c);
     expect(seen).toBe('what is the weather');
     expect(res.result.isError).toBeUndefined();
     expect(res.result.structuredContent.queued).toBe(true);
   });
 
-  test('ask_kortix requires a non-empty request', async () => {
-    const res = await call('tools/call', { name: 'ask_kortix', arguments: {} });
+  test('ask_zed requires a non-empty request', async () => {
+    const res = await call('tools/call', { name: 'ask_zed', arguments: {} });
     expect(res.result.isError).toBe(true);
   });
 
-  test('ask_kortix surfaces a delivery failure as a tool error, not a protocol error', async () => {
-    const c = ctx({ askKortix: async () => ({ ok: false, error: 'empty request' }) });
-    const res = await call('tools/call', { name: 'ask_kortix', arguments: { request: 'hi' } }, c);
+  test('ask_zed surfaces a delivery failure as a tool error, not a protocol error', async () => {
+    const c = ctx({ askZed: async () => ({ ok: false, error: 'empty request' }) });
+    const res = await call('tools/call', { name: 'ask_zed', arguments: { request: 'hi' } }, c);
     expect(res.error).toBeUndefined();
     expect(res.result.isError).toBe(true);
     expect(res.result.content[0].text).toContain('empty request');
   });
 
-  test('ask_kortix writes NO transcript line here — that row is the in-flight flag', async () => {
+  test('ask_zed writes NO transcript line here — that row is the in-flight flag', async () => {
     // It used to be logged from this layer, fire-and-forget. It cannot be any
-    // more: the `ask_kortix: …` row is what stops a second overlapping hand-off
+    // more: the `ask_zed: …` row is what stops a second overlapping hand-off
     // (channels/voice/ask-ledger.ts), so it has to be written and awaited inside
-    // askKortix before the next ask reads the ledger. Two rapid asks would
+    // askZed before the next ask reads the ledger. Two rapid asks would
     // otherwise both see an empty ledger, and a hand-off that failed instantly
     // could get its settle row in BEFORE its own ask row — a permanently
     // outstanding ask. See unit-voice-recording.test.ts for the write itself.
@@ -83,7 +83,7 @@ describe('voice MCP', () => {
         seen.push({ role, text, speaker });
       },
     });
-    await call('tools/call', { name: 'ask_kortix', arguments: { request: 'what is the weather' } }, c);
+    await call('tools/call', { name: 'ask_zed', arguments: { request: 'what is the weather' } }, c);
     expect(seen).toEqual([]);
   });
 
@@ -93,24 +93,24 @@ describe('voice MCP', () => {
     // to reach the model intact, which is why it rides `isError` rather than
     // being swallowed or rewritten here.
     const c = ctx({
-      askKortix: async () => ({
+      askZed: async () => ({
         ok: false,
-        error: 'You already handed a request to Kortix and the answer has not come back yet.',
+        error: 'You already handed a request to Zed and the answer has not come back yet.',
       }),
       postTurn: async () => {
         throw new Error('a refused ask must not be recorded as a hand-off');
       },
     });
-    const res = await call('tools/call', { name: 'ask_kortix', arguments: { request: 'hi again' } }, c);
+    const res = await call('tools/call', { name: 'ask_zed', arguments: { request: 'hi again' } }, c);
     expect(res.result.isError).toBe(true);
-    expect(res.result.content[0].text).toContain('already handed a request to Kortix');
+    expect(res.result.content[0].text).toContain('already handed a request to Zed');
   });
 
   test('the tool description tells the model there is one hand-off at a time', async () => {
     const res = await call('tools/list');
-    const askKortix = res.result.tools.find((t: { name: string }) => t.name === 'ask_kortix');
-    expect(askKortix.description).toContain('ONE request at a time');
-    expect(askKortix.description).toContain('Do not re-send a request');
+    const askZed = res.result.tools.find((t: { name: string }) => t.name === 'ask_zed');
+    expect(askZed.description).toContain('ONE request at a time');
+    expect(askZed.description).toContain('Do not re-send a request');
   });
 
   test('run_command returns stdout/stderr/exit_code/timed_out', async () => {
@@ -237,7 +237,7 @@ describe('voice MCP', () => {
   });
 
   test('post_turn cannot write a tool-role line — only this file records those', async () => {
-    // 'tool' rows are a record of what the worker asked KORTIX to do, written
+    // 'tool' rows are a record of what the worker asked ZED to do, written
     // by callTool below with the tool's real name and outcome. If the model
     // could post them itself, a line saying `run_command: rm -rf / → ok` would
     // be indistinguishable from one that actually ran.

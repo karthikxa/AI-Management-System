@@ -1,5 +1,5 @@
 /**
- * Sentry client-side configuration for Kortix Frontend.
+ * Sentry client-side configuration for Zed Frontend.
  *
  * Uses @sentry/nextjs SDK pointed at Better Stack's Sentry-compatible endpoint.
  * Errors are tunneled through /monitoring route (auto-configured by
@@ -18,7 +18,7 @@ function isBrowserNoiseEvent(event: Sentry.ErrorEvent): boolean {
 if (SENTRY_DSN) {
   Sentry.init({
     dsn: SENTRY_DSN,
-    environment: process.env.NEXT_PUBLIC_KORTIX_ENV || 'dev',
+    environment: process.env.NEXT_PUBLIC_ZED_ENV || 'dev',
 
     // Capture 100% of errors
     // Sample 10% of page loads for performance (keep low on client)

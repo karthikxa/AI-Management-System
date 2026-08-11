@@ -333,10 +333,10 @@ describe('grantCredits', () => {
       },
     };
     mockRegistry.insertLedgerEntry = async () => {
-      throw Object.assign(new Error('Failed query: insert into "kortix"."credit_ledger"'), {
+      throw Object.assign(new Error('Failed query: insert into "zed"."credit_ledger"'), {
         cause: Object.assign(
-          new Error('duplicate key value violates unique constraint "kortix_unique_stripe_event"'),
-          { code: '23505', constraint_name: 'kortix_unique_stripe_event' },
+          new Error('duplicate key value violates unique constraint "zed_unique_stripe_event"'),
+          { code: '23505', constraint_name: 'zed_unique_stripe_event' },
         ),
       });
     };

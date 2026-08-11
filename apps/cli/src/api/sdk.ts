@@ -1,12 +1,12 @@
-import { type Kortix, type KortixPlatformConfig, createKortix } from '@kortix/sdk';
-import { runWithKortix } from '@kortix/sdk/server';
+import { type Zed, type ZedPlatformConfig, createZed } from '@zed/sdk';
+import { runWithZed } from '@zed/sdk/server';
 
 import type { Auth } from './auth.ts';
 import { ApiError } from './client.ts';
 import { secureRemoteBase } from './config.ts';
 
 /**
- * The CLI's ONE seam onto `@kortix/sdk`. Every Kortix backend call the CLI
+ * The CLI's ONE seam onto `@zed/sdk`. Every Zed backend call the CLI
  * makes resolves its transport here — there is no other. `scripts/sdk-boundary.mjs`
  * exempts exactly this file from the raw-fetch rule and asserts the exemption
  * list has length 1, so a second escape hatch cannot be added quietly.
@@ -16,10 +16,10 @@ import { secureRemoteBase } from './config.ts';
  * Normalize a stored CLI host base into the absolute `<origin>/v1` the SDK
  * requires. Two shapes reach us:
  *
- *   - host login stores a bare origin (`https://api.kortix.com`)
- *   - a session sandbox injects `KORTIX_API_URL` *with* the mount (`https://<tunnel>/v1`)
+ *   - host login stores a bare origin (`https://api.zed.com`)
+ *   - a session sandbox injects `ZED_API_URL` *with* the mount (`https://<tunnel>/v1`)
  *
- * `createKortix` throws `INVALID_BACKEND_URL` on a relative base outside a
+ * `createZed` throws `INVALID_BACKEND_URL` on a relative base outside a
  * browser (there is no `window.location` to resolve against), and the SDK
  * appends endpoint paths verbatim — so the version mount must be present
  * exactly once.
@@ -30,7 +30,7 @@ export function sdkBackendUrl(apiBase: string): string {
   return `${base.replace(/\/+$/, '')}/v1`;
 }
 
-export function sdkConfigFromAuth(auth: Auth): KortixPlatformConfig {
+export function sdkConfigFromAuth(auth: Auth): ZedPlatformConfig {
   const token = auth.token;
   return {
     backendUrl: sdkBackendUrl(auth.api_base),
@@ -39,36 +39,36 @@ export function sdkConfigFromAuth(auth: Auth): KortixPlatformConfig {
   };
 }
 
-const clients = new Map<string, Kortix>();
+const clients = new Map<string, Zed>();
 
 function clientKey(auth: Auth): string {
   return `${sdkBackendUrl(auth.api_base)}\u0000${auth.token}`;
 }
 
 /**
- * The Kortix client for a host. Memoized per (backend url, token) so a CLI
+ * The Zed client for a host. Memoized per (backend url, token) so a CLI
  * process holds one client per host it actually talks to, not one per command
  * helper that happens to need a read.
  */
-export function kortixFromAuth(auth: Auth): Kortix {
+export function zedFromAuth(auth: Auth): Zed {
   const key = clientKey(auth);
   const existing = clients.get(key);
   if (existing) return existing;
-  const created = createKortix(sdkConfigFromAuth(auth));
+  const created = createZed(sdkConfigFromAuth(auth));
   clients.set(key, created);
   return created;
 }
 
 /**
  * Run `fn` with this host's config bound to the SDK's `AsyncLocalStorage`
- * scope. The process-global `configureKortix` singleton is documented as safe
+ * scope. The process-global `configureZed` singleton is documented as safe
  * for a CLI, but the CLI is genuinely multi-host: `locateSessionAnywhere`
  * scans every logged-in host, and `mapLimit` fans out concurrent reads. The
  * last writer to the global would win for every in-flight call, so every
  * backend call is scoped instead of racing a shared global.
  */
-export function withKortixScope<T>(auth: Auth, fn: () => Promise<T>): Promise<T> {
-  return runWithKortix(sdkConfigFromAuth(auth), fn);
+export function withZedScope<T>(auth: Auth, fn: () => Promise<T>): Promise<T> {
+  return runWithZed(sdkConfigFromAuth(auth), fn);
 }
 
 interface RuntimeResult<T> {

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the four document view paths (PDF, DOCX, XLSX, CSV/TSV) in `apps/web/src/features/file-renderers/` with vendored extend.ai viewer components carrying Kortix-owned chrome, and delete the legacy engines.
+**Goal:** Replace the four document view paths (PDF, DOCX, XLSX, CSV/TSV) in `apps/web/src/features/file-renderers/` with vendored extend.ai viewer components carrying Zed-owned chrome, and delete the legacy engines.
 
 **Architecture:** Each format gets a folder containing the vendored extend viewer (imports rewired to our ui primitives, hugeicons→lucide via a compat shim, upload/theme-toggle chrome stripped) plus a thin adapter that keeps today's prop contract, so consumers only change import paths. Legacy engines (iframe PDF, docx-preview, Univer+ExcelJS, AG Grid) are deleted per format as each migration lands.
 
@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-07-05-file-renderers-extend-viewers-design.md`
 
-**Discovery amendment to spec:** The vendored extend toolbars are already composed from our own ui primitives (`Button`, `Input`, `Select`, `Tooltip`, `Separator`, `ScrollArea`, `Tabs`, `DropdownMenu`, `Popover`) — they inherit kortix tokens automatically. "Kortix chrome" therefore means: strip upload + theme-toggle blocks, swap icons to lucide, and apply the polish pass (Task 7) — not a from-scratch toolbar rebuild. `shared/viewer-chrome.tsx` from the spec is realized as the compat shim + spinner shim + polish constants.
+**Discovery amendment to spec:** The vendored extend toolbars are already composed from our own ui primitives (`Button`, `Input`, `Select`, `Tooltip`, `Separator`, `ScrollArea`, `Tabs`, `DropdownMenu`, `Popover`) — they inherit zed tokens automatically. "Zed chrome" therefore means: strip upload + theme-toggle blocks, swap icons to lucide, and apply the polish pass (Task 7) — not a from-scratch toolbar rebuild. `shared/viewer-chrome.tsx` from the spec is realized as the compat shim + spinner shim + polish constants.
 
 ## Global Constraints
 
@@ -37,7 +37,7 @@
 - [ ] **Step 1: Create the worktree**
 
 ```bash
-cd /Users/jay/root/kortix/suna
+cd /Users/jay/root/zed/suna
 nvm use 22
 pnpm worktree start file-renderers-extend
 ```
@@ -47,7 +47,7 @@ Expected: a new worktree (path printed by the command, conventionally a sibling 
 - [ ] **Step 2: Copy gitignored env keys (middleware 500s without them)**
 
 ```bash
-cp /Users/jay/root/kortix/suna/apps/web/.env.keys <worktree>/apps/web/.env.keys
+cp /Users/jay/root/zed/suna/apps/web/.env.keys <worktree>/apps/web/.env.keys
 ```
 
 - [ ] **Step 3: Install and sanity-check**
@@ -79,7 +79,7 @@ All subsequent tasks run inside the worktree.
 
 - Produces: `node scripts/vendor-extend-viewer.mjs <registry-name> <out-dir>` — writes each registry file into `<out-dir>`.
 - Produces: `hugeicons-compat.tsx` exports `HugeiconsIcon` (props `{ icon, className?, size?, strokeWidth? }`) and the aliases `ArrowLeft01Icon, ArrowRight01Icon, Comment01Icon, Download01Icon, FileDiffIcon, MinusSignCircleIcon, Moon02Icon, MoreHorizontalIcon, PlusSignCircleIcon, RotateClockwiseIcon, Search01Icon, SidebarLeftIcon, Upload01Icon` (all `LucideIcon`).
-- Produces: `spinner.tsx` exports `Spinner({ className })` — KortixLoader at 16px, drop-in for the vendored `<Spinner className="size-4" />`.
+- Produces: `spinner.tsx` exports `Spinner({ className })` — ZedLoader at 16px, drop-in for the vendored `<Spinner className="size-4" />`.
 
 - [ ] **Step 1: Write the vendor fetch script**
 
@@ -216,19 +216,19 @@ export function HugeiconsIcon({ icon: Icon, ...props }: HugeiconsIconProps) {
 // apps/web/src/features/file-renderers/shared/spinner.tsx
 'use client';
 
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { cn } from '@/lib/utils';
 
 export function Spinner({ className }: { className?: string }) {
   return (
     <span className={cn('inline-flex items-center justify-center', className)}>
-      <KortixLoader customSize={16} />
+      <ZedLoader customSize={16} />
     </span>
   );
 }
 ```
 
-(Verify `KortixLoader` accepts `customSize` — `src/components/ui/kortix-loader.tsx:19` documents it. If the prop is named differently, match the actual name.)
+(Verify `ZedLoader` accepts `customSize` — `src/components/ui/zed-loader.tsx:19` documents it. If the prop is named differently, match the actual name.)
 
 - [ ] **Step 6: Run test to verify it passes**
 
@@ -356,7 +356,7 @@ Expected: FAIL — Cannot find module './csv-renderer'
 
 import React, { lazy, Suspense } from 'react';
 import { FileSpreadsheet } from 'lucide-react';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { cn } from '@/lib/utils';
 
 const CsvViewer = lazy(() =>
@@ -403,7 +403,7 @@ export function CsvRenderer({ content, className, compact = false, containerHeig
       <Suspense
         fallback={
           <div className="flex h-full w-full items-center justify-center">
-            <KortixLoader size="medium" />
+            <ZedLoader size="medium" />
           </div>
         }
       >
@@ -585,7 +585,7 @@ Expected: FAIL — Cannot find module './pdf-renderer' (adapter not written yet)
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { AlertTriangle } from 'lucide-react';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { cn } from '@/lib/utils';
 import { PDFViewer } from './pdf-viewer';
 
@@ -643,7 +643,7 @@ export function PdfRenderer({ fileContent, url, className, compact = false }: Pd
   if (status === 'loading') {
     return (
       <div className={cn('flex h-full w-full items-center justify-center', className)}>
-        <KortixLoader size="medium" />
+        <ZedLoader size="medium" />
       </div>
     );
   }
@@ -825,7 +825,7 @@ Expected: FAIL — Cannot find module './docx-renderer'
 
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { cn } from '@/lib/utils';
 import { DocxViewerPreview } from './docx-viewer';
 
@@ -870,7 +870,7 @@ export function DocxRenderer({ url, blob, className, compact = false }: DocxRend
   if (!src) {
     return (
       <div className={cn('flex h-full w-full items-center justify-center', className)}>
-        <KortixLoader size="medium" />
+        <ZedLoader size="medium" />
       </div>
     );
   }
@@ -1002,7 +1002,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { FileSpreadsheet, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { cn } from '@/lib/utils';
 import { XlsxViewerPreview } from './xlsx-viewer';
 
@@ -1091,7 +1091,7 @@ export function XlsxRenderer({ filePath, fileName, className }: XlsxRendererProp
   if (!src) {
     return (
       <div className={cn('flex h-full w-full items-center justify-center', className)}>
-        <KortixLoader size="medium" />
+        <ZedLoader size="medium" />
       </div>
     );
   }
@@ -1193,7 +1193,7 @@ git commit -m "refactor(web): drop orphaned pdfjs-dist, finish legacy renderer s
 
 
 
-### Task 7: Kortix polish pass + visual verification
+### Task 7: Zed polish pass + visual verification
 
 **Files:**
 
@@ -1235,7 +1235,7 @@ Expected: both clean.
 
 ```bash
 git add -A
-git commit -m "polish(web): kortix polish pass on document viewer chrome"
+git commit -m "polish(web): zed polish pass on document viewer chrome"
 ```
 
 ---

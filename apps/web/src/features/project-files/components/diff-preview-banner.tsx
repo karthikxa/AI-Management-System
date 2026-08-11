@@ -81,8 +81,8 @@ export function DiffPreviewBanner({ loading, error, preview, className }: DiffPr
   return (
     <InfoBanner tone="success" icon={Check} className={className}>
       {preview.files_changed} file{preview.files_changed === 1 ? '' : 's'} changed{' '}
-      <span className="text-kortix-green font-semibold">+{preview.additions}</span>{' '}
-      <span className="text-kortix-red font-semibold">−{preview.deletions}</span>
+      <span className="text-zed-green font-semibold">+{preview.additions}</span>{' '}
+      <span className="text-zed-red font-semibold">−{preview.deletions}</span>
     </InfoBanner>
   );
 }

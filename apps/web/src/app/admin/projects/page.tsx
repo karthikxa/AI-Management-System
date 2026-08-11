@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { useCallback, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { IconInbox } from '@/components/ui/kortix-icons';
+import { IconInbox } from '@/components/ui/zed-icons';
 import { PageSearchBar } from '@/components/ui/page-search-bar';
 import {
   Select,

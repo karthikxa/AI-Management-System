@@ -24,7 +24,7 @@
 // a multi-replica deployment.
 
 import { and, isNotNull, lt, sql } from 'drizzle-orm';
-import { projectGroupGrants, projectMembers } from '@kortix/db';
+import { projectGroupGrants, projectMembers } from '@zed/db';
 import { db } from '../shared/db';
 import { recordAuditEvent } from '../shared/audit';
 

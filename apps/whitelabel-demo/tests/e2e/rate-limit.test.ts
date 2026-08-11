@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import {
   APP_SETUP_TIMEOUT_MS,
   type AppInstance,
-  createTestKortix,
+  createTestZed,
   loginUser,
   resetUsersStore,
   startApp,
@@ -27,7 +27,7 @@ describe('rate limiting', () => {
     resetUsersStore();
     mock = createMockUpstream(WRAPPER_KEY);
     app = await startApp(
-      wrapperEnv({ KORTIX_UPSTREAM: `${mock.url}/v1`, RATE_LIMIT_PER_MIN: String(CAPACITY) }),
+      wrapperEnv({ ZED_UPSTREAM: `${mock.url}/v1`, RATE_LIMIT_PER_MIN: String(CAPACITY) }),
     );
   }, APP_SETUP_TIMEOUT_MS);
 
@@ -40,8 +40,8 @@ describe('rate limiting', () => {
   test('exceeding the per-minute budget returns 429 with Retry-After, then recovers', async () => {
     const email = uniqueEmail('rate-limit');
     const token = await loginUser(app, email, DEMO_PASSWORD);
-    const kortix = createTestKortix(app, token);
-    const hit = () => kortix.validateToken();
+    const zed = createTestZed(app, token);
+    const hit = () => zed.validateToken();
 
     // Drain the bucket.
     for (let i = 0; i < CAPACITY; i++) {
@@ -62,8 +62,8 @@ describe('rate limiting', () => {
     // A different user has their own bucket and is unaffected.
     const otherEmail = uniqueEmail('rate-limit-other');
     const otherToken = await loginUser(app, otherEmail, DEMO_PASSWORD);
-    const otherKortix = createTestKortix(app, otherToken);
-    expect((await otherKortix.validateToken()).valid).toBe(true);
+    const otherZed = createTestZed(app, otherToken);
+    expect((await otherZed.validateToken()).valid).toBe(true);
 
     // After waiting out Retry-After, the original user's bucket has refilled.
     await new Promise((r) => setTimeout(r, retryAfterSeconds * 1000 + 250));

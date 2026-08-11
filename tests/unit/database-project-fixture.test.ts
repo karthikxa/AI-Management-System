@@ -10,13 +10,13 @@ import {
 
 function env(overrides: Partial<Env> = {}): Env {
   return {
-    apiUrl: 'https://staging-api.kortix.com/v1',
-    baseUrl: 'https://staging.kortix.com',
-    gatewayUrl: 'https://gateway-staging.kortix.com',
+    apiUrl: 'https://staging-api.zed.com/v1',
+    baseUrl: 'https://staging.zed.com',
+    gatewayUrl: 'https://gateway-staging.zed.com',
     supabaseUrl: 'https://supabase.example',
     supabaseAnonKey: 'anon',
     supabaseServiceRoleKey: 'service',
-    databaseUrl: 'postgres://staging.example/kortix',
+    databaseUrl: 'postgres://staging.example/zed',
     ownerEmail: null,
     ownerPassword: null,
     adminToken: null,
@@ -36,7 +36,7 @@ function env(overrides: Partial<Env> = {}): Env {
       internalCron: false,
       funded: true,
     },
-    testEmailDomain: 'ke2e.kortix.test',
+    testEmailDomain: 'ke2e.zed.test',
     ...overrides,
   };
 }
@@ -65,8 +65,8 @@ describe('database-only project fixture', () => {
     expect(project.name).toBe('e2e-project');
     expect(project.id).toMatch(/^[0-9a-f-]{36}$/);
     expect(db.query).toHaveBeenCalledOnce();
-    expect(db.query.mock.calls[0][0]).toContain('INSERT INTO kortix.projects');
-    expect(db.query.mock.calls[0][0]).toContain('INSERT INTO kortix.project_members');
+    expect(db.query.mock.calls[0][0]).toContain('INSERT INTO zed.projects');
+    expect(db.query.mock.calls[0][0]).toContain('INSERT INTO zed.project_members');
     expect(db.query.mock.calls[0][1]).toEqual([
       project.id,
       '11111111-1111-4111-8111-111111111111',
@@ -86,7 +86,7 @@ describe('database-only project fixture', () => {
     );
 
     expect(db.query).toHaveBeenCalledWith(
-      expect.stringContaining('DELETE FROM kortix.projects'),
+      expect.stringContaining('DELETE FROM zed.projects'),
       ['33333333-3333-4333-8333-333333333333'],
     );
     expect(db.end).toHaveBeenCalledOnce();

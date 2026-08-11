@@ -1,31 +1,31 @@
-# @kortix/cli
+# @zed/cli
 
-Create a new Kortix project.
+Create a new Zed project.
 
 ```sh
-kortix init my-project
+zed init my-project
 ```
 
-Makes `./my-project/`, runs `git init -b main`, and writes the Kortix
-project floor at the repo root (`kortix.yaml`, `README.md`,
-`.kortix/opencode/`, `.kortix/memory/MEMORY.md`), stages every file, and
+Makes `./my-project/`, runs `git init -b main`, and writes the Zed
+project floor at the repo root (`zed.yaml`, `README.md`,
+`.zed/opencode/`, `.zed/memory/MEMORY.md`), stages every file, and
 makes an initial commit.
 
 ## Usage
 
 ```sh
-kortix init                  # interactive flow: pick a name and wire local coding agents
-kortix init my-project       # use the given name
-kortix ship                  # create the cloud project (first run) + push your code
-kortix self-host start       # run your own Kortix Cloud from Docker images
+zed init                  # interactive flow: pick a name and wire local coding agents
+zed init my-project       # use the given name
+zed ship                  # create the cloud project (first run) + push your code
+zed self-host start       # run your own Zed Cloud from Docker images
 ```
 
-Scaffolding is explicit-only: `kortix init` is the one command that creates
-a project directory. An unknown subcommand (`kortix use`, `kortix inti`, …)
+Scaffolding is explicit-only: `zed init` is the one command that creates
+a project directory. An unknown subcommand (`zed use`, `zed inti`, …)
 errors with a suggestion — it never scaffolds. Init asks which local coding
 agents to wire through `--primary` and `--agents`.
 
-Run `kortix init --help` for the full flag list, or `kortix --help`
+Run `zed init --help` for the full flag list, or `zed --help`
 for the full command list (project, auth, work, and resource subcommands —
 sessions, triggers, connectors, secrets, sandboxes, marketplace, and more).
 
@@ -36,46 +36,46 @@ my-project/
 ├── .git/                              ← initialized on the `main` branch
 ├── .gitignore
 ├── README.md
-├── kortix.yaml                        ← v2 OpenCode manifest
-└── .kortix/
+├── zed.yaml                        ← v2 OpenCode manifest
+└── .zed/
     ├── memory/MEMORY.md               ← project-wide memory for agents
     └── opencode/                      ← OpenCode native config dir
         ├── opencode.jsonc             ← runtime config (providers, plugins, MCP servers, …)
-        ├── agents/{kortix,harness-reflector}.md
-        └── skills/kortix-cli/SKILL.md (+ the artifact skill floor)
+        ├── agents/{zed,harness-reflector}.md
+        └── skills/zed-cli/SKILL.md (+ the artifact skill floor)
 ```
 
 The local coding tools you wire up (`--primary`/`--agents`, default Codex)
-receive native discovery links to the canonical `.kortix/opencode` source.
+receive native discovery links to the canonical `.zed/opencode` source.
 OpenCode uses `.opencode`. Claude Code uses `.claude/skills`,
 `.claude/agents`, and `.claude/commands`. Codex uses `.agents`. Pi uses
 `.pi/skills`. Codex, Pi, and Cursor also get a root `AGENTS.md` pointer.
 
-The public starter uses `kortix_version: 2`. Cloud sessions run OpenCode REST.
+The public starter uses `zed_version: 2`. Cloud sessions run OpenCode REST.
 
 Create a project with:
 
 ```sh
-kortix init my-project --yes --no-git
+zed init my-project --yes --no-git
 ```
 
 Agents can retrieve the deployed platform manual from OpenCode:
 
 ```sh
-kortix system-skills
-kortix system-skills get kortix-system --full
+zed system-skills
+zed system-skills get zed-system --full
 ```
 
-`kortix skills` is a permanent alias.
+`zed skills` is a permanent alias.
 
 After the scaffold lands, one commit is made:
 
 ```
-chore: init kortix project
+chore: init zed project
 ```
 
 Then it's yours. Add a remote, push, open in your coding agent of choice —
-or run `kortix ship` to create the cloud project and push in one step.
+or run `zed ship` to create the cloud project and push in one step.
 
 ## Self-host
 
@@ -90,15 +90,15 @@ that still say `aws-vpc` on disk keep working — they load as `aws-ec2`.)
 
 ```sh
 pnpm install
-./bin/kortix --help
-./bin/kortix self-host init --target docker
-./bin/kortix self-host plan
-./bin/kortix self-host start
-./bin/kortix self-host configure
-./bin/kortix self-host env set PUBLIC_URL=https://kortix.example.com API_PUBLIC_URL=https://api.example.com
-./bin/kortix hosts ls
-./bin/kortix hosts use local
-./bin/kortix hosts use cloud
+./bin/zed --help
+./bin/zed self-host init --target docker
+./bin/zed self-host plan
+./bin/zed self-host start
+./bin/zed self-host configure
+./bin/zed self-host env set PUBLIC_URL=https://zed.example.com API_PUBLIC_URL=https://api.example.com
+./bin/zed hosts ls
+./bin/zed hosts use local
+./bin/zed hosts use cloud
 ```
 
 `self-host start` creates the config when needed and only asks for external
@@ -116,18 +116,18 @@ owner-only instance `.env`.
 ```sh
 export AWS_PROFILE=customer
 
-./bin/kortix self-host init \
+./bin/zed self-host init \
   --target aws-ec2 \
   --instance customer \
   --region us-west-2 \
   --channel stable \
   --yes
 
-./bin/kortix self-host doctor --instance customer
-./bin/kortix self-host plan --instance customer
-./bin/kortix self-host deploy --instance customer
-./bin/kortix self-host status --instance customer
-./bin/kortix self-host reconcile --instance customer --channel stable
+./bin/zed self-host doctor --instance customer
+./bin/zed self-host plan --instance customer
+./bin/zed self-host deploy --instance customer
+./bin/zed self-host status --instance customer
+./bin/zed self-host reconcile --instance customer --channel stable
 ```
 
 For AWS, the CLI is the bootstrap and operator remote control. The customer-

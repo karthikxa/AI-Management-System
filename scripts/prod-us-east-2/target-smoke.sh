@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-TARGET_SECRET_ID="${TARGET_SECRET_ID:-kortix/prod-us-east-2-migration}"
+TARGET_SECRET_ID="${TARGET_SECRET_ID:-zed/prod-us-east-2-migration}"
 TARGET_AWS_REGION="${TARGET_AWS_REGION:-us-east-2}"
 
 for command_name in aws jq node psql; do
@@ -37,9 +37,9 @@ TARGET_SERVICE_ROLE_KEY="$(
     <<<"$target_secret_json"
 )"
 export TARGET_API_URL
-TARGET_API_URL="${TARGET_API_URL:-https://api-use2-shadow.kortix.com}"
+TARGET_API_URL="${TARGET_API_URL:-https://api-use2-shadow.zed.com}"
 export TARGET_FRONTEND_URL
-TARGET_FRONTEND_URL="${TARGET_FRONTEND_URL:-https://us.kortix.com}"
+TARGET_FRONTEND_URL="${TARGET_FRONTEND_URL:-https://us.zed.com}"
 export TARGET_AUTH_SEQUENCE_HEADROOM
 TARGET_AUTH_SEQUENCE_HEADROOM="${TARGET_AUTH_SEQUENCE_HEADROOM:-100000000}"
 export KEEP_TARGET_AUTH_SEQUENCE_HEADROOM

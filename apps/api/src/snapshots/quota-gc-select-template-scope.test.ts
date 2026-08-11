@@ -23,7 +23,7 @@ function padToOrgSize(items: SnapshotLike[], n: number): SnapshotLike[] {
 }
 
 const PROJ = '0945686d-1111-2222-3333-444455556666';
-const BASE = 'kortix-default-r1';
+const BASE = 'zed-default-r1';
 
 describe('ppwarmTpl8', () => {
   test('parses the tpl8 segment of a new-format name', () => {
@@ -33,11 +33,11 @@ describe('ppwarmTpl8', () => {
   });
 
   test('returns null for an old-format name (no template discriminator)', () => {
-    expect(ppwarmTpl8(`kortix-ppwarm-${proj8(PROJ)}-aaaaaaaaaaaa`)).toBeNull();
+    expect(ppwarmTpl8(`zed-ppwarm-${proj8(PROJ)}-aaaaaaaaaaaa`)).toBeNull();
   });
 
   test('returns null for a non-ppwarm name', () => {
-    expect(ppwarmTpl8('kortix-default-abc123')).toBeNull();
+    expect(ppwarmTpl8('zed-default-abc123')).toBeNull();
   });
 });
 
@@ -67,14 +67,14 @@ describe('selectSnapshotsToReap — ppwarm superseded-tip rule is template-scope
   test('old-format tips of a project still supersede each other exactly as before', () => {
     const all = padToOrgSize(
       [
-        snap(`kortix-ppwarm-${proj8(PROJ)}-newesttip1`, { lastUsedAt: ago(1) }),
-        snap(`kortix-ppwarm-${proj8(PROJ)}-oldertipp2`, { lastUsedAt: ago(5) }),
+        snap(`zed-ppwarm-${proj8(PROJ)}-newesttip1`, { lastUsedAt: ago(1) }),
+        snap(`zed-ppwarm-${proj8(PROJ)}-oldertipp2`, { lastUsedAt: ago(5) }),
       ],
       QUOTA_GC_ORG_HIGH_WATER,
     );
     const res = selectSnapshotsToReap({ all, referenced: new Set(), now: NOW });
     const reaped = res.doomed.map((d) => d.snapshot.name);
-    expect(reaped).toContain(`kortix-ppwarm-${proj8(PROJ)}-oldertipp2`);
-    expect(reaped).not.toContain(`kortix-ppwarm-${proj8(PROJ)}-newesttip1`);
+    expect(reaped).toContain(`zed-ppwarm-${proj8(PROJ)}-oldertipp2`);
+    expect(reaped).not.toContain(`zed-ppwarm-${proj8(PROJ)}-newesttip1`);
   });
 });

@@ -28,7 +28,7 @@ const WebSearchResponseSchema = z
  * POST /web-search
  *
  * Search the web using Tavily API.
- * Requires authentication via KORTIX_TOKEN.
+ * Requires authentication via ZED_TOKEN.
  * Credits are deducted based on search depth (basic or advanced).
  */
 webSearch.openapi(
@@ -88,7 +88,7 @@ webSearch.openapi(
 
       if (!billingResult.success && !billingResult.skipped) {
         console.warn(
-          `[KORTIX] Billing failed for ${accountId} but returning results anyway`
+          `[ZED] Billing failed for ${accountId} but returning results anyway`
         );
       }
 
@@ -101,11 +101,11 @@ webSearch.openapi(
       return c.json(response);
     } catch (error) {
       if (error instanceof Error && error.message.includes('not configured')) {
-        console.error(`[KORTIX] Web search config error: ${error.message}`);
+        console.error(`[ZED] Web search config error: ${error.message}`);
         throw new HTTPException(500, { message: error.message });
       }
 
-      console.error(`[KORTIX] Web search error: ${error}`);
+      console.error(`[ZED] Web search error: ${error}`);
       throw new HTTPException(500, {
         message: `Search failed: ${error instanceof Error ? error.message : String(error)}`,
       });

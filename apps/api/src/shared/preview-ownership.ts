@@ -2,7 +2,7 @@
  * Preview proxy ownership gate + user-context resolver.
  *
  * Project-sessions on Daytona model:
- *   - A sandbox lives in `kortix.session_sandboxes`.
+ *   - A sandbox lives in `zed.session_sandboxes`.
  *   - A user can hit the sandbox if they're a member of the account that owns
  *     it (account_members.account_id == session_sandboxes.account_id), or if
  *     they're a platform admin.
@@ -15,9 +15,9 @@ import { db } from './db';
 import { isPlatformAdmin } from './platform-roles';
 import { resolveAccountId } from './resolve-account';
 import { isSessionVisibleTo, loadSessionGrants, resolveShareSubject } from '../connectors/share';
-import { accountMembers, projectSessions, sessionSandboxes } from '@kortix/db';
+import { accountMembers, projectSessions, sessionSandboxes } from '@zed/db';
 import { and, eq, or, sql } from 'drizzle-orm';
-import type { KortixUserContext } from './kortix-user-context';
+import type { ZedUserContext } from './zed-user-context';
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -51,7 +51,7 @@ export async function canAccessSandboxSession(input: {
    *  REQUIRED — an omitted binding would fail open. */
   callerSessionId: string | null;
 }): Promise<boolean> {
-  // callerSessionId MUST be in the key. In Kortix-as-a-Backend every end-user
+  // callerSessionId MUST be in the key. In Zed-as-a-Backend every end-user
   // shares one `userId` (the wrapper credential), so without it end-user A and
   // end-user B collide on one entry for the same target session — and the first
   // `true` would be served to everyone else for the whole TTL, silently
@@ -99,7 +99,7 @@ export async function canAccessSandboxSession(input: {
 type CacheEntry = {
   allowed: boolean;
   /** Null when access is denied or the caller is anonymous. */
-  payload: Omit<KortixUserContext, 'iat' | 'exp'> | null;
+  payload: Omit<ZedUserContext, 'iat' | 'exp'> | null;
   expiresAt: number;
 };
 
@@ -255,13 +255,13 @@ export async function canAccessPreviewSandbox(input: {
 }
 
 /**
- * Payload ready to sign + forward as `X-Kortix-User-Context`. Null when the
+ * Payload ready to sign + forward as `X-Zed-User-Context`. Null when the
  * caller isn't authenticated or isn't allowed on this sandbox.
  */
 export async function resolvePreviewUserContext(
   previewSandboxId: string,
   userId: string | undefined,
-): Promise<Omit<KortixUserContext, 'iat' | 'exp'> | null> {
+): Promise<Omit<ZedUserContext, 'iat' | 'exp'> | null> {
   if (!userId) return null;
   const entry = await getOrCompute(previewSandboxId, userId);
   return entry.payload;

@@ -89,7 +89,7 @@ function webhookUrlFor(projectId: string, slug: string): string {
 }
 
 function curlSample(url: string): string {
-  return `curl -X POST '${url}' \\\n  -H 'content-type: application/json' \\\n  -H 'x-kortix-signature: sha256=<hmac-sha256 of body using your secret>' \\\n  -d '{"message":{"text":"hello"}}'`;
+  return `curl -X POST '${url}' \\\n  -H 'content-type: application/json' \\\n  -H 'x-zed-signature: sha256=<hmac-sha256 of body using your secret>' \\\n  -d '{"message":{"text":"hello"}}'`;
 }
 
 // ─── Create webhook ───────────────────────────────────────────────────────────

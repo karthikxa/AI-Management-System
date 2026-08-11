@@ -42,7 +42,7 @@ describe('runsSingletonWorkers (dead-weight-leader guard)', () => {
   });
 
   test('global worker switch off → NOT an owner', () => {
-    expect(runsSingletonWorkers({ KORTIX_WORKERS_ENABLED: 'false' })).toBe(false);
+    expect(runsSingletonWorkers({ ZED_WORKERS_ENABLED: 'false' })).toBe(false);
   });
 
   test('API-only profile (ALL four worker flags "false") → NOT an owner', () => {
@@ -50,10 +50,10 @@ describe('runsSingletonWorkers (dead-weight-leader guard)', () => {
     // the election — otherwise it can win the lease and dead-weight-starve crons.
     expect(
       runsSingletonWorkers({
-        KORTIX_TRIGGER_SCHEDULER_ENABLED: 'false',
-        KORTIX_PROJECT_MAINTENANCE_ENABLED: 'false',
-        KORTIX_LEGACY_MIGRATION_WORKER_ENABLED: 'false',
-        KORTIX_SUNA_MIGRATION_WORKER_ENABLED: 'false',
+        ZED_TRIGGER_SCHEDULER_ENABLED: 'false',
+        ZED_PROJECT_MAINTENANCE_ENABLED: 'false',
+        ZED_LEGACY_MIGRATION_WORKER_ENABLED: 'false',
+        ZED_SUNA_MIGRATION_WORKER_ENABLED: 'false',
       }),
     ).toBe(false);
   });
@@ -61,10 +61,10 @@ describe('runsSingletonWorkers (dead-weight-leader guard)', () => {
   test('any single worker still enabled → owner', () => {
     expect(
       runsSingletonWorkers({
-        KORTIX_TRIGGER_SCHEDULER_ENABLED: 'false',
-        KORTIX_PROJECT_MAINTENANCE_ENABLED: 'false',
-        KORTIX_LEGACY_MIGRATION_WORKER_ENABLED: 'false',
-        KORTIX_SUNA_MIGRATION_WORKER_ENABLED: 'true',
+        ZED_TRIGGER_SCHEDULER_ENABLED: 'false',
+        ZED_PROJECT_MAINTENANCE_ENABLED: 'false',
+        ZED_LEGACY_MIGRATION_WORKER_ENABLED: 'false',
+        ZED_SUNA_MIGRATION_WORKER_ENABLED: 'true',
       }),
     ).toBe(true);
   });
@@ -72,15 +72,15 @@ describe('runsSingletonWorkers (dead-weight-leader guard)', () => {
   test('only the scheduler enabled (others off) → owner', () => {
     expect(
       runsSingletonWorkers({
-        KORTIX_TRIGGER_SCHEDULER_ENABLED: 'true',
-        KORTIX_PROJECT_MAINTENANCE_ENABLED: 'false',
-        KORTIX_LEGACY_MIGRATION_WORKER_ENABLED: 'false',
-        KORTIX_SUNA_MIGRATION_WORKER_ENABLED: 'false',
+        ZED_TRIGGER_SCHEDULER_ENABLED: 'true',
+        ZED_PROJECT_MAINTENANCE_ENABLED: 'false',
+        ZED_LEGACY_MIGRATION_WORKER_ENABLED: 'false',
+        ZED_SUNA_MIGRATION_WORKER_ENABLED: 'false',
       }),
     ).toBe(true);
   });
 
   test('only literal "false" disables a flag — "0"/"no"/"" still count as on', () => {
-    expect(runsSingletonWorkers({ KORTIX_TRIGGER_SCHEDULER_ENABLED: '0' })).toBe(true);
+    expect(runsSingletonWorkers({ ZED_TRIGGER_SCHEDULER_ENABLED: '0' })).toBe(true);
   });
 });

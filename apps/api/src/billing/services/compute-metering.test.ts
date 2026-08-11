@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { appRuntimes } from '@kortix/db';
+import { appRuntimes } from '@zed/db';
 import * as realProviders from '../../platform/providers';
 
 let billingEnabled = true;
@@ -10,7 +10,7 @@ let billingEnabled = true;
 mock.module('../../config', () => ({
   SANDBOX_VERSION: '0.0.0-test',
   KNOWN_PROVIDERS: [],
-  KORTIX_MARKUP: 1,
+  ZED_MARKUP: 1,
   PLATFORM_FEE_MARKUP: 1,
   getToolCost: () => 0,
   parseAllowedProviders: () => [],
@@ -19,7 +19,7 @@ mock.module('../../config', () => ({
     {
       get: (target: Record<PropertyKey, unknown>, key) => {
         if (Object.hasOwn(target, key)) return target[key];
-        if (key === 'KORTIX_BILLING_INTERNAL_ENABLED') return billingEnabled;
+        if (key === 'ZED_BILLING_INTERNAL_ENABLED') return billingEnabled;
         return target[key];
       },
     },

@@ -23,12 +23,12 @@ describe('renderParts', () => {
     const parts: ClassifiedPart[] = [
       { kind: 'text', id: '1', text: 'hi', synthetic: false },
       { kind: 'reasoning', id: '2', text: 'thinking' },
-      { kind: 'agent', id: '3', name: 'kortix-worker' },
+      { kind: 'agent', id: '3', name: 'zed-worker' },
     ];
     expect(renderParts(parts, renderers)).toEqual([
       'text:hi',
       'reasoning:thinking',
-      'agent:kortix-worker',
+      'agent:zed-worker',
     ]);
   });
 

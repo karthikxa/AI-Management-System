@@ -6,22 +6,22 @@
  * Runs only on the leader instance (started alongside the legacy worker).
  */
 import { and, inArray, isNull, lt, or } from 'drizzle-orm';
-import { sunaAccountMigrations } from '@kortix/db';
+import { sunaAccountMigrations } from '@zed/db';
 import { db } from '../../shared/db';
 import { logger as appLogger } from '../../lib/logger';
 import { driveSunaMigration, LEASE_TTL_MS } from './suna-migration-runner';
 
 type Timer = ReturnType<typeof setInterval>;
-const g = globalThis as unknown as { __kortixSunaMigrationTimer?: Timer | null };
+const g = globalThis as unknown as { __zedSunaMigrationTimer?: Timer | null };
 let timer: Timer | null = null;
 let running = false;
 
 function intervalMs(): number {
-  const raw = Number(process.env.KORTIX_SUNA_MIGRATION_WORKER_INTERVAL_MS);
+  const raw = Number(process.env.ZED_SUNA_MIGRATION_WORKER_INTERVAL_MS);
   return Number.isFinite(raw) && raw > 0 ? raw : 60_000;
 }
 function batchSize(): number {
-  const raw = Number(process.env.KORTIX_SUNA_MIGRATION_WORKER_BATCH);
+  const raw = Number(process.env.ZED_SUNA_MIGRATION_WORKER_BATCH);
   return Number.isFinite(raw) && raw > 0 ? raw : 3;
 }
 
@@ -53,15 +53,15 @@ async function tick(): Promise<void> {
 }
 
 export function startSunaMigrationWorker(): void {
-  if (process.env.KORTIX_SUNA_MIGRATION_WORKER_ENABLED === 'false') return;
-  if (g.__kortixSunaMigrationTimer) clearInterval(g.__kortixSunaMigrationTimer);
+  if (process.env.ZED_SUNA_MIGRATION_WORKER_ENABLED === 'false') return;
+  if (g.__zedSunaMigrationTimer) clearInterval(g.__zedSunaMigrationTimer);
   timer = setInterval(() => {
     tick().catch((err) => appLogger.error('[suna-migration-worker] tick failed', { error: err instanceof Error ? err.message : String(err) }));
   }, intervalMs());
-  g.__kortixSunaMigrationTimer = timer;
+  g.__zedSunaMigrationTimer = timer;
 }
 
 export function stopSunaMigrationWorker(): void {
   if (timer) { clearInterval(timer); timer = null; }
-  if (g.__kortixSunaMigrationTimer) { clearInterval(g.__kortixSunaMigrationTimer); g.__kortixSunaMigrationTimer = null; }
+  if (g.__zedSunaMigrationTimer) { clearInterval(g.__zedSunaMigrationTimer); g.__zedSunaMigrationTimer = null; }
 }

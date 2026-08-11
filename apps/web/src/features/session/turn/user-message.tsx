@@ -29,8 +29,8 @@ import { detectCommandFromText } from '@/features/session/detect-command';
 import { useSandboxImageSrc } from '@/features/session/sandbox-image';
 import { cn } from '@/lib/utils';
 import { getFileIcon, getFilename, getFileType } from '@/lib/utils/file-utils';
-import { stripKortixSystemTags } from '@/lib/utils/kortix-system-tags';
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { stripZedSystemTags } from '@/lib/utils/zed-system-tags';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import { openTabAndNavigate } from '@/stores/tab-store';
 import {
   type AgentPart,
@@ -566,7 +566,7 @@ export function MessageAttachments({
   /** The whole message is still being sent, so every tile is still uploading. */
   pending?: boolean;
 }) {
-  const openFileInComputer = useKortixComputerStore((s) => s.openFileInComputer);
+  const openFileInComputer = useZedComputerStore((s) => s.openFileInComputer);
   const [expanded, setExpanded] = useState(false);
 
   const { visible, hidden } = planAttachmentGrid(attachments, expanded);
@@ -710,7 +710,7 @@ export function UserMessage({
   onRewind?: (messageId: string, text: string) => void;
   rewindDisabled?: boolean;
 }) {
-  const openFileInComputer = useKortixComputerStore((s) => s.openFileInComputer);
+  const openFileInComputer = useZedComputerStore((s) => s.openFileInComputer);
   const { attachments, stickyParts } = useMemo(
     () => splitUserParts(message.parts),
     [message.parts],
@@ -802,7 +802,7 @@ export function UserMessage({
     const withoutFiles = parseFileMentionReferences(withoutProjects).cleanText;
     const withoutAgents = parseAgentMentionReferences(withoutFiles).cleanText;
     const withoutSessions = parseSessionReferences(withoutAgents).cleanText;
-    return stripKortixSystemTags(withoutSessions).trim();
+    return stripZedSystemTags(withoutSessions).trim();
   }, [copyText, effectiveCommandInfo]);
 
   const actions =

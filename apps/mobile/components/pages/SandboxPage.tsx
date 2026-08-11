@@ -97,7 +97,7 @@ const STATUS_STYLE: Record<ProjectSnapshotStatus, { label: string; color: string
 
 const CATEGORY_LABEL: Record<SnapshotErrorCategory, string> = {
   dockerfile: 'Dockerfile build failed',
-  layer: 'Kortix runtime layer failed',
+  layer: 'Zed runtime layer failed',
   git: 'Repository access failed',
   tunnel: 'Sandbox callback unreachable',
   provider: 'Sandbox provider error',
@@ -206,7 +206,7 @@ function TemplateRow({
     : template.has_image
       ? `Image: ${template.image}`
       : `Dockerfile: ${template.dockerfile_path}`;
-  const sourceTag = template.source === 'platform' ? 'platform' : template.source === 'ui' ? 'UI' : 'kortix.yaml';
+  const sourceTag = template.source === 'platform' ? 'platform' : template.source === 'ui' ? 'UI' : 'zed.yaml';
   const editable = canManage && !!template.template_id && !template.is_default;
   const buildable = canManage && !!template.template_id;
 
@@ -400,7 +400,7 @@ function SandboxTemplateSheet({
 
       <BottomSheetScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <Text style={{ fontSize: 12.5, color: muted, marginBottom: 16 }}>
-          Pick a public Docker image or a Dockerfile in your repo. The Kortix runtime layer is added automatically.
+          Pick a public Docker image or a Dockerfile in your repo. The Zed runtime layer is added automatically.
         </Text>
 
         <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -440,7 +440,7 @@ function SandboxTemplateSheet({
           ) : (
             <>
               <Text style={{ fontSize: 11.5, fontFamily: 'Roobert-Medium', color: muted, marginBottom: 6 }}>Dockerfile path</Text>
-              <BottomSheetTextInput value={dockerfilePath} onChangeText={setDockerfilePath} placeholder=".kortix/Dockerfile.ml" placeholderTextColor={muted} autoCapitalize="none" autoCorrect={false} style={[input, { fontFamily: MONO }]} />
+              <BottomSheetTextInput value={dockerfilePath} onChangeText={setDockerfilePath} placeholder=".zed/Dockerfile.ml" placeholderTextColor={muted} autoCapitalize="none" autoCorrect={false} style={[input, { fontFamily: MONO }]} />
               <Text style={{ fontSize: 11.5, color: muted, marginTop: 6 }}>Relative to the repository root.</Text>
             </>
           )}
@@ -460,7 +460,7 @@ function SandboxTemplateSheet({
         <BottomSheetTextInput
           value={entrypoint}
           onChangeText={setEntrypoint}
-          placeholder="Leave blank to use the Kortix default (recommended)."
+          placeholder="Leave blank to use the Zed default (recommended)."
           placeholderTextColor={muted}
           multiline
           autoCapitalize="none"
@@ -598,7 +598,7 @@ export function SandboxPage({
             )}
           </View>
           <Text style={{ fontSize: 12.5, lineHeight: 18, color: muted, marginBottom: 18 }}>
-            Sessions boot from a sandbox template. The platform default is shared by every project and clones your repo into /workspace at boot. Add your own here or in kortix.yaml.
+            Sessions boot from a sandbox template. The platform default is shared by every project and clones your repo into /workspace at boot. Add your own here or in zed.yaml.
           </Text>
 
           {isLoading ? (

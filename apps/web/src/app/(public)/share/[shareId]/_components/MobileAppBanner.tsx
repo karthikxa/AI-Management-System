@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { XIcon as X } from '@phosphor-icons/react';
@@ -63,14 +63,14 @@ export function MobileAppBanner({ shareId }: MobileAppBannerProps) {
   };
 
   const handleOpenInApp = () => {
-    const appUrl = `kortix://share/${shareId}`;
+    const appUrl = `zed://share/${shareId}`;
     window.location.href = appUrl;
 
     setTimeout(() => {
       if (platform === 'ios') {
-        window.location.href = 'https://apps.apple.com/ie/app/kortix/id6754448524';
+        window.location.href = 'https://apps.apple.com/ie/app/zed/id6754448524';
       } else if (platform === 'android') {
-        window.location.href = 'https://play.google.com/store/apps/details?id=com.kortix.app';
+        window.location.href = 'https://play.google.com/store/apps/details?id=com.zed.app';
       }
     }, 2000);
   };
@@ -88,12 +88,12 @@ export function MobileAppBanner({ shareId }: MobileAppBannerProps) {
         <div className="flex items-center gap-3">
           {/* App icon */}
           <div className="bg-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl">
-            <KortixLogo size={20} className="invert dark:invert-0" />
+            <ZedLogo size={20} className="invert dark:invert-0" />
           </div>
 
           {/* Content */}
           <div className="min-w-0 flex-1">
-            <h3 className="text-foreground text-sm leading-tight font-semibold">Kortix</h3>
+            <h3 className="text-foreground text-sm leading-tight font-semibold">Zed</h3>
             <p className="text-muted-foreground text-xs leading-tight">
               {tHardcodedUi.raw(
                 'appShareShareidComponentsMobileappbanner.line94JsxTextOpenThisContentInApp',

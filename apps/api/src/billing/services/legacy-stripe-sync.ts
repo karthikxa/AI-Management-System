@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { creditAccounts } from '@kortix/db';
+import { creditAccounts } from '@zed/db';
 import { db } from '../../shared/db';
 
 export type LegacyStripeSyncResult = {

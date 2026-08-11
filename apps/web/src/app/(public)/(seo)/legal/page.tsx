@@ -96,7 +96,7 @@ function LegalContent() {
                       <div className="text-muted-foreground mb-6 space-y-2">
                         <p>
                           <strong>
-                            {tHardcodedUi.raw('appLegalPage.line101JsxTextKortixAiCorp')}
+                            {tHardcodedUi.raw('appLegalPage.line101JsxTextZedAiCorp')}
                           </strong>
                         </p>
                         <p>
@@ -134,8 +134,8 @@ function LegalContent() {
                       <div className="text-muted-foreground mb-6">
                         <p>
                           Email:{' '}
-                          <a href="mailto:info@kortix.com" className="text-primary hover:underline">
-                            {tHardcodedUi.raw('appLegalPage.line130JsxTextInfoKortixCom')}
+                          <a href="mailto:info@zed.com" className="text-primary hover:underline">
+                            {tHardcodedUi.raw('appLegalPage.line130JsxTextInfoZedCom')}
                           </a>
                         </p>
                       </div>
@@ -145,7 +145,7 @@ function LegalContent() {
                       </h3>
                       <p className="text-muted-foreground mb-6">
                         {tHardcodedUi.raw(
-                          'appLegalPage.line139JsxTextKortixAiCorpIsResponsibleForTheContent',
+                          'appLegalPage.line139JsxTextZedAiCorpIsResponsibleForTheContent',
                         )}
                       </p>
 
@@ -175,13 +175,13 @@ function LegalContent() {
 
                       <p className="text-muted-foreground mb-6 text-balance">
                         {tHardcodedUi.raw(
-                          'appLegalPage.line1551JsxTextReferencesToOurServicesAtKortixInThis',
+                          'appLegalPage.line1551JsxTextReferencesToOurServicesAtZedInThis',
                         )}
                       </p>
 
                       <p className="text-muted-foreground mb-6 text-balance">
                         {tHardcodedUi.raw(
-                          'appLegalPage.line1560JsxTextKortixDoesNotCollectBiometricOrIdentifyingInformation',
+                          'appLegalPage.line1560JsxTextZedDoesNotCollectBiometricOrIdentifyingInformation',
                         )}
                       </p>
 
@@ -367,8 +367,8 @@ function LegalContent() {
                         {tHardcodedUi.raw(
                           'appLegalPage.line1742JsxTextYouCanGetInTouchByEmailingUs',
                         )}{' '}
-                        <a href="mailto:info@kortix.com" className="text-primary hover:underline">
-                          {tHardcodedUi.raw('appLegalPage.line1747JsxTextInfoKortixCom')}
+                        <a href="mailto:info@zed.com" className="text-primary hover:underline">
+                          {tHardcodedUi.raw('appLegalPage.line1747JsxTextInfoZedCom')}
                         </a>
                         .
                       </p>

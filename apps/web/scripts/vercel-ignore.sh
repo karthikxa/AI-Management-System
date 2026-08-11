@@ -22,7 +22,7 @@
 # of the frontend. A real promote changes FE source (apps/web, packages,
 # lockfile, …) so it still builds normally.
 #
-# This is a backend-heavy monorepo: apps/web depends ONLY on packages/@kortix/*
+# This is a backend-heavy monorepo: apps/web depends ONLY on packages/@zed/*
 # and never imports from any sibling app. So a push that exclusively touches
 # other apps (api, cli, gateway, …), infra/, tests/, or docs/ CANNOT change the
 # FE build output — skipping those is safe and is where most build spend goes.
@@ -44,9 +44,9 @@ changed="$(git diff --name-only HEAD^ HEAD 2>/dev/null)" || exit 1
 # ── Stage 1: FE-relevance ────────────────────────────────────────────────────
 # Paths that provably cannot affect the apps/web build output. If EVERY changed
 # path matches, skip on any branch. Sibling apps are safe because apps/web imports
-# nothing from them (only packages/@kortix/*). Never add packages/ or root config
+# nothing from them (only packages/@zed/*). Never add packages/ or root config
 # here — those (and any UNKNOWN new top-level path) must fall through to a build.
-SAFE='^(infra/|tests/|docs/|apps/(api|cli|desktop-electron|kortix-sandbox-agent-server|llm-gateway|mobile|sandbox|whitelabel-demo)/)'
+SAFE='^(infra/|tests/|docs/|apps/(api|cli|desktop-electron|zed-sandbox-agent-server|llm-gateway|mobile|sandbox|whitelabel-demo)/)'
 if ! printf '%s\n' "$changed" | grep -qvE "$SAFE"; then
   echo "vercel-ignore: only non-FE paths (other apps / infra / tests / docs) changed since HEAD^ — skipping build."
   exit 0
@@ -72,7 +72,7 @@ case "$REF" in
 esac
 
 PR="${VERCEL_GIT_PULL_REQUEST_ID:-}"
-OWNER="${VERCEL_GIT_REPO_OWNER:-kortix-ai}"
+OWNER="${VERCEL_GIT_REPO_OWNER:-zed-ai}"
 SLUG="${VERCEL_GIT_REPO_SLUG:-suna}"
 if [ -n "$PR" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
   labels="$(curl -fsSL \

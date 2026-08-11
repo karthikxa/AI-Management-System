@@ -89,17 +89,17 @@ ranked AS (
       PARTITION BY p."project_id", p."name"
       ORDER BY p."updated_at" DESC, p."secret_id"
     ) AS rn
-  FROM "kortix"."project_secrets" p
+  FROM "zed"."project_secrets" p
   WHERE p."owner_user_id" IS NOT NULL
     AND p."name" IN (SELECT name FROM provider_env_vars)
     AND NOT EXISTS (
-      SELECT 1 FROM "kortix"."project_secrets" s
+      SELECT 1 FROM "zed"."project_secrets" s
       WHERE s."project_id" = p."project_id"
         AND s."name" = p."name"
         AND s."owner_user_id" IS NULL
     )
 )
-UPDATE "kortix"."project_secrets" t
+UPDATE "zed"."project_secrets" t
 SET "owner_user_id" = NULL, "active" = true, "updated_at" = now()
 FROM ranked r
 WHERE t."secret_id" = r."secret_id" AND r."rn" = 1;
@@ -107,7 +107,7 @@ WHERE t."secret_id" = r."secret_id" AND r."rn" = 1;
 -- Drop every remaining private provider-secret row (promotion losers, or
 -- overrides that only shadowed an existing shared row for their own owner).
 -- Provider credentials have no "only me" option -- ever.
-DELETE FROM "kortix"."project_secrets"
+DELETE FROM "zed"."project_secrets"
 WHERE "owner_user_id" IS NOT NULL
   AND "name" IN (
     '302AI_API_KEY', 'ABACUS_API_KEY', 'ABLIT_KEY', 'AICORE_SERVICE_KEY',

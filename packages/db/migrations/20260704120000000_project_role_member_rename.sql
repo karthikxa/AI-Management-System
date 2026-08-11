@@ -15,11 +15,11 @@
 -- Scope: the `project_role` enum ONLY. The unrelated `account_role.member` and
 -- `platform_role.user` values are a different axis and untouched.
 
-ALTER TYPE "kortix"."project_role" RENAME VALUE 'user' TO 'member';
+ALTER TYPE "zed"."project_role" RENAME VALUE 'user' TO 'member';
 
-ALTER TABLE "kortix"."project_members"
+ALTER TABLE "zed"."project_members"
   ALTER COLUMN "project_role" SET DEFAULT 'member';
-ALTER TABLE "kortix"."project_group_grants"
+ALTER TABLE "zed"."project_group_grants"
   ALTER COLUMN "role" SET DEFAULT 'member';
 
 -- bootstrap_grants (account_invitations jsonb) may still carry 'user'/'viewer'
@@ -32,9 +32,9 @@ ALTER TABLE "kortix"."project_group_grants"
 -- default must reference a label that exists, so the rename comes first). Rows
 -- that were originally `user` are indistinguishable from any set to `member`
 -- after the fact, but the label rename round-trips cleanly either way.
-ALTER TYPE "kortix"."project_role" RENAME VALUE 'member' TO 'user';
+ALTER TYPE "zed"."project_role" RENAME VALUE 'member' TO 'user';
 
-ALTER TABLE "kortix"."project_members"
+ALTER TABLE "zed"."project_members"
   ALTER COLUMN "project_role" SET DEFAULT 'user';
-ALTER TABLE "kortix"."project_group_grants"
+ALTER TABLE "zed"."project_group_grants"
   ALTER COLUMN "role" SET DEFAULT 'user';

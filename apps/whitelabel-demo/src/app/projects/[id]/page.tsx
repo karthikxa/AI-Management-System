@@ -18,16 +18,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { invalidateSessions } from '@/lib/query-keys';
-import { generateSessionId, type SandboxTemplate } from '@kortix/sdk';
+import { generateSessionId, type SandboxTemplate } from '@zed/sdk';
 import {
   type ModelKey,
   useProjectConfig,
   useProjectModels,
   useVisibleAgents,
   writeStartStash,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 import { ConnectRequiredCard } from '@/components/connect-required-card';
 import {
   type ConnectorRequirement,
@@ -103,7 +103,7 @@ function ProjectHome() {
   const config = useProjectConfig(projectId);
   const templates = useQuery({
     queryKey: ['project-sandbox-templates', projectId],
-    queryFn: () => kortix.projects.sandboxTemplates(projectId),
+    queryFn: () => zed.projects.sandboxTemplates(projectId),
     retry: false,
   });
   // `.sandboxTemplates()` returns `{ items: SandboxTemplate[] }` — this used to
@@ -117,7 +117,7 @@ function ProjectHome() {
       // Template + agent + bindings are create-time; the prompt + model + agent
       // flow into the first message (stashed) so the chosen model applies at
       // start. Unset overrides are omitted by the builder rather than guessed.
-      await kortix.project(projectId).sessions.create(
+      await zed.project(projectId).sessions.create(
         buildSessionCreateInput(
           { ...NO_OVERRIDES, agent, bindings },
           {
@@ -128,7 +128,7 @@ function ProjectHome() {
         ),
       );
       writeStartStash(sessionId, { prompt: text, model, agent });
-      kortix
+      zed
         .project(projectId)
         .onboardingComplete(true)
         .catch(() => {});
@@ -188,7 +188,7 @@ function ProjectHome() {
           </div>
         )}
 
-        {/* Kortix-as-a-Backend: the session declares a connector with no usable
+        {/* Zed-as-a-Backend: the session declares a connector with no usable
             connection. A call to action, not a failure — and the card is honest
             about which remedies actually exist for THIS connector, rather than
             offering everyone a button that only works for shared ones. */}

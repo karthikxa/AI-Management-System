@@ -3,14 +3,14 @@ import { parseTeamsCommand, stripTeamsMentions } from '../channels/teams/util';
 
 describe('stripTeamsMentions', () => {
   test('removes <at> mentions and collapses whitespace', () => {
-    expect(stripTeamsMentions('<at>Kortix</at> do the thing')).toBe('do the thing');
-    expect(stripTeamsMentions('<at id="1">Kortix Bot</at>&nbsp;hello')).toBe('hello');
+    expect(stripTeamsMentions('<at>Zed</at> do the thing')).toBe('do the thing');
+    expect(stripTeamsMentions('<at id="1">Zed Bot</at>&nbsp;hello')).toBe('hello');
   });
 });
 
 describe('parseTeamsCommand', () => {
   test('parses a slash command after a mention', () => {
-    expect(parseTeamsCommand('<at>Kortix</at> /help')).toEqual({ verb: 'help', arg: '' });
+    expect(parseTeamsCommand('<at>Zed</at> /help')).toEqual({ verb: 'help', arg: '' });
     expect(parseTeamsCommand('/model anthropic/claude-sonnet-4.6')).toEqual({
       verb: 'model',
       arg: 'anthropic/claude-sonnet-4.6',

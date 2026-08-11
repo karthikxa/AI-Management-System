@@ -42,14 +42,14 @@ import { withTimeout, configuredTimeoutMs } from '../../shared/with-timeout';
 // Every method below that awaits the SDK directly is bounded with
 // `withTimeout` so a hung upstream fails fast and observably instead of
 // hanging for up to a day.
-const PROVIDER_CALL_TIMEOUT_MS = configuredTimeoutMs('KORTIX_DAYTONA_CALL_TIMEOUT_MS', 20_000, 1_000);
+const PROVIDER_CALL_TIMEOUT_MS = configuredTimeoutMs('ZED_DAYTONA_CALL_TIMEOUT_MS', 20_000, 1_000);
 // listManagedRunningSandboxes() pages through the org's whole managed fleet —
 // a large fleet can legitimately take longer than one single-call budget to
 // fully list, and PROVIDER_CALL_TIMEOUT_MS would then look identical to a
 // genuine hang (silently starving the orphan-box reaper). Give it its own,
 // longer budget instead of reusing the single-call one.
 const LIST_OPERATION_TIMEOUT_MS = configuredTimeoutMs(
-  'KORTIX_DAYTONA_LIST_TIMEOUT_MS',
+  'ZED_DAYTONA_LIST_TIMEOUT_MS',
   90_000,
   PROVIDER_CALL_TIMEOUT_MS,
 );
@@ -76,17 +76,17 @@ function reportIfDiskQuotaError(err: unknown, reason: string): never {
 // own per-project snapshot, resolved by the snapshot builder. Callers
 // must pass `opts.snapshot`; there is no shared platform-wide image.)
 
-// Labels stamped on every Kortix-managed Daytona box at create time. The
+// Labels stamped on every Zed-managed Daytona box at create time. The
 // Daytona org is SHARED across environments (prod / dev / laptops), so the
 // orphan-box reaper MUST scope its sweep to this deployment's own boxes —
-// otherwise one env would stop another env's sandboxes. `kortix.managed` marks
-// "we created it"; `kortix.env` pins the owning environment. The reaper lists
+// otherwise one env would stop another env's sandboxes. `zed.managed` marks
+// "we created it"; `zed.env` pins the owning environment. The reaper lists
 // by exactly these labels (see listManagedRunningSandboxes).
 function managedSandboxLabels(workloadType?: 'session' | 'app'): Record<string, string> {
   return {
-    'kortix.managed': 'true',
-    'kortix.env': config.INTERNAL_KORTIX_ENV,
-    ...(workloadType === 'app' ? { 'kortix.workload': workloadType } : {}),
+    'zed.managed': 'true',
+    'zed.env': config.INTERNAL_ZED_ENV,
+    ...(workloadType === 'app' ? { 'zed.workload': workloadType } : {}),
   };
 }
 import type {
@@ -159,8 +159,8 @@ export function daytonaLifecycle(autoStopOverride?: number): {
   const stop = autoStopOverride ?? providerAutoStopBackstopMinutes();
   return {
     autoStopInterval: Math.max(1, stop),
-    autoArchiveInterval: config.KORTIX_SANDBOX_AUTOARCHIVE_MINUTES,
-    autoDeleteInterval: config.KORTIX_SANDBOX_AUTODELETE_MINUTES,
+    autoArchiveInterval: config.ZED_SANDBOX_AUTOARCHIVE_MINUTES,
+    autoDeleteInterval: config.ZED_SANDBOX_AUTODELETE_MINUTES,
   };
 }
 
@@ -180,30 +180,30 @@ export class DaytonaProvider implements SandboxProvider {
 
   async create(opts: CreateSandboxOpts): Promise<ProvisionResult> {
     const workloadType = sandboxWorkloadType(opts);
-    // KORTIX_URL is the public API base URL the sandbox calls back on. Strip
+    // ZED_URL is the public API base URL the sandbox calls back on. Strip
     // any route suffix so older env files that included /v1 or /v1/router still
     // resolve to the bare origin.
-    const sandboxApiBase = config.KORTIX_URL
+    const sandboxApiBase = config.ZED_URL
       .replace(/\/+$/, '')
       .replace(/\/v1\/router$/, '')
       .replace(/\/v1$/, '');
 
     const createTimeoutSeconds = Math.max(
       1,
-      Number.parseInt(process.env.KORTIX_DAYTONA_CREATE_TIMEOUT_SECONDS || '30', 10) || 30,
+      Number.parseInt(process.env.ZED_DAYTONA_CREATE_TIMEOUT_SECONDS || '30', 10) || 30,
     );
 
     const envVars: Record<string, string> = {
       // Guarantee the sandbox contract even if a caller forgets: the runtime only
-      // needs KORTIX_API_URL + KORTIX_TOKEN; tools derive every router endpoint
-      // from KORTIX_API_URL and auth with KORTIX_TOKEN.
-      KORTIX_API_URL: `${sandboxApiBase}/v1`,
+      // needs ZED_API_URL + ZED_TOKEN; tools derive every router endpoint
+      // from ZED_API_URL and auth with ZED_TOKEN.
+      ZED_API_URL: `${sandboxApiBase}/v1`,
       // Frontend base for user-facing dashboard links (never the API host).
       // Guaranteed here too so it is present even if a caller's env map omits it.
-      KORTIX_FRONTEND_URL: sandboxFrontendBaseUrl(),
-      ...(workloadType === 'app' ? { KORTIX_WORKLOAD_TYPE: workloadType } : {}),
-      // Session identity, git context, KORTIX_TOKEN, and the project's own
-      // secrets (incl. provider keys set via `kortix providers`, picked up by
+      ZED_FRONTEND_URL: sandboxFrontendBaseUrl(),
+      ...(workloadType === 'app' ? { ZED_WORKLOAD_TYPE: workloadType } : {}),
+      // Session identity, git context, ZED_TOKEN, and the project's own
+      // secrets (incl. provider keys set via `zed providers`, picked up by
       // opencode at boot) — see buildSessionSandboxEnvVars() and
       // provisionSessionSandbox().
       ...opts.envVars,
@@ -211,7 +211,7 @@ export class DaytonaProvider implements SandboxProvider {
     assertWorkloadCredential(this.name, opts, envVars);
 
     // Every Daytona sandbox boots from its project's own per-project
-    // snapshot (`kortix-snap-…`), resolved by the snapshot builder before
+    // snapshot (`zed-snap-…`), resolved by the snapshot builder before
     // we get here (see platform/services/session-sandbox.ts +
     // snapshots/builder.ts). There is intentionally no shared platform
     // fallback: a missing snapshot means the project's first build
@@ -236,7 +236,7 @@ export class DaytonaProvider implements SandboxProvider {
         // a large auto-archive (default 3 days) keeps a hibernated box in the
         // fast-resume "stopped" tier, and a finite auto-delete reclaims it if the
         // API/tunnel that created it dies. Intervals are env-tunable
-        // (KORTIX_SANDBOX_AUTO*).
+        // (ZED_SANDBOX_AUTO*).
         ...daytonaLifecycle(opts.autoStopInterval),
         labels: managedSandboxLabels(workloadType),
         public: false,
@@ -300,7 +300,7 @@ export class DaytonaProvider implements SandboxProvider {
       PROVIDER_CALL_TIMEOUT_MS,
       `Daytona get(${externalId}) for App bootstrap`,
     );
-    const command = '/kortix/bin/kortix-appd --daemon';
+    const command = '/zed/bin/zed-appd --daemon';
     const result = await withTimeout(
       sandbox.process.executeCommand(command, undefined, undefined, 15),
       PROVIDER_CALL_TIMEOUT_MS,

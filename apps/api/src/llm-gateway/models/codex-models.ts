@@ -9,7 +9,7 @@ const DEFAULT_CODEX_MODEL_IDS = [
 ];
 
 export function codexModelIds(): string[] {
-  const raw = process.env.KORTIX_CODEX_MODEL_IDS;
+  const raw = process.env.ZED_CODEX_MODEL_IDS;
   if (!raw) return DEFAULT_CODEX_MODEL_IDS;
   const ids = raw
     .split(',')

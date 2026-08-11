@@ -1,6 +1,6 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
 
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import {
   type CreateProjectRepoInput,
   FEATURE_FLAG_KEYS,
@@ -8,7 +8,7 @@ import {
   type ExperimentalFeatureView,
   type FeatureFlagKey,
   type FeatureFlagView,
-  type KortixProject,
+  type ZedProject,
   type ProjectInput,
   type ProvisionProjectInput,
   createProjectRepo,
@@ -39,10 +39,10 @@ test('GitHub project creation accepts a marketplace project template', () => {
   const createInput: CreateProjectRepoInput = {
     account_id: 'acc-1',
     name: 'support-agent',
-    source_item_id: 'kortix-projects:support-agent-kit',
+    source_item_id: 'zed-projects:support-agent-kit',
   };
 
-  expect(createInput.source_item_id).toBe('kortix-projects:support-agent-kit');
+  expect(createInput.source_item_id).toBe('zed-projects:support-agent-kit');
 });
 
 test('CreateProjectRepoInput accepts an optional icon', () => {
@@ -73,7 +73,7 @@ test('createProjectRepo sends icon_glyph on the wire, same as provision and link
   // ("icon_glyph is sent on provision", above) and `linkRepository` gets
   // (github.test.ts, "sends the icon_glyph in the request body when linking a
   // repository").
-  configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
 
   let sentBody: unknown;
   globalThis.fetch = mock(async (_input: RequestInfo | URL, init?: RequestInit) => {
@@ -106,7 +106,7 @@ test('returns ok:true with the parsed project on a real 200 body', async () => {
 });
 
 test('provisionProject applies the caller timeout to slow managed-git provisioning', async () => {
-  configureKortix({
+  configureZed({
     backendUrl: 'http://backend.test/v1',
     getToken: async () => 'tok',
   });
@@ -192,7 +192,7 @@ test('returns ok:false without hitting the network when credentials are missing'
 });
 
 test('normalizes the provider-neutral default_agent field from legacy project config', async () => {
-  configureKortix({
+  configureZed({
     backendUrl: 'http://backend.test/v1',
     getToken: async () => 'tok',
   });
@@ -201,7 +201,7 @@ test('normalizes the provider-neutral default_agent field from legacy project co
       JSON.stringify({
         project: { project_id: 'proj-1' },
         config: {
-          open_code_default_agent: 'kortix',
+          open_code_default_agent: 'zed',
           agents: [],
           commands: [],
           skills: [],
@@ -218,16 +218,16 @@ test('normalizes the provider-neutral default_agent field from legacy project co
 
   const detail = await getProjectDetail('proj-1');
 
-  expect(detail.config.default_agent).toBe('kortix');
-  expect(detail.config.open_code_default_agent).toBe('kortix');
+  expect(detail.config.default_agent).toBe('zed');
+  expect(detail.config.open_code_default_agent).toBe('zed');
 });
 
 // getProjectDetail goes through backendApi/unwrap — the same parsing path
-// createProject, getProject, and updateProject use to return a KortixProject.
+// createProject, getProject, and updateProject use to return a ZedProject.
 // provisionProjectWithToken (covered above) bypasses backendApi entirely with
 // its own explicit-token fetch, so it does not exercise this path.
 test('a project response carries the icon through the backendApi/unwrap parsing path', async () => {
-  configureKortix({
+  configureZed({
     backendUrl: 'http://backend.test/v1',
     getToken: async () => 'tok',
   });
@@ -257,7 +257,7 @@ test('a project response carries the icon through the backendApi/unwrap parsing 
 });
 
 test('provisionProject sends the icon in the request body', async () => {
-  configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
 
   let sentBody: unknown;
   globalThis.fetch = mock(async (_input: RequestInfo | URL, init?: RequestInit) => {
@@ -273,7 +273,7 @@ test('provisionProject sends the icon in the request body', async () => {
   expect(sentBody).toMatchObject({ icon: '🚀' });
 });
 
-test('a project response carries the icon through to KortixProject', async () => {
+test('a project response carries the icon through to ZedProject', async () => {
   nextResponse = () =>
     new Response(JSON.stringify({ project_id: 'proj-1', name: 'Iconic', icon: '🚀' }), {
       status: 200,
@@ -304,7 +304,7 @@ test('a project response carries the icon through to KortixProject', async () =>
 
 /** Runs `updateProject` against a mocked fetch and returns what it sent. */
 async function captureUpdate(input: Partial<ProjectInput>) {
-  configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
 
   let request: { url: string; method?: string; body: string } | undefined;
   globalThis.fetch = mock(async (target: RequestInfo | URL, init?: RequestInit) => {
@@ -370,21 +370,21 @@ test('updateProject can send a name and an icon in one body', async () => {
  * Compile-time pin on the RESPONSE half of the clear, checked by `tsc --noEmit`
  * and not by `bun test`. Assigning INTO the member is what pins it: reading it
  * out into a `string | null | undefined` compiles either way, so only this
- * direction fails if `KortixProject['icon']` is ever narrowed to `string`.
+ * direction fails if `ZedProject['icon']` is ever narrowed to `string`.
  *
  * A clear is only useful if the caller can SEE that it happened — the project
  * card re-renders its lettered fallback from exactly this field. Found while
- * mutation-testing B44: narrowing `KortixProject.icon` to `string` left every
+ * mutation-testing B44: narrowing `ZedProject.icon` to `string` left every
  * runtime assertion here green, because `expect(x).toBeNull()` accepts any type.
  */
-const projectIconAcceptsNull: KortixProject['icon'] = null;
+const projectIconAcceptsNull: ZedProject['icon'] = null;
 
 test('a project response with a null icon reaches the caller as null', async () => {
   expect(projectIconAcceptsNull).toBeNull();
 
   // The clear round-trips: the row this PATCH returns has no icon, and the
   // caller re-renders the lettered fallback from exactly this field.
-  configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
   globalThis.fetch = mock(
     async () =>
       new Response(JSON.stringify({ project_id: 'proj-1', name: 'Iconic', icon: null }), {
@@ -407,7 +407,7 @@ test('a project response with a null icon reaches the caller as null', async () 
 // concern to prove, only to type correctly).
 
 test('icon_glyph round-trips on a project read', async () => {
-  configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
   nextResponse = () =>
     new Response(
       JSON.stringify({
@@ -424,7 +424,7 @@ test('icon_glyph round-trips on a project read', async () => {
 });
 
 test('icon_glyph is sent on provision', async () => {
-  configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
 
   let sentBody: unknown;
   globalThis.fetch = mock(async (_input: RequestInfo | URL, init?: RequestInit) => {
@@ -449,7 +449,7 @@ test('idempotency_key is sent on provision', async () => {
   // is how a caller makes a retry (second tab, reload, lost response) return
   // the project the first call already created instead of a duplicate — so it
   // has to survive `provisionProject`'s body construction, not just typecheck.
-  configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
 
   let sentBody: unknown;
   globalThis.fetch = mock(async (_input: RequestInfo | URL, init?: RequestInit) => {
@@ -518,16 +518,16 @@ test('a name-only update sends NO icon_glyph key, so the stored glyph survives',
 /**
  * Compile-time pin on the RESPONSE half of the clear — same rationale as
  * `projectIconAcceptsNull` above, found necessary during B44's mutation pass:
- * narrowing `KortixProject.icon` to `string` left every runtime assertion
+ * narrowing `ZedProject.icon` to `string` left every runtime assertion
  * green because `expect(x).toBeNull()` accepts any type. Assigning INTO the
  * member is what pins it.
  */
-const projectIconGlyphAcceptsNull: KortixProject['icon_glyph'] = null;
+const projectIconGlyphAcceptsNull: ZedProject['icon_glyph'] = null;
 
 test('a project response with a null icon_glyph reaches the caller as null', async () => {
   expect(projectIconGlyphAcceptsNull).toBeNull();
 
-  configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
   globalThis.fetch = mock(
     async () =>
       new Response(JSON.stringify({ project_id: 'proj-1', name: 'Glyphic', icon_glyph: null }), {
@@ -596,7 +596,7 @@ test('ExperimentalFeatureKey and ExperimentalFeatureView stay as aliases', () =>
 async function captureFeatureCall(
   run: () => Promise<unknown>,
 ): Promise<{ url: string; method?: string; body: string; parsed: Record<string, unknown> }> {
-  configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
 
   let request: { url: string; method?: string; body: string } | undefined;
   globalThis.fetch = mock(async (target: RequestInfo | URL, init?: RequestInit) => {

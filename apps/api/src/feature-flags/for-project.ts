@@ -6,7 +6,7 @@
  * Prefer {@link resolveFeatureFlag} directly whenever the project row is
  * already loaded — this helper costs one extra query.
  */
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { db } from '../shared/db';
 import { resolveFeatureFlag, type FeatureFlagKey } from './registry';

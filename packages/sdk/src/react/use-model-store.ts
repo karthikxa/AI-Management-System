@@ -17,7 +17,7 @@ import {
   DEFAULT_MANAGED_MODEL_IDS,
   MANAGED_FLAGSHIP_MODEL_ID,
   defaultEnabledModelIds,
-} from '@kortix/llm-catalog';
+} from '@zed/llm-catalog';
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { safeSetItem } from '../platform/storage/managed-storage';
 import type { FlatModel } from './model-flatten';
@@ -32,8 +32,8 @@ export type ModelKey = {
   providerID: string;
   modelID: string;
   /**
-   * The REAL upstream provider a `kortix`-gateway model resolves against
-   * ('anthropic', 'openai', 'codex', 'kortix', ...) — see `FlatModel.provider`
+   * The REAL upstream provider a `zed`-gateway model resolves against
+   * ('anthropic', 'openai', 'codex', 'zed', ...) — see `FlatModel.provider`
    * (model-flatten.ts). When present, `subProviderOf` uses it directly instead
    * of parsing `modelID`, so connection-gating never depends on the wire id
    * happening to be namespaced `<provider>/<model>`. Optional so every
@@ -45,18 +45,18 @@ export type ModelKey = {
 
 // ── Gateway wire-model ⟷ ModelKey conversion ───────────────────────────────
 // The LLM gateway identifies a model by its "wire model" — what opencode sends
-// as `body.model`. Under the kortix gateway provider that is just the modelID
+// as `body.model`. Under the zed gateway provider that is just the modelID
 // (a bare managed id like 'glm-5.2', or a BYOK 'provider/model'). A direct
 // provider model uses 'provider/model'.
 export function modelKeyToWire(model: ModelKey): string {
-  if (model.providerID === 'kortix' || model.providerID === 'opencode') return model.modelID;
+  if (model.providerID === 'zed' || model.providerID === 'opencode') return model.modelID;
   return `${model.providerID}/${model.modelID}`;
 }
 
 export function wireToModelKey(wire: string): ModelKey {
-  // Managed (bare) and BYOK ('provider/model') both live under the kortix
+  // Managed (bare) and BYOK ('provider/model') both live under the zed
   // provider in the picker namespace, so the modelID carries the full wire id.
-  return { providerID: 'kortix', modelID: wire };
+  return { providerID: 'zed', modelID: wire };
 }
 
 type Visibility = 'show' | 'hide';
@@ -196,23 +196,23 @@ export function setGlobalDefaultModel(model: ModelKey | undefined): void {
 const DEFAULT_VISIBLE_MODEL_IDS = new Set<string>([MANAGED_FLAGSHIP_MODEL_ID]);
 
 /**
- * Provider id of the managed Kortix LLM gateway (see the sandbox's
+ * Provider id of the managed Zed LLM gateway (see the sandbox's
  * `opencode.ts` provider config). It's a small, hand-picked catalog we control,
  * so every model in it is shown by default — `isVisible` short-circuits the
  * date-based "latest" heuristic for this provider. The newest-per-family
  * behaviour is kept for BYO providers, which is what it's for.
  */
-const MANAGED_GATEWAY_PROVIDER_ID = 'kortix';
+const MANAGED_GATEWAY_PROVIDER_ID = 'zed';
 
 const SUBSCRIPTION_PROVIDER_ID = 'codex';
 
 // The gateway bakes its ENTIRE routable catalog (every BYOK provider's models)
 // into opencode so any model is callable the instant its key is connected — no
 // session restart. The picker must therefore NOT show all of it by default: a
-// `kortix` model is on out-of-the-box only when it's a platform-managed default
+// `zed` model is on out-of-the-box only when it's a platform-managed default
 // or its underlying provider is connected (live, from project secrets). The
 // rest stay one search away. Single source for the managed set lives in
-// @kortix/llm-catalog (mirrors the gateway's managed-ids).
+// @zed/llm-catalog (mirrors the gateway's managed-ids).
 const MANAGED_MODEL_IDS = new Set<string>(DEFAULT_MANAGED_MODEL_IDS);
 
 // `explicitProvider` (a model's `FlatModel.provider` / `ModelKey.provider`) is
@@ -230,7 +230,7 @@ function subProviderOf(modelID: string, explicitProvider?: string): string {
  * True when at least one model in `allModels` is actually usable right now —
  * i.e. would work if sent, not merely present in the catalog. The gateway
  * bakes its ENTIRE routable catalog into every project regardless of plan or
- * connected keys (`providers.connected` always includes `kortix`), so raw
+ * connected keys (`providers.connected` always includes `zed`), so raw
  * catalog presence (`providerListHasModels`, `models.length`) is never a
  * reliable "nothing is connected" signal — it's true even for a brand-new,
  * unpaid, no-BYOK account. This mirrors the entitlement half of `isVisible`
@@ -266,7 +266,7 @@ export function isDefaultVisible(model: ModelKey): boolean {
 /**
  * "Latest" models, keyed `providerID:modelID` for the store's lookup maps.
  *
- * The RULE itself lives in `@kortix/llm-catalog` — the gateway enforces the
+ * The RULE itself lives in `@zed/llm-catalog` — the gateway enforces the
  * same default set server-side, and two copies of "newest per family within
  * the window" is exactly how the picker and "Manage models" drifted apart.
  * This is only the key-shape adapter.
@@ -280,7 +280,7 @@ export function computeLatestSet(models: FlatModel[]): Set<string> {
       released: m.releaseDate,
       family: m.family,
       // `provider` is the real upstream under the gateway (every model is
-      // served as `kortix`); for a native provider it IS the providerID.
+      // served as `zed`); for a native provider it IS the providerID.
       provider: m.provider ?? m.providerID,
     })),
   );
@@ -294,7 +294,7 @@ export function useModelStore(
   allModels: FlatModel[],
   opts?: {
     connectedProviderIds?: Set<string>;
-    // Free tier (no active paid sub): hides every Kortix managed model.
+    // Free tier (no active paid sub): hides every Zed managed model.
     freeTier?: boolean;
     /**
      * Canonical universe used to resolve default/heuristic visibility (the
@@ -338,7 +338,7 @@ export function useModelStore(
       const key = `${model.providerID}:${model.modelID}`;
       const state = visibilityMap.get(key);
       if (state === 'hide') return false;
-      // Gateway (kortix) models. The catalog is namespaced `<provider>/<model>`,
+      // Gateway (zed) models. The catalog is namespaced `<provider>/<model>`,
       // and connection is AUTHORITATIVE — it overrides any stale `show` pin, so a
       // disconnected provider's models disappear (even ones you'd used) and a
       // freshly connected provider's models appear, with no per-model pinning.
@@ -373,7 +373,7 @@ export function useModelStore(
       if (state === 'show') return true;
       if (latestSet.has(key)) return true;
       const m = modelByKey.get(key);
-      // No (or invalid) release metadata — the managed Kortix gateway case.
+      // No (or invalid) release metadata — the managed Zed gateway case.
       // Default to showing only the flagship; every other model is opt-in via
       // "Manage models". Providers that DO carry release dates keep the
       // newest-per-family "latest" behaviour handled above.

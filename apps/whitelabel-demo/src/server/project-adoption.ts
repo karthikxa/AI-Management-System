@@ -1,15 +1,15 @@
 /**
  * Importing an EXISTING account project into this demo user.
  *
- * Why this needs a gate at all: in wrapper mode one server-held `KORTIX_API_KEY`
- * can reach every project in the Kortix account. The `/projects` list is
+ * Why this needs a gate at all: in wrapper mode one server-held `ZED_API_KEY`
+ * can reach every project in the Zed account. The `/projects` list is
  * therefore filtered to the projects this end-user provisioned through the demo
  * (`filterProjectsList` → `listOwnedProjects`), because otherwise every signed-in
  * Lumen user would see — and be able to open — every project the operator owns.
  * That filter is the wrapper's tenancy boundary, not an oversight.
  *
  * But it makes the demo useless for testing against a project that already has
- * connectors, secrets and history: those were created in the Kortix dashboard, so
+ * connectors, secrets and history: those were created in the Zed dashboard, so
  * the demo has no record of them and shows an empty list.
  *
  * The deployment-level switch defaults to off.

@@ -12,7 +12,7 @@ import { qk } from './query-keys';
 /**
  * Server-side project config — the single source of truth for everything a user
  * selects AROUND a session: agents, commands, skills, the default agent, and env
- * requirements. Fetched from the Kortix server (project detail), so it works
+ * requirements. Fetched from the Zed server (project detail), so it works
  * before any sandbox runtime exists. This is the canonical home for the
  * "capabilities, not runtime state" split — `useVisibleAgents({ projectId })`
  * and `useProjectModels(projectId)` are the per-surface siblings.

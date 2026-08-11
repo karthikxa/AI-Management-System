@@ -25,8 +25,8 @@ import { useProjectCans } from '@/lib/use-project-can';
 import { cn } from '@/lib/utils';
 import { hasOpenFloatingLayer, hasOpenNestedDialog } from '@/lib/z-stack';
 import { useCustomizeStore } from '@/stores/customize-store';
-import { getProjectDetail } from '@kortix/sdk';
-import { contract, qk, useFeatureFlag } from '@kortix/sdk/react';
+import { getProjectDetail } from '@zed/sdk';
+import { contract, qk, useFeatureFlag } from '@zed/sdk/react';
 import { ArrowLeftIcon as ArrowLeft } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -353,7 +353,7 @@ function RailButton({
           className={cn(
             'shrink-0 rounded-full px-1.5 py-0.5 text-[11px] font-medium tabular-nums',
             !horizontal && 'ml-auto',
-            active ? 'bg-primary-foreground/15' : 'bg-kortix-base/15 text-kortix-base',
+            active ? 'bg-primary-foreground/15' : 'bg-zed-base/15 text-zed-base',
           )}
         >
           {count}
@@ -362,7 +362,7 @@ function RailButton({
         <span
           aria-hidden
           className={cn(
-            'bg-kortix-orange size-1.5 shrink-0 rounded-full',
+            'bg-zed-orange size-1.5 shrink-0 rounded-full',
             !horizontal && 'ml-auto',
           )}
         />

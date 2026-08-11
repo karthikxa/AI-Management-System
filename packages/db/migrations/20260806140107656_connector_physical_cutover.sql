@@ -5,57 +5,57 @@ set lock_timeout = '2s';
 set statement_timeout = '30s';
 
 -- Runtime queries use enum values, not enum type names.
-ALTER TYPE kortix.executor_connector_authorization_strategy RENAME TO connector_authorization_strategy;
-ALTER TYPE kortix.executor_execution_status RENAME TO connector_call_status;
-ALTER TYPE kortix.executor_connection_profile_owner_type RENAME TO connector_connection_owner_type;
-ALTER TYPE kortix.executor_connection_profile_status RENAME TO connector_connection_status;
-ALTER TYPE kortix.executor_credential_mode RENAME TO connector_credential_mode;
-ALTER TYPE kortix.executor_default_mode RENAME TO connector_default_mode;
-ALTER TYPE kortix.executor_policy_action RENAME TO connector_policy_action;
-ALTER TYPE kortix.executor_connector_provider RENAME TO connector_provider;
-ALTER TYPE kortix.executor_risk RENAME TO connector_risk;
-ALTER TYPE kortix.executor_connector_status RENAME TO connector_status;
+ALTER TYPE zed.executor_connector_authorization_strategy RENAME TO connector_authorization_strategy;
+ALTER TYPE zed.executor_execution_status RENAME TO connector_call_status;
+ALTER TYPE zed.executor_connection_profile_owner_type RENAME TO connector_connection_owner_type;
+ALTER TYPE zed.executor_connection_profile_status RENAME TO connector_connection_status;
+ALTER TYPE zed.executor_credential_mode RENAME TO connector_credential_mode;
+ALTER TYPE zed.executor_default_mode RENAME TO connector_default_mode;
+ALTER TYPE zed.executor_policy_action RENAME TO connector_policy_action;
+ALTER TYPE zed.executor_connector_provider RENAME TO connector_provider;
+ALTER TYPE zed.executor_risk RENAME TO connector_risk;
+ALTER TYPE zed.executor_connector_status RENAME TO connector_status;
 
 -- These metadata-only renames preserve all rows, privileges, and dependencies.
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_credentials RENAME TO connection_credentials;
+ALTER TABLE zed.executor_credentials RENAME TO connection_credentials;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_oauth_applications RENAME TO connection_oauth_applications;
+ALTER TABLE zed.executor_oauth_applications RENAME TO connection_oauth_applications;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_oauth_sessions RENAME TO connection_oauth_sessions;
+ALTER TABLE zed.executor_oauth_sessions RENAME TO connection_oauth_sessions;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_connection_policies RENAME TO connection_policies;
+ALTER TABLE zed.executor_connection_policies RENAME TO connection_policies;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_connector_actions RENAME TO connector_actions;
+ALTER TABLE zed.executor_connector_actions RENAME TO connector_actions;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_attachments RENAME TO connector_attachments;
+ALTER TABLE zed.executor_attachments RENAME TO connector_attachments;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_executions RENAME TO connector_calls;
+ALTER TABLE zed.executor_executions RENAME TO connector_calls;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_connection_profiles RENAME TO connector_connections;
+ALTER TABLE zed.executor_connection_profiles RENAME TO connector_connections;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_connector_grants RENAME TO connector_grants;
+ALTER TABLE zed.executor_connector_grants RENAME TO connector_grants;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_connector_policies RENAME TO connector_policies;
+ALTER TABLE zed.executor_connector_policies RENAME TO connector_policies;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_project_policies RENAME TO connector_project_policies;
+ALTER TABLE zed.executor_project_policies RENAME TO connector_project_policies;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_project_settings RENAME TO connector_project_settings;
+ALTER TABLE zed.executor_project_settings RENAME TO connector_project_settings;
 -- squawk-ignore renaming-table
-ALTER TABLE kortix.executor_connectors RENAME TO connectors;
+ALTER TABLE zed.executor_connectors RENAME TO connectors;
 
 -- squawk-ignore renaming-column
-ALTER TABLE kortix.connection_policies RENAME COLUMN profile_id TO connection_id;
+ALTER TABLE zed.connection_policies RENAME COLUMN profile_id TO connection_id;
 -- squawk-ignore renaming-column
-ALTER TABLE kortix.connector_connections RENAME COLUMN profile_id TO connection_id;
+ALTER TABLE zed.connector_connections RENAME COLUMN profile_id TO connection_id;
 -- squawk-ignore renaming-column
-ALTER TABLE kortix.connection_credentials RENAME COLUMN profile_id TO connection_id;
+ALTER TABLE zed.connection_credentials RENAME COLUMN profile_id TO connection_id;
 -- squawk-ignore renaming-column
-ALTER TABLE kortix.connector_calls RENAME COLUMN profile_id TO connection_id;
+ALTER TABLE zed.connector_calls RENAME COLUMN profile_id TO connection_id;
 -- squawk-ignore renaming-column
-ALTER TABLE kortix.connection_oauth_applications RENAME COLUMN profile_id TO connection_id;
+ALTER TABLE zed.connection_oauth_applications RENAME COLUMN profile_id TO connection_id;
 -- squawk-ignore renaming-column
-ALTER TABLE kortix.connection_oauth_sessions RENAME COLUMN profile_id TO connection_id;
+ALTER TABLE zed.connection_oauth_sessions RENAME COLUMN profile_id TO connection_id;
 
 -- Rename every live constraint by meaning. This covers both baseline-generated
 -- short names and later Drizzle-generated long names.
@@ -69,7 +69,7 @@ BEGIN
     FROM pg_constraint c
     JOIN pg_class r ON r.oid = c.conrelid
     JOIN pg_namespace n ON n.oid = r.relnamespace
-    WHERE n.nspname = 'kortix'
+    WHERE n.nspname = 'zed'
       AND (c.conname LIKE '%executor%' OR c.conname LIKE '%profile%')
       AND NOT (
         r.relname = 'project_session_connector_bindings'
@@ -94,19 +94,19 @@ BEGIN
     new_name := replace(new_name, 'profile', 'connection');
 
     IF new_name = item.old_name THEN
-      RAISE EXCEPTION 'No canonical constraint mapping for kortix.%.%', item.table_name, item.old_name;
+      RAISE EXCEPTION 'No canonical constraint mapping for zed.%.%', item.table_name, item.old_name;
     END IF;
 
     IF EXISTS (
       SELECT 1 FROM pg_constraint c
       JOIN pg_class r ON r.oid = c.conrelid
       JOIN pg_namespace n ON n.oid = r.relnamespace
-      WHERE n.nspname = 'kortix' AND r.relname = item.table_name AND c.conname = new_name
+      WHERE n.nspname = 'zed' AND r.relname = item.table_name AND c.conname = new_name
     ) THEN
-      RAISE EXCEPTION 'Canonical constraint already exists on kortix.%: %', item.table_name, new_name;
+      RAISE EXCEPTION 'Canonical constraint already exists on zed.%: %', item.table_name, new_name;
     END IF;
 
-    EXECUTE format('ALTER TABLE %I.%I RENAME CONSTRAINT %I TO %I', 'kortix', item.table_name, item.old_name, new_name);
+    EXECUTE format('ALTER TABLE %I.%I RENAME CONSTRAINT %I TO %I', 'zed', item.table_name, item.old_name, new_name);
   END LOOP;
 END
 $migration$;
@@ -158,28 +158,28 @@ BEGIN
       ('idx_executor_project_policies_project', 'idx_connector_project_policies_project')
     ) AS mappings(old_name, new_name)
   LOOP
-    old_oid := to_regclass(format('%I.%I', 'kortix', item.old_name));
-    new_oid := to_regclass(format('%I.%I', 'kortix', item.new_name));
+    old_oid := to_regclass(format('%I.%I', 'zed', item.old_name));
+    new_oid := to_regclass(format('%I.%I', 'zed', item.new_name));
 
     IF old_oid IS NOT NULL AND new_oid IS NOT NULL THEN
-      RAISE EXCEPTION 'Both index identifiers exist: kortix.% and kortix.%', item.old_name, item.new_name;
+      RAISE EXCEPTION 'Both index identifiers exist: zed.% and zed.%', item.old_name, item.new_name;
     ELSIF old_oid IS NOT NULL THEN
-      EXECUTE format('ALTER INDEX %I.%I RENAME TO %I', 'kortix', item.old_name, item.new_name);
+      EXECUTE format('ALTER INDEX %I.%I RENAME TO %I', 'zed', item.old_name, item.new_name);
     ELSIF new_oid IS NULL THEN
-      RAISE EXCEPTION 'Missing index: expected kortix.% or kortix.%', item.old_name, item.new_name;
+      RAISE EXCEPTION 'Missing index: expected zed.% or zed.%', item.old_name, item.new_name;
     END IF;
   END LOOP;
 END
 $migration$;
 
 -- Expand session bindings with a canonical column before removing the mirror.
-ALTER TABLE kortix.project_session_connector_bindings ADD COLUMN connection_id uuid;
+ALTER TABLE zed.project_session_connector_bindings ADD COLUMN connection_id uuid;
 
-UPDATE kortix.project_session_connector_bindings
+UPDATE zed.project_session_connector_bindings
 SET connection_id = profile_id
 WHERE connection_id IS NULL;
 
-CREATE FUNCTION kortix.sync_session_connector_binding_connection_ids()
+CREATE FUNCTION zed.sync_session_connector_binding_connection_ids()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $function$
@@ -214,63 +214,63 @@ $function$;
 
 CREATE TRIGGER sync_session_connector_binding_connection_ids
 BEFORE INSERT OR UPDATE OF connection_id, profile_id
-ON kortix.project_session_connector_bindings
+ON zed.project_session_connector_bindings
 FOR EACH ROW
-EXECUTE FUNCTION kortix.sync_session_connector_binding_connection_ids();
+EXECUTE FUNCTION zed.sync_session_connector_binding_connection_ids();
 
-ALTER TABLE kortix.project_session_connector_bindings
+ALTER TABLE zed.project_session_connector_bindings
   ADD CONSTRAINT project_session_connector_bindings_connection_not_null
   CHECK (connection_id IS NOT NULL)
   NOT VALID;
 
-ALTER TABLE kortix.project_session_connector_bindings
+ALTER TABLE zed.project_session_connector_bindings
   ALTER COLUMN profile_id SET DEFAULT NULL;
 
-ALTER TABLE kortix.project_session_connector_bindings
+ALTER TABLE zed.project_session_connector_bindings
   ADD CONSTRAINT project_session_connector_bindings_connection_tenant_fk
   FOREIGN KEY (account_id, project_id, connector_id, connection_id)
-  REFERENCES kortix.connector_connections (account_id, project_id, connector_id, connection_id)
+  REFERENCES zed.connector_connections (account_id, project_id, connector_id, connection_id)
   ON DELETE RESTRICT
   NOT VALID;
 
 -- Old API pods use these automatically-updatable views during the rollout.
-CREATE VIEW kortix.executor_connectors AS SELECT * FROM kortix.connectors;
-CREATE VIEW kortix.executor_connector_actions AS SELECT * FROM kortix.connector_actions;
-CREATE VIEW kortix.executor_connector_grants AS SELECT * FROM kortix.connector_grants;
-CREATE VIEW kortix.executor_connector_policies AS SELECT * FROM kortix.connector_policies;
-CREATE VIEW kortix.executor_project_policies AS SELECT * FROM kortix.connector_project_policies;
-CREATE VIEW kortix.executor_project_settings AS SELECT * FROM kortix.connector_project_settings;
-CREATE VIEW kortix.executor_attachments AS SELECT * FROM kortix.connector_attachments;
+CREATE VIEW zed.executor_connectors AS SELECT * FROM zed.connectors;
+CREATE VIEW zed.executor_connector_actions AS SELECT * FROM zed.connector_actions;
+CREATE VIEW zed.executor_connector_grants AS SELECT * FROM zed.connector_grants;
+CREATE VIEW zed.executor_connector_policies AS SELECT * FROM zed.connector_policies;
+CREATE VIEW zed.executor_project_policies AS SELECT * FROM zed.connector_project_policies;
+CREATE VIEW zed.executor_project_settings AS SELECT * FROM zed.connector_project_settings;
+CREATE VIEW zed.executor_attachments AS SELECT * FROM zed.connector_attachments;
 
-CREATE VIEW kortix.executor_connection_profiles AS
+CREATE VIEW zed.executor_connection_profiles AS
 SELECT connection_id AS profile_id, account_id, project_id, connector_id, owner_type,
   owner_id, label, is_default, status, metadata, created_by, created_at, updated_at
-FROM kortix.connector_connections;
+FROM zed.connector_connections;
 
-CREATE VIEW kortix.executor_credentials AS
+CREATE VIEW zed.executor_credentials AS
 SELECT credential_id, connector_id, connection_id AS profile_id, user_id, kind,
   value_enc, created_by, created_at, updated_at
-FROM kortix.connection_credentials;
+FROM zed.connection_credentials;
 
-CREATE VIEW kortix.executor_executions AS
+CREATE VIEW zed.executor_executions AS
 SELECT execution_id, account_id, project_id, session_id, acting_user_id, connector_id,
   connection_id AS profile_id, action_path, status, risk, request_digest, result_summary,
   approved_by, created_at, resolved_at
-FROM kortix.connector_calls;
+FROM zed.connector_calls;
 
-CREATE VIEW kortix.executor_oauth_applications AS
+CREATE VIEW zed.executor_oauth_applications AS
 SELECT application_id, account_id, project_id, connector_id, connection_id AS profile_id,
   config_enc, created_by, created_at, updated_at
-FROM kortix.connection_oauth_applications;
+FROM zed.connection_oauth_applications;
 
-CREATE VIEW kortix.executor_oauth_sessions AS
+CREATE VIEW zed.executor_oauth_sessions AS
 SELECT session_id, application_id, account_id, project_id, connection_id AS profile_id,
   initiated_by, flow, status, state_hash, pkce_verifier_enc, device_code_enc,
   interval_seconds, next_poll_at, scopes, success_redirect_uri, error_redirect_uri,
   error_code, expires_at, consumed_at, created_at, updated_at
-FROM kortix.connection_oauth_sessions;
+FROM zed.connection_oauth_sessions;
 
-CREATE VIEW kortix.executor_connection_policies AS
+CREATE VIEW zed.executor_connection_policies AS
 SELECT policy_id, connection_id AS profile_id, match, action, position, conditions,
   created_at, updated_at
-FROM kortix.connection_policies;
+FROM zed.connection_policies;

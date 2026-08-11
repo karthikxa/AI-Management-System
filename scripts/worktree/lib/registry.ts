@@ -8,8 +8,8 @@ import type { Ports } from './ports';
 
 export type DbMode = 'shared' | 'isolated';
 
-export const KORTIX_HOME = process.env.KORTIX_HOME || join(homedir(), '.kortix');
-export const WT_HOME = join(KORTIX_HOME, 'worktrees');
+export const ZED_HOME = process.env.ZED_HOME || join(homedir(), '.zed');
+export const WT_HOME = join(ZED_HOME, 'worktrees');
 export const REGISTRY_PATH = join(WT_HOME, 'registry.json');
 const LOCK_PATH = join(WT_HOME, 'registry.lock');
 
@@ -91,7 +91,7 @@ export function slotDir(name: string): string { return join(WT_HOME, name); }
 export function supaWorkdir(name: string): string { return join(slotDir(name), 'sb'); }
 
 export function writeMarker(worktreePath: string, entry: SlotEntry) {
-  writeFileSync(join(worktreePath, '.kortix-worktree.json'), JSON.stringify(entry, null, 2));
+  writeFileSync(join(worktreePath, '.zed-worktree.json'), JSON.stringify(entry, null, 2));
 }
 
 export function dbModeOf(entry: Pick<SlotEntry, 'dbMode'>): DbMode {

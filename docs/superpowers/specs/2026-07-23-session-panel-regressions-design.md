@@ -146,7 +146,7 @@ Unreachable from a session, per B.
 
 Separately, the `Maximize2` button in `easy/file-viewer.tsx` and
 `easy/file-preview.tsx` reads as "full screen" but calls `toggleExpanded()` from
-`kortix-computer-store` — it widens the side panel to 100%. Panel-expand and
+`zed-computer-store` — it widens the side panel to 100%. Panel-expand and
 document-full-screen are two distinct affordances currently signalled by one
 glyph, which is why the real full-screen reads as missing rather than as moved.
 

@@ -1,7 +1,7 @@
 -- Provider-confirmed loss is the one safe exception to immutable runtime
 -- identity: the original object no longer exists, so keep the logical sandbox
 -- row and reset only its provider attachment for replacement provisioning.
-CREATE OR REPLACE FUNCTION kortix.guard_session_sandbox_identity()
+CREATE OR REPLACE FUNCTION zed.guard_session_sandbox_identity()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
@@ -30,7 +30,7 @@ BEGIN
   IF TG_OP = 'DELETE' AND OLD.external_id IS NOT NULL THEN
     SELECT coalesce((metadata->>'deletedAt') IS NOT NULL, false)
       INTO session_deleted
-      FROM kortix.project_sessions
+      FROM zed.project_sessions
      WHERE session_id = OLD.session_id;
 
     IF NOT coalesce(session_deleted, false)

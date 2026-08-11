@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
-import { accountMembers, chatChannelBindings, chatInstalls, chatThreads, projectSessions, projects } from '@kortix/db';
+import { accountMembers, chatChannelBindings, chatInstalls, chatThreads, projectSessions, projects } from '@zed/db';
 import { db } from '../../shared/db';
 import { config } from '../../config';
 import { escapeMrkdwn, formatRelativeTime, repoLabel, repoOgImage, respondViaUrl, sessionWebUrl } from './util';
@@ -33,12 +33,12 @@ export interface SlashCtx {
   // reply for subcommands too slow for the synchronous 3s window (agent list
   // touches git). DB-only subcommands answer synchronously and ignore it.
   responseUrl?: string;
-  // DM fallback path: the Assistant pane delivers `/kortix …` as a plain message
+  // DM fallback path: the Assistant pane delivers `/zed …` as a plain message
   // (no response_url), so deferred subcommands post their result through this
   // instead of `respondViaUrl`. Set only by the DM command runner.
   deferredDeliver?: (resp: SlashResponse) => Promise<void>;
   // Set for per-project/manual Slack apps. These apps do not switch projects:
-  // the webhook URL already scopes every event and command to one Kortix project.
+  // the webhook URL already scopes every event and command to one Zed project.
   projectScopedProjectId?: string;
 }
 
@@ -110,25 +110,25 @@ function unknownSub(sub: string, command: string): SlashResponse {
 function slashHelp(ctx: SlashCtx): SlashResponse {
   const command = ctx.command;
   const isProjectScoped = !!ctx.projectScopedProjectId;
-  // Everything lives behind the one `/kortix` panel; the rest are power-user
+  // Everything lives behind the one `/zed` panel; the rest are power-user
   // shortcuts for people who'd rather type than click.
   const advanced: Array<{ cmd: string; desc: string }> = [
-    { cmd: `${command} model <id>`, desc: 'Set the channel model directly, e.g. `kortix/glm-5.2` or `anthropic/claude-sonnet-4.6` (`default` to reset).' },
+    { cmd: `${command} model <id>`, desc: 'Set the channel model directly, e.g. `zed/glm-5.2` or `anthropic/claude-sonnet-4.6` (`default` to reset).' },
     { cmd: `${command} agent <name>`, desc: 'Set the channel agent directly (`default` to reset).' },
     ...(isProjectScoped ? [] : [{ cmd: `${command} switch`, desc: 'Connect this channel to a different project.' }]),
     { cmd: `${command} policy`,   desc: 'Show or change who can join Slack-started sessions here.' },
     { cmd: `${command} sessions`, desc: 'Recent sessions started in this workspace.' },
     ...(config.SLACK_REQUIRE_USER_IDENTITY
       ? [
-          { cmd: `${command} login`,  desc: 'Connect your own Kortix account so the agent runs as you.' },
-          { cmd: `${command} logout`, desc: 'Disconnect your Kortix account.' },
+          { cmd: `${command} login`,  desc: 'Connect your own Zed account so the agent runs as you.' },
+          { cmd: `${command} logout`, desc: 'Disconnect your Zed account.' },
         ]
       : []),
   ];
   return {
     response_type: 'ephemeral',
     blocks: [
-      { type: 'header', text: { type: 'plain_text', text: '⚡  Kortix', emoji: true } },
+      { type: 'header', text: { type: 'plain_text', text: '⚡  Zed', emoji: true } },
       {
         type: 'section',
         text: {
@@ -164,7 +164,7 @@ async function slashProjectScopedInfo(ctx: SlashCtx): Promise<SlashResponse> {
           type: 'mrkdwn',
           text: project
             ? `This Slack app is already tied to *${escapeMrkdwn(project.name)}*.\nUse \`${ctx.command} agents\`, \`${ctx.command} models\`, or \`${ctx.command} policy\` to configure this channel.`
-            : `This Slack app is already tied to one Kortix project.\nUse \`${ctx.command} agents\`, \`${ctx.command} models\`, or \`${ctx.command} policy\` to configure this channel.`,
+            : `This Slack app is already tied to one Zed project.\nUse \`${ctx.command} agents\`, \`${ctx.command} models\`, or \`${ctx.command} policy\` to configure this channel.`,
         },
       },
     ],
@@ -181,13 +181,13 @@ async function slashProjects(ctx: { teamId: string; channelId: string }): Promis
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: '*No Kortix projects connected yet.*\nHead to your Kortix dashboard to link one to this workspace.',
+            text: '*No Zed projects connected yet.*\nHead to your Zed dashboard to link one to this workspace.',
           },
           accessory: {
             type: 'button',
             text: { type: 'plain_text', text: 'Open dashboard', emoji: true },
             style: 'primary',
-            url: (config.FRONTEND_URL || 'https://kortix.com').replace(/\/$/, ''),
+            url: (config.FRONTEND_URL || 'https://zed.com').replace(/\/$/, ''),
             action_id: 'projects_empty_dashboard',
           },
         },
@@ -195,7 +195,7 @@ async function slashProjects(ctx: { teamId: string; channelId: string }): Promis
     };
   }
   const current = await currentChannelProjectId(ctx);
-  const dashboardBase = (config.FRONTEND_URL || 'https://kortix.com').replace(/\/$/, '');
+  const dashboardBase = (config.FRONTEND_URL || 'https://zed.com').replace(/\/$/, '');
   const blocks: Array<Record<string, unknown>> = [
     {
       type: 'header',
@@ -273,12 +273,12 @@ async function slashSwitch(ctx: { teamId: string; channelId: string }): Promise<
       blocks: [
         {
           type: 'section',
-          text: { type: 'mrkdwn', text: '*No projects to switch to.*\nLink a project to this workspace from your Kortix dashboard first.' },
+          text: { type: 'mrkdwn', text: '*No projects to switch to.*\nLink a project to this workspace from your Zed dashboard first.' },
           accessory: {
             type: 'button',
             text: { type: 'plain_text', text: 'Open dashboard', emoji: true },
             style: 'primary',
-            url: (config.FRONTEND_URL || 'https://kortix.com').replace(/\/$/, ''),
+            url: (config.FRONTEND_URL || 'https://zed.com').replace(/\/$/, ''),
             action_id: 'switch_empty_dashboard',
           },
         },
@@ -374,7 +374,7 @@ async function slashSessions(ctx: { teamId: string; channelId: string }): Promis
     return {
       response_type: 'ephemeral',
       blocks: [
-        { type: 'section', text: { type: 'mrkdwn', text: '*No recent Kortix sessions in this workspace.*\n`@`-mention me in any channel to start one.' } },
+        { type: 'section', text: { type: 'mrkdwn', text: '*No recent Zed sessions in this workspace.*\n`@`-mention me in any channel to start one.' } },
       ],
     };
   }
@@ -384,7 +384,7 @@ async function slashSessions(ctx: { teamId: string; channelId: string }): Promis
     .from(projects)
     .where(inArray(projects.projectId, projectIds));
   const projectById = new Map(projectRows.map((p) => [p.projectId, p]));
-  const dashboardBase = (config.FRONTEND_URL || 'https://kortix.com').replace(/\/$/, '');
+  const dashboardBase = (config.FRONTEND_URL || 'https://zed.com').replace(/\/$/, '');
   return {
     response_type: 'ephemeral',
     blocks: [
@@ -410,19 +410,19 @@ async function slashSessions(ctx: { teamId: string; channelId: string }): Promis
   };
 }
 
-// A context line stating whether the caller has linked their own Kortix account.
+// A context line stating whether the caller has linked their own Zed account.
 async function buildIdentityContext(ctx: SlashCtx): Promise<Record<string, unknown>> {
   const identity = ctx.slackUserId ? await lookupSlackIdentity(ctx.teamId, ctx.slackUserId) : null;
   if (!identity) {
     return {
       type: 'context',
-      elements: [{ type: 'mrkdwn', text: `🔌  Not connected — run \`${ctx.command} login\` to run as your own Kortix account.` }],
+      elements: [{ type: 'mrkdwn', text: `🔌  Not connected — run \`${ctx.command} login\` to run as your own Zed account.` }],
     };
   }
   const email = (await lookupEmailsByUserIds([identity.userId])).get(identity.userId);
   return {
     type: 'context',
-    elements: [{ type: 'mrkdwn', text: `🔗  Connected as *${email ? escapeMrkdwn(email) : 'your Kortix account'}*` }],
+    elements: [{ type: 'mrkdwn', text: `🔗  Connected as *${email ? escapeMrkdwn(email) : 'your Zed account'}*` }],
   };
 }
 
@@ -443,7 +443,7 @@ function sourceLabel(source: string): string {
   }
 }
 
-// The single `/kortix` channel control panel. Consolidates project binding +
+// The single `/zed` channel control panel. Consolidates project binding +
 // agent + model + join policy + account + sessions into one interactive card,
 // each row showing the EFFECTIVE value and where it came from. Inline buttons
 // open the focused pickers (real-catalog models, live agents, projects). DB-only
@@ -453,7 +453,7 @@ async function slashPanel(ctx: SlashCtx): Promise<SlashResponse> {
   const identityBlocks = config.SLACK_REQUIRE_USER_IDENTITY ? [await buildIdentityContext(ctx)] : [];
   const selection = await currentChannelSelection(ctx);
   const currentId = selection?.projectId ?? null;
-  const dashboardBase = (config.FRONTEND_URL || 'https://kortix.com').replace(/\/$/, '');
+  const dashboardBase = (config.FRONTEND_URL || 'https://zed.com').replace(/\/$/, '');
   if (!currentId) {
     return {
       response_type: 'ephemeral',
@@ -579,7 +579,7 @@ async function slashPanel(ctx: SlashCtx): Promise<SlashResponse> {
           },
           {
             type: 'button',
-            text: { type: 'plain_text', text: 'Open in Kortix ↗', emoji: true },
+            text: { type: 'plain_text', text: 'Open in Zed ↗', emoji: true },
             style: 'primary',
             url: `${dashboardBase}/projects/${p.projectId}`,
             action_id: `panel_open_${p.projectId}`,
@@ -666,7 +666,7 @@ async function slashPolicy(ctx: SlashCtx, arg: string): Promise<SlashResponse> {
   if (!(await canManageSlackPolicy(ctx, selection.projectId))) {
     return {
       response_type: 'ephemeral',
-      text: 'Only a linked Kortix account owner or admin for this project can change the Slack session policy.',
+      text: 'Only a linked Zed account owner or admin for this project can change the Slack session policy.',
     };
   }
   const ok = await setChannelConversationPolicy(ctx, next);
@@ -679,7 +679,7 @@ async function slashPolicy(ctx: SlashCtx, arg: string): Promise<SlashResponse> {
 }
 
 // ── Login / Logout ───────────────────────────────────────────────────────────
-// Bind this Slack user to their OWN Kortix account so the agent runs as them
+// Bind this Slack user to their OWN Zed account so the agent runs as them
 // (their credentials/secrets/connectors) instead of the workspace owner. The
 // link opens an authenticated web page that completes the bind; nothing is
 // stored until the user logs in there.
@@ -697,8 +697,8 @@ async function slashLogin(ctx: SlashCtx): Promise<SlashResponse> {
         text: {
           type: 'mrkdwn',
           text: existing
-            ? '*Your Slack is already connected to a Kortix account.*\nClick below to re-connect (e.g. to switch accounts). The link expires in 10 minutes.'
-            : '*Connect your Kortix account.*\nKortix needs access to your account before it can run from Slack. The link expires in 10 minutes and is private to you.',
+            ? '*Your Slack is already connected to a Zed account.*\nClick below to re-connect (e.g. to switch accounts). The link expires in 10 minutes.'
+            : '*Connect your Zed account.*\nZed needs access to your account before it can run from Slack. The link expires in 10 minutes and is private to you.',
         },
       },
       {
@@ -706,7 +706,7 @@ async function slashLogin(ctx: SlashCtx): Promise<SlashResponse> {
         elements: [
           {
           type: 'button',
-            text: { type: 'plain_text', text: existing ? 'Re-connect Kortix' : 'Connect or create account', emoji: true },
+            text: { type: 'plain_text', text: existing ? 'Re-connect Zed' : 'Connect or create account', emoji: true },
             style: 'primary',
             url,
             action_id: 'slack_login_connect',
@@ -725,8 +725,8 @@ async function slashLogout(ctx: SlashCtx): Promise<SlashResponse> {
   return {
     response_type: 'ephemeral',
     text: revoked
-      ? "Disconnected. Kortix will ask you to connect again before it runs on your behalf. Run `/kortix login` anytime."
-      : "You weren't connected. Run `/kortix login` to connect your Kortix account.",
+      ? "Disconnected. Zed will ask you to connect again before it runs on your behalf. Run `/zed login` anytime."
+      : "You weren't connected. Run `/zed login` to connect your Zed account.",
   };
 }
 
@@ -802,7 +802,7 @@ async function slashSession(ctx: SlashCtx): Promise<SlashResponse> {
 // ── Agents ───────────────────────────────────────────────────────────────────
 
 async function slashAgents(ctx: SlashCtx, arg: string): Promise<SlashResponse> {
-  // `/kortix agents <name>` is a convenient alias for setting the agent.
+  // `/zed agents <name>` is a convenient alias for setting the agent.
   if (arg.trim()) return slashSetAgent(ctx, arg);
 
   const selection = await currentChannelSelection(ctx);
@@ -836,7 +836,7 @@ async function slashAgents(ctx: SlashCtx, arg: string): Promise<SlashResponse> {
  * caller may see: a linked member sees only agents they're scoped to; an
  * unlinked caller sees only project-wide (unscoped) agents — never leak a scoped
  * agent's name cross-department. No-op when nothing is scoped. Touches git, so
- * callers must be off the synchronous 3s slash window. Shared by the `/kortix
+ * callers must be off the synchronous 3s slash window. Shared by the `/zed
  * agents` picker and the session-start "agent no longer exists" recovery picker
  * (session.ts) so both list the same scoped catalog.
  */
@@ -918,7 +918,7 @@ export function buildAgentPickerBlocks(
  * configured for the channel (a channel override, or the project default the
  * `default` sentinel resolves to) no longer exists — deleted, renamed, or
  * disabled. Names the dead agent, then offers an inline picker of the project's
- * CURRENT agents; the `set_agent_*` buttons run the SAME handler as `/kortix
+ * CURRENT agents; the `set_agent_*` buttons run the SAME handler as `/zed
  * agents` (interactivity.ts → handleSetSelection), so one click re-points the
  * channel binding and the user just re-sends. `badAgent` null = the `default`
  * sentinel couldn't resolve (no channel override was set).
@@ -1056,7 +1056,7 @@ async function slashSetModel(ctx: SlashCtx, arg: string): Promise<SlashResponse>
     return { response_type: 'ephemeral', text: 'Model reset to the project default.' };
   }
   if (/\s/.test(id)) {
-    return { response_type: 'ephemeral', text: `\`${escapeMrkdwn(id)}\` doesn't look like a model id. Use \`provider/model\` (e.g. \`anthropic/claude-sonnet-4.6\`) or a managed id (e.g. \`kortix/glm-5.2\` or \`glm-5.2\`).` };
+    return { response_type: 'ephemeral', text: `\`${escapeMrkdwn(id)}\` doesn't look like a model id. Use \`provider/model\` (e.g. \`anthropic/claude-sonnet-4.6\`) or a managed id (e.g. \`zed/glm-5.2\` or \`glm-5.2\`).` };
   }
   // The servability check is the real gate — never store a model that would 404
   // at request time, whatever shape the id is.
@@ -1070,7 +1070,7 @@ async function slashSetModel(ctx: SlashCtx, arg: string): Promise<SlashResponse>
   if (!servable) {
     return {
       response_type: 'ephemeral',
-      text: `\`${escapeMrkdwn(id)}\` isn't available for this workspace. Pick one from \`${ctx.command} models\`, or connect that provider's API key in Kortix first.`,
+      text: `\`${escapeMrkdwn(id)}\` isn't available for this workspace. Pick one from \`${ctx.command} models\`, or connect that provider's API key in Zed first.`,
     };
   }
   const stored = toOpencodeModelRef(id);

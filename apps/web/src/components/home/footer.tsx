@@ -65,7 +65,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
       { label: 'Quickstart', href: '/docs/quickstart' },
       { label: 'For developers', href: '/developers' },
       { label: 'Marketplace', href: '/marketplace' },
-      { label: 'GitHub', href: 'https://github.com/kortix-ai/suna', external: true },
+      { label: 'GitHub', href: 'https://github.com/zed-ai/suna', external: true },
     ],
   },
   {
@@ -82,10 +82,10 @@ const FOOTER_SECTIONS: FooterSection[] = [
   {
     title: 'Connect',
     links: [
-      { label: 'X', href: 'https://x.com/kortix', external: true },
-      { label: 'LinkedIn', href: 'https://linkedin.com/company/kortix', external: true },
+      { label: 'X', href: 'https://x.com/zed', external: true },
+      { label: 'LinkedIn', href: 'https://linkedin.com/company/zed', external: true },
       { label: 'Discord', href: 'https://discord.com/invite/RvFhXUdZ9H', external: true },
-      { label: 'Status', href: 'https://status.kortix.com', external: true },
+      { label: 'Status', href: 'https://status.zed.com', external: true },
       { label: 'Support', href: '/support' },
       { label: 'Terms', href: '/legal/terms' },
       { label: 'Privacy', href: '/legal?tab=privacy' },
@@ -153,7 +153,7 @@ const Footer = () => {
         <div className="text-muted-foreground flex items-center gap-3 text-base">
           <small>
             {tI18nHardcoded.raw('autoComponentsHomeFooterJsxTextCopye99743e8')}
-            {currentYear} Kortix
+            {currentYear} Zed
           </small>
         </div>
 

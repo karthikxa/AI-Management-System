@@ -15,7 +15,7 @@
 // process-global in bun:test, so run this file in its own `bun test <file>`
 // invocation (as CI does), same caveat as ../../sandbox-reaper.test.ts.
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { projectSessions, sessionLifecycleCommands } from '@kortix/db';
+import { projectSessions, sessionLifecycleCommands } from '@zed/db';
 
 let commandRow: Record<string, unknown> | null = null;
 let updateCalls: Array<{ table: unknown; updates: Record<string, unknown> }> = [];

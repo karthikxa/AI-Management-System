@@ -13,7 +13,7 @@ import type { ToolProps } from '@/features/session/tool/shared/types';
 import { PlugIcon as Plug } from '@phosphor-icons/react';
 import { useMemo } from 'react';
 
-import { type ConnectorEntry, parseConnectorListOutput } from '@/lib/utils/kortix-tool-output';
+import { type ConnectorEntry, parseConnectorListOutput } from '@/lib/utils/zed-tool-output';
 
 export function ConnectorListTool({ part, defaultOpen, forceOpen }: ToolProps) {
   const input = partInput(part);

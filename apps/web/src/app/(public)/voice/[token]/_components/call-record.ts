@@ -10,22 +10,22 @@
  * said it, because `agent` covers two different actors:
  *
  *   role=user                    → a human in the room.
- *   role=agent, speaker=kortix   → the KORTIX agent putting words into the call
+ *   role=agent, speaker=zed   → the ZED agent putting words into the call
  *                                  (apps/api channels/voice/utterance.ts's
- *                                  KORTIX_SPEAKER).
+ *                                  ZED_SPEAKER).
  *   role=agent, speaker=<other>  → the voice itself, labelled with the bot's
  *                                  display name by the worker
  *                                  (apps/voice-agent/src/transcripts.ts).
  *   role=tool                    → an MCP call the voice made; `speaker` is the
  *                                  tool name and nobody spoke.
  *
- * Reading `role` without `speaker` is exactly how the Kortix agent's own lines
+ * Reading `role` without `speaker` is exactly how the Zed agent's own lines
  * end up indistinguishable from the voice's — do not collapse these.
  */
 import type { CallEntryKind, CallRecordEntry, LiveUtterance } from './types';
 
-/** Matches `KORTIX_SPEAKER` in apps/api/src/channels/voice/utterance.ts. */
-const KORTIX_SPEAKER = 'kortix';
+/** Matches `ZED_SPEAKER` in apps/api/src/channels/voice/utterance.ts. */
+const ZED_SPEAKER = 'zed';
 
 /** A row as the public transcript endpoint returns it. Structurally the SDK's
  *  `PublicVoiceTranscriptTurn`; restated so this module stays importable from
@@ -44,7 +44,7 @@ export interface RawCallTurn {
  * catch branch writes).
  *
  * The split is anchored to this exact vocabulary rather than "text after the
- * last arrow" because `ask_kortix` writes NO outcome, and a request that
+ * last arrow" because `ask_zed` writes NO outcome, and a request that
  * happens to contain an arrow would otherwise have its last few words torn off
  * and relabelled as a result.
  */
@@ -109,12 +109,12 @@ export function toCallRecordEntries(turns: readonly RawCallTurn[]): CallRecordEn
       body = parsed.text;
       outcome = parsed.outcome;
     } else if (turn.role === 'agent') {
-      if (speaker === KORTIX_SPEAKER) {
-        kind = 'kortix';
-        name = 'Kortix agent';
+      if (speaker === ZED_SPEAKER) {
+        kind = 'zed';
+        name = 'Zed agent';
       } else {
         kind = 'voice';
-        name = speaker || 'Kortix';
+        name = speaker || 'Zed';
       }
     } else {
       kind = 'human';

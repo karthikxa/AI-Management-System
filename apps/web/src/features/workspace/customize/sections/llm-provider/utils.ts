@@ -32,10 +32,10 @@ type RuntimeProvidersSnapshot =
 
 export function buildCodexProvider(ocProviders: RuntimeProvidersSnapshot): LlmProviderEntry {
   const connectedIds = new Set(ocProviders?.connected ?? []);
-  const kortix = (ocProviders?.all ?? []).find((p) => p.id === 'kortix');
+  const zed = (ocProviders?.all ?? []).find((p) => p.id === 'zed');
   const models: LlmProviderModel[] =
-    kortix && connectedIds.has('kortix')
-      ? Object.entries(kortix.models ?? {})
+    zed && connectedIds.has('zed')
+      ? Object.entries(zed.models ?? {})
           .filter(([id]) => id.startsWith('codex/'))
           .map(([id, m]) => {
             const raw = m as {

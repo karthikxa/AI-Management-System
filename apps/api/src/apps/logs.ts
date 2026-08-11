@@ -16,7 +16,7 @@ export function deploymentEventsAsLogs(
     entries: selected.map((event, index) => ({
       cursor: start + index + 1,
       time: event.createdAt.toISOString(),
-      source: event.type === 'build_log' ? 'build' : 'kortix',
+      source: event.type === 'build_log' ? 'build' : 'zed',
       line: event.type === 'build_log' ? event.message : `[${event.type}] ${event.message}`,
     })),
     next_cursor: start + selected.length,

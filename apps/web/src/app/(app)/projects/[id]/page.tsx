@@ -19,15 +19,15 @@ import { isBillingEnabled } from '@/lib/config';
 import { useComposerPrefillStore } from '@/stores/composer-prefill-store';
 import { usePendingFilesStore } from '@/stores/session-composer-handoff-store';
 import { useUpgradeDialogStore } from '@/stores/upgrade-dialog-store';
-import { getProjectDetail } from '@kortix/sdk';
-import { contract, qk, writeStartStash } from '@kortix/sdk/react';
+import { getProjectDetail } from '@zed/sdk';
+import { contract, qk, writeStartStash } from '@zed/sdk/react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { promptFromSearchParams } from './prompt-from-search-params';
 
-const FREE_ONBOARDING_UPGRADE_MODAL_KEY = 'kortix:free-onboarding-upgrade-modal-shown';
+const FREE_ONBOARDING_UPGRADE_MODAL_KEY = 'zed:free-onboarding-upgrade-modal-shown';
 
 export default function ProjectIndexPage() {
   const { id: projectId } = useParams<{ id: string }>();
@@ -129,7 +129,7 @@ export default function ProjectIndexPage() {
         // page, so just unlock the composer with the text still in it.
         onError: () => setSending(false),
         onNavigate: (sessionId) => {
-          // `sessionId` here is the route/Kortix session id, not the OpenCode
+          // `sessionId` here is the route/Zed session id, not the OpenCode
           // pin the session page resolves later (`useCanonicalRuntimeSession`
           // /`ensureOpencodeSessionPin` mint a separate id). Stash under the
           // route id via the SDK's canonical `writeStartStash` — the session

@@ -39,14 +39,14 @@ import {
   type AppAccessConfig,
   type AppAccessMode,
   type AppDeployment,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import {
   qk,
   useAppAccess,
   useAppDeployments,
   useFeatureFlag,
   useProjectApps,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 import {
   ArrowSquareOutIcon,
   CaretDownIcon,
@@ -79,7 +79,7 @@ function deploymentTone(
 }
 
 function appCommand(app: App): string {
-  return `kortix apps deploy . --app ${app.app_id}`;
+  return `zed apps deploy . --app ${app.app_id}`;
 }
 
 function AppPreview({
@@ -180,7 +180,7 @@ export function AppsView({ projectId }: { projectId: string }) {
   return (
     <CustomizeSectionWrapper
       title="Apps"
-      description="Deploy apps to stable Kortix URLs. They wake on request and stop when idle."
+      description="Deploy apps to stable Zed URLs. They wake on request and stop when idle."
       docs="/docs/sdk/apps"
       className="max-w-5xl"
       action={
@@ -243,7 +243,7 @@ export function AppsView({ projectId }: { projectId: string }) {
         <EmptyState
           icon={GlobeIcon}
           title="No Apps deployed"
-          description="Deploy a static site, JavaScript bundle, Dockerfile, or OCI image with the Kortix CLI. Deployed Apps appear here."
+          description="Deploy a static site, JavaScript bundle, Dockerfile, or OCI image with the Zed CLI. Deployed Apps appear here."
         />
       )}
 
@@ -254,16 +254,16 @@ export function AppsView({ projectId }: { projectId: string }) {
           title="Deploy from a terminal"
           action={
             <Hint label="Copy deploy command">
-              <CopyButton code="kortix apps deploy ." size="md" />
+              <CopyButton code="zed apps deploy ." size="md" />
             </Hint>
           }
         >
           <span className="text-muted-foreground block text-xs text-pretty">
-            Run this in a linked project. A v2 <code className="text-foreground">kortix.yaml</code>{' '}
+            Run this in a linked project. A v2 <code className="text-foreground">zed.yaml</code>{' '}
             can define build, resources, environment, and secret mappings.
           </span>
           <code className="text-foreground mt-2 block overflow-x-auto font-mono text-xs">
-            kortix apps deploy .
+            zed apps deploy .
           </code>
         </InfoBanner>
       ) : null}
@@ -306,7 +306,7 @@ function AppRow({ projectId, app, canWrite }: { projectId: string; app: App; can
           className={cn(
             'flex size-9 shrink-0 items-center justify-center rounded-sm',
             app.desired_state === 'running'
-              ? 'bg-kortix-green/15 text-kortix-green'
+              ? 'bg-zed-green/15 text-zed-green'
               : 'bg-muted text-muted-foreground',
           )}
         >

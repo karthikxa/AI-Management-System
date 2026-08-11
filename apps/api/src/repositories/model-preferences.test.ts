@@ -75,22 +75,22 @@ describe('getAccountModelDefaults', () => {
 
   // The core bug fix: agent-scope pins keyed only by agent name used to be
   // account-wide, so project A and project B (same account, both declaring an
-  // agent named 'kortix' in their own kortix.yaml) silently shared ONE pin.
+  // agent named 'zed' in their own zed.yaml) silently shared ONE pin.
   describe('per-project agent pin isolation', () => {
     test('project A and project B hold INDEPENDENT pins for the same agent name', async () => {
       selectRows = [
-        { scope: 'agent', scopeKey: 'kortix', projectId: 'proj-a', model: 'anthropic/claude-opus-4.8' },
-        { scope: 'agent', scopeKey: 'kortix', projectId: 'proj-b', model: 'anthropic/claude-sonnet-4.6' },
+        { scope: 'agent', scopeKey: 'zed', projectId: 'proj-a', model: 'anthropic/claude-opus-4.8' },
+        { scope: 'agent', scopeKey: 'zed', projectId: 'proj-b', model: 'anthropic/claude-sonnet-4.6' },
       ];
       const defaultsA = await getAccountModelDefaults('a1', 'proj-a');
       const defaultsB = await getAccountModelDefaults('a1', 'proj-b');
-      expect(defaultsA.agents).toEqual({ kortix: 'anthropic/claude-opus-4.8' });
-      expect(defaultsB.agents).toEqual({ kortix: 'anthropic/claude-sonnet-4.6' });
+      expect(defaultsA.agents).toEqual({ zed: 'anthropic/claude-opus-4.8' });
+      expect(defaultsB.agents).toEqual({ zed: 'anthropic/claude-sonnet-4.6' });
     });
 
     test('a pin for project A never leaks into project C (unrelated project, no pin of its own)', async () => {
       selectRows = [
-        { scope: 'agent', scopeKey: 'kortix', projectId: 'proj-a', model: 'anthropic/claude-opus-4.8' },
+        { scope: 'agent', scopeKey: 'zed', projectId: 'proj-a', model: 'anthropic/claude-opus-4.8' },
       ];
       const defaultsC = await getAccountModelDefaults('a1', 'proj-c');
       expect(defaultsC.agents).toEqual({});
@@ -98,42 +98,42 @@ describe('getAccountModelDefaults', () => {
 
     test('legacy project-less pin (project_id NULL) applies as a fallback to every project that has not re-pinned', async () => {
       selectRows = [
-        { scope: 'agent', scopeKey: 'kortix', projectId: null, model: 'legacy-shared-model' },
+        { scope: 'agent', scopeKey: 'zed', projectId: null, model: 'legacy-shared-model' },
       ];
       const defaultsA = await getAccountModelDefaults('a1', 'proj-a');
       const defaultsB = await getAccountModelDefaults('a1', 'proj-b');
-      expect(defaultsA.agents).toEqual({ kortix: 'legacy-shared-model' });
-      expect(defaultsB.agents).toEqual({ kortix: 'legacy-shared-model' });
+      expect(defaultsA.agents).toEqual({ zed: 'legacy-shared-model' });
+      expect(defaultsB.agents).toEqual({ zed: 'legacy-shared-model' });
     });
 
     test('a project-scoped pin overrides the legacy fallback for THAT project only', async () => {
       selectRows = [
-        { scope: 'agent', scopeKey: 'kortix', projectId: null, model: 'legacy-shared-model' },
-        { scope: 'agent', scopeKey: 'kortix', projectId: 'proj-a', model: 'proj-a-override' },
+        { scope: 'agent', scopeKey: 'zed', projectId: null, model: 'legacy-shared-model' },
+        { scope: 'agent', scopeKey: 'zed', projectId: 'proj-a', model: 'proj-a-override' },
       ];
       const defaultsA = await getAccountModelDefaults('a1', 'proj-a');
       const defaultsB = await getAccountModelDefaults('a1', 'proj-b');
-      expect(defaultsA.agents).toEqual({ kortix: 'proj-a-override' });
-      expect(defaultsB.agents).toEqual({ kortix: 'legacy-shared-model' });
+      expect(defaultsA.agents).toEqual({ zed: 'proj-a-override' });
+      expect(defaultsB.agents).toEqual({ zed: 'legacy-shared-model' });
     });
 
     test('omitting projectId returns ONLY the legacy fallback, never another project\'s pin', async () => {
       selectRows = [
-        { scope: 'agent', scopeKey: 'kortix', projectId: null, model: 'legacy-shared-model' },
-        { scope: 'agent', scopeKey: 'kortix', projectId: 'proj-a', model: 'proj-a-override' },
+        { scope: 'agent', scopeKey: 'zed', projectId: null, model: 'legacy-shared-model' },
+        { scope: 'agent', scopeKey: 'zed', projectId: 'proj-a', model: 'proj-a-override' },
       ];
       const noProjectContext = await getAccountModelDefaults('a1');
-      expect(noProjectContext.agents).toEqual({ kortix: 'legacy-shared-model' });
+      expect(noProjectContext.agents).toEqual({ zed: 'legacy-shared-model' });
     });
 
     test('different agent names on different projects coexist independently', async () => {
       selectRows = [
-        { scope: 'agent', scopeKey: 'kortix', projectId: 'proj-a', model: 'opus' },
+        { scope: 'agent', scopeKey: 'zed', projectId: 'proj-a', model: 'opus' },
         { scope: 'agent', scopeKey: 'reviewer', projectId: 'proj-a', model: 'sonnet' },
-        { scope: 'agent', scopeKey: 'kortix', projectId: 'proj-b', model: 'haiku' },
+        { scope: 'agent', scopeKey: 'zed', projectId: 'proj-b', model: 'haiku' },
       ];
       const defaultsA = await getAccountModelDefaults('a1', 'proj-a');
-      expect(defaultsA.agents).toEqual({ kortix: 'opus', reviewer: 'sonnet' });
+      expect(defaultsA.agents).toEqual({ zed: 'opus', reviewer: 'sonnet' });
     });
   });
 });
@@ -158,14 +158,14 @@ describe('upsertAccountModelPreference', () => {
     await upsertAccountModelPreference({
       accountId: 'a1',
       scope: 'agent',
-      scopeKey: 'kortix',
+      scopeKey: 'zed',
       projectId: 'proj-a',
       model: 'anthropic/claude-opus-4.8',
     });
     expect(insertedValues).toMatchObject({
       accountId: 'a1',
       scope: 'agent',
-      scopeKey: 'kortix',
+      scopeKey: 'zed',
       projectId: 'proj-a',
       model: 'anthropic/claude-opus-4.8',
     });
@@ -176,7 +176,7 @@ describe('upsertAccountModelPreference', () => {
     await upsertAccountModelPreference({
       accountId: 'a1',
       scope: 'agent',
-      scopeKey: 'kortix',
+      scopeKey: 'zed',
       model: 'anthropic/claude-opus-4.8',
     });
     expect(insertedValues.projectId).toBeNull();
@@ -208,12 +208,12 @@ describe('upsertAccountModelPreference', () => {
 
 describe('deleteAccountModelPreference', () => {
   test('agent scope with a projectId only targets that project\'s row', async () => {
-    await deleteAccountModelPreference({ accountId: 'a1', scope: 'agent', scopeKey: 'kortix', projectId: 'proj-a' });
+    await deleteAccountModelPreference({ accountId: 'a1', scope: 'agent', scopeKey: 'zed', projectId: 'proj-a' });
     expect(deleteWhereArgs.length).toBeGreaterThan(0);
   });
 
   test('agent scope without a projectId targets the legacy (project_id IS NULL) row only', async () => {
-    await deleteAccountModelPreference({ accountId: 'a1', scope: 'agent', scopeKey: 'kortix' });
+    await deleteAccountModelPreference({ accountId: 'a1', scope: 'agent', scopeKey: 'zed' });
     expect(deleteWhereArgs.length).toBeGreaterThan(0);
   });
 });
@@ -230,10 +230,10 @@ describe('getSessionAgentContext', () => {
 
   test('carries the joined project.metadata.default_agent as projectDefaultAgent', async () => {
     selectRows = [
-      { agentName: 'default', metadata: {}, projectMetadata: { default_agent: 'kortix' } },
+      { agentName: 'default', metadata: {}, projectMetadata: { default_agent: 'zed' } },
     ];
     const ctx = await getSessionAgentContext('s1');
-    expect(ctx).toEqual({ agentName: 'default', opencodeModel: null, projectDefaultAgent: 'kortix' });
+    expect(ctx).toEqual({ agentName: 'default', opencodeModel: null, projectDefaultAgent: 'zed' });
   });
 
   test('project metadata with no default_agent → projectDefaultAgent null', async () => {
@@ -259,14 +259,14 @@ describe('getSessionAgentContext', () => {
       {
         agentName: 'release-bot',
         metadata: { opencode_model: 'anthropic/claude-opus-4.8' },
-        projectMetadata: { default_agent: 'kortix' },
+        projectMetadata: { default_agent: 'zed' },
       },
     ];
     const ctx = await getSessionAgentContext('s1');
     expect(ctx).toEqual({
       agentName: 'release-bot',
       opencodeModel: 'anthropic/claude-opus-4.8',
-      projectDefaultAgent: 'kortix',
+      projectDefaultAgent: 'zed',
     });
   });
 });

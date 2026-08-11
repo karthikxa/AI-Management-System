@@ -37,7 +37,7 @@ import { FilePreviewModal } from './file-preview-modal';
 import { FileSearch } from './file-search';
 
 /** System directories always pinned at the top of the listing. */
-const ELEVATED_DIRS = new Set(['.kortix', '.opencode']);
+const ELEVATED_DIRS = new Set(['.zed', '.opencode']);
 
 export interface DriveExplorerToolbarOptions {
   showVersionSelector?: boolean;

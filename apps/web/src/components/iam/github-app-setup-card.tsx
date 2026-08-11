@@ -5,7 +5,7 @@
 // paste in credentials for an App that already exists, or a personal/
 // fine-grained access token for the quickest path. No CLI, no SSH.
 //
-// On the hosted Kortix deployment (source 'env') the App is configured by
+// On the hosted Zed deployment (source 'env') the App is configured by
 // the operator via env vars — this card still renders there, but as a
 // read-only "Connected via environment" summary; the separate cloud
 // `GitHubConnectionCard` (per-account App installs) is what a hosted
@@ -39,7 +39,7 @@ import {
   setGitHubAppFromExisting,
   setGitHubAppPat,
   startGitHubAppManifest,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 export const GITHUB_APP_STATUS_KEY = ['github-app-status'];
 
@@ -63,7 +63,7 @@ export function useGitHubAppStatus(enabled = true) {
  * from the SPA to GitHub.
  */
 // sessionStorage-based guard — survives React re-mounts, concurrent renders, AND HMR
-const MANIFEST_GUARD_KEY = 'kortix-manifest-form-submitting';
+const MANIFEST_GUARD_KEY = 'zed-manifest-form-submitting';
 
 function isManifestFormSubmitting(): boolean {
   try {
@@ -301,7 +301,7 @@ export function GitHubAppSetupCard({ canManage }: GitHubAppSetupCardProps) {
         <p className="text-muted-foreground text-xs">
           {status.configured
             ? 'Powers repository creation and pushes for this instance.'
-            : 'Every Kortix project is a git repository the server creates and pushes to on your behalf — connect GitHub to enable projects.'}
+            : 'Every Zed project is a git repository the server creates and pushes to on your behalf — connect GitHub to enable projects.'}
         </p>
       </div>
 
@@ -451,7 +451,7 @@ export function GitHubAppSetupCard({ canManage }: GitHubAppSetupCardProps) {
                   </li>
                   <li>
                     <span className="text-foreground">Repository access</span>: All repositories —
-                    Kortix creates a new repo per project, so a fixed repo list can&apos;t cover
+                    Zed creates a new repo per project, so a fixed repo list can&apos;t cover
                     future ones.
                   </li>
                   <li>
@@ -562,7 +562,7 @@ export function GitHubAppSetupCard({ canManage }: GitHubAppSetupCardProps) {
         open={confirmDisconnectOpen}
         onOpenChange={setConfirmDisconnectOpen}
         title="Disconnect GitHub?"
-        description="Projects that already have a repo keep working, but Kortix won't be able to create new managed repos until you reconnect."
+        description="Projects that already have a repo keep working, but Zed won't be able to create new managed repos until you reconnect."
         confirmLabel="Disconnect"
         confirmVariant="destructive"
         onConfirm={() => disconnectMutation.mutate()}

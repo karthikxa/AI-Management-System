@@ -16,19 +16,19 @@ describe('self-host instance config', () => {
   let previousRoot: string | undefined;
 
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), 'kortix-self-host-config-'));
-    previousRoot = process.env.KORTIX_SELF_HOST_CONFIG_DIR;
-    process.env.KORTIX_SELF_HOST_CONFIG_DIR = root;
+    root = mkdtempSync(join(tmpdir(), 'zed-self-host-config-'));
+    previousRoot = process.env.ZED_SELF_HOST_CONFIG_DIR;
+    process.env.ZED_SELF_HOST_CONFIG_DIR = root;
   });
 
   afterEach(() => {
-    if (previousRoot === undefined) delete process.env.KORTIX_SELF_HOST_CONFIG_DIR;
-    else process.env.KORTIX_SELF_HOST_CONFIG_DIR = previousRoot;
+    if (previousRoot === undefined) delete process.env.ZED_SELF_HOST_CONFIG_DIR;
+    else process.env.ZED_SELF_HOST_CONFIG_DIR = previousRoot;
   });
 
   test('legacy .env-only instances load as a valid, config-less instance', () => {
     mkdirSync(instanceDir('legacy'), { recursive: true });
-    writeFileSync(join(instanceDir('legacy'), '.env'), 'KORTIX_VERSION=0.9.72\n');
+    writeFileSync(join(instanceDir('legacy'), '.env'), 'ZED_VERSION=0.9.72\n');
 
     expect(loadInstanceConfig('legacy')).toEqual({
       schema_version: 1,

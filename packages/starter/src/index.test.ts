@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'bun:test';
 import {
   DEFAULT_STARTER_TEMPLATE_ID,
-  KORTIX_MANAGED_SKILL_NAMES,
+  ZED_MANAGED_SKILL_NAMES,
   STARTER_TEMPLATE_IDS,
   type StarterFile,
   getManagedSkillFiles,
   getMarketplaceFiles,
   getProjectTemplateFiles,
   getStarterFiles,
-  isKortixManagedSkillName,
+  isZedManagedSkillName,
   listGeneralKnowledgeWorkerSkills,
   normalizeStarterTemplateId,
 } from './index';
@@ -90,7 +90,7 @@ describe('getStarterFiles', () => {
       projectName: 'My Cool Project',
       template: 'general-knowledge-worker',
     });
-    const memory = byPath(files).get('.kortix/memory/MEMORY.md');
+    const memory = byPath(files).get('.zed/memory/MEMORY.md');
     expect(memory).toBeDefined();
     expect(memory!).toContain('My Cool Project');
     expect(memory!).not.toContain('{{projectName}}');
@@ -160,25 +160,25 @@ describe('getStarterFiles', () => {
     expect(a).toEqual(b);
   });
 
-  test('always includes the base kortix.yaml', () => {
+  test('always includes the base zed.yaml', () => {
     const files = getStarterFiles({ projectName: 'X', template: 'minimal' });
-    expect(byPath(files).has('kortix.yaml')).toBe(true);
+    expect(byPath(files).has('zed.yaml')).toBe(true);
   });
 
   test('default starter ships the general knowledge worker skills; internal minimal does not', () => {
     // The one user-facing starter (the default) carries the domain skill kit.
     const dflt = getStarterFiles({ projectName: 'X' });
-    expect(dflt.some((f) => f.path === '.kortix/opencode/skills/presentations/SKILL.md')).toBe(
+    expect(dflt.some((f) => f.path === '.zed/opencode/skills/presentations/SKILL.md')).toBe(
       true,
     );
-    expect(dflt.some((f) => f.path === '.kortix/opencode/skills/pdf/SKILL.md')).toBe(true);
+    expect(dflt.some((f) => f.path === '.zed/opencode/skills/pdf/SKILL.md')).toBe(true);
 
     // `minimal` stays base-only (used internally by the project-clone seed path).
     const minimal = getStarterFiles({ projectName: 'X', template: 'minimal' });
-    expect(minimal.some((f) => f.path === '.kortix/opencode/skills/presentations/SKILL.md')).toBe(
+    expect(minimal.some((f) => f.path === '.zed/opencode/skills/presentations/SKILL.md')).toBe(
       false,
     );
-    expect(minimal.some((f) => f.path === '.kortix/opencode/skills/pdf/SKILL.md')).toBe(false);
+    expect(minimal.some((f) => f.path === '.zed/opencode/skills/pdf/SKILL.md')).toBe(false);
   });
 
   /**
@@ -203,7 +203,7 @@ describe('getStarterFiles', () => {
    */
   test('no SKILL.md is nested inside another skill', () => {
     const nested = getStarterFiles({ projectName: 'X' })
-      .map((f) => f.path.match(/^\.kortix\/opencode\/skills\/(.+)\/SKILL\.md$/)?.[1])
+      .map((f) => f.path.match(/^\.zed\/opencode\/skills\/(.+)\/SKILL\.md$/)?.[1])
       .filter((slug): slug is string => typeof slug === 'string' && slug.includes('/'));
     expect(nested).toEqual([]);
   });
@@ -214,7 +214,7 @@ describe('getStarterFiles', () => {
    * one is universal" skill at a time.
    */
   test('the scaffold ships exactly the agreed skill floor', () => {
-    const prefix = '.kortix/opencode/skills/';
+    const prefix = '.zed/opencode/skills/';
     const names = new Set<string>();
     for (const f of getStarterFiles({ projectName: 'X' })) {
       if (!f.path.startsWith(prefix)) continue;
@@ -231,7 +231,7 @@ describe('getStarterFiles', () => {
       'presentations',
       'xlsx',
       // Platform front door.
-      'kortix-cli',
+      'zed-cli',
       // Computer basics — driving a real browser.
       'agent-browser',
       // Web artifacts, and the skill that puts them on a public URL.
@@ -245,29 +245,29 @@ describe('getStarterFiles', () => {
     const files = getStarterFiles({ projectName: 'X', template: 'minimal' });
     const paths = new Set(files.map((f) => f.path));
 
-    expect(paths.has('.kortix/opencode/tools/show.ts')).toBe(true);
-    // `kortix-cli` is the sole managed skill left in the scaffold; the rest of the
-    // `kortix-*` family lives in `templates/managed/` and is injected at boot.
-    expect(paths.has('.kortix/opencode/skills/kortix-cli/SKILL.md')).toBe(true);
-    expect(paths.has('.kortix/opencode/skills/kortix-system/SKILL.md')).toBe(false);
-    expect(paths.has('.kortix/opencode/skills/agent-browser/SKILL.md')).toBe(false);
-    expect(paths.has('.kortix/opencode/plugins/pty.ts')).toBe(true);
-    expect(paths.has('.kortix/opencode/plugins/opencode-pty/src/plugin/pty/manager.ts')).toBe(true);
-    expect(paths.has('.kortix/opencode/tools/memory.ts')).toBe(true);
-    expect(paths.has('.kortix/opencode/tools/web_search.ts')).toBe(true);
-    expect(paths.has('.kortix/opencode/tools/scrape_webpage.ts')).toBe(true);
-    expect(paths.has('.kortix/opencode/tools/image_search.ts')).toBe(true);
-    expect(paths.has('.kortix/opencode/tools/lib/get-env.ts')).toBe(true);
+    expect(paths.has('.zed/opencode/tools/show.ts')).toBe(true);
+    // `zed-cli` is the sole managed skill left in the scaffold; the rest of the
+    // `zed-*` family lives in `templates/managed/` and is injected at boot.
+    expect(paths.has('.zed/opencode/skills/zed-cli/SKILL.md')).toBe(true);
+    expect(paths.has('.zed/opencode/skills/zed-system/SKILL.md')).toBe(false);
+    expect(paths.has('.zed/opencode/skills/agent-browser/SKILL.md')).toBe(false);
+    expect(paths.has('.zed/opencode/plugins/pty.ts')).toBe(true);
+    expect(paths.has('.zed/opencode/plugins/opencode-pty/src/plugin/pty/manager.ts')).toBe(true);
+    expect(paths.has('.zed/opencode/tools/memory.ts')).toBe(true);
+    expect(paths.has('.zed/opencode/tools/web_search.ts')).toBe(true);
+    expect(paths.has('.zed/opencode/tools/scrape_webpage.ts')).toBe(true);
+    expect(paths.has('.zed/opencode/tools/image_search.ts')).toBe(true);
+    expect(paths.has('.zed/opencode/tools/lib/get-env.ts')).toBe(true);
   });
 
   test('marketplace source contains optional first-party skills only', () => {
     const paths = new Set(getMarketplaceFiles().map((f) => f.path));
 
-    expect(paths.has('kortix.registry.json')).toBe(true);
+    expect(paths.has('zed.registry.json')).toBe(true);
     expect(paths.has('runtime/skills/email-triage/SKILL.md')).toBe(true);
     // `agent-browser` is scaffolded now (driving a browser is a floor capability,
     // not an optional install), so it must NOT also sit in the marketplace root —
-    // its hand-written kortix.registry.json entry was removed with the move.
+    // its hand-written zed.registry.json entry was removed with the move.
     expect(paths.has('runtime/skills/agent-browser/SKILL.md')).toBe(false);
     expect(paths.has('runtime/pty/pty-tools.ts')).toBe(false);
     expect(paths.has('runtime/tools/memory.ts')).toBe(false);
@@ -278,44 +278,44 @@ describe('getStarterFiles', () => {
   });
 });
 
-describe('KORTIX_MANAGED_SKILL_NAMES', () => {
-  test('tracks only the first-party kortix-* skill directories', () => {
-    expect([...KORTIX_MANAGED_SKILL_NAMES]).toEqual([
-      'kortix-cli',
-      'kortix-apps',
-      'kortix-computer',
-      'kortix-connectors',
-      'kortix-harness-refinement',
-      'kortix-marketplace',
-      'kortix-voice',
-      'kortix-memory',
-      'kortix-onboarding',
-      'kortix-slack',
-      'kortix-system',
-      'kortix-teams',
+describe('ZED_MANAGED_SKILL_NAMES', () => {
+  test('tracks only the first-party zed-* skill directories', () => {
+    expect([...ZED_MANAGED_SKILL_NAMES]).toEqual([
+      'zed-cli',
+      'zed-apps',
+      'zed-computer',
+      'zed-connectors',
+      'zed-harness-refinement',
+      'zed-marketplace',
+      'zed-voice',
+      'zed-memory',
+      'zed-onboarding',
+      'zed-slack',
+      'zed-system',
+      'zed-teams',
     ]);
 
-    expect(isKortixManagedSkillName('kortix-system')).toBe(true);
-    expect(isKortixManagedSkillName('agent-browser')).toBe(false);
-    expect(isKortixManagedSkillName('kortix')).toBe(false);
-    expect(isKortixManagedSkillName('harness-reflector')).toBe(false);
-    expect(isKortixManagedSkillName('web_search')).toBe(false);
+    expect(isZedManagedSkillName('zed-system')).toBe(true);
+    expect(isZedManagedSkillName('agent-browser')).toBe(false);
+    expect(isZedManagedSkillName('zed')).toBe(false);
+    expect(isZedManagedSkillName('harness-reflector')).toBe(false);
+    expect(isZedManagedSkillName('web_search')).toBe(false);
   });
 
   /**
    * Being LISTED as managed does not inject anything — the baked
-   * `/opt/kortix/managed-skills` set is built by walking template roots, so a
+   * `/opt/zed/managed-skills` set is built by walking template roots, so a
    * managed skill living in a root the bake does not walk is declared managed and
-   * reaches no sandbox at all. That silently stranded `kortix-computer` under
+   * reaches no sandbox at all. That silently stranded `zed-computer` under
    * `templates/marketplace/` for its entire life.
    *
    * `templates/managed/` now owns the family and `scripts/write-managed-skills.ts`
-   * walks it alongside the starter roots (which still carry `kortix-cli`), so the
+   * walks it alongside the starter roots (which still carry `zed-cli`), so the
    * gap is closed by construction. This test is the guard: adding a managed name
    * without putting its SKILL.md in a walked root fails here.
    */
   test('every managed skill is actually in the injected set', () => {
-    const prefix = '.kortix/opencode/skills/';
+    const prefix = '.zed/opencode/skills/';
     const injected = new Set<string>();
     for (const f of [
       ...getManagedSkillFiles(),
@@ -323,10 +323,10 @@ describe('KORTIX_MANAGED_SKILL_NAMES', () => {
     ]) {
       if (!f.path.startsWith(prefix)) continue;
       const name = f.path.slice(prefix.length).split('/')[0];
-      if (name && isKortixManagedSkillName(name)) injected.add(name);
+      if (name && isZedManagedSkillName(name)) injected.add(name);
     }
 
-    const missing = KORTIX_MANAGED_SKILL_NAMES.filter((n) => !injected.has(n));
+    const missing = ZED_MANAGED_SKILL_NAMES.filter((n) => !injected.has(n));
     expect(missing).toEqual([]);
   });
 
@@ -334,17 +334,17 @@ describe('KORTIX_MANAGED_SKILL_NAMES', () => {
    * The managed family is injected at boot (force-overwriting whatever the repo
    * holds), so committing a second copy into every new project bought nothing and
    * padded the Skills UI with ~10 entries the user cannot meaningfully edit.
-   * `kortix-cli` is the deliberate exception — the visible front door to the rest.
+   * `zed-cli` is the deliberate exception — the visible front door to the rest.
    */
-  test('only kortix-cli is scaffolded into a new project', () => {
-    const prefix = '.kortix/opencode/skills/';
+  test('only zed-cli is scaffolded into a new project', () => {
+    const prefix = '.zed/opencode/skills/';
     const scaffolded = new Set<string>();
     for (const f of getStarterFiles({ projectName: 'K', template: 'general-knowledge-worker' })) {
       if (!f.path.startsWith(prefix)) continue;
       const name = f.path.slice(prefix.length).split('/')[0];
-      if (name && isKortixManagedSkillName(name)) scaffolded.add(name);
+      if (name && isZedManagedSkillName(name)) scaffolded.add(name);
     }
-    expect([...scaffolded]).toEqual(['kortix-cli']);
+    expect([...scaffolded]).toEqual(['zed-cli']);
   });
 });
 
@@ -372,7 +372,7 @@ describe('listGeneralKnowledgeWorkerSkills', () => {
 describe('marketplace registry — first-party use-case templates', () => {
   const files = getMarketplaceFiles();
   const filePaths = new Set(files.map((f) => f.path));
-  const registryFile = files.find((f) => f.path === 'kortix.registry.json');
+  const registryFile = files.find((f) => f.path === 'zed.registry.json');
   const registry = JSON.parse(registryFile?.content ?? '{"items":[]}') as {
     items: Array<Record<string, unknown>>;
   };
@@ -449,7 +449,7 @@ describe('marketplace registry — first-party use-case templates', () => {
 describe('marketplace projects — full project templates', () => {
   /**
    * The bundled department templates (SEO / Marketing / Website Studio) were
-   * retired: the marketplace leads with the single Kortix Starter project rather
+   * retired: the marketplace leads with the single Zed Starter project rather
    * than a wall of half-relevant verticals, and the synthetic starter item is
    * built in the API catalog, not from this root.
    *

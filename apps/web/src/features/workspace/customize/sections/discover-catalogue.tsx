@@ -10,7 +10,7 @@ import {
   type DiscoverConnector,
   type DiscoverConnectorVariant,
   type PipedreamApp,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import {
   CubeIcon as Boxes,
   CaretRightIcon as ChevronRight,
@@ -286,7 +286,7 @@ export function DiscoverCatalogue({
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="text-foreground truncate text-sm font-medium">{name}</div>
-                      <Badge variant={isOAuth ? 'kortix' : 'outline'} size="xs">
+                      <Badge variant={isOAuth ? 'zed' : 'outline'} size="xs">
                         {subtitle}
                       </Badge>
                     </div>
@@ -376,7 +376,7 @@ export function DiscoverCatalogue({
                       key={`${variant.kind}:${variant.id}`}
                       className="bg-popover flex items-center gap-3 rounded-md border px-4 py-3"
                     >
-                      <span className="bg-kortix-blue/15 text-kortix-blue flex size-9 shrink-0 items-center justify-center rounded-sm">
+                      <span className="bg-zed-blue/15 text-zed-blue flex size-9 shrink-0 items-center justify-center rounded-sm">
                         {variant.kind === 'mcp' ? (
                           <Boxes className="size-5" />
                         ) : (

@@ -10,7 +10,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import type { FlatModel, ModelKey } from '@kortix/sdk/react';
+import type { FlatModel, ModelKey } from '@zed/sdk/react';
 import { Check, ChevronsUpDown, Cpu } from 'lucide-react';
 import { useMemo, useState } from 'react';
 

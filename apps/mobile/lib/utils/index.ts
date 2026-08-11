@@ -16,7 +16,7 @@ export * from './fonts';
 export * from './icon-mapping';
 
 // Parsing & formatting
-export { formatCredits, formatCreditsWithSign, dollarsToCredits, creditsToDollars, formatDollarsAsCredits, CREDITS_PER_DOLLAR } from '@kortix/shared';
+export { formatCredits, formatCreditsWithSign, dollarsToCredits, creditsToDollars, formatDollarsAsCredits, CREDITS_PER_DOLLAR } from '@zed/shared';
 
 export * from './tool-data-extractor';
 

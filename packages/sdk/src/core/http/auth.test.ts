@@ -68,7 +68,7 @@ test('invalidateBetweenAttempts fires the invalidation hook before each RETRY (n
 // endpoint, composed with any caller-supplied signal ─────────────────────────
 
 test('applies a default (non-aborted) timeout signal to a non-streaming request', () => {
-	const signal = withDefaultTimeout('http://sbx.test/kortix/health', undefined);
+	const signal = withDefaultTimeout('http://sbx.test/zed/health', undefined);
 	expect(signal).toBeDefined();
 	expect(signal?.aborted).toBe(false);
 });
@@ -84,7 +84,7 @@ test('does NOT impose a default timeout on the SSE event stream endpoint (/globa
 test('composes a caller-supplied signal with the default timeout on a non-streaming request', () => {
 	const controller = new AbortController();
 	controller.abort();
-	const signal = withDefaultTimeout('http://sbx.test/kortix/health', {
+	const signal = withDefaultTimeout('http://sbx.test/zed/health', {
 		signal: controller.signal,
 	});
 	// The already-aborted caller signal propagates through AbortSignal.any.
@@ -126,22 +126,22 @@ test('buildAuthHeaders injects the Bearer token without clobbering an existing A
 
 test('buildAuthHeaders identifies the configured client surface', () => {
 	const headers = buildAuthHeaders('http://x.test/', undefined, 'tok', 'cli');
-	expect(headers.get('x-kortix-client')).toBe('cli');
+	expect(headers.get('x-zed-client')).toBe('cli');
 });
 
 test('buildAuthHeaders preserves an explicit client surface header', () => {
 	const headers = buildAuthHeaders(
 		'http://x.test/',
-		{ headers: { 'X-Kortix-Client': 'mobile' } },
+		{ headers: { 'X-Zed-Client': 'mobile' } },
 		'tok',
 		'cli',
 	);
-	expect(headers.get('x-kortix-client')).toBe('mobile');
+	expect(headers.get('x-zed-client')).toBe('mobile');
 });
 
 test('buildAuthHeaders omits an unknown configured client surface', () => {
 	const headers = buildAuthHeaders('http://x.test/', undefined, 'tok', 'forged-source');
-	expect(headers.has('x-kortix-client')).toBe(false);
+	expect(headers.has('x-zed-client')).toBe(false);
 });
 
 test('the synthetic 401 is a JSON fetch-semantics Response (no network call implied)', async () => {

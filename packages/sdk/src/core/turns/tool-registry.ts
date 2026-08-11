@@ -7,7 +7,7 @@
  *
  * Canonical opencode built-in tool names (bash, read, write, edit, grep, glob,
  * webfetch, task, todowrite, question, patch, list, …) get a hand-picked
- * label. Kortix's plugin tool families (agent_*, session_*, task_*, trigger_*,
+ * label. Zed's plugin tool families (agent_*, session_*, task_*, trigger_*,
  * project_*, pty_*, and their `-`/`oc-` variants) are recognized by prefix so
  * new tools in an existing family are categorized correctly without a
  * registry update. Anything else falls back to a humanized version of the

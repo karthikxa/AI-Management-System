@@ -414,7 +414,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<'button'>) {
       className={cn(
         'absolute inset-y-0 z-20 mt-[44px] hidden h-[calc(100dvh-44px)] w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex',
         'after:pointer-events-none after:absolute after:inset-y-0 after:left-1/2 after:w-[3px] after:-translate-x-1/2 after:opacity-0 after:transition-opacity',
-        'hover:after:bg-sidebar-border dark:hover:after:bg-kortix-base/40 hover:after:opacity-100',
+        'hover:after:bg-sidebar-border dark:hover:after:bg-zed-base/40 hover:after:opacity-100',
         'after:[clip-path:polygon(calc(50%-0.0625rem)_0%,calc(50%+0.0625rem)_0%,calc(50%+0.125rem)_50%,calc(50%+0.0625rem)_100%,calc(50%-0.0625rem)_100%,calc(50%-0.125rem)_50%)]',
         'after:[mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]',
         'in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize',
@@ -590,7 +590,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<'li'>) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none transition-all cursor-pointer shadow-none group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-kortix-base focus-visible:ring-[0.6px] active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none transition-all cursor-pointer shadow-none group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-zed-base focus-visible:ring-[0.6px] active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -599,7 +599,7 @@ const sidebarMenuButtonVariants = cva(
         outline:
           'bg-background shadow-[0_0_0_1px_var(--sidebar-border)] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_var(--sidebar-accent)]',
         success:
-          'bg-kortix-green/10 text-kortix-green hover:bg-kortix-green/20 hover:text-kortix-green active:bg-kortix-green/25 active:text-kortix-green data-[active=true]:bg-kortix-green/15 data-[active=true]:text-kortix-green data-[state=open]:hover:bg-kortix-green/20 data-[state=open]:hover:text-kortix-green dark:bg-kortix-green/15 dark:text-kortix-green dark:hover:bg-kortix-green/25 dark:hover:text-kortix-green dark:active:bg-kortix-green/30 dark:active:text-kortix-green dark:data-[active=true]:bg-kortix-green/20 dark:data-[active=true]:text-kortix-green dark:data-[state=open]:hover:bg-kortix-green/25 dark:data-[state=open]:hover:text-kortix-green',
+          'bg-zed-green/10 text-zed-green hover:bg-zed-green/20 hover:text-zed-green active:bg-zed-green/25 active:text-zed-green data-[active=true]:bg-zed-green/15 data-[active=true]:text-zed-green data-[state=open]:hover:bg-zed-green/20 data-[state=open]:hover:text-zed-green dark:bg-zed-green/15 dark:text-zed-green dark:hover:bg-zed-green/25 dark:hover:text-zed-green dark:active:bg-zed-green/30 dark:active:text-zed-green dark:data-[active=true]:bg-zed-green/20 dark:data-[active=true]:text-zed-green dark:data-[state=open]:hover:bg-zed-green/25 dark:data-[state=open]:hover:text-zed-green',
       },
       size: {
         default: 'h-8 text-sm',

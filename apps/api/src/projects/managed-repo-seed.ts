@@ -2,7 +2,7 @@
  * Managed-repo scaffold seed: verification, state recording, and self-heal.
  *
  * A brand-new managed project is only usable once its repo carries a real
- * commit on the default branch — the agents, skills, `kortix.yaml`, and every
+ * commit on the default branch — the agents, skills, `zed.yaml`, and every
  * OpenCode/Claude/Codex/Pi runtime profile live IN the repo, and session start
  * pushes a session branch off `refs/heads/<default_branch>`. A repo with no
  * default branch is therefore structurally dead: the file browser is empty, no
@@ -25,7 +25,7 @@
  *     empty repo" is distinguishable from "empty because the seed never
  *     landed", and the second case can be repaired on next access.
  *
- * `expected: false` is a first-class, permanently-respected state: `kortix ship`
+ * `expected: false` is a first-class, permanently-respected state: `zed ship`
  * (apps/cli/src/commands/ship.ts) provisions with no `seed_starter` and then
  * pushes its own local history to the default branch with a plain (non-force)
  * push. Seeding that repo — at provision time or later — would turn that push
@@ -189,15 +189,15 @@ export function readManagedRepoSeedState(metadata: unknown): ManagedRepoSeedStat
 }
 
 /**
- * May Kortix seed this project's repo on demand?
+ * May Zed seed this project's repo on demand?
  *
  * Yes for a MANAGED repo whose seed was expected but never verified, and for a
  * managed repo with no recorded state at all — every project created before
  * this module existed, including the ones already broken in production. Those
  * repos are dead today; seeding them is the only path back.
  *
- * No for `expected: false` — the `kortix ship` contract owns that repo's first
- * commit (see the module docstring). No for a repo Kortix does not manage.
+ * No for `expected: false` — the `zed ship` contract owns that repo's first
+ * commit (see the module docstring). No for a repo Zed does not manage.
  */
 export function shouldSelfHealManagedRepoSeed(input: {
   managed: boolean;
@@ -250,7 +250,7 @@ export async function pushSeedFiles(input: {
   if (input.backend.seedFiles) {
     await input.backend.seedFiles(input.connRef, input.token, input.files, {
       branch: input.branch,
-      message: 'chore: scaffold Kortix project',
+      message: 'chore: scaffold Zed project',
       baseFiles: input.baseFiles,
     });
     return;
@@ -261,7 +261,7 @@ export async function pushSeedFiles(input: {
     token: input.token,
     files: input.files,
     branch: input.branch,
-    commitMessage: 'chore: scaffold Kortix project',
+    commitMessage: 'chore: scaffold Zed project',
     baseFiles: input.baseFiles,
   });
 }
@@ -314,7 +314,7 @@ export function ensureManagedRepoSeeded(
 
 async function repairManagedRepo(projectId: string, trigger: string): Promise<SelfHealOutcome> {
   try {
-    const { projects } = await import('@kortix/db');
+    const { projects } = await import('@zed/db');
     const { eq } = await import('drizzle-orm');
     const { db } = await import('../shared/db');
     const [row] = await db
@@ -359,7 +359,7 @@ async function repairManagedRepo(projectId: string, trigger: string): Promise<Se
     // plain starter. Rows with no marker predate the recording and get the
     // default starter — the same thing the web create flow asks for.
     const recorded = readManagedRepoSeedState(row.metadata);
-    const { STARTER_TEMPLATE_IDS } = await import('@kortix/starter');
+    const { STARTER_TEMPLATE_IDS } = await import('@zed/starter');
     const { normalizeStarterTemplateId } = await import('./starter');
     const recordedTemplate = recorded?.template;
     const sourceItemId =

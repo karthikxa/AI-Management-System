@@ -10,7 +10,7 @@ import {
   projectLlmCatalogToProviderList,
 } from './provider-selection';
 
-describe('LLM_PROVIDER_CREDENTIALS — Kortix auth requirements, not raw catalog env', () => {
+describe('LLM_PROVIDER_CREDENTIALS — Zed auth requirements, not raw catalog env', () => {
   test('amazon-bedrock requires only the bearer token + region', () => {
     const bedrock = LLM_PROVIDER_CREDENTIALS.find((p) => p.id === 'amazon-bedrock');
     expect(bedrock?.authRequirement.methods).toEqual([
@@ -86,7 +86,7 @@ describe('projectLlmCatalogToProviderList', () => {
       },
     } as never);
 
-    expect(list.default).toEqual({ kortix: 'claude-opus-4.8' });
+    expect(list.default).toEqual({ zed: 'claude-opus-4.8' });
     expect(Object.keys(list.all?.[0]?.models ?? {})).toEqual(['claude-opus-4.8']);
   });
 });
@@ -94,9 +94,9 @@ describe('projectLlmCatalogToProviderList', () => {
 describe('mergeProviderLists', () => {
   test('merges providers, connections, and defaults by provider id', () => {
     const primary = {
-      default: { kortix: 'managed' },
-      connected: ['kortix'],
-      all: [{ id: 'kortix', name: 'Kortix', models: {} }],
+      default: { zed: 'managed' },
+      connected: ['zed'],
+      all: [{ id: 'zed', name: 'Zed', models: {} }],
     } as unknown as ProviderListResponse;
     const secondary = {
       default: { anthropic: 'claude' },
@@ -106,9 +106,9 @@ describe('mergeProviderLists', () => {
 
     const merged = mergeProviderLists(primary, secondary);
 
-    expect(merged.connected).toEqual(['kortix', 'anthropic']);
-    expect(merged.all?.map((provider) => provider.id)).toEqual(['kortix', 'anthropic']);
-    expect(merged.default).toEqual({ kortix: 'managed', anthropic: 'claude' });
+    expect(merged.connected).toEqual(['zed', 'anthropic']);
+    expect(merged.all?.map((provider) => provider.id)).toEqual(['zed', 'anthropic']);
+    expect(merged.default).toEqual({ zed: 'managed', anthropic: 'claude' });
   });
 });
 
@@ -119,12 +119,12 @@ describe('mergeProviderLists', () => {
 // or the open picker keeps showing the pre-toggle list until a hard refresh.
 describe('applyEnablementToProviderList', () => {
   const providers = {
-    default: { kortix: 'glm-5.2' },
-    connected: ['kortix'],
+    default: { zed: 'glm-5.2' },
+    connected: ['zed'],
     all: [
       {
-        id: 'kortix',
-        name: 'Kortix',
+        id: 'zed',
+        name: 'Zed',
         source: 'gateway',
         models: {
           'glm-5.2': { name: 'GLM 5.2', enabled: true },

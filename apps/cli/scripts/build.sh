@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Compile the `kortix` CLI to a self-contained binary at dist/kortix — the
+# Compile the `zed` CLI to a self-contained binary at dist/zed — the
 # artifact the layered snapshot builder bakes into every cloud sandbox
 # (apps/api/src/snapshots/providers/daytona.ts reads
-# KORTIX_SNAPSHOT_CLI_BIN_PATH, default apps/cli/dist/kortix). Mirrors
-# apps/kortix-sandbox-agent-server/scripts/build.sh so both runtime binaries
+# ZED_SNAPSHOT_CLI_BIN_PATH, default apps/cli/dist/zed). Mirrors
+# apps/zed-sandbox-agent-server/scripts/build.sh so both runtime binaries
 # are produced the same way (CI, dev-local.sh, the snapshot test harness).
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -34,7 +34,7 @@ compile_with_retry() {
   local delay=5
 
   while true; do
-    if bun build --compile --target="$target" --outfile=dist/kortix src/index.ts; then
+    if bun build --compile --target="$target" --outfile=dist/zed src/index.ts; then
       return 0
     fi
 
@@ -58,15 +58,15 @@ bun run ../../packages/starter/scripts/generate-embedded.ts
 # Record the exact in-sandbox Connector source before compilation. The final
 # attestation binds that source to the output binary and Linux compile target.
 source_digest="$(bun run scripts/sandbox-runtime-attestation.ts print-source)"
-attestation_tmp="dist/.kortix-connectors-runtime.attestation.json.tmp"
-attestation_final="dist/kortix-connectors-runtime.attestation.json"
+attestation_tmp="dist/.zed-connectors-runtime.attestation.json.tmp"
+attestation_final="dist/zed-connectors-runtime.attestation.json"
 compile_with_retry
 bun run scripts/sandbox-runtime-attestation.ts write \
   "$attestation_tmp" \
-  "dist/kortix" \
+  "dist/zed" \
   "$source_digest" \
   "$target"
 mv "$attestation_tmp" "$attestation_final"
-chmod +x dist/kortix
-size="$(stat -f%z dist/kortix 2>/dev/null || stat -c%s dist/kortix)"
-echo "Built dist/kortix for ${target} (${size} bytes; attestation ${attestation_final})"
+chmod +x dist/zed
+size="$(stat -f%z dist/zed 2>/dev/null || stat -c%s dist/zed)"
+echo "Built dist/zed for ${target} (${size} bytes; attestation ${attestation_final})"

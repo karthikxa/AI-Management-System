@@ -69,7 +69,7 @@ function fakeProjectRow(over: Record<string, unknown> = {}) {
     name: 'icon-wiring-test',
     repoUrl: 'https://github.com/acme/icon-wiring-test.git',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     status: 'active',
     metadata: {},
     lastOpenedAt: null,

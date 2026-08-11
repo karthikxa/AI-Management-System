@@ -4,11 +4,11 @@ import {
   CliError,
   getEnv,
   handleError,
-  kortixConnectorCall,
-  kortixGet,
-  kortixPost,
-  kortixProjectId,
-  kortixSessionId,
+  zedConnectorCall,
+  zedGet,
+  zedPost,
+  zedProjectId,
+  zedSessionId,
   out,
   parseArgs,
   validateRequired,
@@ -28,11 +28,11 @@ async function relayTurnStream(
     blocks?: unknown[];
   } = {},
 ): Promise<boolean> {
-  const projectId = kortixProjectId();
-  const sessionId = kortixSessionId();
+  const projectId = zedProjectId();
+  const sessionId = zedSessionId();
   if (!projectId || !sessionId) return false;
   try {
-    const r = await kortixPost<{ ok?: boolean }>(`/projects/${projectId}/turn-stream`, {
+    const r = await zedPost<{ ok?: boolean }>(`/projects/${projectId}/turn-stream`, {
       session_id: sessionId,
       kind,
       text,
@@ -64,14 +64,14 @@ function readSourcesFlag(flags: Record<string, string>): Array<{ url: string; te
     .filter((s) => /^https?:\/\//.test(s.url));
 }
 
-// Slack Web API methods → their Kortix `channel` connector action paths. The
+// Slack Web API methods → their Zed `channel` connector action paths. The
 // shim speaks Slack method names; the Connector speaks connector actions.
 //
 // Use the reserved platform-owned channel slug first. Projects may define their
 // own `[[connectors]] slug="slack"` (often Pipedream Slack), which must not
 // shadow the built-in Slack CLI. Keep the legacy `slack` fallback so old API
 // deployments / old materialized rows continue to work during rollout.
-const SLACK_CONNECTORS = ['kortix_slack', 'slack'] as const;
+const SLACK_CONNECTORS = ['zed_slack', 'slack'] as const;
 const METHOD_TO_ACTION: Record<string, string> = {
   'chat.postMessage': 'send_message',
   'chat.update': 'update_message',
@@ -106,7 +106,7 @@ function optionalInt(value: string | undefined): number | undefined {
   return value ? Number.parseInt(value, 10) : undefined;
 }
 
-// Route a Slack Web API call through the Kortix Connector (via the SDK): the bot
+// Route a Slack Web API call through the Zed Connector (via the SDK): the bot
 // token is resolved + attached SERVER-SIDE (never in this sandbox), the call is
 // audited + policy-gated, and Slack's response comes back as `data`. The gateway
 // maps Slack's `{ok:false}` envelope to an error, so the SDK throws on failure
@@ -122,7 +122,7 @@ async function connectorCall(
   let lastErr: CliError | null = null;
   for (const connector of SLACK_CONNECTORS) {
     try {
-      const res = await kortixConnectorCall<{ data?: SlackWebApiResponse } & SlackWebApiResponse>(
+      const res = await zedConnectorCall<{ data?: SlackWebApiResponse } & SlackWebApiResponse>(
         `${connector}.${action}`,
         args,
       );
@@ -178,9 +178,9 @@ async function send(opts: {
     const fileName = opts.file.split('/').pop() || 'file';
     // Upload via the server-side proxy — the bot token stays on the server (the
     // 3-step external-upload + form-encoding can't ride the JSON Connector gateway).
-    const projectId = kortixProjectId();
-    if (!projectId) throw new CliError('KORTIX_PROJECT_ID not set — cannot upload.');
-    const res = await kortixPost<{ ok?: boolean; files?: unknown }>(
+    const projectId = zedProjectId();
+    if (!projectId) throw new CliError('ZED_PROJECT_ID not set — cannot upload.');
+    const res = await zedPost<{ ok?: boolean; files?: unknown }>(
       `/projects/${projectId}/channels/slack/file/upload`,
       {
         channel: opts.channel,
@@ -329,13 +329,13 @@ async function fileInfo(opts: { fileId: string }) {
 
 async function download(opts: { url: string; out: string }) {
   // Fetch via the server-side proxy — the bot token stays on the server. Binary,
-  // so a raw fetch (not the JSON kortix client), authed with the session token.
-  const apiUrl = getEnv('KORTIX_API_URL');
-  const tok = getEnv('KORTIX_CLI_TOKEN');
-  const projectId = kortixProjectId();
+  // so a raw fetch (not the JSON zed client), authed with the session token.
+  const apiUrl = getEnv('ZED_API_URL');
+  const tok = getEnv('ZED_CLI_TOKEN');
+  const projectId = zedProjectId();
   if (!apiUrl || !tok || !projectId) {
     throw new CliError(
-      'KORTIX_API_URL / KORTIX_CLI_TOKEN / KORTIX_PROJECT_ID not set — cannot download.',
+      'ZED_API_URL / ZED_CLI_TOKEN / ZED_PROJECT_ID not set — cannot download.',
     );
   }
   const proxyUrl = new URL(
@@ -367,14 +367,14 @@ async function download(opts: { url: string; out: string }) {
 // GET /v1/webhooks/slack/<projectId>/manifest. We just fetch + present it, so
 // there's one manifest implementation no matter where you ask for it.
 async function manifest(opts: { url?: string; projectId?: string; name?: string }) {
-  const projectId = opts.projectId || kortixProjectId();
-  if (!projectId) throw new CliError('--project-id required (or set KORTIX_PROJECT_ID)');
+  const projectId = opts.projectId || zedProjectId();
+  if (!projectId) throw new CliError('--project-id required (or set ZED_PROJECT_ID)');
 
   const params: Record<string, string> = {};
   if (opts.name) params.name = opts.name;
-  const m = await kortixGet<unknown>(`/webhooks/slack/${projectId}/manifest`, params);
+  const m = await zedGet<unknown>(`/webhooks/slack/${projectId}/manifest`, params);
 
-  const publicUrl = (opts.url || getEnv('KORTIX_API_URL') || '')
+  const publicUrl = (opts.url || getEnv('ZED_API_URL') || '')
     .trim()
     .replace(/\/+$/, '')
     .replace(/\/v1$/, '');
@@ -509,17 +509,17 @@ async function main(): Promise<void> {
       // reply resumes this session. Defaults to the Slack-turn env when present.
       const channel = flags.channel ?? getEnv('SLACK_CHANNEL_ID');
       const threadTs = flags.thread ?? getEnv('SLACK_THREAD_TS');
-      const sessionId = kortixSessionId();
-      const projectId = kortixProjectId();
+      const sessionId = zedSessionId();
+      const projectId = zedProjectId();
       if (!channel || !threadTs) {
         throw new CliError(
           'bind-thread needs --channel and --thread (defaults to $SLACK_CHANNEL_ID/$SLACK_THREAD_TS on Slack turns)',
         );
       }
-      if (!sessionId) throw new CliError('KORTIX_SESSION_ID not set — cannot bind this session.');
-      if (!projectId) throw new CliError('KORTIX_PROJECT_ID not set — cannot bind.');
+      if (!sessionId) throw new CliError('ZED_SESSION_ID not set — cannot bind this session.');
+      if (!projectId) throw new CliError('ZED_PROJECT_ID not set — cannot bind.');
       out(
-        await kortixPost(`/projects/${projectId}/channels/slack/bind-thread`, {
+        await zedPost(`/projects/${projectId}/channels/slack/bind-thread`, {
           session_id: sessionId,
           channel,
           thread_ts: threadTs,
@@ -571,7 +571,7 @@ async function main(): Promise<void> {
       console.log(`
 slack — Slack Web API adapter
 
-Auth: none in-sandbox — calls run through the Kortix Connector (server-side bot token).
+Auth: none in-sandbox — calls run through the Zed Connector (server-side bot token).
 
 Turn commands (use these when answering a Slack message):
   step         "<checkpoint>"            # narrate a live plan step as you work

@@ -44,7 +44,7 @@ export function RolePage({ role }: { role: RoleContent }): ReactNode {
       {/* ── hero ────────────────────────────────────────────────────────── */}
       <section className={cn(SOLUTIONS_MEASURE, 'relative pt-32 pb-12 sm:pt-36')}>
         <Reveal>
-          <Badge variant="kortix" className="rounded">
+          <Badge variant="zed" className="rounded">
             Solutions · {role.name}
           </Badge>
           <h1 className="text-foreground mt-6 max-w-4xl text-4xl font-medium tracking-tight text-balance sm:text-5xl lg:text-6xl">
@@ -257,7 +257,7 @@ export function RolePage({ role }: { role: RoleContent }): ReactNode {
       <Section id="cta">
         <Reveal>
           <div className="border-border bg-card flex flex-col items-start gap-6 rounded-sm border p-8 sm:p-12">
-            <Badge variant="kortix" className="rounded">
+            <Badge variant="zed" className="rounded">
               {role.name}
             </Badge>
             <h2 className="text-foreground max-w-2xl text-3xl leading-tight font-medium tracking-tight text-balance sm:text-4xl">

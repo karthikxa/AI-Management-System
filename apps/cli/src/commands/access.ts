@@ -30,7 +30,7 @@ interface PendingInvite {
   invite_expired: boolean;
 }
 
-const HELP = help`Usage: kortix access <subcommand> [options]
+const HELP = help`Usage: zed access <subcommand> [options]
 
 Manage who can use the linked project — mirrors the dashboard's project
 sharing/access panel. Roles: ${ROLES.join(', ')}.
@@ -47,7 +47,7 @@ Options:
   --role <r>         ${ROLES.join('|')}.
   --expires <iso>    Optional auto-revoke timestamp for a grant.
   --project <id>     Operate on this project id (default: linked).
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   -h, --help         Show this help.
 `;
 

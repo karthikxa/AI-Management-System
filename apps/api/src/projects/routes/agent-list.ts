@@ -51,7 +51,7 @@ projectsApp.openapi(
       
       const result = await db.execute(sql`
         SELECT name, display_name, description, agent_type, model_id, status, created_at::text as created_at
-        FROM kortix.project_agents 
+        FROM zed.project_agents 
         WHERE project_id = ${projectId}
         ORDER BY created_at DESC
       `);

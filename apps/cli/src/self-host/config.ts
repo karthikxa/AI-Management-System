@@ -3,11 +3,11 @@ import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 /**
- * Kortix self-host is one generic Docker-native system: generate a
+ * Zed self-host is one generic Docker-native system: generate a
  * docker-compose.yml + .env and run `docker compose up`. It runs identically
  * on a local machine, any VPS, or a cloud VM — there is no separate "target" to pick
  * and no cloud-specific coordinates to store. Everything cloud-specific
- * (a public domain, TLS) is just an env var (KORTIX_DOMAIN) the same compose
+ * (a public domain, TLS) is just an env var (ZED_DOMAIN) the same compose
  * stack reacts to, not a different deployment mechanism.
  */
 export interface SelfHostInstanceConfig {
@@ -20,8 +20,8 @@ const INSTANCE_PATTERN = /^[a-zA-Z][a-zA-Z0-9._-]*$/;
 const TOP_LEVEL_FIELDS = new Set(['schema_version', 'instance', 'release']);
 
 export function selfHostConfigRoot(): string {
-  const override = process.env.KORTIX_SELF_HOST_CONFIG_DIR?.trim();
-  return override ? resolve(override) : resolve(homedir(), '.config', 'kortix', 'self-host');
+  const override = process.env.ZED_SELF_HOST_CONFIG_DIR?.trim();
+  return override ? resolve(override) : resolve(homedir(), '.config', 'zed', 'self-host');
 }
 
 export function instanceDir(instance: string): string {

@@ -19,7 +19,7 @@
  * unit-api-contract-serializers.test.ts.
  */
 import { describe, expect, test } from 'bun:test';
-import type { accountGithubInstallations } from '@kortix/db';
+import type { accountGithubInstallations } from '@zed/db';
 import {
   PAT_MANAGED_GIT_INSTALLATION_ID,
   serializeGitHubInstallations,
@@ -53,7 +53,7 @@ describe('serializeGitHubInstallations — PAT fallback for the "Use a token" se
   });
 
   test('PAT fallback stays importable while preserving the App install path', () => {
-    const installUrl = 'https://github.com/apps/kortix/installations/new?state=signed';
+    const installUrl = 'https://github.com/apps/zed/installations/new?state=signed';
     const result = serializeGitHubInstallations([], ACCOUNT_ID, installUrl, 'globex-corp');
 
     expect(result.installed).toBe(true);

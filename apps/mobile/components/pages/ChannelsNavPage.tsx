@@ -73,11 +73,11 @@ function buildSlackManifest(projectId: string): string {
   const requestUrl = `${root}/v1/webhooks/slack/${projectId}`;
   const manifest = {
     display_information: {
-      name: 'Kortix',
-      description: 'Run a Kortix project from Slack',
+      name: 'Zed',
+      description: 'Run a Zed project from Slack',
       background_color: '#0a0a0a',
     },
-    features: { bot_user: { display_name: 'kortix', always_online: true } },
+    features: { bot_user: { display_name: 'zed', always_online: true } },
     oauth_config: {
       scopes: {
         bot: [

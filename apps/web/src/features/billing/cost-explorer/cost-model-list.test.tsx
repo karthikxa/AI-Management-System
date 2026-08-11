@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import type { CostModelRow } from '@kortix/sdk';
+import type { CostModelRow } from '@zed/sdk';
 
 import { CostModelList, modelListToggleLabel } from './cost-model-list';
 

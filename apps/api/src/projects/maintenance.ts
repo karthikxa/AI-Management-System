@@ -1,4 +1,4 @@
-import { projectSessions, projects } from '@kortix/db';
+import { projectSessions, projects } from '@zed/db';
 import { and, asc, eq, inArray, lt, ne, sql } from 'drizzle-orm';
 import { tickRunningComputeCharges } from '../billing/services/compute-metering';
 import { cleanupExpiredConnectorAttachments } from '../connectors/attachments';
@@ -27,7 +27,7 @@ const TERMINAL_SESSION_STATUSES = ['stopped', 'completed', 'failed'] as const;
 type MaintenanceTimer = ReturnType<typeof setInterval>;
 
 const globalForProjectMaintenance = globalThis as typeof globalThis & {
-  __kortixProjectMaintenanceTimer?: MaintenanceTimer | null;
+  __zedProjectMaintenanceTimer?: MaintenanceTimer | null;
 };
 
 let maintenanceTimer: MaintenanceTimer | null = null;
@@ -51,12 +51,12 @@ function positiveInt(raw: string | undefined, fallback: number): number {
 }
 
 function branchRetentionDays(): number {
-  return positiveInt(process.env.KORTIX_BRANCH_RETENTION_DAYS, DEFAULT_BRANCH_RETENTION_DAYS);
+  return positiveInt(process.env.ZED_BRANCH_RETENTION_DAYS, DEFAULT_BRANCH_RETENTION_DAYS);
 }
 
 function maintenanceIntervalMs(): number {
   return positiveInt(
-    process.env.KORTIX_PROJECT_MAINTENANCE_INTERVAL_MS,
+    process.env.ZED_PROJECT_MAINTENANCE_INTERVAL_MS,
     DEFAULT_MAINTENANCE_INTERVAL_MS,
   );
 }
@@ -74,7 +74,7 @@ function maintenanceIntervalMs(): number {
 // held for longer than any real cycle plausibly takes, a tick force-breaks it
 // (loudly) instead of leaving the loop dead for good.
 function stallThresholdMs(): number {
-  return positiveInt(process.env.KORTIX_PROJECT_MAINTENANCE_STALL_MS, maintenanceIntervalMs() * 3);
+  return positiveInt(process.env.ZED_PROJECT_MAINTENANCE_STALL_MS, maintenanceIntervalMs() * 3);
 }
 
 /** Pure decision, exported for direct unit testing. */
@@ -451,16 +451,16 @@ export async function runProjectMaintenance(): Promise<void> {
 }
 
 export function startProjectMaintenance(): void {
-  if (process.env.KORTIX_PROJECT_MAINTENANCE_ENABLED === 'false') return;
-  if (globalForProjectMaintenance.__kortixProjectMaintenanceTimer) {
-    clearInterval(globalForProjectMaintenance.__kortixProjectMaintenanceTimer);
+  if (process.env.ZED_PROJECT_MAINTENANCE_ENABLED === 'false') return;
+  if (globalForProjectMaintenance.__zedProjectMaintenanceTimer) {
+    clearInterval(globalForProjectMaintenance.__zedProjectMaintenanceTimer);
   }
   maintenanceTimer = setInterval(() => {
     runProjectMaintenance().catch((err) => {
       console.error('[project-maintenance] run failed:', err);
     });
   }, maintenanceIntervalMs());
-  globalForProjectMaintenance.__kortixProjectMaintenanceTimer = maintenanceTimer;
+  globalForProjectMaintenance.__zedProjectMaintenanceTimer = maintenanceTimer;
 }
 
 export function stopProjectMaintenance(): void {
@@ -468,8 +468,8 @@ export function stopProjectMaintenance(): void {
     clearInterval(maintenanceTimer);
     maintenanceTimer = null;
   }
-  if (globalForProjectMaintenance.__kortixProjectMaintenanceTimer) {
-    clearInterval(globalForProjectMaintenance.__kortixProjectMaintenanceTimer);
-    globalForProjectMaintenance.__kortixProjectMaintenanceTimer = null;
+  if (globalForProjectMaintenance.__zedProjectMaintenanceTimer) {
+    clearInterval(globalForProjectMaintenance.__zedProjectMaintenanceTimer);
+    globalForProjectMaintenance.__zedProjectMaintenanceTimer = null;
   }
 }

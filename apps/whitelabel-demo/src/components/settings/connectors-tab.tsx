@@ -24,9 +24,9 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { cn } from '@/lib/utils';
-import type { AdminConnector } from '@kortix/sdk';
+import type { AdminConnector } from '@zed/sdk';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plug, RefreshCw, Settings2, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -65,7 +65,7 @@ export function ConnectorsTab({ projectId }: { projectId: string }) {
 
   const connectors = useQuery({
     queryKey: key,
-    queryFn: () => kortix.project(projectId).connectors.list(),
+    queryFn: () => zed.project(projectId).connectors.list(),
   });
 
   const [slug, setSlug] = useState('');
@@ -74,7 +74,7 @@ export function ConnectorsTab({ projectId }: { projectId: string }) {
   const [url, setUrl] = useState('');
 
   const sync = useMutation({
-    mutationFn: () => kortix.project(projectId).connectors.sync(),
+    mutationFn: () => zed.project(projectId).connectors.sync(),
     onSuccess: (res) => {
       refresh();
       toast.success(`Synced ${res.synced} connector(s)`);
@@ -84,7 +84,7 @@ export function ConnectorsTab({ projectId }: { projectId: string }) {
 
   const create = useMutation({
     mutationFn: () =>
-      kortix.project(projectId).connectors.create({
+      zed.project(projectId).connectors.create({
         slug: slug.trim(),
         name: name.trim() || undefined,
         provider,
@@ -101,7 +101,7 @@ export function ConnectorsTab({ projectId }: { projectId: string }) {
   });
 
   const remove = useMutation({
-    mutationFn: (s: string) => kortix.project(projectId).connectors.remove(s),
+    mutationFn: (s: string) => zed.project(projectId).connectors.remove(s),
     onSuccess: () => {
       refresh();
       toast.success('Connector removed');
@@ -254,7 +254,7 @@ function ConnectorConfigDialog({
   const [open, setOpen] = useState(false);
   const config = useQuery({
     queryKey: ['project-connector-config', projectId, slug],
-    queryFn: () => kortix.project(projectId).connectors.config(slug),
+    queryFn: () => zed.project(projectId).connectors.config(slug),
     enabled: open,
   });
 

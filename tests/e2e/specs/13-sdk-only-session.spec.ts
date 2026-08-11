@@ -36,13 +36,13 @@ function executeSql(sql: string): string {
 
 function readAccountTier(accountId: string): string {
   return executeSql(
-    `SELECT tier FROM kortix.credit_accounts WHERE account_id = '${accountId}'`,
+    `SELECT tier FROM zed.credit_accounts WHERE account_id = '${accountId}'`,
   );
 }
 
 function fundAccount(accountId: string): void {
   executeSql(
-    `INSERT INTO kortix.credit_accounts (
+    `INSERT INTO zed.credit_accounts (
        account_id,
        balance,
        balance_precise,
@@ -67,8 +67,8 @@ function readSessionStatuses(sessionId: string): {
 } {
   const [projectSession, sandbox] = executeSql(
     `SELECT ps.status || '|' || ss.status
-       FROM kortix.project_sessions ps
-       JOIN kortix.session_sandboxes ss ON ss.session_id = ps.session_id
+       FROM zed.project_sessions ps
+       JOIN zed.session_sandboxes ss ON ss.session_id = ps.session_id
       WHERE ps.session_id = '${sessionId}'`,
   ).split('|');
   if (!projectSession || !sandbox) {
@@ -233,7 +233,7 @@ test.describe.serial('13 — SDK-only web session', () => {
           '-v',
           'ON_ERROR_STOP=1',
           '-c',
-          `DELETE FROM kortix.accounts WHERE account_id = '${accountId}'`,
+          `DELETE FROM zed.accounts WHERE account_id = '${accountId}'`,
         ],
         { stdio: 'ignore' },
       );
@@ -346,13 +346,13 @@ test.describe.serial('13 — SDK-only web session', () => {
     const runtimeRequests: string[] = [];
     const globalEventRequests: string[] = [];
     const acpRequests: string[] = [];
-    const failedKortixResponses: string[] = [];
+    const failedZedResponses: string[] = [];
 
     page.on('request', (request) => {
       if (request.url().includes('/global/event')) {
         globalEventRequests.push(request.url());
       }
-      if (request.url().includes('/kortix/acp/')) {
+      if (request.url().includes('/zed/acp/')) {
         acpRequests.push(request.url());
       }
       if (
@@ -368,7 +368,7 @@ test.describe.serial('13 — SDK-only web session', () => {
         response.status() >= 400
         && (response.url().includes('/v1/projects/') || response.url().includes('/v1/p/'))
       ) {
-        failedKortixResponses.push(
+        failedZedResponses.push(
           `${response.status()} ${response.request().method()} ${response.url()}`,
         );
       }
@@ -402,11 +402,11 @@ test.describe.serial('13 — SDK-only web session', () => {
     expect(runtimeRequests).toHaveLength(1);
     expect(globalEventRequests.length).toBeGreaterThan(0);
     expect(acpRequests).toEqual([]);
-    expect(failedKortixResponses).toEqual([]);
+    expect(failedZedResponses).toEqual([]);
 
     await page.getByRole('button', { name: /^Files$/ }).click();
     await expect(page).toHaveURL(`/projects/${projectId}/sessions/${sessionId}`);
-    await expect(page.getByText('kortix.yaml', { exact: true }).first()).toBeVisible({
+    await expect(page.getByText('zed.yaml', { exact: true }).first()).toBeVisible({
       timeout: 60_000,
     });
   });

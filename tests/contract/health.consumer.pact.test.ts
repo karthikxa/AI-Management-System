@@ -6,13 +6,13 @@ const { like, string } = MatchersV3;
 const here = import.meta.dirname;
 
 const provider = new PactV3({
-  consumer: "kortix-dashboard",
-  provider: "kortix-api",
+  consumer: "zed-dashboard",
+  provider: "zed-api",
   dir: resolve(here, "pacts"),
   logLevel: "warn",
 });
 
-describe("contract: kortix-api health", () => {
+describe("contract: zed-api health", () => {
   it("GET /v1/health responds with a healthy service body", async () => {
     provider
       .given("the api is healthy")
@@ -23,7 +23,7 @@ describe("contract: kortix-api health", () => {
         headers: { "Content-Type": "application/json" },
         body: like({
           status: string("ok"),
-          service: string("kortix-api"),
+          service: string("zed-api"),
           version: like("1.0.0"),
         }),
       });
@@ -34,7 +34,7 @@ describe("contract: kortix-api health", () => {
 
       const body = (await res.json()) as { status: string; service: string };
       expect(body.status).toBe("ok");
-      expect(body.service).toBe("kortix-api");
+      expect(body.service).toBe("zed-api");
     });
   });
 });

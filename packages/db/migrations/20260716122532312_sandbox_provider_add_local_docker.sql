@@ -3,7 +3,7 @@
 --
 -- Same precedent as 'platinum' (20260708154500000_sandbox_provider_add_platinum.sql)
 -- and 'managed' before it: the value lives in the Drizzle schema
--- (packages/db/src/schema/kortix.ts) so fresh databases already have it; this
+-- (packages/db/src/schema/zed.ts) so fresh databases already have it; this
 -- migration is what carries it onto every OTHER database (dev/staging/prod,
 -- and any baseline that FAKED past the original CREATE TYPE — see that
 -- migration's comment for the mixed-version-baseline mechanics that make this
@@ -29,4 +29,4 @@
 -- missing 'local-docker' until this migration runs — there is no skip case.
 set statement_timeout = '5s';
 set lock_timeout = '1s';
-ALTER TYPE "kortix"."sandbox_provider" ADD VALUE IF NOT EXISTS 'local-docker';
+ALTER TYPE "zed"."sandbox_provider" ADD VALUE IF NOT EXISTS 'local-docker';

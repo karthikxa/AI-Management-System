@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { describe, expect, test } from 'bun:test';
 
-import type { ProjectSecret, ProjectSecretsResponse } from '@kortix/sdk';
+import type { ProjectSecret, ProjectSecretsResponse } from '@zed/sdk';
 import {
   applyProjectSecretResponse,
   beginOptimisticProjectSecretSave,
@@ -40,7 +40,7 @@ function response(items: ProjectSecret[]): ProjectSecretsResponse {
     optional: ['OPTIONAL_TOKEN'],
     can_manage: true,
     manifest_status: 'loaded',
-    manifest_path: 'kortix.yaml',
+    manifest_path: 'zed.yaml',
   };
 }
 

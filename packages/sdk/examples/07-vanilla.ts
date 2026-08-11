@@ -1,7 +1,7 @@
 /**
  * 07 — The whole flow, framework-free, in one file.
  *
- * createKortix → projects.list() → session(pid, sid).send() → session.stream()
+ * createZed → projects.list() → session(pid, sid).send() → session.stream()
  * → classifyTurn. Zero React, zero DOM, zero Node-specific API beyond
  * `process.env` and `console`.
  *
@@ -17,35 +17,35 @@
  * `session.runtime.session.messages({ sessionID })`.
  *
  * Run:
- *   KORTIX_API_URL=http://localhost:8008/v1 KORTIX_API_KEY=kortix_pat_... \
- *   KORTIX_PROJECT_ID=... KORTIX_SESSION_ID=... \
+ *   ZED_API_URL=http://localhost:8008/v1 ZED_API_KEY=zed_pat_... \
+ *   ZED_PROJECT_ID=... ZED_SESSION_ID=... \
  *     bun run examples/07-vanilla.ts "list the files here"
  *
  * As an npm consumer, one import line changes:
- *   import { classifyTurn, createKortix, narrowChatEvent } from '@kortix/sdk';
- *   import type { MessageWithParts } from '@kortix/sdk';
+ *   import { classifyTurn, createZed, narrowChatEvent } from '@zed/sdk';
+ *   import type { MessageWithParts } from '@zed/sdk';
  */
-import { classifyTurn, createKortix, narrowChatEvent } from '../src/index';
+import { classifyTurn, createZed, narrowChatEvent } from '../src/index';
 import type { MessageWithParts } from '../src/index';
 
 async function main() {
-  const backendUrl = process.env.KORTIX_API_URL ?? 'http://localhost:8008/v1';
-  const apiKey = process.env.KORTIX_API_KEY;
-  const projectId = process.env.KORTIX_PROJECT_ID;
-  const sessionId = process.env.KORTIX_SESSION_ID;
+  const backendUrl = process.env.ZED_API_URL ?? 'http://localhost:8008/v1';
+  const apiKey = process.env.ZED_API_KEY;
+  const projectId = process.env.ZED_PROJECT_ID;
+  const sessionId = process.env.ZED_SESSION_ID;
   const prompt = process.argv[2] ?? 'Say hello in one sentence.';
 
   if (!apiKey || !projectId || !sessionId) {
-    console.error('Set KORTIX_API_KEY, KORTIX_PROJECT_ID and KORTIX_SESSION_ID.');
+    console.error('Set ZED_API_KEY, ZED_PROJECT_ID and ZED_SESSION_ID.');
     process.exit(1);
   }
 
-  const kortix = createKortix({ backendUrl, getToken: async () => apiKey });
+  const zed = createZed({ backendUrl, getToken: async () => apiKey });
 
-  const projects = await kortix.projects.list();
+  const projects = await zed.projects.list();
   console.log(`${projects.length} project(s); using ${projectId}`);
 
-  const session = kortix.session(projectId, sessionId);
+  const session = zed.session(projectId, sessionId);
 
   // Connect BEFORE sending so no early events are missed. `ensureReady()`
   // also hands back this handle's own resolved opencode session id, which

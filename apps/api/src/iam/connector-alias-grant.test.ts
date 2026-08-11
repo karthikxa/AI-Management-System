@@ -8,53 +8,53 @@ import { grantFromLoadedAgents } from '../projects/agents';
  * alias spellings:
  *
  *   catalog   (db-deps)  -> publicConnectorAlias(row.slug)  => "email"
- *   call gate (router)   -> raw connectorSlug               => "kortix_email"
+ *   call gate (router)   -> raw connectorSlug               => "zed_email"
  *   create    (sessions) -> raw caller binding key          => either
  *
  * With an exact `includes()` match, whichever spelling the manifest author
  * picked satisfied one gate and failed another: `email` made the connector
- * VISIBLE but 403'd on call; `kortix_email` made it invisible (silently skipped)
+ * VISIBLE but 403'd on call; `zed_email` made it invisible (silently skipped)
  * but callable. Both are broken, and the first is worse — it looks like it works.
  */
 describe('connector alias spelling must not decide the outcome', () => {
-  const publicSpelling = { agent: 'a', kortixCli: 'all' as const, connectors: ['email'] };
-  const canonicalSpelling = { agent: 'a', kortixCli: 'all' as const, connectors: ['kortix_email'] };
+  const publicSpelling = { agent: 'a', zedCli: 'all' as const, connectors: ['email'] };
+  const canonicalSpelling = { agent: 'a', zedCli: 'all' as const, connectors: ['zed_email'] };
 
   test('both spellings admit the connector once the grant is canonicalized', () => {
     for (const grant of [publicSpelling, canonicalSpelling]) {
       const normalized = canonicalizeGrantConnectors(grant);
       // The call gate sees the canonical slug…
-      expect(agentMayUseConnector(normalized, canonicalConnectorAlias('kortix_email'))).toBe(true);
+      expect(agentMayUseConnector(normalized, canonicalConnectorAlias('zed_email'))).toBe(true);
       // …and the catalog, canonicalized the same way, agrees.
       expect(agentMayUseConnector(normalized, canonicalConnectorAlias('email'))).toBe(true);
     }
   });
 
   test('an ungranted connector is still refused under either spelling', () => {
-    const normalized = canonicalizeGrantConnectors({ agent: 'a', kortixCli: 'all' as const, connectors: ['email'] });
+    const normalized = canonicalizeGrantConnectors({ agent: 'a', zedCli: 'all' as const, connectors: ['email'] });
     expect(agentMayUseConnector(normalized, canonicalConnectorAlias('slack'))).toBe(false);
-    expect(agentMayUseConnector(normalized, canonicalConnectorAlias('kortix_slack'))).toBe(false);
+    expect(agentMayUseConnector(normalized, canonicalConnectorAlias('zed_slack'))).toBe(false);
   });
 
   test("'all' and a null grant are untouched", () => {
     expect(canonicalizeGrantConnectors(null)).toBeNull();
-    const all = canonicalizeGrantConnectors({ agent: 'a', kortixCli: 'all' as const, connectors: 'all' });
+    const all = canonicalizeGrantConnectors({ agent: 'a', zedCli: 'all' as const, connectors: 'all' });
     expect(agentMayUseConnector(all, 'anything')).toBe(true);
   });
 
   test('a connector with no alias mapping passes through unchanged', () => {
-    const normalized = canonicalizeGrantConnectors({ agent: 'a', kortixCli: 'all' as const, connectors: ['stripe'] });
+    const normalized = canonicalizeGrantConnectors({ agent: 'a', zedCli: 'all' as const, connectors: ['stripe'] });
     expect(agentMayUseConnector(normalized, canonicalConnectorAlias('stripe'))).toBe(true);
   });
 
   test('duplicate spellings of one connector collapse', () => {
     const normalized = canonicalizeGrantConnectors({
       agent: 'a',
-      kortixCli: 'all' as const,
-      connectors: ['email', 'kortix_email'],
+      zedCli: 'all' as const,
+      connectors: ['email', 'zed_email'],
     });
     expect(Array.isArray(normalized?.connectors) ? normalized.connectors : []).toEqual([
-      'kortix_email',
+      'zed_email',
     ]);
   });
 });
@@ -64,14 +64,14 @@ describe('the v2 default_agent grant must canonicalize too', () => {
   // all three gates compare the same spelling. The v2 default_agent branch
   // returned `declared.connectors` raw — so a v2 project whose default agent
   // grants `email` had that connector silently denied at the call gate, which
-  // compares the canonical `kortix_email`.
+  // compares the canonical `zed_email`.
   test('a public-spelling grant on the default agent still admits the connector', () => {
     const loaded = {
       specs: [
         {
           name: 'support',
           enabled: true,
-          kortixCli: 'all' as const,
+          zedCli: 'all' as const,
           connectors: ['email', 'slack'],
           env: 'all' as const,
         },
@@ -81,14 +81,14 @@ describe('the v2 default_agent grant must canonicalize too', () => {
     };
     const grant = grantFromLoadedAgents('default', loaded as never);
     expect(agentMayUseConnector(grant, canonicalConnectorAlias('email'))).toBe(true);
-    expect(agentMayUseConnector(grant, canonicalConnectorAlias('kortix_email'))).toBe(true);
+    expect(agentMayUseConnector(grant, canonicalConnectorAlias('zed_email'))).toBe(true);
     expect(agentMayUseConnector(grant, canonicalConnectorAlias('slack'))).toBe(true);
   });
 
   test('an ungranted connector is still refused on the default agent', () => {
     const loaded = {
       specs: [
-        { name: 'support', enabled: true, kortixCli: 'all' as const, connectors: ['email'], env: 'all' as const },
+        { name: 'support', enabled: true, zedCli: 'all' as const, connectors: ['email'], env: 'all' as const },
       ],
       errors: [],
       defaultAgent: 'support',
@@ -111,7 +111,7 @@ describe('a manifest that could not be READ must not widen a grant', () => {
     };
     const grant = grantFromLoadedAgents('default', loaded as never);
     expect(grant).not.toBeNull();
-    expect(agentMayUseConnector(grant, 'kortix_email')).toBe(false);
+    expect(agentMayUseConnector(grant, 'zed_email')).toBe(false);
   });
 
   test('a clean project with no agents section is still unrestricted (unchanged)', () => {

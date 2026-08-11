@@ -1,6 +1,6 @@
 import type { voice } from '@livekit/agents';
 /**
- * The other direction: Kortix speaking INTO the call once a `send_prompt`
+ * The other direction: Zed speaking INTO the call once a `send_prompt`
  * hand-off finishes. Mirrors the old in-process `promptVoiceAgent()` path,
  * but across a process boundary this time.
  *
@@ -8,8 +8,8 @@ import type { voice } from '@livekit/agents';
  * `continueSession()` resolves for a hand-off started by `send_prompt`,
  * apps/api sends a LiveKit data message into this call's room —
  * `RoomServiceClient.sendData(roomName, utf8(JSON.stringify({ type:
- * 'kortix_reply', call_id, text })), DataPacket_Kind.RELIABLE, { topic:
- * 'kortix' })` (verified to exist: livekit-server-sdk@2.17.0's
+ * 'zed_reply', call_id, text })), DataPacket_Kind.RELIABLE, { topic:
+ * 'zed' })` (verified to exist: livekit-server-sdk@2.17.0's
  * `RoomServiceClient.sendData`). This worker just needs to listen for it —
  * LiveKit already delivers data messages to every participant in the room,
  * agent included, with no separate subscription step required.
@@ -38,18 +38,18 @@ import type { voice } from '@livekit/agents';
 import { type Room, RoomEvent } from '@livekit/rtc-node';
 import type { CallContext } from './call-context';
 
-const REPLY_TOPIC = 'kortix';
+const REPLY_TOPIC = 'zed';
 
-interface KortixReplyPayload {
+interface ZedReplyPayload {
   type?: unknown;
   call_id?: unknown;
   text?: unknown;
 }
 
-function parsePayload(raw: Uint8Array): KortixReplyPayload | null {
+function parsePayload(raw: Uint8Array): ZedReplyPayload | null {
   try {
     const parsed = JSON.parse(new TextDecoder().decode(raw));
-    return parsed && typeof parsed === 'object' ? (parsed as KortixReplyPayload) : null;
+    return parsed && typeof parsed === 'object' ? (parsed as ZedReplyPayload) : null;
   } catch {
     return null;
   }
@@ -64,7 +64,7 @@ export function wireInboundReplies(
     if (topic !== REPLY_TOPIC) return;
 
     const message = parsePayload(payload);
-    if (!message || message.type !== 'kortix_reply') return;
+    if (!message || message.type !== 'zed_reply') return;
 
     // A worker process can run many calls, but not more than one room per
     // job — this guard only matters if a stray message ever lands on the
@@ -91,10 +91,10 @@ export function wireInboundReplies(
     try {
       const reply = session.generateReply({ instructions: text });
       void Promise.resolve(reply).catch((err) => {
-        console.error('[voice] generateReply failed for kortix_reply', err);
+        console.error('[voice] generateReply failed for zed_reply', err);
       });
     } catch (err) {
-      console.error('[voice] dropped kortix_reply — session not running', err);
+      console.error('[voice] dropped zed_reply — session not running', err);
     }
   });
 }

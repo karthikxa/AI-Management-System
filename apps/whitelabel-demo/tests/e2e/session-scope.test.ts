@@ -53,7 +53,7 @@ describe('sessionScopeRows', () => {
     expect(scoped.value).toBe('support');
     expect(scoped.detail).toContain('re-scopes future secret delivery');
     expect(scoped.detail).toContain('connector access');
-    expect(scoped.detail).toContain('Kortix CLI access');
+    expect(scoped.detail).toContain('Zed CLI access');
     expect(scoped.detail).toContain('support');
     expect(row('agent').value).toBe('The project default agent');
   });
@@ -170,7 +170,7 @@ describe('a redacted session must not read as permissive (F1)', () => {
     // Guard the other direction: the fix must not make a legitimately
     // un-narrowed session look restricted.
     const rows = sessionScopeRows({
-      agentName: 'kortix',
+      agentName: 'zed',
       secretsAllowlist: null,
       boundConnections: {},
     });

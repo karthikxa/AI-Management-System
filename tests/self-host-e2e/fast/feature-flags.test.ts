@@ -23,10 +23,10 @@ describe('self-host feature-flag matrix (fast, no Docker)', () => {
 
     // Marketing/landing site DEACTIVATED by default on self-host — every
     // marketing route redirects to the app (see apps/web middleware).
-    expect(env.KORTIX_PUBLIC_DISABLE_LANDING_PAGE).toBe('true');
+    expect(env.ZED_PUBLIC_DISABLE_LANDING_PAGE).toBe('true');
     // Billing off by default.
-    expect(env.KORTIX_BILLING_INTERNAL_ENABLED).toBe('false');
-    expect(env.KORTIX_PUBLIC_BILLING_ENABLED).toBe('false');
+    expect(env.ZED_BILLING_INTERNAL_ENABLED).toBe('false');
+    expect(env.ZED_PUBLIC_BILLING_ENABLED).toBe('false');
     // Enterprise off by default.
     expect(env.ENTERPRISE_LICENSE_AVAILABLE).toBe('false');
     // Managed git's declared provider is always github, but it's NOT
@@ -42,11 +42,11 @@ describe('self-host feature-flag matrix (fast, no Docker)', () => {
   test('re-enabling the landing page is a plain `env set`, no dedicated flag', async () => {
     await sandbox.run(['init', '--yes']);
     expect(sandbox.instance).not.toBe('default');
-    expect(sandbox.readEnv().KORTIX_PUBLIC_DISABLE_LANDING_PAGE).toBe('true');
+    expect(sandbox.readEnv().ZED_PUBLIC_DISABLE_LANDING_PAGE).toBe('true');
 
-    const { code } = await sandbox.run(['env', 'set', 'KORTIX_PUBLIC_DISABLE_LANDING_PAGE=false']);
+    const { code } = await sandbox.run(['env', 'set', 'ZED_PUBLIC_DISABLE_LANDING_PAGE=false']);
     expect(code).toBe(0);
-    expect(sandbox.readEnv().KORTIX_PUBLIC_DISABLE_LANDING_PAGE).toBe('false');
+    expect(sandbox.readEnv().ZED_PUBLIC_DISABLE_LANDING_PAGE).toBe('false');
   });
 
   test('--enterprise-license sets ENTERPRISE_LICENSE_AVAILABLE=true', async () => {
@@ -66,21 +66,21 @@ describe('self-host feature-flag matrix (fast, no Docker)', () => {
       '--enterprise-license',
     ]);
     const env = sandbox.readEnv();
-    expect(env.KORTIX_BILLING_INTERNAL_ENABLED).toBe('false');
-    expect(env.KORTIX_PUBLIC_BILLING_ENABLED).toBe('false');
+    expect(env.ZED_BILLING_INTERNAL_ENABLED).toBe('false');
+    expect(env.ZED_PUBLIC_BILLING_ENABLED).toBe('false');
 
     const { code } = await sandbox.run([
       'env',
       'set',
-      'KORTIX_BILLING_INTERNAL_ENABLED=true',
-      'KORTIX_PUBLIC_BILLING_ENABLED=true',
+      'ZED_BILLING_INTERNAL_ENABLED=true',
+      'ZED_PUBLIC_BILLING_ENABLED=true',
     ]);
     expect(code).toBe(0);
     const after = sandbox.readEnv();
-    expect(after.KORTIX_BILLING_INTERNAL_ENABLED).toBe('true');
-    expect(after.KORTIX_PUBLIC_BILLING_ENABLED).toBe('true');
+    expect(after.ZED_BILLING_INTERNAL_ENABLED).toBe('true');
+    expect(after.ZED_PUBLIC_BILLING_ENABLED).toBe('true');
     // Untouched by the billing env set.
-    expect(after.KORTIX_PUBLIC_DISABLE_LANDING_PAGE).toBe('true');
+    expect(after.ZED_PUBLIC_DISABLE_LANDING_PAGE).toBe('true');
     expect(after.ENTERPRISE_LICENSE_AVAILABLE).toBe('true');
   });
 
@@ -89,17 +89,17 @@ describe('self-host feature-flag matrix (fast, no Docker)', () => {
     const compose = sandbox.readComposeText();
 
     const frontendEnv = composeServiceEnv(composeServiceBlock(compose, 'frontend'));
-    expect(frontendEnv.KORTIX_PUBLIC_BILLING_ENABLED).toBe('${KORTIX_PUBLIC_BILLING_ENABLED}');
-    expect(frontendEnv.KORTIX_PUBLIC_DISABLE_LANDING_PAGE).toBe(
-      '${KORTIX_PUBLIC_DISABLE_LANDING_PAGE}',
+    expect(frontendEnv.ZED_PUBLIC_BILLING_ENABLED).toBe('${ZED_PUBLIC_BILLING_ENABLED}');
+    expect(frontendEnv.ZED_PUBLIC_DISABLE_LANDING_PAGE).toBe(
+      '${ZED_PUBLIC_DISABLE_LANDING_PAGE}',
     );
 
-    // kortix-api picks these up via `env_file: .env` (the whole file), not a
+    // zed-api picks these up via `env_file: .env` (the whole file), not a
     // duplicated `environment:` entry — a duplicate would win over env_file
     // and re-pin the value at render time regardless of a later `env set`.
-    const apiBlock = composeServiceBlock(compose, 'kortix-api');
+    const apiBlock = composeServiceBlock(compose, 'zed-api');
     const apiEnv = composeServiceEnv(apiBlock);
-    expect(apiEnv.KORTIX_BILLING_INTERNAL_ENABLED).toBeUndefined();
+    expect(apiEnv.ZED_BILLING_INTERNAL_ENABLED).toBeUndefined();
     expect(apiEnv.ENTERPRISE_LICENSE_AVAILABLE).toBeUndefined();
     expect(apiBlock).toContain('.env');
   });

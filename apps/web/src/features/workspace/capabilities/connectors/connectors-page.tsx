@@ -1,7 +1,7 @@
 'use client';
 
-import { getProjectDetail, listConnectors, type AdminConnector } from '@kortix/sdk';
-import { contract, qk, useFeatureFlag, useProjectAccountId } from '@kortix/sdk/react';
+import { getProjectDetail, listConnectors, type AdminConnector } from '@zed/sdk';
+import { contract, qk, useFeatureFlag, useProjectAccountId } from '@zed/sdk/react';
 import { MagnifyingGlassIcon, PlugIcon, PlusIcon } from '@phosphor-icons/react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
@@ -549,7 +549,7 @@ export function ConnectorsPage({ projectId }: { projectId: string }) {
           <ModalHeader>
             <ModalTitle>Add a custom connector</ModalTitle>
             <ModalDescription>
-              Point Kortix at an OpenAPI, Postman, GraphQL, MCP or HTTP source and it becomes a
+              Point Zed at an OpenAPI, Postman, GraphQL, MCP or HTTP source and it becomes a
               connector your agents can call.
             </ModalDescription>
           </ModalHeader>

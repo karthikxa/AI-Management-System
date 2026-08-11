@@ -7,7 +7,7 @@ const dockerAvailable =
     stderr: 'ignore',
   }).exitCode === 0;
 
-const container = `kortix-runtime-identity-${crypto.randomUUID().slice(0, 8)}`;
+const container = `zed-runtime-identity-${crypto.randomUUID().slice(0, 8)}`;
 
 function dockerPsql(sql: string, allowFailure = false) {
   const result = Bun.spawnSync(
@@ -72,12 +72,12 @@ describe.skipIf(!dockerAvailable)('runtime identity migration — real PostgreSQ
     );
 
     dockerPsql(`
-      CREATE SCHEMA kortix;
-      CREATE TABLE kortix.project_sessions (
+      CREATE SCHEMA zed;
+      CREATE TABLE zed.project_sessions (
         session_id uuid PRIMARY KEY,
         metadata jsonb NOT NULL DEFAULT '{}'::jsonb
       );
-      CREATE TABLE kortix.session_sandboxes (
+      CREATE TABLE zed.session_sandboxes (
         session_id uuid NOT NULL,
         external_id text,
         provider text NOT NULL,
@@ -85,10 +85,10 @@ describe.skipIf(!dockerAvailable)('runtime identity migration — real PostgreSQ
         metadata jsonb NOT NULL DEFAULT '{}'::jsonb
       );
       ${migrations.join('\n')}
-      INSERT INTO kortix.project_sessions(session_id) VALUES
+      INSERT INTO zed.project_sessions(session_id) VALUES
         ('00000000-0000-4000-a000-000000000001'),
         ('00000000-0000-4000-a000-000000000002');
-      INSERT INTO kortix.session_sandboxes(session_id, external_id, provider, status, metadata) VALUES
+      INSERT INTO zed.session_sandboxes(session_id, external_id, provider, status, metadata) VALUES
         ('00000000-0000-4000-a000-000000000001', 'sbx_original', 'platinum', 'active', '{}'),
         ('00000000-0000-4000-a000-000000000002', NULL, 'platinum', 'provisioning', '{}');
     `);
@@ -103,9 +103,9 @@ describe.skipIf(!dockerAvailable)('runtime identity migration — real PostgreSQ
 
   test('blocks direct replacement and provider swaps', () => {
     for (const statement of [
-      `UPDATE kortix.session_sandboxes SET external_id = 'sbx_replacement' WHERE session_id = '00000000-0000-4000-a000-000000000001'`,
-      `UPDATE kortix.session_sandboxes SET provider = 'daytona' WHERE session_id = '00000000-0000-4000-a000-000000000001'`,
-      `UPDATE kortix.session_sandboxes SET external_id = NULL, status = 'provisioning', metadata = '{"identityRecoveryAuthorizedAt":"stale"}' WHERE session_id = '00000000-0000-4000-a000-000000000001'`,
+      `UPDATE zed.session_sandboxes SET external_id = 'sbx_replacement' WHERE session_id = '00000000-0000-4000-a000-000000000001'`,
+      `UPDATE zed.session_sandboxes SET provider = 'daytona' WHERE session_id = '00000000-0000-4000-a000-000000000001'`,
+      `UPDATE zed.session_sandboxes SET external_id = NULL, status = 'provisioning', metadata = '{"identityRecoveryAuthorizedAt":"stale"}' WHERE session_id = '00000000-0000-4000-a000-000000000001'`,
     ]) {
       const result = dockerPsql(`\\set VERBOSITY verbose\n${statement};`, true);
       expect(result.exitCode).not.toBe(0);
@@ -115,14 +115,14 @@ describe.skipIf(!dockerAvailable)('runtime identity migration — real PostgreSQ
 
   test('blocks stale deletion markers and allows only explicit session deletion', () => {
     dockerPsql(`
-      UPDATE kortix.session_sandboxes
+      UPDATE zed.session_sandboxes
          SET metadata = '{"identityDeletionAuthorizedAt":"stale"}'
        WHERE session_id = '00000000-0000-4000-a000-000000000001';
     `);
     const blocked = dockerPsql(
       `
       \\set VERBOSITY verbose
-      DELETE FROM kortix.session_sandboxes
+      DELETE FROM zed.session_sandboxes
        WHERE session_id = '00000000-0000-4000-a000-000000000001';
     `,
       true,
@@ -131,14 +131,14 @@ describe.skipIf(!dockerAvailable)('runtime identity migration — real PostgreSQ
     expect(blocked.output).toContain('23514');
 
     dockerPsql(`
-      UPDATE kortix.project_sessions
+      UPDATE zed.project_sessions
          SET metadata = '{"deletedAt":"2026-07-12T00:00:00Z"}'
        WHERE session_id = '00000000-0000-4000-a000-000000000001';
-      DELETE FROM kortix.session_sandboxes
+      DELETE FROM zed.session_sandboxes
        WHERE session_id = '00000000-0000-4000-a000-000000000001';
-      DELETE FROM kortix.session_sandboxes
+      DELETE FROM zed.session_sandboxes
        WHERE session_id = '00000000-0000-4000-a000-000000000002';
     `);
-    expect(dockerPsql('SELECT count(*) FROM kortix.session_sandboxes;').output).toContain('0');
+    expect(dockerPsql('SELECT count(*) FROM zed.session_sandboxes;').output).toContain('0');
   });
 });

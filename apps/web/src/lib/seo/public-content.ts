@@ -250,7 +250,7 @@ const MARKETING_RECORDS: PublicContentRecord[] = [
     slug: 'company-as-code',
     title: 'Company as Code',
     description:
-      'A Zed project is a git repo, and that repo is the company. kortix.yaml and the OpenCode config define it; agents, skills and memory are files beside your code. Every change is a commit a person approves.',
+      'A Zed project is a git repo, and that repo is the company. zed.yaml and the OpenCode config define it; agents, skills and memory are files beside your code. Every change is a commit a person approves.',
     htmlPath: '/company-as-code',
     markdownPath: '/markdown/company-as-code.md',
   },
@@ -282,7 +282,7 @@ const MARKETING_RECORDS: PublicContentRecord[] = [
     slug: 'self-hosted',
     title: 'Self-host Zed',
     description:
-      'Run the same Zed on your own box. One Docker Compose stack, the same images the managed cloud runs, your database and your files on disk you control. kortix self-host start, then kortix hosts use selfhost.',
+      'Run the same Zed on your own box. One Docker Compose stack, the same images the managed cloud runs, your database and your files on disk you control. zed self-host start, then zed hosts use selfhost.',
     htmlPath: '/self-hosted',
     markdownPath: '/markdown/self-hosted.md',
   },
@@ -625,7 +625,7 @@ function blocksToMarkdown(blocks: Block[]): string {
             .map((item) => `- ${item.name} (${item.domain})`)
             .join('\n')}`;
         case 'verdict':
-          return `### Choose ${block.themLabel} if\n\n${block.them}\n\n### Choose Zed if\n\n${block.kortix}`;
+          return `### Choose ${block.themLabel} if\n\n${block.them}\n\n### Choose Zed if\n\n${block.zed}`;
         case 'compare': {
           const escapeCell = (value: string) => value.replaceAll('|', '\\|').replaceAll('\n', ' ');
           return [
@@ -633,7 +633,7 @@ function blocksToMarkdown(blocks: Block[]): string {
             '| --- | --- | --- |',
             ...block.rows.map(
               (row) =>
-                `| ${escapeCell(row.dimension)} | ${escapeCell(row.them)} | ${escapeCell(row.kortix)} |`,
+                `| ${escapeCell(row.dimension)} | ${escapeCell(row.them)} | ${escapeCell(row.zed)} |`,
             ),
           ].join('\n');
         }
@@ -659,7 +659,7 @@ function renderMarketingMarkdown(record: PublicContentRecord): string {
     `- [Documentation](${CANONICAL_ORIGIN}/docs)`,
     `- [Blog](${CANONICAL_ORIGIN}/blog)`,
     `- [Use cases](${CANONICAL_ORIGIN}/use-cases)`,
-    `- [GitHub](https://github.com/kortix-ai/suna)`,
+    `- [GitHub](https://github.com/zed-ai/suna)`,
   ];
 
   if (record.slug === 'pricing' || record.slug === 'enterprise') {

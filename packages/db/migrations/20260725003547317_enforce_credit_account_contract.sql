@@ -16,7 +16,7 @@ DO $$
 BEGIN
   IF EXISTS (
     SELECT 1
-    FROM kortix.credit_accounts
+    FROM zed.credit_accounts
     WHERE auto_topup_enabled IS NULL
        OR auto_topup_threshold IS NULL
        OR auto_topup_amount IS NULL
@@ -25,7 +25,7 @@ BEGIN
     RAISE EXCEPTION 'credit_accounts contains NULL auto-topup settings';
   END IF;
 
-  ALTER TABLE kortix.credit_accounts
+  ALTER TABLE zed.credit_accounts
     ALTER COLUMN auto_topup_enabled SET NOT NULL,
     ALTER COLUMN auto_topup_threshold SET NOT NULL,
     ALTER COLUMN auto_topup_amount SET NOT NULL;

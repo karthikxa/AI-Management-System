@@ -2,8 +2,8 @@
 
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { errorToast, successToast } from '@/components/ui/toast';
-import { deleteProjectSession } from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+import { deleteProjectSession } from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 

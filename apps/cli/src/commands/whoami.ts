@@ -5,13 +5,13 @@ import { emitJson } from '../command-helpers.ts';
 import { C, help, status } from '../style.ts';
 import type { MeResponse } from '../api/types.ts';
 
-const HELP = help`Usage: kortix whoami [options]
+const HELP = help`Usage: zed whoami [options]
 
 Print the currently authenticated user + active account on the
 selected host.
 
-Shortcut for the active host — same as \`kortix hosts whoami\`. Use
-\`kortix hosts whoami <name>\` to probe a different instance.
+Shortcut for the active host — same as \`zed hosts whoami\`. Use
+\`zed hosts whoami <name>\` to probe a different instance.
 
 Options:
   --host <name>     Probe a specific host (default: active).
@@ -72,8 +72,8 @@ export interface PerformWhoamiOptions {
 }
 
 /**
- * Shared whoami implementation used by both the top-level `kortix whoami`
- * alias and the `kortix hosts whoami` subcommand. Resolves the identity
+ * Shared whoami implementation used by both the top-level `zed whoami`
+ * alias and the `zed hosts whoami` subcommand. Resolves the identity
  * for the named host (default: active) and renders it (human, JSON, or
  * token-only).
  */
@@ -84,10 +84,10 @@ export async function performWhoami(opts: PerformWhoamiOptions): Promise<number>
     if (flags.host) {
       process.stderr.write(
         `${status.err(`Host "${flags.host}" is not logged in.`)} Run ` +
-          `${C.cyan}kortix hosts login ${flags.host}${C.reset}.\n`,
+          `${C.cyan}zed hosts login ${flags.host}${C.reset}.\n`,
       );
     } else {
-      process.stderr.write(`${status.err('Not logged in. Run `kortix login`.')}\n`);
+      process.stderr.write(`${status.err('Not logged in. Run `zed login`.')}\n`);
     }
     return 1;
   }
@@ -99,7 +99,7 @@ export async function performWhoami(opts: PerformWhoamiOptions): Promise<number>
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {
       process.stderr.write(
-        `${status.err('Token rejected. Run `kortix login` to re-authenticate.')}\n`,
+        `${status.err('Token rejected. Run `zed login` to re-authenticate.')}\n`,
       );
       return 1;
     }
@@ -142,8 +142,8 @@ export async function performWhoami(opts: PerformWhoamiOptions): Promise<number>
     if (ctx?.connectors != null) {
       process.stdout.write(`  ${C.dim}connectors ${C.reset}${formatGrant(ctx.connectors)}\n`);
     }
-    if (ctx?.kortix_cli != null) {
-      process.stdout.write(`  ${C.dim}kortix_cli ${C.reset}${formatGrant(ctx.kortix_cli)}\n`);
+    if (ctx?.zed_cli != null) {
+      process.stdout.write(`  ${C.dim}zed_cli ${C.reset}${formatGrant(ctx.zed_cli)}\n`);
     }
     if (ctx?.env != null) {
       process.stdout.write(`  ${C.dim}env       ${C.reset}${formatGrant(ctx.env)}\n`);
@@ -164,7 +164,7 @@ export async function performWhoami(opts: PerformWhoamiOptions): Promise<number>
   }
   if (me.accounts.length > 1) {
     process.stdout.write(
-      `  ${C.dim}${me.accounts.length} accounts total — switch with ${C.reset}${C.cyan}kortix accounts use <slug>${C.reset}\n`,
+      `  ${C.dim}${me.accounts.length} accounts total — switch with ${C.reset}${C.cyan}zed accounts use <slug>${C.reset}\n`,
     );
   }
   if (def) {
@@ -185,7 +185,7 @@ export async function performWhoami(opts: PerformWhoamiOptions): Promise<number>
   const totalHosts = listHosts().length;
   if (totalHosts > 1) {
     process.stdout.write(
-      `  ${C.dim}${totalHosts} hosts configured — list with \`kortix hosts ls\`${C.reset}\n`,
+      `  ${C.dim}${totalHosts} hosts configured — list with \`zed hosts ls\`${C.reset}\n`,
     );
   }
   process.stdout.write('\n');

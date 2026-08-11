@@ -17,12 +17,12 @@ import { Icon } from '@/components/ui/icon';
 import { Avatar } from '@/components/ui/Avatar';
 import { getSheetBg, useThemeColors } from '@/lib/theme-colors';
 import { haptics } from '@/lib/haptics';
-import type { KortixAccount } from '@/lib/projects/projects-client';
+import type { ZedAccount } from '@/lib/projects/projects-client';
 import { NewAccountSheet } from '@/components/accounts/NewAccountSheet';
 
 interface AccountSwitcherSheetProps {
   open: boolean;
-  accounts: KortixAccount[];
+  accounts: ZedAccount[];
   selectedAccountId: string | null;
   onSelect: (accountId: string) => void;
   onClose: () => void;

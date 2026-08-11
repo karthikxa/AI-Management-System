@@ -14,7 +14,7 @@ describe('connector approval review contract', () => {
     expect(source).not.toContain("decision: 'approve'");
     expect(source).not.toContain("decision: 'deny'");
     expect(source).toContain('<Badge');
-    expect(source).toContain('text-kortix-orange');
+    expect(source).toContain('text-zed-orange');
     expect(source).not.toContain('text-amber-');
     expect(source).not.toContain('bg-amber-');
     expect(source).not.toContain('text-[');

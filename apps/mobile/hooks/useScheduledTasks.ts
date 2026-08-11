@@ -160,7 +160,7 @@ async function sandboxFetch<T>(sandboxUrl: string, path: string, options?: Reque
 // ─── API Functions ───────────────────────────────────────────────────────────
 
 async function fetchTriggers(sandboxUrl: string): Promise<Trigger[]> {
-  const api = await sandboxFetch<ApiListResponse>(sandboxUrl, '/kortix/triggers');
+  const api = await sandboxFetch<ApiListResponse>(sandboxUrl, '/zed/triggers');
   return (api.data || []).map((t) => ({
     ...t,
     maxRetries: t.maxRetries ?? 0,
@@ -171,12 +171,12 @@ async function fetchTriggers(sandboxUrl: string): Promise<Trigger[]> {
 }
 
 async function fetchTrigger(sandboxUrl: string, triggerId: string): Promise<Trigger> {
-  const res = await sandboxFetch<ApiSingleResponse>(sandboxUrl, `/kortix/cron/triggers/${triggerId}`);
+  const res = await sandboxFetch<ApiSingleResponse>(sandboxUrl, `/zed/cron/triggers/${triggerId}`);
   return res.data;
 }
 
 async function createTrigger(sandboxUrl: string, data: CreateTriggerData): Promise<Trigger> {
-  const res = await sandboxFetch<ApiSingleResponse>(sandboxUrl, '/kortix/triggers', {
+  const res = await sandboxFetch<ApiSingleResponse>(sandboxUrl, '/zed/triggers', {
     method: 'POST',
     body: JSON.stringify(data),
   });
@@ -184,7 +184,7 @@ async function createTrigger(sandboxUrl: string, data: CreateTriggerData): Promi
 }
 
 async function updateTrigger(sandboxUrl: string, id: string, data: UpdateTriggerData): Promise<Trigger> {
-  const res = await sandboxFetch<ApiSingleResponse>(sandboxUrl, `/kortix/cron/triggers/${id}`, {
+  const res = await sandboxFetch<ApiSingleResponse>(sandboxUrl, `/zed/cron/triggers/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
   });
@@ -192,28 +192,28 @@ async function updateTrigger(sandboxUrl: string, id: string, data: UpdateTrigger
 }
 
 async function deleteTrigger(sandboxUrl: string, id: string): Promise<void> {
-  await sandboxFetch(sandboxUrl, `/kortix/cron/triggers/${id}`, { method: 'DELETE' });
+  await sandboxFetch(sandboxUrl, `/zed/cron/triggers/${id}`, { method: 'DELETE' });
 }
 
 async function pauseTrigger(sandboxUrl: string, id: string): Promise<Trigger> {
-  const res = await sandboxFetch<ApiSingleResponse>(sandboxUrl, `/kortix/cron/triggers/${id}/pause`, { method: 'POST' });
+  const res = await sandboxFetch<ApiSingleResponse>(sandboxUrl, `/zed/cron/triggers/${id}/pause`, { method: 'POST' });
   return res.data;
 }
 
 async function resumeTrigger(sandboxUrl: string, id: string): Promise<Trigger> {
-  const res = await sandboxFetch<ApiSingleResponse>(sandboxUrl, `/kortix/cron/triggers/${id}/resume`, { method: 'POST' });
+  const res = await sandboxFetch<ApiSingleResponse>(sandboxUrl, `/zed/cron/triggers/${id}/resume`, { method: 'POST' });
   return res.data;
 }
 
 async function runTrigger(sandboxUrl: string, id: string): Promise<{ execution_id: string; status: string; message: string }> {
-  const res = await sandboxFetch<ApiRunResponse>(sandboxUrl, `/kortix/cron/triggers/${id}/run`, { method: 'POST' });
+  const res = await sandboxFetch<ApiRunResponse>(sandboxUrl, `/zed/cron/triggers/${id}/run`, { method: 'POST' });
   return res.data;
 }
 
 async function fetchExecutions(sandboxUrl: string, triggerId: string, limit = 50, offset = 0): Promise<Execution[]> {
   const res = await sandboxFetch<ApiExecutionsResponse>(
     sandboxUrl,
-    `/kortix/cron/executions/by-trigger/${triggerId}?limit=${limit}&offset=${offset}`,
+    `/zed/cron/executions/by-trigger/${triggerId}?limit=${limit}&offset=${offset}`,
   );
   return res.data;
 }

@@ -16,7 +16,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '../shared/db';
 import { generateAccountTokenPair, hashSecretKey } from '../shared/crypto';
 
-const API_BASE = process.env.KORTIX_API_URL ?? 'http://localhost:8008';
+const API_BASE = process.env.ZED_API_URL ?? 'http://localhost:8008';
 
 function ok(m: string) { process.stdout.write(`  \x1b[0;32m✓\x1b[0m  ${m}\n`); }
 function dim(l: string, v: string) { process.stdout.write(`  \x1b[2m${l}\x1b[0m  ${v}\n`); }
@@ -38,15 +38,15 @@ async function main() {
   dim('api', API_BASE);
 
   const res = await db.execute<{ user_id: string; account_id: string }>(
-    sql`select user_id, account_id from kortix.account_members order by joined_at limit 1`,
+    sql`select user_id, account_id from zed.account_members order by joined_at limit 1`,
   );
   const owner = ((res as unknown as { rows?: Array<{ user_id: string; account_id: string }> }).rows
     ?? (res as unknown as Array<{ user_id: string; account_id: string }>))[0];
-  if (!owner) die('No rows in kortix.account_members. Seed a user first.');
+  if (!owner) die('No rows in zed.account_members. Seed a user first.');
 
   const admin = generateAccountTokenPair();
   await db.execute(sql`
-    insert into kortix.account_tokens (account_id, user_id, name, public_key, secret_key_hash)
+    insert into zed.account_tokens (account_id, user_id, name, public_key, secret_key_hash)
     values (${owner.account_id}, ${owner.user_id}, 'e2e-create-scope-admin', ${admin.publicKey}, ${hashSecretKey(admin.secretKey)})
   `);
   dim('admin', `${admin.secretKey.slice(0, 18)}…`);
@@ -61,7 +61,7 @@ async function main() {
 
   const foreignRes = await db.execute<{ project_id: string; account_id: string }>(sql`
     select project_id, account_id
-    from kortix.projects
+    from zed.projects
     where account_id <> ${owner.account_id}
     order by created_at desc
     limit 1
@@ -143,7 +143,7 @@ async function main() {
 
   // 5. Clean up.
   await db.execute(sql`
-    delete from kortix.account_tokens where name in ('e2e-create-scope-admin', 'e2e-create-scope-key', 'e2e-create-scope-key-b', 'e2e-foreign-scope-denied')
+    delete from zed.account_tokens where name in ('e2e-create-scope-admin', 'e2e-create-scope-key', 'e2e-create-scope-key-b', 'e2e-foreign-scope-denied')
   `);
 
   process.stdout.write('\n  \x1b[0;32mAll create-scope checks passed.\x1b[0m\n\n');

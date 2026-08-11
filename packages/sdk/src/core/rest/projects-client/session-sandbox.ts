@@ -7,8 +7,8 @@ import { getSandboxUrlForExternalId } from "../../session/server-store/url-helpe
 import type { ProjectSession } from "./sessions";
 
 // ---------------------------------------------------------------------------
-// Session sandbox — runtime row in `kortix.session_sandboxes`. Separate from
-// the legacy /instances sandbox table (`kortix.sandboxes`); no billing or
+// Session sandbox — runtime row in `zed.session_sandboxes`. Separate from
+// the legacy /instances sandbox table (`zed.sandboxes`); no billing or
 // team-membership coupling. Access gated by `project_members` only.
 // ---------------------------------------------------------------------------
 
@@ -177,7 +177,7 @@ export async function startProjectSession(
   // ready, regardless of WHICH caller drove this /start (the facade's
   // `ensureReady()` or the React `useSession` hook — both call this one
   // function). Every other handle for the same session id — a fresh
-  // `kortix.session(pid, sid)` created for a one-off poll, e.g. — can then
+  // `zed.session(pid, sid)` created for a one-off poll, e.g. — can then
   // adopt this entry instead of throwing SessionNotReadyError or re-POSTing.
   const externalId = result.sandbox?.external_id;
   if (result.stage === "ready" && externalId && result.opencode_session_id) {

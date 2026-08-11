@@ -1,4 +1,4 @@
-import type { ProjectSecret } from '@kortix/sdk';
+import type { ProjectSecret } from '@zed/sdk';
 import { isAllowlistable } from './secret-scope';
 
 /**

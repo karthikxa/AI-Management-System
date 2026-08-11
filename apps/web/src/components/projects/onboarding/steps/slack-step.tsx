@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Install Kortix into Slack.
+ * Install Zed into Slack.
  *
  * The managed and custom install paths stay in one fixed decision lane. Custom
  * setup, waiting, and confirmed states render under the chooser in that same
@@ -73,7 +73,7 @@ export function SlackStep({
 
   const openInstall = () => {
     if (!installUrl) return;
-    window.open(installUrl, 'kortix-slack-install', 'width=640,height=780,noopener');
+    window.open(installUrl, 'zed-slack-install', 'width=640,height=780,noopener');
     setCustomRequested(false);
     setPollRequested(true);
   };
@@ -85,8 +85,8 @@ export function SlackStep({
 
   return (
     <StepShell
-      title="Add Kortix to Slack"
-      description="This is where most teams actually use Kortix — @mention your agent, kick off tasks, get results in the channel."
+      title="Add Zed to Slack"
+      description="This is where most teams actually use Zed — @mention your agent, kick off tasks, get results in the channel."
       primaryLabel="Continue"
       primaryDisabled={!connected}
       onPrimary={onContinue}
@@ -95,7 +95,7 @@ export function SlackStep({
     >
       {connected ? (
         <div aria-live="polite" aria-atomic="true" className="flex items-center gap-2">
-          <CheckCircleIcon weight="fill" className="text-kortix-green size-4 shrink-0" />
+          <CheckCircleIcon weight="fill" className="text-zed-green size-4 shrink-0" />
           <h2 className="text-foreground text-sm font-medium">Connected to Slack</h2>
         </div>
       ) : (
@@ -136,7 +136,7 @@ export function SlackStep({
                 </h2>
               </div>
               <p className="text-muted-foreground mt-2 text-xs leading-5 text-pretty">
-                Complete the install in the Slack popup. Kortix checks the connection every 2.5
+                Complete the install in the Slack popup. Zed checks the connection every 2.5
                 seconds.
               </p>
             </div>

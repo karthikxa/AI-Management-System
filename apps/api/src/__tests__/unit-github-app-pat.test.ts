@@ -108,12 +108,12 @@ describe('verifyPastedGithubAppInstallation', () => {
   test('resolves ownerType: User for a personal-account installation', async () => {
     const pem = keyPair();
     const fetchImpl = (async (_url: string | URL, _init?: RequestInit) =>
-      new Response(JSON.stringify({ id: 987, account: { login: 'agent-kortix', type: 'User' } }), {
+      new Response(JSON.stringify({ id: 987, account: { login: 'agent-zed', type: 'User' } }), {
         status: 200,
       })) as typeof fetch;
 
     const result = await verifyPastedGithubAppInstallation('12345', pem, '987', fetchImpl);
-    expect(result).toEqual({ owner: 'agent-kortix', ownerType: 'User' });
+    expect(result).toEqual({ owner: 'agent-zed', ownerType: 'User' });
   });
 
   test('URL-encodes the installation id', async () => {

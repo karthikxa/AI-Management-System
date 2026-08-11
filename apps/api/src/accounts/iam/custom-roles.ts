@@ -8,7 +8,7 @@
 
 import { createRoute, z } from '@hono/zod-openapi';
 import { and, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
-import { iamPolicies, iamRoleActions, iamRoles, projects, serviceAccounts, accountMembers, accountGroups } from '@kortix/db';
+import { iamPolicies, iamRoleActions, iamRoles, projects, serviceAccounts, accountMembers, accountGroups } from '@zed/db';
 import { json, errors, auth } from '../../openapi';
 import { db } from '../../shared/db';
 import { ACCOUNT_ACTIONS, assertAuthorized } from '../../iam';

@@ -30,7 +30,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 // ─── Cached SSH Meta ────────────────────────────────────────────────────────
 
-const SSH_META_KEY = 'kortix:ssh-access-meta:v1';
+const SSH_META_KEY = 'zed:ssh-access-meta:v1';
 
 interface SSHMeta {
   ssh_command: string;
@@ -475,7 +475,7 @@ function CodeSection({
 const TOKEN_COLORS = {
   command: '#7DD3FC',    // sky-300 — commands like mkdir, ssh, cat, chmod
   flag: '#C4B5FD',      // violet-300 — flags like -i, -o, -p
-  path: '#86EFAC',      // emerald-300 — paths like ~/.ssh/kortix_sandbox
+  path: '#86EFAC',      // emerald-300 — paths like ~/.ssh/zed_sandbox
   string: '#FDE68A',    // amber-200 — quoted strings and heredoc delimiters
   number: '#FCA5A5',    // red-300 — numbers like ports
   keyword: '#F9A8D4',   // pink-300 — keywords like Host, HostName, Port
@@ -493,7 +493,7 @@ function tokenize(code: string): { text: string; color: string }[] {
     if (li > 0) tokens.push({ text: '\n', color: TOKEN_COLORS.default });
     const line = lines[li];
 
-    // Heredoc delimiter lines (e.g. KORTIX_KEY, KORTIX_SSH_CONFIG)
+    // Heredoc delimiter lines (e.g. ZED_KEY, ZED_SSH_CONFIG)
     if (/^[A-Z_]+$/.test(line.trim())) {
       tokens.push({ text: line, color: TOKEN_COLORS.string });
       continue;

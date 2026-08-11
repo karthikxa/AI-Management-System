@@ -3,7 +3,7 @@
  *
  * Platinum templates ARE the "snapshots" (GET/DELETE /v1/templates). Building
  * does exactly what Daytona does — ship the staged build context (user
- * Dockerfile + Kortix runtime layer) to the provider and let it build
+ * Dockerfile + Zed runtime layer) to the provider and let it build
  * server-side. Daytona uses Image.fromDockerfile(); Platinum uses
  * `POST /v1/templates/from-build` (tar.gz of the same context staged by
  * snapshots/build-context.ts, so the produced image is identical). Platinum's
@@ -22,7 +22,7 @@ import {
   DEFAULT_CPU,
   DEFAULT_MEMORY_GB,
   DEFAULT_DISK_GB,
-  KORTIX_ENTRYPOINT,
+  ZED_ENTRYPOINT,
 } from '../build-context';
 import { SANDBOX_SPEC_LIMITS } from '../dockerfile-layer';
 import { tarBuildContext } from '../staging-tar';
@@ -91,7 +91,7 @@ export function isRetryablePlatinumBuildError(err: unknown): boolean {
   //     (PT_ORG_MUT_RATE, 20 req/s). Transient; retrying is right.
   //   - `org_template_quota_exceeded` (api/templates.ts pickBuildHost) — the
   //     per-org COUNT cap on live templates (tiers 10/50/500). This does NOT
-  //     self-clear: nothing frees a template row on its own, and Kortix has no
+  //     self-clear: nothing frees a template row on its own, and Zed has no
   //     org-wide GC for Platinum (snapshots/quota-gc.ts is Daytona-only — it
   //     imports listDaytonaSnapshots/deleteDaytonaSnapshotById exclusively). So
   //     burning BUILD_ATTEMPTS on it is pure delay in front of a wall, and it
@@ -382,14 +382,14 @@ function isRetryableUploadError(err: unknown): boolean {
  */
 /**
  * Guard options for the presigned upload URL, derived from deployment env:
- *  - local-dev (`INTERNAL_KORTIX_ENV=dev`) allows http + loopback (MinIO),
- *  - `KORTIX_PLATINUM_UPLOAD_HOST_ALLOWLIST` pins the object-storage origin(s).
+ *  - local-dev (`INTERNAL_ZED_ENV=dev`) allows http + loopback (MinIO),
+ *  - `ZED_PLATINUM_UPLOAD_HOST_ALLOWLIST` pins the object-storage origin(s).
  * Exported so the uploader default and tests share one source of truth.
  */
 export function uploadUrlGuardOptsFromEnv(): { allowLocal: boolean; allowedHosts: string[] } {
   return {
-    allowLocal: config.INTERNAL_KORTIX_ENV === 'dev',
-    allowedHosts: parseUploadHostAllowlist(process.env.KORTIX_PLATINUM_UPLOAD_HOST_ALLOWLIST),
+    allowLocal: config.INTERNAL_ZED_ENV === 'dev',
+    allowedHosts: parseUploadHostAllowlist(process.env.ZED_PLATINUM_UPLOAD_HOST_ALLOWLIST),
   };
 }
 
@@ -529,14 +529,14 @@ class PlatinumAdapter implements SandboxProviderAdapter {
           dockerfile: ctx.dockerfileName,
           // Build-time ext4 ceiling, clamped to Platinum's from-build hard cap.
           // Platinum grows ext4 to fit, so the artifact consumes only image+headroom
-          // (a ~9.4 GiB kortix image builds fine into a 20 GiB ceiling). The runtime
+          // (a ~9.4 GiB zed image builds fine into a 20 GiB ceiling). The runtime
           // disk (default_disk_gb below) stays the FULL spec — build ceiling != runtime
           // disk. Without this clamp a >20 GiB-disk template 400s ("size_mb too_big").
           size_mb: Math.min(diskGb * MB_PER_GB, PLATINUM_MAX_BUILD_SIZE_MB),
           default_cpu: input.spec.cpu ?? DEFAULT_CPU,
           default_ram_mb: (input.spec.memoryGb ?? DEFAULT_MEMORY_GB) * 1024,
           default_disk_gb: diskGb,
-          entrypoint: (input.entrypoint ?? [KORTIX_ENTRYPOINT]).join(' '),
+          entrypoint: (input.entrypoint ?? [ZED_ENTRYPOINT]).join(' '),
         }),
       });
       // PHASE 2 EXACT ID: from-build MUST hand back a non-empty template id. We
@@ -554,7 +554,7 @@ class PlatinumAdapter implements SandboxProviderAdapter {
 
   /**
    * Agent-only fast path: build NEW snapshot from a PREDECESSOR snapshot by
-   * swapping ONLY the kortix-agent binary inside its rootfs (no podman rebuild).
+   * swapping ONLY the zed-agent binary inside its rootfs (no podman rebuild).
    * Ships just the agent .gz via the same presign path; the host debugfs-swaps it
    * into the predecessor's materialized rootfs + re-chunks (CAS delta). The caller
    * uses this ONLY when the user image is unchanged AND the predecessor is active
@@ -572,8 +572,8 @@ class PlatinumAdapter implements SandboxProviderAdapter {
         gzPath,
       );
       // Platinum's GENERAL file-patch primitive: patch our one changed file (the
-      // kortix-agent binary) into the predecessor's rootfs — no rebuild. The guest
-      // path is OURS to specify (Platinum is file-agnostic); /usr/local/bin/kortix-agent
+      // zed-agent binary) into the predecessor's rootfs — no rebuild. The guest
+      // path is OURS to specify (Platinum is file-agnostic); /usr/local/bin/zed-agent
       // is where our runtime layer (dockerfile-layer.ts) installs it. mode 0100755 =
       // executable (debugfs `write` lands 0644 otherwise).
       const patched = await platinumJson<PlatinumTemplate>('/v1/templates/from-patch', {
@@ -581,7 +581,7 @@ class PlatinumAdapter implements SandboxProviderAdapter {
         body: JSON.stringify({
           name: newSnapshotName,
           source_template_name: sourceSnapshotName,
-          files: [{ s3_key: context_s3_key, guest_path: '/usr/local/bin/kortix-agent', mode: 0o100755 }],
+          files: [{ s3_key: context_s3_key, guest_path: '/usr/local/bin/zed-agent', mode: 0o100755 }],
         }),
       });
       // PHASE 2 EXACT ID: from-patch MUST return a non-empty id — poll it, never

@@ -1,4 +1,4 @@
-import { providerEvents } from '@kortix/db';
+import { providerEvents } from '@zed/db';
 import { db } from '../../shared/db';
 
 export type BootTimelineMark = { label: string; atMs: number };
@@ -16,11 +16,11 @@ export type BootTimelineInput = {
 /**
  * Persists the in-guest boot timeline server-side, closing the asymmetry
  * where the HOST provisioning timeline is durable
- * (kortix.provider_events.marks, written by provider-events.ts's
+ * (zed.provider_events.marks, written by provider-events.ts's
  * recordProviderEvent for kind 'provision' | 'migrate') but the equally
  * expensive in-guest boot (repo-materialized, opencode-session-created, ...)
  * only ever lived in daemon memory, exposed transiently on
- * `GET /kortix/health`'s `boot_timeline` field until the sandbox recycled.
+ * `GET /zed/health`'s `boot_timeline` field until the sandbox recycled.
  *
  * Deliberately reuses `provider_events` (kind: 'boot') instead of a new
  * table: same shape (marks: [{label, atMs}]), same query surface, and `kind`

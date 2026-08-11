@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import { eq, sql } from 'drizzle-orm';
-import { accountMembers, accounts, projectMembers, projects } from '@kortix/db';
+import { accountMembers, accounts, projectMembers, projects } from '@zed/db';
 import { db } from '../shared/db';
 import { app } from '../index';
 import { createAccountToken } from '../repositories/account-tokens';
@@ -11,7 +11,7 @@ import { PROJECT_ACTIONS } from '../iam';
 // agent-scope check that is a no-op for humans), so unchecking the leaf did
 // nothing. This suite proves each newly-added leaf gate fires, using the
 // agent-grant fold: a scoped agent token restricts the launching user to the
-// leaves in its kortix_cli grant (project.read/project.write are exempt — see
+// leaves in its zed_cli grant (project.read/project.write are exempt — see
 // AGENT_GRANT_EXEMPT_ACTIONS — so the coarse floor always passes and only the
 // specific leaf gate is under test).
 const ACCOUNT = crypto.randomUUID();
@@ -22,9 +22,9 @@ const EDITOR = crypto.randomUUID();
 const minted: string[] = [];
 
 beforeAll(async () => {
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists agent_grant jsonb`);
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists session_id text`);
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists service_account_id uuid`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists agent_grant jsonb`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists session_id text`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists service_account_id uuid`);
 
   await db.insert(accounts).values({ accountId: ACCOUNT, name: 'write-leaf-gate-test' });
   await db.insert(projects).values({
@@ -49,19 +49,19 @@ beforeAll(async () => {
 
 afterAll(async () => {
   for (const tokenId of minted) {
-    await db.execute(sql`delete from kortix.account_tokens where token_id = ${tokenId}`);
+    await db.execute(sql`delete from zed.account_tokens where token_id = ${tokenId}`);
   }
   await db.delete(projects).where(eq(projects.accountId, ACCOUNT));
   await db.delete(accounts).where(eq(accounts.accountId, ACCOUNT));
 });
 
-async function mint(userId: string, kortixCli: string[] | null): Promise<string> {
+async function mint(userId: string, zedCli: string[] | null): Promise<string> {
   const t = await createAccountToken({
     accountId: ACCOUNT,
     userId,
     projectId: PROJECT,
     name: 'write-leaf-gate-test',
-    agentGrant: (kortixCli ? { agent: 'scoped-bot', kortixCli, connectors: [] } : null) as any,
+    agentGrant: (zedCli ? { agent: 'scoped-bot', zedCli, connectors: [] } : null) as any,
   });
   minted.push(t.tokenId);
   return t.secretKey;
@@ -98,7 +98,7 @@ interface WCase {
   // 'member' = the floor role holds this leaf (so a plain member passes);
   // 'editor' = editor-tier (a plain member is denied, an editor passes).
   tier: 'member' | 'editor';
-  // kortix_cli grants for the agent-grant fold. deny = a grant that should be
+  // zed_cli grants for the agent-grant fold. deny = a grant that should be
   // rejected by the leaf gate; allow = the exact grant that should pass it.
   denyGrant: string[];
   allowGrant: string[];

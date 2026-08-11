@@ -1,4 +1,4 @@
-import { accountModelPreferences, projectLlmRoutingPolicies } from '@kortix/db';
+import { accountModelPreferences, projectLlmRoutingPolicies } from '@zed/db';
 import { and, eq, sql } from 'drizzle-orm';
 import type {
   ProjectModelGenerationConfig,

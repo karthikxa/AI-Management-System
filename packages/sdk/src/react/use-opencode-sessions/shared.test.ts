@@ -59,7 +59,7 @@ describe('unwrap', () => {
 });
 
 // ============================================================================
-// canQueryOpenCodeSession — rejects Kortix's own project-session UUIDs (which
+// canQueryOpenCodeSession — rejects Zed's own project-session UUIDs (which
 // aren't real opencode session ids and would 404 the opencode API).
 // ============================================================================
 
@@ -70,7 +70,7 @@ describe('canQueryOpenCodeSession', () => {
     expect(canQueryOpenCodeSession('')).toBe(false);
   });
 
-  test('rejects a v4 UUID (the Kortix project-session id shape)', () => {
+  test('rejects a v4 UUID (the Zed project-session id shape)', () => {
     expect(canQueryOpenCodeSession('550e8400-e29b-41d4-a716-446655440000')).toBe(false);
   });
 
@@ -159,7 +159,7 @@ describe('getLSCache / setLSCache (localStorage stubbed)', () => {
   });
 
   test('an unknown family is a safe no-op miss', () => {
-    expect(getLSCache('kortix_cache_unknown_family')).toBeUndefined();
+    expect(getLSCache('zed_cache_unknown_family')).toBeUndefined();
   });
 
   test('clearProjectProviderCache removes both the native and gateway scoped entries', () => {

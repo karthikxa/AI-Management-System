@@ -1,6 +1,6 @@
 /**
  * Regression test for Better Stack error `8d0cffbb…`
- * ("Cloning into bare repository '/tmp/kortix/git-cache/….git'…" — state
+ * ("Cloning into bare repository '/tmp/zed/git-cache/….git'…" — state
  * Reoccurred, call site `runGit` at `apps/api/src/projects/git/mirror.ts`).
  *
  * Root cause: `git clone --bare` writes its progress line
@@ -54,12 +54,12 @@ const {
 test('runGit applies backend-produced Authorization headers without rebuilding GitHub auth', async () => {
   const basic = `Basic ${Buffer.from('t:code-storage-jwt').toString('base64')}`;
   const result = await runGit(
-    ['config', '--get-all', 'http.https://kortix.code.storage/.extraheader'],
+    ['config', '--get-all', 'http.https://zed.code.storage/.extraheader'],
     undefined,
     true,
     null,
     undefined,
-    'kortix.code.storage',
+    'zed.code.storage',
     30_000,
     { Authorization: basic },
   );
@@ -83,7 +83,7 @@ describe('stripGitProgress', () => {
   test('removes benign progress lines, keeps fatal lines', () => {
     const out = stripGitProgress(
       [
-        "Cloning into bare repository '/tmp/kortix/git-cache/abc.git'...",
+        "Cloning into bare repository '/tmp/zed/git-cache/abc.git'...",
         'remote: Enumerating objects: 42, done.',
         'remote: Counting objects: 100% (42/42), done.',
         'Receiving objects: 100% (42/42), done.',
@@ -105,11 +105,11 @@ describe('classifyGitError — the 8d0cffbb root cause', () => {
     // The EXACT error shape Node's execFile produces on a timeout: killed:true,
     // signal:'SIGTERM', stderr = only git's progress line (no fatal line, since
     // git was killed mid-transfer before emitting one).
-    const nodeTimeoutError = Object.assign(new Error("Command failed: git clone --bare /repo /cache\nCloning into bare repository '/tmp/kortix/git-cache/5837336aa90fe415914ab32916bff7ad.git'...\n"), {
+    const nodeTimeoutError = Object.assign(new Error("Command failed: git clone --bare /repo /cache\nCloning into bare repository '/tmp/zed/git-cache/5837336aa90fe415914ab32916bff7ad.git'...\n"), {
       killed: true,
       signal: 'SIGTERM',
       code: null,
-      stderr: Buffer.from("Cloning into bare repository '/tmp/kortix/git-cache/5837336aa90fe415914ab32916bff7ad.git'...\n"),
+      stderr: Buffer.from("Cloning into bare repository '/tmp/zed/git-cache/5837336aa90fe415914ab32916bff7ad.git'...\n"),
       stdout: Buffer.from(''),
     });
 
@@ -181,8 +181,8 @@ describe('refreshMirror — partial-clone cleanup on failure', () => {
       gitAuthToken: 'unused-for-local',
     } as never;
 
-    const prevCacheDir = process.env.KORTIX_GIT_CACHE_DIR;
-    process.env.KORTIX_GIT_CACHE_DIR = cacheDir;
+    const prevCacheDir = process.env.ZED_GIT_CACHE_DIR;
+    process.env.ZED_GIT_CACHE_DIR = cacheDir;
     try {
       const repoPath = repoCachePath(project);
       await expect(refreshMirror(project)).rejects.toBeInstanceOf(GitOperationError);
@@ -192,7 +192,7 @@ describe('refreshMirror — partial-clone cleanup on failure', () => {
       // And the surfaced error is the real fatal line, not "Cloning into …".
       await expect(refreshMirror(project)).rejects.toThrow(/does not exist|repository|clone/i);
     } finally {
-      process.env.KORTIX_GIT_CACHE_DIR = prevCacheDir;
+      process.env.ZED_GIT_CACHE_DIR = prevCacheDir;
       await rm(workdir, { recursive: true, force: true }).catch(() => {});
     }
   });
@@ -216,8 +216,8 @@ describe('refreshMirror — partial-clone cleanup on failure', () => {
       gitAuthToken: 'caller-supplied-token',
     } as never;
 
-    const prevCacheDir = process.env.KORTIX_GIT_CACHE_DIR;
-    process.env.KORTIX_GIT_CACHE_DIR = cacheDir;
+    const prevCacheDir = process.env.ZED_GIT_CACHE_DIR;
+    process.env.ZED_GIT_CACHE_DIR = cacheDir;
     try {
       const repoPath = await refreshMirror(project);
       expect(existsSync(join(repoPath, 'HEAD'))).toBe(true);
@@ -225,7 +225,7 @@ describe('refreshMirror — partial-clone cleanup on failure', () => {
       const repoPath2 = await refreshMirror(project);
       expect(repoPath2).toBe(repoPath);
     } finally {
-      process.env.KORTIX_GIT_CACHE_DIR = prevCacheDir;
+      process.env.ZED_GIT_CACHE_DIR = prevCacheDir;
       await rm(workdir, { recursive: true, force: true }).catch(() => {});
     }
   });
@@ -249,8 +249,8 @@ describe('refreshMirror — partial-clone cleanup on failure', () => {
       gitAuthToken: 'caller-supplied-token',
     } as never;
 
-    const prevCacheDir = process.env.KORTIX_GIT_CACHE_DIR;
-    process.env.KORTIX_GIT_CACHE_DIR = cacheDir;
+    const prevCacheDir = process.env.ZED_GIT_CACHE_DIR;
+    process.env.ZED_GIT_CACHE_DIR = cacheDir;
     try {
       const repoPath = repoCachePath(project);
       await mkdir(repoPath, { recursive: true });
@@ -266,7 +266,7 @@ describe('refreshMirror — partial-clone cleanup on failure', () => {
       expect(existsSync(join(repoPath, 'objects'))).toBe(true);
       expect(existsSync(join(repoPath, 'not-a-repo.txt'))).toBe(false);
     } finally {
-      process.env.KORTIX_GIT_CACHE_DIR = prevCacheDir;
+      process.env.ZED_GIT_CACHE_DIR = prevCacheDir;
       await rm(workdir, { recursive: true, force: true }).catch(() => {});
     }
   });

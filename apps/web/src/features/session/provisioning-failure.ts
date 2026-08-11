@@ -1,5 +1,5 @@
-import type { PendingSessionPrompt } from '@kortix/sdk';
-import type { StartStash } from '@kortix/sdk/react';
+import type { PendingSessionPrompt } from '@zed/sdk';
+import type { StartStash } from '@zed/sdk/react';
 
 export interface ProvisioningFailurePresentation {
   title: string;

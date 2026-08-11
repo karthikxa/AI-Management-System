@@ -1,4 +1,4 @@
-import type { Project, ProjectSession, Secret } from '@kortix/api-contract';
+import type { Project, ProjectSession, Secret } from '@zed/api-contract';
 import {
   type accountGithubInstallations,
   type projectGitConnections,
@@ -6,7 +6,7 @@ import {
   projectSecrets,
   type projectSessions,
   type projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, desc, eq, isNull, or } from 'drizzle-orm';
 import type { Context } from 'hono';
 import { normalizeAuditClientSource } from '../../shared/audit-client-source';
@@ -54,7 +54,7 @@ export const UUID_V4_REGEX = /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 // here for the existing import sites. See session-status.ts for the index note.
 export { ACTIVE_SESSION_STATUSES, PROVISIONING_SESSION_STATUSES } from './session-status';
 
-export const PROJECT_GIT_AUTH_SECRET_NAME = 'KORTIX_GIT_AUTH_TOKEN';
+export const PROJECT_GIT_AUTH_SECRET_NAME = 'ZED_GIT_AUTH_TOKEN';
 
 export function serializeSession(
   row: ProjectSessionRow,
@@ -154,7 +154,7 @@ export function serializeSession(
  */
 
 function dashboardBaseUrl(): string {
-  return (config.FRONTEND_URL || 'https://kortix.com').replace(/\/+$/, '');
+  return (config.FRONTEND_URL || 'https://zed.com').replace(/\/+$/, '');
 }
 
 /** True when a GitHub repo-create error is a name collision (HTTP 422). On
@@ -175,9 +175,9 @@ export function serializeProject(
     name: row.name,
     repo_url: row.repoUrl,
     // Universal client-facing git origin. When the proxy is enabled, runtime
-    // clients (CLI `ship`, web) clone/push this with a Kortix token instead of
+    // clients (CLI `ship`, web) clone/push this with a Zed token instead of
     // the real host URL. Falls back to repo_url so callers can always use it.
-    git_origin_url: config.KORTIX_GIT_PROXY ? proxyGitUrl(row.projectId) : row.repoUrl,
+    git_origin_url: config.ZED_GIT_PROXY ? proxyGitUrl(row.projectId) : row.repoUrl,
     default_branch: row.defaultBranch,
     manifest_path: row.manifestPath,
     status: row.status,
@@ -283,7 +283,7 @@ export function requestAuditContext(c: Context): RequestAuditContext {
     path: c.req.path,
     ip: clientIp(c),
     userAgent: c.req.header('user-agent') || null,
-    clientReportedSource: normalizeAuditClientSource(c.req.header('x-kortix-client')),
+    clientReportedSource: normalizeAuditClientSource(c.req.header('x-zed-client')),
   };
 }
 
@@ -331,7 +331,7 @@ export function buildSecretView(input: {
               ? 'connector'
               : backend === 'git_proxy'
                 ? 'git_proxy'
-                : backend === 'kortix_fetch'
+                : backend === 'zed_fetch'
                   ? 'http_broker'
                   : null;
   const storedConsumer =
@@ -370,7 +370,7 @@ export function buildSecretView(input: {
       (strategy === 'runtime' && consumer === 'sandbox') ||
       (strategy === 'broker' && consumer === 'llm_gateway') ||
       (strategy === 'broker' && consumer === 'git_proxy') ||
-      (strategy === 'broker' && consumer === 'http_broker' && backend === 'kortix_fetch') ||
+      (strategy === 'broker' && consumer === 'http_broker' && backend === 'zed_fetch') ||
       consumer === 'connector'
         ? 'available'
         : strategy === 'denied'
@@ -424,7 +424,7 @@ export async function loadSecretViewsForUser(
 }
 
 export function isSystemProjectSecretName(name: string): boolean {
-  return name.toUpperCase().startsWith('KORTIX_');
+  return name.toUpperCase().startsWith('ZED_');
 }
 
 export function serializeSessionSandboxConfig(
@@ -561,8 +561,8 @@ export function hasOwn(body: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(body, key);
 }
 
-export function deriveKortixApiRoot(kortixUrl: string): string {
-  return (kortixUrl || 'https://api.kortix.com')
+export function deriveZedApiRoot(zedUrl: string): string {
+  return (zedUrl || 'https://api.zed.com')
     .replace(/\/+$/, '')
     .replace(/\/v1\/router$/, '')
     .replace(/\/v1$/, '');

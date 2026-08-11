@@ -9,7 +9,7 @@
  * of this module is to make the NEXT drift visible in days rather than months.
  */
 
-import { creditAccounts } from '@kortix/db';
+import { creditAccounts } from '@zed/db';
 import { db } from '../../shared/db';
 import {
   type EntitlementBreach,

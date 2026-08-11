@@ -66,7 +66,7 @@ The UI does not show a startup spinner for this state.
 
 1. The project composer stores the normal browser start stash.
 2. The create request also stores `pending_prompt` in session metadata.
-3. The API does not add `pending_prompt` to `KORTIX_INITIAL_PROMPT`.
+3. The API does not add `pending_prompt` to `ZED_INITIAL_PROMPT`.
 4. The API does not send `pending_prompt` to the runtime.
 5. A terminal provider failure keeps `pending_prompt` unchanged.
 6. The Retry action copies `pending_prompt` into the browser start stash.

@@ -1,4 +1,4 @@
-// Kortix Apps — project-scoped, provider-neutral application deployments.
+// Zed Apps — project-scoped, provider-neutral application deployments.
 
 import { backendApi } from '../../http/api-client';
 import { unwrap } from './shared';
@@ -180,7 +180,7 @@ export interface AppDeployment {
   failed_at: string | null;
   /** User whose deployment request resolved personal project-secret overrides. */
   created_by: string;
-  /** Originating Kortix project session when an agent created this deployment. */
+  /** Originating Zed project session when an agent created this deployment. */
   source_session_id: string | null;
   /** Immutable caller class recorded when the deployment was created. */
   actor_type: 'human' | 'agent' | 'service_account' | 'system';

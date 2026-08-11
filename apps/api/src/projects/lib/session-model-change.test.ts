@@ -76,21 +76,21 @@ describe('mayChangeSessionModel — visibility is not mutability', () => {
 describe('modelChangeResult — a half-applied change must never read as done', () => {
   test('a live push that succeeded is applied', () => {
     const result = modelChangeResult({
-      model: 'kortix/claude-sonnet-4.6',
+      model: 'zed/claude-sonnet-4.6',
       needsPush: true,
       push: { applied: true },
     });
-    expect(result).toEqual({ opencode_model: 'kortix/claude-sonnet-4.6', applied_live: true });
+    expect(result).toEqual({ opencode_model: 'zed/claude-sonnet-4.6', applied_live: true });
   });
 
   test('a live push that FAILED is flagged, with the upstream reason', () => {
     const result = modelChangeResult({
-      model: 'kortix/deepseek-v4-flash',
+      model: 'zed/deepseek-v4-flash',
       needsPush: true,
       push: { applied: false, reason: '502 upstream-closed-before-headers' },
     });
     expect(result).toEqual({
-      opencode_model: 'kortix/deepseek-v4-flash',
+      opencode_model: 'zed/deepseek-v4-flash',
       applied_live: false,
       push_failed: true,
       detail: 'stored, but not pushed: 502 upstream-closed-before-headers',
@@ -99,7 +99,7 @@ describe('modelChangeResult — a half-applied change must never read as done', 
 
   test('a failed push with no reason still flags the failure', () => {
     const result = modelChangeResult({
-      model: 'kortix/glm-5.2',
+      model: 'zed/glm-5.2',
       needsPush: true,
       push: { applied: false },
     });
@@ -109,12 +109,12 @@ describe('modelChangeResult — a half-applied change must never read as done', 
 
   test('no push needed on a cold session is NOT a failure', () => {
     const result = modelChangeResult({
-      model: 'kortix/claude-opus-4.8',
+      model: 'zed/claude-opus-4.8',
       needsPush: false,
-      current: 'kortix/claude-sonnet-4.6',
+      current: 'zed/claude-sonnet-4.6',
     });
     expect(result).toEqual({
-      opencode_model: 'kortix/claude-opus-4.8',
+      opencode_model: 'zed/claude-opus-4.8',
       applied_live: false,
       detail: 'stored — applies when the sandbox next starts',
     });
@@ -123,12 +123,12 @@ describe('modelChangeResult — a half-applied change must never read as done', 
 
   test('re-selecting the same model is a benign no-op, not a failure', () => {
     const result = modelChangeResult({
-      model: 'kortix/claude-opus-4.8',
+      model: 'zed/claude-opus-4.8',
       needsPush: false,
-      current: 'kortix/claude-opus-4.8',
+      current: 'zed/claude-opus-4.8',
     });
     expect(result).toEqual({
-      opencode_model: 'kortix/claude-opus-4.8',
+      opencode_model: 'zed/claude-opus-4.8',
       applied_live: false,
       detail: 'already set to this model',
     });

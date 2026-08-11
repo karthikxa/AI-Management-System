@@ -30,9 +30,9 @@ mock.module('../config', () => ({
     SLACK_SIGNING_SECRET: 'state-secret',
     SLACK_CLIENT_ID: 'client-id',
     SLACK_CLIENT_SECRET: 'client-secret',
-    SLACK_REDIRECT_URI: 'https://dev-api.kortix.com/v1/webhooks/slack/oauth/callback',
+    SLACK_REDIRECT_URI: 'https://dev-api.zed.com/v1/webhooks/slack/oauth/callback',
     SLACK_OAUTH_SCOPES: 'app_mentions:read,chat:write,commands',
-    FRONTEND_URL: 'https://dev.kortix.com',
+    FRONTEND_URL: 'https://dev.zed.com',
   },
 }));
 
@@ -65,7 +65,7 @@ beforeEach(() => {
       ok: true,
       access_token: 'xoxb-new-token',
       bot_user_id: 'U_BOT',
-      team: { id: WORKSPACE_ID, name: 'KortixDev' },
+      team: { id: WORKSPACE_ID, name: 'ZedDev' },
     }), {
       status: 200,
       headers: { 'content-type': 'application/json' },
@@ -97,14 +97,14 @@ describe('Slack OAuth callback', () => {
 
     expect(res.status).toBe(302);
     expect(redirectLocation(res)).toBe(
-      `https://dev.kortix.com/projects/${PROJECT_ID}?projectId=${PROJECT_ID}&success=1&customize=connectors`,
+      `https://dev.zed.com/projects/${PROJECT_ID}?projectId=${PROJECT_ID}&success=1&customize=connectors`,
     );
     expect(saveCalls).toEqual([{
       projectId: PROJECT_ID,
       workspaceId: WORKSPACE_ID,
       botToken: 'xoxb-new-token',
       botUserId: 'U_BOT',
-      teamName: 'KortixDev',
+      teamName: 'ZedDev',
     }]);
   });
 
@@ -115,7 +115,7 @@ describe('Slack OAuth callback', () => {
 
     expect(res.status).toBe(302);
     expect(redirectLocation(res)).toBe(
-      `https://dev.kortix.com/projects/${PROJECT_ID}?projectId=${PROJECT_ID}&error=slack_install_save_failed&customize=connectors`,
+      `https://dev.zed.com/projects/${PROJECT_ID}?projectId=${PROJECT_ID}&error=slack_install_save_failed&customize=connectors`,
     );
     expect(saveCalls).toHaveLength(1);
   });
@@ -129,7 +129,7 @@ describe('Slack OAuth callback', () => {
 
     expect(res.status).toBe(302);
     expect(redirectLocation(res)).toBe(
-      `https://dev.kortix.com/projects/${PROJECT_ID}?projectId=${PROJECT_ID}&error=oauth_exchange_failed&customize=connectors`,
+      `https://dev.zed.com/projects/${PROJECT_ID}?projectId=${PROJECT_ID}&error=oauth_exchange_failed&customize=connectors`,
     );
     expect(saveCalls).toHaveLength(0);
   });
@@ -145,7 +145,7 @@ describe('Slack OAuth callback', () => {
 
     expect(res.status).toBe(302);
     expect(redirectLocation(res)).toBe(
-      `https://dev.kortix.com/projects/${PROJECT_ID}?projectId=${PROJECT_ID}&error=invalid_code&customize=connectors`,
+      `https://dev.zed.com/projects/${PROJECT_ID}?projectId=${PROJECT_ID}&error=invalid_code&customize=connectors`,
     );
     expect(saveCalls).toHaveLength(0);
   });

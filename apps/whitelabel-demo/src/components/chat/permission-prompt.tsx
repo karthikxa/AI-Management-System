@@ -10,7 +10,7 @@
  */
 
 import { Button } from '@/components/ui/button';
-import type { KortixSendError } from '@kortix/sdk/react';
+import type { ZedSendError } from '@zed/sdk/react';
 import { ShieldQuestion } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -35,8 +35,8 @@ export function PermissionPrompt({
       await onAnswer(request.id, decision);
     } catch (err) {
       // `answerPermission` already classifies its own failure via
-      // `classifySendError` and throws the typed `KortixSendError`.
-      toast.error((err as KortixSendError)?.message || 'Could not send your decision');
+      // `classifySendError` and throws the typed `ZedSendError`.
+      toast.error((err as ZedSendError)?.message || 'Could not send your decision');
       setSending(false);
     }
   }

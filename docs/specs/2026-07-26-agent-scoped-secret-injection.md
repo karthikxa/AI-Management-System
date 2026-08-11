@@ -11,7 +11,7 @@
 
 A project's secrets are injected into a session's sandbox as plain env vars. Which
 secrets an agent receives is gated by exactly one thing: the `secrets` grant its
-agent declares in `kortix.yaml` (`sessions.ts` — *"This is the ONLY gate on agent
+agent declares in `zed.yaml` (`sessions.ts` — *"This is the ONLY gate on agent
 secret access — there is no resource-side allow-list on the secret itself"*).
 
 Two paths perform that injection, and they had drifted:
@@ -39,7 +39,7 @@ secret, with no error anywhere.
 Nothing in the codebase ever updates that column (verified: the only `agentName`
 write is on `chat_channel_bindings`).
 
-Meanwhile in-session agent switching is permitted. `KORTIX_ENFORCE_SESSION_AGENT_LOCK`
+Meanwhile in-session agent switching is permitted. `ZED_ENFORCE_SESSION_AGENT_LOCK`
 defaults off, and the proxy forwards a concrete `agent` field untouched
 (`preview.ts` — *"a prompt may freely run a different agent"*).
 
@@ -80,7 +80,7 @@ an unrestricted grant.
 This required opening up a layer below. `loadProjectAgents` **never throws** by
 design: `readManifest` (`projects/triggers.ts`) wraps the git I/O in a blanket
 `catch { return null; }`, and `loadProjectAgents` answers `null` with
-`synthesizeBlankManifest` — which grants the conventional `kortix` agent
+`synthesizeBlankManifest` — which grants the conventional `zed` agent
 `secrets: 'all'`. So a transient git-proxy 429 or mirror-refresh failure was
 **indistinguishable from "blank project"** and silently granted every secret,
 on an ordinary prompt with no agent switch at all. A parse error was equally
@@ -120,18 +120,18 @@ on a concretely-bound session would recompute its grant against `'default'`.
 
 Re-scoping the env on a later turn **cannot undo the disclosure**. By the time a
 switch is observed, the previous agent's secrets are already in
-`/dev/shm/kortix/agent-env.sh`, exported into every shell it spawned, and in its
+`/dev/shm/zed/agent-env.sh`, exported into every shell it spawned, and in its
 own context. Narrowing the next push does not retract any of that.
 
 The default product behavior accepts the switch. Before forwarding the prompt,
 the proxy replaces OpenCode's environment with the running agent's grant and
-re-mints the session token's connector and Kortix CLI grant.
+re-mints the session token's connector and Zed CLI grant.
 
-An operator can enable `KORTIX_ENFORCE_AGENT_SECRET_GRANT_LOCK`. In that strict
+An operator can enable `ZED_ENFORCE_AGENT_SECRET_GRANT_LOCK`. In that strict
 mode, a switch whose `secrets` grant differs from the session's is refused:
 `AgentSecretGrantMismatchError` → `409 AGENT_SWITCH_REQUIRES_NEW_SESSION`.
 
-This is deliberately **narrower than `KORTIX_ENFORCE_SESSION_AGENT_LOCK`**, which
+This is deliberately **narrower than `ZED_ENFORCE_SESSION_AGENT_LOCK`**, which
 409s on any name change and is gated off precisely because it false-positived on
 ordinary flows. Switching between agents with the *same* grant stays free.
 
@@ -165,7 +165,7 @@ and the project's secret set can change under it.
 
 ### Strict lock
 
-`KORTIX_ENFORCE_AGENT_SECRET_GRANT_LOCK` defaults **off**. The normal path
+`ZED_ENFORCE_AGENT_SECRET_GRANT_LOCK` defaults **off**. The normal path
 re-scopes onto the *running* agent's grant. It does **not** restore resolution
 from the stale create-time column. Set the flag to `true` to refuse switches
 whose secret grants differ.
@@ -183,14 +183,14 @@ whose secret grants differ.
 | `projects/lib/sessions.ts` | Boot uses the shared resolver; no `.catch(() => null)` |
 | `projects/lib/sandbox-env-sync.ts` | Hot push resolves from the running agent |
 | `sandbox-proxy/routes/preview.ts` | Threads `requestedAgent`; maps errors to 409 / 503 |
-| `config.ts` | `KORTIX_ENFORCE_AGENT_SECRET_GRANT_LOCK` |
+| `config.ts` | `ZED_ENFORCE_AGENT_SECRET_GRANT_LOCK` |
 
 ## Not in scope
 
 **Gateway-only secrets.** A BYOK key connected through the LLM Providers modal is
 written to `project_secrets` and therefore also injected into the sandbox, where
 the agent can read it with `echo $ANTHROPIC_API_KEY`. In gateway mode the daemon
-withholds it from the *opencode process* (`KORTIX_OPENCODE_DENY_ENV`) so routing
+withholds it from the *opencode process* (`ZED_OPENCODE_DENY_ENV`) so routing
 stays on the gateway, but that is a routing control, not a secrecy control — the
 container still holds the key.
 

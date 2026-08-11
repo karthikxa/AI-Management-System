@@ -11,13 +11,13 @@ const ORIGINAL_STDOUT_WRITE = process.stdout.write;
 const ORIGINAL_STDERR_WRITE = process.stderr.write;
 
 const ENV_KEYS = [
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
-  'KORTIX_CONFIG_FILE',
-  'KORTIX_AUTH_FILE',
+  'ZED_CLI_TOKEN',
+  'ZED_TOKEN',
+  'ZED_API_URL',
+  'ZED_PROJECT_ID',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CONFIG_FILE',
+  'ZED_AUTH_FILE',
   'SLACK_BOT_TOKEN',
   'SLACK_SIGNING_SECRET',
 ] as const;
@@ -76,7 +76,7 @@ function writeConfig(url = 'https://api.test'): void {
     }),
     'utf8',
   );
-  process.env.KORTIX_CONFIG_FILE = file;
+  process.env.ZED_CONFIG_FILE = file;
 }
 
 function captureOutput() {
@@ -143,10 +143,10 @@ function mockApi() {
 beforeEach(() => {
   saved = {};
   for (const key of ENV_KEYS) { saved[key] = process.env[key]; delete process.env[key]; }
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
-  process.env.KORTIX_PROJECT_ID = 'proj_1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_PROJECT_ID = 'proj_1';
   originalCwd = process.cwd();
-  tmp = mkdtempSync(join(tmpdir(), 'kortix-channels-test-'));
+  tmp = mkdtempSync(join(tmpdir(), 'zed-channels-test-'));
   process.chdir(tmp);
   writeConfig();
   captureOutput();
@@ -168,14 +168,14 @@ afterEach(() => {
   rmSync(tmp, { recursive: true, force: true });
 });
 
-describe('kortix channels connect — one-click (cloud)', () => {
+describe('zed channels connect — one-click (cloud)', () => {
   test('prints the install link when OAuth is configured and nothing is connected', async () => {
     const code = await runChannels(['connect']);
     expect(code).toBe(0);
     const out = stripAnsi(stdout);
     expect(out).toContain('Add to Slack');
     expect(out).toContain(INSTALL_URL);
-    expect(out).not.toContain('kortix channels manifest');
+    expect(out).not.toContain('zed channels manifest');
     expect(out).not.toContain('signing secret');
     expect(requests.some((r) => r.url.includes('/channels/slack/mode'))).toBe(true);
     expect(requests.some((r) => r.method === 'POST')).toBe(false);
@@ -209,13 +209,13 @@ describe('kortix channels connect — one-click (cloud)', () => {
   });
 });
 
-describe('kortix channels connect — manual (self-host)', () => {
+describe('zed channels connect — manual (self-host)', () => {
   test('OAuth unavailable + no creds → exit 2 with the manual playbook, not a stack of API calls', async () => {
     state.oauthAvailable = false;
     const code = await runChannels(['connect']);
     expect(code).toBe(2);
     const err = stripAnsi(stderr);
-    expect(err).toContain('kortix channels manifest');
+    expect(err).toContain('zed channels manifest');
     expect(err).toContain('--bot-token');
   });
 
@@ -254,13 +254,13 @@ describe('kortix channels connect — manual (self-host)', () => {
   });
 });
 
-describe('kortix channels status', () => {
-  test('not connected → points at `kortix channels connect`', async () => {
+describe('zed channels status', () => {
+  test('not connected → points at `zed channels connect`', async () => {
     const code = await runChannels(['status']);
     expect(code).toBe(0);
     const out = stripAnsi(stdout);
     expect(out).toContain('not connected');
-    expect(out).toContain('kortix channels connect');
+    expect(out).toContain('zed channels connect');
   });
 
   test('--json reports connected + installation', async () => {
@@ -285,14 +285,14 @@ describe('kortix channels status', () => {
   });
 });
 
-describe('kortix channels --platform teams', () => {
-  test('status not connected → points at `kortix channels connect --platform teams`', async () => {
+describe('zed channels --platform teams', () => {
+  test('status not connected → points at `zed channels connect --platform teams`', async () => {
     const code = await runChannels(['status', '--platform', 'teams']);
     expect(code).toBe(0);
     const out = stripAnsi(stdout);
     expect(out).toContain('teams');
     expect(out).toContain('not connected');
-    expect(out).toContain('kortix channels connect --platform teams');
+    expect(out).toContain('zed channels connect --platform teams');
     // Must NOT hit the Slack endpoint.
     expect(requests.some((r) => r.url.includes('/channels/slack/'))).toBe(false);
     expect(requests.some((r) => r.url.includes('/channels/teams/installation'))).toBe(true);

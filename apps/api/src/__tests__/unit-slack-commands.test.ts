@@ -68,9 +68,9 @@ mock.module('../llm-gateway/models/picker', () => ({
         managed: false,
         hint: 'Most capable',
       },
-      { id: 'kortix/glm-5.2', label: 'GLM 5.2', provider: 'kortix', managed: true, hint: null },
+      { id: 'zed/glm-5.2', label: 'GLM 5.2', provider: 'zed', managed: true, hint: null },
     ],
-    projectDefault: { model: 'kortix/glm-5.2', source: 'project', label: 'GLM 5.2' },
+    projectDefault: { model: 'zed/glm-5.2', source: 'project', label: 'GLM 5.2' },
   }),
   labelForModelRef: (id: string) =>
     id === 'anthropic/claude-opus-4-8' ? 'Claude Opus 4.8' : id,
@@ -82,7 +82,7 @@ let identityRow: { userId: string } | null = null;
 mock.module('../channels/slack/identity', () => ({
   lookupSlackIdentity: async () => identityRow,
   revokeSlackIdentity: async () => true,
-  lookupSlackUserIdForKortixUser: async () => null,
+  lookupSlackUserIdForZedUser: async () => null,
 }));
 mock.module('../accounts/core/app', () => ({
   lookupEmailsByUserIds: async (ids: string[]) =>
@@ -93,7 +93,7 @@ mock.module('../accounts/core/app', () => ({
 const { config } = await import('../config');
 const { handleSlashCommand } = await import('../channels/slack/commands');
 
-const ctx = { teamId: 'T1', channelId: 'C1', slackUserId: 'U1', command: '/kortix' };
+const ctx = { teamId: 'T1', channelId: 'C1', slackUserId: 'U1', command: '/zed' };
 
 // Flatten all stringy text out of a blocks array for easy assertions.
 function allText(resp: any): string {
@@ -120,7 +120,7 @@ beforeEach(() => {
 });
 
 describe('help', () => {
-  // Discovery moved into the one `/kortix` panel; help now documents the
+  // Discovery moved into the one `/zed` panel; help now documents the
   // typed shortcuts that survived it. Asserting the retired `agents`/`models`
   // list here just pinned the old design.
   test('points at the panel and lists the typed shortcuts', async () => {
@@ -165,7 +165,7 @@ describe('identity feature gated OFF', () => {
   });
 });
 
-describe('/kortix models', () => {
+describe('/zed models', () => {
   test('renders a picker of recommended models + a project-default reset', async () => {
     selection = { projectId: 'p1', agentName: null, opencodeModel: 'anthropic/claude-opus-4-8' };
     const resp = await handleSlashCommand('models', '', ctx);
@@ -182,7 +182,7 @@ describe('/kortix models', () => {
   });
 });
 
-describe('/kortix model <id>', () => {
+describe('/zed model <id>', () => {
   // Shape is no longer the gate — servability is, so an id that cannot be
   // served is refused whatever it looks like. The property under test is
   // unchanged and is the one that matters: nothing unusable is ever stored.
@@ -215,7 +215,7 @@ describe('/kortix model <id>', () => {
   });
 });
 
-describe('/kortix agent <name>', () => {
+describe('/zed agent <name>', () => {
   test('sets a named agent', async () => {
     const resp = await handleSlashCommand('agent', 'reviewer', ctx);
     expect(setAgentCalls).toEqual(['reviewer']);
@@ -243,18 +243,18 @@ describe('/kortix agent <name>', () => {
   });
 });
 
-describe('/kortix agents (list)', () => {
+describe('/zed agents (list)', () => {
   test('acks immediately (the real list posts async via response_url)', async () => {
     const resp = await handleSlashCommand('agents', '', { ...ctx, responseUrl: undefined });
     expect(resp.text).toContain('Loading agents');
   });
-  test('/kortix agents <name> is an alias for set', async () => {
+  test('/zed agents <name> is an alias for set', async () => {
     const resp = await handleSlashCommand('agents', 'reviewer', ctx);
     expect(setAgentCalls).toEqual(['reviewer']);
   });
 });
 
-describe('/kortix session (singular)', () => {
+describe('/zed session (singular)', () => {
   test('renders the latest channel session + an Open button', async () => {
     dbResults = [[{ sessionId: 'sess-9', status: 'running', agentName: 'reviewer', createdAt: new Date() }]];
     const resp = await handleSlashCommand('session', '', ctx);
@@ -276,7 +276,7 @@ describe('/kortix session (singular)', () => {
   });
 });
 
-describe('/kortix whoami', () => {
+describe('/zed whoami', () => {
   test('surfaces the current agent + model', async () => {
     selection = { projectId: 'p1', agentName: 'reviewer', opencodeModel: 'anthropic/claude-opus-4-8' };
     // whoami also fetches the project row.

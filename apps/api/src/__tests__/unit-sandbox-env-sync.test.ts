@@ -3,11 +3,11 @@ import { describe, expect, test } from 'bun:test';
 import { isReservedSandboxEnvName, sanitizeSandboxEnv } from '../projects/lib/sandbox-env-names';
 
 describe('isReservedSandboxEnvName', () => {
-  test('flags platform-reserved + KORTIX_/OPENCODE_ prefixes', () => {
+  test('flags platform-reserved + ZED_/OPENCODE_ prefixes', () => {
     expect(isReservedSandboxEnvName('PORT')).toBe(true);
     expect(isReservedSandboxEnvName('PATH')).toBe(true);
     expect(isReservedSandboxEnvName('LD_PRELOAD')).toBe(true);
-    expect(isReservedSandboxEnvName('KORTIX_TOKEN')).toBe(true);
+    expect(isReservedSandboxEnvName('ZED_TOKEN')).toBe(true);
     expect(isReservedSandboxEnvName('OPENCODE_CONFIG_DIR')).toBe(true);
   });
 
@@ -24,7 +24,7 @@ describe('sanitizeSandboxEnv', () => {
       DATABASE_URL: 'postgres://x',
       PORT: '9999',
       PATH: '/evil',
-      KORTIX_TOKEN: 'leak',
+      ZED_TOKEN: 'leak',
       OPENCODE_CONFIG_DIR: '/x',
       SLACK_SIGNING_SECRET: 'sign',
     });

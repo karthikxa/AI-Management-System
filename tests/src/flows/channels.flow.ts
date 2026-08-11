@@ -128,7 +128,7 @@ flow(
         .as(ctx.P.OWNER)
         .post(
           "/v1/projects/:projectId/channels/email/connect",
-          { api_key: "am_us_bogus", display_name: "Kortix E2E" },
+          { api_key: "am_us_bogus", display_name: "Zed E2E" },
           { params: { projectId: p.id } },
         );
       r.status(403);
@@ -140,7 +140,7 @@ flow(
         .as(ctx.P.NONMEMBER)
         .post(
           "/v1/projects/:projectId/channels/email/connect",
-          { api_key: "am_us_bogus", display_name: "Kortix E2E" },
+          { api_key: "am_us_bogus", display_name: "Zed E2E" },
           { params: { projectId: p.id } },
         );
       r.status([403, 404]);
@@ -342,7 +342,7 @@ flow(
     await ctx.step("ANON unsigned command → 503 (unconfigured) or 401 (bad sig)", async () => {
       const r = await ctx.client
         .as(ctx.P.ANON)
-        .post("/v1/webhooks/slack/commands", { command: "/kortix", text: "hi" });
+        .post("/v1/webhooks/slack/commands", { command: "/zed", text: "hi" });
       r.status([401, 503]);
     });
   },
@@ -412,7 +412,7 @@ flow(
 const UNKNOWN_BINDING = "00000000-0000-4000-a000-000000000001";
 
 // CHN-18 — Channel bindings list (read ACL). The web management surface for
-// `chat_channel_bindings` — today only reachable via Slack `/kortix` commands.
+// `chat_channel_bindings` — today only reachable via Slack `/zed` commands.
 flow(
   "CHN-18",
   {
@@ -841,7 +841,7 @@ flow(
         .as(ctx.P.ANON)
         .post(
           "/v1/webhooks/slack/:projectId/commands",
-          "command=%2Fkortix&text=hi&team_id=TKE2E&channel_id=CKE2E&user_id=UKE2E",
+          "command=%2Fzed&text=hi&team_id=TKE2E&channel_id=CKE2E&user_id=UKE2E",
           { params: { projectId: p.id }, raw: true, headers: { "content-type": "application/x-www-form-urlencoded" } },
         );
       r.status(404);

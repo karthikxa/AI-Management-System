@@ -35,9 +35,9 @@ set statement_timeout = '30s';
 -- rewrite), and the CHECK is NOT VALID so it takes no validating scan /
 -- write-blocking lock here. A later migration validates it (every existing row
 -- gets the '{}' default, which the constraint admits).
-ALTER TABLE "kortix"."project_llm_routing_policies"
+ALTER TABLE "zed"."project_llm_routing_policies"
   ADD COLUMN "model_overrides" jsonb DEFAULT '{}'::jsonb NOT NULL;
 
-ALTER TABLE "kortix"."project_llm_routing_policies"
+ALTER TABLE "zed"."project_llm_routing_policies"
   ADD CONSTRAINT "project_llm_routing_policies_model_overrides_object_check"
   CHECK (jsonb_typeof("model_overrides") = 'object') NOT VALID;

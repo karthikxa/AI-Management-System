@@ -1,4 +1,4 @@
-import { createGateway, gatewayErrorResponse } from '@kortix/llm-gateway';
+import { createGateway, gatewayErrorResponse } from '@zed/llm-gateway';
 import { Hono } from 'hono';
 import { createApiClient } from './clients/api-client';
 import { config } from './config';
@@ -6,8 +6,8 @@ import { type TraceSink, createLangfuseSink } from './observability/langfuse';
 import { createGatewayLogger } from './observability/logger';
 
 const STARTED_AT = Date.now();
-const SERVICE_VERSION = process.env.KORTIX_VERSION ?? 'dev';
-const SERVICE_COMMIT = process.env.KORTIX_COMMIT ?? 'unknown';
+const SERVICE_VERSION = process.env.ZED_VERSION ?? 'dev';
+const SERVICE_COMMIT = process.env.ZED_COMMIT ?? 'unknown';
 const TRAFFIC_WINDOW_S = 300;
 // Below this volume in the window, a high error rate is statistical noise, not
 // an incident worth flagging.
@@ -122,7 +122,7 @@ export function buildServer(): GatewayServer {
 
     const incidents: string[] = [];
     if (!apiCheck.ok)
-      incidents.push(`kortix api unreachable (${apiCheck.error ?? `http ${apiCheck.status}`})`);
+      incidents.push(`zed api unreachable (${apiCheck.error ?? `http ${apiCheck.status}`})`);
     if (openBreakers.length)
       incidents.push(`upstream circuit open: ${openBreakers.map((b) => b.provider).join(', ')}`);
     if (errorSpike)
@@ -135,7 +135,7 @@ export function buildServer(): GatewayServer {
     return c.json(
       {
         status,
-        service: 'kortix-llm-gateway',
+        service: 'zed-llm-gateway',
         version: SERVICE_VERSION,
         commit: SERVICE_COMMIT,
         uptime_s: Math.floor((Date.now() - STARTED_AT) / 1000),

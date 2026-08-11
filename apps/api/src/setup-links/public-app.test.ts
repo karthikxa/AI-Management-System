@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, mock, setSystemTime, test } from 'bun:test';
-import { projectSessions, projects } from '@kortix/db';
+import { projectSessions, projects } from '@zed/db';
 
 mock.module('../config', () => ({ config: { API_KEY_SECRET: 'test-pepper' } }));
 
@@ -83,7 +83,7 @@ beforeEach(() => {
   propagated.length = 0;
   enqueued.length = 0;
   sessionRows = [];
-  projectRows = [{ name: 'Kortix Company' }];
+  projectRows = [{ name: 'Zed Company' }];
 });
 
 afterEach(() => {
@@ -180,7 +180,7 @@ describe('secretSubmittedPrompt', () => {
   test('names every saved key and tells the agent not to re-mint', () => {
     const text = secretSubmittedPrompt(['DRATA_API_KEY', 'DRATA_WORKSPACE_ID']);
     expect(text).toContain('DRATA_API_KEY, DRATA_WORKSPACE_ID');
-    expect(text).toContain('kortix secrets sync');
+    expect(text).toContain('zed secrets sync');
     expect(text).toContain('Do not mint a new intake link');
   });
 });

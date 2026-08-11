@@ -2,7 +2,7 @@
 /**
  * Mint a fresh CLI PAT for the first user/account in the DB and print it
  * to stdout. Used by the shell-level CLI smoke test to feed a token into
- * `kortix login --token <...>`.
+ * `zed login --token <...>`.
  */
 import { sql } from 'drizzle-orm';
 import { db } from '../shared/db';
@@ -18,7 +18,7 @@ interface Row extends Record<string, unknown> {
 
 async function main() {
   const result = await db.execute<Row>(
-    sql`select user_id, account_id from kortix.account_members order by joined_at limit 1`,
+    sql`select user_id, account_id from zed.account_members order by joined_at limit 1`,
   );
   const rows =
     (result as unknown as { rows?: Row[] }).rows ?? (result as unknown as Row[]);
@@ -31,7 +31,7 @@ async function main() {
   const { publicKey, secretKey } = generateAccountTokenPair();
   const hash = hashSecretKey(secretKey);
   await db.execute(sql`
-    insert into kortix.account_tokens
+    insert into zed.account_tokens
       (account_id, user_id, name, public_key, secret_key_hash)
     values
       (${row.account_id}, ${row.user_id}, 'cli-smoke', ${publicKey}, ${hash})

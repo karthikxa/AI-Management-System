@@ -38,12 +38,12 @@ import {
   projectSessionConnectorBindings,
   projectSessions,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { db } from '../../shared/db';
 import { loadProjectAgents, requiredConnectorsForAgent } from '../agents';
 import { effectiveRunningAgent } from './secret-grant';
-import type { RequiredConnectorConnection } from '@kortix/api-contract';
+import type { RequiredConnectorConnection } from '@zed/api-contract';
 import { canonicalConnectorAlias } from '../../shared/connector-alias';
 import {
   RequiredConnectorConnectionUnavailableError,
@@ -162,7 +162,7 @@ export async function missingPromptConnectorConnections(input: {
           projectId: input.projectId,
           repoUrl: project.repoUrl,
           defaultBranch: project.defaultBranch,
-          manifestPath: project.manifestPath ?? 'kortix.yaml',
+          manifestPath: project.manifestPath ?? 'zed.yaml',
           gitAuthToken: null,
         },
         { rethrowReadErrors: true },

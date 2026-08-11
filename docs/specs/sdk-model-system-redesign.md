@@ -1,7 +1,7 @@
 # SDK model system redesign — defaults (project / agent / trigger) + free-tier as a pure gateway concern
 
 > **Runtime scope.** OpenCode provider injection below describes the current
-> `kortix_version: 2` runtime.
+> `zed_version: 2` runtime.
 
 Status: **draft / for review** · Owner: SDK refactor (branch `whitelabel-demo`)
 
@@ -11,11 +11,11 @@ Make model selection and defaults a **first-class, dead-simple SDK/API surface**
 
 - Set/get the **default model** at **project**, **agent**, and **trigger** scope
   through the SDK, cleanly — no host-local logic, no ugly key juggling.
-- Treat the **Kortix LLM gateway as the sole authority** for entitlement
-  (free-tier / subscription / budget). Kortix managed models are **just a
+- Treat the **Zed LLM gateway as the sole authority** for entitlement
+  (free-tier / subscription / budget). Zed managed models are **just a
   provider**; the client passes the user's token and renders the catalog the
   server hands back. **No free-tier logic in the SDK/client.**
-- `@kortix/sdk` is the single source of truth — apps consume it.
+- `@zed/sdk` is the single source of truth — apps consume it.
 
 ## TL;DR of the current state
 
@@ -24,9 +24,9 @@ Three layers, mapped:
 1. **Gateway (already correct).** Entitlement is enforced *entirely server-side*.
    The gateway authenticates the token → resolves the account tier → (a) filters
    the `/llm-catalog` per tier and (b) rejects an unavailable managed model at
-   request time (402/400). The SDK Connector client has **zero** tier logic. Kortix is
-   injected into OpenCode as an OpenAI-compatible provider (`kortix`) via
-   `KORTIX_LLM_API_KEY` + `KORTIX_LLM_BASE_URL`. **This is exactly the architecture
+   request time (402/400). The SDK Connector client has **zero** tier logic. Zed is
+   injected into OpenCode as an OpenAI-compatible provider (`zed`) via
+   `ZED_LLM_API_KEY` + `ZED_LLM_BASE_URL`. **This is exactly the architecture
    you want — it already exists.**
 2. **API/DB (defaults are account-scoped only).** `account_model_preferences`
    (`accountId, scope ∈ {account,agent}, scopeKey, model`) backs
@@ -46,7 +46,7 @@ Three layers, mapped:
 Key files: `apps/api/src/llm-gateway/**` (gateway), `apps/api/src/projects/routes/r4.ts`
 + `account_model_preferences` (defaults), `apps/api/src/llm-gateway/models/catalog-models.ts`
 (catalog), `packages/sdk/src/react/use-model-store.ts` + `use-opencode-local.ts`
-(client), `apps/kortix-sandbox-agent-server/src/opencode.ts` (provider injection).
+(client), `apps/zed-sandbox-agent-server/src/opencode.ts` (provider injection).
 
 ## The two problems to fix
 
@@ -77,7 +77,7 @@ default and no per-trigger model.
 - If a caller ever sends a model it isn't entitled to, the gateway returns a clear
   **402/400**; the SDK surfaces that as a normal runtime error (same path as any
   send error). No pre-emptive client gating.
-- Net: Kortix managed models are **just a provider** in the catalog; the user's
+- Net: Zed managed models are **just a provider** in the catalog; the user's
   token + the gateway decide entitlement. Clean concern separation, as intended.
 
 ### 2. Model defaults: one scoped surface, server-resolved
@@ -91,10 +91,10 @@ explicit pick  >  trigger.model  >  agent default  >  project default  >  accoun
 - **`model_preferences`** (a generalized `account_model_preferences`) holds the
   reusable defaults — `scope ∈ {account, project, agent}` + `scopeKey`
   (`projectId` for project, `agentName` for agent) + `model`.
-- **`trigger.model`** is a nullable field on the `kortix.yaml` `triggers:`
+- **`trigger.model`** is a nullable field on the `zed.yaml` `triggers:`
   entry itself (set where you create the trigger; `null`/absent = "Default" =
   resolve the chain). It is the most-specific *default-time* override for that run.
-- **`agent.model`** is a nullable field on the `kortix.yaml` `agents:` entry —
+- **`agent.model`** is a nullable field on the `zed.yaml` `agents:` entry —
   the agent's declarative default. A `model_preferences` (scope=agent) row is an
   optional dynamic override (wins over the manifest). So "agent default" =
   `model_preferences.agent ?? manifest agents.<name>.model`.
@@ -128,18 +128,18 @@ and chat history isn't polluted with implicit picks.
 
 ```ts
 // Catalog — already tier-filtered by the server; render as-is.
-kortix.project(id).llmCatalog()                       // → models the caller can use
+zed.project(id).llmCatalog()                       // → models the caller can use
 
 // Defaults — one clean CRUD (account / project / agent scope):
-kortix.project(id).modelDefaults.get()                // → resolved + per-scope map
-kortix.project(id).modelDefaults.set({ scope:'project', model })
-kortix.project(id).modelDefaults.set({ scope:'account', model })
-kortix.project(id).modelDefaults.set({ scope:'agent',   key: agentName, model })
-kortix.project(id).modelDefaults.clear({ scope, key? })
+zed.project(id).modelDefaults.get()                // → resolved + per-scope map
+zed.project(id).modelDefaults.set({ scope:'project', model })
+zed.project(id).modelDefaults.set({ scope:'account', model })
+zed.project(id).modelDefaults.set({ scope:'agent',   key: agentName, model })
+zed.project(id).modelDefaults.clear({ scope, key? })
 
 // Triggers/webhooks carry their own agent + model (model: null = "Default"):
-kortix.project(id).triggers.create({ ...trigger, agent, model: model ?? null })
-kortix.project(id).triggers.update(triggerId, { agent, model })
+zed.project(id).triggers.create({ ...trigger, agent, model: model ?? null })
+zed.project(id).triggers.update(triggerId, { agent, model })
 
 // React helpers (server-backed, optimistic):
 useModelDefaults(projectId)   // { resolvedFor(agent?), set*, clear*, isLoading }
@@ -148,7 +148,7 @@ useModelPicker(projectId, { sessionId, agentName })  // { current, sendKey, onDe
 // both reading the same SDK catalog/defaults — one selector, used everywhere.
 ```
 
-All of this lives in **`@kortix/sdk`** (`projects-client` + `react`). `apps/web`,
+All of this lives in **`@zed/sdk`** (`projects-client` + `react`). `apps/web`,
 `apps/whitelabel-demo`, `apps/mobile` consume it; no host re-implements it. Wire
 ↔ key conversion (`modelKeyToWire`/`wireToModelKey`) is an SDK internal, exposed
 only if a host truly needs it.
@@ -158,7 +158,7 @@ only if a host truly needs it.
 1. **API + manifest** — (a) generalize `model-defaults` to `{account,project,agent}`
    scope (`model_preferences` table + routes + `default-model.ts` resolution),
    dropping `freeTier` from the response (the catalog already encodes availability);
-   (b) add a nullable **`model`** to `kortix.yaml` `agents:` (`AgentSpec`) and
+   (b) add a nullable **`model`** to `zed.yaml` `agents:` (`AgentSpec`) and
    `triggers:` (`GitTriggerSpec`) — parse + serialize + validate against the
    catalog — and have the trigger run resolver check `trigger.model` first, then
    the agent's `model` (manifest, then DB override). The triggers routes already
@@ -194,15 +194,15 @@ only if a host truly needs it.
      > platform default (auto → gateway picks)
    ```
 
-2. **Triggers + webhooks carry an agent AND a model — in `kortix.yaml`.** A
+2. **Triggers + webhooks carry an agent AND a model — in `zed.yaml`.** A
    cron schedule or webhook exposes a **server-side selector for both the agent
    and the model**, persisted into the project manifest `triggers:` entry
    (which already has `agent`; add a nullable **`model`**). `null`/absent ⇒
-   **"Default"** ⇒ resolve the chain at run time. `kortix.yaml` is the source of
+   **"Default"** ⇒ resolve the chain at run time. `zed.yaml` is the source of
    truth for triggers; the UI/API edits + serializes the manifest (the trigger
    routes already round-trip it).
 
-3. **Agents declare a default model — in `kortix.yaml`.** Add a nullable
+3. **Agents declare a default model — in `zed.yaml`.** Add a nullable
    **`model`** to `agents:` (alongside `name`/`connectors`/…). This is the
    agent's declarative default. A `model_preferences` row (scope=agent) is an
    optional **dynamic override** set via the SDK/UI without a code commit
@@ -210,7 +210,7 @@ only if a host truly needs it.
    that agent's own `model` (manifest or DB override) is its default.
 
    **Where each default lives (two homes, one resolution path):**
-   - **`kortix.yaml` (declarative, committed code):** `agents.<name>.model`,
+   - **`zed.yaml` (declarative, committed code):** `agents.<name>.model`,
      `triggers[].agent` + `.model`. Project-as-code config.
    - **DB `model_preferences` (dynamic, set via SDK/UI):** account (personal) +
      project defaults, and optional per-agent override. No manifest home needed —

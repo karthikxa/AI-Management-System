@@ -2,7 +2,7 @@
  * Server-side Slack file proxy — the binary/multipart ops the Connector gateway
  * (JSON in/out) can't carry, done with the bot token SERVER-SIDE so the sandbox
  * never holds it. Backs the in-sandbox `slack download` + `slack send --file`
- * once the token is pulled from the box (KORTIX-206 Phase C2).
+ * once the token is pulled from the box (ZED-206 Phase C2).
  */
 import { loadSlackTokenForProject } from '../install-store';
 

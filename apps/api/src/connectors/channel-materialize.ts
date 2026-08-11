@@ -1,4 +1,4 @@
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import {
   listAgentMailInstalls,
@@ -10,13 +10,13 @@ import { resolveFeatureFlag } from '../feature-flags/registry';
  * Auto-materialize channel connectors from platform installs.
  *
  * A channel connector (Slack today) doesn't need a `connectors:` entry in
- * kortix.yaml — connecting the platform IS the registration. When a project has
+ * zed.yaml — connecting the platform IS the registration. When a project has
  * a Slack install but hasn't explicitly declared a `channel` connector for it,
  * we synthesize a ConnectorSpec here so the materializer treats it like any
  * other connector: it gets DB rows, a fixed action catalog, policies, and
  * shows up in the connector surface. The credential is the
  * existing install token (resolved server-side at call time) — no copy, no
- * connection_credentials row, no migration. See KORTIX-206.
+ * connection_credentials row, no migration. See ZED-206.
  */
 import type { ChannelPlatform, ConnectorSpec } from '../projects/connectors';
 import { MANIFEST_FILENAME } from '../projects/triggers';
@@ -70,7 +70,7 @@ function channelAlreadyDeclared(
 
 /**
  * Synthetic channel ConnectorSpecs for platforms this project has installed but
- * not explicitly declared in kortix.yaml — connecting the platform IS the
+ * not explicitly declared in zed.yaml — connecting the platform IS the
  * registration. We never shadow an explicit declaration: a hand-written
  * `channel` connector (or anything already using the slug) keeps full control.
  */
@@ -81,7 +81,7 @@ export async function synthesizeChannelConnectors(
   const specs: ConnectorSpec[] = [];
 
   // Slack — no feature flag: the install IS the registration (Telegram
-  // slots in here the same way — see KORTIX-206 Phase D). Teams sits below,
+  // slots in here the same way — see ZED-206 Phase D). Teams sits below,
   // with the other flag-gated channels.
   // Use the reserved platform-owned slug so user-defined connectors like
   // `[[connectors]] slug="slack" provider="pipedream" app="slack"` cannot

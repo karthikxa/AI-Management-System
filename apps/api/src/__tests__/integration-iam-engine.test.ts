@@ -23,7 +23,7 @@ import {
   projectGroupGrants,
   projectMembers,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { db } from '../shared/db';
 import { authorizeV2 } from '../iam/engine-v2';
 import { PROJECT_ACTIONS } from '../iam';

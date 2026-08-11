@@ -3,15 +3,15 @@ title: Runtime & sandbox
 description: Sandbox lifecycle, injected environment, token families, and the image a session boots from.
 ---
 
-A session runs in an isolated sandbox on Daytona, Platinum, or E2B Cloud, built from a layered image. This page is the reference for the sandbox lifecycle, the environment Kortix injects at boot, the token families, and the sandbox image itself. For the session concept, see [Sessions](/docs/work/sessions).
+A session runs in an isolated sandbox on Daytona, Platinum, or E2B Cloud, built from a layered image. This page is the reference for the sandbox lifecycle, the environment Zed injects at boot, the token families, and the sandbox image itself. For the session concept, see [Sessions](/docs/work/sessions).
 
 ## Sandbox lifecycle
 
-A session row carries a `status`. The enum defines `queued`, `branching`, `provisioning`, `running`, `stopped`, `failed`, `completed`, but Kortix only writes 4 of them.
+A session row carries a `status`. The enum defines `queued`, `branching`, `provisioning`, `running`, `stopped`, `failed`, `completed`, but Zed only writes 4 of them.
 
 | Status | Set when |
 | --- | --- |
-| `provisioning` | At session create. Kortix creates the session branch and requests the sandbox. |
+| `provisioning` | At session create. Zed creates the session branch and requests the sandbox. |
 | `running` | Once the sandbox is live and reachable. |
 | `stopped` | On explicit stop, or by the idle sweep that hibernates inactive sandboxes. |
 | `failed` | If provisioning fails. |
@@ -28,7 +28,7 @@ The sandbox itself carries a separate `status` in its own row, with its own enum
 | `error` | The provider reports a boot or runtime failure. |
 | `archived` | Terminal. You deleted the session and the provider destroyed the sandbox, not paused it. |
 
-Kortix enforces a concurrent-session limit per account. Exceeding your tier's limit returns `429`.
+Zed enforces a concurrent-session limit per account. Exceeding your tier's limit returns `429`.
 
 ### Active-turn protection
 
@@ -38,8 +38,8 @@ An open dashboard tab, preview, SSE connection, or health poll does not create a
 
 ### Branch model
 
-- The session branch is named after the session id (a UUID). `KORTIX_SESSION_ID` and `KORTIX_BRANCH_NAME` carry the same value.
-- Kortix cuts the branch from `base_ref`, which defaults to the project's default branch, at session-create time.
+- The session branch is named after the session id (a UUID). `ZED_SESSION_ID` and `ZED_BRANCH_NAME` carry the same value.
+- Zed cuts the branch from `base_ref`, which defaults to the project's default branch, at session-create time.
 - Triggers create their session branch the same way an interactive session does.
 - Nothing writes the default branch directly. Only a merged [change request](/docs/work/change-requests) does.
 
@@ -47,47 +47,47 @@ An open dashboard tab, preview, SSE connection, or health poll does not create a
 
 ```
 /workspace                       ← WORKDIR. The project repo is cloned here.
-/workspace/.kortix/              ← Repo-internal Kortix folder (Dockerfile + opencode config dir).
-/usr/local/bin/kortix-agent      ← The daemon (supervisor + reverse proxy).
-/usr/local/bin/kortix-entrypoint ← The container ENTRYPOINT (PID 1).
-/opt/kortix/home                 ← OpenCode's HOME — its object store lives here, off the repo.
+/workspace/.zed/              ← Repo-internal Zed folder (Dockerfile + opencode config dir).
+/usr/local/bin/zed-agent      ← The daemon (supervisor + reverse proxy).
+/usr/local/bin/zed-entrypoint ← The container ENTRYPOINT (PID 1).
+/opt/zed/home                 ← OpenCode's HOME — its object store lives here, off the repo.
 ```
 
-OpenCode's `HOME` is `/opt/kortix/home`, not `/workspace`. Its object store never lands among your repo files.
+OpenCode's `HOME` is `/opt/zed/home`, not `/workspace`. Its object store never lands among your repo files.
 
 ## Injected environment
 
-Kortix injects these variables at boot, alongside your project's [secrets](/docs/project/secrets), which arrive as plain environment variables.
+Zed injects these variables at boot, alongside your project's [secrets](/docs/project/secrets), which arrive as plain environment variables.
 
 | Variable | What |
 | --- | --- |
-| `KORTIX_PROJECT_ID` | UUID of this project. |
-| `KORTIX_SESSION_ID` | UUID of this session. Also the branch name. |
-| `KORTIX_BRANCH_NAME` | Same value as `KORTIX_SESSION_ID`. |
-| `KORTIX_REPO_URL` | Clone URL for the project repo. |
-| `KORTIX_DEFAULT_BRANCH` | The project's default branch. |
-| `KORTIX_BASE_REF` | The ref this session branched from. |
-| `KORTIX_SERVICE_PORT` | `8000` — the daemon's external port. |
-| `KORTIX_API_URL` | The platform API base (`.../v1`). |
-| `KORTIX_AGENT_NAME` | The agent the session was created with. |
-| `KORTIX_OPENCODE_MODEL` | The model to run, when set. |
-| `KORTIX_INITIAL_PROMPT` | The first prompt, when a trigger spawned the session. |
-| `KORTIX_PROJECT_AUTO_CLONE` | `1` — tells the daemon to clone the repo on boot. |
-| `KORTIX_PROJECT_SECRET_NAMES` | Comma-separated names of the project's secrets. |
-| `KORTIX_PROJECT_SECRETS_REVISION` | Revision marker for the secret set. |
-| `KORTIX_BOOTSTRAP_OPENCODE_SESSION` | `1` — always set. Tells the daemon to create the OpenCode root on cold boot. |
-| `KORTIX_LLM_API_KEY`, `KORTIX_LLM_BASE_URL` | Managed LLM-gateway key and base URL. Injected only on plans that use Kortix's managed model access. |
-| `KORTIX_SANDBOX_TOKEN`, `KORTIX_TOKEN`, `KORTIX_CLI_TOKEN` | The token family. See below. |
+| `ZED_PROJECT_ID` | UUID of this project. |
+| `ZED_SESSION_ID` | UUID of this session. Also the branch name. |
+| `ZED_BRANCH_NAME` | Same value as `ZED_SESSION_ID`. |
+| `ZED_REPO_URL` | Clone URL for the project repo. |
+| `ZED_DEFAULT_BRANCH` | The project's default branch. |
+| `ZED_BASE_REF` | The ref this session branched from. |
+| `ZED_SERVICE_PORT` | `8000` — the daemon's external port. |
+| `ZED_API_URL` | The platform API base (`.../v1`). |
+| `ZED_AGENT_NAME` | The agent the session was created with. |
+| `ZED_OPENCODE_MODEL` | The model to run, when set. |
+| `ZED_INITIAL_PROMPT` | The first prompt, when a trigger spawned the session. |
+| `ZED_PROJECT_AUTO_CLONE` | `1` — tells the daemon to clone the repo on boot. |
+| `ZED_PROJECT_SECRET_NAMES` | Comma-separated names of the project's secrets. |
+| `ZED_PROJECT_SECRETS_REVISION` | Revision marker for the secret set. |
+| `ZED_BOOTSTRAP_OPENCODE_SESSION` | `1` — always set. Tells the daemon to create the OpenCode root on cold boot. |
+| `ZED_LLM_API_KEY`, `ZED_LLM_BASE_URL` | Managed LLM-gateway key and base URL. Injected only on plans that use Zed's managed model access. |
+| `ZED_SANDBOX_TOKEN`, `ZED_TOKEN`, `ZED_CLI_TOKEN` | The token family. See below. |
 
-Kortix does not inject `KORTIX_WORKSPACE`. The image bakes in `/workspace` and no per-session step sets it. Kortix does not inject a git token either — the daemon fetches a short-lived clone credential when it needs one; see [Pushing from a session](#pushing-from-a-session) below. Kortix rejects a user secret named with the `KORTIX_*` prefix, because it reserves that prefix for platform variables.
+Zed does not inject `ZED_WORKSPACE`. The image bakes in `/workspace` and no per-session step sets it. Zed does not inject a git token either — the daemon fetches a short-lived clone credential when it needs one; see [Pushing from a session](#pushing-from-a-session) below. Zed rejects a user secret named with the `ZED_*` prefix, because it reserves that prefix for platform variables.
 
 ## Token families
 
-Kortix has two token vocabularies: external tokens you create yourself, and env vars Kortix injects inside a sandbox. This is the canonical reference for both.
+Zed has two token vocabularies: external tokens you create yourself, and env vars Zed injects inside a sandbox. This is the canonical reference for both.
 
 ### External tokens
 
-A personal access token (PAT, prefixed `kortix_pat_`) or a service account (prefixed `kortix_sa_`) authenticates calls to the Kortix API, the SDK, and the CLI from outside a sandbox. See [Authentication](/docs/sdk/auth) for PAT scope, service-account setup, and how to choose between them.
+A personal access token (PAT, prefixed `zed_pat_`) or a service account (prefixed `zed_sa_`) authenticates calls to the Zed API, the SDK, and the CLI from outside a sandbox. See [Authentication](/docs/sdk/auth) for PAT scope, service-account setup, and how to choose between them.
 
 ### In-sandbox tokens
 
@@ -95,88 +95,88 @@ Four tokens can appear in a sandbox. They carry two different identities.
 
 | Variable | Identity | Used for |
 | --- | --- | --- |
-| `KORTIX_SANDBOX_TOKEN` | The sandbox's own service key. | Signs the daemon's control-surface requests (the `X-Kortix-User-Context` header) and authenticates sandbox-identity routes: clone-credential, turn-stream, execution leases, turn-question. |
-| `KORTIX_TOKEN` | Back-compat alias for `KORTIX_SANDBOX_TOKEN`. | Same value, same use, kept for daemons built before the rename. Do not depend on it — a future release drops this alias and repurposes `KORTIX_TOKEN` to mean the session token instead. |
-| `KORTIX_CLI_TOKEN` | A project-scoped [personal access token](/docs/sdk/auth) (PAT). | Lets the in-sandbox `kortix` CLI act as the launching user, scoped to the project. |
+| `ZED_SANDBOX_TOKEN` | The sandbox's own service key. | Signs the daemon's control-surface requests (the `X-Zed-User-Context` header) and authenticates sandbox-identity routes: clone-credential, turn-stream, execution leases, turn-question. |
+| `ZED_TOKEN` | Back-compat alias for `ZED_SANDBOX_TOKEN`. | Same value, same use, kept for daemons built before the rename. Do not depend on it — a future release drops this alias and repurposes `ZED_TOKEN` to mean the session token instead. |
+| `ZED_CLI_TOKEN` | A project-scoped [personal access token](/docs/sdk/auth) (PAT). | Lets the in-sandbox `zed` CLI act as the launching user, scoped to the project. |
 
-`KORTIX_SANDBOX_TOKEN` is not a project API token. The `kortix` CLI does not read it, and project-scoped API routes reject it. Use `KORTIX_CLI_TOKEN` for any call that should act as the launching user.
+`ZED_SANDBOX_TOKEN` is not a project API token. The `zed` CLI does not read it, and project-scoped API routes reject it. Use `ZED_CLI_TOKEN` for any call that should act as the launching user.
 
 ## Pushing from a session
 
-The daemon fetches a short-lived clone credential from `GET /v1/projects/:id/git/clone-credential`, authenticated with `KORTIX_SANDBOX_TOKEN`. No static git token sits in the environment. With that credential, `git push origin HEAD` sends commits to the session branch. Landing on the default branch requires a merged [change request](/docs/work/change-requests).
+The daemon fetches a short-lived clone credential from `GET /v1/projects/:id/git/clone-credential`, authenticated with `ZED_SANDBOX_TOKEN`. No static git token sits in the environment. With that credential, `git push origin HEAD` sends commits to the session branch. Landing on the default branch requires a merged [change request](/docs/work/change-requests).
 
 ## The agent runtime
 
-The daemon launches OpenCode as `opencode serve --port 4096 --hostname 127.0.0.1`, with `OPENCODE_CONFIG_DIR` set to the project's config directory (default `.kortix/opencode`) inside the cloned repo. See [Agents](/docs/project/agents) for how a session picks an agent and its config.
+The daemon launches OpenCode as `opencode serve --port 4096 --hostname 127.0.0.1`, with `OPENCODE_CONFIG_DIR` set to the project's config directory (default `.zed/opencode`) inside the cloned repo. See [Agents](/docs/project/agents) for how a session picks an agent and its config.
 
 ## The daemon control surface
 
-The `kortix-agent` binary runs as PID 1's child and fronts OpenCode on `KORTIX_SERVICE_PORT` (`8000`). Every route outside `/kortix/*` requires the HMAC-signed `X-Kortix-User-Context` header, validated against `KORTIX_SANDBOX_TOKEN`.
+The `zed-agent` binary runs as PID 1's child and fronts OpenCode on `ZED_SERVICE_PORT` (`8000`). Every route outside `/zed/*` requires the HMAC-signed `X-Zed-User-Context` header, validated against `ZED_SANDBOX_TOKEN`.
 
 | Path | Purpose |
 | --- | --- |
-| `GET /kortix/health` | Liveness check (no auth required). Reports daemon and OpenCode state, repo, branch, commit. |
-| `POST /kortix/refresh` | Re-pull the session branch and restart OpenCode in place. |
-| `POST /kortix/abort` | Abort the current run. |
-| `POST /kortix/env` | Update the runtime environment. |
-| `/kortix/pty` | Backs the in-dashboard terminal. |
+| `GET /zed/health` | Liveness check (no auth required). Reports daemon and OpenCode state, repo, branch, commit. |
+| `POST /zed/refresh` | Re-pull the session branch and restart OpenCode in place. |
+| `POST /zed/abort` | Abort the current run. |
+| `POST /zed/env` | Update the runtime environment. |
+| `/zed/pty` | Backs the in-dashboard terminal. |
 | `/proxy/{port}/*` | Reverse-proxy to another port inside the sandbox. The daemon's own port is blocked. |
 | `*` | Catch-all reverse-proxy to OpenCode on `127.0.0.1:4096`. Returns `503` while OpenCode boots. |
 
-Run `/kortix/refresh` to apply an out-of-band change, such as a manifest edit committed from a parallel session, without re-provisioning the sandbox.
+Run `/zed/refresh` to apply an out-of-band change, such as a manifest edit committed from a parallel session, without re-provisioning the sandbox.
 
 ## The sandbox image
 
-Every sandbox boots from an image built in two layers. Your Dockerfile defines the base environment. The Kortix runtime layer is added on top, so the dashboard can connect to the sandbox.
+Every sandbox boots from an image built in two layers. Your Dockerfile defines the base environment. The Zed runtime layer is added on top, so the dashboard can connect to the sandbox.
 
 ```
 ┌─────────────────────────────────────────┐
-│  Kortix runtime layer (added on top)    │  ← opencode + kortix-agent + entrypoint
+│  Zed runtime layer (added on top)    │  ← opencode + zed-agent + entrypoint
 ├─────────────────────────────────────────┤
-│  Your Dockerfile                        │  ← .kortix/Dockerfile
+│  Your Dockerfile                        │  ← .zed/Dockerfile
 └─────────────────────────────────────────┘
 ```
 
-If your project has no Dockerfile, Kortix builds sessions from a bare `ubuntu:24.04` image plus the runtime layer below.
+If your project has no Dockerfile, Zed builds sessions from a bare `ubuntu:24.04` image plus the runtime layer below.
 
 ### Declare a template
 
-Reference your Dockerfile as a named template under `sandbox.templates` in `kortix.yaml`.
+Reference your Dockerfile as a named template under `sandbox.templates` in `zed.yaml`.
 
 ```yaml
 sandbox:
   templates:
     - slug: dev
       name: Dev box
-      dockerfile: .kortix/Dockerfile
+      dockerfile: .zed/Dockerfile
   default: dev
 ```
 
-Set exactly one of `dockerfile` or `image` on each entry. Dockerfile paths must stay inside the repository. Set `default` to the template slug your sessions should use; omit it to use the platform default image. Older projects on `kortix.toml` follow the same fields — see [legacy `kortix.toml`](/docs/project/legacy-toml). Full field list: [manifest reference](/docs/project/manifest).
+Set exactly one of `dockerfile` or `image` on each entry. Dockerfile paths must stay inside the repository. Set `default` to the template slug your sessions should use; omit it to use the platform default image. Older projects on `zed.toml` follow the same fields — see [legacy `zed.toml`](/docs/project/legacy-toml). Full field list: [manifest reference](/docs/project/manifest).
 
 ### What the runtime layer adds
 
-Kortix appends this layer on top of your Dockerfile's final stage.
+Zed appends this layer on top of your Dockerfile's final stage.
 
 - A system package floor with `git`, `curl`, `build-essential`, `ffmpeg`, and `tmux`.
 - pnpm-managed Node.js and npm, plus uv-managed Python 3.
 - A document-tools floor: LibreOffice, Pandoc, and OCR tools.
 - An exact uv-managed Python version exposed as `python` and `python3`. Use `uv run --with <package>` for third-party dependencies.
 - `opencode-ai`, the `bun` runtime, and `agent-browser` with a baked Chromium build.
-- The `kortix-agent` daemon, the `kortix` CLI, and the entrypoint script.
-- `ENV KORTIX_WORKSPACE=/workspace`, `WORKDIR /workspace`, `EXPOSE 8000`, and the entrypoint that starts the daemon.
+- The `zed-agent` daemon, the `zed` CLI, and the entrypoint script.
+- `ENV ZED_WORKSPACE=/workspace`, `WORKDIR /workspace`, `EXPOSE 8000`, and the entrypoint that starts the daemon.
 
-Everything you install in your own Dockerfile stays on `PATH`. Kortix does not remove or relocate it.
+Everything you install in your own Dockerfile stays on `PATH`. Zed does not remove or relocate it.
 
 ### Constraints
 
 | Rule | Why |
 | --- | --- |
-| Don't set `ENTRYPOINT` or `CMD`. | Kortix overrides both to start the daemon. |
+| Don't set `ENTRYPOINT` or `CMD`. | Zed overrides both to start the daemon. |
 | Don't claim port `8000`. | Reserved for the daemon's reverse proxy. Run dev servers on other ports. |
 | `FROM` a Debian or Ubuntu base. | The runtime layer runs `apt-get`. Alpine, Fedora, and Arch fail the build. |
 | Don't run `apt-get clean` without `rm -rf /var/lib/apt/lists/*`. | The runtime layer re-runs `apt-get update`; a broken cache breaks the build. |
-| Don't bake credentials into the image. | Declare the name in `env:` and set the value as a project secret. Kortix injects it at session start. |
+| Don't bake credentials into the image. | Declare the name in `env:` and set the value as a project secret. Zed injects it at session start. |
 
 ### Hardware spec
 
@@ -192,11 +192,11 @@ sandbox:
       disk: 50
 ```
 
-`cpu` takes 1–32 cores, `memory` takes 1–128 GiB, and `disk` takes 1–500 GiB. Kortix clamps any value above these limits down to the limit. Kortix does not support GPUs; a `gpu` key on a template produces a warning, not an error.
+`cpu` takes 1–32 cores, `memory` takes 1–128 GiB, and `disk` takes 1–500 GiB. Zed clamps any value above these limits down to the limit. Zed does not support GPUs; a `gpu` key on a template produces a warning, not an error.
 
 The spec is part of the template's snapshot, not a per-session setting. Changing it rebuilds the snapshot and applies to the next session. The current session keeps its already-booted spec.
 
-The default spec costs about $0.10 per hour on Daytona, the default sandbox provider. The same spec on Platinum or E2B costs about twice as much, because the Daytona rate includes a volume discount the other providers don't. Kortix meters this cost only for Team accounts; free and self-hosted plans aren't billed for it.
+The default spec costs about $0.10 per hour on Daytona, the default sandbox provider. The same spec on Platinum or E2B costs about twice as much, because the Daytona rate includes a volume discount the other providers don't. Zed meters this cost only for Team accounts; free and self-hosted plans aren't billed for it.
 
 ### Ports and preview URLs
 
@@ -213,6 +213,6 @@ A session's preview can also be shared through a public link, in view-only or in
 
 ### Snapshot rebuilds
 
-Kortix content-addresses each snapshot: it hashes your Dockerfile's bytes, the hardware spec, and the platform's own runtime version. An unchanged hash reuses the existing snapshot. A changed hash triggers a rebuild, shown as "preparing image" on the first session that needs it; later sessions reuse that build.
+Zed content-addresses each snapshot: it hashes your Dockerfile's bytes, the hardware spec, and the platform's own runtime version. An unchanged hash reuses the existing snapshot. A changed hash triggers a rebuild, shown as "preparing image" on the first session that needs it; later sessions reuse that build.
 
 Editing the Dockerfile inside a session takes effect on the next session, not the current one. The edit reaches `main` only once its [change request](/docs/work/change-requests) merges.

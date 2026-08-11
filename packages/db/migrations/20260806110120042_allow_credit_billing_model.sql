@@ -26,10 +26,10 @@ set statement_timeout = '30s';
 -- never a crash and never a wrong charge. That window is empty in practice:
 -- nothing can hold 'credit' until the v3 Stripe prices exist, and checkout
 -- fails closed without them ("No price configured for this tier").
-alter table "kortix"."credit_accounts"
-  drop constraint if exists "kortix_credit_accounts_billing_model_check";
+alter table "zed"."credit_accounts"
+  drop constraint if exists "zed_credit_accounts_billing_model_check";
 
-alter table "kortix"."credit_accounts"
-  add constraint "kortix_credit_accounts_billing_model_check"
+alter table "zed"."credit_accounts"
+  add constraint "zed_credit_accounts_billing_model_check"
   check ("billing_model" = any (array['legacy'::text, 'per_seat'::text, 'credit'::text]))
   not valid;

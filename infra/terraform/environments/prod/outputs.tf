@@ -1,5 +1,5 @@
 output "alb_dns_name" {
-  description = "ALB DNS name behind api.kortix.com."
+  description = "ALB DNS name behind api.zed.com."
   value       = module.api.alb_dns_name
 }
 
@@ -16,7 +16,7 @@ output "log_group" {
 }
 
 output "dns_records" {
-  # When manage_dns is off the api.kortix.com record is NOT terraform-managed
+  # When manage_dns is off the api.zed.com record is NOT terraform-managed
   # (cutover is done out-of-band); expose the ALB DNS as the cutover target.
   value = var.manage_dns ? one(module.dns[*].record_hostnames) : { alb_dns_name = module.api.alb_dns_name }
 }

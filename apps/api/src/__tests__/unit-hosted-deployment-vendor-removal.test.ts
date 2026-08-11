@@ -5,8 +5,8 @@ import { resolve } from 'node:path';
 const repoRoot = resolve(import.meta.dir, '../../../..');
 const forbiddenVendor = ['free', 'style'].join('');
 const forbiddenCapabilityIdentifiers = [
-  'KORTIX_APPS_EXPERIMENTAL',
-  'NEXT_PUBLIC_KORTIX_DEPLOYMENTS_ENABLED',
+  'ZED_APPS_EXPERIMENTAL',
+  'NEXT_PUBLIC_ZED_DEPLOYMENTS_ENABLED',
   'style.dev',
   'freestyleId',
   'legacy-freestyle',

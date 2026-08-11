@@ -19,7 +19,7 @@ function project(overrides: Partial<ProjectSummary> = {}): ProjectSummary {
     name: "Demo",
     repo_url: "https://github.com/acme/demo.git",
     default_branch: "main",
-    manifest_path: "kortix.yaml",
+    manifest_path: "zed.yaml",
     status: "active",
     metadata: {},
     last_opened_at: null,
@@ -30,15 +30,15 @@ function project(overrides: Partial<ProjectSummary> = {}): ProjectSummary {
 }
 
 describe("project clone target", () => {
-  test("uses the Kortix proxy with the logged-in token when available", () => {
+  test("uses the Zed proxy with the logged-in token when available", () => {
     expect(
       resolveProjectCloneTarget(
-        project({ git_origin_url: "https://api.kortix.com/v1/git/proj_1.git" }),
-        "kortix_pat_test",
+        project({ git_origin_url: "https://api.zed.com/v1/git/proj_1.git" }),
+        "zed_pat_test",
       ),
     ).toEqual({
-      repoUrl: "https://api.kortix.com/v1/git/proj_1.git",
-      token: "kortix_pat_test",
+      repoUrl: "https://api.zed.com/v1/git/proj_1.git",
+      token: "zed_pat_test",
       username: "x-access-token",
       needsManagedToken: false,
     });
@@ -48,7 +48,7 @@ describe("project clone target", () => {
     expect(
       resolveProjectCloneTarget(
         project({ metadata: { git: { managed: true } } }),
-        "kortix_pat_test",
+        "zed_pat_test",
       ),
     ).toEqual({
       repoUrl: "https://github.com/acme/demo.git",
@@ -59,7 +59,7 @@ describe("project clone target", () => {
   });
 
   test("relies on the user credential helper for direct BYO repositories", () => {
-    expect(resolveProjectCloneTarget(project(), "kortix_pat_test")).toEqual({
+    expect(resolveProjectCloneTarget(project(), "zed_pat_test")).toEqual({
       repoUrl: "https://github.com/acme/demo.git",
       token: null,
       username: "x-access-token",
@@ -69,9 +69,9 @@ describe("project clone target", () => {
 });
 
 test("a cloned repo is bound to its project without dirtying git status", () => {
-  const repo = mkdtempSync(resolve(tmpdir(), "kortix-project-clone-link-"));
-  mkdirSync(resolve(repo, ".kortix"), { recursive: true });
-  writeFileSync(resolve(repo, "kortix.yaml"), "kortix_version: 2\n");
+  const repo = mkdtempSync(resolve(tmpdir(), "zed-project-clone-link-"));
+  mkdirSync(resolve(repo, ".zed"), { recursive: true });
+  writeFileSync(resolve(repo, "zed.yaml"), "zed_version: 2\n");
   spawnSync("git", ["init", "-b", "main"], { cwd: repo });
   spawnSync("git", ["add", "."], { cwd: repo });
   spawnSync(
@@ -88,7 +88,7 @@ test("a cloned repo is bound to its project without dirtying git status", () => 
     { cwd: repo },
   );
 
-  saveClonedProjectLink(repo, project(), "dev", "https://dev-api.kortix.com");
+  saveClonedProjectLink(repo, project(), "dev", "https://dev-api.zed.com");
 
   expect(loadLink(repo)).toMatchObject({
     project_id: "proj_1",
@@ -101,19 +101,19 @@ test("a cloned repo is bound to its project without dirtying git status", () => 
   ).toBe("");
 });
 
-test("a proxied clone installs an on-demand Kortix credential helper without storing a token", () => {
-  const repo = mkdtempSync(resolve(tmpdir(), "kortix-project-clone-auth-"));
+test("a proxied clone installs an on-demand Zed credential helper without storing a token", () => {
+  const repo = mkdtempSync(resolve(tmpdir(), "zed-project-clone-auth-"));
   spawnSync("git", ["init", "-b", "main"], { cwd: repo });
-  const repoUrl = "https://dev-api.kortix.com/v1/git/proj_1.git";
+  const repoUrl = "https://dev-api.zed.com/v1/git/proj_1.git";
 
-  configureClonedProjectAuth(repo, repoUrl, "!kortix git-credential");
+  configureClonedProjectAuth(repo, repoUrl, "!zed git-credential");
 
   const helpers = spawnSync(
     "git",
     ["config", "--local", "--get-all", `credential.${repoUrl}.helper`],
     { cwd: repo, encoding: "utf8" },
   ).stdout.split(/\r?\n/);
-  expect(helpers).toEqual(["", "!kortix git-credential", ""]);
+  expect(helpers).toEqual(["", "!zed git-credential", ""]);
   expect(
     spawnSync("git", ["config", "--local", "credential.useHttpPath"], {
       cwd: repo,
@@ -121,6 +121,6 @@ test("a proxied clone installs an on-demand Kortix credential helper without sto
     }).stdout.trim(),
   ).toBe("true");
   expect(readFileSync(resolve(repo, ".git", "config"), "utf8")).not.toContain(
-    "kortix_pat_test",
+    "zed_pat_test",
   );
 });

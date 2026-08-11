@@ -1,4 +1,4 @@
-# `@kortix/sdk` — progress
+# `@zed/sdk` — progress
 
 **Single source of truth for _state_** across every session and every plan. Not for
 design (that's a spec) and not for _how_ (that's a plan). This file indexes them.
@@ -6,7 +6,7 @@ design (that's a spec) and not for _how_ (that's a plan). This file indexes them
 > **Multiple sessions run against this repo.** Read this file **before** starting
 > work, and update it **before** ending your turn. Both are mandatory.
 
-**Scope:** everything `@kortix/sdk`. The **Now** section below tracks one plan at a
+**Scope:** everything `@zed/sdk`. The **Now** section below tracks one plan at a
 time. Work outside that plan lives in **Next** and **Backlog** — it is real, it is
 tracked, and it is not forgotten just because it isn't scheduled.
 
@@ -33,9 +33,9 @@ RED:
 GREEN:
 
 - Focused connector REST client suite: `38 pass`, `0 fail`.
-- `pnpm --filter @kortix/sdk test`: `1807 pass`, `2 skip`, `0 fail`, `7001 expect()` calls.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0` for the package and examples.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed-install import and construction passed.
+- `pnpm --filter @zed/sdk test`: `1807 pass`, `2 skip`, `0 fail`, `7001 expect()` calls.
+- `pnpm --filter @zed/sdk typecheck`: exit `0` for the package and examples.
+- `pnpm --filter @zed/sdk run smoke:install`: packed-install import and construction passed.
 - No published export name or package version changed.
 
 **Status:** COMPLETE.
@@ -63,9 +63,9 @@ RED:
 GREEN:
 
 - Focused connector gateway suite: `12 pass`, `0 fail`; regression case `0.19 ms`.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1807 pass`, `0 fail`, `7004 expect()` calls.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed-install import and construction passed.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1807 pass`, `0 fail`, `7004 expect()` calls.
+- `pnpm --filter @zed/sdk run smoke:install`: packed-install import and construction passed.
 - No published export name or package version changed.
 
 **Status:** COMPLETE.
@@ -90,9 +90,9 @@ required RED, GREEN, and REFACTOR sequence directly.
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk test`: `1806 pass`, `0 fail` after merging current `origin/main`.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed-install import and construction passed.
+- `pnpm --filter @zed/sdk test`: `1806 pass`, `0 fail` after merging current `origin/main`.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: packed-install import and construction passed.
 - SDK wake polling stops on the server's bounded `retriable: false` response.
 - No published export name or package version changed.
 
@@ -105,7 +105,7 @@ GREEN:
 ### 2026-08-08 — session `feature-flags-web`
 
 Backlog **B48** — canonical feature-flag naming plus one gating primitive, so the
-SDK matches `@kortix/api-contract`'s `FeatureFlag*` family and every host stops
+SDK matches `@zed/api-contract`'s `FeatureFlag*` family and every host stops
 hand-rolling `project?.experimental?.<key> === true`.
 
 SDK scope (additive only — **0 removals, 0 renames**):
@@ -125,7 +125,7 @@ SDK scope (additive only — **0 removals, 0 renames**):
 - `react/use-feature-flag.ts`: `useFeatureFlag(projectId, key)` → `{enabled, isLoading}`,
   reading the shared `qk.project.detail(id)` entry with a `=== true` fail-closed
   read. One line added to `react/index.ts`.
-- `core/client/kortix.ts`: `project(id).updateFeatureFlag(...)` beside the
+- `core/client/zed.ts`: `project(id).updateFeatureFlag(...)` beside the
   deprecated `updateExperimentalFeature`.
 
 No new subpath, so `exports`, `publishConfig.exports`, and `SUBPATH_TIERS` are
@@ -143,7 +143,7 @@ Verification:
 
 - `bun run test`: `1777 pass`, `0 fail`, `6965 expect()` calls across `139` files.
 - `bun run typecheck`: exit `0` for the package and examples.
-- `bun run smoke:install`: packed `@kortix/sdk` + `@kortix/executor-sdk`,
+- `bun run smoke:install`: packed `@zed/sdk` + `@zed/executor-sdk`,
   installed the tarballs, imported and constructed in Node ESM — pass.
 - Both surface snapshots re-recorded: `11` and `20` insertions, **0 deletions**.
 - Downstream: `apps/web` `tsc --noEmit` clean apart from the documented
@@ -195,7 +195,7 @@ GREEN:
 
 - `pnpm test`: `1755 pass`, `0 fail`, and `6890 expect()` calls across `138` files.
 - `pnpm typecheck`: exit `0` for the package and examples.
-- `pnpm smoke:install`: packed `@kortix/sdk` and `@kortix/executor-sdk` imported and constructed in Node ESM.
+- `pnpm smoke:install`: packed `@zed/sdk` and `@zed/executor-sdk` imported and constructed in Node ESM.
 - CLI black-box and unit suite: `756 pass`, `0 fail`.
 - No published export name changed. The package version remains release-managed.
 
@@ -263,11 +263,11 @@ required RED, GREEN, and REFACTOR sequence directly.
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1716 pass`, `0 fail`, and `6817 expect()`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1716 pass`, `0 fail`, and `6817 expect()`
   calls across `135` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; packed
-  `@kortix/sdk` and `@kortix/executor-sdk` imported and constructed in Node ESM.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; packed
+  `@zed/sdk` and `@zed/executor-sdk` imported and constructed in Node ESM.
 - Public export names and the package version are unchanged.
 - `AppHostingProvider` is exactly `daytona | platinum | e2b`.
 
@@ -305,10 +305,10 @@ RED:
 GREEN:
 
 - Focused query-key, guard, and Apps hook tests: `66 pass`, `0 fail`.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1711 pass`, `0 fail`, and `6804 expect()`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1711 pass`, `0 fail`, and `6804 expect()`
   calls across `135` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed SDK and
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed SDK and
   compatibility adapter imported and constructed.
 - Apps UI SDK-boundary test: `1 pass`, `0 fail`.
 - `pnpm --dir apps/web exec eslint src --quiet`: exit `0`.
@@ -337,10 +337,10 @@ RED:
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1716 pass`, `0 fail`, and `6817 expect()`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1716 pass`, `0 fail`, and `6817 expect()`
   calls across `135` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed SDK and
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed SDK and
   compatibility adapter imported and constructed in Node ESM.
 - The provider rejection has a compile-time `@ts-expect-error` assertion.
 - No published export name changed. The SDK package version remains release-managed.
@@ -363,7 +363,7 @@ Claimed SDK scope:
   session timeline while preserving existing published names.
 - Add strict cursor and time-bound validation plus resumable, uncapped export.
 - Expose the same project, session, actor, source, action, phase, and outcome filters
-  through the framework-free SDK and the Kortix CLI.
+  through the framework-free SDK and the Zed CLI.
 - Keep every existing published export compatible. Do not edit the package version.
 
 The required `tdd` skill is unavailable in this session. This work uses the same
@@ -380,7 +380,7 @@ Scope:
 
 - Account, project, and session audit reads share one canonical event envelope.
 - Account, project, session, actor, source, action, phase, outcome, and time filters
-  are available through the framework-free SDK and the Kortix CLI.
+  are available through the framework-free SDK and the Zed CLI.
 - Session reads preserve resolved connector actions when callers omit canonical
   events.
 - Export is resumable and uses an immutable event lookup to preserve PostgreSQL
@@ -392,10 +392,10 @@ RED then GREEN:
 
 - The pagination test first failed because `buildAuditCursorCondition` was absent.
   It then passed against migrated PostgreSQL at `2 pass`, `0 fail`.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1754 pass`, `0 fail`, `6905 expect()` calls
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1754 pass`, `0 fail`, `6905 expect()` calls
   across `138` files after rebasing onto `origin/main`.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed tarballs installed and
+- `pnpm --filter @zed/sdk run smoke:install`: packed tarballs installed and
   imported successfully.
 - API integration: `441 pass`, `0 fail` across `32` files.
 - API unit: `5919 pass`, `67 skip`, `0 fail` across `562` files.
@@ -476,10 +476,10 @@ four follow-ups that entry recorded. No new capability.
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
 - `bun test --isolate src`: `1680 pass`, `0 fail`, `6614 expect()` calls
   across `130` files (was `1671` / `129` at the start of this session).
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 - `apps/web`: `bun test` `4629 pass` / `0 fail` (`426` files); `tsc --noEmit`
   21-line known baseline unchanged, none in a touched file; `eslint src` 0
   errors, 0 `Never hand-type an entity key` hits.
@@ -496,7 +496,7 @@ nothing in-repo imports the SDK hook (both `apps/web` call sites use the local
 `(status, options)` signature; `apps/mobile` has a THIRD implementation at
 `lib/projects/hooks.ts:729` keyed `['change-requests', id, status]`). It is a
 latent duplicate and a published-API trap — an external consumer mounting
-`useChangeRequests` from `@kortix/sdk/react` beside `apps/web`'s panel gets two
+`useChangeRequests` from `@zed/sdk/react` beside `apps/web`'s panel gets two
 entries and two poll loops. The SDK hook also spreads no `contract(...)`, so it
 inherits the host's global defaults.
 
@@ -526,11 +526,11 @@ RED:
 
 GREEN after rebasing onto `origin/main`:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
 - Full SDK suite: `1714 pass`, `0 fail`, and `6808 expect()` calls across `135`
   files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; packed tarballs
-  imported and constructed `@kortix/sdk` and `@kortix/executor-sdk`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; packed tarballs
+  imported and constructed `@zed/sdk` and `@zed/executor-sdk`.
 - Focused SDK transport suite: `29 pass`, `0 fail`.
 - Focused API deadline suite: `16 pass`, `0 fail`.
 - Focused web timeout-policy and session-create suite: `12 pass`, `0 fail`.
@@ -556,13 +556,13 @@ Claimed scope:
 
 - Move the Connector gateway client, types, catalog search, connector calls,
   approval results, and attachment uploads into the framework-free
-  `@kortix/sdk` core.
+  `@zed/sdk` core.
 - Expose one direct project interface through
-  `kortix.project(projectId).connectors` and the existing `getToken` seam.
+  `zed.project(projectId).connectors` and the existing `getToken` seam.
 - Migrate the CLI, MCP server, sandbox Slack client, snapshot build inputs,
-  tests, documentation, and package publishing to `@kortix/sdk`.
+  tests, documentation, and package publishing to `@zed/sdk`.
 - Delete the unpublished standalone Connector workspace package.
-- Publish one final deprecated `@kortix/executor-sdk` adapter over `@kortix/sdk`
+- Publish one final deprecated `@zed/executor-sdk` adapter over `@zed/sdk`
   for existing production users.
 - Verify the packed SDK, complete CLI, and real CLI with an agent-minted token.
 
@@ -579,11 +579,11 @@ RED, GREEN, REFACTOR:
 
 Final evidence:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`; core and examples compile.
-- `pnpm --filter @kortix/sdk test`: `1597 pass`, `0 fail`, and
+- `pnpm --filter @zed/sdk typecheck`: exit `0`; core and examples compile.
+- `pnpm --filter @zed/sdk test`: `1597 pass`, `0 fail`, and
   `6549 expect()` calls across `127` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; packed tarballs
-  imported and constructed `@kortix/sdk` and `@kortix/executor-sdk` in Node ESM.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; packed tarballs
+  imported and constructed `@zed/sdk` and `@zed/executor-sdk` in Node ESM.
 - The public surface adds Apps names only. No published name was removed or
   renamed. The SDK version remains release-managed at `0.3.0`.
 
@@ -601,11 +601,11 @@ itself stays as the historical record just under this entry).
 - **C1 (Critical) — `packages/sdk/src/react` migrated onto `qk`.** Fixed every
   file the review named plus two it didn't (found by sweeping the whole
   directory for the same literal families): `use-canonical-opencode-session.ts`
-  (the REAL populator of the per-session Kortix row — `session-title-sync.ts`'s
+  (the REAL populator of the per-session Zed row — `session-title-sync.ts`'s
   reads were dead without this one too) and `use-model-defaults.ts:76`'s
   `invalidateQueries`. `use-opencode-events/helpers.ts`'s
-  `refetchKortixSessionMirrors` took a `projectId` param (threaded from
-  `useKortixRouteProjectId()` in `index.ts` → `handle-event.ts`) instead of the
+  `refetchZedSessionMirrors` took a `projectId` param (threaded from
+  `useZedRouteProjectId()` in `index.ts` → `handle-event.ts`) instead of the
   old bare "any project" prefix — no `qk` member expresses "sessions, any
   project" without also reaching every OTHER project-scoped family for every
   project, so the correct fix narrows to the route's own project rather than
@@ -619,7 +619,7 @@ itself stays as the historical record just under this entry).
   `project-providers`, `gateway-routing-policy`, `model-defaults` — hand-typed
   identically on both `apps/web` and the SDK side, so no divergence exists
   there (unlike the four migrated families); `use-change-requests.ts`'s
-  `project-change-requests` family — a genuinely different feature (Kortix PR
+  `project-change-requests` family — a genuinely different feature (Zed PR
   layer) that happens to share a name prefix with `apps/web`'s unrelated
   `project-files`-rooted change-request keys; flagged in Discovered-this-session
   below, not touched.
@@ -659,13 +659,13 @@ itself stays as the historical record just under this entry).
   same-family-different-key situation).
 
 GATES:
-  `pnpm --filter @kortix/sdk typecheck`: exit 0.
+  `pnpm --filter @zed/sdk typecheck`: exit 0.
   `bun test --isolate src`: 1658 pass, 0 fail, 6577 expect() calls, 129 files
     (up from Task 13's 1645/126 — new: `query-key-literals.test.ts`,
     `use-opencode-events/helpers.test.ts`, `use-project-triggers.test.ts`,
     plus assertions added to `query-keys.test.ts`/`provider-refresh.test.ts`/
     `use-project-secrets.test.ts`/`session-title-sync.test.ts`).
-  `pnpm --filter @kortix/sdk run smoke:install`: exit 0.
+  `pnpm --filter @zed/sdk run smoke:install`: exit 0.
   `apps/web`: `bun test` — 4619 pass, 0 fail, 17938 expect() calls, 426 files.
     `npx eslint src` — 0 errors (481 pre-existing `react-hooks/*` warnings,
     unrelated), `grep -c "Never hand-type an entity key"` → 0.
@@ -678,7 +678,7 @@ Discovered this session (not fixed, flagged for later):
   `packages/sdk/src/react/use-change-requests.ts`'s `project-change-requests`
   family and `apps/web/src/features/project-files/hooks/use-change-requests.ts`
   (a DIFFERENT file, `project-files`-rooted keys) share a name but are two
-  separate features (Kortix-native PR layer vs. git file-diff browsing) —
+  separate features (Zed-native PR layer vs. git file-diff browsing) —
   worth a dedicated pass to confirm neither is secretly reading the other's
   data, but out of scope for this fix wave (not part of the review's four
   items, not caught by its acceptance grep).
@@ -759,11 +759,11 @@ report.
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
 - `bun test --isolate src`: `1628 pass`, `0 fail`, `6522 expect()` calls
   across `125` files (up from Task 9's `1623`/`125` — the +5 delta is the new
   `query-keys.test.ts` assertions net of one file unchanged).
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 - `apps/web`: `npx tsc --noEmit` — 21 error lines, byte-identical to the
   documented baseline (zero new). `bun test` (full repo) — `4603 pass`,
   `0 fail`, `17907 expect()` calls across `425` files. `eslint` on all 52
@@ -790,7 +790,7 @@ the segment's value. A session id equal to the string `'visible'` or
 unreachable in practice — but that protection lives in a different package
 with no link back to this file: safety by external invariant, not by
 construction. This file's own top comment already rejects that standard for
-the `'kx'`-vs-`'kortix'` root choice; the same standard now applies here.
+the `'kx'`-vs-`'zed'` root choice; the same standard now applies here.
 
 **Fix**, `src/react/query-keys.ts`: `sessions(id, scope)` gained a literal
 `'list'` segment — `[...sessionsScope(id), 'list', scope]` — making it
@@ -814,13 +814,13 @@ equalize the two shapes.
 
 GREEN (all three SDK gates):
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
 - `bun test --isolate src`: `1623 pass`, `0 fail`, `6484 expect()` calls
   across `125` files (up from round 1's `1620`/`125` — 3 new assertions, no
   new test file). The coordinator flagged a known isolation flake,
   `session-costs.test.ts:389`, that fails only under the full run — it did
   NOT appear this run; 0 fail, no exceptions.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 - `version` field: confirmed untouched (`git diff --stat packages/sdk/package.json` empty).
 
 Downstream `apps/web`: confirmed NO web file needed editing — every call
@@ -896,19 +896,19 @@ factory change): `sessions(id)` defaults to `'visible'`; `sessions(id)` and
 prefixes both scoped forms and is itself never equal to either; every
 project-scoped key (including both new forms) stays prefixed by
 `qk.project.scope(id)`; `session`/`messages` nest under `sessionsScope`, not
-under one specific scope. The `qk` vs `kortixKeys` disjointness tests and the
+under one specific scope. The `qk` vs `zedKeys` disjointness tests and the
 Task 3/5 tests (`invalidate-project.test.ts`, which reads/writes
 `qk.project.sessions(ID)` at its default scope) needed no changes and stayed
 green throughout.
 
 GREEN (all three SDK gates, this fix round):
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
 - `bun test --isolate src`: `1620 pass`, `0 fail`, `6476 expect()` calls
   across `125` files (up from Task 6's `1609`/`125` — this round added 5 new
   assertions to `query-keys.test.ts`, no new test file).
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; packed tarball
-  imported and constructed `createKortix` from Node ESM.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; packed tarball
+  imported and constructed `createZed` from Node ESM.
 - `public-surface.test.ts` + `public-type-surface.test.ts`: `2 pass`, `0
   fail`, no snapshot drift — `sessionsScope` is a new property on the
   already-exported `qk` const (the snapshot records top-level identifiers,
@@ -941,11 +941,11 @@ Task by task:
   project/projects query-key factory plus `ProjectScopeKey` and
   `ProjectsListKey`. `qk.project.scope(id)` is an invalidation-only prefix;
   every project-scoped key nests under it. `qk` roots at `'kx'`, not
-  `'kortix'` — re-rooted in `d6e3d481b7` after the first commit
-  (`ecdb5e9c02`) used `'kortix'`. `kortixKeys` (`use-kortix-master.ts:276-279`)
-  already owns `['kortix', 'projects']` / `['kortix', 'projects', id]`; had
-  `qk` also rooted at `'kortix'`, `kortixKeys.projects()` — already used as an
-  `invalidateQueries` prefix at `use-kortix-master.ts:371,384` — would
+  `'zed'` — re-rooted in `d6e3d481b7` after the first commit
+  (`ecdb5e9c02`) used `'zed'`. `zedKeys` (`use-zed-master.ts:276-279`)
+  already owns `['zed', 'projects']` / `['zed', 'projects', id]`; had
+  `qk` also rooted at `'zed'`, `zedKeys.projects()` — already used as an
+  `invalidateQueries` prefix at `use-zed-master.ts:371,384` — would
   prefix-match every key `qk` produces too, since TanStack matches query keys
   by prefix. `'kx'` makes the two factories disjoint at segment 0, so neither
   can ever reach into the other's cache entries on invalidation.
@@ -971,9 +971,9 @@ Task by task:
   `'./use-project-name'`, `'./invalidate-project'`. Makes `qk`, `contract`,
   `FRESHNESS`, `FreshnessTier`, `ProjectScopeKey`, `ProjectsListKey`,
   `useProjectName`, `invalidateProject`, `invalidateProjectIdentity`, and
-  `writeProjectNameOptimistically` importable from `@kortix/sdk/react` for the
+  `writeProjectNameOptimistically` importable from `@zed/sdk/react` for the
   first time. Checked every name against the full `./react` barrel, including
-  `use-kortix-master.ts`'s `kortixKeys` — no collision.
+  `use-zed-master.ts`'s `zedKeys` — no collision.
 
 Tripwires (`AGENTS.md:311`), run before any edit and again after:
 
@@ -984,12 +984,12 @@ Tripwires (`AGENTS.md:311`), run before any edit and again after:
 
 GREEN (Task 6 gates):
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1609 pass`, `0 fail`, `6455 expect()`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1609 pass`, `0 fail`, `6455 expect()`
   calls across `125` files (same counts as Task 5's completion — Task 6 adds
   no new test file, only barrel wiring).
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed tarball
-  imported and constructed `createKortix` from Node ESM.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed tarball
+  imported and constructed `createZed` from Node ESM.
 
 Wiring the four modules into the barrel made their exports reachable from
 `./react` for the first time, so `public-surface.snapshot.json` and
@@ -1020,14 +1020,14 @@ Scope:
   `ProjectsListKey` types.
 - `qk.project.scope(id)` is an invalidation prefix, never a query key itself;
   every project-scoped key nests under it.
-- Distinct from `kortixKeys` in `use-kortix-master.ts` (the Kortix-Master
+- Distinct from `zedKeys` in `use-zed-master.ts` (the Zed-Master
   multi-server surface) — not extended, not imported, not renamed.
 - Not wired into `react/index.ts` in this task — that export wiring belongs to
   Task 6.
 - No published name changes. No `version` bump.
 
 Added `packages/sdk/src/react/query-keys.ts`, exporting `qk`, `ProjectScopeKey`,
-and `ProjectsListKey`. `qk.project.scope(id)` returns `['kortix', 'project', id]`
+and `ProjectsListKey`. `qk.project.scope(id)` returns `['zed', 'project', id]`
 as an invalidation-only prefix; every other `qk.project.*` member spreads it and
 appends a segment, so `invalidateQueries({ queryKey: qk.project.scope(id) })`
 provably reaches the whole subtree. `qk.projects.list(accountId?)` partitions by
@@ -1044,11 +1044,11 @@ GREEN:
 
 - `bun test --isolate src/react/query-keys.test.ts`: `6 pass`, `0 fail`,
   `22 expect()` calls.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1577 pass`, `0 fail`, `6394 expect()`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1577 pass`, `0 fail`, `6394 expect()`
   calls across `123` files (above the documented `1069`/`71` baseline).
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed tarball
-  imported and `createKortix` constructed successfully.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed tarball
+  imported and `createZed` constructed successfully.
 
 The public surface is unchanged — `query-keys.ts` is not imported anywhere yet.
 The `version` field was not touched.
@@ -1082,11 +1082,11 @@ RED:
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1572 pass`, `2 skip`, `0 fail`, and
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1572 pass`, `2 skip`, `0 fail`, and
   `6380 expect()` calls across `123` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed tarball
-  imported and `createKortix` constructed successfully.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed tarball
+  imported and `createZed` constructed successfully.
 - Focused migrated PostgreSQL proof: `3 pass`, `0 fail`.
 - Complete database package suite: `175 pass`, `6 skip`, `0 fail`.
 - Complete CLI suite: `737 pass`, `0 fail`.
@@ -1104,14 +1104,14 @@ and legacy email-installation fields.
 
 ---
 
-### 2026-08-07 — session `kortix-apps` claim
+### 2026-08-07 — session `zed-apps` claim
 
-No **Now** task claimed. This is the user-directed Kortix Apps implementation.
+No **Now** task claimed. This is the user-directed Zed Apps implementation.
 
 Claimed SDK scope:
 
 - Add the framework-free Apps REST contract and public types.
-- Expose the canonical project surface at `kortix.project(projectId).apps`.
+- Expose the canonical project surface at `zed.project(projectId).apps`.
 - Support artifact upload, deployment creation, inspection, logs, rollback,
   start, stop, and removal through the existing `getToken` seam.
 - Keep provider selection server-side and preserve every published SDK name.
@@ -1133,16 +1133,16 @@ Final security correction:
 
 RED:
 
-- `pnpm --filter @kortix/sdk typecheck`: failed with `TS2551` because
+- `pnpm --filter @zed/sdk typecheck`: failed with `TS2551` because
   `AppDeployment.created_by` did not exist.
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1598 pass`, `0 fail`, and `6550 expect()`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1598 pass`, `0 fail`, and `6550 expect()`
   calls across `127` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; packed tarballs
-  imported and constructed `@kortix/sdk` and `@kortix/executor-sdk`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; packed tarballs
+  imported and constructed `@zed/sdk` and `@zed/executor-sdk`.
 
 **Status:** COMPLETE in PR #6197.
 
@@ -1152,13 +1152,13 @@ GREEN:
 
 ### 2026-08-06 — session `sdk-connectors-unified` completion
 
-Consolidated the Connector data plane into `@kortix/sdk`. The canonical
-surface is `kortix.project(projectId).connectors`, with `kortix.connectors` for
+Consolidated the Connector data plane into `@zed/sdk`. The canonical
+surface is `zed.project(projectId).connectors`, with `zed.connectors` for
 an agent-minted token that already carries project scope. Both expose
 `catalog`, `tools`, `search`, `describe`, `call`, and `uploadAttachment`.
 
 Deleted the unpublished standalone Connector SDK. Added one final
-`@kortix/executor-sdk@0.12.5` compatibility adapter for existing production
+`@zed/executor-sdk@0.12.5` compatibility adapter for existing production
 consumers. The adapter preserves the published `0.12.4` names, signatures,
 raw `request()` escape hatch, `approval_execution_id`, and `ExecutorError`.
 The production workflow publishes this adapter only when `VERSION=0.12.5`,
@@ -1171,14 +1171,14 @@ Connector and Connection nouns.
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1587 pass`, `0 fail`, and
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1587 pass`, `0 fail`, and
   `6465 expect()` calls across `124` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; clean tarball install
-  imported and constructed `@kortix/sdk` and `@kortix/executor-sdk`.
-- `pnpm --filter @kortix/executor-sdk test`: `6 pass`, `0 fail`, and
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; clean tarball install
+  imported and constructed `@zed/sdk` and `@zed/executor-sdk`.
+- `pnpm --filter @zed/executor-sdk test`: `6 pass`, `0 fail`, and
   `23 expect()` calls.
-- `pnpm --filter @kortix/executor-sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/executor-sdk typecheck`: exit `0`.
 - `node scripts/stage-npm-publish.test.mjs`: `24 assertions passed`.
 - Complete CLI suite: `737 pass`, `0 fail`, and `2382 expect()` calls.
 - Complete API suite: `5604 pass`, `62 skip`, `0 fail`, and
@@ -1196,7 +1196,7 @@ GREEN:
 - `git diff --check`: exit `0`.
 - Tracked search for the deleted Connector SDK package name: zero matches.
 
-No published `@kortix/sdk` name was removed or renamed. The SDK version field
+No published `@zed/sdk` name was removed or renamed. The SDK version field
 remains `0.3.0`; the release script stamps the root `VERSION` value.
 
 **Status:** COMPLETE.
@@ -1212,11 +1212,11 @@ Claimed scope:
 - Replace active `executor`, connector `profile`, and product `integration`
   terminology with `connector` and `connection` across
   the SDK, CLI, API, runtime, npm package, documentation, and tests.
-- Preserve published `@kortix/sdk` compatibility with deprecated aliases where
+- Preserve published `@zed/sdk` compatibility with deprecated aliases where
   removal would break existing consumers.
-- Collapse the agent-facing CLI into one `kortix connectors` command tree.
+- Collapse the agent-facing CLI into one `zed connectors` command tree.
 - Fix and black-box verify the complete CLI defect list in
-  `kortix-cli-refactor-report.md` with a real agent-minted session token.
+  `zed-cli-refactor-report.md` with a real agent-minted session token.
 
 The required `tdd` skill is unavailable in this session. The work will use the
 same RED, GREEN, and REFACTOR sequence directly.
@@ -1225,11 +1225,11 @@ Required SDK gates are typecheck, the full test suite, and packed-install smoke.
 
 Final SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1575 pass`, `0 fail`, and
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1575 pass`, `0 fail`, and
   `6401 expect()` calls across `122` files after the final rebase.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed tarball
-  imported and `createKortix` constructed successfully.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed tarball
+  imported and `createZed` constructed successfully.
 - `bun apps/api/scripts/e2e-cli-agent-token.ts`: `85 pass`, `0 fail`. Every
   assertion launched the real CLI with a production-minted project/session PAT.
 
@@ -1268,10 +1268,10 @@ RED:
 GREEN:
 
 - Focused SDK tests: `33 pass`, `0 fail`, and `121 expect()` calls.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1546 pass`, `0 fail`, and `6323 expect()`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1546 pass`, `0 fail`, and `6323 expect()`
   calls across `121` files after rebasing onto `origin/main`.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed tarball
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed tarball
   imported and built successfully.
 
 The public surface changed additively. The runtime and type snapshots add
@@ -1298,7 +1298,7 @@ returns the already-provisioned project. `ProvisionProjectInput` gained
 
 RED:
 
-- `pnpm --filter @kortix/sdk typecheck`: `error TS2353: Object literal may only
+- `pnpm --filter @zed/sdk typecheck`: `error TS2353: Object literal may only
   specify known properties, and 'idempotency_key' does not exist in type
   'ProvisionProjectInput'` — three occurrences, exit `2`. The type IS the
   behaviour here, so the type-checker is where the failure belongs; the runtime
@@ -1307,10 +1307,10 @@ RED:
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1496 pass`, `0 fail`, `6196 expect()` calls
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1496 pass`, `0 fail`, `6196 expect()` calls
   across `121` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed tarball
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed tarball
   imported and constructed.
 
 Public surface unchanged in NAMES — one optional field added to an existing
@@ -1330,8 +1330,8 @@ No **Now** task claimed. This is a narrow additive transport-metadata fix.
 Scope:
 
 - Let an SDK host identify its client surface without replacing the transport.
-- Send the client surface on every SDK-authenticated Kortix request.
-- Mark the Kortix CLI as `cli` so central audit filters reconstruct its actions.
+- Send the client surface on every SDK-authenticated Zed request.
+- Mark the Zed CLI as `cli` so central audit filters reconstruct its actions.
 - Preserve every published name and existing configuration field.
 
 The listed `tdd` skill is unavailable in this session. This work will use the
@@ -1362,11 +1362,11 @@ GREEN:
 - Focused SDK tests: `37 pass`, `0 fail`, and `90 expect()` calls.
 - Focused CLI tests: `13 pass`, `0 fail`, and `16 expect()` calls.
 - Focused API tests: `8 pass`, `0 fail`, and `28 expect()` calls.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1544 pass`, `0 fail`, and `6321 expect()`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1544 pass`, `0 fail`, and `6321 expect()`
   calls across `121` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed tarball
-  imported and `createKortix` constructed successfully.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed tarball
+  imported and `createZed` constructed successfully.
 - The complete CLI suite passed `701` tests. The complete API suite passed
   `5476` tests and skipped `62` tests. Both typechecks exited `0`.
 - A real localhost CLI `projects ls --json` request produced a central audit
@@ -1408,11 +1408,11 @@ GREEN:
 
 - `bun test src/core/session/message-queue.test.ts`: `31 pass`, `0 fail`,
   `47 expect()` calls.
-- `pnpm --filter @kortix/sdk test`: `1490 pass`, `2 skip`, `0 fail`, and
+- `pnpm --filter @zed/sdk test`: `1490 pass`, `2 skip`, `0 fail`, and
   `6185 expect()` calls across `121` files (baseline was `1456` across `120`).
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed tarball
-  imported and `createKortix` constructed successfully.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed tarball
+  imported and `createZed` constructed successfully.
 
 Public surface changed, additively: 12 new names on `./message-queue`, nothing
 removed or renamed. Both snapshots re-recorded deliberately. No alias needed and
@@ -1440,10 +1440,10 @@ This work uses the required RED, GREEN, and REFACTOR sequence directly.
 
 Final SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1537 pass`, `0 fail`, and
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1537 pass`, `0 fail`, and
   `6316 expect()` calls across `121` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 
 **Status:** COMPLETE.
 
@@ -1487,11 +1487,11 @@ RED:
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk test`: `1538 pass`, `0 fail`, and `6298 expect()`
+- `pnpm --filter @zed/sdk test`: `1538 pass`, `0 fail`, and `6298 expect()`
   calls across `121` files.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed tarball
-  imported and `createKortix` constructed successfully.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed tarball
+  imported and `createZed` constructed successfully.
 
 The public surface changed additively. No export was removed or renamed. The
 package version was not edited.
@@ -1529,11 +1529,11 @@ published names. `AppDeployment` now exposes immutable `created_by`,
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1597 pass`, `2 skip`, `0 fail`, and
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1597 pass`, `2 skip`, `0 fail`, and
   `6547 expect()` calls across `127` files.
-- `pnpm --filter @kortix/sdk smoke:install`: exit `0`; the packed SDK imported
-  and `createKortix` constructed successfully.
+- `pnpm --filter @zed/sdk smoke:install`: exit `0`; the packed SDK imported
+  and `createZed` constructed successfully.
 - `bun test src/core/rest/projects-client/apps.test.ts`: `5 pass`, `0 fail`.
 
 No public export name changed. The package version remains untouched.
@@ -1556,16 +1556,16 @@ Implemented:
 Required gates:
 
 ```text
-$ pnpm --filter @kortix/sdk typecheck
+$ pnpm --filter @zed/sdk typecheck
 exit 0
 
-$ pnpm --filter @kortix/sdk test
+$ pnpm --filter @zed/sdk test
 1597 pass
 2 skip
 0 fail
 
-$ pnpm --filter @kortix/sdk run smoke:install
-OK: @kortix/sdk and @kortix/executor-sdk import and construct from packed tarballs
+$ pnpm --filter @zed/sdk run smoke:install
+OK: @zed/sdk and @zed/executor-sdk import and construct from packed tarballs
 install smoke test passed
 ```
 
@@ -1589,11 +1589,11 @@ RED:
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1456 pass`, `2 skip`, `0 fail`, and
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1456 pass`, `2 skip`, `0 fail`, and
   `6133 expect()` calls across `120` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`; the packed tarball
-  imported and `createKortix` constructed successfully.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`; the packed tarball
+  imported and `createZed` constructed successfully.
 
 No public export name, signature, cache key, or public-surface snapshot changed.
 
@@ -1729,7 +1729,7 @@ assert. **Do not run out of order. Do not parallelise.** Dependencies are strict
 | 5   | Axis 2 — root canonical, subpaths deprecated            | **DONE** (snapshot growth accepted by Jay at hard stop #3)                                                                                                                                                                       | `ab099b6a` | 2026-07-10   | `b5e588dbc`+`aafbdf91b`                  |
 | 6   | Dogfood `whitelabel-demo` (acceptance gate)             | **DONE**                                                                                                                                                                                                                         | `ab099b6a` | 2026-07-10   | `db30c6df3`+`19e500e50`                  |
 | 7   | Portability — ban bare globals in `core/`               | **DONE**                                                                                                                                                                                                                         | `ab099b6a` | 2026-07-10   | `189428df7`+`a485ad401`                  |
-| 8   | `tsup` bundles — CDN ESM + `window.Kortix`              | **DONE**                                                                                                                                                                                                                         | `ab099b6a` | 2026-07-10   | `c7bca7a7e`                              |
+| 8   | `tsup` bundles — CDN ESM + `window.Zed`              | **DONE**                                                                                                                                                                                                                         | `ab099b6a` | 2026-07-10   | `c7bca7a7e`                              |
 | 9   | Examples — `07-vanilla.ts`, `08-cdn.html`               | **DONE** (steps 1–5 `549d597a0`, review clean; Step 6 executed 2026-07-12 — D2a + D3 **PASS** in real Chromium vs live local stack, evidence in session log + `docs/superpowers/reviews/2026-07-12-sdk-production-readiness.md`) | `ab099b6a` | 2026-07-10   | `549d597a0` + live gate                  |
 | 10  | Docs — README, CHANGELOG, API-MAP                       | **DONE**                                                                                                                                                                                                                         | `ab099b6a` | 2026-07-10   | `6e9cc9f5a`                              |
 
@@ -1740,7 +1740,7 @@ Statuses: `NOT STARTED` · `IN PROGRESS` · `BLOCKED (reason)` · `DONE (sha)` �
 - [ ] **Task 2, first run.** Nothing has ever installed and imported the tarball. A failure is a **real pre-existing bug**, not something to loop on. Report it.
 - [ ] **Task 3, before committing the snapshot.** It becomes ground truth for everything after.
 - [ ] **Task 5, Step 12 — the snapshot diff.** Additions fine. **A removal or rename means a broken consumer.** Never accept the diff to reach green.
-- [x] **Task 9, Step 6.** Real browser, live stack, real sandbox. D2a (streaming through the IIFE global) and D3 (`instanceof Kortix.ApiError` under the bundle) cannot be claimed without it. — **Executed 2026-07-12, both PASS** (Chromium + live stack + real PAT/sandbox; see session log).
+- [x] **Task 9, Step 6.** Real browser, live stack, real sandbox. D2a (streaming through the IIFE global) and D3 (`instanceof Zed.ApiError` under the bundle) cannot be claimed without it. — **Executed 2026-07-12, both PASS** (Chromium + live stack + real PAT/sandbox; see session log).
 
 Also stop if the same failure survives three different fixes (use
 `superpowers:systematic-debugging`), or you are about to change what a test asserts.
@@ -1822,41 +1822,41 @@ Single, self-contained changes. Anything multi-step earns a spec instead.
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | B1  | **No skills create/update/delete surface.** The only agent capability with zero SDK coverage.                                                                                                                                                                                                                                                                                                                                                | `grep -rn "createSkill                                                                                                                                                                                                                                                                                  | deleteSkill" packages/sdk/src`→ nothing but a comment in`projects-client/agent-config.ts:7`                                                                                                                                                                            | OPEN |
 | B2  | **No account-deletion surface.**                                                                                                                                                                                                                                                                                                                                                                                                             | `grep -rn "deleteAccount" packages/sdk/src` → nothing                                                                                                                                                                                                                                                   | OPEN                                                                                                                                                                                                                                                                   |
-| B3  | **Host-local React hooks that belong in the SDK.** `apps/web` hand-rolls hooks over client fns the SDK already exposes — violating "hosts are thin".                                                                                                                                                                                                                                                                                         | `apps/web/src/hooks/{transcription/use-transcription,projects/use-project-gateway,channels/use-channel-bindings}.ts`. `@kortix/sdk/react` has only `use-gateway-catalog-sync.ts`.                                                                                                                       | OPEN                                                                                                                                                                                                                                                                   |
+| B3  | **Host-local React hooks that belong in the SDK.** `apps/web` hand-rolls hooks over client fns the SDK already exposes — violating "hosts are thin".                                                                                                                                                                                                                                                                                         | `apps/web/src/hooks/{transcription/use-transcription,projects/use-project-gateway,channels/use-channel-bindings}.ts`. `@zed/sdk/react` has only `use-gateway-catalog-sync.ts`.                                                                                                                       | OPEN                                                                                                                                                                                                                                                                   |
 | B4  | `**.name` on `ApiError` is duck-typed by legacy sniffers.** Changing it is a _silent runtime_ break, not a compile break.                                                                                                                                                                                                                                                                                                                    | `src/platform/api/errors.ts:59` — `this.name = 'ApiError'`, with a comment noting legacy sniffers                                                                                                                                                                                                       | WON'T DO for now — documented in `AGENTS.md`; revisit only with a deprecation path                                                                                                                                                                                     |
-| B5  | `**structure_version` semantics undocumented** (`1` = legacy tasks, `2` = tickets/board)                                                                                                                                                                                                                                                                                                                                                     | `src/opencode/kortix-master.ts`                                                                                                                                                                                                                                                                         | OPEN                                                                                                                                                                                                                                                                   |
+| B5  | `**structure_version` semantics undocumented** (`1` = legacy tasks, `2` = tickets/board)                                                                                                                                                                                                                                                                                                                                                     | `src/opencode/zed-master.ts`                                                                                                                                                                                                                                                                         | OPEN                                                                                                                                                                                                                                                                   |
 | B6  | **Tripwire regex is blind to side-effect imports.** `import 'react';` (no `from`) matches neither the graph walker's regex nor the examples tripwire — a bare framework side-effect import slips through                                                                                                                                                                                                                                     | Task 9 probe: brief's literal `import 'react';` did NOT fail the test; `import { createElement } from 'react'` did. `src/index.isomorphic.test.ts` (`collectGraph` importRe + examples test)                                                                                                            | **CLOSED 2026-07-12** — shared `importSpecifiers` helper now catches side-effect imports (both quote styles) in the graph walker, the examples scan, AND the inline tier scan; RED-proven, reviewed. Uncommitted fix wave, see `.superpowers/sdd/fix-wave-2-report.md` |
-| B7  | **Provider-qualified gateway defaults must remain in the `kortix` picker namespace.** Lock `codex/gpt-5.6-sol` to `{ providerID: 'kortix', modelID: 'codex/gpt-5.6-sol' }` rather than misclassifying it as a native provider.                                                                                                                                                                                                               | `src/react/use-model-store.ts:42` defines every gateway wire model as a `kortix` model ID; `src/react/use-opencode-local.test.ts` now covers the Codex default.                                                                                                                                         | **DONE 2026-07-12** — implementation `ee7d2cc09`; full SDK suite, typecheck, and packed-install smoke green                                                                                                                                                            |
+| B7  | **Provider-qualified gateway defaults must remain in the `zed` picker namespace.** Lock `codex/gpt-5.6-sol` to `{ providerID: 'zed', modelID: 'codex/gpt-5.6-sol' }` rather than misclassifying it as a native provider.                                                                                                                                                                                                               | `src/react/use-model-store.ts:42` defines every gateway wire model as a `zed` model ID; `src/react/use-opencode-local.test.ts` now covers the Codex default.                                                                                                                                         | **DONE 2026-07-12** — implementation `ee7d2cc09`; full SDK suite, typecheck, and packed-install smoke green                                                                                                                                                            |
 | B8  | **Retire the experimental project-app deployment SDK surface with its removed platform capability.** This is intentionally subtractive because the user explicitly requested complete removal of the underlying capability.                                                                                                                                                                                                                  | The former project-app client module, facade property, types, examples, and snapshot entries were removed in `ec8b44dda`.                                                                                                                                                                               | **DONE 2026-07-13** — session `remove-freestyle`; full SDK gates green                                                                                                                                                                                                 |
 | B9  | **Expose E2B as an additive sandbox-provider literal everywhere the published SDK accepts or reports a provider.**                                                                                                                                                                                                                                                                                                                           | Stale explicit unions remained in `src/core/rest/{platform-client/types,projects-client/session-sandbox,projects-client/sessions}.ts`; the server provider unification adds `e2b`.                                                                                                                      | **DONE 2026-07-13** — implementation `5763b63e4`; full SDK gates green                                                                                                                                                                                                 |
 | B10 | **Expose the managed Git username alongside the push token.** Code Storage uses `t:<token>` while GitHub uses `x-access-token:<token>`; clients need the provider-selected username to clone and push without hard-coding GitHub credentials.                                                                                                                                                                                                | `src/core/rest/projects-client/projects.ts` models `ProjectGitToken` with only `push_token`; the Code Storage end-to-end flow requires an additive `git_username`.                                                                                                                                      | **DONE 2026-07-19** — implementation `ab80f9305`; full SDK suite, typecheck, and packed-install smoke green                                                                                                                                                            |
 | B11 | **Expose owner-scoped member connection creation and profile-specific Pipedream connect/finalize.**                                                                                                                                                                                                                                                                                                                                  | Existing profile lifecycle methods only target manager-owned `/connections` and the shared connector Pipedream identity; session-selected member profiles need additive typed methods for `/connections/me` and `/{connectionId}/connect`.                                                   | **DONE 2026-07-21** — implementation `3eb18b361`; full SDK suite, typecheck, and packed-install smoke green                                                                                                                                                            |
-| B12 | **Allow daemon-owned PTY queries before OpenCode reports ready.**                                                                                                                                                                                                                                                                                                                                                                            | `useOpenCodePtyList()` gates `/kortix/pty` on `useOpenCodeRuntimeReady()`, while `apps/kortix-sandbox-agent-server/src/proxy.ts` owns `/kortix/pty` independently of OpenCode.                                                                                                                          | **DONE 2026-07-22** — implementation `c973f9209`; SDK and web suites, packed-install smoke, isolated proxy tests, and live Platinum/Daytona PTY smokes green                                                                                                           |
-| B13 | **Add bounded GitHub repository discovery for large managed owners.** The current client can only request the full owner repository list, which exceeds the API processing deadline for `managed-kortix`.                                                                                                                                                                                                                                    | Production `GET /v1/projects/github/repositories?...&installation_id=pat` returned `503` after 25 seconds; `packages/sdk/src/core/rest/projects-client/github.ts` exposes no page or search input.                                                                                                      | **DONE 2026-07-23** — `0748271116`; session `github-repo-selector`                                                                                                                                                                                                     |
-| B14 | **Remove the synthetic `auto` model and enforce paid-tier access for every Kortix-managed model in every environment.** Free-tier wallet credits are sandbox-only; stale `auto` requests must fail closed instead of selecting a managed fallback.                                                                                                                                                                                           | `packages/sdk/src/react/use-opencode-local.ts` sends `kortix/auto`; `apps/api/src/billing/services/tiers.ts` disables managed-model entitlement enforcement for every dev/preview account.                                                                                                              | **DONE 2026-07-24** — implementation `406eb5e9a`; session `fix-free-tier-model-entitlement`                                                                                                                                                                            |
-| B15 | **Top-level `runtime()` on a scoped client bled to the process-global sandbox (cross-tenant).** `createScopedKortix`'s `wrapScoped` scopes the token but not the top-level `runtime()`, which resolves the process-global active runtime (`getActiveOpenCodeUrl()` → last session to `ensureReady()`). In a multi-tenant KaaB wrapper `kortixA.runtime()` reached another end-user's sandbox. #5273 scoped `session().runtime` but not this. | `src/node/server.ts` (`createScopedKortix`); `src/core/client/kortix.ts:43,752,1000`; `src/core/session/server-store/active.ts:21`. RED-proven in `src/node/server.test.ts` (scoped `runtime()` returned a client instead of throwing).                                                                 | **DONE 2026-07-23** — session `sdk-scoped-runtime`; scoped `runtime()` now throws + steers to `session(pid,sid).runtime`; adds no public export (surface snapshot unchanged); typecheck + full suite (1156 pass) + `smoke:install` green                               |
+| B12 | **Allow daemon-owned PTY queries before OpenCode reports ready.**                                                                                                                                                                                                                                                                                                                                                                            | `useOpenCodePtyList()` gates `/zed/pty` on `useOpenCodeRuntimeReady()`, while `apps/zed-sandbox-agent-server/src/proxy.ts` owns `/zed/pty` independently of OpenCode.                                                                                                                          | **DONE 2026-07-22** — implementation `c973f9209`; SDK and web suites, packed-install smoke, isolated proxy tests, and live Platinum/Daytona PTY smokes green                                                                                                           |
+| B13 | **Add bounded GitHub repository discovery for large managed owners.** The current client can only request the full owner repository list, which exceeds the API processing deadline for `managed-zed`.                                                                                                                                                                                                                                    | Production `GET /v1/projects/github/repositories?...&installation_id=pat` returned `503` after 25 seconds; `packages/sdk/src/core/rest/projects-client/github.ts` exposes no page or search input.                                                                                                      | **DONE 2026-07-23** — `0748271116`; session `github-repo-selector`                                                                                                                                                                                                     |
+| B14 | **Remove the synthetic `auto` model and enforce paid-tier access for every Zed-managed model in every environment.** Free-tier wallet credits are sandbox-only; stale `auto` requests must fail closed instead of selecting a managed fallback.                                                                                                                                                                                           | `packages/sdk/src/react/use-opencode-local.ts` sends `zed/auto`; `apps/api/src/billing/services/tiers.ts` disables managed-model entitlement enforcement for every dev/preview account.                                                                                                              | **DONE 2026-07-24** — implementation `406eb5e9a`; session `fix-free-tier-model-entitlement`                                                                                                                                                                            |
+| B15 | **Top-level `runtime()` on a scoped client bled to the process-global sandbox (cross-tenant).** `createScopedZed`'s `wrapScoped` scopes the token but not the top-level `runtime()`, which resolves the process-global active runtime (`getActiveOpenCodeUrl()` → last session to `ensureReady()`). In a multi-tenant KaaB wrapper `zedA.runtime()` reached another end-user's sandbox. #5273 scoped `session().runtime` but not this. | `src/node/server.ts` (`createScopedZed`); `src/core/client/zed.ts:43,752,1000`; `src/core/session/server-store/active.ts:21`. RED-proven in `src/node/server.test.ts` (scoped `runtime()` returned a client instead of throwing).                                                                 | **DONE 2026-07-23** — session `sdk-scoped-runtime`; scoped `runtime()` now throws + steers to `session(pid,sid).runtime`; adds no public export (surface snapshot unchanged); typecheck + full suite (1156 pass) + `smoke:install` green                               |
 | B16 | **Retry transient transport failures on idempotent REST reads before reporting them.** Browser CORS preflight failures surface as opaque `TypeError: Failed to fetch`, bypass the existing HTTP 502/503/504 retry loop, and call the host error handler before React Query retries successfully. Cache successful preflights to reduce exposure without retrying mutations.                                                                  | Production session `d9abee06-5af1-48b9-ba92-53ca0fcf0589` logged continuous audit `200` responses after one browser preflight failure; `src/core/http/api-client.ts` retries response statuses but reports initial fetch throws immediately; `apps/api/src/index.ts` emits no `Access-Control-Max-Age`. | **DONE 2026-07-24** — implementation `9f6e5b615`; session `cors-transport-resilience`                                                                                                                                                                                  |
 | B17 | **Add native OAuth2 client-credentials lifecycle support to existing connector connections.** Static bearer credentials cannot acquire, cache, refresh, or revoke OAuth2 access tokens. Microsoft Graph and SharePoint require OAuth2 and cannot use a static API key.                                                                                                                                                               | `apps/api/src/connectors/credentials.ts` decrypts one opaque value; `apps/api/src/connectors/db-deps.ts` passes that value directly to `executeCall`; `packages/sdk/src/core/rest/projects-client/connectors.ts` accepts only `{ value }`.                                                                  | **DONE 2026-07-24** — session `native-oauth-sharepoint`; full SDK gates and real SharePoint proof green                                                                                                                                                                |
 | B18 | **Keep the managed-model playground pin synchronized with the managed catalog.** The playground exits before API access when its pinned IDs differ from `MANAGED_MODELS`.                                                                                                                                                                                                                                                                    | `packages/sdk/playground/chat/14-change-default-model.ts` still pins retired `qwen3.7-max` and `deepseek-v4-pro`.                                                                                                                                                                                       | **DONE 2026-07-24** — session `managed-models-aster`; full SDK gates green                                                                                                                                                                                             |
-| B19 | **Preserve explicit managed-model pricing and cache-write rates through the project catalog and turn-cost estimator.** Browser-side `models.dev` lookup can substitute another provider's price for a Kortix-managed model, and the turn estimator does not accept a distinct cache-write rate.                                                                                                                                              | `src/core/rest/projects-client/projects.ts`, `src/core/turns/types.ts`, `src/core/turns/state.ts`; confirmed for managed Aster `glm-5.2`.                                                                                                                                                               | **DONE 2026-07-25** — implementation `28c18cbfa`; full SDK suite, typecheck, public-surface snapshot, and packed-install smoke green                                                                                                                                   |
-| B20 | **Keep ACP SSE connections outside the shared 30-second authenticated-fetch timeout.** The ACP controller uses `/kortix/acp/:sessionId` as a long-lived SSE stream.                                                                                                                                                                                                                                                                            | `src/platform/auth-core.ts` exempted only `/global/event`; deployed cold Chromium aborted the ACP stream before `session/load` settled.                                                                                                                                                                | **DONE 2026-07-25** — implementation `89b97f4cc`; RED test, full SDK gates, and local cold ACP plus REST browser matrix pass                                                                                                                                                                                                         |
-| B21 | **Serialize ACP sends with runtime restart reloads.** A send that starts while OpenCode restarts can wait forever on `session/set_config_option` and never send `session/prompt`.                                                                                                                                                                                                                                                               | Deployed cold Chromium sent `session/set_config_option` at `13:36:20.250Z`, received `kortix/runtime_ready`, then sent `session/load` at `13:36:20.640Z`; `POST_RESTART_PONG` never produced `session/prompt`.                                                                                              | **DONE 2026-07-25** — implementation `d8537fa2c`; RED tests, full SDK gates, and test-harness typecheck pass                                                                                                                                                                                                                          |
+| B19 | **Preserve explicit managed-model pricing and cache-write rates through the project catalog and turn-cost estimator.** Browser-side `models.dev` lookup can substitute another provider's price for a Zed-managed model, and the turn estimator does not accept a distinct cache-write rate.                                                                                                                                              | `src/core/rest/projects-client/projects.ts`, `src/core/turns/types.ts`, `src/core/turns/state.ts`; confirmed for managed Aster `glm-5.2`.                                                                                                                                                               | **DONE 2026-07-25** — implementation `28c18cbfa`; full SDK suite, typecheck, public-surface snapshot, and packed-install smoke green                                                                                                                                   |
+| B20 | **Keep ACP SSE connections outside the shared 30-second authenticated-fetch timeout.** The ACP controller uses `/zed/acp/:sessionId` as a long-lived SSE stream.                                                                                                                                                                                                                                                                            | `src/platform/auth-core.ts` exempted only `/global/event`; deployed cold Chromium aborted the ACP stream before `session/load` settled.                                                                                                                                                                | **DONE 2026-07-25** — implementation `89b97f4cc`; RED test, full SDK gates, and local cold ACP plus REST browser matrix pass                                                                                                                                                                                                         |
+| B21 | **Serialize ACP sends with runtime restart reloads.** A send that starts while OpenCode restarts can wait forever on `session/set_config_option` and never send `session/prompt`.                                                                                                                                                                                                                                                               | Deployed cold Chromium sent `session/set_config_option` at `13:36:20.250Z`, received `zed/runtime_ready`, then sent `session/load` at `13:36:20.640Z`; `POST_RESTART_PONG` never produced `session/prompt`.                                                                                              | **DONE 2026-07-25** — implementation `d8537fa2c`; RED tests, full SDK gates, and test-harness typecheck pass                                                                                                                                                                                                                          |
 | B22 | **Expose server-owned warm project-session ensure and claim operations.** The project index needs one reusable empty session without owning session selection or deduplication in app code.                                                                                                                                                                                                                                                   | `apps/web/src/app/(app)/projects/[id]/page.tsx` creates a session only after send. `packages/sdk/src/core/rest/projects-client/sessions.ts` exposes create and list, but no atomic warm-session operation.                                                                                              | **DONE 2026-07-26** — implementation `13167d7cf`; RED tests, full SDK gates, live API/SDK lifecycle, workspace refresh, and maintenance retention proof pass                                                                                                                                                                           |
-| B23 | **Prevent ACP prompt results from exposing a false idle window before late protocol updates settle.**                                                                                                                                                                                                                                                                                                                                          | The deployed white-label parity screenshot rendered 4 ACP tool cards and `Agent is working…`, while REST rendered 26 completed tool cards. `applyAcpEnvelope()` marks the projection idle on the prompt result, and later tool or text updates can mark it busy again.                                                                                                  | **IMPLEMENTATION COMPLETE 2026-07-30** (worktree `bugbash`, uncommitted) — session `acp-turn-liveness`. Root cause pinned with production data: `session/load` makes the harness re-emit a finished conversation as BRAND-NEW `session/update` events (dev session `10533f77-00e3-420c-936b-82933e4d1025`, `kortix.acp_session_envelopes` upstream ids `1431`-`1842` at ordinals `44560`-`57861`, i.e. AFTER the `end_turn` response at ordinal `26518`), so no dedupe or ordinal cursor can suppress them and no terminator follows. `AcpProjection` now carries `pendingPrompts` — the unanswered-`session/prompt` ids — and `status` is derived from it alone; content appends no longer mark a turn busy. A prompt settles on its response, on a JSON-RPC error response, or on the next `initialize`/`session/new`/`session/load` re-attach. Replaying the real 1,912-envelope transcript folds to `{type:'idle'}` (was `{type:'busy'}`). SDK gates: typecheck exit `0`, `1413 pass` / `0 fail` / `121 files`. PR, Deploy Dev, and deployed proof required. |
+| B23 | **Prevent ACP prompt results from exposing a false idle window before late protocol updates settle.**                                                                                                                                                                                                                                                                                                                                          | The deployed white-label parity screenshot rendered 4 ACP tool cards and `Agent is working…`, while REST rendered 26 completed tool cards. `applyAcpEnvelope()` marks the projection idle on the prompt result, and later tool or text updates can mark it busy again.                                                                                                  | **IMPLEMENTATION COMPLETE 2026-07-30** (worktree `bugbash`, uncommitted) — session `acp-turn-liveness`. Root cause pinned with production data: `session/load` makes the harness re-emit a finished conversation as BRAND-NEW `session/update` events (dev session `10533f77-00e3-420c-936b-82933e4d1025`, `zed.acp_session_envelopes` upstream ids `1431`-`1842` at ordinals `44560`-`57861`, i.e. AFTER the `end_turn` response at ordinal `26518`), so no dedupe or ordinal cursor can suppress them and no terminator follows. `AcpProjection` now carries `pendingPrompts` — the unanswered-`session/prompt` ids — and `status` is derived from it alone; content appends no longer mark a turn busy. A prompt settles on its response, on a JSON-RPC error response, or on the next `initialize`/`session/new`/`session/load` re-attach. Replaying the real 1,912-envelope transcript folds to `{type:'idle'}` (was `{type:'busy'}`). SDK gates: typecheck exit `0`, `1413 pass` / `0 fail` / `121 files`. PR, Deploy Dev, and deployed proof required. |
 | B24 | **Accept a server-authorized initial OpenCode session pin in `useSession`.** The SDK must hydrate the cached transcript before runtime readiness without making the initial pin authoritative over the `/start` result.                                                                                                                                                                                                                          | Existing sessions wait for `/start` before `useSessionSync` can hydrate IndexedDB history. The preserved `session-load-latency` work proved the additive option and pin precedence.                                                                                                                       | **IN PROGRESS 2026-07-26** — session `api-latency-refactor`; RED test, implementation port, full SDK gates, browser proof, merge, and Deploy Dev proof required                                                                                                                               |
 | B25 | **Start project model-picker and project-detail reads in parallel.** Gateway projects must not wait for project detail before the SDK starts the compact model-picker request.                                                                                                                                                                                                                                                                   | `src/react/use-opencode-sessions/providers.ts` enables the model query only after `projectDetailQuery.isSuccess`, which creates a sequential request waterfall on project load.                                                                                                                          | **IN PROGRESS 2026-07-26** — session `api-latency-refactor`; RED test, implementation, full SDK gates, browser network proof, merge, and Deploy Dev proof required                                                                                                                            |
 | B26 | **Do not report an expected warm-session configuration mismatch as a global API error.** The web client catches `WARM_SESSION_CONFIGURATION_MISMATCH` and creates a normal session.                                                                                                                                                                                                                                                               | `src/core/rest/projects-client/sessions.ts` calls `/sessions/warm/claim` with the default `showErrors: true`, so the recoverable `409` still reaches the host error handler.                                                                                                                                | **DONE 2026-07-26** — PR #5529, merge `5c0ae97ec`; SDK tests `1280/0`; deployed US proof observed the typed `409`, normal-session fallback, exact `PONG`, and no global mismatch error                                                                                                      |
 | B27 | **Retry the transient IAM policy read that caused the all-account project query failure.** The projects page can issue one query per account.                                                                                                                                                                                                                                                                                                     | Live US shadow evidence at `2026-07-26T20:03:20Z`: one IAM-backed `GET /projects` returned `500`; the identical retry returned `200` after `1.4s`. The wrapped `DrizzleQueryError` hid the nested PostgreSQL cause from logs.                                                                                  | **DONE 2026-07-26** — PR #5529, merge `5c0ae97ec`; one bounded transient read retry fails closed; wrapped PostgreSQL details are logged; API tests `40/0`; US API rollout completed with `2/2` tasks                                                                                             |
-| B28 | **Keep an explicit project-composer agent selection through asynchronous project-default hydration.**                                                                                                                                                                                                                                                                                                                                               | The deployed US two-test session suite clicked `memory-reflector`, then `useOpenCodeLocal()` changed its selection scope when `defaultAgentName` hydrated to `kortix`. The picker reset to `kortix` for 30 seconds.                                                                                          | **DONE 2026-07-27** — PR #5533, merge `ee45f55fa`; SDK tests `1283/0`, typecheck, packed-install smoke, and deployed US two-test suite `2/2` pass; both sessions returned exact `PONG`, and the mismatch fallback emitted no global error                                                                                                                                    |
+| B28 | **Keep an explicit project-composer agent selection through asynchronous project-default hydration.**                                                                                                                                                                                                                                                                                                                                               | The deployed US two-test session suite clicked `memory-reflector`, then `useOpenCodeLocal()` changed its selection scope when `defaultAgentName` hydrated to `zed`. The picker reset to `zed` for 30 seconds.                                                                                          | **DONE 2026-07-27** — PR #5533, merge `ee45f55fa`; SDK tests `1283/0`, typecheck, packed-install smoke, and deployed US two-test suite `2/2` pass; both sessions returned exact `PONG`, and the mismatch fallback emitted no global error                                                                                                                                    |
 | B29 | **Preserve ACP upstream message boundaries in the projected transcript.**                                                                                                                                                                                                                                                                                                                                                                              | Dev session `ee41f742-9384-4f34-88e7-63ae3d765cae` emitted distinct `session/update.messageId` values for assistant steps, but `src/core/acp/projection.ts` discarded `messageId` and appended every text or reasoning chunk to one generated assistant message.                                                                                      | **DONE 2026-07-27** — implementation `60b06c6e4`; focused projection/controller tests `27/0`, full SDK tests `1299/0`, typecheck, packed-install smoke, supplied-transcript replay, and local ACP Chromium flow pass                                                                                                                                                                                          |
-| B30 | **Expose message-based session rewind and restore through both REST and ACP transports.** Editing an earlier user message must rewind the same canonical session instead of creating a fork. The removed path must remain recoverable until the replacement prompt commits.                                                                                                                                                                      | `apps/web/src/features/session/session-chat.tsx` contains `TODO(session-rewind)`. OpenCode exposes `/session/{sessionID}/revert` and `/unrevert`; ACP has no standard rewind method and needs a Kortix bridge extension plus transcript reload.                                                               | **DONE 2026-07-27** — implementation `eab4eef0f`; PR #5619 merged as `9e90e8ed7`. Deploy Dev run `30293660760` deployed source `e548c6a8fc9ee1d5a92db66d6feb912d4442ebeb`, which contains the merge. Dev session `7feb4e84-072f-4b71-987f-dc25dd542890` kept canonical OpenCode session `ses_05b075d25ffe7PBkZ632pcVAlW` across ACP and REST rewind, restore, replacement commit, reconnect, and file rollback. ACP produced `DEPLOYED_ACP_REPLACEMENT`; REST produced `DEPLOYED_REST_REPLACEMENT`; cleanup removed `26/26` probe sessions and restored ACP runtime overrides. SDK tests `1309/0`, daemon tests `306/0`, web source contract `5/0`, local ACP Playwright `1/0`, and local real ACP plus REST smoke pass. Shippable to production: **YES** for protocol behavior. Deployed UI interaction remains unverified because Browser discovery returned `[]`. |
+| B30 | **Expose message-based session rewind and restore through both REST and ACP transports.** Editing an earlier user message must rewind the same canonical session instead of creating a fork. The removed path must remain recoverable until the replacement prompt commits.                                                                                                                                                                      | `apps/web/src/features/session/session-chat.tsx` contains `TODO(session-rewind)`. OpenCode exposes `/session/{sessionID}/revert` and `/unrevert`; ACP has no standard rewind method and needs a Zed bridge extension plus transcript reload.                                                               | **DONE 2026-07-27** — implementation `eab4eef0f`; PR #5619 merged as `9e90e8ed7`. Deploy Dev run `30293660760` deployed source `e548c6a8fc9ee1d5a92db66d6feb912d4442ebeb`, which contains the merge. Dev session `7feb4e84-072f-4b71-987f-dc25dd542890` kept canonical OpenCode session `ses_05b075d25ffe7PBkZ632pcVAlW` across ACP and REST rewind, restore, replacement commit, reconnect, and file rollback. ACP produced `DEPLOYED_ACP_REPLACEMENT`; REST produced `DEPLOYED_REST_REPLACEMENT`; cleanup removed `26/26` probe sessions and restored ACP runtime overrides. SDK tests `1309/0`, daemon tests `306/0`, web source contract `5/0`, local ACP Playwright `1/0`, and local real ACP plus REST smoke pass. Shippable to production: **YES** for protocol behavior. Deployed UI interaction remains unverified because Browser discovery returned `[]`. |
 | B31 | **Allow a page-scoped ACP query override and settle completed ACP prompts that contain stale running tools.**                                                                                                                                                                                                                                                                                                                                     | `?acp` has no SDK transport override. Dev session `5322fa59-7a73-4fea-9f1a-9da59c2a0b5a` rendered the final assistant response while an older tool part remained `running`; `hasProjectionBlockers()` then kept the composer busy and blocked the queued prompt.                                                                 | **IMPLEMENTATION COMPLETE 2026-07-27** — implementation `d3544ae14`; focused SDK `40/0`, full SDK `1312/0`, typecheck, packed-install smoke, web routing `5/0`, and touched web ESLint pass. PR #5636, Deploy Dev, deployed SHA proof, and deployed ACP-only proof remain |
-| B32 | **Synchronize generated Kortix session names from both ACP and OpenCode REST runtimes without navigation or refresh.**                                                                                                                                                                                                                                                                                                                           | ACP emits `session_info_update`; OpenCode `/global/event` emits a wrapped `session.updated`. Neither path reliably persisted `metadata.name`, and the sidebar query could stay stale after a completed prompt.                                                                                              | **IMPLEMENTATION COMPLETE 2026-07-28** — ACP and REST title events persist server-side; the SDK refetches list and detail queries through a bounded post-send loop; focused API `78/0`, full SDK `1318/0`, API and SDK typechecks, packed-install smoke, test-harness typecheck, and local ACP plus REST Chromium `1/0` pass. Full API has `3` pre-existing failures reproduced in the primary checkout. PR, Deploy Dev, deployed SHA proof, and deployed UI proof remain. |
+| B32 | **Synchronize generated Zed session names from both ACP and OpenCode REST runtimes without navigation or refresh.**                                                                                                                                                                                                                                                                                                                           | ACP emits `session_info_update`; OpenCode `/global/event` emits a wrapped `session.updated`. Neither path reliably persisted `metadata.name`, and the sidebar query could stay stale after a completed prompt.                                                                                              | **IMPLEMENTATION COMPLETE 2026-07-28** — ACP and REST title events persist server-side; the SDK refetches list and detail queries through a bounded post-send loop; focused API `78/0`, full SDK `1318/0`, API and SDK typechecks, packed-install smoke, test-harness typecheck, and local ACP plus REST Chromium `1/0` pass. Full API has `3` pre-existing failures reproduced in the primary checkout. PR, Deploy Dev, deployed SHA proof, and deployed UI proof remain. |
 | B33 | **The ACP transcript has no bounded read — a session replays every envelope on open.** OpenCode REST opens on a bounded newest-first page (`SESSION_SYNC_PAGE_SIZE`) and pages backwards through a cursor; ACP has no equivalent, so the ACP path gets slower without limit as a session grows. As ACP becomes the only transport, the bounded-read property is lost with it. | `GET /:projectId/sessions/:sessionId/acp/transcript` (`apps/api/src/projects/routes/acp.ts:160`) and `loadAcpTranscript` (`apps/api/src/projects/lib/acp-transcript.ts`) accept only `after` (forward tailing for gap recovery) — no `before`/`limit`. `useSession` hardcodes `hasOlder: false` / `loadOlder: async () => {}` for ACP (`src/react/use-session.ts:533-535`). **Not a small change:** the projection is a fold over the whole envelope log (`applyAcpEnvelope`), so replaying a suffix yields a wrong projection — open tool calls, session info, and rewind state all live in earlier envelopes. Needs either envelope-range snapshots or a projection checkpoint, then the existing `hasOlder`/`loadOlder` contract plugs into the transcript's scroll-driven autoload unchanged. | OPEN |
 
-| B34 | **A losing ACP identity claim dead-ended the session instead of adopting the winner.** Two writers mint a harness-native session for one Kortix session row — headless prompt delivery in the API, and `AcpSessionController.loadCanonicalSession()` in the browser. The platform CAS guard returned `409 acp_session_id is immutable after the first successful session/new response`; the SDK threw before assigning `protocolSessionId`, so `useSession` surfaced "OpenCode failed to load" and every later reload minted another orphan harness conversation. | `core/acp/session-controller.ts` threw at the `persistAcpSessionId` await (pre-fix line `341`) with `protocolSessionId` still `null`; `react/use-acp-session-runtime.ts:78-84` discarded the identity response body. | **IMPLEMENTATION COMPLETE 2026-07-30** (worktree `bugbash`, uncommitted) — `persistAcpSessionId` widened to `Promise<string \| void>`; the controller adopts the stored id from a 200 body or from a `409` carrying `acp_session_id`, then `loadSession`s it and reaches `{ready:true, connection:'open', error:null}`. A `409` without an id still surfaces the error. Depends on the API adding `acp_session_id` to the conflict body (separate change, `apps/api/**`). SDK gates: typecheck exit `0`, `1390 pass` / `0 fail` / `121 files`, packed-install smoke pass. |
+| B34 | **A losing ACP identity claim dead-ended the session instead of adopting the winner.** Two writers mint a harness-native session for one Zed session row — headless prompt delivery in the API, and `AcpSessionController.loadCanonicalSession()` in the browser. The platform CAS guard returned `409 acp_session_id is immutable after the first successful session/new response`; the SDK threw before assigning `protocolSessionId`, so `useSession` surfaced "OpenCode failed to load" and every later reload minted another orphan harness conversation. | `core/acp/session-controller.ts` threw at the `persistAcpSessionId` await (pre-fix line `341`) with `protocolSessionId` still `null`; `react/use-acp-session-runtime.ts:78-84` discarded the identity response body. | **IMPLEMENTATION COMPLETE 2026-07-30** (worktree `bugbash`, uncommitted) — `persistAcpSessionId` widened to `Promise<string \| void>`; the controller adopts the stored id from a 200 body or from a `409` carrying `acp_session_id`, then `loadSession`s it and reaches `{ready:true, connection:'open', error:null}`. A `409` without an id still surfaces the error. Depends on the API adding `acp_session_id` to the conflict body (separate change, `apps/api/**`). SDK gates: typecheck exit `0`, `1390 pass` / `0 fail` / `121 files`, packed-install smoke pass. |
 | B35 | **Fan out `client_to_agent` envelopes on the live ACP SSE stream, or a second viewer cannot see a turn it did not start.** The API replays both directions from the transcript on connect (`loadAcpTranscript` in `apps/api/src/projects/routes/acp.ts:160,313`), but the live proxy only forwards agent-to-client events, and a `session/prompt` response persisted by the POST branch is never streamed. A browser already connected when a headless/trigger prompt starts therefore never sees the request, so `AcpProjection.pendingPrompts` stays empty and the turn renders settled while the agent works. | `apps/api/src/projects/routes/acp.ts:281-268` persists the direct prompt response with no stream write; `apps/api/src/projects/lib/acp-sse-proxy.ts` writes only upstream SSE blocks. Surfaced while fixing B23, where content arrival stopped being treated as liveness. | OPEN |
-| B36 | **`useSession` owned no chat mount id, so every host had to re-derive one from the OpenCode pin.** A managed-ACP session never has `project_sessions.opencode_session_id` (never written at create time — `apps/api/src/projects/lib/sessions.ts:1290-1291` — and `openSession`'s ACP branch passes the null through, `apps/api/src/projects/routes/shared.ts:923,932`). `apps/web` derived its mount id from that pin and hard-returned `null`, so a healthy ACP session rendered an empty shell: no composer, no transcript, no loader, while the agent worked server-side. The SDK already owned the correct predicate (`hasSessionRuntimeIdentity`, with a passing test named "managed ACP does not require an OpenCode session id") but exposed no id built from it. | Live `/start` on session `10533f77-00e3-420c-936b-82933e4d1025`: `stage=ready`, `runtime_transport=acp`, `acp_session_id=ses_04ff3eb99ffedjXUSdT2WJBShj`, `opencode_session_id=None`. Host derivation at `apps/web/.../sessions/[sessionId]/page.tsx:664` + hard `return null` at `:793`. | **IMPLEMENTATION COMPLETE 2026-07-30** (worktree `bugbash`, uncommitted) — `react/session-runtime-identity.ts` adds `resolveSessionMountId` (REST → the OpenCode pin; ACP → the durable Kortix session id; `null` until the runtime has an identity) and `useSession` returns it as `chatSessionId`. Additive: no export renamed, public-surface snapshot unchanged. Live browser proof on a managed-ACP session: composer textarea exists, `[data-testid=session-chat]` + `[data-testid=session-layout]` present, boot loader gone, 3 transcript messages rendered. |
+| B36 | **`useSession` owned no chat mount id, so every host had to re-derive one from the OpenCode pin.** A managed-ACP session never has `project_sessions.opencode_session_id` (never written at create time — `apps/api/src/projects/lib/sessions.ts:1290-1291` — and `openSession`'s ACP branch passes the null through, `apps/api/src/projects/routes/shared.ts:923,932`). `apps/web` derived its mount id from that pin and hard-returned `null`, so a healthy ACP session rendered an empty shell: no composer, no transcript, no loader, while the agent worked server-side. The SDK already owned the correct predicate (`hasSessionRuntimeIdentity`, with a passing test named "managed ACP does not require an OpenCode session id") but exposed no id built from it. | Live `/start` on session `10533f77-00e3-420c-936b-82933e4d1025`: `stage=ready`, `runtime_transport=acp`, `acp_session_id=ses_04ff3eb99ffedjXUSdT2WJBShj`, `opencode_session_id=None`. Host derivation at `apps/web/.../sessions/[sessionId]/page.tsx:664` + hard `return null` at `:793`. | **IMPLEMENTATION COMPLETE 2026-07-30** (worktree `bugbash`, uncommitted) — `react/session-runtime-identity.ts` adds `resolveSessionMountId` (REST → the OpenCode pin; ACP → the durable Zed session id; `null` until the runtime has an identity) and `useSession` returns it as `chatSessionId`. Additive: no export renamed, public-surface snapshot unchanged. Live browser proof on a managed-ACP session: composer textarea exists, `[data-testid=session-chat]` + `[data-testid=session-layout]` present, boot loader gone, 3 transcript messages rendered. |
 | B37 | **A stale cached `/start` made every ACP controller mint a throwaway harness conversation.** The mint is a runtime call, so nothing refreshed `/start`; the cached response kept saying "no harness session yet" for the whole tab. Each later controller (remount, Fast Refresh, tab reopen) therefore called `session/new` again, got the platform's `409 ACP_SESSION_ID_CONFLICT`, adopted the winner and abandoned its own conversation — one leaked harness conversation per mount, plus a user-facing error toast naming an internal invariant. | Recovered-conflict noise reached the global `onError` hook (`apps/web/src/lib/error-handler.tsx:handleApiError` → toast + Sentry) with the message `acp_session_id is immutable after the first successful session/new response`. | **IMPLEMENTATION COMPLETE 2026-07-30** (worktree `bugbash`, uncommitted) — `useAcpSessionRuntime` reports the settled id (`onAcpIdentitySettled`), `useSession` corrects the cached `/start` identity, `nextAcpIdentity` keeps the write-once id out of the controller memo so learning it never tears down a live stream, and `core/http/api-client.ts` classifies a typed `409 ACP_SESSION_ID_CONFLICT` as silent to `onError` (same pattern as the typed `501 feature_not_supported`). Live proof: 6 controller opens on one session → `session/new` **1**, `session/load` **4**, zero orphans, zero conflicts. |
 
 > **Paths above are as of today (pre-Task-4).** After the restructure they move:
@@ -1869,16 +1869,16 @@ Single, self-contained changes. Anything multi-step earns a spec instead.
 
 ---
 | B38 | **A replay-revealed message was appended, so a reload could render the answer above its question.** `applyAcpEnvelope` positioned every message by first appearance in the fold, with no order key. A `session/load` replay that introduced a message the projection had never seen appended it. Folding dev session `6a7b3c29-ce92-4e4f-8f63-2696db54b1b9` from its `session/load` at ordinal 509 rendered `assistant("What's \"das\"...") , user("yo"), assistant, user, assistant, user, assistant, user("das"), user("yo")` — the conversation's LAST answer at the head and `user("das")` with no reply. FIXED: `insertAt`/`withMessage`/`anchored` place a replay-revealed message after the message the replay positioned last; a replay only becomes the order authority once its first USER turn lands. Mirrored in `apps/api/src/shared/compact-transcript.ts`. | DONE (uncommitted, worktree `bugbash`) |
-| B39 | **The token meter re-derived a total that some providers do not use.** `finishPrompt` stored the five raw usage components and discarded `totalTokens`; `apps/web/.../token-progress.tsx` summed them. Across `kortix.acp_session_envelopes`, `totalTokens` is present on 184/184 object usage payloads; 174 satisfy `total = input+output+thought+cachedRead+cachedWrite`, 10 satisfy `total = input+output+cachedRead+cachedWrite` (gpt-5.x bills thinking INSIDE `outputTokens`), 0 satisfy neither. Summing therefore over-reported by `thoughtTokens` on 10 sessions, and `at(-1)` targeting dropped usage whenever a queued prompt appended the next user bubble first (meter read 0, or 19563 vs 19675). FIXED: `reportedTokens` reconciles the components against `totalTokens` with `reasoning` always `thoughtTokens`; `finishPrompt` targets the last ASSISTANT. Corrects 10 of 138 real sessions. | DONE (uncommitted, worktree `bugbash`) |
+| B39 | **The token meter re-derived a total that some providers do not use.** `finishPrompt` stored the five raw usage components and discarded `totalTokens`; `apps/web/.../token-progress.tsx` summed them. Across `zed.acp_session_envelopes`, `totalTokens` is present on 184/184 object usage payloads; 174 satisfy `total = input+output+thought+cachedRead+cachedWrite`, 10 satisfy `total = input+output+cachedRead+cachedWrite` (gpt-5.x bills thinking INSIDE `outputTokens`), 0 satisfy neither. Summing therefore over-reported by `thoughtTokens` on 10 sessions, and `at(-1)` targeting dropped usage whenever a queued prompt appended the next user bubble first (meter read 0, or 19563 vs 19675). FIXED: `reportedTokens` reconciles the components against `totalTokens` with `reasoning` always `thoughtTokens`; `finishPrompt` targets the last ASSISTANT. Corrects 10 of 138 real sessions. | DONE (uncommitted, worktree `bugbash`) |
 | B40 | **`usage_update{size,used}` is projected but still not wired to the meter.** `AcpProjection.contextWindow`/`contextUsed` now carry the harness's own context report (dev `10533f77-…`: `size 200000, used 30470`). Nothing reads them: `TokenProgress` gets `messages`, not the projection, and `getContextLimit` still guesses from the client model catalog or defaults to 200000. 7 of 138 real sessions report a meter of 0 while `contextUsed` knows the answer (`17c78bef-…`: meter 0, `contextUsed` 12502, truth 12516) — usage that arrives before any assistant message exists is lost. Needs `contextWindow`/`contextUsed` plumbed from `useSession` to the composer. | OPEN |
 | B41 | **The two ACP folds disagree on message boundaries for harnesses that emit no `messageId`.** `bun /tmp` harness-agnostic check over 241 sessions: SDK `projection.ts` and API `compact-transcript.ts` agree on role sequence + tool count for 218, disagree for 23, unchanged by B38/B39. All disagreements are ±1 assistant message on Pi-style logs where every chunk is unnamed, so boundaries come from open-message heuristics that differ across an attach. Pre-existing at HEAD (23 there too). | OPEN |
 | B42 | **A prompt that errors renders as an unanswered user bubble with no explanation.** `applyAcpEnvelope`'s response branch clears the pending prompt and drops `envelope.error` unless a `promptDrafts` entry survives. Dev session `ecc2d856-a08d-4cda-98bb-b76a7c892e69`: six `session/prompt` calls all answered `-32603 Internal error: OpenCode service failure`, and the projection is six user messages and zero assistants. `AcpProjection` has no per-turn error surface for a renderer to show. | OPEN |
-| B43 | **Expose the emoji project icon on the SDK's typed project contract.** Tasks 1–3 of the project-emoji-icons plan added `icon` to the API request/response bodies (`packages/api-contract/src/index.ts:120`, `icon: z.string().nullable()`); the SDK declares its own independent types and had no `icon` field anywhere. | `KortixProject`, `ProvisionProjectInput`, `CreateProjectRepoInput` (`packages/sdk/src/core/rest/projects-client/projects.ts`) and `LinkRepositoryInput` (`packages/sdk/src/core/rest/projects-client/github.ts`) carried no `icon` member; plan `docs/superpowers/plans/2026-07-31-project-emoji-icons.md`; spec `docs/superpowers/specs/2026-07-31-project-emoji-icons-design.md`; task brief `.superpowers/sdd/2026-07-31-project-emoji-icons/task-4-brief.md`. | **DONE 2026-07-31** — session `sdk-project-emoji-icon`; implementation `8f8db0d4f1`; full SDK gates green (see session log) |
+| B43 | **Expose the emoji project icon on the SDK's typed project contract.** Tasks 1–3 of the project-emoji-icons plan added `icon` to the API request/response bodies (`packages/api-contract/src/index.ts:120`, `icon: z.string().nullable()`); the SDK declares its own independent types and had no `icon` field anywhere. | `ZedProject`, `ProvisionProjectInput`, `CreateProjectRepoInput` (`packages/sdk/src/core/rest/projects-client/projects.ts`) and `LinkRepositoryInput` (`packages/sdk/src/core/rest/projects-client/github.ts`) carried no `icon` member; plan `docs/superpowers/plans/2026-07-31-project-emoji-icons.md`; spec `docs/superpowers/specs/2026-07-31-project-emoji-icons-design.md`; task brief `.superpowers/sdd/2026-07-31-project-emoji-icons/task-4-brief.md`. | **DONE 2026-07-31** — session `sdk-project-emoji-icon`; implementation `8f8db0d4f1`; full SDK gates green (see session log) |
 | B44 | **`ProjectInput` — the `updateProject` body — carries no `icon`, so a project's emoji is write-once.** B43 added `icon` to the CREATE inputs and to the response type only. `updateProject(projectId, input: Partial<ProjectInput>)` is the sole SDK path to `PATCH /v1/projects/:projectId`, and its input type declares `account_id`/`name`/`repo_url`/`default_branch`/`manifest_path` — so a host cannot change or remove an icon without an `as any` cast. The API's tri-state semantics need `string \| null`, not `string`: an absent key leaves the icon alone, an explicit `null` clears it. | `ProjectInput` (`packages/sdk/src/core/rest/projects-client/projects.ts:163`) has no `icon` member; `updateProject` at `:427`; API handler `apps/api/src/projects/routes/r5.ts` (tri-state `icon` landed in `c76c6f962`). | **DONE 2026-07-31** — session `sdk-project-edit-icon`; implementation `cc5c36dbc4`; typecheck exit 0, full suite 1365 pass / 0 fail across 116 files, packed-install smoke pass |
-| B45 | **Expose the second, named-glyph project icon (`icon_glyph`) on the SDK's typed project contract.** Tasks 1–5 of the project-glyph-icons plan added a server-validated `icon_glyph: {name,color} \| null` alongside the existing emoji `icon` — across the API contract, all three create paths, and `PATCH /projects/:id`'s tri-state semantics (the glyph wins and clears `icon` if both are sent). B43/B44 gave the SDK its own independent `icon` field; it has no `icon_glyph` anywhere. | `KortixProject`, `ProjectInput`, `ProvisionProjectInput`, `CreateProjectRepoInput` (`packages/sdk/src/core/rest/projects-client/projects.ts`) and `LinkRepositoryInput` (`packages/sdk/src/core/rest/projects-client/github.ts`) carry no `icon_glyph` member; plan `docs/superpowers/plans/2026-08-01-project-glyph-icons.md`; spec `docs/superpowers/specs/2026-08-01-project-glyph-icons-design.md`; task brief `.superpowers/sdd/2026-08-01-project-glyph-icons/task-6-brief.md`. | **DONE 2026-08-01** — session `sdk-project-glyph-icon`; implementation `3ce3e5f1f`; typecheck exit 0, full suite 1374 pass / 0 fail across 116 files, packed-install smoke pass, both brief mutations killed via typecheck (see session log) |
-| B46 | **Expose session agent-config freshness and reload.** A session's agent behaviour is compiled from git once, at provision, and frozen into the sandbox env — so merging an agent change never reaches an open session. The API grew `GET /v1/projects/:id/sessions/:sid/config` and `POST .../reload` (`apps/api/src/projects/routes/r7.ts:2170,2223`) and the CLI grew `kortix sessions reload` (`apps/cli/src/commands/sessions.ts:213`), but the SDK had neither, so `apps/web` could not offer it at all — and `apps/web/src/sdk-boundary-baseline.json` forbids reaching past `@kortix/sdk`. | `grep -rn "sessions/.*/reload" packages/sdk/src` → nothing but the unrelated sandbox-runtime `/kortix/services/system/reload`. Additive: `getProjectSessionConfigState`, `reloadProjectSessionConfig`, `SessionConfigState`, `SessionReloadResult`, plus `session().configState()` / `session().reloadConfig()` on the facade. | **DONE 2026-08-03** — session `stale-session-ui`; typecheck exit 0; full suite 1416 pass / 1 fail across 117 files (the single failure, `fetchCostExportCsv`, is PRE-EXISTING — it passes in isolation and fails identically at 1410/1 on a clean tree, a cross-file `configureKortix` token leak); packed-install smoke pass; surface snapshots re-recorded and reviewed as **purely additive, 0 removals** |
-| B47 | **A reload reported success while the agent kept running the old prompt.** `SessionReloadResult` exposed `applied` (the compiled config was pushed) but nothing about whether the agent files opencode actually READS were updated — and those came apart in production. Verified on dev: marker present in `~/.config/kortix-opencode.json`, absent from opencode's `/config` and `/agent`, because `OPENCODE_CONFIG_DIR` points into the session's working tree and its `.md` files win. | Additive: `config_dir_synced?: boolean | null` and `config_dir_reason?: string` on `SessionReloadResult`. Tri-state on purpose — `false` is a deliberate refusal (the session edited its own agent files), `null` is an older daemon that could not say. | **DONE 2026-08-03** — session `stale-session-ui`; typecheck exit 0; full suite 1419 pass / 1 fail across 117 files (the failure, `fetchCostExportCsv`, is PRE-EXISTING — passes in isolation, fails identically on a clean tree); packed-install smoke pass; type snapshot re-recorded and reviewed as **purely additive, 0 removals** |
-| B48 | **Canonical feature-flag naming + one gating primitive.** The platform renamed the system to "Feature flags" (`FeatureFlag*` in `@kortix/api-contract`, `FeatureFlagStabilitySchema` = experimental\|beta\|stable, gated routes returning `403 {code:'feature_disabled', feature}`, canonical `PATCH /projects/:id/features`). The SDK still exposed only `Experimental*` names, had no runtime key list for cross-package drift tests, no typed narrowing for the 403, and no shared React gate hook — so every host hand-rolled `project?.experimental?.<key> === true`. | Additive only: `FeatureFlagKey`, `FeatureFlagView` (stability widened to `'experimental'\|'beta'\|'stable'`), `FEATURE_FLAG_KEYS`, `updateFeatureFlag` (canonical `/features` route), `isFeatureDisabledError`, `FeatureDisabledError`, `useFeatureFlag`, and `project(id).updateFeatureFlag` on the facade. Every `Experimental*` name kept as a `@deprecated` alias; `updateExperimentalFeature` keeps its `/experimental` wire path for older deployed APIs. | **DONE 2026-08-08** — session `feature-flags-web`; TDD RED first on all four (`Export named 'FEATURE_FLAG_KEYS' not found`, `Export named 'isFeatureDisabledError' not found`, `Cannot find module './use-feature-flag'`); GREEN at `1777 pass, 0 fail, 6965 expect()` across `139` files; `typecheck` exit 0 (package + examples); `smoke:install` packed + installed + imported OK. Both surface snapshots re-recorded and reviewed: **11 + 20 insertions, 0 removals — purely additive** |
+| B45 | **Expose the second, named-glyph project icon (`icon_glyph`) on the SDK's typed project contract.** Tasks 1–5 of the project-glyph-icons plan added a server-validated `icon_glyph: {name,color} \| null` alongside the existing emoji `icon` — across the API contract, all three create paths, and `PATCH /projects/:id`'s tri-state semantics (the glyph wins and clears `icon` if both are sent). B43/B44 gave the SDK its own independent `icon` field; it has no `icon_glyph` anywhere. | `ZedProject`, `ProjectInput`, `ProvisionProjectInput`, `CreateProjectRepoInput` (`packages/sdk/src/core/rest/projects-client/projects.ts`) and `LinkRepositoryInput` (`packages/sdk/src/core/rest/projects-client/github.ts`) carry no `icon_glyph` member; plan `docs/superpowers/plans/2026-08-01-project-glyph-icons.md`; spec `docs/superpowers/specs/2026-08-01-project-glyph-icons-design.md`; task brief `.superpowers/sdd/2026-08-01-project-glyph-icons/task-6-brief.md`. | **DONE 2026-08-01** — session `sdk-project-glyph-icon`; implementation `3ce3e5f1f`; typecheck exit 0, full suite 1374 pass / 0 fail across 116 files, packed-install smoke pass, both brief mutations killed via typecheck (see session log) |
+| B46 | **Expose session agent-config freshness and reload.** A session's agent behaviour is compiled from git once, at provision, and frozen into the sandbox env — so merging an agent change never reaches an open session. The API grew `GET /v1/projects/:id/sessions/:sid/config` and `POST .../reload` (`apps/api/src/projects/routes/r7.ts:2170,2223`) and the CLI grew `zed sessions reload` (`apps/cli/src/commands/sessions.ts:213`), but the SDK had neither, so `apps/web` could not offer it at all — and `apps/web/src/sdk-boundary-baseline.json` forbids reaching past `@zed/sdk`. | `grep -rn "sessions/.*/reload" packages/sdk/src` → nothing but the unrelated sandbox-runtime `/zed/services/system/reload`. Additive: `getProjectSessionConfigState`, `reloadProjectSessionConfig`, `SessionConfigState`, `SessionReloadResult`, plus `session().configState()` / `session().reloadConfig()` on the facade. | **DONE 2026-08-03** — session `stale-session-ui`; typecheck exit 0; full suite 1416 pass / 1 fail across 117 files (the single failure, `fetchCostExportCsv`, is PRE-EXISTING — it passes in isolation and fails identically at 1410/1 on a clean tree, a cross-file `configureZed` token leak); packed-install smoke pass; surface snapshots re-recorded and reviewed as **purely additive, 0 removals** |
+| B47 | **A reload reported success while the agent kept running the old prompt.** `SessionReloadResult` exposed `applied` (the compiled config was pushed) but nothing about whether the agent files opencode actually READS were updated — and those came apart in production. Verified on dev: marker present in `~/.config/zed-opencode.json`, absent from opencode's `/config` and `/agent`, because `OPENCODE_CONFIG_DIR` points into the session's working tree and its `.md` files win. | Additive: `config_dir_synced?: boolean | null` and `config_dir_reason?: string` on `SessionReloadResult`. Tri-state on purpose — `false` is a deliberate refusal (the session edited its own agent files), `null` is an older daemon that could not say. | **DONE 2026-08-03** — session `stale-session-ui`; typecheck exit 0; full suite 1419 pass / 1 fail across 117 files (the failure, `fetchCostExportCsv`, is PRE-EXISTING — passes in isolation, fails identically on a clean tree); packed-install smoke pass; type snapshot re-recorded and reviewed as **purely additive, 0 removals** |
+| B48 | **Canonical feature-flag naming + one gating primitive.** The platform renamed the system to "Feature flags" (`FeatureFlag*` in `@zed/api-contract`, `FeatureFlagStabilitySchema` = experimental\|beta\|stable, gated routes returning `403 {code:'feature_disabled', feature}`, canonical `PATCH /projects/:id/features`). The SDK still exposed only `Experimental*` names, had no runtime key list for cross-package drift tests, no typed narrowing for the 403, and no shared React gate hook — so every host hand-rolled `project?.experimental?.<key> === true`. | Additive only: `FeatureFlagKey`, `FeatureFlagView` (stability widened to `'experimental'\|'beta'\|'stable'`), `FEATURE_FLAG_KEYS`, `updateFeatureFlag` (canonical `/features` route), `isFeatureDisabledError`, `FeatureDisabledError`, `useFeatureFlag`, and `project(id).updateFeatureFlag` on the facade. Every `Experimental*` name kept as a `@deprecated` alias; `updateExperimentalFeature` keeps its `/experimental` wire path for older deployed APIs. | **DONE 2026-08-08** — session `feature-flags-web`; TDD RED first on all four (`Export named 'FEATURE_FLAG_KEYS' not found`, `Export named 'isFeatureDisabledError' not found`, `Cannot find module './use-feature-flag'`); GREEN at `1777 pass, 0 fail, 6965 expect()` across `139` files; `typecheck` exit 0 (package + examples); `smoke:install` packed + installed + imported OK. Both surface snapshots re-recorded and reviewed: **11 + 20 insertions, 0 removals — purely additive** |
 
 ## DISCOVERED THIS SESSION — append freely
 
@@ -1891,21 +1891,21 @@ is scope creep; losing them is worse. Land them here, then tell the user.
 | 2026-07-30 | `bugbash-model-resilience` | **Any ACP send failure replaces the whole chat surface with the page-level "OpenCode failed to load" card.** `executeSend`'s catch patches `error` onto the controller snapshot, `useSession` republishes it as `runtimeError`, and `apps/web`'s session page renders `InlineSessionError` + Restart INSTEAD of `SessionLayout`/`SessionChat` for it. Model-not-found is now recovered before it can reach that path, but a gateway 500 or a provider error on a send still nukes a healthy session's transcript and composer. The send failure is ALREADY surfaced inline as `sendError`; the controller should not also mark the runtime dead | `packages/sdk/src/core/acp/session-controller.ts:575-589` (patch `error`), `packages/sdk/src/react/use-session.ts:884` (`runtimeSessionError`), `apps/web/src/app/(app)/projects/[id]/sessions/[sessionId]/page.tsx:775-800` (full-page card) |
 | 2026-07-30 | `bugbash-model-picker`   | **An explicit model pick has nowhere to persist on a composer with no `sessionId` and no loaded agent** (project home). `setModel` writes the per-agent slot only `if (currentAgent)` and the per-session slot only `if (scopedSessionModelKey)`; with neither it writes `visibility` + `recent` only, both of which lose to `serverDefaultKey` in the read chain — so the picker trigger never moves. Verified in a real browser: after clicking "Claude Sonnet 4.6" on `/projects/<id>`, `localStorage['opencode-model-store-v1']` held only `user` + `recent`, no `selectedModel`/`sessionModel`, and the trigger stayed on the platform default. The read chain's own comment (`:470`) claims selection "must NOT depend on a loaded agent", which the write side does not honour | `packages/sdk/src/react/use-opencode-local.ts:512-545` (write), `:443-459` (read) |
 | 2026-07-10 | `01AzJBSa`               | The original plan's "bump to `0.3.0`" is **impossible** — `version` is inert and `latest` on npm is `0.9.100`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | `scripts/stage-npm-publish.mjs:32`                                                                                |
-| 2026-07-10 | `01AzJBSa`               | `KortixProject` declared **twice**, as two different interfaces                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `core/rest/projects-client/projects.ts:31`, `core/runtime/kortix-master.ts:577`                                   |
+| 2026-07-10 | `01AzJBSa`               | `ZedProject` declared **twice**, as two different interfaces                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `core/rest/projects-client/projects.ts:31`, `core/runtime/zed-master.ts:577`                                   |
 | 2026-07-10 | `01AzJBSa`               | Bare `process.env` read in the isomorphic core → `ReferenceError` in a `<script>` bundle                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `platform/platform-client/shared.ts:29` — fixed in Task 7                                                         |
 | 2026-07-10 | `01AzJBSa`               | The tripwire walks **imports**; it cannot see globals (`process`/`window`/`document`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `src/index.isomorphic.test.ts` — fixed in Task 7                                                                  |
 | 2026-07-10 | `01AzJBSa`               | Nothing installs and imports the tarball. `npm pack --dry-run` lists contents only                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | `.github/workflows/package-tests.yml` — Task 2                                                                    |
-| 2026-07-10 | `ab099b6a`               | Plan's smoke script can't install: staged `workspace:*` dep pins `@kortix/llm-catalog@0.0.0-smoke`, absent from npm. Fixed per Jay: pack + install the sibling tarball alongside                                                                                                                                                                                                                                                                                                                                                                                                                      | `packages/sdk/scripts/smoke-install.mjs` — Task 2                                                                 |
-| 2026-07-10 | `ab099b6a`               | **`createServerKortix` does not exist.** Plan (`:253,991`) and spec (`:158`) assert it from `./server`; real exports are `createScopedKortix`, `runWithKortix`, `getScopedConfig` (`src/server.ts`). Also affects Task 6's Lumen snippet                                                                                                                                                                                                                                                                                                                                                              | `docs/superpowers/{plans,specs}/2026-07-10-*` — Task 2/6                                                          |
+| 2026-07-10 | `ab099b6a`               | Plan's smoke script can't install: staged `workspace:*` dep pins `@zed/llm-catalog@0.0.0-smoke`, absent from npm. Fixed per Jay: pack + install the sibling tarball alongside                                                                                                                                                                                                                                                                                                                                                                                                                      | `packages/sdk/scripts/smoke-install.mjs` — Task 2                                                                 |
+| 2026-07-10 | `ab099b6a`               | **`createServerZed` does not exist.** Plan (`:253,991`) and spec (`:158`) assert it from `./server`; real exports are `createScopedZed`, `runWithZed`, `getScopedConfig` (`src/server.ts`). Also affects Task 6's Lumen snippet                                                                                                                                                                                                                                                                                                                                                              | `docs/superpowers/{plans,specs}/2026-07-10-*` — Task 2/6                                                          |
 | 2026-07-10 | `ab099b6a`               | Docs prose says 25 subpaths / 21 legacy; reality is 23 export keys / 20 legacy. Plan's enumerated key lists (Task 5 Step 9) match reality exactly                                                                                                                                                                                                                                                                                                                                                                                                                                                     | `packages/sdk/package.json`                                                                                       |
-| 2026-07-10 | `ab099b6a`               | Plan's `createCliToken` facade name is fictional; real facade method is `kortix.project(id).tokens.create(input?)` (→ `createProjectCliToken`). `gateway.sessions(days?)` was correct                                                                                                                                                                                                                                                                                                                                                                                                                 | `packages/sdk/src/core/client/kortix.ts:303` — found in Task 6                                                    |
+| 2026-07-10 | `ab099b6a`               | Plan's `createCliToken` facade name is fictional; real facade method is `zed.project(id).tokens.create(input?)` (→ `createProjectCliToken`). `gateway.sessions(days?)` was correct                                                                                                                                                                                                                                                                                                                                                                                                                 | `packages/sdk/src/core/client/zed.ts:303` — found in Task 6                                                    |
 | 2026-07-10 | `ab099b6a`               | Demo e2e harness memoizes builds on `.next/BUILD_ID` — e2e runs silently exercise STALE builds after source changes; must clear `.next` (or fix the harness) for trustworthy runs                                                                                                                                                                                                                                                                                                                                                                                                                     | `apps/whitelabel-demo/tests/e2e/harness.ts` (`ensureBuilt()`)                                                     |
 | 2026-07-10 | `ab099b6a`               | Original preview-token malformed-200 guard was itself broken: `upstreamRes.status \|\| 502` returns 200 on that path, so the "error" response shipped as HTTP 200. Fixed by the Task 6 rewrite (now a real 502, e2e-covered)                                                                                                                                                                                                                                                                                                                                                                          | `apps/whitelabel-demo/src/app/api/preview-token/route.ts` (pre-`19e500e50`)                                       |
 | 2026-07-10 | `ab099b6a`               | **CRITICAL (final review): the CDN claim is unfulfillable by the release pipeline.** Publish runs tsc only (`publish-npm-package.sh:36`; `prepublishOnly` tsc-only) so tsup bundles never land in the tarball; `stage-npm-publish.mjs:37` promotes only `type/main/types/exports/files/bin`, so `browser`/`unpkg`/`jsdelivr` stay nested in `publishConfig` where npm/unpkg/jsDelivr never look; nothing validates them at release. Plan flaw (plan `:1253-1278` said "pass through untouched"), faithfully implemented. Decision with Jay: wire the pipeline vs walk back the README/CHANGELOG claim | `scripts/{publish-npm-package.sh,stage-npm-publish.mjs}`, `packages/sdk/{README,CHANGELOG}.md`                    |
-| 2026-07-10 | `ab099b6a`               | `bundle.test.ts` never executes in CI (no workflow runs `build:bundles` → both tests skip forever) and NO workflow runs `pnpm --filter @kortix/sdk typecheck` at all (examples' "typechecked in CI" claim is local-only). Two cheap CI steps close both                                                                                                                                                                                                                                                                                                                                               | `.github/workflows/package-tests.yml`                                                                             |
+| 2026-07-10 | `ab099b6a`               | `bundle.test.ts` never executes in CI (no workflow runs `build:bundles` → both tests skip forever) and NO workflow runs `pnpm --filter @zed/sdk typecheck` at all (examples' "typechecked in CI" claim is local-only). Two cheap CI steps close both                                                                                                                                                                                                                                                                                                                                               | `.github/workflows/package-tests.yml`                                                                             |
 | 2026-07-10 | `4003a41b`               | GETTING-STARTED step 3 was un-followable: the web "API keys" tab's **Create button only rendered in the empty state**, and the connector auto-mints "Connector Session" tokens, so real accounts never see it — no way to mint a PAT from the UI. Fixed (uncommitted, this worktree): `CreateApiKeyAction` header button + regression test; doc wording updated ("CLI tokens tab" → "API keys")                                                                                                                                                                                                         | `apps/web/src/features/accounts/settings/cli-tokens-tab.tsx`, `packages/sdk/GETTING-STARTED.md`                   |
-| 2026-07-10 | `4003a41b`               | **`ensureReady()` is single-shot** — one `/start` with `wait_ms=30_000`, then throws `RUNTIME_UNAVAILABLE`; a cold provision (observed: minutes) makes EVERY ensureReady example (02/04/06/07) fail — callers must hand-roll a retry loop (examples 09/step4 in this worktree do). Live-observed worse: the server returned near-instantly ~99× in 5min (long-poll not held), and one session went provisioning→stopped and then **disappeared from `projects.sessions()`**. SDK DX gap: `ensureReady({ deadlineMs })` or documented retry                                                            | `packages/sdk/src/core/client/kortix.ts:674` (verified live against local stack)                                  |
-| 2026-07-10 | `4003a41b`               | Local-stack default-agent sends fail: gateway forwards opencode's `max_tokens` to a model demanding `max_completion_tokens` (OpenAI `unsupported_parameter`, HTTP 400) → default `send()` turns error with no assistant reply. Workaround verified live: per-send model override `{ providerID: 'kortix', modelID: 'claude-sonnet-4.6' }` → full e2e pass. Platform fix belongs in the gateway param translation or default model config                                                                                                                                                              | `/v1/llm-gateway/v1/llm/chat/completions` (via tunnel), `apps/api/src/router/routes/proxy/helpers.ts:252`         |
+| 2026-07-10 | `4003a41b`               | **`ensureReady()` is single-shot** — one `/start` with `wait_ms=30_000`, then throws `RUNTIME_UNAVAILABLE`; a cold provision (observed: minutes) makes EVERY ensureReady example (02/04/06/07) fail — callers must hand-roll a retry loop (examples 09/step4 in this worktree do). Live-observed worse: the server returned near-instantly ~99× in 5min (long-poll not held), and one session went provisioning→stopped and then **disappeared from `projects.sessions()`**. SDK DX gap: `ensureReady({ deadlineMs })` or documented retry                                                            | `packages/sdk/src/core/client/zed.ts:674` (verified live against local stack)                                  |
+| 2026-07-10 | `4003a41b`               | Local-stack default-agent sends fail: gateway forwards opencode's `max_tokens` to a model demanding `max_completion_tokens` (OpenAI `unsupported_parameter`, HTTP 400) → default `send()` turns error with no assistant reply. Workaround verified live: per-send model override `{ providerID: 'zed', modelID: 'claude-sonnet-4.6' }` → full e2e pass. Platform fix belongs in the gateway param translation or default model config                                                                                                                                                              | `/v1/llm-gateway/v1/llm/chat/completions` (via tunnel), `apps/api/src/router/routes/proxy/helpers.ts:252`         |
 | 2026-07-11 | `4003a41b`               | `session.transcript()` on a session whose sandbox was re-provisioned returns `{available:false, reason:"…ZlibError fetching …/session/<old opencode id>/message…"}` — graceful, but the compact transcript is unreadable after a sandbox swap (stale opencode session id?). Observed live on the local stack                                                                                                                                                                                                                                                                                          | `packages/sdk/src/core/rest/projects-client/sessions.ts` (`getSessionTranscript`)                                 |
 | 2026-07-11 | `4003a41b`               | `sandboxShares.list(sandboxId)` (`GET /p/share?sandbox_id=…`) returns **502** on the local stack for a live, ready sandbox — session `publicShares` create/list/revoke on the same sandbox works fine. SDK surfaces it correctly as typed ApiError; route itself looks broken/misrouted locally                                                                                                                                                                                                                                                                                                       | `packages/sdk/src/core/rest/projects-client/sandbox-shares.ts:33`                                                 |
 | 2026-07-21 | `profile-owned-bindings` | The existing computer-connector integration's unknown-slug assertion depends on its arbitrary local project's Git manifest being readable. When GitHub returns 422, `getConnectorPoliciesFromManifest` returns `{ policies: [] }` before proving the slug exists, so the test reports **7 pass / 1 fail** instead of the earlier **8 / 0**. This branch does not touch that path.                                                                                                                                                                                                                     | `apps/api/src/connectors/manifest-crud.ts:393`, `apps/api/src/__tests__/integration-computer-connector.test.ts:157` |
@@ -1916,8 +1916,8 @@ is scope creep; losing them is worse. Land them here, then tell the user.
 
 | Question                                    | Owner | Status                                                                                                                                                              |
 | ------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Second `KortixProject` name                 | Jay   | **RESOLVED** — platform keeps `KortixProject`; the kortix-master daemon's becomes `KortixMasterProject`, aliased                                                    |
-| Rename `ApiError` → `KortixApiError`?       | Jay   | **RESOLVED — no.** Package name already namespaces the import; `.name` is duck-typed (B4); `instanceof` is the branch mechanism. Prefix only for genuine ambiguity. |
+| Second `ZedProject` name                 | Jay   | **RESOLVED** — platform keeps `ZedProject`; the zed-master daemon's becomes `ZedMasterProject`, aliased                                                    |
+| Rename `ApiError` → `ZedApiError`?       | Jay   | **RESOLVED — no.** Package name already namespaces the import; `.name` is duck-typed (B4); `instanceof` is the branch mechanism. Prefix only for genuine ambiguity. |
 | "Shift the cortex tab to SDK" — what is it? | Jay   | **OPEN.** May re-order everything if it names work Marko is waiting on.                                                                                             |
 
 ---
@@ -1926,7 +1926,7 @@ is scope creep; losing them is worse. Land them here, then tell the user.
 
 - Baseline: **1046 tests pass, 0 fail, 65 files.** `typecheck` exits 0. Fewer tests
   in your run means you filtered by accident.
-- `@kortix/sdk` is **live on npm**, `latest` = `0.9.100`. **Never edit `version`** —
+- `@zed/sdk` is **live on npm**, `latest` = `0.9.100`. **Never edit `version`** —
   `scripts/stage-npm-publish.mjs:32` overwrites it from the root `VERSION`.
 - `bun test <dir with no test files>` exits **0**. `Ran 0 tests` is not a green run.
 - Streaming is `fetch` + `response.body.pipeThrough(TextDecoderStream)`, **not**
@@ -1952,16 +1952,16 @@ Brainstormed → spec → plan → execution prompt → this tracker. **No sourc
 - `packages/sdk/PROGRESS.md` (this file)
 
 **Found** — see _Discovered this session_. The load-bearing ones: `0.3.0` was
-impossible; `KortixProject` was declared twice; nothing tests an install; the
+impossible; `ZedProject` was declared twice; nothing tests an install; the
 tripwire can't see globals; the SDK can't stream on RN and `apps/mobile` quietly
 works around it with 655 parallel lines.
 
 **Verified**
 
 ```
-pnpm --filter @kortix/sdk typecheck  → exit 0
-pnpm --filter @kortix/sdk test       → 1046 pass, 0 fail, 4381 assertions, 65 files
-npm view @kortix/sdk version         → 0.9.100
+pnpm --filter @zed/sdk typecheck  → exit 0
+pnpm --filter @zed/sdk test       → 1046 pass, 0 fail, 4381 assertions, 65 files
+npm view @zed/sdk version         → 0.9.100
 ```
 
 **Unverified:** nothing — no source changed.
@@ -1984,12 +1984,12 @@ assertion (`package-exports.test.ts:30`) that asserts nothing.
 first-ever run failed in Step 2:
 
 ```
-npm error notarget No matching version found for @kortix/llm-catalog@0.0.0-smoke
+npm error notarget No matching version found for @zed/llm-catalog@0.0.0-smoke
 ```
 
 Root cause: `stage-npm-publish.mjs` rewrites `workspace:*` deps to the lockstep
 version. Under `VERSION=0.0.0-smoke` the tarball depends on
-`@kortix/llm-catalog@0.0.0-smoke`, which is not on npm, so `npm install
+`@zed/llm-catalog@0.0.0-smoke`, which is not on npm, so `npm install
 <tarball>` cannot resolve. This is the plan's known risk #2 realised — a design
 gap in the smoke script (AGENTS.md documents the pinning behaviour), not a bug
 in the published artifact. Real releases co-publish both packages, so prod
@@ -2002,26 +2002,26 @@ keys / 20 legacy. The plan's enumerated key lists (Task 5 Step 9) match reality
 exactly, so the plan's literal instructions are unaffected.
 
 **Task 2 resumed and BLOCKED a second time.** Jay approved packing the
-workspace sibling (`@kortix/llm-catalog` staged at the same synthetic version,
+workspace sibling (`@zed/llm-catalog` staged at the same synthetic version,
 both tarballs installed together — hermetic, mirrors the lockstep release);
 that fix works and the ETARGET failure is gone. The smoke then failed at the
 final ESM import with a NEW finding:
 
 ```
-SyntaxError: The requested module '@kortix/sdk/server' does not provide an
-export named 'createServerKortix'
+SyntaxError: The requested module '@zed/sdk/server' does not provide an
+export named 'createServerZed'
 ```
 
-`createServerKortix` exists nowhere in the SDK — it is a plan/spec authoring
+`createServerZed` exists nowhere in the SDK — it is a plan/spec authoring
 error (plan `:253,991`; spec `:158`). The real `./server` exports are
-`createScopedKortix` (`src/server.ts:123`), `runWithKortix`, `getScopedConfig`.
+`createScopedZed` (`src/server.ts:123`), `runWithZed`, `getScopedConfig`.
 Task 6's Lumen snippet uses the same phantom name. Decision with Jay: assert
-the real name and correct the docs, or add `createServerKortix` as new API.
+the real name and correct the docs, or add `createServerZed` as new API.
 Tautology in `package-exports.test.ts` removed per Jay (`4e39bb11e`).
 
 **Continuation of session `ab099b6a` — the full chain.** Jay resolved both
-Task 2 stops (pack the `@kortix/llm-catalog` sibling into the smoke install;
-assert the real `createScopedKortix`, docs corrected in `2a7a3e56c`). From
+Task 2 stops (pack the `@zed/llm-catalog` sibling into the smoke install;
+assert the real `createScopedZed`, docs corrected in `2a7a3e56c`). From
 there the chain ran task-by-task with a fresh implementer + independent
 reviewer per task, fixes re-reviewed:
 
@@ -2035,19 +2035,19 @@ reviewer per task, fixes re-reviewed:
   bug by rewriting `core/files/client.test.ts` mocking (zero `expect()` lines
   changed — verified twice). Suite 1050/67.
 - **Task 5 DONE** `b5e588dbc`+`aafbdf91b` (orchestrator-implemented) —
-  `KortixMasterProject` rename with aliases; canonical root barrel (26→518
+  `ZedMasterProject` rename with aliases; canonical root barrel (26→518
   root names); 20 deprecated shims + 5 ./internal/*; both maps rewritten to
   28 keys; snapshot growth (+523/-0) accepted by Jay at hard stop #3. Suite
   1058/68; hosts compile untouched.
 - **Task 6 DONE** `db30c6df3`+`19e500e50` — demo on root entry;
-  `createScopedKortix` replaces raw transport (real names: `tokens.create`,
+  `createScopedZed` replaces raw transport (real names: `tokens.create`,
   `gateway.sessions`); fix restored the malformed-200 guard as a true 502
   with a RED-watched e2e (44/3/0 on a fresh build).
 - **Task 7 DONE** `189428df7`+`a485ad401` — bare-globals tripwire (guard
   window per-global, comment-safe after probe-RED fix); `safeEnv` →
   `core/http/env.ts`; `shared.ts:29` fixed. Suite 1059/68.
-- **Task 8 DONE** `c7bca7a7e` — tsup bundles (`kortix.esm.min.js`,
-  `kortix.global.js` IIFE via `outExtension` — tsup would otherwise emit
+- **Task 8 DONE** `c7bca7a7e` — tsup bundles (`zed.esm.min.js`,
+  `zed.global.js` IIFE via `outExtension` — tsup would otherwise emit
   `.global.global.js`); zero `node:` specifiers in either bundle. Built
   suite 1061/69.
 - **Task 9 steps 1–5 DONE** `549d597a0` — `07-vanilla.ts` (render loop
@@ -2055,7 +2055,7 @@ reviewer per task, fixes re-reviewed:
   tripwire (+B6: the regex is blind to side-effect imports). Suite 1062/69
   built. **Step 6 (browser + live stack, D2a/D3) awaits Jay — hard stop #4.**
 - **Task 10 DONE** `6e9cc9f5a` — README/CHANGELOG/API-MAP; count corrected
-  to 20; `createScopedKortix` documented; RN-streaming not claimed.
+  to 20; `createScopedZed` documented; RN-streaming not claimed.
 
 **Final whole-branch review: "With fixes."** Purely-additive surface
 re-verified independently. One CRITICAL: the README/CHANGELOG CDN claim is
@@ -2073,11 +2073,11 @@ Task 9 Step 6, needs Jay's live stack; the release pipeline path for the
 bundles (the CRITICAL above); CI runs of the new workflow steps on Actions.
 
 **Shippable to production: NOT YET** — pending Jay: CDN-claim decision,
-README domain decision (`api.kortix.ai` vs `.com`), CI-gate fixes, and the
+README domain decision (`api.zed.ai` vs `.com`), CI-gate fixes, and the
 Task 9 Step 6 browser gate.
 
 **Fix wave (same session, after Jay's decisions).** Jay chose: wire the CDN
-pipeline, `api.kortix.com`, both CI gates now.
+pipeline, `api.zed.com`, both CI gates now.
 
 - `33f45e6f8` — `stage-npm-publish.mjs` promotes `browser`/`unpkg`/`jsdelivr`
   if present and hard-fails (`process.exit(1)`) when a promoted path is
@@ -2090,7 +2090,7 @@ pipeline, `api.kortix.com`, both CI gates now.
   simulation: both bundles in the tarball, top-level CDN fields staged,
   manifests restored byte-identical. Sibling packages
   provably unaffected (promote-if-present; pinned by test).
-- `695908713` — README standardized on `api.kortix.com` (Jay's call).
+- `695908713` — README standardized on `api.zed.com` (Jay's call).
 - `e48a48489` — `package-tests.yml`: SDK typecheck step + `build:bundles`
   before the test run, so `bundle.test.ts` executes in CI (1062/0/69).
 
@@ -2101,7 +2101,7 @@ idempotent); redundant rebuild via prepublishOnly inside the scripted release.
 
 **Remaining before the branch is DONE-done: Task 9 Step 6 only** (Jay: real
 browser + live stack + real PAT/sandbox → D2a streaming through the IIFE
-global, D3 `instanceof Kortix.ApiError` under the bundle).
+global, D3 `instanceof Zed.ApiError` under the bundle).
 
 **Shippable to production: NOT YET** — solely on the unverified D2a/D3
 browser gate. Everything else is implemented, reviewed, and green.
@@ -2111,13 +2111,13 @@ browser gate. Everything else is implemented, reviewed, and green.
 Jay-directed addition, outside the Now chain: `examples/step5-change-model.ts`
 — change a project's default model with a compile-time-safe `ManagedModelId`
 literal union (pinned in-file, startup-verified against `MANAGED_MODELS` from
-`@kortix/llm-catalog` — first example to import the catalog; resolves fine
+`@zed/llm-catalog` — first example to import the catalog; resolves fine
 under `examples/tsconfig.json`). Defaults to Jay's project
 `4cfe8027-5260-44d7-871b-ccd36368f63f`. Verified: typecheck exit 0 (bad model
 id probe-confirmed RED → TS2345, then restored green); full flow ran live
 against localhost:8008 (set → re-read ✓), then the project's prior default
 (`openai/gpt-5.5`) was restored. Suite 1062 pass / 0 fail / 69 files. Note:
-bun auto-loads `packages/sdk/.env.local` (holds `KORTIX_API_KEY`) — that is
+bun auto-loads `packages/sdk/.env.local` (holds `ZED_API_KEY`) — that is
 how examples authenticate when run from the package dir.
 
 ---
@@ -2131,11 +2131,11 @@ Fresh end-to-end review of the whole branch (41 commits vs `main`, base
 `docs/superpowers/reviews/2026-07-12-sdk-production-readiness.md`.
 
 **D2a — PASS.** `examples/08-cdn.html` served from `:8099`, loaded in real
-Chromium (Playwright) via `<script src=…kortix.global.js>` against `pnpm dev` +
+Chromium (Playwright) via `<script src=…zed.global.js>` against `pnpm dev` +
 fresh session `4f2953bc…` (project t1, real PAT, real sandbox). Page output:
 `sent — streaming…` then `· message.part.updated` ×7 through `· session.idle`.
-**D3 — PASS.** A bundle-thrown `ApiError` (`kortix.ts:681`) satisfied
-`error instanceof Kortix.ApiError` in page script (branch printed
+**D3 — PASS.** A bundle-thrown `ApiError` (`zed.ts:681`) satisfied
+`error instanceof Zed.ApiError` in page script (branch printed
 `ApiError undefined: Session runtime not ready`); a bad-PAT run threw
 `SessionStartError` and correctly took the non-ApiError branch (extends `Error`
 by design). **Discovery:** first attempt was CORS-blocked — the API allowlist
@@ -2156,7 +2156,7 @@ the runtime snapshot's type blindness; F6 CORS constraint documented
 **Verified:** typecheck exit 0 · full suite **1069 pass / 0 fail / 71 files**
 (reproduced independently by implementer AND reviewer) · smoke:install OK ·
 build:bundles OK (esm 189.90 KB, iife 190.88 KB).
-**Unverified:** npm Trusted Publishing wiring for the `@kortix` org
+**Unverified:** npm Trusted Publishing wiring for the `@zed` org
 (publish-npm-package.sh skips silently without OIDC/token — one-time infra
 check, outside the repo); Safari/Workers legs of the runtime matrix.
 
@@ -2170,14 +2170,14 @@ Trusted Publishing check.
 ### 2026-07-12 — session `gateway-fallbacks`: B7 provider-qualified default lock
 
 The platform gateway default is now `codex/gpt-5.6-sol`, but it remains a
-Kortix gateway wire model in the picker: `{ providerID: 'kortix', modelID:
+Zed gateway wire model in the picker: `{ providerID: 'zed', modelID:
 'codex/gpt-5.6-sol' }`. This deliberately does not expose or classify it as a
 native OpenCode `codex` provider. Implementation: `ee7d2cc09`.
 
 **TDD/regression evidence:** the focused picker regression is green (14 pass,
 0 fail). Final full SDK suite: **1076 pass / 0 fail / 72 files** and **4958
-expect() calls**. `pnpm --filter @kortix/sdk typecheck` exited 0, and
-`pnpm --filter @kortix/sdk smoke:install` packed, installed, imported, and
+expect() calls**. `pnpm --filter @zed/sdk typecheck` exited 0, and
+`pnpm --filter @zed/sdk smoke:install` packed, installed, imported, and
 constructed the published package successfully.
 
 **Cross-package evidence:** gateway **144 pass / 0 fail**; catalog **25 pass /
@@ -2282,9 +2282,9 @@ typecheck with `TS2322`. The focused GREEN run reported **9 pass / 0 fail** with
 16 assertions. The mobile older-page hydration test first returned only the
 older page. Its GREEN run reported **1 pass / 0 fail**.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0. The full
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0. The full
 suite reported **1171 pass / 0 fail** with 5170 assertions across 88 files.
-`pnpm --filter @kortix/sdk run smoke:install` built, packed, installed, imported,
+`pnpm --filter @zed/sdk run smoke:install` built, packed, installed, imported,
 and constructed the package successfully.
 
 **Other local gates:** API typecheck exited 0. Focused API tests reported **38
@@ -2299,9 +2299,9 @@ changed mobile files.
 `secretSet: true`. Connector, action, and credential row counts did not change.
 The real cloud session smoke reported **21 pass / 0 fail**. Project provisioning
 took 4 seconds. The sandbox reached `ready` 18 seconds after session creation.
-OpenCode and `kortix.yaml` returned `200`. Cleanup returned `200`.
+OpenCode and `zed.yaml` returned `200`. Cleanup returned `200`.
 
-**Infrastructure evidence:** `dev-api.kortix.com` returns
+**Infrastructure evidence:** `dev-api.zed.com` returns
 `x-backend: ecs-fargate`. ECS runs three tasks at its current three-task ceiling.
 The 24-hour target-response maximum was 47.132 seconds. The API logged 1,904
 target `5xx` responses. Stale background `/global/event` requests retried missing
@@ -2332,10 +2332,10 @@ renamed.
 focused project-client suite passed, including the new marketplace-template
 contract assertion.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full SDK
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full SDK
 suite reported **1141 pass / 0 fail** across 86 files with 5054 assertions; and
-`pnpm --filter @kortix/sdk run smoke:install` built, packed, installed, imported,
-and constructed `@kortix/sdk` successfully.
+`pnpm --filter @zed/sdk run smoke:install` built, packed, installed, imported,
+and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for the SDK surface. Repository merge, Deploy
 Dev, and live-dev verification remain part of the parent feature lifecycle.
@@ -2362,7 +2362,7 @@ passed at **409 / 497 routes**.
 **Final SDK gates after rebasing onto current `origin/main`:** typecheck exited 0;
 the full SDK suite reported **1128 pass / 0 fail** across 84 files with 5029
 assertions; and the packed install smoke built, packed, installed, imported, and
-constructed `@kortix/sdk` successfully.
+constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for the SDK surface. Repository PR, Deploy Dev,
 and live-dev verification remain part of the parent feature lifecycle.
@@ -2387,10 +2387,10 @@ session-create input. The real isolated API then proved: attached group default
 default returned to `staging`. Both sessions retained their generated UUID as
 `branch_name`.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0;
-`pnpm --filter @kortix/sdk test` reported **1077 pass / 2 skip / 0 fail** across
-72 files with 4955 assertions; `pnpm --filter @kortix/sdk run smoke:install`
-packed, installed, imported, and constructed `@kortix/sdk` successfully.
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0;
+`pnpm --filter @zed/sdk test` reported **1077 pass / 2 skip / 0 fail** across
+72 files with 4955 assertions; `pnpm --filter @zed/sdk run smoke:install`
+packed, installed, imported, and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for the SDK surface. The two skipped tests are
 the existing browser-bundle tests that only execute after `build:bundles`; this
@@ -2406,9 +2406,9 @@ associated public types, playground example, API map/docs references, and the
 corresponding runtime/type public-surface snapshot entries. No compatibility
 alias remains because the underlying platform capability itself was removed.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0;
-`pnpm --filter @kortix/sdk test` reported **1079 pass / 0 fail** across 72 files
-with 4921 assertions; `pnpm --filter @kortix/sdk run smoke:install` built,
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0;
+`pnpm --filter @zed/sdk test` reported **1079 pass / 0 fail** across 72 files
+with 4921 assertions; `pnpm --filter @zed/sdk run smoke:install` built,
 packed, installed, imported, and constructed the published package successfully.
 
 **Shippable to production: YES** for the SDK subtraction. Repository delivery,
@@ -2424,9 +2424,9 @@ surface from the SDK README and API map as part of the repository-wide starter
 and documentation cleanup. No SDK source, export, type, or runtime behavior
 changed; the B8 removal record remains as the audit trail.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0;
-`pnpm --filter @kortix/sdk test` reported **1079 pass / 0 fail** across 72 files
-with 4921 assertions after bundle generation; `pnpm --filter @kortix/sdk run
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0;
+`pnpm --filter @zed/sdk test` reported **1079 pass / 0 fail** across 72 files
+with 4921 assertions after bundle generation; `pnpm --filter @zed/sdk run
 smoke:install` built, packed, installed, imported, and constructed the published
 package successfully.
 
@@ -2440,7 +2440,7 @@ full published-package gates green.
 Claimed the user-directed additive project LLM routing-policy surface: persisted
 default and vision models, an ordered default fallback chain, exact-model
 overrides, bounded `transient` / `any-error` conditions, and a route-preview
-contract exposed through `@kortix/sdk` for the Customize UI. Existing model
+contract exposed through `@zed/sdk` for the Customize UI. Existing model
 default names and behavior remain unchanged. SDK work will follow RED → GREEN →
 REFACTOR and finish on the full typecheck, test, and packed-install smoke gates.
 
@@ -2456,7 +2456,7 @@ the generated root-session title in `project_sessions.metadata.name`.
 The REST parser handles the real `/global/event` envelope:
 `{ directory, payload: { type, properties } }`.
 
-`useSession` refetches the active Kortix session list and detail queries after
+`useSession` refetches the active Zed session list and detail queries after
 runtime title events. It also runs a bounded refresh after each send.
 
 Verification:
@@ -2509,10 +2509,10 @@ TDD evidence:
 
 SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit 0.
-- `pnpm --filter @kortix/sdk test`: **1263 pass / 0 fail**, **5644**
+- `pnpm --filter @zed/sdk typecheck`: exit 0.
+- `pnpm --filter @zed/sdk test`: **1263 pass / 0 fail**, **5644**
   assertions.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed install and Node ESM
+- `pnpm --filter @zed/sdk run smoke:install`: packed install and Node ESM
   import passed.
 
 Additional local gates:
@@ -2609,10 +2609,10 @@ against the real API and a provisioned project, covering persisted save/read-bac
 default and exact route preview, invalid-policy preservation, access boundaries, and
 reset.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0;
-`pnpm --filter @kortix/sdk test` reported **1083 pass / 0 fail** across 74 files with
-4936 assertions; `pnpm --filter @kortix/sdk run smoke:install` built, packed,
-installed, imported, and constructed `@kortix/sdk` successfully.
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0;
+`pnpm --filter @zed/sdk test` reported **1083 pass / 0 fail** across 74 files with
+4936 assertions; `pnpm --filter @zed/sdk run smoke:install` built, packed,
+installed, imported, and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for the SDK surface. Repository merge, Deploy Dev,
 and live-dev verification remain part of the parent feature lifecycle.
@@ -2627,10 +2627,10 @@ instance exports remain import-compatible as deprecated fail-closed stubs, while
 the supported sandbox-provider union is exactly `daytona | platinum | e2b`.
 
 **TDD/regression evidence:** focused E2B and retired-provider type/runtime tests
-passed before the final suite. Final SDK gates: `pnpm --filter @kortix/sdk
-typecheck` exited 0; `pnpm --filter @kortix/sdk test` reported **1083 pass / 0
-fail** across 74 files with 4985 assertions; `pnpm --filter @kortix/sdk run
-smoke:install` packed, installed, imported, and constructed `@kortix/sdk`
+passed before the final suite. Final SDK gates: `pnpm --filter @zed/sdk
+typecheck` exited 0; `pnpm --filter @zed/sdk test` reported **1083 pass / 0
+fail** across 74 files with 4985 assertions; `pnpm --filter @zed/sdk run
+smoke:install` packed, installed, imported, and constructed `@zed/sdk`
 successfully.
 
 **Shippable to production: YES** for the SDK surface.
@@ -2675,7 +2675,7 @@ deployed browser plus protocol verification.
 ### 2026-07-13 — session `personal-session-branch` (abandoned)
 
 Abandoned the personal/group session-branch preference claim by explicit product
-decision. Branch choice belongs to an ordinary isolated Kortix project: users may
+decision. Branch choice belongs to an ordinary isolated Zed project: users may
 connect the same Git repository more than once, choose an existing branch during
 project creation, and keep each project's secrets, access, sessions, triggers,
 deployments, and runtime settings independent. The advanced per-session `base_ref`
@@ -2690,15 +2690,15 @@ added.
 
 Completed the replacement project-as-environment SDK surface. GitHub imports can
 now discover existing repository branches through the typed
-`kortix.github.listRepositoryBranches(accountId, installationId, repoFullName)`
-facade. A Kortix project owns one selected repository branch as its canonical
+`zed.github.listRepositoryBranches(accountId, installationId, repoFullName)`
+facade. A Zed project owns one selected repository branch as its canonical
 `default_branch`; no personal/group preference hierarchy remains in the SDK.
 Existing per-session `base_ref` support remains backward compatible.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0;
-`pnpm --filter @kortix/sdk test` reported **1085 pass / 0 fail** across 77 files
-with 4960 assertions; `pnpm --filter @kortix/sdk smoke:install` built, packed,
-installed, imported, and constructed `@kortix/sdk` successfully.
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0;
+`pnpm --filter @zed/sdk test` reported **1085 pass / 0 fail** across 77 files
+with 4960 assertions; `pnpm --filter @zed/sdk smoke:install` built, packed,
+installed, imported, and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** — the public addition is typed, additive,
 snapshot-locked, and verified from the packed package.
@@ -2719,7 +2719,7 @@ typecheck, test, and packed-install smoke gates.
 ### 2026-07-13 — session `gateway-routing-ux` (completion)
 
 Completed the additive compact project model-picker SDK surface. The project
-transport and `createKortix().project(id).models.picker()` facade now load the
+transport and `createZed().project(id).models.picker()` facade now load the
 connection-aware picker projection rather than the full runtime catalog, while
 the existing `llm-catalog` API remains available and unchanged. React project
 model/provider hooks share the compact project cache, and model visibility now
@@ -2731,10 +2731,10 @@ project-default control and every fallback choice. Routing saves and project-
 default writes are mutually excluded through a shared mutation key, and an
 effective-default refetch cannot replace unsaved fallback edits.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0;
-`pnpm --filter @kortix/sdk test` reported **1094 pass / 0 fail** across 79 files
-with 4988 assertions; `pnpm --filter @kortix/sdk smoke:install` built, packed,
-installed, imported, and constructed `@kortix/sdk` successfully.
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0;
+`pnpm --filter @zed/sdk test` reported **1094 pass / 0 fail** across 79 files
+with 4988 assertions; `pnpm --filter @zed/sdk smoke:install` built, packed,
+installed, imported, and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** — the SDK change is additive, snapshot-locked,
 install-verified, and backed by the real local compact-picker API flow.
@@ -2763,10 +2763,10 @@ of project routing pins. Existing fields and exported names remain compatible.
 
 **TDD evidence:** the initial typecheck failed because `provider_coverage` was
 absent, then passed after the additive contract was implemented. Final SDK gates:
-`pnpm --filter @kortix/sdk typecheck` exited 0; `pnpm --filter @kortix/sdk test`
+`pnpm --filter @zed/sdk typecheck` exited 0; `pnpm --filter @zed/sdk test`
 reported **1095 pass / 0 fail** across 80 files with 4990 assertions;
-`pnpm --filter @kortix/sdk run smoke:install` built, packed, installed, imported,
-and constructed `@kortix/sdk` successfully.
+`pnpm --filter @zed/sdk run smoke:install` built, packed, installed, imported,
+and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for the SDK surface. Parent API/UI rollout and
 live provider verification remain part of the enclosing change.
@@ -2782,10 +2782,10 @@ keeps Automatic neutral and shows selected-provider plus current-image status
 only for pinned projects. Existing provider readiness and `launch_ready` fields
 remain backward compatible.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0;
-`pnpm --filter @kortix/sdk test` reported **1094 pass / 2 skip / 0 fail**
-across 80 files with 4986 assertions; `pnpm --filter @kortix/sdk run smoke:install` built,
-packed, installed, imported, and constructed `@kortix/sdk` successfully.
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0;
+`pnpm --filter @zed/sdk test` reported **1094 pass / 2 skip / 0 fail**
+across 80 files with 4986 assertions; `pnpm --filter @zed/sdk run smoke:install` built,
+packed, installed, imported, and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for the SDK surface. API/web typechecks,
 focused provider tests, and UI lint also pass; live dev verification remains the
@@ -2802,10 +2802,10 @@ and compatibility subpaths; no exported name was removed or renamed.
 
 **RED evidence:** the focused public-surface guards failed 2 / 2 and reported only
 additions for `GitHubApp*`, `ManagedGitStatus`, and their client functions.
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0;
-`pnpm --filter @kortix/sdk test` reported **1092 pass / 2 skip / 0 fail** across
-80 files with 4943 assertions; `pnpm --filter @kortix/sdk run smoke:install`
-built, packed, installed, imported, and constructed `@kortix/sdk` successfully.
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0;
+`pnpm --filter @zed/sdk test` reported **1092 pass / 2 skip / 0 fail** across
+80 files with 4943 assertions; `pnpm --filter @zed/sdk run smoke:install`
+built, packed, installed, imported, and constructed `@zed/sdk` successfully.
 The exact self-host fast E2E also reported **24 pass / 0 fail**.
 
 **Shippable to production: YES** — the public additions are deliberate,
@@ -2839,10 +2839,10 @@ accept a provider, without renaming or removing an exported symbol.
 
 **TDD evidence:** the focused connector contract initially rejected `postman`,
 then passed after the provider union was widened. **Final SDK gates:**
-`pnpm --filter @kortix/sdk typecheck` exited 0; `pnpm --filter @kortix/sdk test`
+`pnpm --filter @zed/sdk typecheck` exited 0; `pnpm --filter @zed/sdk test`
 reported **1113 pass / 0 fail** across 82 files with 4995 assertions; and
-`pnpm --filter @kortix/sdk smoke:install` built, packed, installed, imported,
-and constructed `@kortix/sdk` successfully.
+`pnpm --filter @zed/sdk smoke:install` built, packed, installed, imported,
+and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** — the SDK change is additive, its complete
 runtime and type-level public surfaces remain snapshot-locked, and the packed
@@ -2884,10 +2884,10 @@ API, resolved its direct MCP/docs/CLI/Postman variants, verified the official
 Postman repository requires bearer auth, and materialized **1,223 actions** with
 zero sync errors. The live Pipedream search returned only `authType: oauth`.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full SDK
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full SDK
 suite reported **1121 pass / 2 skip / 0 fail** across 84 files with 5009
-assertions; and `pnpm --filter @kortix/sdk run smoke:install` built, packed,
-installed, imported, and constructed `@kortix/sdk` successfully.
+assertions; and `pnpm --filter @zed/sdk run smoke:install` built, packed,
+installed, imported, and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for the SDK surface. Repository merge, Deploy
 Dev, and live-dev verification remain part of the parent feature lifecycle.
@@ -2918,10 +2918,10 @@ Connectors/Channels source regression passed **6 / 0**; API typecheck exited 0;
 and the ke2e coverage gate passed at **405 / 493 routes** with the two Discover
 routes absent.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full SDK
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full SDK
 suite reported **1119 pass / 2 skip / 0 fail** across 84 files with 4999
-assertions; and `pnpm --filter @kortix/sdk run smoke:install` built, packed,
-installed, imported, and constructed `@kortix/sdk` successfully.
+assertions; and `pnpm --filter @zed/sdk run smoke:install` built, packed,
+installed, imported, and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for this explicitly requested rollback. The two
 skips are the pre-existing browser-bundle tests that require a bundle build.
@@ -2954,10 +2954,10 @@ The real HubSpot Postman-managed repository detected bearer auth across **1,223*
 operations; authenticated connector creation synced **1 / 0 errors** and
 materialized **1,223 actions** with `authSecret: credential` and `secretSet: false`.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full SDK
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full SDK
 suite reported **1120 pass / 2 skip / 0 fail** across 84 files with 5005
-assertions; and `pnpm --filter @kortix/sdk run smoke:install` built, packed,
-installed, imported, and constructed `@kortix/sdk` successfully.
+assertions; and `pnpm --filter @zed/sdk run smoke:install` built, packed,
+installed, imported, and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for the SDK surface. Repository PR, Deploy Dev,
 and live-dev verification remain part of the parent feature lifecycle.
@@ -2975,10 +2975,10 @@ classifies it `verified`/`invalid`/`unknown`/`not_connected` (closes the LLM
 provider UI's "Connected ≠ proven working" gap). No exported name renamed or
 removed — additive only.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full SDK
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full SDK
 suite reported **1122 pass / 2 skip / 0 fail** across 84 files with 5009
-assertions; and `pnpm --filter @kortix/sdk run smoke:install` built, packed,
-installed, imported, and constructed `@kortix/sdk` successfully. Public-surface
+assertions; and `pnpm --filter @zed/sdk run smoke:install` built, packed,
+installed, imported, and constructed `@zed/sdk` successfully. Public-surface
 snapshots re-recorded — diff is additive only (`verifyGatewayProvider`,
 `GatewayProviderVerifyResult`, `GatewayProviderVerifyStatus`).
 
@@ -3013,10 +3013,10 @@ to use `x-access-token:<token>`.
 the response's `git_username` was absent; after implementation the same command
 reported **3 pass / 0 fail / 10 assertions**.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full SDK
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full SDK
 suite reported **1138 pass / 2 skip / 0 fail**; and
-`pnpm --filter @kortix/sdk run smoke:install` built, packed, installed, imported,
-and constructed `@kortix/sdk` successfully. Cross-surface verification also
+`pnpm --filter @zed/sdk run smoke:install` built, packed, installed, imported,
+and constructed `@zed/sdk` successfully. Cross-surface verification also
 reported API focused **18 pass**, provision fixture **9 pass**, CLI **454 pass / 0
 fail**, sandbox agent **208 pass / 0 fail**, and the live isolated Code Storage +
 Daytona session smoke **24 pass / 0 fail**.
@@ -3033,7 +3033,7 @@ Claimed the additive GitHub project-create template input needed by the
 user-directed Git provider default. `CreateProjectRepoInput` will accept the
 existing optional `source_item_id` concept so a selected marketplace project
 template is seeded into the user's newly created GitHub repository rather than
-silently falling back to the generic starter or Kortix-managed storage. No
+silently falling back to the generic starter or Zed-managed storage. No
 exported name or existing field will be removed or renamed. Implementation will
 follow RED -> GREEN -> REFACTOR and finish with the full SDK typecheck, test,
 and packed-install smoke gates.
@@ -3075,10 +3075,10 @@ runtime, and a soft-deleted row; the ordinary member received 403 for project
 inventory and a manager still received 404 when directly reading the private
 session.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full SDK
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full SDK
 suite reported **1145 pass / 0 fail** with 5071 assertions; and
-`pnpm --filter @kortix/sdk run smoke:install` built, packed, installed, imported,
-and constructed `@kortix/sdk` successfully.
+`pnpm --filter @zed/sdk run smoke:install` built, packed, installed, imported,
+and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for the SDK and local end-to-end contract.
 Repository PR, Deploy Dev, and live-dev verification remain part of the parent
@@ -3110,10 +3110,10 @@ real Connector calls resolved distinct hidden credentials. The black-box proof
 reported **21 pass / 0 fail**. Cleanup then verified zero synthetic projects,
 users, tokens, and sandbox rows remained.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full SDK
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full SDK
 suite reported **1145 pass / 0 fail** across 86 files with 5077 assertions; and
-`pnpm --filter @kortix/sdk run smoke:install` built, packed, installed, imported,
-and constructed `@kortix/sdk` successfully. API typecheck exited 0 and `git diff
+`pnpm --filter @zed/sdk run smoke:install` built, packed, installed, imported,
+and constructed `@zed/sdk` successfully. API typecheck exited 0 and `git diff
 --check` was clean.
 
 **Post-rebase addendum:** after rebasing onto current `origin/main` at
@@ -3136,7 +3136,7 @@ introduced by #5139 so `main` returns to the previously published SDK contract.
 This is an exact feature rollback rather than a new SDK behavior; the feature
 will continue in a separate draft PR before it is considered shippable.
 
-**Verification:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full SDK
+**Verification:** `pnpm --filter @zed/sdk typecheck` exited 0; the full SDK
 suite reported **1145 pass / 0 fail** with 5071 assertions; the packed-install
 smoke completed successfully; API typecheck exited 0; and the focused live-env
 API regression run reported **41 pass / 0 fail** with 83 assertions.
@@ -3182,10 +3182,10 @@ reported **60 pass / 0 fail**. API typecheck exited 0 and `git diff --check` was
 clean. Multi-file Bun invocations reproduced the suite's known global mock
 contamination; every affected file passed in its own isolated process.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full SDK
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full SDK
 suite reported **1147 pass / 0 fail** across 86 files with 5080 assertions; and
-`pnpm --filter @kortix/sdk run smoke:install` built, packed, installed, imported,
-and constructed `@kortix/sdk` successfully.
+`pnpm --filter @zed/sdk run smoke:install` built, packed, installed, imported,
+and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for the SDK surface and locally verified API
 hardening. Replacement PR review, Deploy Dev, deployed-SHA proof, and live-dev
@@ -3206,10 +3206,10 @@ seconds and enters the existing bounded backoff loop.
 `deriveTerminalPanelState`, and `shouldExpirePtyConnect` did not exist. The
 focused GREEN run reported **14 pass / 0 fail** with 27 assertions.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full
 suite reported **1148 pass / 2 skip / 0 fail** across 86 files with 5082
-assertions; and `pnpm --filter @kortix/sdk run smoke:install` built, packed,
-installed, imported, and constructed `@kortix/sdk` successfully. The full web
+assertions; and `pnpm --filter @zed/sdk run smoke:install` built, packed,
+installed, imported, and constructed `@zed/sdk` successfully. The full web
 suite reported **1891 pass / 0 fail** with 5318 assertions. Focused web ESLint
 exited 0.
 
@@ -3235,7 +3235,7 @@ PAT and GitHub App installations use this bounded contract.
 
 The web import flow debounces repository search by 300 ms, preserves selectable
 results during background queries, and renders a retryable error state. The New
-project modal now presents three explicit repository sources: Kortix managed,
+project modal now presents three explicit repository sources: Zed managed,
 create in GitHub, and import from GitHub. Account Git settings expose account
 GitHub App connections without requiring platform-admin access. The synthetic
 managed PAT is labelled as a server connection instead of a personal GitHub
@@ -3248,10 +3248,10 @@ managed installation plus an App install URL with status `200`. A bounded
 repository search returned status `200` in **443 ms**. Production had returned
 `503` after **25.08 seconds** on the unbounded path.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full
 suite reported **1149 pass / 2 skip / 0 fail** across 86 files with 5083
-assertions; and `pnpm --filter @kortix/sdk run smoke:install` built, packed,
-installed, imported, and constructed `@kortix/sdk` successfully. API typecheck
+assertions; and `pnpm --filter @zed/sdk run smoke:install` built, packed,
+installed, imported, and constructed `@zed/sdk` successfully. API typecheck
 exited 0. Focused web ESLint reported 0 errors. The full web typecheck remains
 blocked by two unrelated `origin/main` errors in `template-url.test.ts`.
 
@@ -3279,13 +3279,13 @@ Completed secure existing-installation linking. The additive SDK request field
 passes the GitHub user token to the API. The API verifies personal ownership or
 active organization-admin membership before it writes the account installation.
 The signed install state also preserves the initiating frontend origin. A shared
-GitHub App callback can therefore return to the Kortix host that started the
+GitHub App callback can therefore return to the Zed host that started the
 flow.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full
 suite reported **1152 pass / 0 fail** across 86 files with 5090 assertions; and
-`pnpm --filter @kortix/sdk run smoke:install` built, packed, installed, imported,
-and constructed `@kortix/sdk` successfully.
+`pnpm --filter @zed/sdk run smoke:install` built, packed, installed, imported,
+and constructed `@zed/sdk` successfully.
 
 **Shippable to production: YES** for the SDK surface. API typecheck, focused API
 authorization tests, focused web tests, and focused web lint also pass.
@@ -3297,7 +3297,7 @@ Repository merge, Deploy Dev, and live-dev verification remain pending.
 
 Claimed the additive existing-GitHub-App installation discovery contract. The
 SDK will request installations that the authorized GitHub user can link to one
-Kortix account. The API will verify personal ownership or active organization
+Zed account. The API will verify personal ownership or active organization
 admin access before it returns or saves an installation. Existing install and
 save contracts remain backward compatible.
 
@@ -3318,10 +3318,10 @@ before the database write. No exported name was removed or renamed.
 the GitHub App API suite reported **9 pass / 0 fail** with 30 assertions; and the
 web GitHub setup and connection regressions passed inside the full web suite.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full
 suite reported **1158 pass / 0 fail** across 86 files with 5110 assertions; and
-`pnpm --filter @kortix/sdk run smoke:install` built, packed, installed, imported,
-and constructed `@kortix/sdk` successfully.
+`pnpm --filter @zed/sdk run smoke:install` built, packed, installed, imported,
+and constructed `@zed/sdk` successfully.
 
 **Cross-surface evidence:** API typecheck exited 0; the full web suite reported
 **1952 pass / 0 fail** across 212 files with 5455 assertions; focused web ESLint
@@ -3349,7 +3349,7 @@ verification remain part of the parent feature lifecycle.
 Removed the synthetic `auto` model from the catalog, API routing, sandbox
 configuration, SDK defaults, web model picker, CLI, Slack, and tests. The
 platform default is the concrete managed model `glm-5.2`. Stale `auto` and
-`kortix/auto` selections are discarded by SDK storage compatibility paths and
+`zed/auto` selections are discarded by SDK storage compatibility paths and
 rejected by the gateway as `model_not_found`.
 
 Managed-model entitlement now depends only on the resolved billing tier.
@@ -3359,10 +3359,10 @@ does not place an LLM wallet hold. BYOK resolves with `billingMode: none` and
 does not append a managed fallback. Codex remains provider-funded and reaches
 its credential gate before any managed-model entitlement gate.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0; the full SDK
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0; the full SDK
 suite reported **1179 pass / 0 fail** across 89 files with 5187
-assertions; and `pnpm --filter @kortix/sdk run smoke:install` built, packed,
-installed, imported, and constructed `@kortix/sdk` successfully. The two public
+assertions; and `pnpm --filter @zed/sdk run smoke:install` built, packed,
+installed, imported, and constructed `@zed/sdk` successfully. The two public
 surface snapshot diffs contain only the additive `resolvePromptModel` export.
 
 **Cross-surface evidence:** the full web suite reported **1979 pass / 0 fail**
@@ -3374,7 +3374,7 @@ API suites reported **69 pass / 0 fail** when run in isolated processes.
 
 The standalone gateway reported **22 pass / 2 fail**. Both failures are
 pre-existing architecture checks: `origin/main` already contains the
-`@kortix/llm-catalog` dependency and the three flagged imports. The full API
+`@zed/llm-catalog` dependency and the three flagged imports. The full API
 command did not terminate after 14 minutes and was stopped. Its task-specific
 files all pass in isolated processes.
 
@@ -3413,7 +3413,7 @@ The focused GREEN runs reported **20 pass / 0 fail** for the SDK and **3 pass /
 
 **Final SDK gates:** SDK and API typechecks exited 0. The full SDK suite reported
 **1186 pass / 0 fail** across 89 files with 5204 assertions. The packed-install
-smoke built, packed, installed, imported, and constructed `@kortix/sdk`.
+smoke built, packed, installed, imported, and constructed `@zed/sdk`.
 `git diff --check` exited 0.
 
 **API suite evidence:** the focused CORS suite passed. The full API suite reached
@@ -3422,7 +3422,7 @@ include missing `getTraceHeaders` and `captureException` exports, incomplete
 maintenance mocks, and missing sandbox-reaper exports.
 
 **Real local HTTP evidence:** an allowed preflight returned 204 with
-`Access-Control-Allow-Origin: https://kortix.com`,
+`Access-Control-Allow-Origin: https://zed.com`,
 `Access-Control-Allow-Credentials: true`, and
 `Access-Control-Max-Age: 600`. An unknown origin received no
 `Access-Control-Allow-Origin`. `/v1/health` returned 200.
@@ -3462,7 +3462,7 @@ removes the credential from the next Connector resolution.
 
 **Final SDK gates:** the SDK typecheck exited 0. The full SDK suite reported
 **1187 pass / 0 fail** across 89 files. The packed-install smoke built,
-packed, installed, imported, and constructed `@kortix/sdk`. The public type
+packed, installed, imported, and constructed `@zed/sdk`. The public type
 snapshot adds only `ConnectionCredentialInput` and
 `OAuth2ClientCredentials` under the root and `projects-client` exports.
 
@@ -3497,7 +3497,7 @@ Created the web SDK-only specification and implementation plan. Added an AST
 boundary scanner, an exact ratchet baseline, and ESLint import restrictions.
 
 The RED test reported 155 forbidden production imports. The categories were 103
-host runtime imports, 32 host-owned Kortix API imports, and 20 deprecated SDK
+host runtime imports, 32 host-owned Zed API imports, and 20 deprecated SDK
 runtime imports.
 
 The focused GREEN run reported 1 pass and 0 failures. ESLint returned one
@@ -3510,13 +3510,13 @@ the baseline. ESLint passed for the changed configuration, scanner, and test.
 
 ### 2026-07-24 — session `frontend-sdk-only` (web SDK boundary Task 2)
 
-Replaced frontend OpenCode compatibility imports with `@kortix/sdk` and
-`@kortix/sdk/react`. Replaced host store imports with
-`@kortix/sdk/internal/*`. Deleted 13 compatibility re-export files.
+Replaced frontend OpenCode compatibility imports with `@zed/sdk` and
+`@zed/sdk/react`. Replaced host store imports with
+`@zed/sdk/internal/*`. Deleted 13 compatibility re-export files.
 
 The boundary baseline decreased from 155 violations to 47 violations. All 20
 deprecated SDK runtime imports are gone. The host runtime category decreased
-from 103 imports to 15 imports. The 32 host-owned Kortix API imports remain for
+from 103 imports to 15 imports. The 32 host-owned Zed API imports remain for
 Task 5.
 
 Focused web tests reported **51 pass / 0 fail**. The boundary test passed.
@@ -3638,7 +3638,7 @@ None references a changed file. ESLint reported 0 errors and one existing
 ### 2026-07-24 — session `frontend-sdk-only` (web SDK boundary Task 4)
 
 Moved provider normalization, provider merging, and server-backed model defaults
-into `@kortix/sdk/react`. Added `useSessionModelSelection` as the
+into `@zed/sdk/react`. Added `useSessionModelSelection` as the
 runtime-neutral project model and agent hook.
 
 Moved optimistic compaction state behind `useSession`. Consolidated first-message
@@ -3647,7 +3647,7 @@ Deleted every file under `apps/web/src/hooks/opencode`.
 
 The boundary baseline decreased from 47 violations to 32 violations. The host
 runtime category decreased from 15 imports to 0 imports. The remaining 32
-violations are host-owned Kortix API imports assigned to Task 5.
+violations are host-owned Zed API imports assigned to Task 5.
 
 **TDD evidence:** the provider merge test failed because
 `mergeProviderLists` did not exist. The model-default test failed because
@@ -3665,7 +3665,7 @@ warnings.
 
 ### 2026-07-24 — session `frontend-sdk-only` (web SDK boundary Task 5)
 
-Moved every frontend Kortix API transport into `@kortix/sdk`. Deleted
+Moved every frontend Zed API transport into `@zed/sdk`. Deleted
 `apps/web/src/lib/api-client.ts` and nine host API wrapper modules. Moved the
 IAM client and portable React Query modules into the SDK.
 
@@ -3689,7 +3689,7 @@ removed or renamed exports.
 
 Moved runtime routing, runtime actions, SSE transport, preview authentication,
 presentation conversion, PTY commands, and explicit host-boundary transport
-into `@kortix/sdk`.
+into `@zed/sdk`.
 
 Added runtime-neutral SDK aliases without removing existing public exports.
 Renamed the remaining frontend files that contained `opencode`. The web source
@@ -3697,7 +3697,7 @@ tree now contains no file path with that term.
 
 Expanded the AST boundary and ESLint gates. They reject OpenCode imports,
 deprecated runtime SDK subpaths, SDK internal subpaths, legacy runtime stores,
-runtime proxy paths, OpenCode REST paths, and raw Kortix backend routes.
+runtime proxy paths, OpenCode REST paths, and raw Zed backend routes.
 The boundary baseline contains 0 violations.
 
 The runtime snapshot added 145 names and removed 0 names. The type snapshot
@@ -3744,7 +3744,7 @@ Added the SDK boundary test and frontend ESLint to the pull-request CI job.
 - PTY smoke: pass, including WebSocket attach and replay.
 - File transport smoke: **26 pass / 1 optional agent-read failure**.
 - SDK-only Chromium session: **1 pass** in 1.0 minutes. It observed one
-  `prompt_async`, visible `PONG`, no failed Kortix responses, and `kortix.yaml`.
+  `prompt_async`, visible `PONG`, no failed Zed responses, and `zed.yaml`.
 - Tests TypeScript check and `git diff --check`: exit 0.
 
 The generic auth spec failed because its default local user credentials were
@@ -3767,7 +3767,7 @@ commit contains the refactor merge. The API health route reported
 
 The deployed Chromium regression passed in 1.2 minutes. It rendered the session
 workspace, sent one `prompt_async` request, displayed `PONG`, observed zero
-failed Kortix project or runtime responses, and opened `kortix.yaml`.
+failed Zed project or runtime responses, and opened `zed.yaml`.
 
 The first protected-dev browser run exposed an E2E harness defect. The shared
 Vercel bypass header reached the cross-origin API and failed its CORS preflight.
@@ -3812,10 +3812,10 @@ and `deepseek-v4-flash`. The pin no longer contains `qwen3.7-max` or
 **RED evidence:** the playground stopped before API access because the pinned
 IDs contained retired managed models.
 
-**Final SDK gates:** `pnpm --filter @kortix/sdk typecheck` exited 0. The full SDK
+**Final SDK gates:** `pnpm --filter @zed/sdk typecheck` exited 0. The full SDK
 suite reported **1185 pass / 2 skip / 0 fail** across 89 files. The
 packed-install smoke built, packed, installed, imported, and constructed
-`@kortix/sdk`.
+`@zed/sdk`.
 
 **Shippable to production: YES** for B18 and the published SDK surface.
 Repository delivery and live-dev verification remain part of the repository
@@ -3980,7 +3980,7 @@ full suite, and packed-install smoke gates are required.
 
 Added the server-supplied managed-model prices to the typed project catalog.
 Added cache-write rates and context tiers to the public turn-cost contract.
-The browser no longer uses `models.dev` as a fallback for `kortix` models.
+The browser no longer uses `models.dev` as a fallback for `zed` models.
 `GatewayLogRow` now includes `cache_write_tokens`.
 
 **RED evidence:**
@@ -3997,7 +3997,7 @@ The browser no longer uses `models.dev` as a fallback for `kortix` models.
 - Full SDK suite: **1216 pass / 0 fail** across 98 files.
 - Public type-surface snapshot: additive `ModelCostTierRates`; no removals.
 - Packed-install smoke: built, packed, installed, imported, and constructed
-  `@kortix/sdk`.
+  `@zed/sdk`.
 - Web managed-pricing suite: **8 pass / 0 fail**.
 - Changed-file web ESLint and Prettier checks: exit 0.
 
@@ -4027,7 +4027,7 @@ The SDK source remains unchanged until Task 4 starts with a failing test.
 ### 2026-07-25 — session `acp-opencode-canary` (OpenCode ACP Task 3 completion)
 
 Separated the OpenCode process transport from the SDK client transport.
-Every sandbox injects `KORTIX_OPENCODE_PROCESS_TRANSPORT=acp`.
+Every sandbox injects `ZED_OPENCODE_PROCESS_TRANSPORT=acp`.
 The API client transport defaults to `rest` during the parity implementation.
 The `/start` response reports that client transport as `runtime_transport`.
 Pre-ACP servers can omit the additive field.
@@ -4051,7 +4051,7 @@ It consumes ordered SSE events and reconnects with `Last-Event-ID`.
 It exposes native `session/load`, `session/prompt`, `session/cancel`, and `session/set_config_option` methods.
 
 Added the framework-free ACP session projection.
-It converts user, assistant, thought, tool, plan, permission, question, usage, and stop updates into the existing Kortix session presentation types.
+It converts user, assistant, thought, tool, plan, permission, question, usage, and stop updates into the existing Zed session presentation types.
 It rejects updates for a different ACP session.
 
 **RED evidence:** the focused run reported two missing modules and zero passing tests.
@@ -4119,7 +4119,7 @@ transcript restoration, text streaming, permissions, questions, attachments,
 busy-message serialization, cancellation, slash commands, and process restart.
 
 The sandbox daemon resumes the canonical ACP session after OpenCode restarts.
-It publishes the replayable `kortix/runtime_ready` process-generation signal.
+It publishes the replayable `zed/runtime_ready` process-generation signal.
 The SDK reloads the canonical session before it accepts another prompt.
 
 The OpenCode question compatibility bridge exposes questions as
@@ -4130,7 +4130,7 @@ The browser returns only ACP JSON-RPC responses.
 
 - SDK restart recovery: **12 pass / 1 fail**.
 - Sandbox restart signal: **13 pass / 1 fail**.
-- The pre-fix Chromium matrix reconnected SSE after `/kortix/refresh/`.
+- The pre-fix Chromium matrix reconnected SSE after `/zed/refresh/`.
   It did not send a post-restart prompt because the new process had no loaded
   ACP session.
 
@@ -4139,7 +4139,7 @@ The browser returns only ACP JSON-RPC responses.
 - Focused ACP SDK suite: **18 pass / 0 fail**.
 - Focused sandbox ACP suite: **17 pass / 0 fail**.
 - Linux sandbox daemon build: exit 0.
-- Platinum image `kortix-default-0429779a8bc2`: built in 370.774 seconds.
+- Platinum image `zed-default-0429779a8bc2`: built in 370.774 seconds.
 - Full local Chromium ACP and REST rollback matrix: **1 pass / 0 fail** in
   4.3 minutes.
 
@@ -4202,12 +4202,12 @@ Local and deployed dev ACP and REST paths pass.
 ### 2026-07-25 — session `acp-opencode-canary` (ACP stream timeout correction)
 
 The follow-up deployed cold Chromium run exposed an ACP transport defect.
-`authenticatedFetch` applied its 30-second default timeout to `/kortix/acp/:sessionId`.
+`authenticatedFetch` applied its 30-second default timeout to `/zed/acp/:sessionId`.
 The controller lost the stream while `session/load` was pending.
 The browser never sent `session/prompt`.
 
 `isStreamingRequest` now exempts both OpenCode REST `/global/event` streams and
-ACP `/kortix/acp/:sessionId` streams.
+ACP `/zed/acp/:sessionId` streams.
 Non-streaming requests retain the 30-second timeout.
 
 **RED evidence:**
@@ -4236,7 +4236,7 @@ cold Chromium matrix remain.
 
 Serialized ACP prompt preparation with OpenCode runtime restarts.
 The controller interrupts stalled config-option requests when
-`kortix/runtime_ready` changes the runtime generation.
+`zed/runtime_ready` changes the runtime generation.
 It waits for canonical `session/load` replay and retries only the idempotent
 model and mode config preflight.
 It does not retry `session/prompt` after dispatch.
@@ -4361,11 +4361,11 @@ Claimed the full white-label ACP and SDK reference-app refactor.
 The SDK will add the provider-neutral `default_agent` project-config field.
 The legacy `open_code_default_agent` field will remain as a deprecated alias.
 
-The reference app will use one `createKortix` client and one `useSession`
+The reference app will use one `createZed` client and one `useSession`
 runtime path.
 Client code will not import runtime transports, legacy runtime stores, or
 OpenCode packages.
-Client code will not construct Kortix REST or runtime proxy requests.
+Client code will not construct Zed REST or runtime proxy requests.
 Project settings will render the server-provided experimental-feature catalog.
 
 Implementation will follow RED -> GREEN -> REFACTOR.
@@ -4382,17 +4382,17 @@ artifact verification.
 
 Completed the SDK-only white-label ACP reference implementation.
 
-The white-label application uses one `createKortix` client and one
+The white-label application uses one `createZed` client and one
 `useSession` path. Application code does not import OpenCode packages,
 runtime transports, legacy runtime stores, or SDK source files.
 
 The wrapper BFF delegates HTTP forwarding to the SDK-owned
-`forwardKortixRequest()` function. White-label BFF tests use
-`createScopedKortix()` from `@kortix/sdk/server`. Repository Playwright specs
+`forwardZedRequest()` function. White-label BFF tests use
+`createScopedZed()` from `@zed/sdk/server`. Repository Playwright specs
 also import the public SDK entry point.
 
 The boundary scanner covers application source, local tests, and repository
-Playwright specs. It rejects raw Kortix transport calls, SDK source imports,
+Playwright specs. It rejects raw Zed transport calls, SDK source imports,
 OpenCode imports, runtime proxy URLs, OpenCode REST paths, provider terms,
 legacy runtime stores, and direct runtime imports.
 
@@ -4425,7 +4425,7 @@ Local verification:
 
 The final boundary review found two Playwright imports of
 `packages/sdk/src/node/server`. The RED test reported **10 pass / 1 fail**.
-Both specs now import `@kortix/sdk/server`. The GREEN run reports
+Both specs now import `@zed/sdk/server`. The GREEN run reports
 **11 pass / 0 fail**. Playwright lists both specs with the public package
 import.
 
@@ -4440,9 +4440,9 @@ Deploy Dev, deployed SHA proof, and deployed ACP plus REST parity remain.
 
 PR #5458 exposed two delivery defects.
 
-The root `@kortix/sdk` development dependency broke the reduced API Docker
+The root `@zed/sdk` development dependency broke the reduced API Docker
 workspace. The dependency now belongs to the minimal `tests/e2e` workspace.
-Both Playwright specs import the public `@kortix/sdk/server` entry point.
+Both Playwright specs import the public `@zed/sdk/server` entry point.
 
 The first package-unit run timed out while the mode suite built Next.js and
 started two servers. The setup limit is now 120 seconds. Test assertions remain
@@ -4576,7 +4576,7 @@ Deployed API contract proof:
 - Release stored `executionLeaseUntil = null`.
 
 Deployed sandbox-agent proof used Daytona snapshot
-`kortix-default-631f50320491`.
+`zed-default-631f50320491`.
 Disposable session `07729779-f350-4af0-b46f-f727d91859f6` entered `busy` after
 a real OpenRouter prompt.
 CloudWatch recorded:
@@ -4642,7 +4642,7 @@ The frontend image tag references the full merge SHA.
 
 Vercel deployment `dpl_FX4EmhvavKet4MvwcDyjVeqxZWdD` is ready.
 GitHub maps that deployment to the full merge SHA.
-The deployment owns the `dev.kortix.com` alias.
+The deployment owns the `dev.zed.com` alias.
 
 The final deployed ACP and REST presentation plus question matrix passed:
 
@@ -4700,7 +4700,7 @@ Post-fix verification:
 - The ACP question remained visible after 121 seconds and a page reload.
 - Both transports submitted Beta and rendered `QUESTION_BETA`.
 - ACP used `session/prompt` and sent zero `/prompt_async` requests.
-- REST used `/prompt_async` and sent zero `/kortix/acp/` requests.
+- REST used `/prompt_async` and sent zero `/zed/acp/` requests.
 - Post-cleanup database proof: `active_projects=0`, `cleanup_users=0`.
 - `git diff --check`: exit 0.
 
@@ -4765,7 +4765,7 @@ Final verification:
 - Both screenshots contain completed presentation tool sequences.
 - Both transports submitted Beta and rendered `QUESTION_BETA`.
 - The stale project `81050937-bc7f-4b05-aafb-914acc019fe4` was archived
-  through `@kortix/sdk`.
+  through `@zed/sdk`.
 - Post-cleanup database proof: `active_projects=0`, `cleanup_users=0`.
 - `git diff --check`: exit 0.
 
@@ -4797,7 +4797,7 @@ parity, PR merge, Deploy Dev, deployed SHA proof, and deployed parity.
 ### 2026-07-26 — session `agent-sandbox-environments` (claim)
 
 Claimed the user-directed per-agent sandbox environment contract. The additive
-SDK field will expose `agents.<name>.sandbox` from `kortix.yaml`. Session
+SDK field will expose `agents.<name>.sandbox` from `zed.yaml`. Session
 creation will resolve an explicit session override first, then the selected
 agent environment, then the project default, then the platform default.
 
@@ -4849,18 +4849,18 @@ TDD evidence:
 
 SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit 0.
-- `pnpm --filter @kortix/sdk test`: **1262 pass / 0 fail**, **5633**
+- `pnpm --filter @zed/sdk typecheck`: exit 0.
+- `pnpm --filter @zed/sdk test`: **1262 pass / 0 fail**, **5633**
   assertions.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed install and Node ESM
+- `pnpm --filter @zed/sdk run smoke:install`: packed install and Node ESM
   import passed.
 
 Additional gates:
 
-- `pnpm --filter @kortix/manifest-schema typecheck`: exit 0.
-- `pnpm --filter kortix-api typecheck`: exit 0.
+- `pnpm --filter @zed/manifest-schema typecheck`: exit 0.
+- `pnpm --filter zed-api typecheck`: exit 0.
 - Focused web ESLint: exit 0.
-- `pnpm --filter @kortix/starter typecheck`: exit 0.
+- `pnpm --filter @zed/starter typecheck`: exit 0.
 - `git diff --check`: exit 0.
 
 Real local proof used disposable project
@@ -5042,7 +5042,7 @@ Implemented message-based session rewind and restore in `eab4eef0f`.
 
 The implementation keeps one canonical OpenCode session. It does not create a
 fork. Native REST uses `session.revert` and `session.unrevert`. ACP uses the
-Kortix `session/revert` and `session/unrevert` extensions. The daemon forwards
+Zed `session/revert` and `session/unrevert` extensions. The daemon forwards
 both ACP extensions to native OpenCode history routes.
 
 ACP transcript replay preserves native OpenCode message IDs. The controller
@@ -5067,16 +5067,16 @@ TDD evidence:
 
 SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit 0.
-- `pnpm --filter @kortix/sdk test`: **1309 pass / 0 fail**, **5779**
+- `pnpm --filter @zed/sdk typecheck`: exit 0.
+- `pnpm --filter @zed/sdk test`: **1309 pass / 0 fail**, **5779**
   assertions across **111** files.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed install and Node ESM
+- `pnpm --filter @zed/sdk run smoke:install`: packed install and Node ESM
   import passed.
 
 Daemon and web gates:
 
-- `pnpm --filter @kortix/sandbox-agent-server typecheck`: exit 0.
-- `pnpm --filter @kortix/sandbox-agent-server test`: **306 pass / 0 fail**,
+- `pnpm --filter @zed/sandbox-agent-server typecheck`: exit 0.
+- `pnpm --filter @zed/sandbox-agent-server test`: **306 pass / 0 fail**,
   **739** assertions across **33** files.
 - Web source contract: **5 pass / 0 fail**, **11** assertions.
 - Touched web ESLint: exit 0.
@@ -5162,10 +5162,10 @@ TDD evidence:
 
 Required gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit 0.
-- `pnpm --filter @kortix/sdk test`: **1312 pass / 2 skip / 0 fail** with
+- `pnpm --filter @zed/sdk typecheck`: exit 0.
+- `pnpm --filter @zed/sdk test`: **1312 pass / 2 skip / 0 fail** with
   **5785** assertions across **111** files.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed install and Node ESM
+- `pnpm --filter @zed/sdk run smoke:install`: packed install and Node ESM
   import passed.
 - Touched web ESLint: exit 0.
 - Web `tsc --noEmit`: no errors reference the touched files. Existing unrelated
@@ -5186,7 +5186,7 @@ and deployed UI verification remain.
 
 ### 2026-07-28 — session `acp-session-name-sync` (B32 claim)
 
-Claimed the Kortix session-name synchronization defect for ACP-backed sessions.
+Claimed the Zed session-name synchronization defect for ACP-backed sessions.
 
 The investigation will trace the authoritative server-side title mirror,
 ACP runtime session metadata, project-session reads, SDK query invalidation,
@@ -5208,7 +5208,7 @@ harness support.
 
 The existing `acp_runtime` experiment is the single rollout gate.
 The visible experiment name is `ACP & Multi-Harness`.
-Project manifests use `kortix_version: 3` runtime profiles and logical agents.
+Project manifests use `zed_version: 3` runtime profiles and logical agents.
 Project-session ACP identity is immutable.
 ACP envelopes persist in PostgreSQL with database ordinals as SSE cursors.
 Upstream deduplication is scoped by runtime instance.
@@ -5278,14 +5278,14 @@ rejection.
 PR #5759 merged as `35d4063c954176338e809abc4329e43410786122`.
 Its 15 executed checks passed.
 Deploy Dev run `30406252134` completed successfully for that exact SHA.
-`GET https://dev-api.kortix.com/v1/health` reported:
+`GET https://dev-api.zed.com/v1/health` reported:
 
 - `environment`: `dev`
 - `version`: `0.11.1-dev.35d4063c`
 - `commit`: `35d4063c954176338e809abc4329e43410786122`
 
 Deployed Daytona protocol smoke against
-`https://dev-api.kortix.com/v1` reported:
+`https://dev-api.zed.com/v1` reported:
 
 - OpenCode: pass.
 - Claude Code: pass.
@@ -5343,10 +5343,10 @@ No SDK export or runtime implementation changed.
 
 Final SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1356 pass`, `0 fail`,
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1356 pass`, `0 fail`,
   `5929 expect() calls`, `116 files`.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed tarball imported and
+- `pnpm --filter @zed/sdk run smoke:install`: packed tarball imported and
   constructed successfully.
 
 **Status:** COMPLETE.
@@ -5384,10 +5384,10 @@ smoke.
 
 Local SDK verification:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1355 pass`, `2 skip`, `0 fail`, and
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1355 pass`, `2 skip`, `0 fail`, and
   `5925` assertions across `116` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed tarball import and
+- `pnpm --filter @zed/sdk run smoke:install`: packed tarball import and
   construction passed.
 
 **Status:** COMPLETE.
@@ -5412,19 +5412,19 @@ Delivery evidence:
 - All required PR checks passed.
 - Deploy Dev run `30411098518` completed with `success`.
 - The run built and published the CLI, API image, and frontend image.
-- `GET https://dev-api.kortix.com/v1/health` returned version
+- `GET https://dev-api.zed.com/v1/health` returned version
   `0.11.1-dev.3b3992fb` and the exact merge commit.
 - The `dev-latest` Git tag resolved to the exact merge commit.
 - The shipped macOS arm64 CLI reported
-  `Kortix CLI v0.11.1-dev.3b3992fb`.
+  `Zed CLI v0.11.1-dev.3b3992fb`.
 
 Deployed agent-discovery verification:
 
-- `kortix system-skills --host kortix-internal-dev --json` returned 10 system
+- `zed system-skills --host zed-internal-dev --json` returned 10 system
   skills.
-- `kortix system-skills get kortix-system --full --json` returned 19 reference
+- `zed system-skills get zed-system --full --json` returned 19 reference
   files.
-- The deployed `references/kortix/runtime-harnesses.md` file contained OpenCode,
+- The deployed `references/zed/runtime-harnesses.md` file contained OpenCode,
   Claude Code, Codex, Pi, the real-model rule, and the four-harness smoke command.
 
 Deployed protocol verification used one disposable Platinum project:
@@ -5440,7 +5440,7 @@ ACP identity.
 
 The first Codex attempt proved the dev managed OpenAI credential is invalid.
 The Codex harness reached
-`https://dev-api.kortix.com/v1/router/openai/responses`, which returned
+`https://dev-api.zed.com/v1/router/openai/responses`, which returned
 `401 invalid_api_key`. The exact Codex harness passed after the disposable
 project received a direct OpenAI credential. No generic provider preflight was
 used as acceptance evidence.
@@ -5487,7 +5487,7 @@ public type-surface snapshots.
 
 TDD evidence:
 
-- RED: `pnpm --filter @kortix/sdk exec bun test
+- RED: `pnpm --filter @zed/sdk exec bun test
   src/public-type-surface.test.ts` reported `0 pass`, `1 fail`, and only two
   additive `BillingState` entries.
 - GREEN: the same focused command reported `1 pass`, `0 fail`, and `2`
@@ -5495,10 +5495,10 @@ TDD evidence:
 
 Final SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1356 pass`, `0 fail`, `5929` assertions,
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1356 pass`, `0 fail`, `5929` assertions,
   `116` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed tarball imported and
+- `pnpm --filter @zed/sdk run smoke:install`: packed tarball imported and
   constructed successfully.
 
 **Status:** COMPLETE.
@@ -5513,10 +5513,10 @@ The final branch retains the additive `acp-multi-harness` starter input.
 
 Final SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1357 pass`, `0 fail`, `5931`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1357 pass`, `0 fail`, `5931`
   assertions, and `116` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: the packed tarball imported
+- `pnpm --filter @zed/sdk run smoke:install`: the packed tarball imported
   and constructed successfully.
 
 **SDK package shippable to production: YES.**
@@ -5534,7 +5534,7 @@ Scope:
 
 - Treat the `/start` response as the authoritative runtime identity.
 - Keep `initialOpenCodeSessionId` as a backward-compatible cache seed.
-- Prevent SDK caches from crossing Kortix `(projectId, sessionId)` boundaries.
+- Prevent SDK caches from crossing Zed `(projectId, sessionId)` boundaries.
 - Prove two sandboxes restored from one snapshot receive distinct OpenCode IDs.
 
 The required `tdd` skill is unavailable in this session.
@@ -5557,10 +5557,10 @@ TDD evidence:
 
 Final SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1381 pass`, `0 fail`, `5970`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1381 pass`, `0 fail`, `5970`
   assertions.
-- `pnpm --filter @kortix/sdk run smoke:install`: the packed tarball installed,
+- `pnpm --filter @zed/sdk run smoke:install`: the packed tarball installed,
   imported, and constructed successfully.
 - The public export snapshot did not change.
 
@@ -5587,7 +5587,7 @@ Live local acceptance:
 - `/start` returned distinct OpenCode roots:
   `ses_050ddca47ffe4r8L0yDak7Fiar` and
   `ses_050ddd663ffe159AjQGlKxefsg`.
-- `createKortix().session().ensureReady()` matched each `/start` root.
+- `createZed().session().ensureReady()` matched each `/start` root.
 - Restart preserved each root.
 - Each transcript contained only its own three assistant markers.
 - Fixture cleanup left zero projects and zero users.
@@ -5629,7 +5629,7 @@ Live dev evidence on merge `7a7bb4f16`:
 - The first SDK prompt used the stale snapshot model
   `opencode/big-pickle` and produced no assistant message.
 - A direct prompt with the persisted project-session model
-  `kortix/glm-5.2` unblocked each session.
+  `zed/glm-5.2` unblocked each session.
 - Both sessions then passed follow-up, restart, and post-restart SDK sends.
 
 Scope:
@@ -5652,19 +5652,19 @@ Removing those files restores the enforced SDK boundary without changing the
 current command surface.
 
 ```
-RED    pnpm --filter @kortix/cli lint:sdk-boundary
+RED    pnpm --filter @zed/cli lint:sdk-boundary
        → 18 violations
-GREEN  pnpm --filter @kortix/cli lint:sdk-boundary
+GREEN  pnpm --filter @zed/cli lint:sdk-boundary
        → 0 violations
-       pnpm --filter @kortix/cli test
+       pnpm --filter @zed/cli test
        → 636 pass, 0 fail, 2,068 assertions
        exact packages-and-apps CI command
        → exit 0
-       pnpm --filter @kortix/sdk typecheck
+       pnpm --filter @zed/sdk typecheck
        → exit 0
-       pnpm --filter @kortix/sdk test
+       pnpm --filter @zed/sdk test
        → 1,412 pass, 2 skip, 0 fail, 6,128 assertions
-       pnpm --filter @kortix/sdk smoke:install
+       pnpm --filter @zed/sdk smoke:install
        → packed tarball imports and constructs; exit 0
 ```
 
@@ -5675,7 +5675,7 @@ bun test --isolate --env-file=scripts/test.env \
   src/__tests__/e2e-project-session-contract.test.ts
 → 52 pass, 0 fail, 367 assertions
 
-pnpm --filter kortix-api test
+pnpm --filter zed-api test
 → 5,028 pass, 57 skip, 0 fail, 20,369 assertions
 ```
 
@@ -5703,10 +5703,10 @@ Public-surface decision:
 
 Final SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1318 pass`, `0 fail`, `5781`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1318 pass`, `0 fail`, `5781`
   assertions across `113` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: the packed tarball installed,
+- `pnpm --filter @zed/sdk run smoke:install`: the packed tarball installed,
   imported, and constructed successfully.
 - Public value and type surface snapshots pass.
 - The framework-free import-graph checks pass.
@@ -5749,14 +5749,14 @@ invalidates the cached persisted defaults. A failed defaults read clears the
 cache so the next `send()` retries it.
 
 The live smoke now treats the sandbox as the isolation boundary. It accepts an
-equal snapshot-inherited `opencode_session_id` only when the Kortix sessions,
+equal snapshot-inherited `opencode_session_id` only when the Zed sessions,
 sandboxes, and transcripts remain isolated. The session-create helper retries
 only the exact `409 ACP_RUNTIME_REQUIRED` manifest-convergence response.
 
 TDD and focused evidence:
 
 - RED: the inherited-session prompt omitted the persisted model and agent.
-- GREEN: the prompt used `kortix/glm-5.2` and agent `kortix`.
+- GREEN: the prompt used `zed/glm-5.2` and agent `zed`.
 - RED: `changeModel()` left the old persisted model cached.
 - GREEN: the next prompt used the changed model.
 - Focused SDK client suite: `71 pass`, `0 fail`, `258` assertions.
@@ -5764,10 +5764,10 @@ TDD and focused evidence:
 
 Final SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1385 pass`, `0 fail`, `5978`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1385 pass`, `0 fail`, `5978`
   assertions across `121` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: the packed tarball installed,
+- `pnpm --filter @zed/sdk run smoke:install`: the packed tarball installed,
   imported, and constructed successfully.
 
 Live dev Platinum acceptance:
@@ -5776,9 +5776,9 @@ Live dev Platinum acceptance:
   `tests/performance/session-start/results/2026-07-29/opencode-inherited-pin-dev-platinum.json`.
 - Result: `PASS 2/2`.
 - Create-to-ready: `26.022 s` and `35.169 s`.
-- Two distinct Kortix sessions and Platinum sandboxes inherited
+- Two distinct Zed sessions and Platinum sandboxes inherited
   `ses_050fadf1dffeb2XyPZiu0qloal`.
-- `createKortix().session().ensureReady()` matched the authoritative `/start`
+- `createZed().session().ensureReady()` matched the authoritative `/start`
   pin for both sandboxes.
 - Both sessions passed first response, follow-up response, restart, and
   post-restart response using only SDK `send()`.
@@ -5795,7 +5795,7 @@ Repository delivery evidence:
   `d6979ad99241ebd8baeb00391dc186ce007b63e1`.
 - All PR checks completed successfully.
 - Deploy Dev run `30487926127` completed successfully for the merge SHA.
-- `https://dev-api.kortix.com/v1/health` reported version
+- `https://dev-api.zed.com/v1/health` reported version
   `0.11.1-dev.d6979ad9` and commit
   `d6979ad99241ebd8baeb00391dc186ce007b63e1`.
 
@@ -5806,7 +5806,7 @@ Repository delivery evidence:
 ### 2026-07-30 — session `opencode-rest-rollback` claim
 
 Claimed the user-directed removal of ACP, multi-harness runtime support, and
-`kortix.yaml` version 3.
+`zed.yaml` version 3.
 
 The SDK session runtime will use OpenCode REST only. The rollback will restore
 the release-branch OpenCode REST client behavior without reverting unrelated
@@ -5852,10 +5852,10 @@ RED evidence:
 
 GREEN evidence:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1390 pass`, `0 fail`, and
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1390 pass`, `0 fail`, and
   `5971 expect() calls` across `117` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 - API unit suite: `5074 pass`, `62 skip`, `0 fail`, and
   `20505 expect() calls` across `500` files.
 - Focused real-PostgreSQL integration:
@@ -5896,9 +5896,9 @@ RED:
 GREEN:
 
 - `bun test src/react/session-title-sync.test.ts`: `2 pass`, `0 fail`.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1347 pass`, `0 fail`, `116 files`.
-- `pnpm --filter @kortix/sdk run smoke:install`: packed tarballs installed,
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1347 pass`, `0 fail`, `116 files`.
+- `pnpm --filter @zed/sdk run smoke:install`: packed tarballs installed,
   imported, and constructed successfully.
 
 Live browser proof loaded a titleless cached session with one hydrated user
@@ -5918,9 +5918,9 @@ The earlier completion entry records pre-merge counts and is retained as history
 
 Final SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1340 pass`, `0 fail`.
-- `pnpm --filter @kortix/sdk run smoke:install`: the packed tarball installed,
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1340 pass`, `0 fail`.
+- `pnpm --filter @zed/sdk run smoke:install`: the packed tarball installed,
   imported, and constructed successfully.
 
 Final repository gates:
@@ -5942,7 +5942,7 @@ Final repository gates:
 - Authenticated local curl: `25 pass`, `0 fail`.
 - Local REST contract smoke: `14 pass`, `0 fail`.
 - Local Chromium: `2 pass`, `0 fail`. The session rendered `PONG`, used one
-  `/prompt_async` request and `/global/event`, sent no `/kortix/acp/` request,
+  `/prompt_async` request and `/global/event`, sent no `/zed/acp/` request,
   opened the current-main Files side panel, and passed warm-session fallback.
 
 **Status:** COMPLETE.
@@ -5961,10 +5961,10 @@ Verified the final rollback tree against `origin/main`
 
 Current SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1345 pass`, `0 fail`, `5894`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1345 pass`, `0 fail`, `5894`
   assertions across `115` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: the packed tarball installed,
+- `pnpm --filter @zed/sdk run smoke:install`: the packed tarball installed,
   imported, and constructed successfully.
 
 Current repository evidence:
@@ -5988,7 +5988,7 @@ Current repository evidence:
 - Authenticated local Chromium: `1 pass`, `0 fail`. The chat rendered
   `UI_REST_OK_1785423144172`, sent one request to
   `/v1/p/:externalId/8000/session/:id/prompt_async`, sent no
-  `/kortix/acp/` request, and received no failed Kortix response.
+  `/zed/acp/` request, and received no failed Zed response.
 
 **Status:** COMPLETE.
 
@@ -6016,7 +6016,7 @@ Cause: the client re-derived plan entitlement instead of reading the server's
 answer. `hasUsableModel` gated managed models on a locally computed `freeTier`
 (from `/billing/account-state`'s `tier_key`), and `isVisible` did the same. The
 server's rule is not that: `/model-picker` applies entitlement only when
-`KORTIX_BILLING_INTERNAL_ENABLED` is on, and it stamps the resolved answer on
+`ZED_BILLING_INTERNAL_ENABLED` is on, and it stamps the resolved answer on
 every model as `enabled`. With internal billing off — self-host, and this local
 stack, where `GET /v1/billing/config` returns `{"billing_disabled":true}` — free
 tier IS entitled to every managed model, so the two disagreed by construction and
@@ -6041,7 +6041,7 @@ express it: that is also the benign answer for a session with no live sandbox.
 `model-flatten.test.ts`; restoring them passes 26. In a real browser on
 `/projects/<id>` the trigger reads `"No model"` with 1 "No model connected" node
 before the fix and `"GLM 5.2"` with 0 such nodes after.
-`pnpm --filter @kortix/sdk typecheck` clean, `test` 1428 pass / 0 fail.
+`pnpm --filter @zed/sdk typecheck` clean, `test` 1428 pass / 0 fail.
 `public-type-surface.snapshot.json` regenerated — additive, one new type.
 
 **Discovered, NOT fixed (appended to Backlog below):** on a composer with no
@@ -6077,8 +6077,8 @@ Fix: `applyModelOption` recovers instead of throwing. The replacement comes only
 from what the harness advertises (`configOptions[id='model'].options`), preferring
 the session's active model, then the server default, then the first advertised
 option — no model id is hardcoded anywhere in the path. Every candidate must share
-the requested id's **routing namespace**, so a managed `kortix/*` pick is never
-rewritten to a BYOK `anthropic/*` id: that would move the user off the Kortix
+the requested id's **routing namespace**, so a managed `zed/*` pick is never
+rewritten to a BYOK `anthropic/*` id: that would move the user off the Zed
 gateway and its credits metering. With no safe replacement the harness keeps its
 own selection, the prompt still goes out, and the user is told which model is
 running. A rejected id is recorded in `rejectedModels` and never attempted again,
@@ -6099,7 +6099,7 @@ catalog so a cold start cannot wipe every preference, and it runs only from
 
 **Evidence.** RED first, both defects: `bun test src/core/acp/session-controller.test.ts`
 failed 8 of 8 new tests with `AcpRpcError: Invalid params: model not found:
-kortix/anthropic/claude-sonnet-5` thrown out of `executeSend`;
+zed/anthropic/claude-sonnet-5` thrown out of `executeSend`;
 `reconcilePersistedModels` did not exist. GREEN after: `bun test src` → **1465
 pass, 0 fail, 122 files**. `typecheck` clean. `smoke:install` packed, installed and
 imported the tarball. Both public-surface snapshots regenerated — **additive only,
@@ -6111,7 +6111,7 @@ The harness rejection was injected by rewriting the wire `value` of
 `session/set_config_option` in the page, so the harness returned a REAL `-32602`.
 
 - Pre-fix (`ba9c4d99-…`): `main` innerText = `OpenCode failed to load / Invalid
-  params: model not found: kortix/anthropic/claude-sonnet-5-bugbash-missing /
+  params: model not found: zed/anthropic/claude-sonnet-5-bugbash-missing /
   Restart session`, `document.querySelector('textarea')` → **null**. Envelopes:
   `set_config_option(model)` → `ERROR` → `initialize`, `initialize`,
   `session/load`, `session/load`. **No `session/prompt` at all.**
@@ -6155,11 +6155,11 @@ already locked by `messages.test.ts:340`).
 **Verified**
 
 ```
-pnpm --filter @kortix/sdk typecheck                      → exit 0
-pnpm --filter @kortix/sdk test                           → 1481 pass, 0 fail, 122 files
+pnpm --filter @zed/sdk typecheck                      → exit 0
+pnpm --filter @zed/sdk test                           → 1481 pass, 0 fail, 122 files
 bun test src/react/use-opencode-sessions/agents.test.ts  → 9 pass, 0 fail (RED first: 2 fail)
-apps/kortix-sandbox-agent-server: bun test src/__tests__ → 293 pass, 0 fail
-apps/kortix-sandbox-agent-server: bun tsc --noEmit       → exit 0
+apps/zed-sandbox-agent-server: bun test src/__tests__ → 293 pass, 0 fail
+apps/zed-sandbox-agent-server: bun tsc --noEmit       → exit 0
 apps/web: bun test src/features/workspace/command-palette.test.ts → 3 pass, 0 fail
 ```
 
@@ -6180,18 +6180,18 @@ palette's no-project branch is asserted at the source level plus by the hook's o
 `src/index.ts`. Nothing on the Now chain.
 
 **The bug.** Every project in the local stack showed a sidebar banner reading
-**"Upgrade to v2 — This project still runs the v1 kortix.toml"**, including
+**"Upgrade to v2 — This project still runs the v1 zed.toml"**, including
 freshly provisioned v3 projects. The predicate lived in `apps/web`
 (`customize/migrate-to-v2/manifest-version.ts:22-26`): it regex-sniffed
-`kortix_version` out of `config.manifest_raw` and returned `1` for a falsy or
+`zed_version` out of `config.manifest_raw` and returned `1` for a falsy or
 non-matching string. Four distinct "unknown" cases therefore rendered as
 "legacy, needs migrating" — no manifest text, unparseable text, text with no
-`kortix_version`, and a config blanked by IAM. It also clamped every version
+`zed_version`, and a config blanked by IAM. It also clamped every version
 `>= 2` to `2`, so v3 was indistinguishable from v2 and the copy advertised a
 destination (v2) that was not the platform's latest.
 
-The manifest is self-describing: `kortix_version` is `required` with a `const`
-in each of `kortix.v1/v2/v3.schema.json`. Nothing needed inferring. The API now
+The manifest is self-describing: `zed_version` is `required` with a `const`
+in each of `zed.v1/v2/v3.schema.json`. Nothing needed inferring. The API now
 reads it (`apps/api/src/projects/lib/manifest-verdict.ts`) and returns
 `config.manifest_version` — `version`, `latest_version`, `migration_offered`,
 `target_version`, `unknown_reason`, `path`. Unknown stays unknown: `version`
@@ -6222,7 +6222,7 @@ session's in-flight work, fenced off from this change). Baseline is 1501 pass /
 the full run.
 
 **Not verified:** no deployed dev run — this session does not own the release
-path. A genuine v1 `kortix.toml` project was not exercised live because no local
+path. A genuine v1 `zed.toml` project was not exercised live because no local
 project has one; the v1 → target 2 rule is covered by unit tests on the server
 resolver plus a live response-rewrite that proved the client renders exactly the
 verdict it is given.
@@ -6232,10 +6232,10 @@ verdict it is given.
 ### 2026-07-30 — session `bugbash-acp-rest-capability`
 
 Managed ACP serves NO OpenCode REST API (its daemon skips `opencode.start()` —
-`apps/kortix-sandbox-agent-server/src/main.ts:262-272`), yet every OpenCode REST
+`apps/zed-sandbox-agent-server/src/main.ts:262-272`), yet every OpenCode REST
 hook in this package fired anyway because they all gated on "sandbox healthy +
 url pinned". Live capture on session `fcfd1f38-…`, sandbox
-`sbx_01KYR7C97JFC6TP04AJHXFH8KT`: `/8000/kortix/health` → 200
+`sbx_01KYR7C97JFC6TP04AJHXFH8KT`: `/8000/zed/health` → 200
 (`runtimeReady:true`, `acp_ready:true`) while `/8000/project/current`,
 `/8000/global/config`, `/8000/command`, `/8000/session`, `/8000/agent`,
 `/8000/skill` → `503 {"error":"opencode not ready","opencode":"starting"}`. No
@@ -6292,9 +6292,9 @@ also carries two CONCURRENT sessions' names, not just this one's: mine are
 **Verified**
 
 ```
-pnpm --filter @kortix/sdk typecheck   → exit 0
-pnpm --filter @kortix/sdk test        → 1535 pass, 0 fail, 129 files (from 1481/122)
-pnpm --filter @kortix/sdk smoke:install → ✔ install smoke test passed
+pnpm --filter @zed/sdk typecheck   → exit 0
+pnpm --filter @zed/sdk test        → 1535 pass, 0 fail, 129 files (from 1481/122)
+pnpm --filter @zed/sdk smoke:install → ✔ install smoke test passed
 RED first: runtime-transport/current-runtime/available-commands/keys-rest-capability
            /commands-transport → 11 pass, 9 fail, 2 errors
            keys-rest-capability after the gate split → 3 pass, 4 fail
@@ -6302,7 +6302,7 @@ RED first: runtime-transport/current-runtime/available-commands/keys-rest-capabi
 
 Live, on the reported managed-ACP session (web :14100 / api :14108):
 45 fetch/xhr requests, ALL 200. Exactly ONE sandbox path in the whole page —
-`/8000/kortix/health`. `/8000/session`, `/8000/command`, `/8000/project/current`,
+`/8000/zed/health`. `/8000/session`, `/8000/command`, `/8000/project/current`,
 `/8000/global/config`, `/8000/agent`, `/8000/skill`: **0 hits each, 0 × 503**.
 Agent selector populated (`opencode, claude, codex, memory-reflector, pi`) from
 `/projects/:id/detail`. Slash palette populated from the ACP stream:
@@ -6324,7 +6324,7 @@ as today.
 ## CLI routed onto the SDK — `persistProjectSessionAcpIdentity` made public
 
 **Scope in this package: ONE line of source.** `apps/cli` was rewritten to consume
-only `@kortix/sdk` (it previously hand-rolled an OpenCode REST client and never
+only `@zed/sdk` (it previously hand-rolled an OpenCode REST client and never
 imported the SDK at all). Everything the CLI needed already existed on the public
 surface except one function.
 
@@ -6350,10 +6350,10 @@ belong to concurrent sessions whose exports were already in the working tree
 un-snapshotted; regenerating recorded them too. Nothing was removed.
 
 Also added `src/core/runtime/pty.public.test.ts`: two cases locking that
-`getKortixPtyWebSocketUrl` resolves outside a browser (wss for https, ws for a
+`getZedPtyWebSocketUrl` resolves outside a browser (wss for https, ws for a
 local http base). The CLI's `sessions shell` now drives the SDK PTY client from
 Bun, and the snapshot only proves the export exists, not that it runs without a
-`window`. No source change was needed — `kortixPty` was already public via
+`window`. No source change was needed — `zedPty` was already public via
 `core/runtime/client`.
 
 ```
@@ -6400,9 +6400,9 @@ RED  bun test src/core/acp/projection.test.ts        → 34 pass, 7 fail
 RED  apps/api … compact-transcript.test.ts           → 14 pass, 4 fail; then 18 pass, 1 fail
 RED  apps/web … token-progress.test.ts               → SyntaxError: no export getLastAssistantTokenBreakdown
 
-pnpm --filter @kortix/sdk typecheck        → clean
-pnpm --filter @kortix/sdk test            → 1550 pass, 0 fail, 130 files (from 1535/129)
-pnpm --filter @kortix/sdk smoke:install   → ✔ install smoke test passed
+pnpm --filter @zed/sdk typecheck        → clean
+pnpm --filter @zed/sdk test            → 1550 pass, 0 fail, 130 files (from 1535/129)
+pnpm --filter @zed/sdk smoke:install   → ✔ install smoke test passed
 apps/api  bun test --isolate compact-transcript + public-session-share-view → 37 pass, 0 fail
 apps/web  bun test token-progress.test.ts → 12 pass, 0 fail; eslint clean; tsc: 0 errors in my files
 biome: 3 errors, all pre-existing `noExplicitAny` (identical set at HEAD)
@@ -6445,7 +6445,7 @@ host-local CLI transport after the earlier SDK-only rewrite.
 
 Scope:
 
-- Restore the CLI to the published `@kortix/sdk` surface.
+- Restore the CLI to the published `@zed/sdk` surface.
 - Keep OpenCode REST as the default runtime.
 - Preserve existing CLI commands and output contracts.
 - Repair the current session API contract failures separately from SDK code.
@@ -6467,7 +6467,7 @@ entry. Left as-is; not this session's to resolve.)
 ### 2026-07-31 — session `sdk-project-emoji-icon` (B43 claim)
 
 Claimed the additive `icon` field on the SDK's typed project contract:
-`KortixProject`, `ProvisionProjectInput`, `CreateProjectRepoInput`
+`ZedProject`, `ProvisionProjectInput`, `CreateProjectRepoInput`
 (`packages/sdk/src/core/rest/projects-client/projects.ts`) and
 `LinkRepositoryInput` (`packages/sdk/src/core/rest/projects-client/github.ts`).
 This mirrors the API-side `icon: z.string().nullable()` contract that Tasks 1–3
@@ -6482,7 +6482,7 @@ package — this is an independent, additive type declaration. Task brief:
 
 ### 2026-07-31 — session `sdk-project-emoji-icon` (B43 completion)
 
-Added `icon?: string | null` to `KortixProject`, and `icon?: string` to
+Added `icon?: string | null` to `ZedProject`, and `icon?: string` to
 `ProvisionProjectInput`, `CreateProjectRepoInput`
 (`packages/sdk/src/core/rest/projects-client/projects.ts`), and
 `LinkRepositoryInput` (`packages/sdk/src/core/rest/projects-client/github.ts`).
@@ -6491,7 +6491,7 @@ export, no rename, `version` untouched. Implementation `8f8db0d4f1`.
 
 RED proven via `typecheck`, not `bun test`: TypeScript excess-property checks
 are compile-time only, so the wire-serialization tests passed at runtime even
-before the fields existed. Before the implementation, `pnpm --filter @kortix/sdk
+before the fields existed. Before the implementation, `pnpm --filter @zed/sdk
 typecheck` reported 7 `TS2353`/`TS2339` errors, all `'icon' does not exist on
 type '…'`, across the four interfaces touched. After adding the fields,
 `typecheck` exited 0.
@@ -6501,14 +6501,14 @@ convention, no new file): two type-pin tests (`CreateProjectRepoInput`,
 `LinkRepositoryInput` each accept `icon`) and the two wire-contract tests from
 the task brief verbatim — `provisionProject` sends `icon` in the real POST
 body, and a real 200 response body's `icon` survives parsing onto
-`KortixProject`.
+`ZedProject`.
 
 **Final SDK gates:**
 
 ```
-pnpm --filter @kortix/sdk typecheck        → exit 0
-pnpm --filter @kortix/sdk test             → 1354 pass, 0 fail, 2 skip, 116 files
-pnpm --filter @kortix/sdk run smoke:install → ✔ install smoke test passed
+pnpm --filter @zed/sdk typecheck        → exit 0
+pnpm --filter @zed/sdk test             → 1354 pass, 0 fail, 2 skip, 116 files
+pnpm --filter @zed/sdk run smoke:install → ✔ install smoke test passed
 bun test src/index.isomorphic.test.ts      → 67 pass, 0 fail (tripwire)
 bun test src/public-surface.test.ts src/package-exports.test.ts → 3 pass, 0 fail (snapshot unchanged)
 npx biome check <3 touched files>          → 2 pre-existing findings in github.ts
@@ -6558,13 +6558,13 @@ Review findings, both accepted:
    own explicit-token `fetch`, so it does not exercise this path.
 
 ```
-pnpm --filter @kortix/sdk exec bun test src/core/rest/projects-client/projects.test.ts \
+pnpm --filter @zed/sdk exec bun test src/core/rest/projects-client/projects.test.ts \
   src/core/rest/projects-client/github.test.ts
   → 18 pass, 0 fail (projects.test.ts: 12 pass; github.test.ts: 6 pass)
 
-pnpm --filter @kortix/sdk typecheck    → exit 0
-pnpm --filter @kortix/sdk test         → 1357 pass, 0 fail, 116 files
-pnpm --filter @kortix/sdk run smoke:install → ✔ install smoke test passed
+pnpm --filter @zed/sdk typecheck    → exit 0
+pnpm --filter @zed/sdk test         → 1357 pass, 0 fail, 116 files
+pnpm --filter @zed/sdk run smoke:install → ✔ install smoke test passed
 
 npx biome check <4 touched files>      → projects.ts, projects.test.ts,
                                           github.test.ts clean; github.ts
@@ -6611,26 +6611,26 @@ RED:
 GREEN:
 
 ```
-pnpm --filter @kortix/sdk typecheck
+pnpm --filter @zed/sdk typecheck
 → exit 0
 
-pnpm --filter @kortix/sdk test
+pnpm --filter @zed/sdk test
 → 1355 pass, 2 skip, 0 fail, 5908 assertions, 117 files
 
-pnpm --filter @kortix/sdk run smoke:install
-→ OK: @kortix/sdk imports and constructs from a packed tarball
+pnpm --filter @zed/sdk run smoke:install
+→ OK: @zed/sdk imports and constructs from a packed tarball
 → ✔ install smoke test passed
 
-pnpm --filter @kortix/db lint
+pnpm --filter @zed/db lint
 → 115 migration files passed; Squawk reported 0 issues
 
-pnpm --filter @kortix/db typecheck
+pnpm --filter @zed/db typecheck
 → exit 0
 
-pnpm --filter @kortix/db test
+pnpm --filter @zed/db test
 → 160 pass, 3 skip, 0 fail
 
-pnpm --filter kortix-api test
+pnpm --filter zed-api test
 → 4873 pass, 57 skip, 0 fail, 19954 assertions, 480 files
 
 bun test apps/web/src/components/iam/audit-display-helpers.test.ts
@@ -6692,7 +6692,7 @@ whatever it is handed, so the six new runtime tests were green before the
 implementation. The gate that owns a type contract is `tsc`, and it was red:
 
 ```
-pnpm --filter @kortix/sdk typecheck
+pnpm --filter @zed/sdk typecheck
 src/core/rest/projects-client/projects.test.ts(285,38): error TS2353: Object literal may only specify known properties, and 'icon' does not exist in type 'Partial<ProjectInput>'.
 src/core/rest/projects-client/projects.test.ts(298,38): error TS2353: ... (x4)
 Exit status 2
@@ -6713,27 +6713,27 @@ nine killed:
 | M6 | drop `projectId` from the route | 17 / 1 |
 | M7 | narrow `ProjectInput.icon` to `string` | typecheck exit 1, 2 TS errors |
 | M8 | remove `ProjectInput.icon` entirely | typecheck exit 1, 4 TS errors |
-| M9 | narrow `KortixProject.icon` to `string` | typecheck exit 1, 1 TS error |
+| M9 | narrow `ZedProject.icon` to `string` | typecheck exit 1, 1 TS error |
 
 M9 covers a gap this session FOUND rather than introduced: B43 added
-`KortixProject.icon?: string | null` with no compile-time pin on the
+`ZedProject.icon?: string | null` with no compile-time pin on the
 nullability, and narrowing it to `string` left every runtime assertion green
 (`expect(x).toBeNull()` accepts any type). The clear is only useful if the
 caller can see that it happened, so the response half is now pinned with
-`const projectIconAcceptsNull: KortixProject['icon'] = null;` — a test-only
+`const projectIconAcceptsNull: ZedProject['icon'] = null;` — a test-only
 addition, no source change to B43's declaration.
 
 **Gates**
 
 ```
-pnpm --filter @kortix/sdk typecheck
+pnpm --filter @zed/sdk typecheck
 → exit 0
 
-pnpm --filter @kortix/sdk test
+pnpm --filter @zed/sdk test
 → 1365 pass, 0 fail, 5893 expect() calls, 116 files  (baseline before this change: 1359 / 0 / 116)
 
-pnpm --filter @kortix/sdk run smoke:install
-→ OK: @kortix/sdk imports and constructs from a packed tarball
+pnpm --filter @zed/sdk run smoke:install
+→ OK: @zed/sdk imports and constructs from a packed tarball
 → ✔ install smoke test passed
 ```
 
@@ -6753,7 +6753,7 @@ byte-identical.
 ### 2026-08-01 — session `sdk-project-glyph-icon` (B45 claim)
 
 Claimed the additive `icon_glyph?: ProjectGlyph | null` field across the SDK's
-typed project contract: `KortixProject`, `ProjectInput`
+typed project contract: `ZedProject`, `ProjectInput`
 (`packages/sdk/src/core/rest/projects-client/projects.ts`),
 `ProvisionProjectInput`, `CreateProjectRepoInput` (same file), and
 `LinkRepositoryInput` (`packages/sdk/src/core/rest/projects-client/github.ts`).
@@ -6761,11 +6761,11 @@ typed project contract: `KortixProject`, `ProjectInput`
 This is Task 6 of `docs/superpowers/plans/2026-08-01-project-glyph-icons.md` —
 the SDK-types twin of B43/B44, extended to the second glyph-icon shape
 (`{name, color}`) landed server-side by Tasks 1–5. `ProjectGlyph` is declared
-independently in the SDK — deliberately NOT imported from `@kortix/shared`,
+independently in the SDK — deliberately NOT imported from `@zed/shared`,
 which exports a same-named type with literal-union `name`/`color` fields for
 the server-side catalogue. The SDK's dependencies stay exactly
-`@kortix/llm-catalog`, `@opencode-ai/sdk`, and `zustand`; adding a workspace
-dependency on `@kortix/shared` for a two-field interface would cost every
+`@zed/llm-catalog`, `@opencode-ai/sdk`, and `zustand`; adding a workspace
+dependency on `@zed/shared` for a two-field interface would cost every
 downstream consumer for nothing. The two types are structurally compatible, so
 nothing needs converting at the boundary. Task brief:
 `.superpowers/sdd/2026-08-01-project-glyph-icons/task-6-brief.md`.
@@ -6776,7 +6776,7 @@ nothing needs converting at the boundary. Task brief:
 ### 2026-08-01 — session `sdk-project-glyph-icon` (B45 completion)
 
 Added `ProjectGlyph` (`{ name: string; color: string }`) and
-`icon_glyph?: ProjectGlyph | null` to `KortixProject` and `ProjectInput`, and
+`icon_glyph?: ProjectGlyph | null` to `ZedProject` and `ProjectInput`, and
 `icon_glyph?: ProjectGlyph` (non-null — create bodies have no clear-the-glyph
 case) to `ProvisionProjectInput` and `CreateProjectRepoInput`
 (`packages/sdk/src/core/rest/projects-client/projects.ts`), and the same
@@ -6785,10 +6785,10 @@ case) to `ProvisionProjectInput` and `CreateProjectRepoInput`
 one new exported interface, five new optional members on already-exported
 interfaces — no rename, no removal, `version` untouched.
 
-**Deliberately a SECOND `ProjectGlyph`.** `@kortix/shared` exports a
+**Deliberately a SECOND `ProjectGlyph`.** `@zed/shared` exports a
 same-named type with literal-union `name`/`color` fields for the server-side
-catalogue. The SDK does not import `@kortix/shared` — its dependencies stay
-exactly `@kortix/llm-catalog`, `@opencode-ai/sdk`, `zustand` — so this
+catalogue. The SDK does not import `@zed/shared` — its dependencies stay
+exactly `@zed/llm-catalog`, `@opencode-ai/sdk`, `zustand` — so this
 declares an independent, structurally-compatible `string`/`string` version.
 A literal union here would make every catalogue addition a breaking change
 for pinned consumers; the catalogue is a server-side concern that can grow
@@ -6797,7 +6797,7 @@ without a package release.
 **Test conventions used.** The brief's snippet named `clientReturning` and
 `recordingClient` helpers that do not exist in this file. The real
 conventions (`projects.test.ts`/`github.test.ts`, both already used by
-B43/B44): `configureKortix` + a mocked `globalThis.fetch`, and the
+B43/B44): `configureZed` + a mocked `globalThis.fetch`, and the
 `captureUpdate(input: Partial<ProjectInput>)` helper B44 added for reading the
 literal wire body `updateProject` sent. Reused as-is, no new helpers invented.
 One correction to the brief's test snippet: `const omitted: ProjectInput = {}`
@@ -6810,7 +6810,7 @@ read round-trip (`getProject`), a provision wire-body check, the
 omitted-vs-null type pin, three `captureUpdate`-based wire tests (explicit
 null on the wire, a glyph sent verbatim, a name-only update sends no
 `icon_glyph` key), and a compile-time response-nullability pin
-(`KortixProject['icon_glyph'] = null`) paired with its round-trip test, mirroring
+(`ZedProject['icon_glyph'] = null`) paired with its round-trip test, mirroring
 the `projectIconAcceptsNull` pin B44 added after finding that gap in `icon`.
 `github.test.ts` — one wire test for `LinkRepositoryInput.icon_glyph`.
 
@@ -6820,7 +6820,7 @@ TS interface, so the new tests already passed at runtime before the fields
 existed. Before the implementation:
 
 ```
-pnpm --filter @kortix/sdk typecheck
+pnpm --filter @zed/sdk typecheck
 src/core/rest/projects-client/github.test.ts(110,5): error TS2353: 'icon_glyph' does not exist in type 'LinkRepositoryInput'.
 src/core/rest/projects-client/projects.test.ts(49,5): error TS2353: 'icon_glyph' does not exist in type 'CreateProjectRepoInput'.
 src/core/rest/projects-client/projects.test.ts(52,22): error TS2339: Property 'icon_glyph' does not exist on type 'CreateProjectRepoInput'.
@@ -6866,10 +6866,10 @@ optional here.
 **Final SDK gates:**
 
 ```
-pnpm --filter @kortix/sdk typecheck        → exit 0
-pnpm --filter @kortix/sdk test             → 1374 pass, 0 fail, 5910 expect() calls, 116 files
+pnpm --filter @zed/sdk typecheck        → exit 0
+pnpm --filter @zed/sdk test             → 1374 pass, 0 fail, 5910 expect() calls, 116 files
                                               (baseline before this change: 1365 pass / 0 fail / 116 files)
-pnpm --filter @kortix/sdk run smoke:install → ✔ install smoke test passed
+pnpm --filter @zed/sdk run smoke:install → ✔ install smoke test passed
 bun test src/index.isomorphic.test.ts      → tripwire green (included in the 1374/116 total above)
 bun test src/public-surface.test.ts src/package-exports.test.ts → 2 pass, 0 fail (runtime snapshot unchanged)
 bun test src/public-type-surface.test.ts   → 1 pass, 0 fail (type snapshot regenerated, additive-only diff)
@@ -6883,7 +6883,7 @@ npx biome check <4 touched files>          → 2 NEW findings both fixed inline 
 
 **Cross-surface note:** `apps/web` was not touched — later tasks of this plan
 consume `project.icon_glyph` there. `packages/api-contract` and
-`@kortix/shared` were not imported or modified, per the task brief's
+`@zed/shared` were not imported or modified, per the task brief's
 constraint (decision 2: a second, independent `ProjectGlyph`).
 
 **Status:** COMPLETE.
@@ -6957,10 +6957,10 @@ No public field, type, or export was removed or renamed.
 
 SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1389 pass`, `0 fail`,
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1389 pass`, `0 fail`,
   and `5969 expect() calls` across `117` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 
 **Status:** COMPLETE.
 
@@ -6987,7 +6987,7 @@ branch). Purely additive — no existing export renamed or removed.
 Measured baseline before any change:
 
 ```
-pnpm --filter @kortix/sdk test
+pnpm --filter @zed/sdk test
 → 1357 pass, 2 skip, 0 fail, 5873 expect() calls, across 116 files [16.84s]
 ```
 
@@ -7041,17 +7041,17 @@ any implementation code existed, for the expected reason.
 GREEN:
 
 ```
-pnpm --filter @kortix/sdk typecheck
+pnpm --filter @zed/sdk typecheck
 → exit 0 (tsc --noEmit + tsc --noEmit -p examples/tsconfig.json)
 
-pnpm --filter @kortix/sdk test
+pnpm --filter @zed/sdk test
 → 1370 pass, 0 fail, 5908 expect() calls, across 116 files [16.58s]
    (post-change run; two SSE-related tests are environment-conditionally
    skipped in some runs and not in others — pre-existing, unrelated to this
    change, and total test count (1370) is stable across both)
 
-pnpm --filter @kortix/sdk run smoke:install
-→ OK: @kortix/sdk imports and constructs from a packed tarball
+pnpm --filter @zed/sdk run smoke:install
+→ OK: @zed/sdk imports and constructs from a packed tarball
 → ✔ install smoke test passed
 ```
 
@@ -7112,7 +7112,7 @@ leaving the caller responsible for attaching the token." Re-reading
 header itself, fetches itself, and returns a `Blob`. As shipped,
 `costExportUrl` was a bare URL string with no auth story — a consumer
 treating it like a plain link (`<a href>`, `window.open`) gets a silent
-`401`, and the architecture rule ("hosts never raw-fetch the Kortix API")
+`401`, and the architecture rule ("hosts never raw-fetch the Zed API")
 would force Task 16 to hand-roll authenticated fetch-to-Blob logic in
 `apps/web` instead.
 
@@ -7128,7 +7128,7 @@ cannot diverge. `costExportUrl` is unchanged in behavior and stays exported —
 removing it would break a name this task already published.
 
 Deviated from the literal `Promise<Blob>` suggested in the review: also
-surfaces the `x-kortix-row-cap` response header (parsed to `number | null`)
+surfaces the `x-zed-row-cap` response header (parsed to `number | null`)
 because Task 16 needs it to warn when the 10,000-row CSV cap truncates a
 finance export, and that header isn't present anywhere in either route's JSON
 response schema — a caller genuinely cannot get it any other way. Judged
@@ -7168,14 +7168,14 @@ bun test src/core/rest/projects-client/session-costs.test.ts
 
 **GREEN:**
 ```
-pnpm --filter @kortix/sdk typecheck
+pnpm --filter @zed/sdk typecheck
 → exit 0
 
-pnpm --filter @kortix/sdk test
+pnpm --filter @zed/sdk test
 → 1374 pass, 0 fail, 5926 expect() calls, across 116 files [16.62s]
 
-pnpm --filter @kortix/sdk run smoke:install
-→ OK: @kortix/sdk imports and constructs from a packed tarball
+pnpm --filter @zed/sdk run smoke:install
+→ OK: @zed/sdk imports and constructs from a packed tarball
 → ✔ install smoke test passed
 
 bun test src/index.isomorphic.test.ts
@@ -7237,10 +7237,10 @@ fix, GREEN after. No signature change, no new export — behavior-only.
 
 Gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1389 pass`, `2 skip`, `0 fail`, `5968
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1389 pass`, `2 skip`, `0 fail`, `5968
   expect() calls` across `117` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 
 **SDK package shippable to production: YES.**
 
@@ -7252,8 +7252,8 @@ No **Now** task claimed. This is a narrow cross-host session-title bug fix.
 
 Scope:
 
-- Treat Veyris's historical `New agent` name as a Kortix placeholder.
-- Keep the SDK title-refresh loop active until Kortix replaces that placeholder.
+- Treat Veyris's historical `New agent` name as a Zed placeholder.
+- Keep the SDK title-refresh loop active until Zed replaces that placeholder.
 - Preserve all published names and signatures.
 
 The required `tdd` skill is unavailable in this session. The work will use the
@@ -7276,7 +7276,7 @@ Scope:
 
 - Expose stored secret delivery metadata through the project secrets API.
 - Add an admin-only route for delivery-strategy changes.
-- Expose the additive contract through `@kortix/sdk`.
+- Expose the additive contract through `@zed/sdk`.
 - Record central audit events for secret administration without secret values.
 - Keep `broker` and `egress` unavailable until their adapters exist.
 
@@ -7295,7 +7295,7 @@ Required SDK gates are typecheck, the full test suite, and packed-install smoke.
 
 Added delivery strategy, consumer, status, rotation, and egress-policy metadata
 to the project secret contract. Added `setProjectSecretStrategy()` and
-`kortix.project(id).secrets.setStrategy()` without removing or renaming a
+`zed.project(id).secrets.setStrategy()` without removing or renaming a
 published export.
 
 The type-surface snapshot adds eight entries. The runtime-surface snapshot adds
@@ -7303,10 +7303,10 @@ two entries. All changes are additive.
 
 SDK gates:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1391 pass`, `0 fail`, and `5975 expect()`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1391 pass`, `0 fail`, and `5975 expect()`
   calls across `117` files.
-- `pnpm --filter @kortix/sdk smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk smoke:install`: exit `0`.
 
 **Status:** COMPLETE.
 
@@ -7363,10 +7363,10 @@ part ids, since hosts own their own message ids).
 
 **Gates**
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1396 pass`, `0 fail`, `5985 expect() calls`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1396 pass`, `0 fail`, `5985 expect() calls`
   across `117` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0` — *"OK: @kortix/sdk
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0` — *"OK: @zed/sdk
   imports and constructs from a packed tarball"*.
 - `apps/web` consumer check: `bun test src/features/session src/components/markdown`
   → `1087 pass`, `0 fail` across `99` files.
@@ -7427,10 +7427,10 @@ affordance — flagged for review rather than assumed.
 
 **Gates**
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1403 pass`, `0 fail`, `5997 expect() calls`
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1403 pass`, `0 fail`, `5997 expect() calls`
   across `117` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 - `apps/web`: `bun test src/features/session src/components/markdown src/features/files`
   → `1116 pass`, `0 fail` across `105` files.
 
@@ -7505,9 +7505,9 @@ correction, not a break.
 
 **Gates**
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1407 pass`, `0 fail` across `117` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1407 pass`, `0 fail` across `117` files.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 - `apps/web`: `1116 pass`, `0 fail` across `105` files.
 
 **Tests added** — 4: confirming one message does not delete another still
@@ -7530,7 +7530,7 @@ thread. Product decision from the user: **queue, do not reject.**
 **Finding that shaped the design.** The runtime already has native queueing.
 The opencode client exposes two `prompt` methods:
 
-- `session.promptAsync` → `/session/{id}/prompt_async` — what Kortix calls
+- `session.promptAsync` → `/session/{id}/prompt_async` — what Zed calls
   today. No `delivery` field.
 - `session.prompt` (v2) → `/api/session/{id}/prompt` — *"Durably admit one
   session input and schedule agent-loop execution"* — with
@@ -7567,9 +7567,9 @@ yet — it stays internal until something consumes it, so no snapshot moved.
 
 **Gates**
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1419 pass`, `0 fail` across `118` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1419 pass`, `0 fail` across `118` files.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 
 **Status:** queue core COMPLETE. **NOT yet wired** — the SDK send path and the
 `apps/web` bubble still need to consume it, and the `SendPhase` per-message state
@@ -7616,9 +7616,9 @@ chronological order, so the ordinal pairing is sound.
 
 **Gates**
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1420 pass`, `0 fail` across `118` files.
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1420 pass`, `0 fail` across `118` files.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 - `apps/web`: `1189 pass`, `0 fail` across `118` files.
 
 **Tests added** — 1, RED first: a PENDING upload is not consumed by another
@@ -7660,16 +7660,16 @@ approval page now reads the SDK field directly without a host-local type cast.
 
 RED:
 
-- `pnpm --filter @kortix/sdk typecheck`: failed with `TS2353` and `TS2339`
+- `pnpm --filter @zed/sdk typecheck`: failed with `TS2353` and `TS2339`
   because `ApprovalLinkDetails` did not expose `review_complete`.
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1410 pass`, `2 skip`, `0 fail`, and
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1410 pass`, `2 skip`, `0 fail`, and
   `6026 expect()` calls across `117` files.
-- `pnpm --filter @kortix/sdk smoke:install`: exit `0`; packed tarball imported
-  and `createKortix` constructed successfully.
+- `pnpm --filter @zed/sdk smoke:install`: exit `0`; packed tarball imported
+  and `createZed` constructed successfully.
 
 No public export name changed. The public-surface snapshots stayed unchanged.
 
@@ -7712,14 +7712,14 @@ RED:
 GREEN:
 
 - `bun test src/core/session/preview-probe.test.ts`: `21 pass`, `0 fail`.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1516 pass`, `1 fail`, `1517` tests across
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1516 pass`, `1 fail`, `1517` tests across
   `122` files. The one failure is `fetchCostExportCsv requests the export URL
   with a Bearer token` in `core/rest/projects-client/session-costs.test.ts` —
   PRE-EXISTING and unrelated (a process-wide `mock.module` auth-token leak from
   a sibling suite). Verified on a clean tree at the same commit: `1495 pass`,
   `1 fail`, same test.
-- `pnpm --filter @kortix/sdk smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk smoke:install`: exit `0`.
 
 Public surface: PURELY ADDITIVE — 4 names on `.` and `./session`
 (`PREVIEW_PROBE_TIMEOUT_MS`, `PreviewPortProbe`, `classifyPreviewProbeStatus`,
@@ -7753,10 +7753,10 @@ itself already weak evidence the port is up. Three seconds leaves room for
 several samples inside any window worth having.
 
 - `bun test src/core/session/preview-probe.test.ts`: `21 pass`, `0 fail`.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1516 pass`, `1 fail` — the same
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1516 pass`, `1 fail` — the same
   pre-existing `fetchCostExportCsv` failure documented in the entry above.
-- `pnpm --filter @kortix/sdk smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk smoke:install`: exit `0`.
 
 No export name changed, so both public-surface snapshots are byte-identical to
 the previous entry's. `version` untouched.
@@ -7808,10 +7808,10 @@ killing a specific test; see the commit messages).
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1533 pass`, `0 fail`, `6287 expect()` calls
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1533 pass`, `0 fail`, `6287 expect()` calls
   across `121` files (baseline for this branch was `1520` / `121`).
-- `pnpm --filter @kortix/sdk run smoke:install`: exit `0`.
+- `pnpm --filter @zed/sdk run smoke:install`: exit `0`.
 
 **Not covered by a test:** the two-line wiring in `use-session-sync.ts` that
 passes `wasTranscriptEvicted` into `shouldHydrateFromCache`. The SDK test runner
@@ -7853,10 +7853,10 @@ No rename, no removal, so no consumer breaks.
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1603 pass`, `2 skip`, `0 fail`, `6486
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1603 pass`, `2 skip`, `0 fail`, `6486
   expect()` across `126` files (was `1590`/`126` before this change).
-- `pnpm --filter @kortix/sdk run smoke:install`: `✔ install smoke test passed`.
+- `pnpm --filter @zed/sdk run smoke:install`: `✔ install smoke test passed`.
 
 Also verified end to end against the live local stack: the admin panel's new
 Entitlements tab drove `POST …/trial` → `200` with body
@@ -7915,15 +7915,15 @@ src/core/rest/projects-client/connectors.test.ts(531,17): error TS2339: Property
 
 GREEN:
 
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1584 pass`, `2 skip`, `3 fail`,
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1584 pass`, `2 skip`, `3 fail`,
   `6451 expect()` across `124` files. **The 3 failures are pre-existing and
   unrelated** — `fetchCostExportCsv …`, `catalog uses the project-scoped route …`,
   `attachment upload sends raw bytes …`. Verified by `git stash` → same 3 failures,
   `1582 pass`. This change moved the count `1582 → 1584` and the failures not at
   all. Not fixed here: they are outside this task, and burying them under an
   unrelated change is worse than reporting them.
-- `pnpm --filter @kortix/sdk run smoke:install`: **FAILS**, pre-existing.
+- `pnpm --filter @zed/sdk run smoke:install`: **FAILS**, pre-existing.
   `src/index.ts(136,11): error TS18046: 'error' is of type 'unknown'` inside the
   throwaway smoke project, with `WARN Local package.json exists, but node_modules
   missing`. Identical failure on a stashed tree, so it is the harness in this
@@ -7961,7 +7961,7 @@ Kept both request-safety deadlines. Added the stable API wire code
 `request_deadline`. The SDK normalizes typed and legacy API deadline responses,
 returns typed client `TIMEOUT` errors, and does not invoke the host global error
 handler for either class. The web host rejects these deadlines before telemetry
-or toast processing. The shared toast helper also rejects exact Kortix deadline
+or toast processing. The shared toast helper also rejects exact Zed deadline
 messages when a direct caller has discarded the typed code. Unrelated `503`
 failures and third-party timeout messages remain visible.
 
@@ -8019,10 +8019,10 @@ GREEN:
 
 - `bun test src/react/use-admin-projects.test.ts`: `8 pass`, `0 fail`,
   `23 expect()` calls.
-- `pnpm --filter @kortix/sdk typecheck`: exit `0`.
-- `pnpm --filter @kortix/sdk test`: `1737 pass`, `0 fail`, `6854 expect()` calls
+- `pnpm --filter @zed/sdk typecheck`: exit `0`.
+- `pnpm --filter @zed/sdk test`: `1737 pass`, `0 fail`, `6854 expect()` calls
   across `137` files (was `1729`/`136` before this change).
-- `pnpm --filter @kortix/sdk run smoke:install`: `✔ install smoke test passed`.
+- `pnpm --filter @zed/sdk run smoke:install`: `✔ install smoke test passed`.
 
 Both surface snapshots were re-recorded. The diff is **7 insertions, 0
 deletions** — `useAdminProjects` in the runtime snapshot, plus the same name and

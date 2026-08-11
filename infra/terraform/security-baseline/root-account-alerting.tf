@@ -22,7 +22,7 @@ locals {
 
 resource "aws_cloudwatch_event_rule" "root_login_use1" {
   provider      = aws.use1
-  name          = "kortix-root-login-failures"
+  name          = "zed-root-login-failures"
   description   = "Forward successful AWS root-account console logins to operations"
   event_pattern = local.root_console_login_event_pattern
   state         = "ENABLED"
@@ -37,7 +37,7 @@ resource "aws_cloudwatch_event_target" "root_login_use1" {
 }
 
 resource "aws_cloudwatch_event_rule" "root_login_usw2" {
-  name          = "kortix-root-login-failures"
+  name          = "zed-root-login-failures"
   description   = "Deliver successful AWS root-account console logins to operations"
   event_pattern = local.root_console_login_event_pattern
   state         = "ENABLED"

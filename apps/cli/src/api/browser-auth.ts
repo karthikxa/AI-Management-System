@@ -24,7 +24,7 @@ interface StartOpts {
 
 /**
  * Stand up a one-shot HTTP server on a random localhost port that
- * accepts a single signed callback from the Kortix dashboard.
+ * accepts a single signed callback from the Zed dashboard.
  *
  * The dashboard's authorize page POSTs `{ state, token }` to
  * `http://127.0.0.1:<port>/callback`. CORS is wide-open because we're
@@ -97,7 +97,7 @@ export function startCallbackServer(opts: StartOpts = {}): Promise<BrowserAuthSe
         res.end(JSON.stringify({ error: 'state mismatch' }));
         return;
       }
-      if (typeof parsed.token !== 'string' || !parsed.token.startsWith('kortix_pat_')) {
+      if (typeof parsed.token !== 'string' || !parsed.token.startsWith('zed_pat_')) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'missing or malformed token' }));
         return;

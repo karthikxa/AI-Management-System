@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { useSendReferralEmails } from '@/hooks/referrals/use-referrals';
 import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -152,7 +152,7 @@ export function ReferralEmailInvitation({ className }: ReferralEmailProps) {
                 status === 'sending' && 'opacity-60',
               )}
             >
-              {status === 'sending' && <KortixLoader size="small" />}
+              {status === 'sending' && <ZedLoader size="small" />}
               {status === 'sent' && <Check className="h-3 w-3" />}
               <span className="max-w-[200px] truncate">{email}</span>
               <button
@@ -193,7 +193,7 @@ export function ReferralEmailInvitation({ className }: ReferralEmailProps) {
           onClick={sendAllEmails}
           disabled={!hasUnsentEmails || isSending}
         >
-          {isSending ? <KortixLoader size="small" /> : <Mail className="h-4 w-4 sm:mr-1.5" />}
+          {isSending ? <ZedLoader size="small" /> : <Mail className="h-4 w-4 sm:mr-1.5" />}
           <span className="hidden sm:inline">{isSending ? t('sending') : t('send')}</span>
         </Button>
       </div>

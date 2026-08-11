@@ -20,21 +20,21 @@ function rules(source: string, options?: ScanOptions): string[] {
   return scanSource(source, options).map((violation) => violation.rule);
 }
 
-describe('scanSource raw-kortix-fetch', () => {
+describe('scanSource raw-zed-fetch', () => {
   test('flags a fetch whose template base is interpolated', () => {
     const source = 'const r = await fetch(`${base}/v1/projects`);';
 
-    expect(rules(source)).toContain('raw-kortix-fetch');
+    expect(rules(source)).toContain('raw-zed-fetch');
   });
 
   test('flags a fetch whose target is a bare variable', () => {
     const source = 'const r = await fetch(url, { method: "GET" });';
 
-    expect(rules(source)).toContain('raw-kortix-fetch');
+    expect(rules(source)).toContain('raw-zed-fetch');
   });
 
   test('allows the GitHub releases API', () => {
-    const source = "await fetch('https://api.github.com/repos/kortix-ai/suna/releases/latest')";
+    const source = "await fetch('https://api.github.com/repos/zed-ai/suna/releases/latest')";
 
     expect(scanSource(source)).toEqual([]);
   });
@@ -141,8 +141,8 @@ describe('scanSource import rules', () => {
     expect(rules(source, { test: true })).toEqual(['opencode-package']);
   });
 
-  test('flags a deep @kortix/sdk source import', () => {
-    const source = "import { y } from '@kortix/sdk/src/core/rest/client';";
+  test('flags a deep @zed/sdk source import', () => {
+    const source = "import { y } from '@zed/sdk/src/core/rest/client';";
 
     expect(rules(source)).toContain('sdk-internal-import');
   });
@@ -153,20 +153,20 @@ describe('scanSource import rules', () => {
     expect(rules(source)).toContain('sdk-internal-import');
   });
 
-  test('flags a deep @kortix/sdk source import inside a test file', () => {
-    const source = "import { y } from '@kortix/sdk/src/core/rest/client';";
+  test('flags a deep @zed/sdk source import inside a test file', () => {
+    const source = "import { y } from '@zed/sdk/src/core/rest/client';";
 
     expect(rules(source, { test: true })).toEqual(['sdk-internal-import']);
   });
 
-  test('allows the public @kortix/sdk entry point', () => {
-    const source = "import { createKortix } from '@kortix/sdk';";
+  test('allows the public @zed/sdk entry point', () => {
+    const source = "import { createZed } from '@zed/sdk';";
 
     expect(scanSource(source)).toEqual([]);
   });
 
-  test('allows the public @kortix/sdk/server entry point', () => {
-    const source = "import { createKortix } from '@kortix/sdk/server';";
+  test('allows the public @zed/sdk/server entry point', () => {
+    const source = "import { createZed } from '@zed/sdk/server';";
 
     expect(scanSource(source)).toEqual([]);
   });
@@ -190,8 +190,8 @@ describe('scanCliBoundary', () => {
     root = null;
   });
 
-  test('reports a planted raw Kortix fetch with its file and line', () => {
-    root = mkdtempSync(resolve(tmpdir(), 'kortix-cli-sdk-boundary-'));
+  test('reports a planted raw Zed fetch with its file and line', () => {
+    root = mkdtempSync(resolve(tmpdir(), 'zed-cli-sdk-boundary-'));
     writeFileSync(
       resolve(root, 'planted.ts'),
       [
@@ -206,7 +206,7 @@ describe('scanCliBoundary', () => {
 
     expect(violations).toEqual([
       {
-        rule: 'raw-kortix-fetch',
+        rule: 'raw-zed-fetch',
         index: expect.any(Number),
         match: 'fetch(',
         message: expect.stringContaining('src/api/sdk.ts'),
@@ -217,15 +217,15 @@ describe('scanCliBoundary', () => {
   });
 
   test('reports no violation for a planted allow-listed fetch', () => {
-    root = mkdtempSync(resolve(tmpdir(), 'kortix-cli-sdk-boundary-'));
+    root = mkdtempSync(resolve(tmpdir(), 'zed-cli-sdk-boundary-'));
     writeFileSync(
       resolve(root, 'clean.ts'),
       [
-        "import { createKortix } from '@kortix/sdk';",
+        "import { createZed } from '@zed/sdk';",
         'export async function latest() {',
-        "  return fetch('https://api.github.com/repos/kortix-ai/suna/releases/latest');",
+        "  return fetch('https://api.github.com/repos/zed-ai/suna/releases/latest');",
         '}',
-        'export { createKortix };',
+        'export { createZed };',
         '',
       ].join('\n'),
     );

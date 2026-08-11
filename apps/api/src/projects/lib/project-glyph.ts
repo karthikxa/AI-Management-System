@@ -10,7 +10,7 @@
  * not fail project creation, because the icon is decoration and the project is
  * not. Same contract as `normalizeProjectIcon` in ./project-icon.ts.
  */
-import { type ProjectGlyph, isProjectGlyphColor, isProjectGlyphName } from '@kortix/shared';
+import { type ProjectGlyph, isProjectGlyphColor, isProjectGlyphName } from '@zed/shared';
 
 export function normalizeProjectGlyph(input: unknown): ProjectGlyph | null {
   // `typeof [] === 'object'` and `typeof null === 'object'`, so both need

@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 /**
- * Provision a REAL Kortix session for the voice end-to-end test.
+ * Provision a REAL Zed session for the voice end-to-end test.
  *
- * Every voice test so far used a synthetic session id, which meant ask_kortix —
+ * Every voice test so far used a synthetic session id, which meant ask_zed —
  * the whole point of the channel — could only ever report 'no-session'. This
  * mints a real user, project, and session with a live sandbox so the hand-off
  * has somewhere to land and the turn-relay has a turn to narrate.

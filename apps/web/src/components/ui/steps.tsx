@@ -4,7 +4,7 @@
  * Steps — a collapsible run of operations with a left rail.
  *
  * Adapted from prompt-kit (https://prompt-kit.com/c/steps.json). Changes from
- * upstream: Phosphor icons instead of lucide, kortix tokens instead of
+ * upstream: Phosphor icons instead of lucide, zed tokens instead of
  * bg-muted, and a `trailing` slot on the trigger for the duration readout.
  */
 

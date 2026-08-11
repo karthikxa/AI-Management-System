@@ -1,7 +1,7 @@
-# Kortix CLI — design
+# Zed CLI — design
 
 Status: **draft** · author: in-progress · scope: the cloud-aware
-`kortix` CLI commands beyond the local `init` flow that
+`zed` CLI commands beyond the local `init` flow that
 already ships.
 
 ## 1. Scope
@@ -12,28 +12,28 @@ The CLI lets a user do **everything they can do in the dashboard**, but
 from a terminal or a local coding agent. Concretely:
 
 The mental model is a four-level hierarchy you drill DOWN:
-**Host → Account → Project → Session**. You sign into a *host* (a Kortix
+**Host → Account → Project → Session**. You sign into a *host* (a Zed
 instance — auth lives here), pick an *account* (workspace) within it, pick a
 *project* within that account, and open *sessions* in the project. Exactly one
 host/account/project is "active" at a time; `use` is the verb that moves the
 active pointer at every level (`hosts use`, `accounts use`, `projects use`;
 sessions are the ephemeral leaf, addressed by id). Every command acts on the
 current (host, account, project) unless overridden by `--host` or a directory
-`link.json`. The bare `kortix` screen renders this path as a breadcrumb with
+`link.json`. The bare `zed` screen renders this path as a breadcrumb with
 each unmet level made actionable.
 
-- **Auth (per host)** — sign in with `kortix hosts login [<name>]`,
-  sign out with `kortix hosts logout`, inspect with `kortix hosts whoami`.
-  `kortix login`/`logout`/`whoami` are thin shortcuts that act on the
+- **Auth (per host)** — sign in with `zed hosts login [<name>]`,
+  sign out with `zed hosts logout`, inspect with `zed hosts whoami`.
+  `zed login`/`logout`/`whoami` are thin shortcuts that act on the
   active host.
 - **Projects** — list, show, link a local checkout to a remote project,
   open the dashboard.
 - **Secrets** — list, set, unset env vars for a project.
 - **Sessions** — list, create, connect / open the live URL, restart.
 - **Triggers** — list, fire, enable / disable. (These round-trip
-  through `kortix.yaml` already; CLI is convenience over the existing
+  through `zed.yaml` already; CLI is convenience over the existing
   API routes, not a new surface.)
-- **Project init** — already exists (`kortix init` scaffolds a repo).
+- **Project init** — already exists (`zed init` scaffolds a repo).
 
 ### Out
 
@@ -41,14 +41,14 @@ each unmet level made actionable.
   later as its own thing on top of the same API; it is **not** invoked
   through this CLI.
 - **Implicit top-level `start` / `dev`.** Self-hosting lives under
-  `kortix self-host ...` so Cloud hosts and local self-hosted hosts use
+  `zed self-host ...` so Cloud hosts and local self-hosted hosts use
   the same host-selection model.
 
 ### Non-goal: a CLI-only API
 
 The CLI must consume the **same HTTP API the dashboard consumes**. We
 do not build a parallel "CLI API." If the dashboard currently reads
-`kortix.yaml` straight off GitHub for some view, that logic moves into
+`zed.yaml` straight off GitHub for some view, that logic moves into
 the API so both surfaces share one source of truth. (See §5 for the
 audit-and-move list.)
 
@@ -61,21 +61,21 @@ for every subsequent call, so command code doesn't fork.
 ### 2.1 Token storage
 
 ```
-~/.config/kortix/auth.json    (chmod 0600)
+~/.config/zed/auth.json    (chmod 0600)
 
 {
-  "api_base":   "https://api.kortix.com",          # overridable
-  "token":      "kortix_pat_abc...",                # the actual token
+  "api_base":   "https://api.zed.com",          # overridable
+  "token":      "zed_pat_abc...",                # the actual token
   "token_type": "pat" | "device_flow",
   "account_id": "uuid",                              # which account to act on by default
-  "user_email": "marko@kortix.ai",                  # for whoami display only
+  "user_email": "marko@zed.ai",                  # for whoami display only
   "expires_at": "2026-06-01T...Z"                    # optional; CLI re-auths on 401
 }
 ```
 
-- Override the file path with `KORTIX_AUTH_FILE`.
-- Override the base URL with `KORTIX_API_URL` or `--api <url>`.
-- Pull the token from env via `KORTIX_CLI_TOKEN` for non-interactive use
+- Override the file path with `ZED_AUTH_FILE`.
+- Override the base URL with `ZED_API_URL` or `--api <url>`.
+- Pull the token from env via `ZED_CLI_TOKEN` for non-interactive use
   (CI, agents) — bypasses the file.
 
 ### 2.2 Phase A — paste-a-token
@@ -84,10 +84,10 @@ The user generates a PAT in the dashboard at `/account/tokens`, pastes
 into:
 
 ```
-kortix login --token kortix_pat_...
+zed login --token zed_pat_...
 ```
 
-Or just `kortix login` — the CLI opens the dashboard page in the
+Or just `zed login` — the CLI opens the dashboard page in the
 browser, reads stdin for the token, validates against
 `GET /v1/account/me`, persists.
 
@@ -106,10 +106,10 @@ Backend additions needed:
 The proper Vercel-style flow:
 
 ```
-$ kortix login
-  Opening browser to https://kortix.com/cli?user_code=XJ42-9KQS
+$ zed login
+  Opening browser to https://zed.com/cli?user_code=XJ42-9KQS
   Waiting for approval...
-  ✓ Authenticated as marko@kortix.ai
+  ✓ Authenticated as marko@zed.ai
 ```
 
 Backend additions needed:
@@ -129,53 +129,53 @@ Pattern can clone the project-level OAuth device flow already in
 
 | Command                                         | What it does                                                         | API call                                                            |
 | ----------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `kortix login [--token <pat>]`                  | Auth via PAT paste or device flow                                    | (paste): `GET /v1/account/me` to verify · (device): see §2.3        |
-| `kortix logout`                                 | Delete local auth file                                               | none                                                                |
-| `kortix whoami`                                 | Print user + active account                                          | `GET /v1/account/me`                                                |
-| `kortix accounts ls`                            | List accounts this user belongs to                                   | `GET /v1/account/me` → `accounts[]`                                 |
-| `kortix accounts use <slug-or-id>`              | Switch active account stored in `auth.json`                          | `GET /v1/account/me` then write                                     |
-| `kortix projects ls`                            | List projects in active account                                      | `GET /v1/projects`                                                  |
-| `kortix projects info [<id-or-slug>]`           | Show one project (defaults to linked project)                        | `GET /v1/projects/:id`                                              |
-| `kortix projects link [<id-or-slug>]`           | Bind cwd to a remote project (writes `.kortix/link.json`)            | `GET /v1/projects/:id`                                              |
-| `kortix projects unlink`                        | Remove `.kortix/link.json`                                           | none                                                                |
-| `kortix projects open`                          | Open the dashboard URL for the linked project                        | none                                                                |
-| `kortix secrets ls`                             | List secret names + manifest `[env]` requirements                    | `GET /v1/projects/:id/secrets`                                      |
-| `kortix secrets set <NAME>=<VALUE>...`          | Upsert one or more secrets (read VALUE from stdin if `-`)            | `POST /v1/projects/:id/secrets` (per entry)                         |
-| `kortix secrets unset <NAME>...`                | Remove                                                               | `DELETE /v1/projects/:id/secrets/:name`                             |
-| `kortix sessions ls`                            | List sessions                                                        | `GET /v1/projects/:id/sessions`                                     |
-| `kortix sessions new [--prompt "..."]`          | Start a session                                                      | `POST /v1/projects/:id/sessions`                                    |
-| `kortix sessions open <session-id>`             | Print / open the dashboard URL for one session                       | none                                                                |
-| `kortix sessions logs <session-id> [-f]`        | Stream session output                                                | `GET /v1/projects/:id/sessions/:sid/events` (SSE — exists)          |
-| `kortix sessions rm <session-id>`               | Stop + delete                                                        | `DELETE /v1/projects/:id/sessions/:sid`                             |
-| `kortix triggers ls`                            | List triggers                                                        | `GET /v1/projects/:id/triggers`                                     |
-| `kortix triggers fire <slug>`                   | Manually fire                                                        | `POST /v1/projects/:id/triggers/:slug/fire`                         |
-| `kortix triggers enable/disable <slug>`         | Flip `enabled` in manifest                                           | `PATCH /v1/projects/:id/triggers/:slug`                             |
-| `kortix env ls/pull/push`                       | Alias of `kortix secrets` plus dotenv import/export                  | same as secrets                                                     |
+| `zed login [--token <pat>]`                  | Auth via PAT paste or device flow                                    | (paste): `GET /v1/account/me` to verify · (device): see §2.3        |
+| `zed logout`                                 | Delete local auth file                                               | none                                                                |
+| `zed whoami`                                 | Print user + active account                                          | `GET /v1/account/me`                                                |
+| `zed accounts ls`                            | List accounts this user belongs to                                   | `GET /v1/account/me` → `accounts[]`                                 |
+| `zed accounts use <slug-or-id>`              | Switch active account stored in `auth.json`                          | `GET /v1/account/me` then write                                     |
+| `zed projects ls`                            | List projects in active account                                      | `GET /v1/projects`                                                  |
+| `zed projects info [<id-or-slug>]`           | Show one project (defaults to linked project)                        | `GET /v1/projects/:id`                                              |
+| `zed projects link [<id-or-slug>]`           | Bind cwd to a remote project (writes `.zed/link.json`)            | `GET /v1/projects/:id`                                              |
+| `zed projects unlink`                        | Remove `.zed/link.json`                                           | none                                                                |
+| `zed projects open`                          | Open the dashboard URL for the linked project                        | none                                                                |
+| `zed secrets ls`                             | List secret names + manifest `[env]` requirements                    | `GET /v1/projects/:id/secrets`                                      |
+| `zed secrets set <NAME>=<VALUE>...`          | Upsert one or more secrets (read VALUE from stdin if `-`)            | `POST /v1/projects/:id/secrets` (per entry)                         |
+| `zed secrets unset <NAME>...`                | Remove                                                               | `DELETE /v1/projects/:id/secrets/:name`                             |
+| `zed sessions ls`                            | List sessions                                                        | `GET /v1/projects/:id/sessions`                                     |
+| `zed sessions new [--prompt "..."]`          | Start a session                                                      | `POST /v1/projects/:id/sessions`                                    |
+| `zed sessions open <session-id>`             | Print / open the dashboard URL for one session                       | none                                                                |
+| `zed sessions logs <session-id> [-f]`        | Stream session output                                                | `GET /v1/projects/:id/sessions/:sid/events` (SSE — exists)          |
+| `zed sessions rm <session-id>`               | Stop + delete                                                        | `DELETE /v1/projects/:id/sessions/:sid`                             |
+| `zed triggers ls`                            | List triggers                                                        | `GET /v1/projects/:id/triggers`                                     |
+| `zed triggers fire <slug>`                   | Manually fire                                                        | `POST /v1/projects/:id/triggers/:slug/fire`                         |
+| `zed triggers enable/disable <slug>`         | Flip `enabled` in manifest                                           | `PATCH /v1/projects/:id/triggers/:slug`                             |
+| `zed env ls/pull/push`                       | Alias of `zed secrets` plus dotenv import/export                  | same as secrets                                                     |
 
 Conventions:
 - All `<project>` arguments accept project-id (UUID) or slug
   (slug-resolution happens client-side via `GET /v1/projects` with a
   small cache).
 - Commands that operate on a project look up project-id in this order:
-  `--project <id>` flag → `KORTIX_PROJECT_ID` env → `.kortix/link.json`
+  `--project <id>` flag → `ZED_PROJECT_ID` env → `.zed/link.json`
   → error.
 
 ## 4. Project linking
 
-Mirrors Vercel's `.vercel/project.json`. The first `kortix` command in
+Mirrors Vercel's `.vercel/project.json`. The first `zed` command in
 a fresh checkout prompts:
 
 ```
-$ kortix secrets ls
-This directory isn't linked to a Kortix project.
+$ zed secrets ls
+This directory isn't linked to a Zed project.
 Link it now? [Y/n]
 Select project:
-  ▸ kortix-agent / acme-bot        (uuid: 1a2b...)
-    kortix-agent / marketing-site  (uuid: 9f8e...)
-✓ Linked → .kortix/link.json
+  ▸ zed-agent / acme-bot        (uuid: 1a2b...)
+    zed-agent / marketing-site  (uuid: 9f8e...)
+✓ Linked → .zed/link.json
 ```
 
-File at `.kortix/link.json` (added to `.gitignore` by default in the
+File at `.zed/link.json` (added to `.gitignore` by default in the
 init starter):
 
 ```json
@@ -192,7 +192,7 @@ The user's directive: **don't build a CLI-only API. Use the same
 endpoints the dashboard uses.** Two implications:
 
 1. Anywhere the dashboard currently shells out to GitHub / reads
-   `kortix.yaml` directly client-side, move that logic to the API so
+   `zed.yaml` directly client-side, move that logic to the API so
    the CLI gets it without re-implementation. (Audit needed — TODO.)
 2. Any endpoint the CLI needs that isn't already exposed for the
    dashboard becomes a shared addition (PAT mgmt, device flow, account
@@ -202,7 +202,7 @@ endpoints the dashboard uses.** Two implications:
 
 All `/v1/projects/:id/...` routes for secrets, triggers, sessions,
 and oauth credentials. The router is already auth-agnostic — it
-accepts Supabase JWT or `kortix_` API key via the same
+accepts Supabase JWT or `zed_` API key via the same
 `Authorization: Bearer` header.
 
 ### 5.2 To add (will be used by dashboard immediately too)
@@ -223,7 +223,7 @@ router pattern. The dashboard for the approve / tokens pages goes in
 ### 5.3 To investigate (might already be shared)
 
 - Does the manifest-editor in the dashboard hit an API endpoint to
-  read `kortix.yaml`, or does it fetch directly from GitHub?
+  read `zed.yaml`, or does it fetch directly from GitHub?
   - If it fetches direct: move to API.
 - Does the trigger list in the dashboard hit
   `/v1/projects/:id/triggers` or re-parse the manifest in JS?
@@ -234,7 +234,7 @@ router pattern. The dashboard for the approve / tokens pages goes in
 
 ```
 apps/cli/
-  bin/kortix                       # bash shim → bun run src/index.ts
+  bin/zed                       # bash shim → bun run src/index.ts
   src/
     index.ts                       # arg dispatcher (existing)
     style.ts                       # color + glyph helpers (existing)
@@ -254,10 +254,10 @@ apps/cli/
       triggers.ts                  # NEW
     api/
       client.ts                    # fetch wrapper: auth headers, 401 handling, JSON
-      auth.ts                      # load/save ~/.config/kortix/auth.json
+      auth.ts                      # load/save ~/.config/zed/auth.json
       types.ts                     # response shapes, generated from API
       device-flow.ts               # Phase B
-    project-link.ts                # .kortix/link.json read/write
+    project-link.ts                # .zed/link.json read/write
 ```
 
 ### API client (`src/api/client.ts`) sketch
@@ -275,16 +275,16 @@ function createApiClient(auth: Auth): ApiClient { ... }
 ```
 
 Behavior:
-- On 401: print "Token rejected — run `kortix login` to re-auth" and exit 1.
+- On 401: print "Token rejected — run `zed login` to re-auth" and exit 1.
 - On 5xx: retry once with 1 s backoff, then surface.
 - Every response body is JSON parsed; non-JSON 200s throw.
 
 ## 7. Error model
 
-- Auth missing → `kortix: not logged in. Run \`kortix login\`.` (exit 1).
-- No project linked → `kortix: no project linked. Run \`kortix projects link\`.` (exit 1).
-- API 4xx → print `kortix: <message from API>` (exit 1).
-- API 5xx → print `kortix: server error — try again.` (exit 2).
+- Auth missing → `zed: not logged in. Run \`zed login\`.` (exit 1).
+- No project linked → `zed: no project linked. Run \`zed projects link\`.` (exit 1).
+- API 4xx → print `zed: <message from API>` (exit 1).
+- API 5xx → print `zed: server error — try again.` (exit 2).
 - All errors use `status.err()` from `src/style.ts`.
 
 ## 8. Phasing
@@ -292,10 +292,10 @@ Behavior:
 | Phase | Deliverable | Branch behavior |
 | ----- | ----------- | --------------- |
 | **1a — API: PAT** | `/v1/account/{me,tokens}` endpoints + dashboard tokens page | dashboard usable for tokens |
-| **1b — CLI: login/whoami/projects** | `kortix login --token`, `logout`, `whoami`, `projects ls/info/link/unlink/open` | useful but read-only |
-| **2 — CLI: secrets + sessions** | `kortix secrets *`, `kortix sessions *` | feature parity with the dashboard's most-used screens |
+| **1b — CLI: login/whoami/projects** | `zed login --token`, `logout`, `whoami`, `projects ls/info/link/unlink/open` | useful but read-only |
+| **2 — CLI: secrets + sessions** | `zed secrets *`, `zed sessions *` | feature parity with the dashboard's most-used screens |
 | **3 — CLI: triggers + env** | The rest of the surface | full coverage |
-| **4 — Device flow** | `/v1/cli/device/*` + dashboard approve page; `kortix login` opens browser by default | Vercel-style polish |
+| **4 — Device flow** | `/v1/cli/device/*` + dashboard approve page; `zed login` opens browser by default | Vercel-style polish |
 | **(later, separate)** | MCP wrapper — **not part of this CLI**, reuses the same API | separate repo / package |
 
 ## 9. Open questions
@@ -315,8 +315,8 @@ Behavior:
 4. **Session "connect"** — does the platform expose a public URL per
    running session that the CLI can `open` in the browser, or only the
    dashboard route? Both are fine; the CLI just `open`s the URL.
-5. **Dotenv import/export** — `kortix env pull` writing `.env` is
-   common; should we also support `kortix env push --from .env`? Probably
+5. **Dotenv import/export** — `zed env pull` writing `.env` is
+   common; should we also support `zed env push --from .env`? Probably
    yes, but worth confirming.
 
 ## 10. Next-action list

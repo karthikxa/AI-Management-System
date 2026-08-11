@@ -6,11 +6,11 @@
 #   cd apps/web && NEXT_OUTPUT=standalone pnpm run build
 #
 # Then from repo root:
-#   docker build -f apps/web/Dockerfile -t kortix/kortix-frontend:latest .
+#   docker build -f apps/web/Dockerfile -t zed/zed-frontend:latest .
 #
-# For CLOUD builds (kortix.ai), override billing at build time:
+# For CLOUD builds (zed.ai), override billing at build time:
 #   NEXT_PUBLIC_BILLING_ENABLED=true pnpm build
-#   docker build -f apps/web/Dockerfile -t kortix/kortix-frontend:cloud .
+#   docker build -f apps/web/Dockerfile -t zed/zed-frontend:cloud .
 #
 # Build-time env vars (baked into the image):
 #   NEXT_PUBLIC_BILLING_ENABLED - "true" for cloud, "false" for self-hosted
@@ -25,11 +25,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-LABEL org.opencontainers.image.title="kortix-frontend" \
-      org.opencontainers.image.description="Kortix web frontend (Next.js standalone)" \
-      org.opencontainers.image.source="https://github.com/kortix-ai/suna" \
+LABEL org.opencontainers.image.title="zed-frontend" \
+      org.opencontainers.image.description="Zed web frontend (Next.js standalone)" \
+      org.opencontainers.image.source="https://github.com/zed-ai/suna" \
       org.opencontainers.image.licenses="Elastic-2.0" \
-      org.opencontainers.image.vendor="Kortix"
+      org.opencontainers.image.vendor="Zed"
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
@@ -85,7 +85,7 @@ RUN rm -f /app/apps/web/.env /app/apps/web/.env.local /app/apps/web/.env.product
 COPY apps/web/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# In local mode (no KORTIX_PUBLIC_URL), runs as nextjs user via CMD.
+# In local mode (no ZED_PUBLIC_URL), runs as nextjs user via CMD.
 # In VPS mode, entrypoint does sed as root, then exec's node as nextjs.
 USER nextjs
 

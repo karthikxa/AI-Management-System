@@ -1,10 +1,10 @@
-# Secret exposure inside a Kortix sandbox — verified baseline
+# Secret exposure inside a Zed sandbox — verified baseline
 
 **Status:** statement of *current* behaviour on `main`, as of 2026-07-28. No
 proposal here. This exists so the env-var refactor argues from measured facts
 rather than from what the architecture is assumed to do.
 
-**Runtime scope:** The `KORTIX_OPENCODE_DENY_ENV` findings below apply to the
+**Runtime scope:** The `ZED_OPENCODE_DENY_ENV` findings below apply to the
 OpenCode child process inside the session sandbox.
 
 Every claim below is anchored to code I read on `main`. Where the codebase
@@ -29,7 +29,7 @@ return {
   ...runtimeSecrets.env,
   ...channelEnv,
   ...sessionContextEnv,
-  KORTIX_PROJECT_SECRET_NAMES: runtimeSecrets.names.join(','),
+  ZED_PROJECT_SECRET_NAMES: runtimeSecrets.names.join(','),
   ...
 ```
 
@@ -51,18 +51,18 @@ This is the founder's specific complaint, and it is not an accident. From
 > `// but opencode must NOT — a provider key in opencode's env makes it connect`
 > `// a NATIVE provider and bypass the gateway.`
 
-So `KORTIX_OPENCODE_DENY_ENV` exists to protect **gateway routing** (spend,
+So `ZED_OPENCODE_DENY_ENV` exists to protect **gateway routing** (spend,
 budgets, logs), not to protect the **secret**. The stated rationale for the
 secret still being present — *"the agent's own code may use them"* — is exactly
 the assumption a per-secret strategy model has to make opt-in.
 
 ## 3. The deny-list strips from OpenCode's child process, not from the box
 
-[opencode.ts](../apps/kortix-sandbox-agent-server/src/opencode.ts), which says so
+[opencode.ts](../apps/zed-sandbox-agent-server/src/opencode.ts), which says so
 itself:
 
 ```ts
-const denyEnv = (env.KORTIX_OPENCODE_DENY_ENV || '').split(',')...
+const denyEnv = (env.ZED_OPENCODE_DENY_ENV || '').split(',')...
 for (const name of denyEnv) { if (name in env) { delete env[name]; withheld++ } }
 ```
 
@@ -90,22 +90,22 @@ yes. Whatever the refactor decides, this must end as either wired or deleted.
 
 ## 5. On-disk exposure is thoughtfully handled — and irrelevant to this threat
 
-[agent-env-file.ts](../apps/kortix-sandbox-agent-server/src/agent-env-file.ts)
-writes the agent env to `/dev/shm/kortix` at mode `0600`, verifies `/dev/shm` is
+[agent-env-file.ts](../apps/zed-sandbox-agent-server/src/agent-env-file.ts)
+writes the agent env to `/dev/shm/zed` at mode `0600`, verifies `/dev/shm` is
 a real tmpfs, and shreds the file — specifically so a hibernated or archived
 Daytona disk cannot retain plaintext.
 
 That is good work against *disk capture*. It does nothing against the threat that
 matters here: the agent runs **as the user that can read those 0600 files**.
 
-## 6. Why this blocks Kortix-as-a-Backend specifically
+## 6. Why this blocks Zed-as-a-Backend specifically
 
 In KaaB one wrapper account fronts many end-users on one repo and one agent. The
 agent's input is end-user-controlled text, so prompt injection is not a risk to
 be mitigated — it is the normal operating condition. Any secret in the box is
 therefore reachable by any end-user of the wrapper.
 
-That is why the founder's framing is right: today Kortix's env handling is safe
+That is why the founder's framing is right: today Zed's env handling is safe
 for *trusted internal users* and not for a multi-tenant backend.
 
 ## What is NOT claimed here

@@ -5,14 +5,14 @@
  * dialog teaches nothing. So each action carries the two forms a wrapper author
  * actually arrives with:
  *
- *  - SDK — the `@kortix/sdk` call this app runs, verbatim.
+ *  - SDK — the `@zed/sdk` call this app runs, verbatim.
  *  - HTTP — the request that ends up on the wire, for anyone integrating from a
  *    language with no SDK.
  *
  * Two rules this module exists to keep:
  *
  * 1. NOTHING SECRET IS EVER RENDERED. No secret value, no API key, no bearer
- *    token — the authorization header is always the `$KORTIX_API_KEY`
+ *    token — the authorization header is always the `$ZED_API_KEY`
  *    placeholder and a secret's value is always `SECRET_VALUE_PLACEHOLDER`.
  *    That is why `SnippetContext` accepts a secret's IDENTIFIER and env KEY and
  *    has nowhere to put a value: a demo that teaches people to paste their key
@@ -34,7 +34,7 @@ import {
 export const SECRET_VALUE_PLACEHOLDER = '$SECRET_VALUE';
 
 /** The wrapper's bearer, as a placeholder — never the real key. */
-export const AUTHORIZATION_HEADER = 'Authorization: Bearer $KORTIX_API_KEY';
+export const AUTHORIZATION_HEADER = 'Authorization: Bearer $ZED_API_KEY';
 
 /** Stand-ins for ids a screen may not have yet (the create dialog runs before
  *  any session exists). */
@@ -122,7 +122,7 @@ export interface CallSnippet {
   title: string;
   /** One line: what this call is for. */
   summary: string;
-  /** The `@kortix/sdk` call this app makes. */
+  /** The `@zed/sdk` call this app makes. */
   sdk: string;
   http: HttpForm;
   /** Fields or headers the application server adds. */
@@ -140,7 +140,7 @@ function json(value: unknown): string {
  *
  * The authorization line is part of the block on purpose: the single most
  * common wrapper mistake is forwarding the end user's own token upstream, and
- * seeing `$KORTIX_API_KEY` on every call is the correction.
+ * seeing `$ZED_API_KEY` on every call is the correction.
  */
 export function renderHttp(form: HttpForm): string {
   if (form.kind === 'runtime') return form.summary;
@@ -171,11 +171,11 @@ function projectProvision(ctx: SnippetContext): CallSnippet {
     summary:
       'The create path that lets the wrapper record local project ownership.',
     sdk: [
-      `await kortix.projects.provision(${json(body)});`,
+      `await zed.projects.provision(${json(body)});`,
       '',
       '// The other half of the same rule: the list comes back filtered to the',
       '// projects THIS end user provisioned, so the two calls are one feature.',
-      'await kortix.projects.list();',
+      'await zed.projects.list();',
     ].join('\n'),
     http: {
       kind: 'rest',
@@ -198,7 +198,7 @@ function connectionsList(ctx: SnippetContext): CallSnippet {
     title: 'List the connections a session may bind',
     summary:
       'What the picker is made of — and why some connectors have nothing to pick.',
-    sdk: 'await kortix.project(projectId).connectors.connections.list();',
+    sdk: 'await zed.project(projectId).connectors.connections.list();',
     http: {
       kind: 'rest',
       method: 'GET',
@@ -231,10 +231,10 @@ function sessionCreate(ctx: SnippetContext): CallSnippet {
     summary:
       'The create call sets the initial session scope and runtime options.',
     sdk: [
-      "import { generateSessionId } from '@kortix/sdk';",
+      "import { generateSessionId } from '@zed/sdk';",
       '',
       'const sessionId = generateSessionId();',
-      `await kortix.project(projectId).sessions.create(${sdkBody});`,
+      `await zed.project(projectId).sessions.create(${sdkBody});`,
     ].join('\n'),
     http: {
       kind: 'rest',
@@ -260,14 +260,14 @@ function sessionPrompt(ctx: SnippetContext): CallSnippet {
     summary:
       'Each message names the agent that runs it — the one override that moves mid-session.',
     sdk: [
-      'await kortix',
+      'await zed',
       '  .session(projectId, sessionId)',
       agent
         ? `  .send('Refund order 4182', { agent: '${agent}' });`
         : "  .send('Refund order 4182');",
       '',
       '// Or make the choice sticky for every following message:',
-      `kortix.session(projectId, sessionId).setAgent(${agent ? `'${agent}'` : "'support'"});`,
+      `zed.session(projectId, sessionId).setAgent(${agent ? `'${agent}'` : "'support'"});`,
     ].join('\n'),
     http: {
       kind: 'runtime',
@@ -277,7 +277,7 @@ function sessionPrompt(ctx: SnippetContext): CallSnippet {
     serverInjected: [],
     notes: [
       'The agent is per MESSAGE, not per session: `send(text, { agent })` overrides the sticky pick for that one turn.',
-      'A switch re-scopes secret delivery plus connector and Kortix CLI grants before the prompt runs. This only affects future access; it cannot erase a secret an earlier agent already read. Operators can opt into a strict immutable-grant mode that returns 409 AGENT_SWITCH_REQUIRES_NEW_SESSION.',
+      'A switch re-scopes secret delivery plus connector and Zed CLI grants before the prompt runs. This only affects future access; it cannot erase a secret an earlier agent already read. Operators can opt into a strict immutable-grant mode that returns 409 AGENT_SWITCH_REQUIRES_NEW_SESSION.',
     ],
   };
 }
@@ -290,10 +290,10 @@ function sessionRescope(ctx: SnippetContext): CallSnippet {
     title: 'Re-scope a running session',
     summary: 'Read the current scope, then send one complete replacement.',
     sdk: [
-      'const current = await kortix.session(projectId, sessionId).scope();',
+      'const current = await zed.session(projectId, sessionId).scope();',
       '',
       '// Both axes are complete replacements. Preserve the unchanged axis.',
-      'await kortix.session(projectId, sessionId).rescope({',
+      'await zed.session(projectId, sessionId).rescope({',
       "  secrets: ['TEST_KEY_2'],",
       '  connector_bindings: current.connector_bindings,',
       '});',
@@ -330,7 +330,7 @@ function sessionModel(ctx: SnippetContext): CallSnippet {
       'The one create-time override that is still movable once a session is running.',
     sdk: [
       '// Server side (src/app/api/session-model/route.ts):',
-      `await kortix.session(projectId, sessionId).changeModel('${model}');`,
+      `await zed.session(projectId, sessionId).changeModel('${model}');`,
       '',
       '// Browser side — this app goes through its own route, so the runtime-named',
       '// field stays server-side and client code says `model`:',
@@ -359,7 +359,7 @@ function sessionsList(ctx: SnippetContext): CallSnippet {
     id: 'sessions.list',
     title: "List a project's sessions",
     summary: 'The project-scoped session read used by the wrapper.',
-    sdk: 'await kortix.project(projectId).sessions.list();',
+    sdk: 'await zed.project(projectId).sessions.list();',
     http: {
       kind: 'rest',
       method: 'GET',
@@ -384,10 +384,10 @@ function sessionDelete(ctx: SnippetContext): CallSnippet {
       'The two ways a session ends — one keeps the sandbox, one destroys it.',
     sdk: [
       '// Reboots the runtime, keeps the session and its sandbox identity.',
-      'await kortix.session(projectId, sessionId).restart();',
+      'await zed.session(projectId, sessionId).restart();',
       '',
       '// Destroys the session and the sandbox behind it. Not recoverable.',
-      'await kortix.session(projectId, sessionId).delete();',
+      'await zed.session(projectId, sessionId).delete();',
     ].join('\n'),
     http: {
       kind: 'rest',
@@ -408,7 +408,7 @@ function sessionCosts(ctx: SnippetContext): CallSnippet {
     id: 'session.costs',
     title: "Read a project's session costs",
     summary: 'Finalized LLM and compute cost, grouped by session.',
-    sdk: 'await kortix.billing.sessionCosts.list({ projectId });',
+    sdk: 'await zed.billing.sessionCosts.list({ projectId });',
     http: {
       kind: 'rest',
       method: 'GET',
@@ -432,7 +432,7 @@ function approvalResolve(ctx: SnippetContext): CallSnippet {
     id: 'approval.resolve',
     title: 'Resolve an approval',
     summary: 'A `require_approval` gate ends the agent’s turn until a person decides.',
-    sdk: `await kortix.project(projectId).approvals.resolve('${executionId}', 'approve');`,
+    sdk: `await zed.project(projectId).approvals.resolve('${executionId}', 'approve');`,
     http: {
       kind: 'rest',
       method: 'POST',
@@ -457,7 +457,7 @@ function secretUpsert(ctx: SnippetContext): CallSnippet {
     id: 'secret.upsert',
     title: 'Create or rotate a secret',
     summary: 'One call does both — the identifier is what decides which.',
-    sdk: `await kortix.project(projectId).secrets.upsert(${json(body)});`,
+    sdk: `await zed.project(projectId).secrets.upsert(${json(body)});`,
     http: {
       kind: 'rest',
       method: 'POST',
@@ -482,7 +482,7 @@ function secretDelete(ctx: SnippetContext): CallSnippet {
     id: 'secret.delete',
     title: 'Delete a secret',
     summary: 'Removes the identifier, not the grants that name it.',
-    sdk: `await kortix.project(projectId).secrets.remove('${identifier}');`,
+    sdk: `await zed.project(projectId).secrets.remove('${identifier}');`,
     http: {
       kind: 'rest',
       method: 'DELETE',
@@ -508,7 +508,7 @@ function connectorConnectLink(ctx: SnippetContext): CallSnippet {
     title: 'Mint a connect link for a required connector',
     summary:
       'The remedy behind a 409 CONNECTOR_CONNECTION_REQUIRED — for the shared connectors it can fix.',
-    sdk: `await kortix.project(projectId).setupLinks.requestConnector({ slug: '${slug}' });`,
+    sdk: `await zed.project(projectId).setupLinks.requestConnector({ slug: '${slug}' });`,
     http: {
       kind: 'rest',
       method: 'POST',
@@ -519,7 +519,7 @@ function connectorConnectLink(ctx: SnippetContext): CallSnippet {
     notes: [
       'Session create refuses BEFORE any sandbox boots when a connector the session declares has no usable connection: 409 CONNECTOR_CONNECTION_REQUIRED (the connector exists, nothing is connected to it) or 409 REQUIRED_CONNECTOR_CONNECTION_UNAVAILABLE (the alias is not a connector on this project at all). Classify both — the second is a manifest change, not something anyone can connect their way out of.',
       'The refusal body carries `connector_connections`, each with an `authorization_strategy`, and that field decides who can fix it. `project` means one shared connection serves everyone, which is what this call mints a link for. `user` means the connection must belong to the account the session runs as — a wrapper runs every end user under ONE credential, so no end user can satisfy it, and this call refuses a `user` connector outright with 409 CONNECTOR_AUTHORIZATION_STRATEGY_MISMATCH.',
-      'The returned `url` is a Kortix-hosted page with a short-lived token. Whoever opens it connects the account, so it is shared with the person who should own that connection, not published — and it does the one thing a wrapper credential can never do on an end user’s behalf: sign in as somebody.',
+      'The returned `url` is a Zed-hosted page with a short-lived token. Whoever opens it connects the account, so it is shared with the person who should own that connection, not published — and it does the one thing a wrapper credential can never do on an end user’s behalf: sign in as somebody.',
       'Pipedream-backed connectors only. A deployment with no Pipedream answers 501, and a connector that is not connected through Pipedream answers 404 — both worth surfacing verbatim rather than retrying.',
     ],
   };

@@ -14,7 +14,7 @@
  *   API_KEY_SECRET (normally loaded with dotenvx from apps/api/.env)
  *
  * Example for an isolated worktree:
- *   eval "$(supabase --workdir ~/.kortix/worktrees/<name>/sb status -o env)"
+ *   eval "$(supabase --workdir ~/.zed/worktrees/<name>/sb status -o env)"
  *   E2E_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" E2E_ANON_KEY="$ANON_KEY" \
  *   DATABASE_URL="$DB_URL" E2E_API_URL=http://127.0.0.1:18908/v1 \
  *   E2E_SUPABASE_URL="$API_URL" \
@@ -32,11 +32,11 @@ import {
   connectors,
   creditAccounts,
   projectSessions,
-} from '@kortix/db';
+} from '@zed/db';
 import { db } from '../src/shared/db';
 import { createAccountToken } from '../src/repositories/account-tokens';
 import { createExecutorClient } from '../../../packages/executor-sdk/src/index';
-import { ApiError, createKortix } from '@kortix/sdk';
+import { ApiError, createZed } from '@zed/sdk';
 
 const ROOT = resolve(import.meta.dir, '../../..');
 const CLI_ENTRY = resolve(ROOT, 'apps/cli/src/index.ts');
@@ -68,7 +68,7 @@ function log(message: string): void {
 
 function safe(value: string): string {
   return value
-    .replace(/kortix_pat_[A-Za-z0-9_-]+/g, '<agent-token>')
+    .replace(/zed_pat_[A-Za-z0-9_-]+/g, '<agent-token>')
     .replace(/https?:\/\/\S+/g, '<url>');
 }
 
@@ -120,12 +120,12 @@ async function cli(args: string[], input?: string): Promise<CliResult> {
     cwd: ROOT,
     env: {
       ...process.env,
-      KORTIX_API_URL: API,
-      KORTIX_CLI_TOKEN: agentToken,
-      KORTIX_PROJECT_ID: projectId,
-      KORTIX_SESSION_ID: sessionId,
-      KORTIX_NO_UPDATE_CHECK: '1',
-      KORTIX_DISABLE_SANDBOX_ENV_FILE: '1',
+      ZED_API_URL: API,
+      ZED_CLI_TOKEN: agentToken,
+      ZED_PROJECT_ID: projectId,
+      ZED_SESSION_ID: sessionId,
+      ZED_NO_UPDATE_CHECK: '1',
+      ZED_DISABLE_SANDBOX_ENV_FILE: '1',
       NO_COLOR: '1',
       FORCE_COLOR: '0',
     },
@@ -168,7 +168,7 @@ async function waitForProjectFile(timeoutMs = 120_000): Promise<void> {
   const end = Date.now() + timeoutMs;
   let last = '';
   while (Date.now() < end) {
-    const result = await api(`/projects/${projectId}/files/content?path=kortix.yaml`);
+    const result = await api(`/projects/${projectId}/files/content?path=zed.yaml`);
     last = `${result.status} ${result.text.slice(0, 120)}`;
     if (result.status === 200 && typeof result.body?.content === 'string') return;
     await Bun.sleep(2_000);
@@ -239,7 +239,7 @@ async function setup(): Promise<void> {
   check('managed project provisioned', project.status >= 200 && project.status < 300 && !!projectId);
   if (!projectId) throw new Error(`project provision failed: ${project.status} ${project.text}`);
   await waitForProjectFile();
-  check('kortix.yaml is readable through the live API', true);
+  check('zed.yaml is readable through the live API', true);
 
   sessionId = randomUUID();
   await db.insert(projectSessions).values({
@@ -248,7 +248,7 @@ async function setup(): Promise<void> {
     projectId,
     branchName: sessionId,
     createdBy: userId,
-    agentName: 'kortix',
+    agentName: 'zed',
     status: 'running',
   });
 
@@ -259,8 +259,8 @@ async function setup(): Promise<void> {
     sessionId,
     name: `Connector Session ${sessionId.slice(0, 8)}`,
     agentGrant: {
-      agent: 'kortix',
-      kortixCli: 'all',
+      agent: 'zed',
+      zedCli: 'all',
       connectors: 'all',
       env: 'all',
     },
@@ -279,8 +279,8 @@ async function setup(): Promise<void> {
     'production token mint stored project_id + session_id + agent_grant',
     stored?.projectId === projectId &&
       stored?.sessionId === sessionId &&
-      stored?.agentGrant?.agent === 'kortix' &&
-      stored?.agentGrant?.kortixCli === 'all' &&
+      stored?.agentGrant?.agent === 'zed' &&
+      stored?.agentGrant?.zedCli === 'all' &&
       stored?.agentGrant?.connectors === 'all',
   );
 }
@@ -308,7 +308,7 @@ async function seedCallableAction(): Promise<void> {
 }
 
 async function driveConnectorSdk(): Promise<void> {
-  const client = createKortix({
+  const client = createZed({
     backendUrl: API,
     getToken: async () => agentToken,
   }).project(projectId).connectors;
@@ -326,7 +326,7 @@ async function driveConnectorSdk(): Promise<void> {
     q: 'sdk-agent-token',
   });
   check(
-    '@kortix/sdk live call reaches the real upstream',
+    '@zed/sdk live call reaches the real upstream',
     called.ok === true && called.data?.args?.q === 'sdk-agent-token',
   );
   let badActionError: unknown;
@@ -349,8 +349,8 @@ async function driveExistingSessionGrantRefresh(): Promise<void> {
     sessionId,
     name: `Connector Session stale grant ${sessionId.slice(0, 8)}`,
     agentGrant: {
-      agent: 'kortix',
-      kortixCli: 'all',
+      agent: 'zed',
+      zedCli: 'all',
       connectors: [],
       env: 'all',
     },
@@ -389,7 +389,7 @@ async function driveExecutorCompatibilityAdapter(): Promise<void> {
     q: 'executor-adapter-agent-token',
   });
   check(
-    'deprecated Executor adapter remaps a live call through @kortix/sdk',
+    'deprecated Executor adapter remaps a live call through @zed/sdk',
     called.ok === true && called.data?.args?.q === 'executor-adapter-agent-token',
   );
 }
@@ -400,12 +400,12 @@ async function driveMcp(): Promise<void> {
     cwd: ROOT,
     env: {
       ...process.env,
-      KORTIX_API_URL: API,
-      KORTIX_CLI_TOKEN: agentToken,
-      KORTIX_PROJECT_ID: projectId,
-      KORTIX_SESSION_ID: sessionId,
-      KORTIX_NO_UPDATE_CHECK: '1',
-      KORTIX_DISABLE_SANDBOX_ENV_FILE: '1',
+      ZED_API_URL: API,
+      ZED_CLI_TOKEN: agentToken,
+      ZED_PROJECT_ID: projectId,
+      ZED_SESSION_ID: sessionId,
+      ZED_NO_UPDATE_CHECK: '1',
+      ZED_DISABLE_SANDBOX_ENV_FILE: '1',
       NO_COLOR: '1',
     },
     stdin: 'pipe',
@@ -431,7 +431,7 @@ async function driveMcp(): Promise<void> {
   }
   try {
     const initialized = await rpc(1, 'initialize', { protocolVersion: '2025-06-18' });
-    check('MCP initialize identifies kortix-connectors', initialized?.serverInfo?.name === 'kortix-connectors');
+    check('MCP initialize identifies zed-connectors', initialized?.serverInfo?.name === 'zed-connectors');
     const listed = await rpc(2, 'tools/list');
     const names = (listed.tools ?? []).map((tool: any) => tool.name);
     check(
@@ -463,8 +463,8 @@ async function driveMcp(): Promise<void> {
 async function commandMatrix(): Promise<void> {
   let selectedConnectionId = '';
   await expectCli('token reports session token context', ['token'], { stdout: /session token|session/ });
-  await expectCli('whoami works with agent token', ['whoami'], { stdout: /kortix|agent|session/i });
-  await expectCli('system-skills list works', ['system-skills'], { stdout: /kortix-system/ });
+  await expectCli('whoami works with agent token', ['whoami'], { stdout: /zed|agent|session/i });
+  await expectCli('system-skills list works', ['system-skills'], { stdout: /zed-system/ });
   await expectCli('projects info works for bound project', ['projects', 'info', projectId], { stdout: new RegExp(projectId) });
   await expectCli('projects ls fails closed for project-scoped agent token', ['projects', 'ls'], {
     code: 1,
@@ -855,7 +855,7 @@ async function deniedGrantBoundary(): Promise<void> {
     projectId,
     sessionId,
     name: `Connector Session denied ${sessionId.slice(0, 8)}`,
-    agentGrant: { agent: 'locked', kortixCli: [], connectors: [], env: [] },
+    agentGrant: { agent: 'locked', zedCli: [], connectors: [], env: [] },
   });
   const allowedToken = agentToken;
   agentToken = denied.secretKey;

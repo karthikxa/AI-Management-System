@@ -56,16 +56,16 @@ describe('secrets-registry pure helpers', () => {
     expect(maskSecretValue('sk-or-v1-abcdef0123456789')).toBe('sk-…6789');
   });
 
-  test('servicesForKeys dedupes and sorts across overlapping service sets, and falls back to kortix-api for unknown keys', () => {
+  test('servicesForKeys dedupes and sorts across overlapping service sets, and falls back to zed-api for unknown keys', () => {
     // POSTGRES_PASSWORD and SUPABASE_JWT_SECRET both configure supabase-db and
-    // kortix-api among others — the union must be deduped, not concatenated.
+    // zed-api among others — the union must be deduped, not concatenated.
     const services = servicesForKeys(['POSTGRES_PASSWORD', 'SUPABASE_JWT_SECRET']);
     expect(services).toEqual([...new Set(services)]); // no duplicates
     expect(services).toEqual([...services].sort()); // sorted
     expect(services).toContain('supabase-db');
-    expect(services).toContain('kortix-api');
+    expect(services).toContain('zed-api');
 
-    expect(servicesForKeys(['NOT_A_REAL_KEY'])).toEqual(['kortix-api']);
+    expect(servicesForKeys(['NOT_A_REAL_KEY'])).toEqual(['zed-api']);
     expect(servicesForKeys([])).toEqual([]);
   });
 
@@ -78,12 +78,12 @@ describe('secrets-registry pure helpers', () => {
   });
 
   test('isUpdaterManagedKey only flags the updater/image-tag keys, not ordinary secrets', () => {
-    expect(isUpdaterManagedKey('KORTIX_VERSION')).toBe(true);
+    expect(isUpdaterManagedKey('ZED_VERSION')).toBe(true);
     expect(isUpdaterManagedKey('API_IMAGE')).toBe(true);
     // The instance dir's absolute host path — recomputed on every render (see
     // normalizeFullSupabaseEnv in commands/self-host.ts) exactly like
-    // KORTIX_APP_REPLICAS, so hand-setting it is refused for the same reason.
-    expect(isUpdaterManagedKey('KORTIX_INSTANCE_DIR')).toBe(true);
+    // ZED_APP_REPLICAS, so hand-setting it is refused for the same reason.
+    expect(isUpdaterManagedKey('ZED_INSTANCE_DIR')).toBe(true);
     expect(isUpdaterManagedKey('OPENROUTER_API_KEY')).toBe(false);
     expect(isUpdaterManagedKey('DAYTONA_API_KEY')).toBe(false);
   });
@@ -102,14 +102,14 @@ function baseEnv(overrides: Record<string, string> = {}): Record<string, string>
     MANAGED_GIT_GITHUB_OWNER: '',
     MANAGED_GIT_GITHUB_TOKEN: '',
     MANAGED_GIT_GITHUB_INSTALL_ID: '',
-    KORTIX_GITHUB_APP_ID: '',
-    KORTIX_GITHUB_APP_PRIVATE_KEY: '',
+    ZED_GITHUB_APP_ID: '',
+    ZED_GITHUB_APP_PRIVATE_KEY: '',
     OPENROUTER_API_KEY: '',
     POSTGRES_PASSWORD: 'p'.repeat(32),
     SUPABASE_JWT_SECRET: 'j'.repeat(64),
     SUPABASE_ANON_KEY: 'anon.jwt.token',
     SUPABASE_SERVICE_ROLE_KEY: 'service.jwt.token',
-    DASHBOARD_USERNAME: 'kortix',
+    DASHBOARD_USERNAME: 'zed',
     DASHBOARD_PASSWORD: 'd'.repeat(24),
     GATEWAY_INTERNAL_TOKEN: 'g'.repeat(32),
     INTERNAL_SERVICE_KEY: 'i'.repeat(32),
@@ -158,7 +158,7 @@ describe('missingRequiredSecrets', () => {
   test('a fully-configured env (Daytona + GitHub PAT + OpenRouter) also reports nothing missing', () => {
     const env = baseEnv({
       DAYTONA_API_KEY: 'dtn_live_key',
-      MANAGED_GIT_GITHUB_OWNER: 'kortix-ai',
+      MANAGED_GIT_GITHUB_OWNER: 'zed-ai',
       MANAGED_GIT_GITHUB_TOKEN: 'ghp_faketoken',
       OPENROUTER_API_KEY: 'sk-or-fake',
     });
@@ -171,7 +171,7 @@ describe('missingRequiredSecrets', () => {
     const env = baseEnv({
       DAYTONA_API_KEY: 'dtn_live_key',
       OPENROUTER_API_KEY: 'sk-or-fake',
-      MANAGED_GIT_GITHUB_OWNER: 'kortix-ai', // owner alone is not enough
+      MANAGED_GIT_GITHUB_OWNER: 'zed-ai', // owner alone is not enough
     });
     expect(gitProviderConfigured(env)).toBe(false);
     expect(missingRequiredSecrets(env)).toEqual([]);
@@ -181,9 +181,9 @@ describe('missingRequiredSecrets', () => {
     const env = baseEnv({
       DAYTONA_API_KEY: 'dtn_live_key',
       OPENROUTER_API_KEY: 'sk-or-fake',
-      MANAGED_GIT_GITHUB_OWNER: 'kortix-ai',
-      KORTIX_GITHUB_APP_ID: '123456',
-      KORTIX_GITHUB_APP_PRIVATE_KEY: '-----BEGIN PRIVATE KEY-----\\nfake\\n-----END PRIVATE KEY-----',
+      MANAGED_GIT_GITHUB_OWNER: 'zed-ai',
+      ZED_GITHUB_APP_ID: '123456',
+      ZED_GITHUB_APP_PRIVATE_KEY: '-----BEGIN PRIVATE KEY-----\\nfake\\n-----END PRIVATE KEY-----',
       MANAGED_GIT_GITHUB_INSTALL_ID: '987654',
     });
     expect(gitProviderConfigured(env)).toBe(true);
@@ -193,7 +193,7 @@ describe('missingRequiredSecrets', () => {
   test('a corrupted/blanked-out internal generated secret is reported even though the sandbox provider is configured', () => {
     const env = baseEnv({
       DAYTONA_API_KEY: 'dtn_live_key',
-      MANAGED_GIT_GITHUB_OWNER: 'kortix-ai',
+      MANAGED_GIT_GITHUB_OWNER: 'zed-ai',
       MANAGED_GIT_GITHUB_TOKEN: 'ghp_faketoken',
       OPENROUTER_API_KEY: 'sk-or-fake',
       TUNNEL_SIGNING_SECRET: '', // e.g. hand-edited .env with a blanked line
@@ -204,21 +204,21 @@ describe('missingRequiredSecrets', () => {
 });
 
 describe('shouldPullImages', () => {
-  test('true when KORTIX_IMAGE_PULL is unset (normal registry pull behavior)', () => {
+  test('true when ZED_IMAGE_PULL is unset (normal registry pull behavior)', () => {
     expect(shouldPullImages({})).toBe(true);
   });
 
-  test('false for KORTIX_IMAGE_PULL=never (--local-images dev mode) — a blanket `docker compose pull` would fail with "manifest unknown" against images that were only ever built locally', () => {
-    expect(shouldPullImages({ KORTIX_IMAGE_PULL: 'never' })).toBe(false);
+  test('false for ZED_IMAGE_PULL=never (--local-images dev mode) — a blanket `docker compose pull` would fail with "manifest unknown" against images that were only ever built locally', () => {
+    expect(shouldPullImages({ ZED_IMAGE_PULL: 'never' })).toBe(false);
   });
 
   test('true for any other value (defensive — only the literal "never" opts out)', () => {
-    expect(shouldPullImages({ KORTIX_IMAGE_PULL: '' })).toBe(true);
-    expect(shouldPullImages({ KORTIX_IMAGE_PULL: 'always' })).toBe(true);
+    expect(shouldPullImages({ ZED_IMAGE_PULL: '' })).toBe(true);
+    expect(shouldPullImages({ ZED_IMAGE_PULL: 'always' })).toBe(true);
   });
 });
 
-// ── `kortix self-host env` CLI black-box coverage ────────────────────────────
+// ── `zed self-host env` CLI black-box coverage ────────────────────────────
 
 const CLI_ENTRY = resolve(import.meta.dir, '..', '..', 'index.ts');
 
@@ -227,27 +227,27 @@ const CLI_ENTRY = resolve(import.meta.dir, '..', '..', 'index.ts');
 // command self-host-cli.test.ts exercises) shell out to real `docker
 // compose` to decide whether anything needs restarting — and the Compose
 // *project name* is derived only from `--instance` (see composeProject()),
-// not from KORTIX_SELF_HOST_CONFIG_DIR. Using the default instance name here
-// would target the SAME Docker Compose project as a real `kortix self-host`
+// not from ZED_SELF_HOST_CONFIG_DIR. Using the default instance name here
+// would target the SAME Docker Compose project as a real `zed self-host`
 // deployment a developer has actually running on this machine, which is
 // exactly the collision that bit an earlier version of this test file (it
-// recreated a live `kortix-default` container). A fresh random instance name
+// recreated a live `zed-default` container). A fresh random instance name
 // per test run guarantees `docker compose ps` finds no running services for
 // it, so the CLI takes the safe "stack isn't running" branch and never
 // issues a mutating `docker compose up`.
 let instanceCounter = 0;
 function uniqueInstance(): string {
   instanceCounter += 1;
-  return `kortixtest${Date.now()}${instanceCounter}`;
+  return `zedtest${Date.now()}${instanceCounter}`;
 }
 
-describe('kortix self-host env (CLI)', () => {
+describe('zed self-host env (CLI)', () => {
   let tmp: string;
   let configRoot: string;
   let instance: string;
 
   beforeEach(() => {
-    tmp = mkdtempSync(join(tmpdir(), 'kortix-self-host-env-'));
+    tmp = mkdtempSync(join(tmpdir(), 'zed-self-host-env-'));
     configRoot = join(tmp, 'self-host');
     instance = uniqueInstance();
   });
@@ -260,9 +260,9 @@ describe('kortix self-host env (CLI)', () => {
       cwd: tmp,
       env: {
         ...process.env,
-        KORTIX_SELF_HOST_CONFIG_DIR: configRoot,
-        KORTIX_CONFIG_FILE: join(tmp, 'cli-config.json'),
-        KORTIX_NO_UPDATE_CHECK: '1',
+        ZED_SELF_HOST_CONFIG_DIR: configRoot,
+        ZED_CONFIG_FILE: join(tmp, 'cli-config.json'),
+        ZED_NO_UPDATE_CHECK: '1',
         NO_COLOR: '1',
         FORCE_COLOR: '0',
       },
@@ -318,25 +318,25 @@ describe('kortix self-host env (CLI)', () => {
 
   test('env set refuses to hand-set an updater-managed key', async () => {
     await run(['init', '--yes']);
-    const before = readEnv().KORTIX_VERSION;
-    const { code, stderr } = await run(['env', 'set', 'KORTIX_VERSION=9.9.9']);
+    const before = readEnv().ZED_VERSION;
+    const { code, stderr } = await run(['env', 'set', 'ZED_VERSION=9.9.9']);
     expect(code).toBe(2);
     expect(stderr).toContain('updater');
-    expect(readEnv().KORTIX_VERSION).toBe(before);
+    expect(readEnv().ZED_VERSION).toBe(before);
   });
 
-  test('KORTIX_INSTANCE_DIR is the absolute instance directory and env set refuses to hand-set it', async () => {
+  test('ZED_INSTANCE_DIR is the absolute instance directory and env set refuses to hand-set it', async () => {
     await run(['init', '--yes']);
     // Must be the real, absolute on-disk path this instance's compose/env
-    // live in — see the KORTIX_INSTANCE_DIR field doc comment on SelfHostEnv
+    // live in — see the ZED_INSTANCE_DIR field doc comment on SelfHostEnv
     // (commands/self-host.ts) for why the in-compose updater's DinD bind
     // mount depends on this being exactly right.
-    expect(readEnv().KORTIX_INSTANCE_DIR).toBe(join(configRoot, instance));
+    expect(readEnv().ZED_INSTANCE_DIR).toBe(join(configRoot, instance));
 
-    const { code, stderr } = await run(['env', 'set', 'KORTIX_INSTANCE_DIR=/tmp/somewhere-else']);
+    const { code, stderr } = await run(['env', 'set', 'ZED_INSTANCE_DIR=/tmp/somewhere-else']);
     expect(code).toBe(2);
     expect(stderr).toContain('updater');
-    expect(readEnv().KORTIX_INSTANCE_DIR).toBe(join(configRoot, instance));
+    expect(readEnv().ZED_INSTANCE_DIR).toBe(join(configRoot, instance));
   });
 
   test('env rotate DASHBOARD_PASSWORD regenerates only that value', async () => {
@@ -388,13 +388,13 @@ describe('kortix self-host env (CLI)', () => {
 
 // ── init/start required secrets: warn, never hard-block ─────────────────────
 
-describe('kortix self-host init/start required-secrets warning (CLI)', () => {
+describe('zed self-host init/start required-secrets warning (CLI)', () => {
   let tmp: string;
   let configRoot: string;
   let instance: string;
 
   beforeEach(() => {
-    tmp = mkdtempSync(join(tmpdir(), 'kortix-self-host-enforce-'));
+    tmp = mkdtempSync(join(tmpdir(), 'zed-self-host-enforce-'));
     configRoot = join(tmp, 'self-host');
     instance = uniqueInstance();
   });
@@ -407,9 +407,9 @@ describe('kortix self-host init/start required-secrets warning (CLI)', () => {
       cwd: tmp,
       env: {
         ...process.env,
-        KORTIX_SELF_HOST_CONFIG_DIR: configRoot,
-        KORTIX_CONFIG_FILE: join(tmp, 'cli-config.json'),
-        KORTIX_NO_UPDATE_CHECK: '1',
+        ZED_SELF_HOST_CONFIG_DIR: configRoot,
+        ZED_CONFIG_FILE: join(tmp, 'cli-config.json'),
+        ZED_NO_UPDATE_CHECK: '1',
         NO_COLOR: '1',
         FORCE_COLOR: '0',
       },
@@ -428,7 +428,7 @@ describe('kortix self-host init/start required-secrets warning (CLI)', () => {
     const { code, stdout } = await run(['init', '--yes']);
     expect(code).toBe(0);
     expect(stdout).toContain('Proceeding with required secrets missing');
-    expect(stdout).toContain('kortix self-host env set');
+    expect(stdout).toContain('zed self-host env set');
   });
 
   // `start` genuinely shells out to `docker compose pull`/`up` once past this

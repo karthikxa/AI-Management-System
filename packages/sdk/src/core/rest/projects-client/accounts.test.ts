@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { validateToken } from './accounts';
 
 let calls: { url: string; method: string }[] = [];
@@ -17,7 +17,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 const last = () => calls[calls.length - 1];
 
 test('validateToken hits GET /accounts/me and returns { valid: true, identity } on success', async () => {

@@ -1,18 +1,18 @@
 import { spawnSync } from 'node:child_process';
 import { C, help, status } from '../style.ts';
 
-const HELP = help`Usage: kortix update
+const HELP = help`Usage: zed update
 
-Fetch the latest \`kortix\` binary from kortix.com and replace this one.
+Fetch the latest \`zed\` binary from zed.com and replace this one.
 
-This re-runs the install script (kortix.com/install) which downloads
+This re-runs the install script (zed.com/install) which downloads
 the matching binary for your OS + arch from GitHub Releases.
 
 Options:
   -h, --help     Show this help.
 `;
 
-const INSTALL_URL = 'https://kortix.com/install';
+const INSTALL_URL = 'https://zed.com/install';
 
 export async function runUpdate(argv: string[]): Promise<number> {
   if (argv.includes('-h') || argv.includes('--help')) {
@@ -20,7 +20,7 @@ export async function runUpdate(argv: string[]): Promise<number> {
     return 0;
   }
 
-  process.stdout.write(`${status.info(`Updating Kortix CLI from ${C.cyan}${INSTALL_URL}${C.reset}…`)}\n`);
+  process.stdout.write(`${status.info(`Updating Zed CLI from ${C.cyan}${INSTALL_URL}${C.reset}…`)}\n`);
   process.stdout.write(`${C.dim}  Running: curl -fsSL ${INSTALL_URL} | bash${C.reset}\n\n`);
 
   const result = spawnSync('bash', ['-c', `curl -fsSL ${INSTALL_URL} | bash`], {
@@ -35,6 +35,6 @@ export async function runUpdate(argv: string[]): Promise<number> {
     process.stderr.write(`\n${status.err(`update failed (exit ${result.status})`)}\n`);
     return result.status ?? 1;
   }
-  process.stdout.write(`\n${status.ok('Update complete. Run `kortix version` to confirm.')}\n`);
+  process.stdout.write(`\n${status.ok('Update complete. Run `zed version` to confirm.')}\n`);
   return 0;
 }

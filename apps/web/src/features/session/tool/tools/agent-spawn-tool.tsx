@@ -23,7 +23,7 @@ import {
   getToolInfo,
   type MessageWithParts,
 } from '@/ui';
-import { useRuntimeMessages } from '@kortix/sdk/react';
+import { useRuntimeMessages } from '@zed/sdk/react';
 import { CheckIcon as Check, CpuIcon as Cpu } from '@phosphor-icons/react';
 import { useContext, useMemo, useState } from 'react';
 

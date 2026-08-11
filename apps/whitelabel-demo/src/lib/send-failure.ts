@@ -1,4 +1,4 @@
-import type { KortixSendError } from '@kortix/sdk/react';
+import type { ZedSendError } from '@zed/sdk/react';
 
 /**
  * A short, human title for a failed send.
@@ -12,7 +12,7 @@ import type { KortixSendError } from '@kortix/sdk/react';
  * adds the one-line "what kind of problem is this", because the three kinds
  * need different reactions from the user.
  */
-export function sendFailureTitle(error: KortixSendError): string {
+export function sendFailureTitle(error: ZedSendError): string {
   switch (error.kind) {
     case 'billing':
       // Not retryable by the end-user — the operator has to act.

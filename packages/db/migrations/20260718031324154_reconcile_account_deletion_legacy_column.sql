@@ -17,12 +17,12 @@ begin
   if exists (
     select 1
     from pg_attribute
-    where attrelid = 'kortix.account_deletion_requests'::regclass
+    where attrelid = 'zed.account_deletion_requests'::regclass
       and attname = 'deletion_scheduled_for'
       and not attisdropped
       and attnotnull
   ) then
-    alter table kortix.account_deletion_requests
+    alter table zed.account_deletion_requests
       alter column deletion_scheduled_for drop not null;
   end if;
 end

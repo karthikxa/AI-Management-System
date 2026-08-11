@@ -14,7 +14,7 @@ function pngDimensions(buf: Buffer): { signature: boolean; width: number; height
 
 describe('buildTeamsAppPackage', () => {
   test('produces a non-trivial zip with the manifest + both icons', () => {
-    const zip = buildTeamsAppPackage({ appId: 'app-123', baseUrl: 'https://kortix-teams.ngrok.app' });
+    const zip = buildTeamsAppPackage({ appId: 'app-123', baseUrl: 'https://zed-teams.ngrok.app' });
     expect(zip.length).toBeGreaterThan(1000);
     expect(zip[0]).toBe(0x50);
     expect(zip[1]).toBe(0x4b);

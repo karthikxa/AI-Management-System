@@ -4,7 +4,7 @@ import { createFrontendClient } from '@pipedream/sdk/browser';
 import { useMutation } from '@tanstack/react-query';
 
 import { errorToast, successToast } from '@/components/ui/toast';
-import { pipedreamConnect, pipedreamFinalize } from '@kortix/sdk';
+import { pipedreamConnect, pipedreamFinalize } from '@zed/sdk';
 
 import { withPipedreamOverlayEscape } from '@/hooks/connectors/use-pipedream-connect-member';
 

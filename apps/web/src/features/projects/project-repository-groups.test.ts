@@ -1,16 +1,16 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { KortixProject } from '@kortix/sdk';
+import type { ZedProject } from '@zed/sdk';
 import { groupProjectsByRepository } from './project-repository-groups';
 
-function project(projectId: string, repoUrl: string, branch: string): KortixProject {
+function project(projectId: string, repoUrl: string, branch: string): ZedProject {
   return {
     project_id: projectId,
     account_id: 'account-1',
     name: projectId,
     repo_url: repoUrl,
     default_branch: branch,
-    manifest_path: 'kortix.yaml',
+    manifest_path: 'zed.yaml',
     status: 'active',
     metadata: {},
     last_opened_at: null,
@@ -22,22 +22,22 @@ function project(projectId: string, repoUrl: string, branch: string): KortixProj
 describe('groupProjectsByRepository', () => {
   test('groups equivalent GitHub URLs while preserving isolated projects and branches', () => {
     const groups = groupProjectsByRepository([
-      project('API dev', 'https://github.com/Kortix/suna.git', 'dev'),
-      project('Web dev', 'git@github.com:kortix/suna.git', 'dev'),
-      project('Production', 'https://github.com/kortix/suna/', 'main'),
-      project('Company', 'https://github.com/kortix/company.git', 'main'),
+      project('API dev', 'https://github.com/Zed/suna.git', 'dev'),
+      project('Web dev', 'git@github.com:zed/suna.git', 'dev'),
+      project('Production', 'https://github.com/zed/suna/', 'main'),
+      project('Company', 'https://github.com/zed/company.git', 'main'),
     ]);
 
     expect(groups).toHaveLength(2);
     expect(groups[0]).toMatchObject({
-      key: 'github.com/kortix/suna',
-      label: 'Kortix/suna',
+      key: 'github.com/zed/suna',
+      label: 'Zed/suna',
     });
     expect(groups[0]?.projects.map((item) => [item.name, item.default_branch])).toEqual([
       ['API dev', 'dev'],
       ['Web dev', 'dev'],
       ['Production', 'main'],
     ]);
-    expect(groups[1]?.label).toBe('kortix/company');
+    expect(groups[1]?.label).toBe('zed/company');
   });
 });

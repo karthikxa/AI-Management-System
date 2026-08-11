@@ -35,7 +35,7 @@ import Link from 'next/link';
 const CAL_FIELD_COMPANY_SIZE = 'Company_size';
 const CAL_FIELD_COMPANY_NAME = 'Company_name';
 
-const CONTACT_EMAIL = 'hey@kortix.ai';
+const CONTACT_EMAIL = 'hey@zed.ai';
 
 type CompanySize = '1-10' | '11-50' | '51-200' | '201-1000' | '1000+';
 
@@ -367,7 +367,7 @@ export function DemoQualifierModal({
               )}
             >
               {tI18nHardcoded.raw(
-                'autoFeaturesContactDemoQualifierModalJsxTextKortixIsBuilt9d7721e7',
+                'autoFeaturesContactDemoQualifierModalJsxTextZedIsBuilt9d7721e7',
               )}
             </InfoBanner>
             <p className="text-muted-foreground text-sm leading-relaxed">

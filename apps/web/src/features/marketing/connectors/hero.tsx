@@ -3,7 +3,7 @@
 import { Reveal } from '@/components/home/reveal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/marketing/button';
-import { KortixLetterField } from '@/components/ui/marketing/kortix-letter-field';
+import { ZedLetterField } from '@/components/ui/marketing/zed-letter-field';
 import { Github } from '@/features/icon/icons/github';
 import { Gmail } from '@/features/icon/icons/gmail';
 import { Linear } from '@/features/icon/icons/linear';
@@ -49,11 +49,11 @@ export function ConnectorsHero() {
   return (
     <section className="relative overflow-hidden pt-32 pb-12 sm:pt-36">
       <div className="absolute inset-0 z-0 mask-y-to-95%">
-        <KortixLetterField seed={7211} />
+        <ZedLetterField seed={7211} />
       </div>
       <div className="relative mx-auto max-w-7xl px-6">
         <Reveal>
-          <Badge variant="kortix" className="rounded">
+          <Badge variant="zed" className="rounded">
             {hero.eyebrow}
           </Badge>
           <h1 className="text-foreground mt-6 max-w-4xl text-4xl font-medium tracking-tight text-balance sm:text-5xl lg:text-6xl">

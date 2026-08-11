@@ -36,7 +36,7 @@ describe('resolveAppRuntimeEnvironment', () => {
 
   test('rejects reserved keys and duplicate literal/secret destinations', () => {
     expect(() => resolveAppRuntimeEnvironment({
-      environment: { KORTIX_APPD_TOKEN: 'bad' },
+      environment: { ZED_APPD_TOKEN: 'bad' },
       secrets: {},
       availableSecrets: [],
     })).toThrow('reserved');

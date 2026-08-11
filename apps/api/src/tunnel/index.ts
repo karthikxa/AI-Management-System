@@ -3,7 +3,7 @@
  * cloud sandboxes to local machine resources.
  *
  * Uses the agent-tunnel library for transport (relay, heartbeat, WS handlers).
- * This file wires in Kortix-specific business logic: DB persistence,
+ * This file wires in Zed-specific business logic: DB persistence,
  * permission sync, event notifications, and cleanup.
  *
  * Routes:
@@ -16,7 +16,7 @@
 
 import { createWsHandlers, type AuthResult } from 'agent-tunnel';
 import { eq, and, lt } from 'drizzle-orm';
-import { tunnelConnections, tunnelPermissions, tunnelDeviceAuthRequests } from '@kortix/db';
+import { tunnelConnections, tunnelPermissions, tunnelDeviceAuthRequests } from '@zed/db';
 import { config } from '../config';
 import type { AppEnv } from '../types';
 import { makeOpenApiApp } from '../openapi';
@@ -39,7 +39,7 @@ import { notifyTunnelEvent } from './routes/permission-requests';
 // `bun --hot` (local dev) a dynamic import inside the WS auth handler can wedge
 // and never settle, so onAuthenticate hangs → the agent never gets `auth_ok`
 // and the tunnel is stuck "offline" forever. See the prod-timeout incident note.
-import { isTunnelToken, isKortixToken, hashSecretKey, deriveSigningKey } from '../shared/crypto';
+import { isTunnelToken, isZedToken, hashSecretKey, deriveSigningKey } from '../shared/crypto';
 import { validateSecretKey } from '../repositories/api-keys';
 import { getSupabase } from '../shared/supabase';
 import { db } from '../shared/db';
@@ -80,7 +80,7 @@ const wsHandlers = createWsHandlers(tunnelRelay, {
         accountId = row.accountId;
         tunnel = row;
       }
-    } else if (isKortixToken(token)) {
+    } else if (isZedToken(token)) {
       const result = await validateSecretKey(token);
       if (result.isValid) accountId = result.accountId!;
     } else {

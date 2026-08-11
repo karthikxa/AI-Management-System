@@ -12,7 +12,7 @@
  * - Global fetch is mocked to simulate upstream responses
  */
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
-import { projectSessions, sessionSandboxes } from '@kortix/db';
+import { projectSessions, sessionSandboxes } from '@zed/db';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { runWithContext } from '../lib/request-context';
@@ -92,7 +92,7 @@ mock.module('../middleware/auth', () => ({
       throw new HTTPException(401, { message: 'Missing authentication token' });
     }
     c.set('userId', TEST_USER_ID);
-    c.set('userEmail', 'test@kortix.dev');
+    c.set('userEmail', 'test@zed.dev');
     await next();
   },
   supabaseAuth: async (c: any, next: any) => {
@@ -287,7 +287,7 @@ mock.module('../platform/providers', () => ({
           name === 'platinum' && (request.port === 4096 || ptyWebsocket) ? 8000 : request.port,
         websocket: ptyWebsocket
           ? {
-              userContextQueryParam: '__kortix_user_context',
+              userContextQueryParam: '__zed_user_context',
               queryDefaults: { cursor: '0' },
             }
           : undefined,
@@ -444,8 +444,8 @@ function mockFetch(url: string | URL | Request, init?: RequestInit): Promise<Res
 // ─── Import proxy app AFTER mocks ────────────────────────────────────────────
 
 const { sandboxProxyApp } = await import('../sandbox-proxy/index');
-const { verifyKortixUserContext, KORTIX_USER_CONTEXT_HEADER } = await import(
-  '../shared/kortix-user-context'
+const { verifyZedUserContext, ZED_USER_CONTEXT_HEADER } = await import(
+  '../shared/zed-user-context'
 );
 const { resolvePreviewWsUpstream } = await import('../sandbox-proxy/routes/preview');
 const { invalidateSandbox } = await import('../sandbox-proxy/backend');
@@ -597,14 +597,14 @@ describe('Preview proxy: websocket upstream resolution', () => {
       expect(`${url.origin}${url.pathname}`).toBe(
         'wss://8000-platinum.sbx.example/pty/pty_test/connect',
       );
-      const queryContext = url.searchParams.get('__kortix_user_context');
+      const queryContext = url.searchParams.get('__zed_user_context');
       expect(queryContext).toBeTruthy();
-      expect(verifyKortixUserContext(queryContext!, TEST_SERVICE_KEY).ok).toBe(true);
-      expect(upstream.headers[KORTIX_USER_CONTEXT_HEADER]).toBe(queryContext!);
+      expect(verifyZedUserContext(queryContext!, TEST_SERVICE_KEY).ok).toBe(true);
+      expect(upstream.headers[ZED_USER_CONTEXT_HEADER]).toBe(queryContext!);
     }
   });
 
-  test('signs the user context into Platinum Kortix-native PTY websocket URLs', async () => {
+  test('signs the user context into Platinum Zed-native PTY websocket URLs', async () => {
     mockDbSandbox = { ...mockDbSandbox, provider: 'platinum' };
     mockPreviewUrl = 'https://8000-platinum.sbx.example';
     mockPreviewToken = null;
@@ -613,7 +613,7 @@ describe('Preview proxy: websocket upstream resolution', () => {
       sandboxId: TEST_SANDBOX_ID,
       upstreamPort: 8000,
       userId: TEST_USER_ID,
-      remainingPath: '/kortix/pty/kpty_test/connect',
+      remainingPath: '/zed/pty/kpty_test/connect',
       queryString: '',
       callerSessionId: null,
     });
@@ -623,11 +623,11 @@ describe('Preview proxy: websocket upstream resolution', () => {
     if (upstream.ok) {
       const url = new URL(upstream.url);
       expect(`${url.origin}${url.pathname}`).toBe(
-        'wss://8000-platinum.sbx.example/kortix/pty/kpty_test/connect',
+        'wss://8000-platinum.sbx.example/zed/pty/kpty_test/connect',
       );
-      const queryContext = url.searchParams.get('__kortix_user_context');
+      const queryContext = url.searchParams.get('__zed_user_context');
       expect(queryContext).toBeTruthy();
-      expect(verifyKortixUserContext(queryContext!, TEST_SERVICE_KEY).ok).toBe(true);
+      expect(verifyZedUserContext(queryContext!, TEST_SERVICE_KEY).ok).toBe(true);
     }
   });
 });
@@ -813,7 +813,7 @@ describe('Preview proxy: forwarding', () => {
     // opencode binds 127.0.0.1:4096 (loopback-only); Platinum's edge dials the
     // guest eth0 IP, so :4096 is unreachable → 502. The proxy must resolve the
     // agent's :8000 preview link (it bridges to localhost:4096 in-box). This is
-    // what makes `kortix sessions connect` / `opencode attach` work on Platinum.
+    // what makes `zed sessions connect` / `opencode attach` work on Platinum.
     // Distinct id so the module-level previewLinkCache can't collide with the
     // PTY test above (which caches a non-preview.* URL for the same id:8000 key).
     mockDbSandbox = { ...mockDbSandbox, provider: 'platinum' };
@@ -859,7 +859,7 @@ describe('Preview proxy: forwarding', () => {
 
     expect(res.status).toBe(204);
     expect(mockFetchCalls).toHaveLength(2);
-    expect(mockFetchCalls[0].url).toBe('https://preview.daytona.io/proxy-url/kortix/env');
+    expect(mockFetchCalls[0].url).toBe('https://preview.daytona.io/proxy-url/zed/env');
     expect(mockFetchCalls[0].method).toBe('POST');
     expect(mockFetchCalls[0].headers['authorization']).toBe(`Bearer ${TEST_SERVICE_KEY}`);
     expect(mockFetchCalls[0].headers['content-type']).toBe('application/json');
@@ -892,7 +892,7 @@ describe('Preview proxy: forwarding', () => {
       headers: { Authorization: 'Bearer test', 'Content-Type': 'application/json' },
       body: JSON.stringify({
         parts: [{ type: 'text', text: 'set up the MS Graph connector' }],
-        model: { providerID: 'kortix', modelID: 'codex/gpt-5.6-sol' },
+        model: { providerID: 'zed', modelID: 'codex/gpt-5.6-sol' },
       }),
     });
 
@@ -943,7 +943,7 @@ describe('Preview proxy: forwarding', () => {
 
     expect(res.status).toBe(204);
     expect(mockFetchCalls.map((call) => call.url)).toEqual([
-      'https://preview.daytona.io/proxy-url/kortix/env',
+      'https://preview.daytona.io/proxy-url/zed/env',
       'https://preview.daytona.io/proxy-url/session/ses_123/prompt_async',
     ]);
   });
@@ -970,7 +970,7 @@ describe('Preview proxy: forwarding', () => {
     });
   });
 
-  // Agent-lock enforcement is OFF by default (KORTIX_ENFORCE_SESSION_AGENT_LOCK
+  // Agent-lock enforcement is OFF by default (ZED_ENFORCE_SESSION_AGENT_LOCK
   // unset) — in-session agent switching is allowed. A prompt may run a different
   // concrete agent than the session booted with, and it's forwarded untouched.
   test('allows in-session agent switching by default (no 409, concrete agent forwarded)', async () => {
@@ -1014,13 +1014,13 @@ describe('Preview proxy: forwarding', () => {
         Authorization: 'Bearer test',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ agent: 'kortix', parts: [{ type: 'text', text: 'hi' }] }),
+      body: JSON.stringify({ agent: 'zed', parts: [{ type: 'text', text: 'hi' }] }),
     });
 
     expect(res.status).toBe(204);
     // Concrete agent forwarded untouched (only the literal 'default' sentinel is stripped).
     expect(JSON.parse(mockFetchCalls[1].body ?? '{}')).toEqual({
-      agent: 'kortix',
+      agent: 'zed',
       parts: [{ type: 'text', text: 'hi' }],
     });
   });
@@ -1041,7 +1041,7 @@ describe('Preview proxy: forwarding', () => {
     const body = await res.json();
     expect(body.error).toContain('env sync failed: 401');
     expect(mockFetchCalls).toHaveLength(1);
-    expect(mockFetchCalls[0].url).toBe('https://preview.daytona.io/proxy-url/kortix/env');
+    expect(mockFetchCalls[0].url).toBe('https://preview.daytona.io/proxy-url/zed/env');
   });
 
   test('does not retry non-transient project env sync HTTP errors that mention network failures', async () => {
@@ -1063,7 +1063,7 @@ describe('Preview proxy: forwarding', () => {
     expect(body.error).toContain('env sync failed: 500');
     expect(mockWakeCalls).toEqual([]);
     expect(mockFetchCalls).toHaveLength(1);
-    expect(mockFetchCalls[0].url).toBe('https://preview.daytona.io/proxy-url/kortix/env');
+    expect(mockFetchCalls[0].url).toBe('https://preview.daytona.io/proxy-url/zed/env');
   });
 
   test('retries transient project env sync failures before forwarding prompt_async', async () => {
@@ -1085,8 +1085,8 @@ describe('Preview proxy: forwarding', () => {
     expect(res.status).toBe(204);
     expect(mockWakeCalls).toEqual([TEST_SANDBOX_ID]);
     expect(mockFetchCalls.map((call) => call.url)).toEqual([
-      'https://preview.daytona.io/proxy-url/kortix/env',
-      'https://preview.daytona.io/proxy-url/kortix/env',
+      'https://preview.daytona.io/proxy-url/zed/env',
+      'https://preview.daytona.io/proxy-url/zed/env',
       'https://preview.daytona.io/proxy-url/session/ses_123/prompt_async',
     ]);
   });
@@ -1114,8 +1114,8 @@ describe('Preview proxy: forwarding', () => {
     expect(res.status).toBe(204);
     expect(mockWakeCalls).toEqual([TEST_SANDBOX_ID]);
     expect(mockFetchCalls.map((call) => call.url)).toEqual([
-      'https://preview.daytona.io/proxy-url/kortix/env',
-      'https://preview.daytona.io/proxy-url/kortix/env',
+      'https://preview.daytona.io/proxy-url/zed/env',
+      'https://preview.daytona.io/proxy-url/zed/env',
       'https://preview.daytona.io/proxy-url/session/ses_123/prompt_async',
     ]);
   });
@@ -1177,13 +1177,13 @@ describe('Preview proxy: forwarding', () => {
   test('forwards signed user context for session sandbox access', async () => {
     mockFetchResponses = [{ status: 200, body: 'OK' }];
     const app = createProxyTestApp();
-    await app.request(`/v1/p/${TEST_SANDBOX_ID}/${TEST_PORT}/kortix/health`, {
+    await app.request(`/v1/p/${TEST_SANDBOX_ID}/${TEST_PORT}/zed/health`, {
       headers: { Authorization: 'Bearer test' },
     });
 
-    const signedContext = mockFetchCalls[0].headers[KORTIX_USER_CONTEXT_HEADER.toLowerCase()];
+    const signedContext = mockFetchCalls[0].headers[ZED_USER_CONTEXT_HEADER.toLowerCase()];
     expect(signedContext).toBeTruthy();
-    const verified = verifyKortixUserContext(signedContext, TEST_SERVICE_KEY);
+    const verified = verifyZedUserContext(signedContext, TEST_SERVICE_KEY);
     expect(verified.ok).toBe(true);
     if (verified.ok) {
       expect(verified.context).toMatchObject({
@@ -1199,7 +1199,7 @@ describe('Preview proxy: forwarding', () => {
     mockFetchResponses = [{ status: 200, body: 'OK' }];
     const sandboxId = 'touch-sandbox-001';
     const app = createProxyTestApp();
-    const res = await app.request(`/v1/p/${sandboxId}/${TEST_PORT}/kortix/health`, {
+    const res = await app.request(`/v1/p/${sandboxId}/${TEST_PORT}/zed/health`, {
       headers: { Authorization: 'Bearer test' },
     });
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -1220,7 +1220,7 @@ describe('Preview proxy: forwarding', () => {
   test('surfaces daemon signed-context rejection as 502', async () => {
     mockFetchResponses = [{ status: 401, body: 'bad signature' }];
     const app = createProxyTestApp();
-    const res = await app.request(`/v1/p/${TEST_SANDBOX_ID}/${TEST_PORT}/kortix/health`, {
+    const res = await app.request(`/v1/p/${TEST_SANDBOX_ID}/${TEST_PORT}/zed/health`, {
       headers: { Authorization: 'Bearer test' },
     });
     expect(res.status).toBe(502);
@@ -1315,9 +1315,9 @@ describe('Preview proxy: CORS', () => {
     mockFetchResponses = [{ status: 200, body: 'OK' }];
     const app = createProxyTestApp();
     const res = await app.request(`/v1/p/${TEST_SANDBOX_ID}/${TEST_PORT}/`, {
-      headers: { Authorization: 'Bearer test', Origin: 'https://app.kortix.com' },
+      headers: { Authorization: 'Bearer test', Origin: 'https://app.zed.com' },
     });
-    expect(res.headers.get('access-control-allow-origin')).toBe('https://app.kortix.com');
+    expect(res.headers.get('access-control-allow-origin')).toBe('https://app.zed.com');
     expect(res.headers.get('access-control-allow-credentials')).toBe('true');
   });
 
@@ -1325,11 +1325,11 @@ describe('Preview proxy: CORS', () => {
     mockFetchResponses = [{ status: 401, body: 'bad signed context' }];
     const app = createProxyTestApp();
     const res = await app.request(`/v1/p/${TEST_SANDBOX_ID}/${TEST_PORT}/global/event`, {
-      headers: { Authorization: 'Bearer test', Origin: 'https://dev.kortix.com' },
+      headers: { Authorization: 'Bearer test', Origin: 'https://dev.zed.com' },
     });
 
     expect(res.status).toBe(502);
-    expect(res.headers.get('access-control-allow-origin')).toBe('https://dev.kortix.com');
+    expect(res.headers.get('access-control-allow-origin')).toBe('https://dev.zed.com');
     expect(res.headers.get('access-control-allow-credentials')).toBe('true');
   });
 

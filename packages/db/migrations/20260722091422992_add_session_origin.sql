@@ -17,7 +17,7 @@ set statement_timeout = '30s';
 --   [x] origin_ref: nullable TEXT, no default -- metadata-only.
 --   [x] No CHECK/FK/unique added -- no validation scan.
 
-CREATE TYPE "kortix"."project_session_origin" AS ENUM (
+CREATE TYPE "zed"."project_session_origin" AS ENUM (
   'user',
   'trigger',
   'schedule',
@@ -25,8 +25,8 @@ CREATE TYPE "kortix"."project_session_origin" AS ENUM (
   'system'
 );
 
-ALTER TABLE "kortix"."project_sessions"
-  ADD COLUMN "origin" "kortix"."project_session_origin" DEFAULT 'user' NOT NULL;
+ALTER TABLE "zed"."project_sessions"
+  ADD COLUMN "origin" "zed"."project_session_origin" DEFAULT 'user' NOT NULL;
 
-ALTER TABLE "kortix"."project_sessions"
+ALTER TABLE "zed"."project_sessions"
   ADD COLUMN "origin_ref" text;

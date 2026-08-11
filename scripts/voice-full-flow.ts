@@ -6,13 +6,13 @@
  * and assert on durable signals (DB rows, HTTP statuses, audio frames) at
  * every hop. One PASS/FAIL/WARN/SKIP line per step; non-zero exit on any FAIL.
  *
- * Usage (fresh run, does everything — KORTIX_URL is required by apps/api's
+ * Usage (fresh run, does everything — ZED_URL is required by apps/api's
  * own config validation, same as running the API itself):
- *   KORTIX_URL=http://localhost:15608 \
+ *   ZED_URL=http://localhost:15608 \
  *     dotenvx run -f apps/api/.env --quiet -- bun scripts/voice-full-flow.ts
  *
  * Usage (iterate against an already-provisioned call):
- *   KORTIX_URL=http://localhost:15608 \
+ *   ZED_URL=http://localhost:15608 \
  *     dotenvx run -f apps/api/.env --quiet -- bun scripts/voice-full-flow.ts \
  *     --skip-provision --call <sessionId> [--skip-voice-flag --skip-session]
  *
@@ -43,7 +43,7 @@
 
 // ── apps/api internals, imported straight from source ──────────────────────
 // These resolve fine (see file header): each of these files' OWN imports
-// (drizzle-orm, @kortix/db, livekit-server-sdk, ...) are resolved relative to
+// (drizzle-orm, @zed/db, livekit-server-sdk, ...) are resolved relative to
 // THAT file's location inside apps/api, not this one.
 import { db } from '../apps/api/src/shared/db';
 import { config } from '../apps/api/src/config';
@@ -52,7 +52,7 @@ import { roomNameForCall, mintAccessToken } from '../apps/api/src/channels/voice
 import { runCommandInSandbox } from '../apps/api/src/channels/voice/run-command';
 
 // ── workspace-scoped packages this file cannot `import` directly (see file
-// header) — includes drizzle-orm/@kortix/db, which are apps/api dependencies
+// header) — includes drizzle-orm/@zed/db, which are apps/api dependencies
 // too, not root ones, even though the schema TYPES flow through fine above
 // via `db`'s own inferred type. ──────────────────────────────────────────
 const ROOT_DIR = new URL('../', import.meta.url).pathname;
@@ -76,7 +76,7 @@ const {
   TrackSource,
 } = await loadFrom('@livekit/rtc-node', VOICE_AGENT_DIR);
 const { eq } = await loadFrom('drizzle-orm', API_DIR);
-const { projectSessions } = await loadFrom('@kortix/db', API_DIR);
+const { projectSessions } = await loadFrom('@zed/db', API_DIR);
 
 // ── constants ────────────────────────────────────────────────────────────
 const API = process.env.KE2E_API_URL || 'http://localhost:15608/v1';
@@ -86,7 +86,7 @@ const ANON_KEY = process.env.SUPABASE_ANON_KEY!;
 const SAMPLE_RATE = 24_000;
 const CHANNELS = 1;
 const DEFAULT_API_LOG =
-  '/tmp/claude-501/-Users-markokraemer-Projects-kortix-suna/aa206d1b-1ea8-4354-ad2d-e5e148a8e827/scratchpad/api3.log';
+  '/tmp/claude-501/-Users-markokraemer-Projects-zed-suna/aa206d1b-1ea8-4354-ad2d-e5e148a8e827/scratchpad/api3.log';
 const EXPECTED_TOOLS = ['voice_spawn', 'voice_read', 'send_prompt', 'run_command', 'voice_end'];
 
 // ── tiny arg parser ─────────────────────────────────────────────────────
@@ -115,7 +115,7 @@ function printHelp() {
   --skip-provision          reuse an existing project/session instead of minting one
   --project <id>            project id (required with --skip-provision unless derivable from --call)
   --call <id>                session id == call id (required with --skip-provision)
-  --token <connectorToken>   skip fetching KORTIX_CLI_TOKEN from the sandbox
+  --token <connectorToken>   skip fetching ZED_CLI_TOKEN from the sandbox
   --say "<text>"            phrase spoken in step 6 (default: a plain "can you hear me")
   --run-command-say "<text>" phrase spoken in step 8 to trigger run_command
   --api-log <path>          API access-log path checked in step 8 (default: ${DEFAULT_API_LOG})
@@ -245,7 +245,7 @@ async function mcpCall(
       'content-type': 'application/json',
       // Defensive only — a project-scoped session token already carries this
       // session id server-side; see db-deps.ts's resolveProjectPrincipal.
-      'X-Kortix-Session-Id': sessionId,
+      'X-Zed-Session-Id': sessionId,
     },
     body: JSON.stringify({ jsonrpc: '2.0', id, method, ...(params ? { params } : {}) }),
   });
@@ -428,7 +428,7 @@ async function main() {
   }
 
   // ── prerequisite: the per-session connector token the sandbox's agent
-  // would carry (KORTIX_CLI_TOKEN), needed for every real MCP call
+  // would carry (ZED_CLI_TOKEN), needed for every real MCP call
   // below. Fetched by executing `printenv` INSIDE the sandbox — the same
   // primitive the voice run_command tool itself uses — rather than minting
   // a new one, so this is the actual credential a live agent has, not a
@@ -438,13 +438,13 @@ async function main() {
     record('token', 'SKIP', 'using --token override');
   } else {
     try {
-      const result = await runCommandInSandbox(sessionId!, 'printenv KORTIX_CLI_TOKEN');
+      const result = await runCommandInSandbox(sessionId!, 'printenv ZED_CLI_TOKEN');
       const tok = result.stdout.trim().split('\n').pop()?.trim();
       if (!tok || result.timedOut) {
         throw new Error(`printenv returned nothing (timedOut=${result.timedOut}, exit=${result.exitCode})`);
       }
       connectorToken = tok;
-      record('token', 'PASS', `fetched KORTIX_CLI_TOKEN (${tok.slice(0, 12)}…)`);
+      record('token', 'PASS', `fetched ZED_CLI_TOKEN (${tok.slice(0, 12)}…)`);
     } catch (err) {
       record('token', 'FAIL', err instanceof Error ? err.message : String(err));
     }

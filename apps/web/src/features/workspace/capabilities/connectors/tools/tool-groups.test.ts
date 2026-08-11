@@ -1,4 +1,4 @@
-import type { ConnectorAction } from '@kortix/sdk';
+import type { ConnectorAction } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 
 import { filterActions, groupToolsByRisk, toolRowText } from './tool-groups';

@@ -52,7 +52,7 @@ function daytonaApiBase(): string {
 // snapshots/quota-gc.ts's reconcileSnapshotQuota(), which runs inside
 // maintenance.ts's Promise.all every cycle — an unbounded hang here wedges
 // the maintenance loop's `maintenanceRunning` lock exactly the same way.
-const DAYTONA_REST_CALL_TIMEOUT_MS = configuredTimeoutMs('KORTIX_DAYTONA_CALL_TIMEOUT_MS', 20_000, 1_000);
+const DAYTONA_REST_CALL_TIMEOUT_MS = configuredTimeoutMs('ZED_DAYTONA_CALL_TIMEOUT_MS', 20_000, 1_000);
 
 /**
  * List every snapshot in the org via the REST API (the SDK exposes no stable

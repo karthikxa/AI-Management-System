@@ -1,0 +1,1556 @@
+import { beforeEach, expect, mock, test } from 'bun:test';
+import { listFiles as globalListFiles } from '../files/client';
+import { ApiError } from '../http/api/errors';
+import { isConfigured } from '../http/config';
+import { SessionNotReadyError, createZed } from './zed';
+
+// Capture every outbound request the facade makes.
+let calls: { url: string; method: string; body?: unknown }[] = [];
+beforeEach(() => {
+  calls = [];
+  globalThis.fetch = mock(async (url: unknown, opts: { method?: string; body?: unknown } = {}) => {
+    calls.push({
+      url: String(url),
+      method: opts.method ?? 'GET',
+      body: typeof opts.body === 'string' ? JSON.parse(opts.body) : opts.body,
+    });
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        secrets: [],
+        candidates: [],
+        sessions: [],
+        connector_bindings: {},
+      }),
+      {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      },
+    );
+  }) as unknown as typeof fetch;
+});
+
+const zed = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+const last = () => calls[calls.length - 1];
+
+test('createZed wires the platform seam', () => {
+  expect(isConfigured()).toBe(true);
+});
+
+test('facade exposes the core namespaces', () => {
+  expect(typeof zed.projects.list).toBe('function');
+  expect(typeof zed.accounts.list).toBe('function');
+  expect(typeof zed.project).toBe('function');
+  expect(typeof zed.session).toBe('function');
+  expect(typeof zed.runtime).toBe('function');
+});
+
+test('project(id) handle binds the id and hits the right endpoint', async () => {
+  await zed.project('PID123').secrets.list();
+  expect(last().url).toContain('/projects/PID123/secrets');
+  expect(last().method).toBe('GET');
+});
+
+test('project(id).apps exposes the complete App lifecycle with the project id bound', async () => {
+  const apps = zed.project('PID123').apps;
+
+  expect(typeof apps.list).toBe('function');
+  expect(typeof apps.create).toBe('function');
+  expect(typeof apps.get).toBe('function');
+  expect(typeof apps.update).toBe('function');
+  expect(typeof apps.remove).toBe('function');
+  expect(typeof apps.artifacts.register).toBe('function');
+  expect(typeof apps.artifacts.uploadArchive).toBe('function');
+  expect(typeof apps.artifacts.finalize).toBe('function');
+  expect(typeof apps.deployments.create).toBe('function');
+  expect(typeof apps.deployments.list).toBe('function');
+  expect(typeof apps.deployments.get).toBe('function');
+  expect(typeof apps.deployments.logs).toBe('function');
+  expect(typeof apps.start).toBe('function');
+  expect(typeof apps.stop).toBe('function');
+  expect(typeof apps.rollback).toBe('function');
+
+  await apps.deployments.create('APP1', {
+    artifact_id: 'ART1',
+    source: { kind: 'static' },
+  });
+  expect(last()).toMatchObject({
+    method: 'POST',
+    url: 'http://test.local/projects/PID123/apps/APP1/deployments',
+    body: { artifact_id: 'ART1', source: { kind: 'static' } },
+  });
+});
+
+test('project(id).connectors exposes the complete connector data plane', async () => {
+  const connectors = zed.project('PID123').connectors;
+
+  expect(typeof connectors.catalog).toBe('function');
+  expect(typeof connectors.tools).toBe('function');
+  expect(typeof connectors.search).toBe('function');
+  expect(typeof connectors.describe).toBe('function');
+  expect(typeof connectors.call).toBe('function');
+  expect(typeof connectors.uploadAttachment).toBe('function');
+
+  await connectors.call('slack.send_message', { channel: 'C1', text: 'hello' });
+  expect(last().url).toBe('http://test.local/connectors/projects/PID123/call');
+  expect(last().method).toBe('POST');
+  expect(last().body).toEqual({
+    connector: 'slack',
+    action: 'send_message',
+    args: { channel: 'C1', text: 'hello' },
+  });
+});
+
+test('top-level connectors supports a project-scoped agent token without a project id', async () => {
+  expect(typeof zed.connectors.catalog).toBe('function');
+  expect(typeof zed.connectors.call).toBe('function');
+
+  await zed.connectors.call('slack.send_message', { channel: 'C1' });
+  expect(last().url).toBe('http://test.local/connectors/call');
+  expect(last().body).toEqual({
+    connector: 'slack',
+    action: 'send_message',
+    args: { channel: 'C1' },
+  });
+});
+
+test('project(id).secrets.broker binds the project and encoded identifier', async () => {
+  await zed.project('PID123').secrets.broker('primary/key', {
+    url: 'https://api.example.com/v1/items',
+    method: 'POST',
+  });
+
+  expect(last().url).toContain('/projects/PID123/secrets/primary%2Fkey/broker');
+  expect(last().method).toBe('POST');
+  expect(last().body).toEqual({
+    url: 'https://api.example.com/v1/items',
+    method: 'POST',
+  });
+});
+
+test('session(projectId, sessionId) binds both ids', async () => {
+  await zed.session('PID123', 'SID456').previews();
+  expect(last().url).toContain('/projects/PID123/sessions/SID456/previews');
+});
+
+test('session(projectId, sessionId).cost binds project scope without starting the runtime', async () => {
+  await zed.session('PID123', 'SID456').cost();
+
+  expect(calls).toHaveLength(1);
+  expect(last().url).toBe('http://test.local/usage/session-costs/SID456?project_id=PID123');
+  expect(last().method).toBe('GET');
+});
+
+test('project(id).session(sid) is the same session handle', async () => {
+  await zed.project('PA').session('SB').get();
+  expect(last().url).toContain('/projects/PA/sessions/SB');
+});
+
+test('session(...).scope reads the authoritative session scope', async () => {
+  await zed.session('PID123', 'SID456').scope();
+  expect(last().url).toBe('http://test.local/projects/PID123/sessions/SID456/scope');
+  expect(last().method).toBe('GET');
+});
+
+test('session(...).rescope writes canonical connection bindings', async () => {
+  await zed.session('PID123', 'SID456').rescope({
+    connector_bindings: {
+      gmail: { connection_id: 'AUTH-1' },
+    },
+  });
+  expect(last().url).toBe('http://test.local/projects/PID123/sessions/SID456/scope');
+  expect(last().method).toBe('PUT');
+  expect(last().body).toEqual({
+    connector_bindings: {
+      gmail: { connection_id: 'AUTH-1' },
+    },
+  });
+});
+
+test('project(id).sessions.list forwards manager inventory scope', async () => {
+  await zed.project('PID123').sessions.list({ scope: 'project' });
+  expect(last().url).toContain('/projects/PID123/sessions?scope=project');
+});
+
+test('project(id).sessions exposes server-owned warm-session ensure and claim', async () => {
+  globalThis.fetch = mock(async (url: unknown, opts: { method?: string; body?: unknown } = {}) => {
+    const requestUrl = String(url);
+    calls.push({
+      url: requestUrl,
+      method: opts.method ?? 'GET',
+      body: typeof opts.body === 'string' ? JSON.parse(opts.body) : opts.body,
+    });
+    const body = requestUrl.endsWith('/warm/claim')
+      ? { session_id: 'SID456' }
+      : {
+          session: { session_id: 'SID456' },
+          reused: true,
+          workspace_refresh: { status: 'unchanged' },
+        };
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  }) as unknown as typeof fetch;
+
+  await zed.project('PID123').sessions.ensureWarm();
+  expect(last().url).toContain('/projects/PID123/sessions/warm');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').sessions.claimWarm({ session_id: 'SID456' });
+  expect(last().url).toContain('/projects/PID123/sessions/warm/claim');
+  expect(last().method).toBe('POST');
+  expect(last().body).toEqual({ session_id: 'SID456' });
+});
+
+test('top-level projects.list hits /projects', async () => {
+  await zed.projects.list();
+  expect(last().url).toContain('/projects');
+});
+
+test('session(...).audit hits the audit endpoint with the given limit', async () => {
+  await zed.session('PID123', 'SID456').audit(10);
+  expect(last().url).toContain('/projects/PID123/sessions/SID456/audit?limit=10');
+});
+
+test('project(id).access.invite forwards a time-bound expiry to the backend', async () => {
+  const expiry = '2027-01-01T00:00:00.000Z';
+  await zed.project('PID123').access.invite('teammate@acme.com', 'member', expiry);
+  expect(last().url).toContain('/projects/PID123/access/invite');
+  expect(last().method).toBe('POST');
+  expect(last().body).toMatchObject({
+    email: 'teammate@acme.com',
+    role: 'member',
+    expires_at: expiry,
+  });
+});
+
+test('project(id).access.invite omits expires_at for a permanent grant', async () => {
+  await zed.project('PID123').access.invite('teammate@acme.com', 'member');
+  expect(last().body).not.toHaveProperty('expires_at');
+});
+
+test('project(id).access.invite sends expires_at:null to clear a bound', async () => {
+  await zed.project('PID123').access.invite('teammate@acme.com', 'member', null);
+  expect(last().body).toMatchObject({ expires_at: null });
+});
+
+// ── review / approvals / gateway / channels / apps / model-defaults / sandbox
+// / github / transcribe / sandbox-shares — the facade groups wired to close
+// the projects-client coverage gap (~85/187 wired before) ───────────────────
+
+test('project(id).review hits the review-items endpoints', async () => {
+  await zed.project('PID123').review.list({ segment: 'needs_you' });
+  expect(last().url).toContain('/projects/PID123/review/items?segment=needs_you');
+
+  await zed.project('PID123').review.get('RI1');
+  expect(last().url).toContain('/projects/PID123/review/items/RI1');
+
+  await zed.project('PID123').review.act('RI1', { verdict: 'approve' });
+  expect(last().url).toContain('/projects/PID123/review/items/RI1/act');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').review.bulkAct({ ids: ['RI1', 'RI2'], verdict: 'reject' });
+  expect(last().url).toContain('/projects/PID123/review/bulk');
+
+  await zed.project('PID123').review.submit({ kind: 'output', title: 'Result' });
+  expect(last().url).toContain('/projects/PID123/review/items');
+  expect(last().method).toBe('POST');
+});
+
+test('project(id).approvals hits the approvals inbox endpoints', async () => {
+  await zed.project('PID123').approvals.list();
+  expect(last().url).toContain('/projects/PID123/approvals');
+
+  await zed.project('PID123').approvals.sessionsNeedingInput();
+  expect(last().url).toContain('/projects/PID123/approvals/needs-input');
+
+  await zed.project('PID123').approvals.resolve('EXEC1', 'approve');
+  expect(last().url).toContain('/projects/PID123/approvals/EXEC1');
+  expect(last().method).toBe('POST');
+});
+
+test('project(id).gateway hits the gateway observability + budget + key endpoints', async () => {
+  await zed.project('PID123').gateway.logs({ limit: 10 });
+  expect(last().url).toContain('/projects/PID123/gateway/logs?limit=10');
+
+  await zed.project('PID123').gateway.overview(7);
+  expect(last().url).toContain('/projects/PID123/gateway/overview?days=7');
+
+  await zed.project('PID123').gateway.budgets();
+  expect(last().url).toContain('/projects/PID123/gateway/budgets');
+
+  await zed.project('PID123').gateway.setBudget({ scope: 'project', limit_usd: 50 });
+  expect(last().url).toContain('/projects/PID123/gateway/budgets');
+  expect(last().method).toBe('PUT');
+
+  await zed.project('PID123').gateway.createKey('ci-key');
+  expect(last().url).toContain('/projects/PID123/gateway/keys');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').gateway.revokeKey('KEY1');
+  expect(last().url).toContain('/projects/PID123/gateway/keys/KEY1');
+  expect(last().method).toBe('DELETE');
+});
+
+test('project(id).gateway.routing binds policy CRUD and preview to the project', async () => {
+  await zed.project('PID123').gateway.routing.get();
+  expect(last().url).toContain('/projects/PID123/gateway/routing-policy');
+  expect(last().method).toBe('GET');
+
+  await zed.project('PID123').gateway.routing.set({
+    defaultModel: 'codex/gpt-5.6-sol',
+    visionModel: null,
+    defaultFallback: { models: ['glm-5.2'], fallbackOn: 'any-error' },
+    rules: [],
+  });
+  expect(last().method).toBe('PUT');
+
+  await zed.project('PID123').gateway.routing.preview({
+    requestedModel: 'codex/gpt-5.6-sol',
+    imageInput: false,
+  });
+  expect(last().url).toContain('/projects/PID123/gateway/routing-policy/preview');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').gateway.routing.reset();
+  expect(last().method).toBe('DELETE');
+});
+
+test('project(id).channels covers slack, email and voice', async () => {
+  await zed.project('PID123').channels.slack.installation();
+  expect(last().url).toContain('/projects/PID123/channels/slack/installation');
+
+  await zed.project('PID123').channels.email.mode();
+  expect(last().url).toContain('/projects/PID123/channels/email/mode');
+
+  await zed.project('PID123').channels.voice.setBotName('Zed');
+  expect(last().url).toContain('/projects/PID123/channels/meet/name');
+  expect(last().method).toBe('PUT');
+});
+
+test('project(id) exposes provider-neutral Apps without a generic deployments alias', () => {
+  const handle = zed.project('PID123') as unknown as Record<string, unknown>;
+  expect('apps' in handle).toBe(true);
+  expect('deployments' in handle).toBe(false);
+});
+
+test('project(id).modelDefaults gets/sets/clears the default model', async () => {
+  await zed.project('PID123').modelDefaults.get();
+  expect(last().url).toContain('/projects/PID123/model-defaults');
+
+  await zed.project('PID123').modelDefaults.set({ scope: 'project', model: 'anthropic/claude' });
+  expect(last().method).toBe('PUT');
+
+  await zed.project('PID123').modelDefaults.clear({ scope: 'project' });
+  expect(last().method).toBe('DELETE');
+});
+
+test('project(id).modelPicker loads the compact selector catalog', async () => {
+  await zed.project('PID123').modelPicker();
+  expect(last().url).toContain('/projects/PID123/model-picker');
+  expect(last().method).toBe('GET');
+});
+
+test('project(id).sandbox hits the sandbox/snapshot/template admin endpoints', async () => {
+  await zed.project('PID123').sandbox.list();
+  expect(last().url).toContain('/projects/PID123/sandboxes');
+
+  await zed.project('PID123').sandbox.snapshots();
+  expect(last().url).toContain('/projects/PID123/snapshots');
+
+  await zed.project('PID123').sandbox.rebuildSnapshot();
+  expect(last().url).toContain('/projects/PID123/snapshots/rebuild');
+  expect(last().method).toBe('POST');
+});
+
+test('project(id).setAgentScope binds the project id + agent name', async () => {
+  await zed.project('PID123').setAgentScope('researcher', { env: 'all' });
+  expect(last().url).toContain('/projects/PID123/agents/researcher/scope');
+  expect(last().method).toBe('PUT');
+});
+
+test('zed.github covers install/list/link/repo endpoints (account-scoped, not project-scoped)', async () => {
+  await zed.github.getInstallation('ACC1');
+  expect(last().url).toContain('/projects/github/installation?account_id=ACC1');
+
+  await zed.github.listRepositories('ACC1');
+  expect(last().url).toContain('/projects/github/repositories?account_id=ACC1');
+});
+
+test('zed.sandboxShares hits /p/share (sandbox-scoped, not project-scoped)', async () => {
+  await zed.sandboxShares.list('SB1');
+  expect(last().url).toContain('/p/share?sandbox_id=SB1');
+
+  await zed.sandboxShares.create({ sandboxId: 'SB1', port: 8000 });
+  expect(last().url).toContain('/p/share');
+  expect(last().method).toBe('POST');
+
+  await zed.sandboxShares.revoke('SB1', 'TOK1');
+  expect(last().url).toContain('/p/share/TOK1?sandbox_id=SB1');
+  expect(last().method).toBe('DELETE');
+});
+
+// ── wave 4: account-invite lifecycle, resource-grants CRUD, group-grant
+// attach/detach, connector extras (pipedream/policies/oauth), and the
+// remaining project-level admin toggles ────────────────────────────────────
+
+test('zed.accounts covers cancel/resend invite (account-scoped)', async () => {
+  await zed.accounts.cancelInvite('ACC1', 'INV1');
+  expect(last().url).toContain('/accounts/ACC1/invites/INV1');
+  expect(last().method).toBe('DELETE');
+
+  await zed.accounts.resendInvite('ACC1', 'INV1');
+  expect(last().url).toContain('/accounts/ACC1/invites/INV1/resend');
+  expect(last().method).toBe('POST');
+});
+
+test('zed.accountInvites covers describe/accept/decline (invite-token scoped, no account id)', async () => {
+  await zed.accountInvites.describe('INV1');
+  expect(last().url).toContain('/account-invites/INV1');
+  expect(last().method).toBe('GET');
+
+  await zed.accountInvites.accept('INV1');
+  expect(last().url).toContain('/account-invites/INV1/accept');
+  expect(last().method).toBe('POST');
+
+  await zed.accountInvites.decline('INV1');
+  expect(last().url).toContain('/account-invites/INV1/decline');
+  expect(last().method).toBe('POST');
+});
+
+test('project(id).access covers group-grant attach/update/detach', async () => {
+  await zed.project('PID123').access.attachGroupGrant('GRP1', 'member');
+  expect(last().url).toContain('/projects/PID123/group-grants');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').access.updateGroupGrant('GRP1', 'editor');
+  expect(last().url).toContain('/projects/PID123/group-grants/GRP1');
+  expect(last().method).toBe('PATCH');
+
+  await zed.project('PID123').access.detachGroupGrant('GRP1');
+  expect(last().url).toContain('/projects/PID123/group-grants/GRP1');
+  expect(last().method).toBe('DELETE');
+});
+
+test('project(id).access.resourceGrants covers list/create/remove', async () => {
+  await zed.project('PID123').access.resourceGrants.list();
+  expect(last().url).toContain('/projects/PID123/resource-grants');
+  expect(last().method).toBe('GET');
+
+  await zed.project('PID123').access.resourceGrants.create({
+    resourceType: 'secret',
+    resourceId: 'MY_SECRET',
+    principalType: 'member',
+    principalId: 'user-1',
+  });
+  expect(last().url).toContain('/projects/PID123/resource-grants');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').access.resourceGrants.remove('G9');
+  expect(last().url).toContain('/projects/PID123/resource-grants/G9');
+  expect(last().method).toBe('DELETE');
+});
+
+test('project(id).secrets covers provider OAuth start, poll, and removal', async () => {
+  await zed.project('PID123').secrets.startProviderOAuth('chatgpt');
+  expect(last().url).toContain('/projects/PID123/oauth/chatgpt/start');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').secrets.pollProviderOAuth('chatgpt', 'FLOW1');
+  expect(last().url).toContain('/projects/PID123/oauth/chatgpt/poll');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').secrets.removeProviderOAuth('chatgpt');
+  expect(last().url).toContain('/projects/PID123/oauth/chatgpt');
+  expect(last().method).toBe('DELETE');
+});
+
+test('project(id).connectors covers credential-mode/sensitive/policies/pipedream', async () => {
+  await zed.project('PID123').connectors.auth.discover({
+    slug: 'hubspot',
+    provider: 'postman',
+    spec: 'https://github.com/HubSpot/HubSpot-public-api-spec-collection',
+  });
+  expect(last().url).toContain('/connectors/projects/PID123/connectors/auth-discovery');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').connectors.setName('slack-1', 'My Slack');
+  expect(last().url).toContain('/connectors/projects/PID123/connectors/slack-1/name');
+
+  await zed.project('PID123').connectors.setCredential('slack-1', 'secret-value');
+  expect(last().url).toContain('/connectors/projects/PID123/connectors/slack-1/credential');
+
+  await zed.project('PID123').connectors.setCredentialMode('slack-1', 'shared');
+  expect(last().url).toContain('/connectors/projects/PID123/connectors/slack-1/credential-mode');
+
+  await zed.project('PID123').connectors.setAuthorizationStrategy('slack-1', 'user');
+  expect(last().url).toContain(
+    '/connectors/projects/PID123/connectors/slack-1/authorization-strategy',
+  );
+
+  await zed.project('PID123').connectors.setSensitive('slack-1', true);
+  expect(last().url).toContain('/connectors/projects/PID123/connectors/slack-1/sensitive');
+
+  await zed.project('PID123').connectors.policies.get('slack-1');
+  expect(last().url).toContain('/connectors/projects/PID123/connectors/slack-1/policies');
+  expect(last().method).toBe('GET');
+
+  await zed
+    .project('PID123')
+    .connectors.policies.set('slack-1', [{ match: '*', action: 'block' }]);
+  expect(last().url).toContain('/connectors/projects/PID123/connectors/slack-1/policies');
+  expect(last().method).toBe('PUT');
+
+  await zed.project('PID123').connectors.pipedream.listApps('gmail');
+  expect(last().url).toContain('/connectors/projects/PID123/pipedream/apps?q=gmail');
+
+  await zed.project('PID123').connectors.discover.list('notion');
+  expect(last().url).toContain('/connectors/projects/PID123/discover/connectors?q=notion');
+
+  await zed.project('PID123').connectors.discover.detail('mcp/notion');
+  expect(last().url).toContain(
+    '/connectors/projects/PID123/discover/connectors/detail?id=mcp%2Fnotion',
+  );
+
+  await zed.project('PID123').connectors.pipedream.connect('gmail-1');
+  expect(last().url).toContain('/connectors/projects/PID123/connectors/gmail-1/connect');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').connectors.pipedream.finalize('gmail-1');
+  expect(last().url).toContain('/connectors/projects/PID123/connectors/gmail-1/connect/finalize');
+  expect(last().method).toBe('POST');
+});
+
+test('project(id).connectors exposes the connection lifecycle', async () => {
+  await zed.project('PID123').connectors.connections.list();
+  expect(last().url).toContain('/projects/PID123/connections');
+
+  await zed.project('PID123').connectors.connections.reconcile({
+    connector_alias: 'gmail',
+    owner_type: 'project',
+    label: 'Project Gmail',
+  });
+  expect(last().method).toBe('POST');
+});
+
+test('zed.connectStatus hits the top-level connect-status endpoint (not project-scoped)', async () => {
+  await zed.connectStatus();
+  expect(last().url).toContain('/connectors/connect-status');
+});
+
+test('project(id) covers experimental-feature toggle, sandbox provider pin, and repo-collaborator invite', async () => {
+  await zed.project('PID123').updateExperimentalFeature('marketplace', true);
+  expect(last().url).toContain('/projects/PID123/experimental');
+  expect(last().method).toBe('PATCH');
+
+  await zed.project('PID123').setDefaultAgent('zed');
+  expect(last().url).toContain('/projects/PID123/default-agent');
+  expect(last().method).toBe('PUT');
+
+  await zed.project('PID123').sandbox.setProvider('daytona');
+  expect(last().url).toContain('/projects/PID123/sandbox-provider');
+  expect(last().method).toBe('PATCH');
+
+  await zed.project('PID123').git.inviteCollaborator('octocat');
+  expect(last().url).toContain('/projects/PID123/git/collaborators');
+  expect(last().method).toBe('POST');
+});
+
+test('zed.projects.createRepo hits the create-repo endpoint (not bound to an existing project id)', async () => {
+  await zed.projects.createRepo({ name: 'new-repo' });
+  expect(last().url).toContain('/projects/create-repo');
+  expect(last().method).toBe('POST');
+});
+
+test('zed.transcribe hits the top-level /transcription endpoint (not project-scoped)', async () => {
+  const file = new File(['audio'], 'clip.webm', { type: 'audio/webm' });
+  await zed.transcribe(file);
+  expect(last().url).toContain('/transcription');
+  expect(last().method).toBe('POST');
+});
+
+// ── wave 5: token minting, billing read surface, marketplace/registry
+// install, session transcript, CR request-changes, account audit — closing
+// the gaps a coverage audit found against the ~499 API routes ──────────────
+
+test('zed.accounts.tokens covers list/create/revoke (account-scoped CLI PATs)', async () => {
+  await zed.accounts.tokens.list('ACC1');
+  expect(last().url).toContain('/accounts/tokens?account_id=ACC1');
+  expect(last().method).toBe('GET');
+
+  await zed.accounts.tokens.create({ name: 'ci-key', accountId: 'ACC1', projectId: 'PID1' });
+  expect(last().url).toContain('/accounts/tokens');
+  expect(last().method).toBe('POST');
+
+  await zed.accounts.tokens.revoke('TOK1', 'ACC1');
+  expect(last().url).toContain('/accounts/tokens/TOK1?account_id=ACC1');
+  expect(last().method).toBe('DELETE');
+});
+
+test('project(id).tokens covers list/create/revoke (project-scoped CLI PATs)', async () => {
+  await zed.project('PID123').tokens.list();
+  expect(last().url).toContain('/projects/PID123/cli-token');
+  expect(last().method).toBe('GET');
+
+  await zed.project('PID123').tokens.create({ name: 'agent-token' });
+  expect(last().url).toContain('/projects/PID123/cli-token');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').tokens.revoke('TOK1');
+  expect(last().url).toContain('/projects/PID123/cli-token/TOK1');
+  expect(last().method).toBe('DELETE');
+});
+
+test('zed.billing covers the read surface (account-state, transactions, credits, tiers)', async () => {
+  await zed.billing.accountState();
+  expect(last().url).toContain('/billing/account-state');
+
+  await zed.billing.accountStateMinimal();
+  expect(last().url).toContain('/billing/account-state/minimal');
+
+  await zed.billing.transactions({ accountId: 'ACC1', limit: 10 });
+  expect(last().url).toContain('/billing/transactions?account_id=ACC1&limit=10');
+
+  await zed.billing.transactionsSummary({ days: 7 });
+  expect(last().url).toContain('/billing/transactions/summary?days=7');
+
+  await zed.billing.creditBreakdown();
+  expect(last().url).toContain('/billing/credit-breakdown');
+
+  await zed.billing.usageHistory(14);
+  expect(last().url).toContain('/billing/usage-history?days=14');
+
+  await zed.billing.tierConfigurations();
+  expect(last().url).toContain('/billing/tier-configurations');
+});
+
+test('session(...).transcript hits the compact transcript endpoint with limit/chars', async () => {
+  await zed.session('PID123', 'SID456').transcript({ limit: 10, chars: 200 });
+  expect(last().url).toContain('/projects/PID123/sessions/SID456/transcript?limit=10&chars=200');
+  expect(last().method).toBe('GET');
+});
+
+test('project(id).changeRequests.requestChanges hits the request-changes endpoint', async () => {
+  await zed.project('PID123').changeRequests.requestChanges('CR1', 'please fix the tests');
+  expect(last().url).toContain('/projects/PID123/change-requests/CR1/request-changes');
+  expect(last().method).toBe('POST');
+});
+
+test('zed.accounts.audit covers log/export/webhooks CRUD', async () => {
+  await zed.accounts.audit.log('ACC1', { action: 'iam.', limit: 20 });
+  expect(last().url).toContain('/accounts/ACC1/audit?action=iam.&limit=20');
+  expect(last().method).toBe('GET');
+
+  await zed.accounts.audit.export('ACC1', { format: 'csv' });
+  expect(last().url).toContain('/accounts/ACC1/audit/export?format=csv');
+
+  await zed.accounts.audit.webhooks.list('ACC1');
+  expect(last().url).toContain('/accounts/ACC1/audit/webhooks');
+  expect(last().method).toBe('GET');
+
+  await zed.accounts.audit.webhooks.create('ACC1', {
+    name: 'siem',
+    url: 'https://siem.example.com/hook',
+  });
+  expect(last().url).toContain('/accounts/ACC1/audit/webhooks');
+  expect(last().method).toBe('POST');
+
+  await zed.accounts.audit.webhooks.update('ACC1', 'WH1', { enabled: false });
+  expect(last().url).toContain('/accounts/ACC1/audit/webhooks/WH1');
+  expect(last().method).toBe('PATCH');
+
+  await zed.accounts.audit.webhooks.remove('ACC1', 'WH1');
+  expect(last().url).toContain('/accounts/ACC1/audit/webhooks/WH1');
+  expect(last().method).toBe('DELETE');
+});
+
+test('project(id).audit and session(id).audit expose canonical cursor pagination', async () => {
+  await zed.project('PID123').audit({ phase: 'completed', cursor: 'CUR1' });
+  expect(last().url).toContain('/projects/PID123/audit?phase=completed&cursor=CUR1');
+
+  await zed.session('PID123', 'SID456').audit(50, { cursor: '42|EVENT' });
+  expect(last().url).toContain('/projects/PID123/sessions/SID456/audit?limit=50&cursor=42%7CEVENT');
+});
+
+// ── setup links / manifest validate / git token / slack files / meet speak /
+// gateway playground / billing mutations / public marketplace / validateToken
+// — closing the LAST projects-client coverage gaps ─────────────────────────
+
+test('project(id).setupLinks mints secret-entry and connect-request links', async () => {
+  await zed.project('PID123').setupLinks.requestSecret({ names: ['STRIPE_KEY'] });
+  expect(last().url).toContain('/projects/PID123/secret-requests');
+  expect(last().method).toBe('POST');
+
+  await zed.project('PID123').setupLinks.requestConnector({ slug: 'github' });
+  expect(last().url).toContain('/projects/PID123/connect-requests');
+  expect(last().method).toBe('POST');
+});
+
+test('project(id).validateManifest posts the raw TOML text', async () => {
+  await zed.project('PID123').validateManifest('[project]\nname = "x"');
+  expect(last().url).toContain('/projects/PID123/manifest/validate');
+  expect(last().method).toBe('POST');
+});
+
+test('project(id).gitToken mints a scoped push token', async () => {
+  await zed.project('PID123').gitToken();
+  expect(last().url).toContain('/projects/PID123/git-token');
+  expect(last().method).toBe('POST');
+});
+
+test('project(id).channels.slack covers file download + upload proxies', async () => {
+  await zed.project('PID123').channels.slack.getFile('https://files.slack.com/x');
+  expect(last().url).toContain('/projects/PID123/channels/slack/file?url=');
+  expect(last().method).toBe('GET');
+
+  await zed.project('PID123').channels.slack.uploadFile({
+    channel: 'C1',
+    filename: 'report.pdf',
+    contentBase64: 'YWJj',
+  });
+  expect(last().url).toContain('/projects/PID123/channels/slack/file/upload');
+  expect(last().method).toBe('POST');
+});
+
+test('project(id).gateway.playground posts prompt + models', async () => {
+  await zed.project('PID123').gateway.playground('Say hi', ['gpt-4o', 'claude-3']);
+  expect(last().url).toContain('/projects/PID123/gateway/playground');
+  expect(last().method).toBe('POST');
+});
+
+test('zed.billing.checkout covers create + confirm session', async () => {
+  await zed.billing.checkout.createSession({
+    tierKey: 'pro',
+    successUrl: 'https://app.example.com/success',
+    cancelUrl: 'https://app.example.com/cancel',
+  });
+  expect(last().url).toContain('/billing/create-checkout-session');
+  expect(last().method).toBe('POST');
+
+  await zed.billing.checkout.confirmSession('cs_123');
+  expect(last().url).toContain('/billing/confirm-checkout-session');
+  expect(last().method).toBe('POST');
+});
+
+test('zed.billing.subscription covers portal/cancel/reactivate/downgrade/proration', async () => {
+  await zed.billing.subscription.createPortalSession('https://app.example.com/billing');
+  expect(last().url).toContain('/billing/create-portal-session');
+  expect(last().method).toBe('POST');
+
+  await zed.billing.subscription.cancel('too expensive');
+  expect(last().url).toContain('/billing/cancel-subscription');
+
+  await zed.billing.subscription.reactivate();
+  expect(last().url).toContain('/billing/reactivate-subscription');
+
+  await zed.billing.subscription.scheduleDowngrade('starter');
+  expect(last().url).toContain('/billing/schedule-downgrade');
+
+  await zed.billing.subscription.cancelScheduledChange();
+  expect(last().url).toContain('/billing/cancel-scheduled-change');
+
+  await zed.billing.subscription.prorationPreview('price_123');
+  expect(last().url).toContain('/billing/proration-preview?new_price_id=price_123');
+  expect(last().method).toBe('GET');
+});
+
+test('zed.billing.credits covers purchase + auto-topup get/configure', async () => {
+  await zed.billing.credits.purchase({ amount: 20 });
+  expect(last().url).toContain('/billing/purchase-credits');
+  expect(last().method).toBe('POST');
+
+  await zed.billing.credits.autoTopupSettings();
+  expect(last().url).toContain('/billing/auto-topup/settings');
+  expect(last().method).toBe('GET');
+
+  await zed.billing.credits.configureAutoTopup({ enabled: true, threshold: 5, amount: 20 });
+  expect(last().url).toContain('/billing/auto-topup/configure');
+  expect(last().method).toBe('POST');
+});
+
+test('zed.billing.sessionCosts covers paginated list and detail reads', async () => {
+  await zed.billing.sessionCosts.list({
+    accountId: 'ACC1',
+    projectId: 'PID1',
+    limit: 20,
+    offset: 0,
+  });
+  expect(last().url).toBe(
+    'http://test.local/usage/session-costs?account_id=ACC1&project_id=PID1&limit=20&offset=0',
+  );
+  expect(last().method).toBe('GET');
+
+  await zed.billing.sessionCosts.get('SID/1', {
+    accountId: 'ACC1',
+    projectId: 'PID1',
+  });
+  expect(last().url).toBe(
+    'http://test.local/usage/session-costs/SID%2F1?account_id=ACC1&project_id=PID1',
+  );
+  expect(last().method).toBe('GET');
+});
+
+test('zed.marketplace covers public catalog browse + authed sources CRUD (top-level, not project-scoped)', async () => {
+  await zed.marketplace.items({ query: 'slack' });
+  expect(last().url).toContain('/marketplace/items?query=slack');
+  expect(last().method).toBe('GET');
+
+  await zed.marketplace.item('zed:researcher');
+  expect(last().url).toContain('/marketplace/items/zed%3Aresearcher');
+
+  await zed.marketplace.itemFile('zed:researcher', 'agent.md');
+  expect(last().url).toContain('/marketplace/items/zed%3Aresearcher/file?path=agent.md');
+
+  await zed.marketplace.marketplaces();
+  expect(last().url).toContain('/marketplace/marketplaces');
+
+  await zed.marketplace.featured();
+  expect(last().url).toContain('/marketplace/marketplaces/featured');
+
+  await zed.marketplace.sources.list();
+  expect(last().url).toContain('/marketplace/sources');
+  expect(last().method).toBe('GET');
+
+  await zed.marketplace.sources.add({ address: 'https://github.com/acme/registry' });
+  expect(last().url).toContain('/marketplace/sources');
+  expect(last().method).toBe('POST');
+
+  await zed.marketplace.sources.remove('SRC1');
+  expect(last().url).toContain('/marketplace/sources/SRC1');
+  expect(last().method).toBe('DELETE');
+});
+
+test('zed.validateToken hits /accounts/me and never throws', async () => {
+  const result = await zed.validateToken();
+  expect(last().url).toContain('/accounts/me');
+  expect(result.valid).toBe(true);
+});
+
+// ── per-handle runtime isolation (regression: two session handles used to
+// share the module-global "active runtime", so the second handle's
+// ensureReady() silently redirected the first handle's send/health/preview
+// calls to the wrong sandbox) ──────────────────────────────────────────────
+
+function sessionStartPayload(externalId: string, opencodeSessionId: string) {
+  return {
+    stage: 'ready',
+    agent_name: 'agent',
+    retriable: false,
+    sandbox: { external_id: externalId },
+    opencode_session_id: opencodeSessionId,
+  };
+}
+
+function requestUrl(input: unknown): string {
+  return input instanceof Request ? input.url : String(input);
+}
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
+function mockTwoSessionSandboxes() {
+  return mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    calls.push({ url, method: 'POST' });
+    if (url.includes('/sessions/SESS-A/start')) {
+      return jsonResponse(sessionStartPayload('sb-A', 'ocs-A'));
+    }
+    if (url.includes('/sessions/SESS-B/start')) {
+      return jsonResponse(sessionStartPayload('sb-B', 'ocs-B'));
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+}
+
+test('two session handles resolve independent sandboxes: A.send never crosses to B (or back)', async () => {
+  globalThis.fetch = mockTwoSessionSandboxes();
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+
+  const a = k.session('PROJ', 'SESS-A');
+  const b = k.session('PROJ', 'SESS-B');
+
+  await a.ensureReady();
+  await b.ensureReady(); // resolves AFTER a — guards against shared sandbox state
+
+  await a.send('hello from A');
+  const aPromptCall = calls.find((c) => c.url.includes('/message'));
+  expect(aPromptCall?.url).toContain('/p/sb-A/8000');
+  expect(aPromptCall?.url).not.toContain('sb-B');
+
+  calls.length = 0;
+  await b.send('hello from B');
+  const bPromptCall = calls.find((c) => c.url.includes('/message'));
+  expect(bPromptCall?.url).toContain('/p/sb-B/8000');
+  expect(bPromptCall?.url).not.toContain('sb-A');
+
+  calls.length = 0;
+  await a.abort();
+  const aAbortCall = calls.find((c) => c.url.includes('/abort'));
+  expect(aAbortCall?.url).toContain('/p/sb-A/8000');
+  expect(aAbortCall?.url).not.toContain('sb-B');
+});
+
+test('send applies persisted session defaults when the OpenCode pin came from a snapshot', async () => {
+  globalThis.fetch = mock(async (input: unknown, init?: RequestInit) => {
+    const url = requestUrl(input);
+    const request = input instanceof Request ? input : null;
+    const bodyText = request ? await request.clone().text() : String(init?.body ?? '');
+    calls.push({
+      url,
+      method: request?.method ?? init?.method ?? 'GET',
+      body: bodyText ? JSON.parse(bodyText) : undefined,
+    });
+    if (url.includes('/sessions/SESS-INHERITED/start')) {
+      return jsonResponse(sessionStartPayload('sb-inherited', 'shared-snapshot-pin'));
+    }
+    if (url.endsWith('/projects/PROJ/sessions/SESS-INHERITED')) {
+      return jsonResponse({
+        session_id: 'SESS-INHERITED',
+        agent_name: 'zed',
+        metadata: { opencode_model: 'zed/glm-5.2' },
+      });
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({
+    backendUrl: 'http://test.local',
+    getToken: async () => 'tok',
+  });
+  await k.session('PROJ', 'SESS-INHERITED').send('hello from inherited state');
+
+  const promptCall = calls.find(
+    (call) =>
+      call.url.includes('/p/sb-inherited/8000/session/shared-snapshot-pin/message') &&
+      call.method === 'POST',
+  );
+  expect(promptCall?.body).toMatchObject({
+    agent: 'zed',
+    model: { providerID: 'zed', modelID: 'glm-5.2' },
+    parts: [{ type: 'text', text: 'hello from inherited state' }],
+  });
+});
+
+test('changeModel invalidates the persisted default before the next send', async () => {
+  let persistedModel = 'zed/glm-5.2';
+  globalThis.fetch = mock(async (input: unknown, init?: RequestInit) => {
+    const url = requestUrl(input);
+    const request = input instanceof Request ? input : null;
+    const bodyText = request ? await request.clone().text() : String(init?.body ?? '');
+    const body = bodyText ? JSON.parse(bodyText) : undefined;
+    calls.push({
+      url,
+      method: request?.method ?? init?.method ?? 'GET',
+      body,
+    });
+    if (url.includes('/sessions/SESS-MODEL-CHANGE/start')) {
+      return jsonResponse(sessionStartPayload('sb-model-change', 'shared-snapshot-pin'));
+    }
+    if (url.endsWith('/projects/PROJ/sessions/SESS-MODEL-CHANGE/model')) {
+      persistedModel = body.opencode_model;
+      return jsonResponse({
+        opencode_model: persistedModel,
+        applied_live: true,
+      });
+    }
+    if (url.endsWith('/projects/PROJ/sessions/SESS-MODEL-CHANGE')) {
+      return jsonResponse({
+        session_id: 'SESS-MODEL-CHANGE',
+        agent_name: 'zed',
+        metadata: { opencode_model: persistedModel },
+      });
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({
+    backendUrl: 'http://test.local',
+    getToken: async () => 'tok',
+  });
+  const handle = k.session('PROJ', 'SESS-MODEL-CHANGE');
+  await handle.send('before change');
+  await handle.changeModel('zed/gpt-5.6-mini');
+  await handle.send('after change');
+
+  const prompts = calls.filter(
+    (call) =>
+      call.url.includes('/p/sb-model-change/8000/session/shared-snapshot-pin/message') &&
+      call.method === 'POST',
+  );
+  expect(prompts.map((call) => call.body)).toEqual([
+    expect.objectContaining({
+      model: { providerID: 'zed', modelID: 'glm-5.2' },
+    }),
+    expect.objectContaining({
+      model: { providerID: 'zed', modelID: 'gpt-5.6-mini' },
+    }),
+  ]);
+});
+
+test('changeModel surfaces push_failed so a half-applied change is not read as saved', async () => {
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    if (url.endsWith('/projects/PROJ/sessions/SESS-HALF/model')) {
+      return jsonResponse({
+        opencode_model: 'zed/deepseek-v4-flash',
+        applied_live: false,
+        push_failed: true,
+        detail: 'stored, but not pushed: env sync failed: 502 upstream-closed-before-headers',
+      });
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const result = await k.session('PROJ', 'SESS-HALF').changeModel('zed/deepseek-v4-flash');
+
+  expect(result.push_failed).toBe(true);
+  expect(result.applied_live).toBe(false);
+  expect(result.detail).toContain('502 upstream-closed-before-headers');
+});
+
+test('per-call and handle prompt choices override persisted session defaults', async () => {
+  globalThis.fetch = mock(async (input: unknown, init?: RequestInit) => {
+    const url = requestUrl(input);
+    const request = input instanceof Request ? input : null;
+    const bodyText = request ? await request.clone().text() : String(init?.body ?? '');
+    calls.push({
+      url,
+      method: request?.method ?? init?.method ?? 'GET',
+      body: bodyText ? JSON.parse(bodyText) : undefined,
+    });
+    if (url.includes('/sessions/SESS-OVERRIDES/start')) {
+      return jsonResponse(sessionStartPayload('sb-overrides', 'shared-snapshot-pin'));
+    }
+    if (url.endsWith('/projects/PROJ/sessions/SESS-OVERRIDES')) {
+      return jsonResponse({
+        session_id: 'SESS-OVERRIDES',
+        agent_name: 'persisted-agent',
+        metadata: { opencode_model: 'persisted/model' },
+      });
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({
+    backendUrl: 'http://test.local',
+    getToken: async () => 'tok',
+  });
+  const handle = k.session('PROJ', 'SESS-OVERRIDES');
+  await handle.send('persisted');
+  handle.setModel({ providerID: 'sticky', modelID: 'model' });
+  handle.setAgent('sticky-agent');
+  await handle.send('sticky');
+  await handle.send('per-call', {
+    model: { providerID: 'per-call', modelID: 'model' },
+    agent: 'per-call-agent',
+  });
+
+  const prompts = calls.filter(
+    (call) =>
+      call.url.includes('/p/sb-overrides/8000/session/shared-snapshot-pin/message') &&
+      call.method === 'POST',
+  );
+  expect(prompts.map((call) => call.body)).toEqual([
+    expect.objectContaining({
+      model: { providerID: 'persisted', modelID: 'model' },
+      agent: 'persisted-agent',
+    }),
+    expect.objectContaining({
+      model: { providerID: 'sticky', modelID: 'model' },
+      agent: 'sticky-agent',
+    }),
+    expect.objectContaining({
+      model: { providerID: 'per-call', modelID: 'model' },
+      agent: 'per-call-agent',
+    }),
+  ]);
+  expect(
+    calls.filter(
+      (call) =>
+        call.url.endsWith('/projects/PROJ/sessions/SESS-OVERRIDES') && call.method === 'GET',
+    ),
+  ).toHaveLength(1);
+});
+
+test('a failed persisted-default read is retried by the next send', async () => {
+  let sessionReads = 0;
+  globalThis.fetch = mock(async (input: unknown, init?: RequestInit) => {
+    const url = requestUrl(input);
+    const request = input instanceof Request ? input : null;
+    const bodyText = request ? await request.clone().text() : String(init?.body ?? '');
+    calls.push({
+      url,
+      method: request?.method ?? init?.method ?? 'GET',
+      body: bodyText ? JSON.parse(bodyText) : undefined,
+    });
+    if (url.includes('/sessions/SESS-DEFAULT-RETRY/start')) {
+      return jsonResponse(sessionStartPayload('sb-default-retry', 'shared-snapshot-pin'));
+    }
+    if (url.endsWith('/projects/PROJ/sessions/SESS-DEFAULT-RETRY')) {
+      sessionReads += 1;
+      if (sessionReads <= 3) throw new TypeError('transient session read failure');
+      return jsonResponse({
+        session_id: 'SESS-DEFAULT-RETRY',
+        agent_name: 'persisted-agent',
+        metadata: { opencode_model: 'persisted/model' },
+      });
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({
+    backendUrl: 'http://test.local',
+    getToken: async () => 'tok',
+  });
+  const handle = k.session('PROJ', 'SESS-DEFAULT-RETRY');
+  await expect(handle.send('first')).rejects.toThrow('transient session read failure');
+  await handle.send('second');
+
+  expect(sessionReads).toBe(4);
+  const prompts = calls.filter(
+    (call) =>
+      call.url.includes('/p/sb-default-retry/8000/session/shared-snapshot-pin/message') &&
+      call.method === 'POST',
+  );
+  expect(prompts).toHaveLength(1);
+  expect(prompts[0]?.body).toMatchObject({
+    model: { providerID: 'persisted', modelID: 'model' },
+    agent: 'persisted-agent',
+    parts: [{ type: 'text', text: 'second' }],
+  });
+});
+
+test("previewUrl uses the handle's own sandbox id, not whichever session resolved last", async () => {
+  globalThis.fetch = mockTwoSessionSandboxes();
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+
+  const a = k.session('PROJ', 'SESS-A');
+  const b = k.session('PROJ', 'SESS-B');
+
+  await a.ensureReady();
+  await b.ensureReady();
+
+  expect(a.previewUrl(3000, '/docs')).toBe('http://test.local/p/sb-A/3000/docs');
+  expect(b.previewUrl(3000, '/docs')).toBe('http://test.local/p/sb-B/3000/docs');
+});
+
+test('previewUrl()/proxyUrl()/runtime throw SessionNotReadyError before ensureReady()', () => {
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const s = k.session('PROJ', 'SESS-NEW');
+
+  expect(() => s.previewUrl(3000)).toThrow(SessionNotReadyError);
+  expect(() => s.proxyUrl('http://localhost:3000')).toThrow(SessionNotReadyError);
+  expect(() => s.runtime).toThrow(SessionNotReadyError);
+});
+
+// health() is a liveness POLL, not an action gated on the runtime being up —
+// pollers (e.g. a header dot ticking every 15s on a fresh inline
+// `zed.session(...)` handle, see apps/whitelabel-demo/session-header.tsx)
+// must be able to call it before the session has ever resolved a runtime, so
+// it degrades to the graceful "no URL yet" shape instead of throwing.
+test('health() resolves gracefully (ok: false) before ensureReady() instead of throwing', async () => {
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const s = k.session('PROJ', 'SESS-NEVER-STARTED');
+
+  const result = await s.health();
+  expect(result.ok).toBe(false);
+  expect(result.status).toBe(0);
+});
+
+test("health() resolves against the handle's own runtime URL once ready", async () => {
+  globalThis.fetch = mockTwoSessionSandboxes();
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const a = k.session('PROJ', 'SESS-A');
+
+  await a.ensureReady();
+  calls.length = 0;
+  await a.health();
+
+  expect(calls.some((c) => c.url.includes('/p/sb-A/8000/zed/health'))).toBe(true);
+});
+
+// ── shared session-runtime registry (regression: apps/whitelabel-demo's
+// session-header.tsx polls health() on a FRESH `zed.session(...)` handle
+// every 15s, and preview-panel.tsx calls previewUrl() in render on a handle
+// that never itself called ensureReady() — both used to throw
+// SessionNotReadyError forever because a handle's `_ready` cache never
+// survived past that one instance) ──────────────────────────────────────────
+
+test('a second fresh handle for the same session adopts the registry entry — no ensureReady() of its own needed', async () => {
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    calls.push({ url, method: 'POST' });
+    if (url.includes('/sessions/SESS-REG-1/start')) {
+      return jsonResponse(sessionStartPayload('sb-reg1', 'ocs-reg1'));
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const first = k.session('PROJ', 'SESS-REG-1');
+  await first.ensureReady();
+
+  // Brand-new handle for the SAME (projectId, sessionId) — never called ensureReady.
+  const second = k.session('PROJ', 'SESS-REG-1');
+  expect(second.previewUrl(4000, '/y')).toBe('http://test.local/p/sb-reg1/4000/y');
+
+  calls.length = 0;
+  const health = await second.health();
+  expect(health.ok).toBe(true);
+  expect(calls.some((c) => c.url.includes('/p/sb-reg1/8000/zed/health'))).toBe(true);
+});
+
+test('restart clears the registry entry so a subsequent send re-resolves the runtime', async () => {
+  let startCount = 0;
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    calls.push({ url, method: 'POST' });
+    if (url.includes('/sessions/SESS-REG-2/start')) {
+      startCount += 1;
+      const sandboxId = startCount === 1 ? 'sb-reg2-old' : 'sb-reg2-new';
+      return jsonResponse(sessionStartPayload(sandboxId, `ocs-reg2-${startCount}`));
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const handle = k.session('PROJ', 'SESS-REG-2');
+
+  await handle.ensureReady();
+  expect(startCount).toBe(1);
+
+  await handle.restart();
+
+  calls.length = 0;
+  await handle.send('hello again');
+  const promptCall = calls.find((c) => c.url.includes('/message'));
+  expect(promptCall?.url).toContain('/p/sb-reg2-new/8000');
+  expect(startCount).toBe(2);
+});
+
+test('session rewind and restore stay bound to the same canonical OpenCode session', async () => {
+  globalThis.fetch = mock(async (input: unknown, init?: RequestInit) => {
+    const url = requestUrl(input);
+    const request = input instanceof Request ? input : null;
+    const bodyText = request ? await request.clone().text() : String(init?.body ?? '');
+    calls.push({
+      url,
+      method: request?.method ?? init?.method ?? 'GET',
+      body: bodyText ? JSON.parse(bodyText) : undefined,
+    });
+    if (url.includes('/sessions/SESS-REWIND/start')) {
+      return jsonResponse(sessionStartPayload('sb-rewind', 'ocs-rewind'));
+    }
+    return jsonResponse({ id: 'ocs-rewind' });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({
+    backendUrl: 'http://test.local',
+    getToken: async () => 'tok',
+  });
+  const handle = k.session('PROJ', 'SESS-REWIND');
+
+  await handle.rewind('msg_2');
+  await handle.restoreRewind();
+
+  const historyCalls = calls.filter((call) => call.url.includes('/session/ocs-rewind/revert'));
+  expect(historyCalls).toEqual([
+    expect.objectContaining({
+      url: expect.stringContaining('/p/sb-rewind/8000/session/ocs-rewind/revert'),
+      method: 'POST',
+      body: { messageID: 'msg_2' },
+    }),
+  ]);
+  expect(calls).toContainEqual(
+    expect.objectContaining({
+      url: expect.stringContaining('/p/sb-rewind/8000/session/ocs-rewind/unrevert'),
+      method: 'POST',
+    }),
+  );
+});
+
+// ── ensureReady() in-flight dedup (P0 robustness fix: two concurrent
+// ensureReady() calls for the SAME (projectId, sessionId) used to both drive
+// their own `/start` long-poll — a real hazard for a "Zed as a Backend"
+// server handling concurrent requests against one session) ─────────────────
+
+test('ensureReady() dedupes concurrent starts for the same session: only one /start POST fires, both callers resolve', async () => {
+  let startCalls = 0;
+  let releaseStart!: (res: Response) => void;
+  const deferredStart = new Promise<Response>((resolve) => {
+    releaseStart = resolve;
+  });
+
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    calls.push({ url, method: 'POST' });
+    if (url.includes('/sessions/SESS-DEDUP/start')) {
+      startCalls += 1;
+      return deferredStart;
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const handle = k.session('PROJ', 'SESS-DEDUP');
+
+  // Fire twice concurrently, before the (deferred) /start response arrives.
+  const p1 = handle.ensureReady();
+  const p2 = handle.ensureReady();
+
+  // Let both calls reach (and park at) the deferred /start request before
+  // releasing it — proves they're genuinely in flight together, not just
+  // sequentially resolved.
+  await new Promise((r) => setTimeout(r, 0));
+  releaseStart(jsonResponse(sessionStartPayload('sb-dedup', 'ocs-dedup')));
+
+  const [r1, r2] = await Promise.all([p1, p2]);
+  expect(startCalls).toBe(1); // only ONE /start POST fired for both concurrent callers
+  expect(r1.sandboxId).toBe('sb-dedup');
+  expect(r2.sandboxId).toBe('sb-dedup');
+});
+
+test('ensureReady() dedup also covers TWO DIFFERENT handles for the same session', async () => {
+  let startCalls = 0;
+  let releaseStart!: (res: Response) => void;
+  const deferredStart = new Promise<Response>((resolve) => {
+    releaseStart = resolve;
+  });
+
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    calls.push({ url, method: 'POST' });
+    if (url.includes('/sessions/SESS-DEDUP-2/start')) {
+      startCalls += 1;
+      return deferredStart;
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const handleA = k.session('PROJ', 'SESS-DEDUP-2');
+  const handleB = k.session('PROJ', 'SESS-DEDUP-2'); // fresh handle, same (project, session) id
+
+  const p1 = handleA.ensureReady();
+  const p2 = handleB.ensureReady();
+
+  await new Promise((r) => setTimeout(r, 0));
+  releaseStart(jsonResponse(sessionStartPayload('sb-dedup-2', 'ocs-dedup-2')));
+  await Promise.all([p1, p2]);
+  expect(startCalls).toBe(1);
+});
+
+test('ensureReady() clears the in-flight entry on failure, so a retry issues a fresh /start', async () => {
+  let startCalls = 0;
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    calls.push({ url, method: 'POST' });
+    if (url.includes('/sessions/SESS-DEDUP-FAIL/start')) {
+      startCalls += 1;
+      // First attempt: a failure shape (no sandbox / not ready).
+      if (startCalls === 1)
+        return jsonResponse({
+          stage: 'failed',
+          retriable: true,
+          sandbox: null,
+          opencode_session_id: null,
+          agent_name: 'agent',
+        });
+      return jsonResponse(sessionStartPayload('sb-retry', 'ocs-retry'));
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const handle = k.session('PROJ', 'SESS-DEDUP-FAIL');
+
+  await expect(handle.ensureReady()).rejects.toBeInstanceOf(ApiError);
+  expect(startCalls).toBe(1);
+
+  const ready = await handle.ensureReady();
+  expect(ready.sandboxId).toBe('sb-retry');
+  expect(startCalls).toBe(2);
+});
+
+// ── session(...).files — bound to THIS session's own runtime, never the
+// module-global "active" sandbox the top-level `@zed/sdk` `files` export
+// follows (P0 fix: cross-session bleed for a host juggling multiple open
+// sessions concurrently) ─────────────────────────────────────────────────────
+
+test('session(...).files hits THIS session\'s own runtime URL, not whichever session is globally "active"', async () => {
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    calls.push({ url, method: 'GET' });
+    if (url.includes('/sessions/FILES-A/start'))
+      return jsonResponse(sessionStartPayload('sb-files-a', 'ocs-files-a'));
+    if (url.includes('/sessions/FILES-B/start'))
+      return jsonResponse(sessionStartPayload('sb-files-b', 'ocs-files-b'));
+    if (url.includes('/file?path=')) return jsonResponse([]);
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const a = k.session('PROJ', 'FILES-A');
+  const b = k.session('PROJ', 'FILES-B');
+
+  await a.ensureReady();
+  await b.ensureReady(); // resolves LAST — the module-global "active runtime" now points at B
+
+  calls.length = 0;
+  await a.files.list('/workspace');
+  const aFileCall = calls.find((c) => c.url.includes('/file?path='));
+  expect(aFileCall?.url).toContain('/p/sb-files-a/8000/file');
+  expect(aFileCall?.url).not.toContain('sb-files-b');
+
+  // The module-global `files` export (used directly, not through a session
+  // handle) follows the "active runtime" pointer — which B's later
+  // `ensureReady()` last set. This is the documented, PRE-EXISTING behavior of
+  // the global export; the point of this test is that `a.files` does NOT
+  // share that behavior.
+  calls.length = 0;
+  await globalListFiles('/workspace');
+  const globalFileCall = calls.find((c) => c.url.includes('/file?path='));
+  expect(globalFileCall?.url).toContain('/p/sb-files-b/8000/file');
+});
+
+test('session(...).files auto-provisions via ensureReady() if not already ready', async () => {
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    calls.push({ url, method: 'GET' });
+    if (url.includes('/sessions/FILES-AUTO/start'))
+      return jsonResponse(sessionStartPayload('sb-files-auto', 'ocs-files-auto'));
+    if (url.includes('/file/mkdir')) return jsonResponse(true);
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const s = k.session('PROJ', 'FILES-AUTO');
+
+  // Never called ensureReady() directly — mkdir should still resolve against
+  // this session's own runtime.
+  await s.files.mkdir('/workspace/new-dir');
+  const mkdirCall = calls.find((c) => c.url.includes('/file/mkdir'));
+  expect(mkdirCall?.url).toContain('/p/sb-files-auto/8000/file/mkdir');
+});
+
+// ── ensureReady() polls a slow cold-start to ready instead of throwing on the
+// first non-ready check (a backend waiting to send its first turn must not
+// give up while the sandbox is still provisioning/starting) ─────────────────
+test('ensureReady() polls through provisioning/starting until the runtime reports ready', async () => {
+  const stages = ['provisioning', 'starting', 'ready'] as const;
+  let polls = 0;
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    if (url.includes('/start')) {
+      const stage = stages[Math.min(polls, stages.length - 1)];
+      polls += 1;
+      const ready = stage === 'ready';
+      return jsonResponse({
+        stage,
+        agent_name: 'default',
+        retriable: !ready,
+        sandbox: ready ? { external_id: 'sb-poll' } : null,
+        opencode_session_id: ready ? 'ocs-poll' : null,
+      });
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  const ready = await k.session('PROJ', 'SESS-POLL').ensureReady({ readyTimeoutMs: 10_000 });
+  expect(ready.opencodeSessionId).toBe('ocs-poll');
+  expect(ready.sandboxId).toBe('sb-poll');
+  expect(polls).toBeGreaterThanOrEqual(3);
+});
+
+test('ensureReady() throws RUNTIME_UNAVAILABLE when the runtime never becomes ready before the deadline', async () => {
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    if (url.includes('/start')) {
+      return jsonResponse({
+        stage: 'provisioning',
+        agent_name: 'default',
+        retriable: true,
+        sandbox: null,
+        opencode_session_id: null,
+      });
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  await expect(
+    k.session('PROJ', 'SESS-TIMEOUT').ensureReady({ readyTimeoutMs: 20 }),
+  ).rejects.toMatchObject({ code: 'RUNTIME_UNAVAILABLE' });
+});
+
+test('ensureReady() treats a transient null /start result as retriable and resolves once ready', async () => {
+  let n = 0;
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    if (url.includes('/start')) {
+      n += 1;
+      // startProjectSession returns null (not throws) for a 5xx/408/429/network
+      // blip AND the create→start 404 race — ensureReady only ever sees `null`,
+      // not the cause, so this one 503 stands in for all of them. It must poll
+      // through the null, not give up.
+      if (n <= 1) return jsonResponse({ error: 'gateway' }, 503);
+      return jsonResponse({
+        stage: 'ready',
+        agent_name: 'default',
+        retriable: false,
+        sandbox: { external_id: 'sb-transient' },
+        opencode_session_id: 'ocs-transient',
+      });
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  // Small budget → the inter-poll pause (min(1000, remaining)) stays small.
+  const ready = await k.session('PROJ', 'SESS-TRANSIENT').ensureReady({ readyTimeoutMs: 300 });
+  expect(ready.opencodeSessionId).toBe('ocs-transient');
+  expect(n).toBeGreaterThanOrEqual(2);
+});
+
+test('ensureReady() caps each /start long-poll to the remaining deadline budget', async () => {
+  const waits: number[] = [];
+  let n = 0;
+  globalThis.fetch = mock(async (input: unknown) => {
+    const url = requestUrl(input);
+    if (url.includes('/start')) {
+      const m = url.match(/wait_ms=(\d+)/);
+      if (m) waits.push(Number(m[1]));
+      n += 1;
+      if (n === 1) {
+        return jsonResponse({
+          stage: 'provisioning',
+          agent_name: 'default',
+          retriable: true,
+          sandbox: null,
+          opencode_session_id: null,
+        });
+      }
+      return jsonResponse({
+        stage: 'ready',
+        agent_name: 'default',
+        retriable: false,
+        sandbox: { external_id: 'sb-cap' },
+        opencode_session_id: 'ocs-cap',
+      });
+    }
+    return jsonResponse({ ok: true });
+  }) as unknown as typeof fetch;
+
+  const k = createZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  await k.session('PROJ', 'SESS-CAP').ensureReady({ readyTimeoutMs: 300 });
+  expect(waits.length).toBeGreaterThan(0);
+  // Uncapped this would be 30_000; capped to the remaining budget it's ≤ 300.
+  expect(Math.max(...waits)).toBeLessThanOrEqual(300);
+});

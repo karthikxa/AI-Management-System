@@ -1,5 +1,5 @@
 {
-  "name": "Kortix-Computer-Frontend",
+  "name": "Zed-Computer-Frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -48,9 +48,9 @@
     "@extend-ai/react-xlsx": "0.13.4",
     "@glideapps/glide-data-grid": "6.0.4-alpha24",
     "@hookform/resolvers": "^5.2.1",
-    "@kortix/llm-catalog": "workspace:*",
-    "@kortix/sdk": "workspace:*",
-    "@kortix/shared": "workspace:*",
+    "@zed/llm-catalog": "workspace:*",
+    "@zed/sdk": "workspace:*",
+    "@zed/shared": "workspace:*",
     "@lezer/highlight": "1.2.3",
     "@logtail/next": "^0.4.0",
     "@next/third-parties": "16.3.0",
@@ -205,7 +205,7 @@
   },
   "devDependencies": {
     "@embedpdf/pdfium": "2.14.4",
-    "@kortix/manifest-schema": "workspace:*",
+    "@zed/manifest-schema": "workspace:*",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/postcss": "^4.1.4",
     "@types/canvas-confetti": "^1.9.0",

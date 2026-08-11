@@ -1,6 +1,6 @@
 'use client';
 
-import type { SessionCostDetail, SessionCostLedgerEntry } from '@kortix/sdk';
+import type { SessionCostDetail, SessionCostLedgerEntry } from '@zed/sdk';
 import {
   ArrowSquareOutIcon as ExternalLink,
   ReceiptIcon as ReceiptText,

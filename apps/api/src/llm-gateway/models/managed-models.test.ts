@@ -130,10 +130,10 @@ describe('resolvePlatformDefaultModelId — the platform default must always be 
     expect(resolvePlatformDefaultModelId('glm-5.2', lineup)).toBe('claude-opus-4.8');
   });
 
-  test('accepts and preserves the opencode `kortix/<id>` ref form', () => {
-    expect(resolvePlatformDefaultModelId('kortix/glm-5.2', lineup)).toBe('claude-opus-4.8');
+  test('accepts and preserves the opencode `zed/<id>` ref form', () => {
+    expect(resolvePlatformDefaultModelId('zed/glm-5.2', lineup)).toBe('claude-opus-4.8');
     const served = [managed('glm-5.2', 'aster'), ...lineup];
-    expect(resolvePlatformDefaultModelId('kortix/glm-5.2', served)).toBe('kortix/glm-5.2');
+    expect(resolvePlatformDefaultModelId('zed/glm-5.2', served)).toBe('zed/glm-5.2');
   });
 
   test('falls back to the first served model when no flagship is served', () => {

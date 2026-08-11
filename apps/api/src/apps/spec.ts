@@ -149,14 +149,14 @@ export async function normalizeAppBuild(
   switch (source.kind) {
     case 'static': {
       const root = source.root ? relativePath(source.root, 'root') : '.';
-      const staticRoot = root === '.' ? '/kortix/app' : `/kortix/app/${root}`;
+      const staticRoot = root === '.' ? '/zed/app' : `/zed/app/${root}`;
       return {
         sourceKind: source.kind,
         sourceDir: extractedSourceDir,
         dockerfile: [
           'FROM alpine:3.22',
-          'WORKDIR /kortix/app',
-          'COPY . /kortix/app',
+          'WORKDIR /zed/app',
+          'COPY . /zed/app',
         ].join('\n'),
         runtimeSpec: {
           static_root: staticRoot,
@@ -180,11 +180,11 @@ export async function normalizeAppBuild(
           shellRun(install),
           shellRun(build),
           'FROM alpine:3.22',
-          'WORKDIR /kortix/app',
-          `COPY --from=build /source/${outputDir} /kortix/app/public`,
+          'WORKDIR /zed/app',
+          `COPY --from=build /source/${outputDir} /zed/app/public`,
         ].join('\n'),
         runtimeSpec: {
-          static_root: '/kortix/app/public',
+          static_root: '/zed/app/public',
           spa: source.spa ?? true,
           readiness_path: readinessPath(source.readinessPath),
         },
@@ -218,7 +218,7 @@ export async function normalizeAppBuild(
       }
       const appCommand = source.command ? command(source.command) : [];
       if (appCommand.length === 0) {
-        throw new Error('OCI image deployments require command because kortix-appd owns ENTRYPOINT');
+        throw new Error('OCI image deployments require command because zed-appd owns ENTRYPOINT');
       }
       return {
         sourceKind: source.kind,

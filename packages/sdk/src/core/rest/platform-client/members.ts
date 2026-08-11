@@ -128,8 +128,8 @@ export async function updateSandboxMemberScope(
 
 // ─── Legacy project ACL inside a sandbox ─────────────────────────────────────
 //
-// The ACL lives in kortix-master's sqlite next to the projects it governs, so
-// these helpers talk to kortix-master via the preview proxy. Emails aren't
+// The ACL lives in zed-master's sqlite next to the projects it governs, so
+// these helpers talk to zed-master via the preview proxy. Emails aren't
 // known inside the sandbox — hydrate them client-side by joining against the
 // sandbox member list (which does carry emails).
 
@@ -145,7 +145,7 @@ export interface SandboxProjectMembersResponse {
   members: SandboxProjectMember[];
 }
 
-async function fetchKortixMaster<T>(
+async function fetchZedMaster<T>(
   sandbox: SandboxInfo,
   path: string,
   init?: RequestInit,
@@ -167,9 +167,9 @@ export async function listSandboxProjectMembers(
   sandbox: SandboxInfo,
   projectId: string,
 ): Promise<SandboxProjectMembersResponse> {
-  return fetchKortixMaster<SandboxProjectMembersResponse>(
+  return fetchZedMaster<SandboxProjectMembersResponse>(
     sandbox,
-    `/kortix/projects/${encodeURIComponent(projectId)}/members`,
+    `/zed/projects/${encodeURIComponent(projectId)}/members`,
     { method: 'GET' },
   );
 }
@@ -180,9 +180,9 @@ export async function grantSandboxProjectAccess(
   userId: string,
   role: 'admin' | 'member' = 'member',
 ): Promise<void> {
-  await fetchKortixMaster<void>(
+  await fetchZedMaster<void>(
     sandbox,
-    `/kortix/projects/${encodeURIComponent(projectId)}/members`,
+    `/zed/projects/${encodeURIComponent(projectId)}/members`,
     {
       method: 'POST',
       body: JSON.stringify({ user_id: userId, role }),
@@ -195,9 +195,9 @@ export async function revokeSandboxProjectAccess(
   projectId: string,
   userId: string,
 ): Promise<void> {
-  await fetchKortixMaster<void>(
+  await fetchZedMaster<void>(
     sandbox,
-    `/kortix/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`,
+    `/zed/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`,
     { method: 'DELETE' },
   );
 }

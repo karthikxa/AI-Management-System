@@ -3,7 +3,7 @@ import {
   type ProviderAuthRequirement,
   isProviderAuthSatisfied,
   providerAuthRequirement,
-} from '@kortix/llm-catalog';
+} from '@zed/llm-catalog';
 import type { ProviderListResponse as SdkProviderListResponse } from '@opencode-ai/sdk/v2/client';
 
 import type { ProjectLlmCatalogResponse } from '../core/rest/projects-client';
@@ -11,10 +11,10 @@ import type { ProjectLlmCatalogResponse } from '../core/rest/projects-client';
 export type ProviderListResponse = SdkProviderListResponse;
 
 /**
- * Provider → Kortix-owned auth requirement, derived from the shared
+ * Provider → Zed-owned auth requirement, derived from the shared
  * models.dev catalog via `providerAuthRequirement` (NOT the raw catalog
  * `env` list — see that function's doc comment for why: models.dev lists
- * every auth method the upstream SDK supports, not what Kortix actually
+ * every auth method the upstream SDK supports, not what Zed actually
  * reads). Mirrors the `{ id, authRequirement }` projection of the web's
  * `LLM_PROVIDERS` (built from the same catalog + the same override table),
  * so connection inference is identical without depending on the web-only
@@ -28,10 +28,10 @@ export const LLM_PROVIDER_CREDENTIALS: Array<{
   authRequirement: providerAuthRequirement(provider),
 }));
 
-// In gateway mode OpenCode must see Kortix as the single LLM provider. Native
+// In gateway mode OpenCode must see Zed as the single LLM provider. Native
 // providers, including OpenCode Zen, belong only to native mode.
-export const GATEWAY_PROVIDER_IDS = new Set(['kortix']);
-const NATIVE_EXCLUDED_PROVIDER_IDS = new Set(['kortix']);
+export const GATEWAY_PROVIDER_IDS = new Set(['zed']);
+const NATIVE_EXCLUDED_PROVIDER_IDS = new Set(['zed']);
 
 export function normalizeProviderList(providers: ProviderListResponse): ProviderListResponse {
   const modernAll = Array.isArray(providers.all) ? providers.all : [];
@@ -87,7 +87,7 @@ export function providerListHasGateway(providers: ProviderListResponse | undefin
   const normalized = normalizeProviderList(providers);
   const all = Array.isArray(normalized.all) ? normalized.all : [];
   const connected = Array.isArray(normalized.connected) ? normalized.connected : [];
-  return connected.includes('kortix') || all.some((p) => p.id === 'kortix');
+  return connected.includes('zed') || all.some((p) => p.id === 'zed');
 }
 
 export function filterToGatewayProviders(providers: ProviderListResponse): ProviderListResponse {
@@ -212,17 +212,17 @@ export function projectLlmCatalogToProviderList(
 ): ProviderListResponse {
   const models = Object.fromEntries(
     Object.entries(catalog.models ?? {}).filter(
-      ([modelId]) => modelId !== 'auto' && modelId !== 'kortix/auto',
+      ([modelId]) => modelId !== 'auto' && modelId !== 'zed/auto',
     ),
   );
   const firstModelId = Object.keys(models)[0];
   return {
-    default: firstModelId ? { kortix: firstModelId } : {},
-    connected: ['kortix'],
+    default: firstModelId ? { zed: firstModelId } : {},
+    connected: ['zed'],
     all: [
       {
-        id: 'kortix',
-        name: 'Kortix',
+        id: 'zed',
+        name: 'Zed',
         source: 'gateway',
         models,
       },

@@ -1,4 +1,4 @@
-import type { Connection } from '@kortix/sdk';
+import type { Connection } from '@zed/sdk';
 
 /**
  * Which connections a WRAPPER may bind to a session it starts.

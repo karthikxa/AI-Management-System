@@ -1,5 +1,5 @@
 /**
- * ProjectsPage — Lists all Kortix projects.
+ * ProjectsPage — Lists all Zed projects.
  * Ported from web's /workspace page project list.
  */
 
@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Search, X, FolderGit2, Clock, MessageSquare, ChevronRight } from 'lucide-react-native';
 
 import { useSandboxContext } from '@/contexts/SandboxContext';
-import { useKortixProjects, type KortixProject } from '@/lib/kortix';
+import { useZedProjects, type ZedProject } from '@/lib/zed';
 import { useTabStore, type PageTab } from '@/stores/tab-store';
 import { PageHeader } from '@/components/ui/page-header';
 import { PageContent } from '@/components/ui/page-content';
@@ -60,7 +60,7 @@ export function ProjectsPage({ page, onBack, onOpenDrawer, onOpenRightDrawer, is
   const theme = useThemeColors();
   const { sandboxUrl } = useSandboxContext();
 
-  const { data: projects, isLoading, refetch } = useKortixProjects(sandboxUrl);
+  const { data: projects, isLoading, refetch } = useZedProjects(sandboxUrl);
   const [searchQuery, setSearchQuery] = useState('');
 
   const fg = isDark ? '#F8F8F8' : '#121215';
@@ -70,19 +70,19 @@ export function ProjectsPage({ page, onBack, onOpenDrawer, onOpenRightDrawer, is
   const border = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
   const inputBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
 
-  const filtered: KortixProject[] = useMemo(() => {
+  const filtered: ZedProject[] = useMemo(() => {
     if (!projects) return [];
     if (!searchQuery.trim()) return projects;
     const q = searchQuery.toLowerCase();
     return projects.filter(
-      (p: KortixProject) =>
+      (p: ZedProject) =>
         p.name.toLowerCase().includes(q) ||
         p.path.toLowerCase().includes(q) ||
         (p.description || '').toLowerCase().includes(q),
     );
   }, [projects, searchQuery]);
 
-  const handleProjectPress = useCallback((project: KortixProject) => {
+  const handleProjectPress = useCallback((project: ZedProject) => {
     const pageId = `page:project:${project.id}`;
     // Store project name for tab title display
     useTabStore.getState().setTabState(pageId, { projectName: project.name });

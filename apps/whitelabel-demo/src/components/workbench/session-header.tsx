@@ -22,10 +22,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ModelSwitcher } from '@/components/workbench/model-switcher';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { invalidateSessions, qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
-import { isRuntimeReady } from '@kortix/sdk';
+import { isRuntimeReady } from '@zed/sdk';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MoreVertical, Pencil, RotateCw, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -35,17 +35,17 @@ import { toast } from 'sonner';
 export function SessionHeader({ projectId, sessionId }: { projectId: string; sessionId: string }) {
   const session = useQuery({
     queryKey: qk.session(projectId, sessionId),
-    queryFn: () => kortix.session(projectId, sessionId).get({ showErrors: false }),
+    queryFn: () => zed.session(projectId, sessionId).get({ showErrors: false }),
     retry: false,
   });
   const title =
     session.data?.name || session.data?.custom_name || session.data?.branch_name || 'Session';
   const status = session.data?.status;
 
-  // Runtime liveness probe (GET /kortix/health) for the header dot.
+  // Runtime liveness probe (GET /zed/health) for the header dot.
   const health = useQuery({
     queryKey: ['session-health', projectId, sessionId],
-    queryFn: () => kortix.session(projectId, sessionId).health(),
+    queryFn: () => zed.session(projectId, sessionId).health(),
     refetchInterval: 15_000,
     retry: false,
   });
@@ -97,7 +97,7 @@ function SessionActions({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const rename = useMutation({
-    mutationFn: () => kortix.session(projectId, sessionId).update({ name: name.trim() }),
+    mutationFn: () => zed.session(projectId, sessionId).update({ name: name.trim() }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.session(projectId, sessionId) });
       invalidateSessions(qc, projectId);
@@ -107,7 +107,7 @@ function SessionActions({
     onError: () => toast.error('Could not rename'),
   });
   const restart = useMutation({
-    mutationFn: () => kortix.session(projectId, sessionId).restart(),
+    mutationFn: () => zed.session(projectId, sessionId).restart(),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.sessionStart(projectId, sessionId) });
       toast.success('Restarting the session…');
@@ -115,7 +115,7 @@ function SessionActions({
     onError: () => toast.error('Could not restart'),
   });
   const remove = useMutation({
-    mutationFn: () => kortix.session(projectId, sessionId).delete(),
+    mutationFn: () => zed.session(projectId, sessionId).delete(),
     onSuccess: () => {
       invalidateSessions(qc, projectId);
       setConfirmingDelete(false);

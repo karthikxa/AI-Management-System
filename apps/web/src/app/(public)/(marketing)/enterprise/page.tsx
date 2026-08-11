@@ -2,10 +2,10 @@
 
 import { Reveal } from '@/components/home/reveal';
 import { Badge } from '@/components/ui/badge';
-import { KORTIX_BULLET_GRADIENT, KortixAsterisk } from '@/components/ui/kortix-asterisk';
+import { ZED_BULLET_GRADIENT, ZedAsterisk } from '@/components/ui/zed-asterisk';
 import { Button } from '@/components/ui/marketing/button';
-import KortixGrid from '@/components/ui/marketing/gridder';
-import { KortixLetterField } from '@/components/ui/marketing/kortix-letter-field';
+import ZedGrid from '@/components/ui/marketing/gridder';
+import { ZedLetterField } from '@/components/ui/marketing/zed-letter-field';
 import { DemoQualifierModal } from '@/features/contact/demo-qualifier-modal';
 import { cn } from '@/lib/utils';
 import {
@@ -120,8 +120,8 @@ const DEPLOYMENT = [
   },
 ] as const;
 
-const CAL_LINK = 'team/kortix/demo';
-const CAL_NAMESPACE = 'kortix-enterprise-demo';
+const CAL_LINK = 'team/zed/demo';
+const CAL_NAMESPACE = 'zed-enterprise-demo';
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
@@ -142,11 +142,11 @@ const EnterprisePage = () => {
       <div className="bg-background relative">
         <section className="relative overflow-hidden px-6 pt-32 pb-12 sm:pt-36">
           <div className="absolute inset-0 z-0 mask-y-to-95%">
-            <KortixLetterField seed={3382} />
+            <ZedLetterField seed={3382} />
           </div>
           <div className="mx-auto max-w-7xl">
             <Reveal>
-              <Badge variant="kortix" className="rounded">
+              <Badge variant="zed" className="rounded">
                 {t('heroEyebrow')}
               </Badge>
               <h1 className="text-foreground mt-6 max-w-4xl text-4xl font-medium tracking-tight text-balance sm:text-5xl lg:text-6xl">
@@ -207,9 +207,9 @@ const EnterprisePage = () => {
                     <div className="flex items-center gap-2">
                       <Icon className="text-foreground size-4" />
                       <span
-                        className="animate-kortix-bullet-flow bg-size-[100%_300%] bg-clip-text font-mono text-xs font-semibold tracking-wider text-transparent uppercase"
+                        className="animate-zed-bullet-flow bg-size-[100%_300%] bg-clip-text font-mono text-xs font-semibold tracking-wider text-transparent uppercase"
                         style={{
-                          backgroundImage: KORTIX_BULLET_GRADIENT,
+                          backgroundImage: ZED_BULLET_GRADIENT,
                           animationDelay: `${index * 0.3}s`,
                         }}
                       >
@@ -287,7 +287,7 @@ const EnterprisePage = () => {
                       key={titleKey}
                       className="text-muted-foreground flex items-start gap-3 text-sm leading-relaxed"
                     >
-                      <KortixAsterisk index={index} />
+                      <ZedAsterisk index={index} />
                       <span>
                         <span className="text-foreground font-medium">{t(titleKey)}.</span>{' '}
                         {t(descriptionKey)}
@@ -311,7 +311,7 @@ const EnterprisePage = () => {
                       key={titleKey}
                       className="text-muted-foreground flex items-start gap-3 text-sm leading-relaxed"
                     >
-                      <KortixAsterisk index={index + 3} />
+                      <ZedAsterisk index={index + 3} />
                       <span>
                         <span className="text-foreground font-medium">{t(titleKey)}.</span>{' '}
                         {t(descriptionKey)}
@@ -360,7 +360,7 @@ const EnterprisePage = () => {
               <div className="flex grid-cols-12 flex-col-reverse gap-2 md:grid">
                 <div className="col-span-4 flex flex-col items-start justify-start space-y-4 p-6 *:text-left">
                   <div className="space-y-2">
-                    <Badge variant="kortix" className="rounded">
+                    <Badge variant="zed" className="rounded">
                       {tI18nHardcoded.raw(
                         'autoAppPublicMarketingEnterprisePageJsxTextDeployInternalAgentse5230bd9',
                       )}
@@ -384,7 +384,7 @@ const EnterprisePage = () => {
                   </div>
                 </div>
                 <div className="col-span-8 mask-y-from-90% mask-x-from-90%">
-                  <KortixGrid count={58} seed={4228} />
+                  <ZedGrid count={58} seed={4228} />
                 </div>
               </div>
             </div>

@@ -1,13 +1,13 @@
 'use client';
 
-import type { FeatureFlagKey } from '@kortix/sdk';
-import { useFeatureFlag } from '@kortix/sdk/react';
+import type { FeatureFlagKey } from '@zed/sdk';
+import { useFeatureFlag } from '@zed/sdk/react';
 
 /**
  * Every feature flag for one project, in one object.
  *
  * This is NOT a second gating primitive — every member below is `useFeatureFlag`
- * from `@kortix/sdk/react`, the one primitive. It exists for the two call sites
+ * from `@zed/sdk/react`, the one primitive. It exists for the two call sites
  * that must decide about an ARBITRARY flag chosen at runtime (the menu
  * registry's `requiresFlag`, read by the command palette and the right sidebar)
  * and so cannot name one key at author time.

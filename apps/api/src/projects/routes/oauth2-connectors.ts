@@ -3,8 +3,8 @@ import {
   OAuth2AuthorizationStartInputSchema,
   OAuth2DeviceAuthorizationStartInputSchema,
   OAuth2DiscoveryInputSchema,
-} from '@kortix/api-contract';
-import { connectorConnections, connectors } from '@kortix/db';
+} from '@zed/api-contract';
+import { connectorConnections, connectors } from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { config } from '../../config';
 import { ensureDefaultConnection } from '../../connectors/credentials';
@@ -43,10 +43,10 @@ function allowedRedirectUri(value: string | undefined, projectId: string): strin
   const configuredOrigin = new URL(config.FRONTEND_URL).origin;
   const allowedOrigins = new Set([
     configuredOrigin,
-    'https://kortix.com',
-    'https://www.kortix.com',
-    'https://dev.kortix.com',
-    'https://staging.kortix.com',
+    'https://zed.com',
+    'https://www.zed.com',
+    'https://dev.zed.com',
+    'https://staging.zed.com',
   ]);
   if (!allowedOrigins.has(uri.origin)) throw new Error('redirect URI origin is not allowed');
   if (!uri.pathname.startsWith(`/projects/${projectId}`) && uri.origin !== configuredOrigin) {

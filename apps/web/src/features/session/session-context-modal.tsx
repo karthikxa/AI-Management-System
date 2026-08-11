@@ -11,14 +11,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import type { ProviderListResponse } from '@kortix/sdk/react';
+import type { ProviderListResponse } from '@zed/sdk/react';
 import { useModelPricingLookup } from '@/lib/model-pricing';
 import { cn } from '@/lib/utils';
 import type { MessageWithParts } from '@/ui/types';
-import type { AssistantMessage, Message, Part, Session } from '@kortix/sdk';
-import type { ModelPricingLookup } from '@kortix/sdk/turns';
-import { allDescendantIds, childMapByParent, formatCost, getSessionCost } from '@kortix/sdk/turns';
-import { useSessionStateStore } from '@kortix/sdk/react';
+import type { AssistantMessage, Message, Part, Session } from '@zed/sdk';
+import type { ModelPricingLookup } from '@zed/sdk/turns';
+import { allDescendantIds, childMapByParent, formatCost, getSessionCost } from '@zed/sdk/turns';
+import { useSessionStateStore } from '@zed/sdk/react';
 import {
   CheckIcon as Check,
   CaretDownIcon as ChevronDown,

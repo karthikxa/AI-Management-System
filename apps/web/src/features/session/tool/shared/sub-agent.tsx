@@ -5,7 +5,7 @@ import { ToolPartRenderer } from '@/features/session/tool/tool-part-renderer';
 import type { MessageWithParts, ToolPart } from '@/ui';
 import { SessionRetryDisplay, TurnErrorDisplay } from '@/features/session/session-error-banner';
 import { getChildSessionError, getRetryInfo, getRetryMessage } from '@/ui';
-import { useSessionStateStore } from '@kortix/sdk/react';
+import { useSessionStateStore } from '@zed/sdk/react';
 import { useEffect, useMemo, useState } from 'react';
 
 export function SubAgentActivity({

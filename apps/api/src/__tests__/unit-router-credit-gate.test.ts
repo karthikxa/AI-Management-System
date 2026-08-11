@@ -17,7 +17,7 @@ describe('creditGateExemptEnv', () => {
   });
 
   test('no-arg form matches the explicit call for the ambient env', () => {
-    const ambient = process.env.INTERNAL_KORTIX_ENV || 'dev';
+    const ambient = process.env.INTERNAL_ZED_ENV || 'dev';
     expect(creditGateExemptEnv()).toBe(creditGateExemptEnv(ambient));
   });
 });

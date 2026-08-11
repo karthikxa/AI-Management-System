@@ -44,7 +44,7 @@ export async function synthUser(env: Env, label: string, runId: string): Promise
  * members but blocks the invite accept/decline lifecycle: an invite is
  * addressed to an exact email, and the accept/decline handlers reject any
  * caller whose email doesn't match. Passing the email in lets a flow create
- * the invite FIRST (for an address with no Kortix user yet), then mint the
+ * the invite FIRST (for an address with no Zed user yet), then mint the
  * matching identity to act as the addressee.
  */
 export async function synthUserWithEmail(

@@ -1,10 +1,10 @@
 // Covers two small project-scoped mutations that live in `./projects.ts`
 // (manifest validation + git push-token minting) — split into their own file
 // because `projects.test.ts` is dedicated to the server-token
-// (`provisionProjectWithToken`) idiom, not the standard configureKortix() one.
+// (`provisionProjectWithToken`) idiom, not the standard configureZed() one.
 
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { getProjectGitToken, validateProjectManifest } from './projects';
 
 let calls: { url: string; method: string; body: unknown }[] = [];
@@ -26,7 +26,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 const last = () => calls[calls.length - 1];
 
 test('validateProjectManifest posts { raw } and returns the verdict', async () => {
@@ -40,7 +40,7 @@ test('validateProjectManifest posts { raw } and returns the verdict', async () =
 });
 
 test('getProjectGitToken posts to git-token and returns the push token', async () => {
-  nextResponse = { status: 200, body: { push_token: 'tok_abc', git_username: 't', repo_id: 'r1', repo_url: 'https://kortix.code.storage/x.git' } };
+  nextResponse = { status: 200, body: { push_token: 'tok_abc', git_username: 't', repo_id: 'r1', repo_url: 'https://zed.code.storage/x.git' } };
   const result = await getProjectGitToken('P1');
   expect(last().url).toContain('/projects/P1/git-token');
   expect(last().method).toBe('POST');

@@ -17,8 +17,8 @@ import { and, desc, eq, gt, inArray, lt, or } from 'drizzle-orm';
 import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { OPENCODE_VERSION } from '@kortix/shared';
-import { projectSnapshotBuilds } from '@kortix/db';
+import { OPENCODE_VERSION } from '@zed/shared';
+import { projectSnapshotBuilds } from '@zed/db';
 import { db } from '../shared/db';
 import { resolveCommitSha, type GitBackedProject } from '../projects/git';
 import { getSandboxProvider, type BuildLogTap, type BuildSnapshotResult, type ProviderState, type SandboxProviderAdapter } from './providers';
@@ -107,7 +107,7 @@ export interface EnsureSandboxImageResult {
  *
  * The shared default is always eligible — it's the pre-existing, already-safe
  * 66%-hit-rate path. A CUSTOM (non-default-slug) template is eligible only on
- * a provider allowlisted via `KORTIX_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS`
+ * a provider allowlisted via `ZED_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS`
  * (default: platinum only). Platinum's per-project templates warm-MISS 100% of
  * the time today precisely because this gate used to be `template.isShared`
  * unconditionally; Daytona's shared-default path is untouched by default and
@@ -178,7 +178,7 @@ export async function ensureSandboxImage(
   // session on this commit boots warm; this boot never blocks on the bake and
   // falls through to the normal cold path when no warm image exists yet.
   if (
-    config.KORTIX_WARM_SNAPSHOT_ENABLED &&
+    config.ZED_WARM_SNAPSHOT_ENABLED &&
     (opts.source ?? 'session-start') === 'session-start' &&
     perProjectWarmEligible(template, buildProvider)
   ) {
@@ -398,7 +398,7 @@ type TemplateIdentity = Awaited<ReturnType<typeof computeTemplateIdentity>>;
 
 /**
  * Try the provider's agent-only swap instead of a full rebuild. Returns true iff
- * the new snapshot was produced by swapping just the kortix-agent binary into the
+ * the new snapshot was produced by swapping just the zed-agent binary into the
  * predecessor's rootfs. Conservative + CORRECT — fires ONLY when:
  *   • the provider supports it (Platinum; Daytona has no `swapAgent`),
  *   • a distinct predecessor snapshot exists (there's a real drift), and
@@ -442,7 +442,7 @@ async function maybeSwapAgent(
     );
     // Reap any half-created new-name row so the fallback buildSnapshot (same name)
     // isn't blocked by a name-collision 409 — pickBuildHost has no state filter for
-    // non-admin/org callers, which is exactly how Kortix builds authenticate.
+    // non-admin/org callers, which is exactly how Zed builds authenticate.
     await provider.deleteSnapshot(identity.snapshotName).catch(() => {});
     return false;
   }
@@ -505,7 +505,7 @@ async function runInlineBuild(
       // AND on resume — the SAME path Daytona takes, no provider divergence.
       // Stateful/warm capture used to resume opencode mid-state off a CH memory
       // snapshot, which intermittently wedged it (virtio-net RX stall after
-      // restore → /global/event + /pty hang while /kortix/health still
+      // restore → /global/event + /pty hang while /zed/health still
       // answered). A cold boot avoids that entirely.
     });
     if (buildId) await closeBuildLogReady(buildId);
@@ -1010,7 +1010,7 @@ function kickBackgroundRebuild(
  * only delays warmth: the next kick after the window bakes the CURRENT tip.
  */
 const WARM_BAKE_COOLDOWN_MS = (() => {
-  const raw = Number.parseInt(process.env.KORTIX_WARM_BAKE_COOLDOWN_MS || '', 10);
+  const raw = Number.parseInt(process.env.ZED_WARM_BAKE_COOLDOWN_MS || '', 10);
   return Number.isFinite(raw) && raw >= 0 ? raw : 10 * 60 * 1000;
 })();
 const warmBakeLastKickAt = new Map<string, number>();
@@ -1171,7 +1171,7 @@ export async function kickProjectWarmPrebake(
   project: GitBackedProject,
   opts: { accountId?: string; provider?: string; projectPin?: string | null } = {},
 ): Promise<void> {
-  if (!config.KORTIX_WARM_SNAPSHOT_ENABLED) return;
+  if (!config.ZED_WARM_SNAPSHOT_ENABLED) return;
 
   const providers = opts.provider
     ? [opts.provider]
@@ -1300,8 +1300,8 @@ function currentMetaRuntimeFingerprint(): Promise<string> {
     sandboxVersion: `meta-v3:opencode:${OPENCODE_VERSION}`,
     opencodeVersion: OPENCODE_VERSION,
     artifacts: [
-      { label: 'agent', path: resolve(root, 'apps/kortix-sandbox-agent-server/src') },
-      { label: 'agent-package', path: resolve(root, 'apps/kortix-sandbox-agent-server/package.json') },
+      { label: 'agent', path: resolve(root, 'apps/zed-sandbox-agent-server/src') },
+      { label: 'agent-package', path: resolve(root, 'apps/zed-sandbox-agent-server/package.json') },
       { label: 'cli', path: resolve(root, 'apps/cli/src') },
       { label: 'cli-package', path: resolve(root, 'apps/cli/package.json') },
       { label: 'entrypoint', path: resolve(root, 'apps/sandbox/entrypoint.sh') },
@@ -1330,7 +1330,7 @@ export async function ensureMetaSandboxImage(opts: {
   }
   const fingerprint = await currentMetaRuntimeFingerprint();
   const contentHash = createHash('sha256').update(`meta-runtime-v1\0${fingerprint}`).digest('hex');
-  const snapshotName = `kortix-meta-${contentHash.slice(0, 16)}`;
+  const snapshotName = `zed-meta-${contentHash.slice(0, 16)}`;
   const buildKey = `${opts.provider}:${snapshotName}`;
   const existing = metaImageBuilds.get(buildKey);
   if (existing) return existing;
@@ -1366,7 +1366,7 @@ let startupPreBuildKicked = false;
 export function kickStartupPreBuild(): void {
   // Focused acceptance runs can skip the multi-gigabyte session and meta
   // images. Production keeps the pre-build enabled by default.
-  if (process.env.KORTIX_SKIP_STARTUP_PREBUILD === 'true') return;
+  if (process.env.ZED_SKIP_STARTUP_PREBUILD === 'true') return;
   if (startupPreBuildKicked) return;
   startupPreBuildKicked = true;
   for (const providerId of templateBuildProviders()) {
@@ -1458,7 +1458,7 @@ export function kickProjectTemplatePrebuilds(
 // ─── Per-project COLD rootfs warm ────────────────────────────────────────────
 
 /** Managed name prefix for per-project COLD warm images. Reapable, disjoint
- *  from the shared-default (`kortix-default-`) and custom (`kortix-tpl-`) names.
+ *  from the shared-default (`zed-default-`) and custom (`zed-tpl-`) names.
  *  Provider-agnostic: the SAME cold image builds on Daytona and Platinum. */
 export interface PerProjectWarmResult {
   snapshotName: string;
@@ -1647,7 +1647,7 @@ export function shouldAttemptWarmFromBase(baseState: ProviderState): boolean {
  * template being warmed, for use as `BuildableTemplate.baseImageRef` — the
  * per-project warm fast path. Generic over the template: this used to serve only
  * the shared default, but since `perProjectWarmEligible` allows custom templates
- * on the providers in KORTIX_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS, the caller
+ * on the providers in ZED_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS, the caller
  * passes whichever template's base identity it is warming. Returns undefined (never throws) whenever the
  * fast path isn't available: the provider doesn't implement
  * `getSnapshotImageRef`, the base snapshot isn't `active` yet, or the lookup
@@ -1672,10 +1672,10 @@ export async function resolveWarmBaseImageRef(
  * per-project warm bake. Reads the full project row (the GitBackedProject subset
  * lacks the fields `resolveProjectUpstream` needs). The build-time auth header is
  * a short-lived git-host credential embedded ONLY in a one-shot RUN; origin is
- * reset to the Kortix proxy so the daemon re-auths per session at runtime.
+ * reset to the Zed proxy so the daemon re-auths per session at runtime.
  */
 async function resolveWarmRepoContext(project: GitBackedProject, tip: string): Promise<WarmRepoContext> {
-  const { projects } = await import('@kortix/db');
+  const { projects } = await import('@zed/db');
   const { resolveProjectUpstream } = await import('../projects/lib/git');
   const { proxyGitUrl } = await import('../projects/lib/sessions');
 

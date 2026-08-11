@@ -29,7 +29,7 @@
  * self-concurrency.
  */
 import { sql, type SQL } from 'drizzle-orm';
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 
 /** `coalesce(metadata,'{}'::jsonb)` — a NULL metadata column merges as empty. */
 function base(): SQL {

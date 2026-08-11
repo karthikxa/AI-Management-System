@@ -11,7 +11,7 @@ import { buildResourceDenier } from '../projects/lib/project-resources';
 import type { ProjectConfigSummary } from '../projects/git/types';
 
 const CONFIG = {
-  is_kortix_repo: true,
+  is_zed_repo: true,
   signals: {},
   manifest_raw: null,
   manifest: {},
@@ -22,8 +22,8 @@ const CONFIG = {
   agents: [
     { name: 'release-bot', path: '.opencode/agent/release-bot.md', description: null, mode: null, source: 'opencode' },
     { name: 'free-bot', path: '.opencode/agent/free-bot.md', description: null, mode: null, source: 'opencode' },
-    // A kortix.yaml (manifest-declared) agent has no separate file — never produces a deny path.
-    { name: 'manifest-bot', path: '(manifest)', description: null, mode: null, source: 'kortix.yaml' },
+    // A zed.yaml (manifest-declared) agent has no separate file — never produces a deny path.
+    { name: 'manifest-bot', path: '(manifest)', description: null, mode: null, source: 'zed.yaml' },
   ],
   skills: [
     { name: 'lead-research', path: '.opencode/skills/lead-research/SKILL.md', description: null },
@@ -102,7 +102,7 @@ describe('buildResourceDenier — containsDenied gates archives that cannot be s
   });
 });
 
-describe('buildResourceDenier — kortix.toml agents never yield a deny path', () => {
+describe('buildResourceDenier — zed.toml agents never yield a deny path', () => {
   test('a denied manifest agent does not block any file (only the shared manifest holds it)', () => {
     // manifest-bot NOT accessible, but it has no own file → no deny path → null
     // (the other resources are all accessible).

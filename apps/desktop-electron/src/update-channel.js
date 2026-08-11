@@ -2,9 +2,9 @@
 // without the Electron runtime (updater.js itself requires electron /
 // electron-updater, which only load inside an Electron process).
 
-/** Update channel baked at build time (CI: extraMetadata.kortixUpdateChannel). */
+/** Update channel baked at build time (CI: extraMetadata.zedUpdateChannel). */
 function resolveChannel(pkg) {
-  return (pkg && pkg.kortixUpdateChannel) || 'stable';
+  return (pkg && pkg.zedUpdateChannel) || 'stable';
 }
 
 /**

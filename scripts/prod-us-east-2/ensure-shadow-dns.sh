@@ -5,7 +5,7 @@ CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN:-}"
 CLOUDFLARE_GLOBAL_API_KEY="${CLOUDFLARE_GLOBAL_API_KEY:-}"
 CLOUDFLARE_EMAIL="${CLOUDFLARE_EMAIL:-}"
 AWS_REGION="${AWS_REGION:-us-east-2}"
-CLOUDFLARE_ZONE_NAME="${CLOUDFLARE_ZONE_NAME:-kortix.com}"
+CLOUDFLARE_ZONE_NAME="${CLOUDFLARE_ZONE_NAME:-zed.com}"
 
 for command_name in aws curl jq; do
   command -v "$command_name" >/dev/null 2>&1 || {
@@ -44,14 +44,14 @@ zone_id="$(jq -er '.result | select(length == 1) | .[0].id' <<<"$zone_response")
 api_origin="$(
   aws elbv2 describe-load-balancers \
     --region "$AWS_REGION" \
-    --names kortix-prod-use2-alb \
+    --names zed-prod-use2-alb \
     --query 'LoadBalancers[0].DNSName' \
     --output text
 )"
 gateway_origin="$(
   aws elbv2 describe-load-balancers \
     --region "$AWS_REGION" \
-    --names kortix-prod-use2-gateway-alb \
+    --names zed-prod-use2-gateway-alb \
     --query 'LoadBalancers[0].DNSName' \
     --output text
 )"
@@ -117,5 +117,5 @@ ensure_record() {
   echo "$hostname: proxied CNAME to $expected_origin"
 }
 
-ensure_record api-use2-shadow.kortix.com "$api_origin"
-ensure_record gateway-use2-shadow.kortix.com "$gateway_origin"
+ensure_record api-use2-shadow.zed.com "$api_origin"
+ensure_record gateway-use2-shadow.zed.com "$gateway_origin"

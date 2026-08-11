@@ -16,7 +16,7 @@ owning CSM gets an alert with the exact context. Nothing reaches the customer
 and nothing on the account changes until a human reviews it.
 
 Fresh session per sweep — state lives on the HubSpot account record itself (a
-`kortix_onboarding_last_nudge_milestone` property marks the last milestone
+`zed_onboarding_last_nudge_milestone` property marks the last milestone
 nudged), not in a local ledger file. A sweep can find several accounts at
 once; handle each as an independent unit — a failure checking one account's
 milestones is logged and skipped, never blocking any other account in the
@@ -45,7 +45,7 @@ GET /crm/v3/objects/companies/search
     { propertyName: "{{customer_since_property}}", operator: "GTE", value: <today - {{onboarding_window_days}}d> }
   ]
   properties: ["name", "hubspot_owner_id", "{{customer_since_property}}",
-               "kortix_onboarding_last_nudge_milestone", "kortix_onboarding_last_nudge_at"]
+               "zed_onboarding_last_nudge_milestone", "zed_onboarding_last_nudge_at"]
 ```
 
 For each match, resolve `hubspot_owner_id` to the owning CSM's name and note
@@ -94,7 +94,7 @@ report team expansion as the stall if core setup itself never finished.
 
 ## Step 3 — Draft the nudge (stalled or overdue accounts only)
 
-Skip this step if `kortix_onboarding_last_nudge_milestone` already equals the
+Skip this step if `zed_onboarding_last_nudge_milestone` already equals the
 milestone this account is currently stalled at — it was nudged for this exact
 stall on a prior run. Draft again only when the stalled milestone has changed
 (the account moved past the previously-nudged one and is now stuck further
@@ -129,8 +129,8 @@ one-time notice.
 ## Step 5 — Write the marker back
 
 For every account that got a new nudge drafted in Step 3, set
-`kortix_onboarding_last_nudge_milestone` to that milestone's name and
-`kortix_onboarding_last_nudge_at` to now. This is the only HubSpot write —
+`zed_onboarding_last_nudge_milestone` to that milestone's name and
+`zed_onboarding_last_nudge_at` to now. This is the only HubSpot write —
 never the deal stage, the owner, a plan, or a seat count.
 
 </workflow>
@@ -142,10 +142,10 @@ never the deal stage, the owner, a plan, or a seat count.
 - **No account changes, ever.** The agent never changes a plan, a seat count,
   a billing setting, the deal stage, or the account owner — in HubSpot or any
   other system.
-- **HubSpot writes are scoped** to `kortix_onboarding_last_nudge_milestone`
+- **HubSpot writes are scoped** to `zed_onboarding_last_nudge_milestone`
   and its timestamp. Nothing else on the record is touched.
 - **No duplicate nudges for the same stall.** Always check
-  `kortix_onboarding_last_nudge_milestone` before drafting — an account
+  `zed_onboarding_last_nudge_milestone` before drafting — an account
   stalled at the same milestone as last run isn't re-nudged, though a change
   in which milestone it's stalled at always gets a fresh draft.
 - **CSM alerts aren't deduplicated.** Unlike the nudge draft, the Slack alert

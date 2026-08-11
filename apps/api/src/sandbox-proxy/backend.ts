@@ -5,7 +5,7 @@
  * Both proxy data paths (HTTP forward in routes/preview.ts and the WebSocket
  * upstream resolver) used to duplicate this: each loaded the session-sandbox
  * row, resolved the service key, fetched the Daytona preview link, and built
- * the signed X-Kortix-User-Context header with slightly different code. The
+ * the signed X-Zed-User-Context header with slightly different code. The
  * HTTP path even queried the *same* row twice per request (ownership gate +
  * forward). This module collapses all of that into one place:
  *
@@ -21,7 +21,7 @@
  */
 
 import { and, eq, gt, ne, sql, type SQL } from 'drizzle-orm';
-import { projectSessions, sessionSandboxes } from '@kortix/db';
+import { projectSessions, sessionSandboxes } from '@zed/db';
 import { config } from '../config';
 import {
   getProvider,
@@ -33,9 +33,9 @@ import {
 import { db } from '../shared/db';
 import { resolvePreviewUserContext } from '../shared/preview-ownership';
 import {
-  encodeKortixUserContext,
-  KORTIX_USER_CONTEXT_HEADER,
-} from '../shared/kortix-user-context';
+  encodeZedUserContext,
+  ZED_USER_CONTEXT_HEADER,
+} from '../shared/zed-user-context';
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const SANDBOX_TOUCH_INTERVAL_MS = 60 * 1000;
@@ -245,7 +245,7 @@ export function invalidatePreviewLink(sandboxId: string, port: number): void {
  *   - Daytona preview-warning bypass + CORS-disable flags
  *   - the per-link Daytona preview token (when present)
  *   - Authorization: Bearer <service key> (replaces the user's JWT)
- *   - a signed X-Kortix-User-Context so the daemon can enforce per-user ACLs
+ *   - a signed X-Zed-User-Context so the daemon can enforce per-user ACLs
  *     without calling back to the API (only when we have both a real user and
  *     a service key; anonymous/service-only requests proxy through unchanged).
  */
@@ -262,7 +262,7 @@ export async function buildSandboxUpstreamHeaders(opts: {
   if (userId && serviceKey) {
     const payload = await resolvePreviewUserContext(sandboxId, userId);
     if (payload) {
-      headers[KORTIX_USER_CONTEXT_HEADER] = encodeKortixUserContext(payload, serviceKey);
+      headers[ZED_USER_CONTEXT_HEADER] = encodeZedUserContext(payload, serviceKey);
     }
   }
   return headers;

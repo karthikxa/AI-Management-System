@@ -85,7 +85,7 @@ export function ConnectorsTool({ part, defaultOpen, forceOpen, locked }: ToolPro
     </BasicTool>
   );
 }
-ToolRegistry.register('kortix-connectors_connectors', ConnectorsTool);
+ToolRegistry.register('zed-connectors_connectors', ConnectorsTool);
 
 export function ConnectorDiscoverTool({ part, defaultOpen, forceOpen, locked }: ToolProps) {
   const input = partInput(part);
@@ -144,7 +144,7 @@ export function ConnectorDiscoverTool({ part, defaultOpen, forceOpen, locked }: 
     </BasicTool>
   );
 }
-ToolRegistry.register('kortix-connectors_discover', ConnectorDiscoverTool);
+ToolRegistry.register('zed-connectors_discover', ConnectorDiscoverTool);
 
 export function ConnectorDescribeTool({ part, defaultOpen, forceOpen, locked }: ToolProps) {
   const tI18nHardcoded = useTranslations('hardcodedUi');
@@ -199,7 +199,7 @@ export function ConnectorDescribeTool({ part, defaultOpen, forceOpen, locked }: 
     </BasicTool>
   );
 }
-ToolRegistry.register('kortix-connectors_describe', ConnectorDescribeTool);
+ToolRegistry.register('zed-connectors_describe', ConnectorDescribeTool);
 
 export function ConnectorCallTool({ part, defaultOpen, forceOpen, locked }: ToolProps) {
   const input = partInput(part);
@@ -287,4 +287,4 @@ export function ConnectorCallTool({ part, defaultOpen, forceOpen, locked }: Tool
     </BasicTool>
   );
 }
-ToolRegistry.register('kortix-connectors_call', ConnectorCallTool);
+ToolRegistry.register('zed-connectors_call', ConnectorCallTool);

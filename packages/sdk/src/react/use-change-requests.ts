@@ -17,7 +17,7 @@ export const changeRequestsKey = (projectId: string | null | undefined) =>
   ['project-change-requests', projectId] as const;
 
 /**
- * Change requests — the Kortix-native PR layer. List + open/merge/close/
+ * Change requests — the Zed-native PR layer. List + open/merge/close/
  * request-changes, the CRUD surface a Review Center / workbench "Changes" tab
  * needs. Thin React Query binding over `projects-client/change-requests.ts`;
  * every mutation invalidates the list so status transitions (open → merged/

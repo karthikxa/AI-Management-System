@@ -33,8 +33,8 @@ import { MODEL_SELECTOR_PROVIDER_IDS, ProviderLogo } from '@/features/providers/
 import { isLlmGatewayEnabled } from '@/lib/llm-gateway';
 import type { ProviderModalTab } from '@/stores/provider-modal-store';
 import { useProviderModalStore } from '@/stores/provider-modal-store';
-import { getProjectDetail } from '@kortix/sdk';
-import { contract, qk, type ProviderListResponse } from '@kortix/sdk/react';
+import { getProjectDetail } from '@zed/sdk';
+import { contract, qk, type ProviderListResponse } from '@zed/sdk/react';
 import { useQuery } from '@tanstack/react-query';
 import { resolveAvailableSelectedModel } from './model-availability';
 import { pickerGroupId, pickerGroupLabel } from './model-grouping';
@@ -148,7 +148,7 @@ export function ModelSelector({
   });
   const llmGatewayEnabled = isLlmGatewayEnabled(projectDetailQuery.data?.project);
   const baseModels = useMemo(() => {
-    return llmGatewayEnabled ? models : models.filter((m) => m.providerID !== 'kortix');
+    return llmGatewayEnabled ? models : models.filter((m) => m.providerID !== 'zed');
   }, [models, llmGatewayEnabled]);
 
   // NOTE: the picker deliberately derives NO availability of its own. Which
@@ -210,8 +210,8 @@ export function ModelSelector({
         groups.set(groupID, {
           providerID: groupID,
           // NEVER `m.providerName` here — under the gateway it's always
-          // "Kortix" (opencode's raw provider name), which is exactly the
-          // "every provider shows as Kortix" bug. Label by the resolved real
+          // "Zed" (opencode's raw provider name), which is exactly the
+          // "every provider shows as Zed" bug. Label by the resolved real
           // provider id instead. See pickerGroupLabel's doc comment.
           providerName: llmGatewayEnabled ? pickerGroupLabel(groupID, m) : m.providerName,
           models: [m],

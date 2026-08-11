@@ -84,12 +84,12 @@ describe('buildReviewCardBlocks', () => {
     expect(actions.elements[0].action_id).toContain('_approve_');
   });
 
-  test('includes a deep-link "View in Kortix" button when a webUrl is given', () => {
-    const blocks = buildReviewCardBlocks(item, { webUrl: 'https://app.kortix.ai/x' });
+  test('includes a deep-link "View in Zed" button when a webUrl is given', () => {
+    const blocks = buildReviewCardBlocks(item, { webUrl: 'https://app.zed.ai/x' });
     const actions = blocks.find((b) => b.type === 'actions') as {
       elements: Array<{ url?: string; text: { text: string } }>;
     };
-    const view = actions.elements.find((e) => e.text.text === 'View in Kortix');
-    expect(view?.url).toBe('https://app.kortix.ai/x');
+    const view = actions.elements.find((e) => e.text.text === 'View in Zed');
+    expect(view?.url).toBe('https://app.zed.ai/x');
   });
 });

@@ -12,7 +12,7 @@ import { Claude } from '@/features/icon/icons/claude';
 import { Copy } from '@/features/icon/icons/copy';
 import { Cursor } from '@/features/icon/icons/cursor';
 import { Github } from '@/features/icon/icons/github';
-import { Kortix } from '@/features/icon/icons/kortix';
+import { Zed } from '@/features/icon/icons/zed';
 import { CheckIcon } from '@/lib/icons/ssr';
 import { cn } from '@/lib/utils';
 // `docs-page-actions.tsx` is 'use client', so — unlike page.tsx/layout.tsx —
@@ -52,10 +52,10 @@ export function DocsPageActions({
     { key: 'github', label: 'Open in GitHub', href: githubUrl, icon: Github },
     { key: 'markdown', label: 'View as Markdown', href: markdownPath, icon: MarkdownLogoIcon },
     {
-      key: 'kortix',
-      label: 'Open in Kortix',
+      key: 'zed',
+      label: 'Open in Zed',
       href: `/projects/start?q=${encodedPrompt}`,
-      icon: Kortix,
+      icon: Zed,
     },
     {
       key: 'chatgpt',

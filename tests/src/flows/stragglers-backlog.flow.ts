@@ -17,7 +17,7 @@ flow("SBX-1", { domain: "sandboxes", todo: "no standalone endpoint — sandbox c
 flow("SBX-2", { domain: "sandboxes", todo: "no standalone endpoint — manual stop=SESS-12, delete=SESS-7, restart=SESS-9, status=SESS-8 (all covered)" }, async () => {});
 
 // TRG-6 — cron scheduler is a global setInterval sweep (server background
-// behavior, gated by KORTIX_TRIGGER_SCHEDULER_ENABLED). Not an HTTP route;
+// behavior, gated by ZED_TRIGGER_SCHEDULER_ENABLED). Not an HTTP route;
 // proven by the live triggers harness (apps/api/scripts/e2e-triggers-live.sh),
 // not black-box-assertable here without driving wall-clock + a funded session.
 flow("TRG-6", { domain: "triggers", todo: "internal cron scheduler (setInterval sweep) — no HTTP surface; covered by e2e-triggers-live" }, async () => {});

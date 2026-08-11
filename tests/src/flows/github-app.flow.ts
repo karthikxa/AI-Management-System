@@ -168,7 +168,7 @@ flow(
     ],
   },
   async (ctx) => {
-    // The two callbacks are PUBLIC browser redirects from GitHub — no Kortix
+    // The two callbacks are PUBLIC browser redirects from GitHub — no Zed
     // auth header is possible on a cross-site redirect, so they must NEVER
     // 500 and NEVER store on a bad/missing state. They redirect to the
     // frontend with an `error` reason instead. We prove that contract on

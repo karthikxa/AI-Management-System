@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { gatewayRequestLogs, projectSessions, sandboxComputeSessions } from '@kortix/db';
+import { gatewayRequestLogs, projectSessions, sandboxComputeSessions } from '@zed/db';
 import { Column, SQL, type SQLWrapper, Table, getTableColumns, is, sql } from 'drizzle-orm';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import type { CostSort } from './cost-window';
@@ -131,7 +131,7 @@ function subqueryExposureCounts(record: QueryRecord): Map<string, Map<string, nu
 
 // The qualified references each join's ON condition makes, as [qualifier, name].
 // A two-segment render (`"llm_agg"."session_id"`) points at a joined subquery; a
-// three-segment one (`"kortix"."project_sessions"."session_id"`) points at a table
+// three-segment one (`"zed"."project_sessions"."session_id"`) points at a table
 // and is dropped, since a table cannot expose a duplicate name.
 function joinConditionReferences(record: QueryRecord): Array<[string, string]> {
   const dialect = new PgDialect();
@@ -148,7 +148,7 @@ function joinConditionReferences(record: QueryRecord): Array<[string, string]> {
   return references;
 }
 
-const SESSION_ID_TIEBREAK = '"kortix"."project_sessions"."session_id" asc';
+const SESSION_ID_TIEBREAK = '"zed"."project_sessions"."session_id" asc';
 
 // How Drizzle actually renders one field of a `.as(alias)` subquery. The two
 // kinds render differently, and the difference is the whole point:
@@ -567,7 +567,7 @@ describe('listSessionCosts service', () => {
 
   test('recent orders by updated_at, descending, never by spend', async () => {
     const [recency, tiebreak] = await orderByFor('recent');
-    expect(recency).toBe('"kortix"."project_sessions"."updated_at" desc');
+    expect(recency).toBe('"zed"."project_sessions"."updated_at" desc');
     expect(tiebreak).toBe(SESSION_ID_TIEBREAK);
   });
 

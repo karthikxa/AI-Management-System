@@ -17,7 +17,7 @@ terraform {
 }
 
 resource "aws_acm_certificate" "this" {
-  #checkov:skip=CKV2_AWS_71:The shared *.kortix.com certificate is required for short-lived staging and preview hostnames; DNS validation and Cloudflare origin restrictions control issuance and access.
+  #checkov:skip=CKV2_AWS_71:The shared *.zed.com certificate is required for short-lived staging and preview hostnames; DNS validation and Cloudflare origin restrictions control issuance and access.
   domain_name               = var.domain_name
   subject_alternative_names = var.subject_alternative_names
   validation_method         = "DNS"
@@ -29,7 +29,7 @@ resource "aws_acm_certificate" "this" {
     ManagedBy   = "terraform"
     Name        = replace(var.domain_name, "*", "wildcard")
     Environment = lookup(var.tags, "Environment", "managed")
-    Project     = lookup(var.tags, "Project", "kortix")
+    Project     = lookup(var.tags, "Project", "zed")
     Service     = lookup(var.tags, "Service", "certificate")
     Platform    = lookup(var.tags, "Platform", "managed")
   }

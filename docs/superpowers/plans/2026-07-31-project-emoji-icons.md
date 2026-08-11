@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Work happens in the worktree `/Users/jay/root/kortix/suna-emoji` on branch `emoji`. Do not switch branches.
+- Work happens in the worktree `/Users/jay/root/zed/suna-emoji` on branch `emoji`. Do not switch branches.
 - No database migration. `metadata.icon` only.
 - Icon cap is **64 bytes** and **exactly one grapheme cluster**. Never 32 bytes — `👩🏽‍❤️‍💋‍👨🏿` is 35 bytes and is valid.
 - A malformed icon never fails a create. `normalizeProjectIcon` returns `null` and creation proceeds.
@@ -21,11 +21,11 @@
 - **`apps/web` typecheck baseline is 8 errors, NOT ~1500.** `CLAUDE.md` says `tsc --noEmit` emits roughly 1500 bogus `TS2786` errors from a React 19↔18 mismatch. **That is stale for this checkout** — measured on this branch: 8 total errors, **zero** `TS2786`. The 8 are real pre-existing type errors (a `projectId` prop mismatch across `agent-selector.tsx`, `composer-toolbar.tsx`, `schedule-view.tsx`, `channels-view.tsx`, plus two in a test file). Do not wave errors away as "the known bogus 1500" — there is no such wall here. Your files must add zero new errors, and the total must stay at 8.
 - **Run `apps/web` tests from `apps/web`, not the repo root.** `cd apps/web && bun test src` gives 2653 pass / 0 fail. `bun test apps/web/src` from the repo root reports **10 failures** — pre-existing SEO/robots/marketplace tests that resolve fixture paths relative to cwd. Six of those ten reproduce on `main` in a clean checkout, so they are not this branch's. Judge any suite result by the directory it was run from before calling it a regression.
 - **Run ESLint from `apps/web`, not the repo root.** The config is `apps/web/eslint.config.mjs`. From the repo root, `npx eslint <file>` fails with "ESLint couldn't find an eslint.config.(js|mjs|cjs) file" — and that failure is easy to misread as a clean run. Always `cd apps/web` first and pass paths relative to it.
-- **Running `apps/api` tests needs env.** A bare `bun test apps/api/...` fails env validation before any test runs (`API_KEY_SECRET`, `TUNNEL_SIGNING_SECRET`, `KORTIX_URL` required). Run them from `apps/api` through dotenvx:
+- **Running `apps/api` tests needs env.** A bare `bun test apps/api/...` fails env validation before any test runs (`API_KEY_SECRET`, `TUNNEL_SIGNING_SECRET`, `ZED_URL` required). Run them from `apps/api` through dotenvx:
   ```bash
-  cd apps/api && KORTIX_URL=http://localhost:8008 dotenvx run --quiet -- bun test --isolate src/projects/lib/<file>.test.ts
+  cd apps/api && ZED_URL=http://localhost:8008 dotenvx run --quiet -- bun test --isolate src/projects/lib/<file>.test.ts
   ```
-  `KORTIX_URL` is normally set by `pnpm dev`'s tunnel; any placeholder works for unit tests.
+  `ZED_URL` is normally set by `pnpm dev`'s tunnel; any placeholder works for unit tests.
 - **`ProjectSchema` in `apps/api/src/projects/lib/app.ts` is a re-tag, not the schema.** Line 27 is `ContractProjectSchema.openapi('Project')`. The field-bearing definition lives in `packages/api-contract/src/index.ts` — add response fields there, and `app.ts` inherits them.
 - **NEVER run `git merge`, `git rebase`, `git reset --hard`, or `git push` unless the task explicitly says to.** An implementer merged `main` into `emoji` on its own initiative during Task 3. It happened to be harmless — 7 files, no migrations — but it silently moved the branch's merge-base, which invalidates every review package base computed before it, and a rebase in this repo forks the Drizzle snapshot lineage. Commit your own work and stop.
 - **NEVER run `git stash`, `git stash pop`, or `git stash apply`. This is a hard ban.**
@@ -47,7 +47,7 @@
   - Files under `apps/api/**` or `packages/**` → `npx biome check <files>`
   - Files under `apps/web/**` → `npx eslint <files>`
   - **Never create an ESLint config file.** If a lint command appears not to work, you are running the wrong linter for that directory — do not "fix" it by adding configuration. Adding a root `eslint.config.mjs` applies rules to the entire monorepo and shadows `apps/web`'s own config.
-- Load the `kortix-design-system` skill and `make-interfaces-feel-better` before writing any `apps/web` visual code.
+- Load the `zed-design-system` skill and `make-interfaces-feel-better` before writing any `apps/web` visual code.
 - Never write a Linear identifier or `linear.app` URL into a branch name, commit message, PR title, or PR body.
 - Do not use `npx shadcn@latest add`. Install frimousse with pnpm and hand-author the component.
 
@@ -177,7 +177,7 @@ describe('normalizeProjectIcon', () => {
 - [ ] **Step 2: Run the test to verify it fails**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji && bun test apps/api/src/projects/lib/project-icon.test.ts
+cd /Users/jay/root/zed/suna-emoji && bun test apps/api/src/projects/lib/project-icon.test.ts
 ```
 
 Expected: FAIL — `Cannot find module './project-icon'`.
@@ -265,7 +265,7 @@ grapheme check before reaching this one.
 - [ ] **Step 4: Run the test to verify it passes**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji && bun test apps/api/src/projects/lib/project-icon.test.ts
+cd /Users/jay/root/zed/suna-emoji && bun test apps/api/src/projects/lib/project-icon.test.ts
 ```
 
 Expected: PASS, 15 tests.
@@ -273,7 +273,7 @@ Expected: PASS, 15 tests.
 - [ ] **Step 5: Lint**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji && npx biome check apps/api/src/projects/lib/project-icon.ts apps/api/src/projects/lib/project-icon.test.ts
+cd /Users/jay/root/zed/suna-emoji && npx biome check apps/api/src/projects/lib/project-icon.ts apps/api/src/projects/lib/project-icon.test.ts
 ```
 
 Expected: no output.
@@ -295,7 +295,7 @@ git commit -m "feat(api): add normalizeProjectIcon validator for project emoji i
 
 **Interfaces:**
 - Consumes: `normalizeProjectIcon` from Task 1.
-- Produces: `icon: string | null` on every serialized project. Task 4 mirrors this on `KortixProject`; Task 8 renders it.
+- Produces: `icon: string | null` on every serialized project. Task 4 mirrors this on `ZedProject`; Task 8 renders it.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -306,7 +306,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { serializeProject } from './serializers';
 
-// `metadata` is nullable: packages/db/src/schema/kortix.ts:330 declares
+// `metadata` is nullable: packages/db/src/schema/zed.ts:330 declares
 // jsonb('metadata').default({}) with NO .notNull(), which is why
 // serializeProject guards it with `?.`. The helper must be able to pass null
 // so that guard is actually exercised.
@@ -317,7 +317,7 @@ function projectRow(metadata: Record<string, unknown> | null) {
     name: 'demo',
     repoUrl: 'https://github.com/acme/demo.git',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     status: 'active' as const,
     secretDefaultStrategy: 'runtime' as const,
     metadata,
@@ -350,7 +350,7 @@ describe('serializeProject icon', () => {
 - [ ] **Step 2: Run the test to verify it fails**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji && bun test apps/api/src/projects/lib/serializers.test.ts
+cd /Users/jay/root/zed/suna-emoji && bun test apps/api/src/projects/lib/serializers.test.ts
 ```
 
 Expected: FAIL — `icon` is `undefined`, not `'🚀'`.
@@ -391,7 +391,7 @@ schema, not the looser `ProjectSessionSchema` fields elsewhere in the file.
 - [ ] **Step 6: Run the test to verify it passes**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji && bun test apps/api/src/projects/lib/serializers.test.ts
+cd /Users/jay/root/zed/suna-emoji && bun test apps/api/src/projects/lib/serializers.test.ts
 ```
 
 Expected: PASS, 4 tests.
@@ -399,7 +399,7 @@ Expected: PASS, 4 tests.
 - [ ] **Step 7: Run the wider API suite for regressions**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji && bun test apps/api/src/projects
+cd /Users/jay/root/zed/suna-emoji && bun test apps/api/src/projects
 ```
 
 Expected: PASS. If a snapshot asserts the exact key set of a serialized project, update it to include `icon`.
@@ -500,7 +500,7 @@ Declare each `const icon` in the same scope as its `const row`, above the call.
 - [ ] **Step 7: Start the local stack**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji && pnpm dev
+cd /Users/jay/root/zed/suna-emoji && pnpm dev
 ```
 
 Run it in the background. Wait for `curl -s localhost:8008/v1/health` to return JSON.
@@ -539,7 +539,7 @@ Expected: HTTP `201`, and `icon = None`. The project is created; the bad icon is
 
 - [ ] **Step 10: Verify `create-repo` and `link-repository`**
 
-Repeat Step 8's create-then-read-back shape against `POST /v1/projects/create-repo` and `POST /v1/projects/link-repository`. Both need a GitHub App installation on the account; if none is configured locally, record that fact explicitly in the task notes and cover both routes on `dev.kortix.com` in Task 9 instead. Do not mark this task done with the gap unrecorded.
+Repeat Step 8's create-then-read-back shape against `POST /v1/projects/create-repo` and `POST /v1/projects/link-repository`. Both need a GitHub App installation on the account; if none is configured locally, record that fact explicitly in the task notes and cover both routes on `dev.zed.com` in Task 9 instead. Do not mark this task done with the gap unrecorded.
 
 - [ ] **Step 11: Lint and commit**
 
@@ -554,13 +554,13 @@ git commit -m "feat(api): persist project icon on all three create paths"
 ### Task 4: SDK types
 
 **Files:**
-- Modify: `packages/sdk/src/core/rest/projects-client/projects.ts` (`KortixProject` :39, `CreateProjectRepoInput` :185, `ProvisionProjectInput` :196)
+- Modify: `packages/sdk/src/core/rest/projects-client/projects.ts` (`ZedProject` :39, `CreateProjectRepoInput` :185, `ProvisionProjectInput` :196)
 - Modify: `packages/sdk/src/core/rest/projects-client/github.ts` (`LinkRepositoryInput` :40)
 - Modify: `packages/sdk/PROGRESS.md` (claim the task)
 
 **Interfaces:**
 - Consumes: the API contract from Tasks 2 and 3.
-- Produces: `KortixProject.icon?: string | null`, and `icon?: string` on `ProvisionProjectInput`, `CreateProjectRepoInput`, `LinkRepositoryInput`. Tasks 7 and 8 consume these.
+- Produces: `ZedProject.icon?: string | null`, and `icon?: string` on `ProvisionProjectInput`, `CreateProjectRepoInput`, `LinkRepositoryInput`. Tasks 7 and 8 consume these.
 
 - [ ] **Step 1: Read the SDK rules first**
 
@@ -578,7 +578,7 @@ Assert the real contract, not the type. A test whose only assertion is that an o
 
 ```ts
 test('provisionProject sends the icon in the request body', async () => {
-  configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'tok' });
 
   let sentBody: unknown;
   globalThis.fetch = mock(async (_input: RequestInfo | URL, init?: RequestInit) => {
@@ -594,7 +594,7 @@ test('provisionProject sends the icon in the request body', async () => {
   expect(sentBody).toMatchObject({ icon: '🚀' });
 });
 
-test('a project response carries the icon through to KortixProject', async () => {
+test('a project response carries the icon through to ZedProject', async () => {
   nextResponse = () =>
     new Response(JSON.stringify({ project_id: 'proj-1', name: 'Iconic', icon: '🚀' }), {
       status: 200,
@@ -616,7 +616,7 @@ Run the SDK's test command as documented in `AGENTS.md`. Expected: FAIL — `ico
 
 - [ ] **Step 5: Add the four fields**
 
-In `packages/sdk/src/core/rest/projects-client/projects.ts`, inside `KortixProject`:
+In `packages/sdk/src/core/rest/projects-client/projects.ts`, inside `ZedProject`:
 
 ```ts
   /** Per-project emoji shown on the project card. Server-validated: exactly one
@@ -666,12 +666,12 @@ git commit -m "feat(sdk): add optional project icon to project type and create i
 
 - [ ] **Step 1: Load the design skills**
 
-Load `kortix-design-system` and `make-interfaces-feel-better` before writing this component. Compose from `@/components/ui/*`. Do not invent local chrome.
+Load `zed-design-system` and `make-interfaces-feel-better` before writing this component. Compose from `@/components/ui/*`. Do not invent local chrome.
 
 - [ ] **Step 2: Install frimousse**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji && pnpm add frimousse --filter Kortix-Computer-Frontend
+cd /Users/jay/root/zed/suna-emoji && pnpm add frimousse --filter Zed-Computer-Frontend
 ```
 
 Do not run `npx shadcn@latest add`. It writes a stock-shadcn-styled component outside pnpm.
@@ -841,7 +841,7 @@ The footer renders a resting hint when nothing is hovered rather than collapsing
 `nth-[6n+k]:`, `group-odd/row:`, and `group-even/row:` are Tailwind v4 arbitrary and named-group variants, stacked three and four deep. The classes above are literal so the scanner will emit them, but the **stacking order** is not proven until it renders.
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji && pnpm dev
+cd /Users/jay/root/zed/suna-emoji && pnpm dev
 ```
 
 Open the picker, hover an emoji, and inspect the button in devtools. Confirm:
@@ -1075,7 +1075,7 @@ Add the same Cancel button to the `ModalFooter` at :1050. Leave that footer's su
 - [ ] **Step 8: Typecheck the touched file**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji/apps/web && npx tsc --noEmit 2>&1 | grep 'project-create-modal\|project-icon-field\|emoji-picker'
+cd /Users/jay/root/zed/suna-emoji/apps/web && npx tsc --noEmit 2>&1 | grep 'project-create-modal\|project-icon-field\|emoji-picker'
 ```
 
 Expected: no output. Ignore the roughly 1500 unrelated `TS2786` errors.
@@ -1114,7 +1114,7 @@ git commit -m "feat(web): add emoji icon, cancel action, and name gate to create
 - Test: `apps/web/src/components/ui/entity-avatar.test.tsx`
 
 **Interfaces:**
-- Consumes: `KortixProject.icon` from Task 4.
+- Consumes: `ZedProject.icon` from Task 4.
 - Produces: the visible feature. Nothing consumes this.
 
 - [ ] **Step 1: Write the failing test**
@@ -1159,7 +1159,7 @@ describe('EntityAvatar', () => {
 - [ ] **Step 2: Run the test to verify it fails**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji && bun test apps/web/src/components/ui/entity-avatar.test.tsx
+cd /Users/jay/root/zed/suna-emoji && bun test apps/web/src/components/ui/entity-avatar.test.tsx
 ```
 
 Expected: FAIL — `emoji` is not a prop, so the initial `D` renders.
@@ -1208,7 +1208,7 @@ Add `emoji` to the destructured parameters, then replace the `style` and the bod
 - [ ] **Step 4: Run the test to verify it passes**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji && bun test apps/web/src/components/ui/entity-avatar.test.tsx
+cd /Users/jay/root/zed/suna-emoji && bun test apps/web/src/components/ui/entity-avatar.test.tsx
 ```
 
 Expected: PASS, 3 tests.
@@ -1261,7 +1261,7 @@ git commit -m "feat(web): render the project emoji icon on the project card"
 - [ ] **Step 1: Run the full local gates**
 
 ```bash
-cd /Users/jay/root/kortix/suna-emoji
+cd /Users/jay/root/zed/suna-emoji
 bun test apps/api/src/projects
 # apps/api + packages lint with Biome; only apps/web has ESLint.
 npx biome check $(git diff --name-only main...HEAD | grep -E '^(apps/api|packages)/.*\.tsx?$' | tr '\n' ' ')
@@ -1306,7 +1306,7 @@ Confirm the deployed artifact contains the merged SHA. A `200` from `/health` is
 
 - [ ] **Step 5: Re-run the feature on dev**
 
-On `https://dev.kortix.com`: create a project with an emoji, confirm the card in the grid shows it, and confirm `GET https://dev-api.kortix.com/v1/projects/<id>` returns the `icon` field. If Task 3 Step 10 could not exercise `create-repo` or `link-repository` locally, cover them here.
+On `https://dev.zed.com`: create a project with an emoji, confirm the card in the grid shows it, and confirm `GET https://dev-api.zed.com/v1/projects/<id>` returns the `icon` field. If Task 3 Step 10 could not exercise `create-repo` or `link-repository` locally, cover them here.
 
 - [ ] **Step 6: Report**
 

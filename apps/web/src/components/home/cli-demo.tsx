@@ -1,7 +1,7 @@
 'use client';
 
 import { useCopy } from '@/hooks/use-copy';
-import { KORTIX_CLI_INSTALL_COMMAND } from '@/lib/kortix-cli';
+import { ZED_CLI_INSTALL_COMMAND } from '@/lib/zed-cli';
 import { cn } from '@/lib/utils';
 import { CheckIcon as Check, CopyIcon as Copy } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
@@ -13,18 +13,18 @@ import {
   useState,
 } from 'react';
 import { HyperText } from '../ui/hyper-text';
-import { KORTIX_BULLET_GRADIENT, KortixAsterisk } from '../ui/kortix-asterisk';
+import { ZED_BULLET_GRADIENT, ZedAsterisk } from '../ui/zed-asterisk';
 import { Button } from '../ui/marketing/button';
-import { KortixHyperLogo } from '../ui/marketing/kortix-hyper-logo';
+import { ZedHyperLogo } from '../ui/marketing/zed-hyper-logo';
 import { TextShimmer } from '../ui/text-shimmer';
 
 type Color = 'cyan' | 'green' | 'amber' | 'red' | 'fg' | 'dim' | 'faded';
 
-const KORTIX_CMD_CLASS =
-  'animate-kortix-bullet-flow inline-block bg-size-[100%_300%] bg-clip-text text-transparent';
+const ZED_CMD_CLASS =
+  'animate-zed-bullet-flow inline-block bg-size-[100%_300%] bg-clip-text text-transparent';
 
-const KORTIX_CMD_STYLE: CSSProperties = {
-  backgroundImage: KORTIX_BULLET_GRADIENT,
+const ZED_CMD_STYLE: CSSProperties = {
+  backgroundImage: ZED_BULLET_GRADIENT,
   backgroundSize: '100% 300%',
   WebkitBackgroundClip: 'text',
   backgroundClip: 'text',
@@ -42,7 +42,7 @@ const COLOR: Record<Color, string> = {
   faded: 'text-muted-foreground/45',
 };
 
-type Span = { t: string; c?: Color | 'kortix' | 'cursor' };
+type Span = { t: string; c?: Color | 'zed' | 'cursor' };
 type Line = Span[];
 
 type OutEvent =
@@ -52,7 +52,7 @@ type OutEvent =
 
 type Step = { input: string; note?: boolean; out?: Line[]; events?: OutEvent[] };
 
-const t = (text: string, c?: Color | 'kortix' | 'cursor'): Span => ({ t: text, c });
+const t = (text: string, c?: Color | 'zed' | 'cursor'): Span => ({ t: text, c });
 const ok = (...spans: Span[]): Line => [t('  '), t('✓', 'green'), t('  '), ...spans];
 
 const CURSOR: Span = { t: '', c: 'cursor' };
@@ -62,7 +62,7 @@ const pickOptionsLine = (options: string[], selected: number): Line => {
   const spans: Span[] = [t('  ')];
   options.forEach((opt, i) => {
     if (i > 0) spans.push(t('  ·  ', 'faded'));
-    spans.push(i === selected ? t(opt, 'kortix') : t(opt, 'dim'));
+    spans.push(i === selected ? t(opt, 'zed') : t(opt, 'dim'));
   });
   return spans;
 };
@@ -112,7 +112,7 @@ const insetCard = (title: string, body: string[]): string[] => {
 };
 
 const PROMPT_BODY = [
-  'Read the kortix skill, then propose an',
+  'Read the zed skill, then propose an',
   'initial agent, wire up the trigger,',
   'and list the secrets to set.',
 ];
@@ -123,7 +123,7 @@ function getStartedBox(): Line[] {
   lines.push([t(boxLine(''), 'faded')]);
   for (const s of [
     'Paste this prompt into your coding agent',
-    'to configure your Kortix project:',
+    'to configure your Zed project:',
   ]) {
     lines.push([t('║ ', 'faded'), t(padTo(s, BW), 'dim'), t(' ║', 'faded')]);
   }
@@ -131,9 +131,9 @@ function getStartedBox(): Line[] {
   for (const l of insetCard('prompt', PROMPT_BODY)) lines.push([t(l, 'dim')]);
   lines.push([t(boxLine(''), 'faded')]);
   const pre = 'When ready, take it live:  ';
-  const cmd = 'kortix ship';
+  const cmd = 'zed ship';
   const trailing = ' '.repeat(Math.max(0, BW - pre.length - cmd.length));
-  lines.push([t('║ ', 'faded'), t(pre, 'dim'), t(cmd, 'kortix'), t(trailing), t(' ║', 'faded')]);
+  lines.push([t('║ ', 'faded'), t(pre, 'dim'), t(cmd, 'zed'), t(trailing), t(' ║', 'faded')]);
   lines.push([t(boxLine(''), 'faded')]);
   lines.push([t(boxBottom(), 'faded')]);
   return lines;
@@ -148,18 +148,18 @@ const INIT_INTRO: Line[] = [
     t('   '),
     t('The open-source AI Management System', 'fg'),
     t('   '),
-    t('·  configure your Kortix project', 'faded'),
+    t('·  configure your Zed project', 'faded'),
   ],
   [],
 ];
 
 const AGENT_PICK_INTRO: Line[] = [
   [],
-  [t('  Pick your local coding agent to configure this Kortix project.', 'dim')],
+  [t('  Pick your local coding agent to configure this Zed project.', 'dim')],
   [],
-  [t('  It picks up the Kortix skill — ask it to scaffold triggers,', 'dim')],
-  [t('  custom agents, or edit kortix.yaml for you.', 'dim')],
-  [t('  (Kortix itself runs opencode inside every sandbox session.)', 'dim')],
+  [t('  It picks up the Zed skill — ask it to scaffold triggers,', 'dim')],
+  [t('  custom agents, or edit zed.yaml for you.', 'dim')],
+  [t('  (Zed itself runs opencode inside every sandbox session.)', 'dim')],
   [],
 ];
 
@@ -168,14 +168,14 @@ const PROJECT_NAME_LABEL: Line = [t('Project name '), t('(my-app)', 'dim'), t(':
 
 const initTail = (name: string): Line[] => [
   [],
-  [t('Initialized Kortix project '), t(`"${name}"`, 'fg'), t(' in '), t(`~/${name}`, 'faded')],
+  [t('Initialized Zed project '), t(`"${name}"`, 'fg'), t(' in '), t(`~/${name}`, 'faded')],
   [t('Wrote 9 files:')],
-  [t('  + ', 'faded'), t('kortix.yaml')],
-  [t('  + ', 'faded'), t('.kortix/Dockerfile')],
-  [t('  + ', 'faded'), t('.kortix/opencode/opencode.jsonc')],
-  [t('  + ', 'faded'), t('.kortix/opencode/agents/kortix.md')],
-  [t('  + ', 'faded'), t('.kortix/opencode/skills/kortix-cli/SKILL.md')],
-  [t('  + ', 'faded'), t('.claude/skills/kortix/SKILL.md')],
+  [t('  + ', 'faded'), t('zed.yaml')],
+  [t('  + ', 'faded'), t('.zed/Dockerfile')],
+  [t('  + ', 'faded'), t('.zed/opencode/opencode.jsonc')],
+  [t('  + ', 'faded'), t('.zed/opencode/agents/zed.md')],
+  [t('  + ', 'faded'), t('.zed/opencode/skills/zed-cli/SKILL.md')],
+  [t('  + ', 'faded'), t('.claude/skills/zed/SKILL.md')],
   [t('Git: initialized (main)', 'dim')],
   [],
   [t('Next:')],
@@ -192,30 +192,30 @@ const INIT_EVENTS: OutEvent[] = [
 
 const SCRIPT: Step[] = [
   {
-    input: 'kortix init my-app',
+    input: 'zed init my-app',
     events: INIT_EVENTS,
   },
   { input: "# build your agents locally — they're just files", note: true, out: [] },
   {
-    input: 'kortix ship',
+    input: 'zed ship',
     out: [
-      ok(t('kortix.yaml verified')),
+      ok(t('zed.yaml verified')),
       [],
-      [t('  '), t('kortix ship', 'kortix'), t('  new project → managed Kortix git', 'dim')],
+      [t('  '), t('zed ship', 'zed'), t('  new project → managed Zed git', 'dim')],
       [t('  name    ', 'dim'), t('my-app')],
       [],
-      ok(t('Committed: '), t('kortix: ship', 'fg')),
+      ok(t('Committed: '), t('zed: ship', 'fg')),
       [],
       ok(t('Pushed '), t('main', 'fg'), t(' → '), t('origin/main', 'fg')),
       [],
       ok(t('Shipped '), t('my-app', 'fg')),
-      [t('  repo  ', 'dim'), t('git.kortix.com/acme/my-app', 'faded')],
-      [t('  live  ', 'dim'), t('kortix.com/p/my-app', 'cyan')],
+      [t('  repo  ', 'dim'), t('git.zed.com/acme/my-app', 'faded')],
+      [t('  live  ', 'dim'), t('zed.com/p/my-app', 'cyan')],
       [],
     ],
   },
   {
-    input: 'kortix sessions new --prompt "Audit auth"',
+    input: 'zed sessions new --prompt "Audit auth"',
     out: [
       ok(t('Session started '), t('1f3a', 'fg')),
       [t('  session_id ', 'dim'), t('1f3a2b7c-…')],
@@ -225,7 +225,7 @@ const SCRIPT: Step[] = [
     ],
   },
   {
-    input: 'kortix cr open --title "Fix auth timeout"',
+    input: 'zed cr open --title "Fix auth timeout"',
     out: [
       [t('  '), t('✓', 'green'), t(' Opened '), t('CR #3', 'fg'), t(': Fix auth timeout')],
       [t('  session-1f3a → main', 'dim')],
@@ -242,7 +242,7 @@ type InstallCta = {
 type Block = { cmd: Line; out: Line[]; pending?: boolean; installCta?: InstallCta };
 
 const cmdLineOf = (step: Step): Line =>
-  step.note ? [t(step.input, 'faded')] : [t('$ ', 'faded'), t(step.input, 'kortix')];
+  step.note ? [t(step.input, 'faded')] : [t('$ ', 'faded'), t(step.input, 'zed')];
 
 const STATIC_BLOCKS: Block[] = SCRIPT.map((step) => ({
   cmd: cmdLineOf(step),
@@ -250,10 +250,10 @@ const STATIC_BLOCKS: Block[] = SCRIPT.map((step) => ({
 }));
 
 const PALETTE: { cmd: string; desc: string }[] = [
-  { cmd: 'kortix init', desc: 'scaffold a new Kortix project' },
-  { cmd: 'kortix ship', desc: 'commit, push & deploy to managed git' },
-  { cmd: 'kortix sessions new', desc: 'start an agent session' },
-  { cmd: 'kortix cr open', desc: 'open a change request' },
+  { cmd: 'zed init', desc: 'scaffold a new Zed project' },
+  { cmd: 'zed ship', desc: 'commit, push & deploy to managed git' },
+  { cmd: 'zed sessions new', desc: 'start an agent session' },
+  { cmd: 'zed cr open', desc: 'open a change request' },
 ];
 
 const INSTALL_CTA_MESSAGE =
@@ -261,7 +261,7 @@ const INSTALL_CTA_MESSAGE =
 
 function demoResponse(cmd: string, installCmd: string): Block {
   return {
-    cmd: [t('$ ', 'faded'), t(cmd, 'kortix')],
+    cmd: [t('$ ', 'faded'), t(cmd, 'zed')],
     out: [
       [],
       // [t('demo response', 'amber')],
@@ -295,8 +295,8 @@ function LineView({ line }: { line: Line }) {
       {line.length === 0
         ? ' '
         : line.map((s, i) =>
-            s.c === 'kortix' ? (
-              <span key={i} className={KORTIX_CMD_CLASS} style={KORTIX_CMD_STYLE}>
+            s.c === 'zed' ? (
+              <span key={i} className={ZED_CMD_CLASS} style={ZED_CMD_STYLE}>
                 {s.t}
               </span>
             ) : s.c === 'cursor' ? (
@@ -319,7 +319,7 @@ function ReasoningView() {
   const tI18nHardcoded = useTranslations('hardcodedUi');
   return (
     <div className="text-muted-foreground flex items-center gap-2 py-0.5">
-      <KortixAsterisk
+      <ZedAsterisk
         index={0}
         parentClass={tI18nHardcoded.raw(
           'autoComponentsHomeCliDemoJsxAttrParentClassMt0Animateaddcd0bb',
@@ -379,7 +379,7 @@ export function CliDemo() {
   const paletteItems = paletteOpen
     ? PALETTE.filter((p) => p.cmd.toLowerCase().includes(draft.slice(1).trim().toLowerCase()))
     : [];
-  const installCmd = KORTIX_CLI_INSTALL_COMMAND;
+  const installCmd = ZED_CLI_INSTALL_COMMAND;
 
   useEffect(() => {
     const el = rootRef.current;
@@ -560,7 +560,7 @@ export function CliDemo() {
     setPaletteIdx(0);
     setScrollback((prev) => [
       ...prev,
-      { cmd: [t('$ ', 'faded'), t('kortix init', 'kortix')], out: [...INIT_INTRO] },
+      { cmd: [t('$ ', 'faded'), t('zed init', 'zed')], out: [...INIT_INTRO] },
     ]);
     setWizard({ phase: 'name' });
     requestAnimationFrame(() => inputRef.current?.focus());
@@ -592,7 +592,7 @@ export function CliDemo() {
 
   const runCommand = (cmd: string) => {
     if (thinking) return;
-    if (cmd === 'kortix init') {
+    if (cmd === 'zed init') {
       startInitWizard();
       return;
     }
@@ -607,7 +607,7 @@ export function CliDemo() {
     if (value.startsWith('/')) {
       const item = paletteItems[paletteIdx] ?? paletteItems[0];
       runCommand(item ? item.cmd : value.slice(1).trim());
-    } else if (/^kortix\s+init$/.test(value)) {
+    } else if (/^zed\s+init$/.test(value)) {
       startInitWizard();
     } else {
       respond(demoResponse(value, installCmd));
@@ -674,8 +674,8 @@ export function CliDemo() {
     >
       <div className="border-border/60 bg-muted/30 flex shrink-0 items-center gap-3 border-b p-4 py-2">
         <span className="text-muted-foreground/70 inline-flex items-center gap-1 text-xs">
-          <KortixAsterisk index={0} parentClass="mt-0" />
-          <HyperText animateOnHover={false}>kortix</HyperText>
+          <ZedAsterisk index={0} parentClass="mt-0" />
+          <HyperText animateOnHover={false}>zed</HyperText>
         </span>
       </div>
 
@@ -704,7 +704,7 @@ export function CliDemo() {
           ))
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <KortixHyperLogo />
+            <ZedHyperLogo />
           </div>
         )}
       </div>
@@ -722,11 +722,11 @@ export function CliDemo() {
                   className={
                     isNote
                       ? 'text-muted-foreground/45'
-                      : typed.startsWith('kortix')
-                        ? KORTIX_CMD_CLASS
+                      : typed.startsWith('zed')
+                        ? ZED_CMD_CLASS
                         : 'text-foreground'
                   }
-                  style={!isNote && typed.startsWith('kortix') ? KORTIX_CMD_STYLE : undefined}
+                  style={!isNote && typed.startsWith('zed') ? ZED_CMD_STYLE : undefined}
                 >
                   {typed}
                 </span>
@@ -758,7 +758,7 @@ export function CliDemo() {
               disabled={thinking}
               readOnly={wizard?.phase === 'agent'}
               aria-label={tI18nHardcoded.raw(
-                'autoComponentsHomeCliDemoJsxAttrAriaLabelKortixTerminalc0bdb15a',
+                'autoComponentsHomeCliDemoJsxAttrAriaLabelZedTerminalc0bdb15a',
               )}
               placeholder={
                 thinking
@@ -767,7 +767,7 @@ export function CliDemo() {
                     ? ''
                     : wizard?.phase === 'name'
                       ? 'my-app'
-                      : 'try kortix init, or / for commands'
+                      : 'try zed init, or / for commands'
               }
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
@@ -806,8 +806,8 @@ export function CliDemo() {
                   )}
                 >
                   <span
-                    className={active ? KORTIX_CMD_CLASS : undefined}
-                    style={active ? KORTIX_CMD_STYLE : undefined}
+                    className={active ? ZED_CMD_CLASS : undefined}
+                    style={active ? ZED_CMD_STYLE : undefined}
                   >
                     {agent}
                   </span>

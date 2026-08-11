@@ -6,14 +6,14 @@
  * That mapping has to stay 1:1 for the merge to work, which is exactly why the
  * two things a READER needs cannot live there:
  *
- *  1. A hand-off is TWO rows. `askKortix` writes `ask_kortix: <request>` when it
- *     starts and `settleAsk` writes `ask_kortix_done: <outcome>` when it ends
+ *  1. A hand-off is TWO rows. `askZed` writes `ask_zed: <request>` when it
+ *     starts and `settleAsk` writes `ask_zed_done: <outcome>` when it ends
  *     (apps/api channels/voice/ask-ledger.ts — they are the in-flight ledger,
  *     not decoration). Rendered as they are stored, one question shows up as two
  *     unrelated rows, the second one a bare word like "answered" with nothing
  *     saying what it answered. Here they are folded back into ONE row: the
  *     request, and how it turned out — or that it is still outstanding.
- *  2. A name on every single bubble is noise. Repeating "Kortix" six times down
+ *  2. A name on every single bubble is noise. Repeating "Zed" six times down
  *     a run of six consecutive lines tells the reader nothing they did not
  *     already know from the last five.
  *
@@ -29,15 +29,15 @@ import type { CallRecordEntry } from './types';
 
 /** `ASK_SPEAKER` / `ASK_SETTLED_SPEAKER` in apps/api's ask-ledger.ts, which is
  *  what ends up in `voice_call_turns.speaker` and therefore in `entry.name`. */
-const ASK_TOOL = 'ask_kortix';
-const ASK_SETTLED_TOOL = 'ask_kortix_done';
+const ASK_TOOL = 'ask_zed';
+const ASK_SETTLED_TOOL = 'ask_zed_done';
 
 /**
  * How long a silence has to be before the same speaker is re-labelled.
  *
  * A run exists so consecutive lines are not stamped with the same name over and
  * over. But after a pause, "who was that again" is a real question — the reader
- * has looked away, or the call sat quiet while Kortix worked — and the label
+ * has looked away, or the call sat quiet while Zed worked — and the label
  * stops being redundant. Two minutes is well past the gap between turns of a
  * conversation and well under the length of a lull.
  */
@@ -61,7 +61,7 @@ export interface FeedRow {
   /** Speech only: this line begins a run by someone new, so it carries the
    *  name. False on every continuation line. */
   showLabel: boolean;
-  /** Tool only: opened and not yet closed — a hand-off Kortix is still working
+  /** Tool only: opened and not yet closed — a hand-off Zed is still working
    *  on. Distinct from `outcome === null`, which for any other tool just means
    *  the row never recorded one. */
   pending: boolean;
@@ -71,7 +71,7 @@ export interface FeedRow {
 }
 
 /**
- * Folds each `ask_kortix_done` into the `ask_kortix` it closes.
+ * Folds each `ask_zed_done` into the `ask_zed` it closes.
  *
  * Pairing is positional — a settle closes the most recent still-open ask —
  * because that is precisely the invariant apps/api enforces: one hand-off at a
@@ -105,7 +105,7 @@ export function foldAskSettlements(
 
     if (entry.name === ASK_SETTLED_TOOL) {
       // The settle row's TEXT is the outcome — `interpretTool` already stripped
-      // the `ask_kortix_done: ` prefix that made it parseable in the first place.
+      // the `ask_zed_done: ` prefix that made it parseable in the first place.
       const outcome = entry.text.trim() || SETTLED_FALLBACK;
       if (openAsk !== null) {
         const open = out[openAsk];
@@ -121,7 +121,7 @@ export function foldAskSettlements(
       }
       out.push({
         // Named for the hand-off it closes, not for the row that recorded it:
-        // `ask_kortix_done` is an implementation detail of the ledger, and on
+        // `ask_zed_done` is an implementation detail of the ledger, and on
         // its own it would read as a second, different tool.
         entry: { ...entry, name: ASK_TOOL, text: '', outcome },
         pending: false,

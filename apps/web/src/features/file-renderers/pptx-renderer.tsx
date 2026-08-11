@@ -6,7 +6,7 @@ import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { downloadFile } from '@/features/files/api/runtime-files';
 import { cn } from '@/lib/utils';
 
@@ -33,12 +33,12 @@ interface PptxRendererProps {
 }
 
 /**
- * Maps the viewer's shadcn-style theme tokens onto Kortix's own CSS variables
+ * Maps the viewer's shadcn-style theme tokens onto Zed's own CSS variables
  * so the embedded PowerPoint viewer follows the app's light/dark theme exactly.
  * The library writes both `--pptx-*` and `--color-*` custom properties from
  * these values, so referencing our variables keeps everything in one system.
  */
-const KORTIX_VIEWER_THEME: ViewerTheme = {
+const ZED_VIEWER_THEME: ViewerTheme = {
   colors: {
     background: 'var(--background)',
     foreground: 'var(--foreground)',
@@ -185,7 +185,7 @@ export function PptxRenderer({
         </div>
         <p className="text-muted-foreground text-sm">Couldn&apos;t display this presentation.</p>
         <Button size="sm" variant="outline" onClick={handleDownload} disabled={busy}>
-          {busy ? <KortixLoader size="small" /> : <Download className="mr-2 h-4 w-4" />}
+          {busy ? <ZedLoader size="small" /> : <Download className="mr-2 h-4 w-4" />}
           Download to view
         </Button>
       </div>
@@ -195,7 +195,7 @@ export function PptxRenderer({
   if (!bytes) {
     return (
       <div className={cn('flex h-full w-full items-center justify-center', className)}>
-        <KortixLoader size="medium" />
+        <ZedLoader size="medium" />
       </div>
     );
   }
@@ -221,7 +221,7 @@ export function PptxRenderer({
             content={bytes}
             fileName={fileName}
             canEdit={false}
-            theme={KORTIX_VIEWER_THEME}
+            theme={ZED_VIEWER_THEME}
             className="h-full min-h-0 w-full"
           />
         </I18nextProvider>

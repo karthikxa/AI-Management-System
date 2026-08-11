@@ -6,8 +6,8 @@ import { InfoBanner } from '@/components/ui/info-banner';
 import { Input } from '@/components/ui/input';
 import Loading from '@/components/ui/loading';
 import { errorToast, successToast } from '@/components/ui/toast';
-import { upsertProjectSecret } from '@kortix/sdk';
-import { qk, refreshProjectProviderState } from '@kortix/sdk/react';
+import { upsertProjectSecret } from '@zed/sdk';
+import { qk, refreshProjectProviderState } from '@zed/sdk/react';
 import {
   CheckIcon as Check,
   CaretLeftIcon as ChevronLeft,
@@ -296,13 +296,13 @@ export function CustomProviderForm({
 
         {/* GAP C2 — a custom provider's traffic goes straight to `baseURL`
             (see buildCustomProviderSnippet's `options.baseURL`), never through
-            the Kortix gateway — so it never appears in gateway logs, never
+            the Zed gateway — so it never appears in gateway logs, never
             counts against gateway budgets, and never participates in routing
             policy/fallback. Disclosed here since nothing else in this flow
             says so. */}
         <InfoBanner tone="warning" icon={Info}>
           Requests to a custom provider go straight to its own endpoint — they don&apos;t pass
-          through the Kortix gateway, so they&apos;re not covered by gateway budgets, logs, or
+          through the Zed gateway, so they&apos;re not covered by gateway budgets, logs, or
           routing.
         </InfoBanner>
       </form>
@@ -358,7 +358,7 @@ function CustomProviderSnippetView({
       </InfoBanner>
 
       <InfoBanner tone="warning" icon={Info}>
-        This provider talks directly to its own endpoint, bypassing the Kortix gateway — no budgets,
+        This provider talks directly to its own endpoint, bypassing the Zed gateway — no budgets,
         logs, or routing apply to it.
       </InfoBanner>
 
@@ -385,7 +385,7 @@ function CustomProviderSnippetView({
                   className="absolute inset-0 inline-flex items-center justify-center"
                 >
                   {copied ? (
-                    <Check className="text-kortix-green size-3.5" />
+                    <Check className="text-zed-green size-3.5" />
                   ) : (
                     <Copy className="size-3.5" />
                   )}

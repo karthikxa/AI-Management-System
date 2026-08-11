@@ -219,7 +219,7 @@ jq -e --arg project_id "$project_id" '
   and (.project.repo_url | type == "string" and length > 0)
   and (.config | type == "object")
   and (.file_count | type == "number" and . >= 1)
-  and (.files | type == "array" and any(.[]; ((.path // "") == "kortix.yaml") or (.path // "") == "kortix.toml" or .name == "kortix.yaml" or .name == "kortix.toml"))
+  and (.files | type == "array" and any(.[]; ((.path // "") == "zed.yaml") or (.path // "") == "zed.toml" or .name == "zed.yaml" or .name == "zed.toml"))
 ' "$project_detail_file" >/dev/null
 
 curl_json project_files "$project_files_file" "$api_url/projects/$project_id/files" "$GATE5_API_CURL_USER_TOKEN"
@@ -267,7 +267,7 @@ jq -e \
     and .status == "active"
   ' "$sandbox_file" >/dev/null
 
-curl_json proxy_health "$proxy_health_file" "$api_url/p/$external_id/8000/kortix/health" "$GATE5_API_CURL_USER_TOKEN"
+curl_json proxy_health "$proxy_health_file" "$api_url/p/$external_id/8000/zed/health" "$GATE5_API_CURL_USER_TOKEN"
 jq -e --arg session_id "$session_id" '
   .daemon == "ok"
   and .opencode == "ok"
@@ -296,7 +296,7 @@ jq -e '
   and any(.[]; .type == "file" and (((.path // "") | endswith("/reviewer.md")) or .name == "reviewer.md"))
 ' "$proxy_agents_file" >/dev/null
 
-curl_json proxy_refresh "$proxy_refresh_file" "$api_url/p/$external_id/8000/kortix/refresh" "$GATE5_API_CURL_USER_TOKEN" POST
+curl_json proxy_refresh "$proxy_refresh_file" "$api_url/p/$external_id/8000/zed/refresh" "$GATE5_API_CURL_USER_TOKEN" POST
 jq -e '
   .ok == true
   and (.repo.before.commit | type == "string" and length > 0)
@@ -340,11 +340,11 @@ jq -n \
       { name: "project_sessions", method: "GET", path: "/projects/<project_id>/sessions", status: 200, artifact: "api-curl-project-sessions.json" },
       { name: "project_session", method: "GET", path: "/projects/<project_id>/sessions/<session_id>", status: 200, artifact: "api-curl-project-session.json" },
       { name: "session_sandbox", method: "GET", path: "/projects/<project_id>/sessions/<session_id>/sandbox", status: 200, artifact: "api-curl-session-sandbox.json" },
-      { name: "proxy_health", method: "GET", path: "/p/<external_id>/8000/kortix/health", status: 200, artifact: "api-curl-proxy-health.json" },
+      { name: "proxy_health", method: "GET", path: "/p/<external_id>/8000/zed/health", status: 200, artifact: "api-curl-proxy-health.json" },
       { name: "proxy_app", method: "GET", path: "/p/<external_id>/8000/app", status: 200, artifact: "api-curl-proxy-app.html", headers_artifact: "api-curl-proxy-app.headers" },
       { name: "proxy_opencode", method: "GET", path: "/p/<external_id>/8000/file?path=.opencode", status: 200, artifact: "api-curl-proxy-opencode.json" },
       { name: "proxy_opencode_agents", method: "GET", path: "/p/<external_id>/8000/file?path=.opencode/agents", status: 200, artifact: "api-curl-proxy-opencode-agents.json" },
-      { name: "proxy_refresh", method: "POST", path: "/p/<external_id>/8000/kortix/refresh", status: 200, artifact: "api-curl-proxy-refresh.json" },
+      { name: "proxy_refresh", method: "POST", path: "/p/<external_id>/8000/zed/refresh", status: 200, artifact: "api-curl-proxy-refresh.json" },
       { name: "ops_overview", method: "GET", path: "/ops/overview", status: 200, artifact: "api-curl-ops-overview.json" }
     ]
   }' >"$GATE5_TARGET_EVIDENCE_DIR/api-curl-proof.json"

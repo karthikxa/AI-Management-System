@@ -4,7 +4,7 @@ import { getActiveOpenCodeUrl } from '../../core/session/server-store/active';
 import type { ServerStore } from '../../core/session/server-store/types';
 
 // Re-export the public surface that lives in sibling modules so importers of
-// '../browser/stores/server-store' (and '@kortix/sdk/server-store') stay unchanged.
+// '../browser/stores/server-store' (and '@zed/sdk/server-store') stay unchanged.
 export { getSandboxUrlForExternalId, getPublicShareUrlForToken } from '../../core/session/server-store/url-helpers';
 export {
   deriveSubdomainOpts,

@@ -54,7 +54,7 @@ export function SystemFaultView({
 
     let eventId = EMPTY;
     if (report && !shouldIgnoreBrowserRuntimeNoise({ message: error.message, error })) {
-      console.error('[Kortix System Fault]', error);
+      console.error('[Zed System Fault]', error);
       eventId =
         Sentry.captureException(error, {
           tags: { area: 'global-error-boundary' },
@@ -79,7 +79,7 @@ export function SystemFaultView({
       language: nav?.language || EMPTY,
       viewport,
       online: typeof nav?.onLine === 'boolean' ? (nav.onLine ? 'yes' : 'no') : EMPTY,
-      env: process.env.NEXT_PUBLIC_KORTIX_ENV || 'dev',
+      env: process.env.NEXT_PUBLIC_ZED_ENV || 'dev',
       sentryEventId: eventId,
       errorName: error.name || 'Error',
       errorDigest: error.digest || EMPTY,
@@ -188,8 +188,8 @@ export function SystemFaultView({
           {tI18nHardcoded.raw(
             'autoComponentsCommonSystemFaultJsxTextIfThisPersistsContact38b14ac8',
           )}
-          <a href="mailto:support@kortix.ai">
-            {tI18nHardcoded.raw('autoComponentsCommonSystemFaultJsxTextSupportKortixAi314bf854')}
+          <a href="mailto:support@zed.ai">
+            {tI18nHardcoded.raw('autoComponentsCommonSystemFaultJsxTextSupportZedAi314bf854')}
           </a>
         </p>
       </main>

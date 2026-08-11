@@ -1,4 +1,4 @@
-import { chatChannelBindings, chatInstalls, projectSecrets } from '@kortix/db';
+import { chatChannelBindings, chatInstalls, projectSecrets } from '@zed/db';
 import { and, eq, isNull, like } from 'drizzle-orm';
 import {
   encryptProjectSecret,
@@ -102,8 +102,8 @@ export interface AgentMailInstallInput {
 }
 
 function agentMailConnectionSuffix(connectionSlug?: string | null): string {
-  const slug = (connectionSlug || 'kortix_email').trim();
-  if (!slug || slug === 'kortix_email') return '';
+  const slug = (connectionSlug || 'zed_email').trim();
+  if (!slug || slug === 'zed_email') return '';
   return `_${slug
     .toUpperCase()
     .replace(/[^A-Z0-9]+/g, '_')
@@ -202,7 +202,7 @@ export async function saveAgentMailInstall(
   input: AgentMailInstallInput,
 ): Promise<AgentMailInstallSummary> {
   const { projectId } = input;
-  const connectionSlug = input.connectionSlug || 'kortix_email';
+  const connectionSlug = input.connectionSlug || 'zed_email';
   const keys = agentMailKeys(connectionSlug);
   const previous = await loadAgentMailInstall(projectId, connectionSlug);
   if (input.apiKey) await upsertSecret(projectId, keys.apiKey, input.apiKey);
@@ -309,7 +309,7 @@ export async function deleteAgentMailInstall(
           eq(chatChannelBindings.workspaceId, install.inboxId),
           eq(
             chatChannelBindings.channelId,
-            (connectionSlug || 'kortix_email').trim() || 'kortix_email',
+            (connectionSlug || 'zed_email').trim() || 'zed_email',
           ),
         ),
       );
@@ -322,7 +322,7 @@ export async function deleteAgentMailInstall(
           eq(chatInstalls.workspaceId, install.inboxId),
         ),
       );
-  } else if (!connectionSlug || connectionSlug === 'kortix_email') {
+  } else if (!connectionSlug || connectionSlug === 'zed_email') {
     await db
       .delete(chatChannelBindings)
       .where(
@@ -340,7 +340,7 @@ export async function deleteAgentMailInstall(
 function agentMailConnectionSlugFromInboxSecret(name: string): string | null {
   if (!name.startsWith(AGENTMAIL_INBOX_ID)) return null;
   const suffix = name.slice(AGENTMAIL_INBOX_ID.length);
-  if (!suffix) return 'kortix_email';
+  if (!suffix) return 'zed_email';
   return suffix.replace(/^_+/, '').toLowerCase() || null;
 }
 
@@ -410,7 +410,7 @@ export async function loadAgentMailInstall(
     )
     .limit(1);
   return {
-    connectionSlug: connectionSlug || 'kortix_email',
+    connectionSlug: connectionSlug || 'zed_email',
     inboxId,
     email,
     displayName: displayName || null,
@@ -513,11 +513,11 @@ export interface SlackOauthInstallInput {
   teamName: string | null;
 }
 
-// Universal Kortix Slack App install. Records this project's membership of the
+// Universal Zed Slack App install. Records this project's membership of the
 // workspace, then fans the bot token + workspace metadata out to every project
 // on the workspace — Slack issues one token per (app, workspace) and a re-auth
 // rotates it, so all sharing projects must be kept current. The signing secret
-// is the master Kortix one and stays server-side; it is never persisted here.
+// is the master Zed one and stays server-side; it is never persisted here.
 export async function saveSlackOauthInstall(
   input: SlackOauthInstallInput,
 ): Promise<SlackInstallSummary> {

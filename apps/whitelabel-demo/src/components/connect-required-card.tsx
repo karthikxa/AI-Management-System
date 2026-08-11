@@ -28,7 +28,7 @@ import {
   type RequiredConnector,
   connectorRemedy,
 } from '@/lib/connector-required';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { useMutation } from '@tanstack/react-query';
 import { ExternalLink, Link2, Plug } from 'lucide-react';
 
@@ -110,7 +110,7 @@ function ConnectorRemedyBlock({
   // the refusal is shown verbatim instead of being swallowed into "try again".
   const mint = useMutation({
     mutationFn: () =>
-      kortix
+      zed
         .project(projectId)
         .setupLinks.requestConnector({ slug: connector.alias }),
   });

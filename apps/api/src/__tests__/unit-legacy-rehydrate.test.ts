@@ -99,7 +99,7 @@ describe('buildRestoreScript', () => {
 
   test('resolves the store for both snapshot layouts', () => {
     const script = buildRestoreScript();
-    expect(script).toContain('/home/kortix/.local/share/opencode');
-    expect(script).toContain('/opt/kortix/home/.local/share/opencode');
+    expect(script).toContain('/home/zed/.local/share/opencode');
+    expect(script).toContain('/opt/zed/home/.local/share/opencode');
   });
 });

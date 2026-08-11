@@ -2,7 +2,7 @@
  * Unit tests for the tunnel auth tiers (apps/api/src/tunnel/routes/auth.ts).
  *
  * Locks the regression that killed the cloud agent: the sandbox authenticates
- * with an `apiKey` (KORTIX_TOKEN), so it MUST be able to READ connections + RPC
+ * with an `apiKey` (ZED_TOKEN), so it MUST be able to READ connections + RPC
  * (getTunnelReadContext), while tunnel MANAGEMENT stays user-credential-only
  * (getTunnelOwnerContext -> requireUserCredential rejects non-human tokens).
  */

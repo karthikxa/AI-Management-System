@@ -805,7 +805,7 @@ export interface IamAuditWebhook {
 
 export interface CreatedAuditWebhook extends IamAuditWebhook {
   /** Plaintext HMAC signing secret — returned ONCE on create. Use it to
-   *  verify the X-Kortix-Signature header in your receiver. */
+   *  verify the X-Zed-Signature header in your receiver. */
   secret: string;
   /** Outcome of the one-shot test delivery fired at creation — lets the UI warn
    *  on an unreachable URL immediately instead of after silent audit-event loss. */

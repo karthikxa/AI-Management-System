@@ -113,7 +113,7 @@ export interface SandboxProviderAdapter {
 
   /**
    * Build the snapshot. The caller has already composed the layered Dockerfile
-   * (user Dockerfile + Kortix runtime). Returns when the snapshot is `active`,
+   * (user Dockerfile + Zed runtime). Returns when the snapshot is `active`,
    * throws on terminal failure. May return the exact external template id the
    * build produced (Platinum); providers with no external-id concept return void.
    */
@@ -162,7 +162,7 @@ export interface SandboxProviderAdapter {
 
   /**
    * Optional agent-only fast path: produce `newSnapshotName` from a predecessor
-   * `sourceSnapshotName` by swapping ONLY the kortix-agent binary (no rebuild).
+   * `sourceSnapshotName` by swapping ONLY the zed-agent binary (no rebuild).
    * Implemented by providers that control the host filesystem (Platinum). Absent
    * on providers without a rootfs handle (Daytona) — callers fall back to build.
    */

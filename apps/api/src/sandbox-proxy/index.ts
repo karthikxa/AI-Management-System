@@ -28,7 +28,7 @@ sandboxProxyApp.route('/share', shareApp);
 sandboxProxyApp.route('/public-share', publicShareApp);
 
 // ── Path-based proxy ────────────────────────────────────────────────────────
-// Auth middleware accepts Supabase JWT, kortix_ tokens, and cookies.
+// Auth middleware accepts Supabase JWT, zed_ tokens, and cookies.
 sandboxProxyApp.use('/:sandboxId/:port/*', combinedAuth);
 sandboxProxyApp.use('/:sandboxId/:port', combinedAuth);
 sandboxProxyApp.use('/:sandboxId/:port/*', createSandboxProxyRateLimitMiddleware());

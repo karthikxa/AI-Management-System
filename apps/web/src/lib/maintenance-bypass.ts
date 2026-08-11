@@ -17,7 +17,7 @@
  * middleware runtime and the Node route handler.
  */
 
-export const MAINTENANCE_BYPASS_COOKIE = 'kortix-maint-bypass';
+export const MAINTENANCE_BYPASS_COOKIE = 'zed-maint-bypass';
 
 /** How long a minted bypass lasts, in seconds (8h — long enough for a rollout). */
 export const MAINTENANCE_BYPASS_TTL_SECONDS = 8 * 60 * 60;
@@ -35,7 +35,7 @@ function bypassSecret(): string {
     process.env.SUPABASE_SERVICE_KEY ||
     // Last-resort dev fallback so local (no service key) still functions; not a
     // real secret, but the lockdown is not a security boundary.
-    'kortix-maintenance-bypass-dev-secret'
+    'zed-maintenance-bypass-dev-secret'
   );
 }
 

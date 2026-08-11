@@ -50,7 +50,7 @@ set statement_timeout = '30s';
 -- minutes' would be rejected by squawk and is unnecessary — the boot floor
 -- belongs in the trigger, which also repairs a stale value and covers the
 -- provisioning -> active transition.)
-ALTER TABLE "kortix"."session_sandboxes"
+ALTER TABLE "zed"."session_sandboxes"
   ADD COLUMN "active_since" timestamptz DEFAULT now() NOT NULL,
   ADD COLUMN "deadline_at"  timestamptz DEFAULT now() NOT NULL;
 
@@ -59,7 +59,7 @@ ALTER TABLE "kortix"."session_sandboxes"
 -- short enough that the zombie backlog is gone half an hour after deploy. Rows
 -- already stopped/archived keep the bare default and are never kill candidates,
 -- so their value is inert.
-UPDATE "kortix"."session_sandboxes"
+UPDATE "zed"."session_sandboxes"
    SET "deadline_at" = now() + interval '30 minutes'
  WHERE "status" IN ('active', 'provisioning');
 
@@ -112,7 +112,7 @@ UPDATE "kortix"."session_sandboxes"
 --      un-resumable — it is the one case where I2's witness requirement and I3's
 --      cap clamp combined into a deadline in the past, which refused the user's
 --      first prompt on the entire back catalogue of parked sessions.
-CREATE OR REPLACE FUNCTION "kortix"."session_sandboxes_anchor_guard"()
+CREATE OR REPLACE FUNCTION "zed"."session_sandboxes_anchor_guard"()
 RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
   -- True when the trigger (not the caller) raised deadline_at, and must
@@ -232,10 +232,10 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS "trg_session_sandboxes_anchor_guard" ON "kortix"."session_sandboxes";
+DROP TRIGGER IF EXISTS "trg_session_sandboxes_anchor_guard" ON "zed"."session_sandboxes";
 CREATE TRIGGER "trg_session_sandboxes_anchor_guard"
-BEFORE INSERT OR UPDATE ON "kortix"."session_sandboxes"
-FOR EACH ROW EXECUTE FUNCTION "kortix"."session_sandboxes_anchor_guard"();
+BEFORE INSERT OR UPDATE ON "zed"."session_sandboxes"
+FOR EACH ROW EXECUTE FUNCTION "zed"."session_sandboxes_anchor_guard"();
 
 -- (4) The ceiling. NOT VALID so this migration takes no long ACCESS EXCLUSIVE
 -- scan; it is enforced on every new write immediately, which is what matters.
@@ -244,11 +244,11 @@ FOR EACH ROW EXECUTE FUNCTION "kortix"."session_sandboxes_anchor_guard"();
 -- value a caller stated, so this CHECK stays reachable for exactly the class of
 -- future bug it exists to surface: a new writer that computes a deadline past
 -- the cap.
-ALTER TABLE "kortix"."session_sandboxes"
+ALTER TABLE "zed"."session_sandboxes"
   ADD CONSTRAINT "session_sandboxes_deadline_within_cap"
   CHECK ("deadline_at" <= "active_since" + interval '24 hours') NOT VALID;
 
-COMMENT ON COLUMN "kortix"."session_sandboxes"."active_since" IS
-  'Start of this box''s current continuous running stretch. Anchor operand of the 24h cap. Assigned ONLY by kortix.session_sandboxes_anchor_guard(); never movable by application code in any state, and re-anchored only on resume of a park the trigger itself witnessed.';
-COMMENT ON COLUMN "kortix"."session_sandboxes"."deadline_at" IS
+COMMENT ON COLUMN "zed"."session_sandboxes"."active_since" IS
+  'Start of this box''s current continuous running stretch. Anchor operand of the 24h cap. Assigned ONLY by zed.session_sandboxes_anchor_guard(); never movable by application code in any state, and re-anchored only on resume of a park the trigger itself witnessed.';
+COMMENT ON COLUMN "zed"."session_sandboxes"."deadline_at" IS
   'When the control plane stops this box. Single TS writer: apps/api/src/projects/sandbox-deadline.ts. Bounded by deadline_at <= active_since + 24h.';

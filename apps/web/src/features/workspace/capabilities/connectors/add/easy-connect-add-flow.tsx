@@ -1,6 +1,6 @@
 'use client';
 
-import { createConnector, type PipedreamApp } from '@kortix/sdk';
+import { createConnector, type PipedreamApp } from '@zed/sdk';
 import { useMutation } from '@tanstack/react-query';
 
 import { errorToast, successToast, warningToast } from '@/components/ui/toast';

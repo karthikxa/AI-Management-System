@@ -1,4 +1,4 @@
-import { hydrateEnvironmentSecret } from '@kortix/shared';
+import { hydrateEnvironmentSecret } from '@zed/shared';
 
 hydrateEnvironmentSecret();
 
@@ -29,7 +29,7 @@ function requiredApiToken(): string {
 
 export const config = {
   port: optionalInt('PORT', 8090),
-  apiUrl: required('KORTIX_API_URL'),
+  apiUrl: required('ZED_API_URL'),
   apiToken: requiredApiToken(),
   langfuse: {
     publicKey: process.env.LANGFUSE_PUBLIC_KEY,

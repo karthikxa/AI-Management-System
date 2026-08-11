@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { Catalog } from '@kortix/llm-catalog';
+import type { Catalog } from '@zed/llm-catalog';
 import { createRuntimeModelCatalog } from './runtime-catalog';
 
 const seed: Catalog = {

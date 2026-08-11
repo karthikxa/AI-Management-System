@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 
 import { confirmsUninstall, uninstallComposeArgs } from '../../commands/self-host.ts';
 
-// `kortix self-host uninstall` — pure-helper + arg-gating coverage only.
+// `zed self-host uninstall` — pure-helper + arg-gating coverage only.
 // Deliberately does NOT exercise the real teardown path (which shells out to
 // `docker compose down --volumes --remove-orphans`): the two scenarios below
 // (no config yet / non-interactive without --yes) both return before ever
@@ -26,13 +26,13 @@ describe('uninstall pure helpers', () => {
   });
 });
 
-describe('kortix self-host uninstall (CLI arg gating — no Docker invoked)', () => {
+describe('zed self-host uninstall (CLI arg gating — no Docker invoked)', () => {
   let tmp: string;
   let configRoot: string;
   const CLI_ENTRY = resolve(import.meta.dir, '..', '..', 'index.ts');
 
   beforeEach(() => {
-    tmp = mkdtempSync(join(tmpdir(), 'kortix-self-host-uninstall-'));
+    tmp = mkdtempSync(join(tmpdir(), 'zed-self-host-uninstall-'));
     configRoot = join(tmp, 'self-host');
   });
 
@@ -44,9 +44,9 @@ describe('kortix self-host uninstall (CLI arg gating — no Docker invoked)', ()
       cwd: tmp,
       env: {
         ...process.env,
-        KORTIX_SELF_HOST_CONFIG_DIR: configRoot,
-        KORTIX_CONFIG_FILE: join(tmp, 'cli-config.json'),
-        KORTIX_NO_UPDATE_CHECK: '1',
+        ZED_SELF_HOST_CONFIG_DIR: configRoot,
+        ZED_CONFIG_FILE: join(tmp, 'cli-config.json'),
+        ZED_NO_UPDATE_CHECK: '1',
         NO_COLOR: '1',
         FORCE_COLOR: '0',
       },

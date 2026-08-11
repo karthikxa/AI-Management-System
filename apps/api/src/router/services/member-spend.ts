@@ -1,7 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 
 import { db } from '../../shared/db';
-import { creditAccounts, sandboxMembers, sandboxes } from '@kortix/db';
+import { creditAccounts, sandboxMembers, sandboxes } from '@zed/db';
 
 export interface CapStatus {
   capCents: number | null;

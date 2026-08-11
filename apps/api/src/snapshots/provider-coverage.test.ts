@@ -31,7 +31,7 @@ describe('sandbox template provider coverage', () => {
     const calls: string[] = [];
     const states = { daytona: 'active', platinum: 'building', e2b: 'missing' } as const;
 
-    const result = await observeTemplateProviderCoverage('kortix-default-current', {
+    const result = await observeTemplateProviderCoverage('zed-default-current', {
       isProviderEnabled: () => true,
       getProvider: (provider) => ({
         getSnapshotState: async (snapshotName: string) => {
@@ -43,9 +43,9 @@ describe('sandbox template provider coverage', () => {
     });
 
     expect(calls).toEqual([
-      'daytona:kortix-default-current',
-      'platinum:kortix-default-current',
-      'e2b:kortix-default-current',
+      'daytona:zed-default-current',
+      'platinum:zed-default-current',
+      'e2b:zed-default-current',
     ]);
     expect(result.map(({ provider, status, launch_ready }) => ({ provider, status, launch_ready })))
       .toEqual([

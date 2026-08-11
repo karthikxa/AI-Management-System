@@ -1,19 +1,19 @@
 /**
  * Wrapper-mode route policy — the single explicit table of what an
  * authenticated wrapper end user is allowed to reach through
- * `app/api/kortix/[...path]/route.ts`.
+ * `app/api/zed/[...path]/route.ts`.
  *
  * Deny-by-default. This is deliberately NARROWER than what a project-scoped
- * Kortix PAT can do (`apps/api/src/middleware/auth.ts`'s
+ * Zed PAT can do (`apps/api/src/middleware/auth.ts`'s
  * `enforceTokenProjectScope`) — that gate protects ONE project's token from
- * reaching other projects; this one protects an entire Kortix ACCOUNT (the
- * operator's, behind `KORTIX_API_KEY`) from an unbounded number of wrapper end
+ * reaching other projects; this one protects an entire Zed ACCOUNT (the
+ * operator's, behind `ZED_API_KEY`) from an unbounded number of wrapper end
  * users, so it also blocks account-admin surfaces (members, invites, billing,
  * GitHub App installs, platform/admin) outright — those are the operator's to
- * manage from their own Kortix dashboard, never delegated to end users.
+ * manage from their own Zed dashboard, never delegated to end users.
  *
- * Every rule below is derived from which `@kortix/sdk` calls this app's own
- * UI actually makes (`grep -rn 'kortix\.' src` in `apps/whitelabel-demo`) —
+ * Every rule below is derived from which `@zed/sdk` calls this app's own
+ * UI actually makes (`grep -rn 'zed\.' src` in `apps/whitelabel-demo`) —
  * see the per-rule comments for the reasoning, not just the shape.
  */
 

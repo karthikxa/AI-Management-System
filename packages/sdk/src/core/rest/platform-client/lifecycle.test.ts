@@ -1,6 +1,6 @@
 import { test, expect, beforeEach, mock } from 'bun:test';
-import { configureKortix } from '../../http/config';
-import type { KortixProject, ProjectSession, ProjectSessionSandbox, SessionStartResult } from '../projects-client';
+import { configureZed } from '../../http/config';
+import type { ZedProject, ProjectSession, ProjectSessionSandbox, SessionStartResult } from '../projects-client';
 import {
   getProviders,
   ensureSandbox,
@@ -33,7 +33,7 @@ let handler: (url: string, method: string, body: unknown) => { status: number; b
 
 beforeEach(() => {
   delete process.env.BACKEND_URL;
-  configureKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok' });
   calls = [];
   handler = () => ({ status: 200, body: {} });
   globalThis.fetch = mock(async (url: unknown, opts: RequestInit = {}) => {
@@ -52,13 +52,13 @@ const callsMatching = (re: RegExp) => calls.filter((c) => re.test(c.url));
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
-const project1: KortixProject = {
+const project1: ZedProject = {
   project_id: 'proj-1',
   account_id: 'acc-1',
   name: 'Project One',
   repo_url: 'https://github.com/acme/one',
   default_branch: 'main',
-  manifest_path: 'kortix.yaml',
+  manifest_path: 'zed.yaml',
   status: 'active',
   metadata: {},
   last_opened_at: null,
@@ -66,7 +66,7 @@ const project1: KortixProject = {
   updated_at: '2026-01-01T00:00:00Z',
 };
 
-const project2: KortixProject = {
+const project2: ZedProject = {
   ...project1,
   project_id: 'proj-2',
   name: 'Project Two',

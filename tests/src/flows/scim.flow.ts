@@ -135,7 +135,7 @@ flow(
     await ctx.step('list Users with userName filter → ListResponse', async () => {
       const r = await scim.get('/scim/v2/accounts/:accountId/Users', {
         params: { accountId: team.id },
-        query: { filter: 'userName eq "nobody@ke2e.kortix.test"' },
+        query: { filter: 'userName eq "nobody@ke2e.zed.test"' },
       });
       r.status(200).body().has('$.totalResults', 0);
     });
@@ -150,7 +150,7 @@ flow(
     });
 
     await ctx.step('POST Users for an unknown email → 201 invite, active:true', async () => {
-      const userName = `${ctx.fixtures.name('scim-user')}@ke2e.kortix.test`;
+      const userName = `${ctx.fixtures.name('scim-user')}@ke2e.zed.test`;
       const r = await scim.post(
         '/scim/v2/accounts/:accountId/Users',
         { userName, externalId: 'ext-ke2e-1' },
@@ -203,7 +203,7 @@ flow(
           '/scim/v2/accounts/:accountId/Users/:userId',
           {
             schemas: ['urn:ietf:params:scim:schemas:core:2.0:User'],
-            userName: 'x@ke2e.kortix.test',
+            userName: 'x@ke2e.zed.test',
             active: false,
           },
           { params: { accountId: team.id, userId: '00000000-0000-4000-8000-000000000000' } },
@@ -371,7 +371,7 @@ flow(
 
     await ctx.step('garbage bearer → 401', async () => {
       const r = await ctx.client
-        .withBearer('kortix_scim_totally-bogus-token', 'BOGUS')
+        .withBearer('zed_scim_totally-bogus-token', 'BOGUS')
         .get('/scim/v2/accounts/:accountId/ServiceProviderConfig', {
           params: { accountId: teamA.id },
         });
@@ -441,7 +441,7 @@ flow(
     await ctx.step(
       'POST Users for an unknown email → 201 invite (create the real user to PUT)',
       async () => {
-        const userName = `${ctx.fixtures.name('scim-put-user')}@ke2e.kortix.test`;
+        const userName = `${ctx.fixtures.name('scim-put-user')}@ke2e.zed.test`;
         const r = await scim.post(
           '/scim/v2/accounts/:accountId/Users',
           { userName, externalId: 'ext-ke2e-put-1' },
@@ -459,7 +459,7 @@ flow(
           '/scim/v2/accounts/:accountId/Users/:userId',
           {
             schemas: ['urn:ietf:params:scim:schemas:core:2.0:User'],
-            userName: 'ke2e-put-replaced@ke2e.kortix.test',
+            userName: 'ke2e-put-replaced@ke2e.zed.test',
             active: false,
           },
           { params: { accountId: team.id, userId } },

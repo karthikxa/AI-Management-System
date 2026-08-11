@@ -7,7 +7,7 @@
  */
 import { describe, expect, test, afterAll } from 'bun:test';
 import { eq } from 'drizzle-orm';
-import { voiceCallTurns, voiceJoinLinks } from '@kortix/db';
+import { voiceCallTurns, voiceJoinLinks } from '@zed/db';
 import { db } from '../shared/db';
 import { looksLikeJoinLinkToken, mintJoinLink, resolveJoinLink, revokeJoinLinksForCall } from '../channels/voice/join-links';
 import { voiceJoinPublicApp } from '../channels/voice/public-join-routes';
@@ -135,7 +135,7 @@ describe('looksLikeJoinLinkToken', () => {
  *
  * Two things on trial, and the second is the one that bites:
  *
- *  1. The WHOLE record comes back, `speaker` included. The Kortix agent's own
+ *  1. The WHOLE record comes back, `speaker` included. The Zed agent's own
  *     lines and the voice's own speech are both `role: 'agent'`, so `speaker`
  *     is the only thing that tells them apart, and a tool call is meaningless
  *     without the tool's name. Dropping that column is exactly what left the
@@ -170,29 +170,29 @@ describe('GET /public/voice-join/:token/transcript', () => {
     return { status: res.status, body: text ? JSON.parse(text) : null };
   }
 
-  test('returns every kind of turn — both voices, the Kortix agent, and the tool calls', async () => {
+  test('returns every kind of turn — both voices, the Zed agent, and the tool calls', async () => {
     const id = callId();
     const projectId = crypto.randomUUID();
     const { token } = await mintJoinLink({ callId: id, projectId });
     await seedTurns(id, projectId, [
       { role: 'user', speaker: null, text: 'is the deploy done?' },
-      { role: 'tool', speaker: 'ask_kortix', text: 'ask_kortix: is the deploy done?' },
+      { role: 'tool', speaker: 'ask_zed', text: 'ask_zed: is the deploy done?' },
       { role: 'tool', speaker: 'run_command', text: 'run_command: git log -1 → ok' },
-      { role: 'agent', speaker: 'kortix', text: 'The deploy finished.' },
-      { role: 'agent', speaker: 'Kortix Voice', text: 'Yep, it just finished!' },
+      { role: 'agent', speaker: 'zed', text: 'The deploy finished.' },
+      { role: 'agent', speaker: 'Zed Voice', text: 'Yep, it just finished!' },
     ]);
 
     const { status, body } = await get(`/${token}/transcript`);
     expect(status).toBe(200);
     expect(body.call_id).toBe(id);
-    // `speaker` is load-bearing: without it the Kortix agent's line and the
+    // `speaker` is load-bearing: without it the Zed agent's line and the
     // voice's line are both just "agent", and a tool row has no tool.
     expect(body.turns.map((t: any) => [t.role, t.speaker, t.text])).toEqual([
       ['user', null, 'is the deploy done?'],
-      ['tool', 'ask_kortix', 'ask_kortix: is the deploy done?'],
+      ['tool', 'ask_zed', 'ask_zed: is the deploy done?'],
       ['tool', 'run_command', 'run_command: git log -1 → ok'],
-      ['agent', 'kortix', 'The deploy finished.'],
-      ['agent', 'Kortix Voice', 'Yep, it just finished!'],
+      ['agent', 'zed', 'The deploy finished.'],
+      ['agent', 'Zed Voice', 'Yep, it just finished!'],
     ]);
   });
 
@@ -202,7 +202,7 @@ describe('GET /public/voice-join/:token/transcript', () => {
     const { token } = await mintJoinLink({ callId: id, projectId });
     await seedTurns(id, projectId, [
       { role: 'user', speaker: null, text: 'first' },
-      { role: 'agent', speaker: 'kortix', text: 'second' },
+      { role: 'agent', speaker: 'zed', text: 'second' },
     ]);
 
     const first = await get(`/${token}/transcript`);
@@ -212,7 +212,7 @@ describe('GET /public/voice-join/:token/transcript', () => {
     expect(idle.body.turns).toEqual([]);
     expect(idle.body.cursor).toBe(first.body.cursor);
 
-    await seedTurns(id, projectId, [{ role: 'agent', speaker: 'Kortix Voice', text: 'third' }]);
+    await seedTurns(id, projectId, [{ role: 'agent', speaker: 'Zed Voice', text: 'third' }]);
     const next = await get(`/${token}/transcript?cursor=${first.body.cursor}`);
     expect(next.body.turns.map((t: any) => t.text)).toEqual(['third']);
     expect(next.body.cursor).toBeGreaterThan(first.body.cursor);

@@ -47,7 +47,7 @@ const accts = await api('GET', '/accounts');
 const accountId = Array.isArray(accts.json) ? (accts.json.find((a: any) => a.personal_account)?.account_id ?? accts.json[0]?.account_id) : null;
 if (!accountId) err('no account');
 {
-  const sql = `INSERT INTO kortix.credit_accounts (account_id, balance, tier) VALUES ('${accountId}', 1000, 'free') ON CONFLICT (account_id) DO UPDATE SET balance = 1000;`;
+  const sql = `INSERT INTO zed.credit_accounts (account_id, balance, tier) VALUES ('${accountId}', 1000, 'free') ON CONFLICT (account_id) DO UPDATE SET balance = 1000;`;
   const p = Bun.spawn(['psql', DB_URL, '-v', 'ON_ERROR_STOP=1', '-c', sql], { stdout: 'ignore', stderr: 'pipe' });
   if (await p.exited !== 0) err('credit seed failed: ' + (await new Response(p.stderr).text()).slice(0, 200));
 }

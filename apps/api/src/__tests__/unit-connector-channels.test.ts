@@ -90,7 +90,7 @@ describe('channelCatalog(slack)', () => {
 
   test('default slack channel slug is platform-owned, not the user connector namespace', () => {
     expect(channelDefaultSlug('slack')).toBe(SLACK_CHANNEL_CONNECTOR_SLUG);
-    expect(SLACK_CHANNEL_CONNECTOR_SLUG).toBe('kortix_slack');
+    expect(SLACK_CHANNEL_CONNECTOR_SLUG).toBe('zed_slack');
   });
 });
 
@@ -167,7 +167,7 @@ describe('channelCatalog(email)', () => {
   test('api base + default slug', () => {
     expect(channelApiBase('email')).toBe('https://api.agentmail.to/v0');
     expect(channelDefaultSlug('email')).toBe(EMAIL_CHANNEL_CONNECTOR_SLUG);
-    expect(EMAIL_CHANNEL_CONNECTOR_SLUG).toBe('kortix_email');
+    expect(EMAIL_CHANNEL_CONNECTOR_SLUG).toBe('zed_email');
   });
 });
 
@@ -177,7 +177,7 @@ describe('channelCatalog(voice)', () => {
   const action = (path: string) => expectDefined(byPath.get(path));
 
   test('exposes the full both-directions surface, not just spawning', () => {
-    // The Kortix agent drives a call from the INSIDE through this connector, so
+    // The Zed agent drives a call from the INSIDE through this connector, so
     // spawning alone is useless: it also has to hear the room (read_transcript)
     // and answer it (send_prompt). Those two living somewhere else is exactly
     // how an agent ended up able to start a call it could not then talk to.
@@ -271,14 +271,14 @@ describe('channelCatalog(voice)', () => {
 
   test('reserved voice channel slug', () => {
     expect(channelDefaultSlug('voice')).toBe(VOICE_CHANNEL_CONNECTOR_SLUG);
-    expect(VOICE_CHANNEL_CONNECTOR_SLUG).toBe('kortix_voice');
+    expect(VOICE_CHANNEL_CONNECTOR_SLUG).toBe('zed_voice');
   });
 });
 
 /* ─── parse ───────────────────────────────────────────────────────────────── */
 
 function parse(body: string) {
-  const src = [`kortix_version = ${KNOWN_SCHEMA_VERSION}`, '\n[project]\nname = "t"\n', body].join(
+  const src = [`zed_version = ${KNOWN_SCHEMA_VERSION}`, '\n[project]\nname = "t"\n', body].join(
     '\n',
   );
   return extractConnectors(parseManifestString(src));
@@ -303,13 +303,13 @@ platform = "slack"
   test('email platform parses + round-trips through TOML', () => {
     const { specs, errors } = parse(`
 [[connectors]]
-slug = "kortix_email"
+slug = "zed_email"
 provider = "channel"
 platform = "email"
 `);
     expect(errors).toEqual([]);
     expect(specs[0]).toMatchObject({
-      slug: 'kortix_email',
+      slug: 'zed_email',
       provider: 'channel',
       platform: 'email',
     });
@@ -669,7 +669,7 @@ describe('handleCall — channel (email)', () => {
       resolveCredential: async () => 'am_project_token',
       loadPolicies: async () => [],
       loadProjectPolicies: async () => [
-        { match: 'kortix_email.reply_message', action: 'require_approval', position: 0 },
+        { match: 'zed_email.reply_message', action: 'require_approval', position: 0 },
       ],
       loadDefaultMode: async () => 'allow_all',
       enforcePolicies: true,
@@ -705,7 +705,7 @@ describe('handleCall — channel (email)', () => {
     expect(claimCount).toBe(0);
   });
 
-  test('legacy connector="email" calls use kortix_email and build AgentMail requests', async () => {
+  test('legacy connector="email" calls use zed_email and build AgentMail requests', async () => {
     const fetchCalls: Array<{
       url: string;
       method: string;

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 import { runWithContext } from '../lib/request-context';
 
 mock.module('../config', () => ({
-  KORTIX_MARKUP: 1.2,
+  ZED_MARKUP: 1.2,
   config: {
     TAVILY_API_KEY: 'tvly-test',
     TAVILY_API_URL: 'https://api.tavily.test',
@@ -10,7 +10,7 @@ mock.module('../config', () => ({
     SERPER_API_URL: 'https://google.serper.test',
     OPENROUTER_API_KEY: 'openrouter-test',
     OPENROUTER_API_URL: 'https://openrouter.test/api/v1',
-    FRONTEND_URL: 'https://kortix.test',
+    FRONTEND_URL: 'https://zed.test',
   },
 }));
 
@@ -65,8 +65,8 @@ describe('router provider trace propagation', () => {
       'POST',
       '/v1/router/web-search',
       async () => {
-        await webSearchTavily('kortix', 2);
-        await imageSearchSerper('kortix', 2);
+        await webSearchTavily('zed', 2);
+        await imageSearchSerper('zed', 2);
       },
       '00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01',
     );

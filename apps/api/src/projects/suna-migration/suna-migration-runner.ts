@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
-import { sunaAccountMigrations, type Database } from '@kortix/db';
+import { sunaAccountMigrations, type Database } from '@zed/db';
 import { logger as appLogger } from '../../lib/logger';
 import { extractStep, repoStep, pushStep, dbStep } from './suna-migration-phases';
 

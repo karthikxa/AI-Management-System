@@ -6,7 +6,7 @@
  *  - /v1/git/:project/* is the smart-HTTP proxy. It does its OWN token auth (git
  *    Basic/Bearer, NOT the user JWT). It resolves the project FIRST, so an
  *    unknown project → 404 even unauthenticated; a missing/garbage token on a
- *    real project → 401; a Kortix token for a *different* tenant → 403; a valid
+ *    real project → 401; a Zed token for a *different* tenant → 403; a valid
  *    owning token reaches `resolveProjectUpstream`, which in local dev (no real
  *    managed upstream) typically 502s. We assert permissive sets accordingly.
  *  - /v1/projects/* is behind `supabaseAuth` (ANON → 401).
@@ -67,9 +67,9 @@ flow(
   { domain: "git", routes: ["GET /v1/git/:project/info/refs"] },
   async (ctx) => {
     const p = await ctx.fixtures.sharedProject();
-    await ctx.step("a JWT bearer is not a Kortix git token → 401", async () => {
+    await ctx.step("a JWT bearer is not a Zed git token → 401", async () => {
       // The user's Supabase JWT is forwarded as Bearer but rejected by the proxy
-      // auth (only Kortix PAT / API key / sandbox tokens are accepted).
+      // auth (only Zed PAT / API key / sandbox tokens are accepted).
       const r = await ctx.client
         .as(ctx.P.OWNER)
         .get("/v1/git/:project/info/refs", { params: { project: p.id }, query: { service: "git-upload-pack" } });
@@ -98,7 +98,7 @@ flow(
       r.status(401);
     });
     await ctx.step("missing token (server-managed already) → 400/409", async () => {
-      // A managed project 409s ("already managed by Kortix"); a generic project
+      // A managed project 409s ("already managed by Zed"); a generic project
       // with no token in the body 400s ("token is required").
       const r = await ctx.client
         .as(ctx.P.OWNER)

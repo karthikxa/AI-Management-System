@@ -41,7 +41,7 @@ interface ActionCatalogEntry {
   resource_type: string;
 }
 
-const HELP = help`Usage: kortix roles <subcommand> [options]
+const HELP = help`Usage: zed roles <subcommand> [options]
 
 Manage account-level custom roles + their policy assignments — the CLI face
 of the dashboard's Roles tab and a project's "Custom roles" card. Built-in
@@ -86,14 +86,14 @@ Options:
   -h, --help         Show this help.
 
 Examples:
-  kortix roles ls
-  kortix roles actions
-  kortix roles create support_agent --name "Support Agent" \\
+  zed roles ls
+  zed roles actions
+  zed roles create support_agent --name "Support Agent" \\
     --scope project --actions project.read,project.session.start,project.trigger.fire
-  kortix roles assign support_agent --to member:<user-id> --project <project-id>
-  kortix roles assignments --project <project-id>
-  kortix roles export --out policies.toml
-  kortix roles import policies.toml
+  zed roles assign support_agent --to member:<user-id> --project <project-id>
+  zed roles assignments --project <project-id>
+  zed roles export --out policies.toml
+  zed roles import policies.toml
 `;
 
 interface RolesContext {
@@ -105,13 +105,13 @@ interface RolesContext {
 function resolveAccountContext(accountArg?: string): RolesContext | null {
   const auth = loadAuth();
   if (!auth?.token) {
-    process.stderr.write(`${status.err('Not logged in. Run `kortix login`.')}\n`);
+    process.stderr.write(`${status.err('Not logged in. Run `zed login`.')}\n`);
     return null;
   }
   const accountId = accountArg || activeAccount()?.id || auth.account_id || '';
   if (!accountId) {
     process.stderr.write(
-      `${status.err('No active account. Run `kortix accounts use` or pass --account <id>.')}\n`,
+      `${status.err('No active account. Run `zed accounts use` or pass --account <id>.')}\n`,
     );
     return null;
   }
@@ -329,7 +329,7 @@ export async function runRoles(argv: string[]): Promise<number> {
 
       case 'unassign': {
         const policyId = positional[0];
-        if (!policyId) return missing('a policy id (see `kortix roles assignments`)');
+        if (!policyId) return missing('a policy id (see `zed roles assignments`)');
         await ctx.client.delete(`${base}/policies/${encodeURIComponent(policyId)}`);
         process.stdout.write(`${status.ok(`Removed assignment ${C.bold}${policyId}${C.reset}`)}\n`);
         return 0;
@@ -460,6 +460,6 @@ function missing(what: string): number {
 }
 
 function notFound(what: string): number {
-  process.stderr.write(`${status.err(`No ${what} in this account. Try \`kortix roles ls\`.`)}\n`);
+  process.stderr.write(`${status.err(`No ${what} in this account. Try \`zed roles ls\`.`)}\n`);
   return 1;
 }

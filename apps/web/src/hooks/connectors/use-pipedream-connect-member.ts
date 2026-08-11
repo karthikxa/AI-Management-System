@@ -8,7 +8,7 @@ import {
   pipedreamConnectConnection,
   pipedreamFinalizeConnection,
   reconcileMemberConnection,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 const PIPEDREAM_IFRAME_SELECTOR = 'iframe[id^="pipedream-connect-iframe-"]';
 

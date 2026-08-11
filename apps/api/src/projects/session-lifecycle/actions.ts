@@ -3,8 +3,8 @@ import { config, type SandboxProviderName } from '../../config';
 import { logger } from '../../lib/logger';
 import { getProvider } from '../../platform/providers';
 import { db } from '../../shared/db';
-import { projectSessions, sessionSandboxes } from '@kortix/db';
-import { isMetaAgentName } from '@kortix/shared';
+import { projectSessions, sessionSandboxes } from '@zed/db';
+import { isMetaAgentName } from '@zed/shared';
 import { and, eq } from 'drizzle-orm';
 import { revokeSessionConnectorTokens } from '../../repositories/account-tokens';
 import { legacyRehydrateSpec, rehydrateSessionChat } from '../legacy-migration-rehydrate';
@@ -173,7 +173,7 @@ export async function restartSession(input: {
     if (restartUnreachable) {
       return {
         status: 503,
-        body: { error: restartUnreachable, code: 'KORTIX_URL_UNREACHABLE' },
+        body: { error: restartUnreachable, code: 'ZED_URL_UNREACHABLE' },
       };
     }
   }
@@ -234,7 +234,7 @@ export async function restartSession(input: {
           manifestPath: loaded.row.manifestPath,
           llmGatewayEnabled: projectLlmGatewayEnabled(loaded.row.metadata),
           // A restarted meta coordinator must keep its meta runtime: without
-          // this the rebuilt env loses KORTIX_PROJECT_AUTO_CLONE=0 and the
+          // this the rebuilt env loses ZED_PROJECT_AUTO_CLONE=0 and the
           // meta agent config, so the daemon clones the project over the meta
           // workspace and wipes /workspace/AGENTS.md.
           platformMetaAgent: isMetaAgentName(session.agentName ?? ''),

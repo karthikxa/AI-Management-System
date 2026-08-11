@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { UnifiedMarkdown } from '@/components/markdown/unified-markdown';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -48,7 +48,7 @@ import {
   type PublicSessionShareMeta,
   type PublicSessionTranscript,
   type PublicSessionTranscriptMessage,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import {
   describeShareError,
   toShareLoadError,
@@ -112,7 +112,7 @@ export function ShareViewer({ shareId }: { shareId: string }) {
     return (
       <div className="bg-background flex h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <KortixLoader size="medium" />
+          <ZedLoader size="medium" />
           <p className="text-muted-foreground text-sm">
             {tHardcodedUi.raw(
               'appShareShareidComponentsShareviewer.line147JsxTextLoadingSharedSession',
@@ -262,12 +262,12 @@ function UserBubble({ text }: { text: string }) {
 function AssistantBlock({ text }: { text: string }) {
   return (
     <div className="flex flex-col gap-2">
-      {/* Agent header — Kortix logomark (matches Suna AgentHeader for name="Kortix") */}
+      {/* Agent header — Zed logomark (matches Suna AgentHeader for name="Zed") */}
       <div className="flex items-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/kortix-logomark-white.svg"
-          alt="Kortix"
+          src="/zed-logomark-white.svg"
+          alt="Zed"
           className="flex-shrink-0 invert dark:invert-0"
           style={{ height: '12px', width: 'auto' }}
         />

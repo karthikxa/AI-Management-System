@@ -28,7 +28,7 @@ export function printBanner(): void {
   const lines: string[] = ['', ''];
   for (const row of ART) lines.push(`${CYAN}${row}${RESET}`);
   lines.push('');
-  lines.push(`   ${WHITE}${TAGLINE}${RESET}   ${FADED}·  configure your Kortix project${RESET}`);
+  lines.push(`   ${WHITE}${TAGLINE}${RESET}   ${FADED}·  configure your Zed project${RESET}`);
   lines.push('');
   process.stdout.write(colorize(lines.join('\n')) + '\n');
 }
@@ -106,7 +106,7 @@ export function printGetStarted({ prompt }: GetStartedInput): void {
   lines.push(
     boxLine(`${DIM}Paste this prompt into your ${RESET}${BOLD}coding agent of choice${RESET}`),
   );
-  lines.push(boxLine(`${DIM}to configure your Kortix project:${RESET}`));
+  lines.push(boxLine(`${DIM}to configure your Zed project:${RESET}`));
   lines.push(boxLine(''));
 
   const innerInsetWidth = BOX_WIDTH - 4;
@@ -115,7 +115,7 @@ export function printGetStarted({ prompt }: GetStartedInput): void {
 
   lines.push(boxLine(''));
   lines.push(
-    boxLine(`${DIM}When you're ready, take it live:${RESET}  ${CYAN}kortix ship${RESET}`),
+    boxLine(`${DIM}When you're ready, take it live:${RESET}  ${CYAN}zed ship${RESET}`),
   );
   lines.push(
     boxLine(`${DIM}links your GitHub repo (1-click) + sets your env — no web UI${RESET}`),

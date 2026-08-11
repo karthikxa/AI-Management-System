@@ -58,7 +58,7 @@ export const useBrowserRecentsStore = create<BrowserRecentsState>()(
       clearRecents: () => set({ recents: [] }),
     }),
     {
-      name: 'kortix-browser-recents',
+      name: 'zed-browser-recents',
       storage: createSafeJSONStorage(),
     },
   ),

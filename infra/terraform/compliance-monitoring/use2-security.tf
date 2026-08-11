@@ -10,7 +10,7 @@ data "aws_vpc" "use2" {
   provider = aws.use2
 
   tags = {
-    Name = "kortix-prod-use2-vpc"
+    Name = "zed-prod-use2-vpc"
   }
 }
 
@@ -95,13 +95,13 @@ resource "aws_kms_key" "use2_alerts" {
 
 resource "aws_kms_alias" "use2_alerts" {
   provider      = aws.use2
-  name          = "alias/kortix-compliance-alerts"
+  name          = "alias/zed-compliance-alerts"
   target_key_id = aws_kms_key.use2_alerts.key_id
 }
 
 resource "aws_sns_topic" "use2_alerts" {
   provider          = aws.use2
-  name              = "kortix-compliance-alerts"
+  name              = "zed-compliance-alerts"
   kms_master_key_id = aws_kms_key.use2_alerts.arn
   tags              = local.tags
 }
@@ -147,7 +147,7 @@ data "aws_iam_policy_document" "use2_alerts" {
     condition {
       test     = "ArnLike"
       variable = "aws:SourceArn"
-      values   = ["arn:aws:events:us-east-2:${local.account_id}:rule/kortix-*failures"]
+      values   = ["arn:aws:events:us-east-2:${local.account_id}:rule/zed-*failures"]
     }
   }
 
@@ -177,8 +177,8 @@ resource "aws_sns_topic_policy" "use2_alerts" {
 
 resource "aws_wafv2_web_acl" "use2" {
   provider    = aws.use2
-  name        = "kortix-alb-waf"
-  description = "Regional WAF for Kortix production ALBs"
+  name        = "zed-alb-waf"
+  description = "Regional WAF for Zed production ALBs"
   scope       = "REGIONAL"
 
   default_action {
@@ -274,7 +274,7 @@ resource "aws_wafv2_web_acl" "use2" {
 
   visibility_config {
     cloudwatch_metrics_enabled = true
-    metric_name                = "kortix-alb-waf"
+    metric_name                = "zed-alb-waf"
     sampled_requests_enabled   = true
   }
 
@@ -335,13 +335,13 @@ resource "aws_kms_key" "use2_logs" {
 
 resource "aws_kms_alias" "use2_logs" {
   provider      = aws.use2
-  name          = "alias/kortix-compliance-logs"
+  name          = "alias/zed-compliance-logs"
   target_key_id = aws_kms_key.use2_logs.key_id
 }
 
 resource "aws_cloudwatch_log_group" "use2_waf" {
   provider          = aws.use2
-  name              = "aws-waf-logs-kortix-alb-waf"
+  name              = "aws-waf-logs-zed-alb-waf"
   retention_in_days = 365
   kms_key_id        = aws_kms_key.use2_logs.arn
   tags              = local.tags
@@ -356,7 +356,7 @@ resource "aws_wafv2_web_acl_logging_configuration" "use2" {
 resource "aws_cloudwatch_metric_alarm" "use2_target_response_time" {
   provider            = aws.use2
   for_each            = local.use2_albs
-  alarm_name          = "kortix-alb-${each.value.name}-target-response-time"
+  alarm_name          = "zed-alb-${each.value.name}-target-response-time"
   alarm_description   = "SOC2 DCF-86: ALB target response time is elevated"
   namespace           = "AWS/ApplicationELB"
   metric_name         = "TargetResponseTime"
@@ -375,7 +375,7 @@ resource "aws_cloudwatch_metric_alarm" "use2_target_response_time" {
 resource "aws_cloudwatch_metric_alarm" "use2_elb_5xx" {
   provider            = aws.use2
   for_each            = local.use2_albs
-  alarm_name          = "kortix-alb-${each.value.name}-elb-5xx"
+  alarm_name          = "zed-alb-${each.value.name}-elb-5xx"
   alarm_description   = "SOC2 DCF-86: ALB server errors detected"
   namespace           = "AWS/ApplicationELB"
   metric_name         = "HTTPCode_ELB_5XX_Count"
@@ -394,7 +394,7 @@ resource "aws_cloudwatch_metric_alarm" "use2_elb_5xx" {
 resource "aws_cloudwatch_metric_alarm" "use2_unhealthy_hosts" {
   provider            = aws.use2
   for_each            = local.use2_albs
-  alarm_name          = "kortix-alb-${each.value.name}-unhealthy-hosts"
+  alarm_name          = "zed-alb-${each.value.name}-unhealthy-hosts"
   alarm_description   = "SOC2 DCF-86: ALB has unhealthy targets"
   namespace           = "AWS/ApplicationELB"
   metric_name         = "UnHealthyHostCount"
@@ -414,7 +414,7 @@ resource "aws_cloudwatch_metric_alarm" "use2_unhealthy_hosts" {
 
 resource "aws_cloudwatch_event_rule" "use2_backup_failures" {
   provider      = aws.use2
-  name          = "kortix-backup-job-failures"
+  name          = "zed-backup-job-failures"
   description   = "Alert on failed, aborted, or expired AWS Backup jobs"
   event_pattern = local.backup_failure_pattern
   tags          = merge(local.tags, { Control = "DCF-99" })
@@ -422,7 +422,7 @@ resource "aws_cloudwatch_event_rule" "use2_backup_failures" {
 
 resource "aws_cloudwatch_event_rule" "use2_snapshot_failures" {
   provider      = aws.use2
-  name          = "kortix-ebs-snapshot-failures"
+  name          = "zed-ebs-snapshot-failures"
   description   = "Alert on failed EBS snapshot operations"
   event_pattern = local.snapshot_failure_pattern
   tags          = merge(local.tags, { Control = "DCF-99" })
@@ -452,7 +452,7 @@ resource "aws_default_security_group" "use2" {
   egress  = []
 
   tags = merge(local.tags, {
-    Name = "kortix-prod-use2-default"
+    Name = "zed-prod-use2-default"
   })
 }
 
@@ -542,7 +542,7 @@ resource "aws_network_acl" "use2_restricted" {
   }
 
   tags = merge(local.tags, {
-    Name = "kortix-prod-use2-restricted"
+    Name = "zed-prod-use2-restricted"
   })
 
   lifecycle {
@@ -565,7 +565,7 @@ resource "aws_default_network_acl" "use2" {
   default_network_acl_id = one(data.aws_network_acls.use2_default.ids)
 
   tags = merge(local.tags, {
-    Name = "kortix-prod-use2-default-deny"
+    Name = "zed-prod-use2-default-deny"
   })
 
   lifecycle {

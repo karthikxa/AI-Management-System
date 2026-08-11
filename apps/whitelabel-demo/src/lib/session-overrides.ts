@@ -1,4 +1,4 @@
-import type { CreateProjectSessionInput } from '@kortix/sdk';
+import type { CreateProjectSessionInput } from '@zed/sdk';
 
 /**
  * The overrides a new session can be started with, and the exact create body

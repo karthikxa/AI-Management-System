@@ -16,12 +16,12 @@ services:
     profiles: [frontend, all]
     restart: unless-stopped
 
-  kortix-api:
+  zed-api:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
       args:
-        SERVICE: kortix-api
+        SERVICE: zed-api
     ports:
       - "8008:8008"
     env_file:

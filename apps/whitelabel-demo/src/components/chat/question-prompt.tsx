@@ -13,7 +13,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import type { KortixSendError } from '@kortix/sdk/react';
+import type { ZedSendError } from '@zed/sdk/react';
 import { MessageCircleQuestion, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -61,8 +61,8 @@ export function QuestionPrompt({
       await onAnswer(request.id, answers);
     } catch (err) {
       // `answerQuestion` already classifies its own failure via
-      // `classifySendError` and throws the typed `KortixSendError`.
-      toast.error((err as KortixSendError)?.message || 'Could not send your answer');
+      // `classifySendError` and throws the typed `ZedSendError`.
+      toast.error((err as ZedSendError)?.message || 'Could not send your answer');
       setSending(false);
     }
   }

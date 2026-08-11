@@ -1,5 +1,5 @@
 /**
- * Top-level `policies:` + `policy:` parser for kortix.yaml. Mirrors the
+ * Top-level `policies:` + `policy:` parser for zed.yaml. Mirrors the
  * connectors parser shape — collects bad entries into `errors` instead of
  * throwing — and validates the engine vocabulary (action, default_mode).
  */
@@ -14,9 +14,9 @@ import { KNOWN_SCHEMA_VERSION, parseManifestString } from '../projects/triggers'
 
 function parseFrom(body: string) {
   const m = parseManifestString(
-    `kortix_version: ${KNOWN_SCHEMA_VERSION}\nproject:\n  name: t\n${body}`,
+    `zed_version: ${KNOWN_SCHEMA_VERSION}\nproject:\n  name: t\n${body}`,
     'yaml',
-    'kortix.yaml',
+    'zed.yaml',
   );
   return extractProjectPolicies(m);
 }

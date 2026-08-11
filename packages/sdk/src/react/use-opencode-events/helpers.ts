@@ -92,11 +92,11 @@ export function scheduleProjectMetadataRefetch(queryClient: QueryClient): void {
 
 /**
  * OpenCode title/tree mirroring is owned by API session reads. When OpenCode
- * emits a title/tree change, refetch the active Kortix session reads so tabs
+ * emits a title/tree change, refetch the active Zed session reads so tabs
  * and sidebars pick up the server-side mirror without browser-side writes.
  *
  * `projectId` is the route-scoped project the connected SSE stream belongs to
- * (`useKortixRouteProjectId()` at the `useOpenCodeEventStream` call site) —
+ * (`useZedRouteProjectId()` at the `useOpenCodeEventStream` call site) —
  * required, not optional-and-ignored. Pre-migration this used a BARE,
  * id-less flat `project-sessions` array prefix, which TanStack's default
  * partial-key match treats as "any project's sessions list currently
@@ -116,7 +116,7 @@ export function scheduleProjectMetadataRefetch(queryClient: QueryClient): void {
  * project this event was never about. Outside a project route (`projectId`
  * null) there is nothing to mirror, so this is a no-op.
  */
-export function refetchKortixSessionMirrors(
+export function refetchZedSessionMirrors(
   queryClient: QueryClient,
   projectId: string | null,
 ): void {

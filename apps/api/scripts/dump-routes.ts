@@ -15,14 +15,14 @@
  * The route table is ENV-SENSITIVE — two flags decide whether whole routers
  * mount, so regenerating with the wrong ones silently rewrites the manifest
  * and moves the coverage gate:
- *   KORTIX_BILLING_INTERNAL_ENABLED=true  hides /v1/setup/* (self-host only)
+ *   ZED_BILLING_INTERNAL_ENABLED=true  hides /v1/setup/* (self-host only)
  *   LLM_GATEWAY_ENABLED=true              mounts the in-API /v1/llm/* surface
  * Both must be `true` — that is the managed/cloud deployment the manifest
  * describes. A local .env with billing off adds nine /v1/setup routes and
  * drops seven /v1/llm ones. Regenerate with:
  *
  *   cd apps/api && SUPABASE_URL=https://placeholder.supabase.co \
- *     INTERNAL_KORTIX_ENV=dev KORTIX_BILLING_INTERNAL_ENABLED=true \
+ *     INTERNAL_ZED_ENV=dev ZED_BILLING_INTERNAL_ENABLED=true \
  *     LLM_GATEWAY_ENABLED=true bun scripts/dump-routes.ts
  */
 import { resolve } from "node:path";

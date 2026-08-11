@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { gatewayRequestLogs, projectSessions, projects, sandboxComputeSessions } from '@kortix/db';
+import { gatewayRequestLogs, projectSessions, projects, sandboxComputeSessions } from '@zed/db';
 import { type SQL, sql } from 'drizzle-orm';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import type { ProjectCostRow } from './cost-rollups';
@@ -301,7 +301,7 @@ describe('listCostByProject', () => {
       'groupBy',
     ]);
     expect(renderJoinOn(computeAggregate, 'innerJoin')).toBe(
-      '"kortix"."project_sessions"."session_id" = "kortix"."sandbox_compute_sessions"."session_id"',
+      '"zed"."project_sessions"."session_id" = "zed"."sandbox_compute_sessions"."session_id"',
     );
     expect(computeAggregate?.calls.find((call) => call.method === 'groupBy')?.args).toEqual([
       projectSessions.projectId,
@@ -319,7 +319,7 @@ describe('listCostByProject', () => {
 
     const projectsQuery = queryRecords.find((query) => query.table === projects);
     const where = renderWhere(projectsQuery);
-    expect(where.sql).toBe('"kortix"."projects"."account_id" = $1');
+    expect(where.sql).toBe('"zed"."projects"."account_id" = $1');
     expect(where.params).toEqual([accountId]);
   });
 
@@ -615,7 +615,7 @@ describe('getCostSummary', () => {
     const computeRecord = computeTotalsRecord();
     expect(computeRecord?.calls.map((call) => call.method)).toContain('innerJoin');
     expect(renderJoinOn(computeRecord, 'innerJoin')).toBe(
-      '"kortix"."project_sessions"."session_id" = "kortix"."sandbox_compute_sessions"."session_id"',
+      '"zed"."project_sessions"."session_id" = "zed"."sandbox_compute_sessions"."session_id"',
     );
     const computeWhere = renderWhere(computeRecord);
     expect(computeWhere.sql).toContain('"project_sessions"."project_id" = $');
@@ -687,9 +687,9 @@ describe('getCostSummary', () => {
     // ordering alone leaves it to whatever order Postgres happens to scan
     // rows in, which can flip between refreshes.
     const [spend, provider, model] = renderOrderBy(modelsRecord());
-    expect(spend).toBe('sum("kortix"."gateway_request_logs"."final_cost_precise") desc');
-    expect(provider).toBe('"kortix"."gateway_request_logs"."provider" desc');
-    expect(model).toBe('"kortix"."gateway_request_logs"."resolved_model" desc');
+    expect(spend).toBe('sum("zed"."gateway_request_logs"."final_cost_precise") desc');
+    expect(provider).toBe('"zed"."gateway_request_logs"."provider" desc');
+    expect(model).toBe('"zed"."gateway_request_logs"."resolved_model" desc');
   });
 
   test('the prior window is the equal-length window immediately before the current one', async () => {
@@ -730,7 +730,7 @@ describe('getCostSummary', () => {
     const computeIds = computeProjectIdsRecord();
     expect(computeIds?.calls.map((call) => call.method)).toEqual(['innerJoin', 'where', 'groupBy']);
     expect(renderJoinOn(computeIds, 'innerJoin')).toBe(
-      '"kortix"."project_sessions"."session_id" = "kortix"."sandbox_compute_sessions"."session_id"',
+      '"zed"."project_sessions"."session_id" = "zed"."sandbox_compute_sessions"."session_id"',
     );
   });
 

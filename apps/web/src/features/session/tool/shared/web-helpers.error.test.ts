@@ -5,7 +5,7 @@ import { parseWebSearchOutput } from '@/features/session/tool/shared/web-helpers
 describe('parseWebSearchOutput on failure', () => {
   test('returns no results when the payload is a top-level failure with a query', () => {
     const payload = JSON.stringify({
-      query: 'Kortix AI platform founder CEO',
+      query: 'Zed AI platform founder CEO',
       success: false,
       error: 'Error: An unexpected error occurred while making the request.',
     });
@@ -18,8 +18,8 @@ describe('parseWebSearchOutput on failure', () => {
 
   test('still parses a successful single-query payload', () => {
     const payload = JSON.stringify({
-      query: 'kortix',
-      results: [{ title: 'Kortix', url: 'https://kortix.com' }],
+      query: 'zed',
+      results: [{ title: 'Zed', url: 'https://zed.com' }],
     });
     const parsed = parseWebSearchOutput(payload);
     expect(parsed).toHaveLength(1);

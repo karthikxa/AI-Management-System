@@ -6,7 +6,7 @@
 4. Run the tests and record the expected failures.
 5. Make `accountIsFreeTierForModels()` environment-independent.
 6. Add an LLM billing gate that never holds free-tier wallet credits.
-7. Remove the synthetic model from `@kortix/llm-catalog`.
+7. Remove the synthetic model from `@zed/llm-catalog`.
 8. Remove synthetic model handling from gateway routing and resolution.
 9. Make API default-model responses concrete.
 10. Make the SDK send concrete model keys.

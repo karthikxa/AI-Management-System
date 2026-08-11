@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { pierreDarkCm, pierreLightCm } from '@/lib/codemirror-pierre-theme';
 import { cn } from '@/lib/utils';
@@ -630,7 +630,7 @@ export function CodeEditor({
       case 'saving':
         return (
           <Button variant="ghost" size="sm" disabled className="h-7 gap-1.5 px-2 text-xs">
-            <KortixLoader size="small" />
+            <ZedLoader size="small" />
             <span className="hidden sm:inline">Saving</span>
           </Button>
         );

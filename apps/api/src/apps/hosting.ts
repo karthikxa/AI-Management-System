@@ -86,7 +86,7 @@ export function appControlToken(runtimeId: string, secret: string): string {
   if (!runtimeId) throw new Error('runtimeId is required');
   if (secret.length < 16) throw new Error('App control secret must contain at least 16 characters');
   return createHmac('sha256', secret)
-    .update('kortix-appd-control:v1\0')
+    .update('zed-appd-control:v1\0')
     .update(runtimeId)
     .digest('base64url');
 }
@@ -134,7 +134,7 @@ export class AppHostingProvider {
       workloadType: 'app',
       resourceSpec: input.machine,
       publishedPorts: [APP_CONTROL_PORT, APP_INGRESS_PORT],
-      envVars: { ...input.envVars, KORTIX_APPD_TOKEN: token },
+      envVars: { ...input.envVars, ZED_APPD_TOKEN: token },
     });
     try {
       await provider.ensureAppRuntimeStarted(result.externalId);
@@ -224,7 +224,7 @@ export class AppHostingProvider {
   ): Promise<AppdStatus> {
     const response = await this.controlRequest(provider, externalId, runtimeId, '/v1/status');
     if (!response.ok) {
-      throw new Error(`kortix-appd status returned ${response.status}: ${(await response.text()).slice(0, 300)}`);
+      throw new Error(`zed-appd status returned ${response.status}: ${(await response.text()).slice(0, 300)}`);
     }
     return response.json() as Promise<AppdStatus>;
   }
@@ -247,7 +247,7 @@ export class AppHostingProvider {
       `/v1/logs?${query}`,
     );
     if (!response.ok) {
-      throw new Error(`kortix-appd logs returned ${response.status}: ${(await response.text()).slice(0, 300)}`);
+      throw new Error(`zed-appd logs returned ${response.status}: ${(await response.text()).slice(0, 300)}`);
     }
     return response.json();
   }
@@ -266,13 +266,13 @@ export class AppHostingProvider {
         const status = await this.status(provider, externalId, runtimeId);
         if (status.ready && status.status === 'running') return status;
         if (status.status === 'failed') {
-          throw new Error(`kortix-appd failed${status.last_exit ? `: ${status.last_exit}` : ''}`);
+          throw new Error(`zed-appd failed${status.last_exit ? `: ${status.last_exit}` : ''}`);
         }
         lastError = `status=${status.status} ready=${status.ready}`;
       } catch (error) {
-        if (error instanceof Error && error.message.startsWith('kortix-appd failed')) throw error;
+        if (error instanceof Error && error.message.startsWith('zed-appd failed')) throw error;
         lastError = error instanceof Error ? error.message : String(error);
-        const unauthorized = /kortix-appd status returned (?:401|403):/.test(lastError);
+        const unauthorized = /zed-appd status returned (?:401|403):/.test(lastError);
         if (!unauthorized && Date.now() >= nextRestartAt) {
           nextRestartAt = Date.now() + APPD_RESTART_INTERVAL_MS;
           try {

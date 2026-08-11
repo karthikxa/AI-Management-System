@@ -29,7 +29,7 @@ account, not a customer's.
 2. **Start fresh, every run.** Each firing is a new session with no memory of
    the last one. Resume by reading HubSpot itself: accounts where
    `{{customer_since_property}}` falls inside the last `{{onboarding_window_days}}`
-   days, plus the `kortix_onboarding_last_nudge_milestone` marker that records
+   days, plus the `zed_onboarding_last_nudge_milestone` marker that records
    which milestone a nudge was last drafted for, so the same stall doesn't get
    a duplicate email every day it persists.
 3. **Read milestones and product events from Postgres, read-only.** Pull each
@@ -44,7 +44,7 @@ account, not a customer's.
    draft a nudge email addressed to the customer's specific missed step, held
    in `{{draft_channel}}` for the owning CSM to review, edit, and send.
 6. **Never re-draft the same stall.** Check
-   `kortix_onboarding_last_nudge_milestone` before drafting — only draft a new
+   `zed_onboarding_last_nudge_milestone` before drafting — only draft a new
    nudge when the account has stalled at a *different* milestone than the one
    last nudged, or the marker is missing.
 7. **Alert the owning CSM every time.** Post to `{{alert_channel}}` with the

@@ -143,8 +143,8 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
           height: TRACK_HEIGHT,
           backgroundColor: isChecked
             ? hovered
-              ? 'var(--kortix-blue)'
-              : 'var(--kortix-blue)'
+              ? 'var(--zed-blue)'
+              : 'var(--zed-blue)'
             : hovered
               ? 'color-mix(in oklab, var(--accent), rgb(var(--overlay)) 10%)'
               : 'var(--accent)',

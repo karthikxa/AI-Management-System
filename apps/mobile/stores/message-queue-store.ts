@@ -9,7 +9,7 @@ import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 
-const QUEUE_STORAGE_KEY = 'kortix_message_queue_v1';
+const QUEUE_STORAGE_KEY = 'zed_message_queue_v1';
 
 // ---------------------------------------------------------------------------
 // Types

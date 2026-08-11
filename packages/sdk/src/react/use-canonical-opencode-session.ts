@@ -5,7 +5,7 @@ import { useOpenCodeSessions, type Session } from './use-opencode-sessions';
 import { useProjectSession } from './use-project-session';
 
 /**
- * OpenCode ↔ Kortix session mapping — READ side.
+ * OpenCode ↔ Zed session mapping — READ side.
  *
  * The mapping is now fully SERVER-OWNED: `POST /sessions/:id/start` (see
  * openSession in apps/api) resolves + persists the canonical OpenCode root and
@@ -13,7 +13,7 @@ import { useProjectSession } from './use-project-session';
  * the client (the old client-side `ensure-opencode` mutation caused the
  * "session replaced / data lost" drift). It just surfaces the pin:
  *   1. the value /start handed us this render (`pinFromStart`), else
- *   2. the persisted pin on the Kortix session row (`getProjectSession`).
+ *   2. the persisted pin on the Zed session row (`getProjectSession`).
  *
  * The OpenCode session list is still read (read-only) for ?oc deep-links and
  * sidebar sub-session rendering.
@@ -49,7 +49,7 @@ export function useCanonicalOpenCodeSession(params: {
   const { projectId, sessionId, pinFromStart, initialPin, listRuntimeSessions = true } = params;
   const sessionsQuery = useOpenCodeSessions(listRuntimeSessions);
 
-  // The Kortix session row carries the authoritative, server-managed pin — used
+  // The Zed session row carries the authoritative, server-managed pin — used
   // as a fallback when /start's value isn't in this render's props yet.
   // The /start pin is authoritative on open, so only fall back to the persisted
   // row pin when /start didn't hand us one THIS render — i.e. a deep-link refresh

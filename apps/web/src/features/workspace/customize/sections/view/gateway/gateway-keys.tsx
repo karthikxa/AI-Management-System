@@ -123,7 +123,7 @@ export function GatewayKeys({
               icon={KeyRound}
               size="sm"
               title="No keys yet"
-              description="Create a project-scoped key to call the gateway from outside a Kortix session."
+              description="Create a project-scoped key to call the gateway from outside a Zed session."
               action={
                 canWrite ? (
                   <Button variant="outline" size="sm" onClick={() => setCreating(true)}>
@@ -316,7 +316,7 @@ function RevealKeyDialog({
                 aria-label="Copy key"
               >
                 {copied ? (
-                  <Check className="text-kortix-green size-4 shrink-0" />
+                  <Check className="text-zed-green size-4 shrink-0" />
                 ) : (
                   <Copy className="size-4 shrink-0" />
                 )}

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { appRuntimes, projectSessions, sandboxComputeSessions, sessionSandboxes } from '@kortix/db';
+import { appRuntimes, projectSessions, sandboxComputeSessions, sessionSandboxes } from '@zed/db';
 import * as realComputeMetering from '../billing/services/compute-metering';
 import * as realProviders from '../platform/providers';
 import { mockConfigModule } from './reaping/test-support/mock-config';
@@ -124,8 +124,8 @@ const visitStamps = () => updateCalls.filter(isVisitStamp);
 // in the same process — which is what made this whole directory unrunnable.
 mock.module('../config', () =>
   mockConfigModule({
-    KORTIX_SANDBOX_AUTOSTOP_MINUTES: 15,
-    KORTIX_SANDBOX_TRIGGER_AUTOSTOP_MINUTES: 5,
+    ZED_SANDBOX_AUTOSTOP_MINUTES: 15,
+    ZED_SANDBOX_TRIGGER_AUTOSTOP_MINUTES: 5,
     ALLOWED_SANDBOX_PROVIDERS: ['daytona', 'e2b'],
   }),
 );
@@ -650,16 +650,16 @@ describe('reapOrphanProviderBoxes', () => {
   });
 
   test('env flag off → no-op (never lists or stops)', async () => {
-    const prev = process.env.KORTIX_ORPHAN_BOX_REAP_ENABLED;
-    process.env.KORTIX_ORPHAN_BOX_REAP_ENABLED = 'false';
+    const prev = process.env.ZED_ORPHAN_BOX_REAP_ENABLED;
+    process.env.ZED_ORPHAN_BOX_REAP_ENABLED = 'false';
     try {
       managedBoxes = [{ externalId: 'orphan-x', createdAt: hoursAgo(48) }];
       const r = await reapOrphanProviderBoxes(NOW2);
       expect(stops).toEqual([]);
       expect(r).toEqual({ listed: 0, orphans: 0, stopped: 0, errors: 0 });
     } finally {
-      if (prev === undefined) delete process.env.KORTIX_ORPHAN_BOX_REAP_ENABLED;
-      else process.env.KORTIX_ORPHAN_BOX_REAP_ENABLED = prev;
+      if (prev === undefined) delete process.env.ZED_ORPHAN_BOX_REAP_ENABLED;
+      else process.env.ZED_ORPHAN_BOX_REAP_ENABLED = prev;
     }
   });
 });
@@ -743,8 +743,8 @@ describe('the batch cap rotates and cannot starve a row', () => {
   });
 
   test('a backlog larger than the batch is reported, not silently dropped', async () => {
-    const prev = process.env.KORTIX_REAP_BATCH_SIZE;
-    process.env.KORTIX_REAP_BATCH_SIZE = '2';
+    const prev = process.env.ZED_REAP_BATCH_SIZE;
+    process.env.ZED_REAP_BATCH_SIZE = '2';
     try {
       candidates = [
         candidate({
@@ -770,8 +770,8 @@ describe('the batch cap rotates and cannot starve a row', () => {
       expect(r.matching).toBe(3);
       expect(r.deferred).toBe(1);
     } finally {
-      if (prev === undefined) delete process.env.KORTIX_REAP_BATCH_SIZE;
-      else process.env.KORTIX_REAP_BATCH_SIZE = prev;
+      if (prev === undefined) delete process.env.ZED_REAP_BATCH_SIZE;
+      else process.env.ZED_REAP_BATCH_SIZE = prev;
     }
   });
 
@@ -780,8 +780,8 @@ describe('the batch cap rotates and cannot starve a row', () => {
   // win every pass and the third is unreachable FOREVER while the billing tick
   // keeps charging it. Two passes must now cover all three.
   test('REGRESSION: two passes over a batch of two cover all three rows', async () => {
-    const prev = process.env.KORTIX_REAP_BATCH_SIZE;
-    process.env.KORTIX_REAP_BATCH_SIZE = '2';
+    const prev = process.env.ZED_REAP_BATCH_SIZE;
+    process.env.ZED_REAP_BATCH_SIZE = '2';
     try {
       const held = (id: string) => ({
         sandboxId: `sb-${id}`,
@@ -814,8 +814,8 @@ describe('the batch cap rotates and cannot starve a row', () => {
 
       expect(new Set([...examined[0], ...examined[1]]).size).toBe(3);
     } finally {
-      if (prev === undefined) delete process.env.KORTIX_REAP_BATCH_SIZE;
-      else process.env.KORTIX_REAP_BATCH_SIZE = prev;
+      if (prev === undefined) delete process.env.ZED_REAP_BATCH_SIZE;
+      else process.env.ZED_REAP_BATCH_SIZE = prev;
     }
   });
 });

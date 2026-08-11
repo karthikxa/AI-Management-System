@@ -30,7 +30,7 @@ const radioControlClassName = cn(
   'transition-[color,box-shadow,border-color,background-color]',
   'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
   'disabled:cursor-not-allowed disabled:opacity-50',
-  'data-[state=checked]:border-foreground data-[state=checked]:bg-background data-[state=checked]:border-kortix-blue data-[state=checked]:border-4 ',
+  'data-[state=checked]:border-foreground data-[state=checked]:bg-background data-[state=checked]:border-zed-blue data-[state=checked]:border-4 ',
   'aria-invalid:border-destructive',
 );
 

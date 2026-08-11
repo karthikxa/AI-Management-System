@@ -7,7 +7,7 @@
  * data migration). Each action is a plain `http` binding against the platform's
  * API base, so the gateway's existing executeCall runs them unchanged. The
  * Slack catalog mirrors the in-sandbox `slack` CLI 1:1 for full parity. See
- * KORTIX-206.
+ * ZED-206.
  *
  * Voice is the one channel that breaks the "plain http binding" pattern: it
  * has no third-party API and no install token — a call is a LiveKit room
@@ -30,10 +30,10 @@ import type { ActionBinding, NormalizedAction, Risk } from './types';
  * `slack thread` resolve against the wrong catalog and fail with
  * `action_not_found`.
  */
-export const SLACK_CHANNEL_CONNECTOR_SLUG = 'kortix_slack';
-export const TEAMS_CHANNEL_CONNECTOR_SLUG = 'kortix_teams';
-export const EMAIL_CHANNEL_CONNECTOR_SLUG = 'kortix_email';
-export const VOICE_CHANNEL_CONNECTOR_SLUG = 'kortix_voice';
+export const SLACK_CHANNEL_CONNECTOR_SLUG = 'zed_slack';
+export const TEAMS_CHANNEL_CONNECTOR_SLUG = 'zed_teams';
+export const EMAIL_CHANNEL_CONNECTOR_SLUG = 'zed_email';
+export const VOICE_CHANNEL_CONNECTOR_SLUG = 'zed_voice';
 
 export function channelDefaultSlug(platform: string): string {
   switch (platform) {
@@ -151,7 +151,7 @@ const EMAIL_ATTACHMENT_SCHEMA = {
  * through: POST → JSON body, GET → query string, with `Authorization: Bearer`.
  *
  * NOT included here (handled outside the gateway, by design):
- *   • step / send(answer) — the turn-stream relay (Kortix-internal, kept as-is).
+ *   • step / send(answer) — the turn-stream relay (Zed-internal, kept as-is).
  *   • typing               — a Slack Web-API no-op.
  *   • download / manifest  — sandbox-FS write / server-meta fetch (CLI-side).
  *   • send --file          — multi-step external upload (CLI-side helper).
@@ -514,13 +514,13 @@ interface VoiceActionDef {
 }
 
 /**
- * The Voice catalog — THE KORTIX AGENT'S side of a live call.
+ * The Voice catalog — THE ZED AGENT'S side of a live call.
  *
  * Two surfaces exist and they point in opposite directions; keep them straight:
- *   - THIS connector is how the Kortix agent drives a call from the inside:
+ *   - THIS connector is how the Zed agent drives a call from the inside:
  *     start one, read what is being said, say something, hang up.
  *   - The voice MCP (channels/voice/mcp.ts) is the other direction — how the
- *     LiveKit voice agent calls BACK into Kortix from the outside.
+ *     LiveKit voice agent calls BACK into Zed from the outside.
  *
  * These actions live on the connector rather than in a project's opencode
  * config on purpose: connectors are materialized server-side for every project,

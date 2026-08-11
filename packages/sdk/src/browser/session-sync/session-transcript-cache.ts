@@ -95,9 +95,9 @@ export function shouldHydrateFromCache(input: {
  */
 export async function readCachedTranscript(
   sessionId: string,
-  kortixSessionScope?: string,
+  zedSessionScope?: string,
 ): Promise<CachedTranscript | null> {
-  const cached = await loadSessionFromIDB(sessionId, kortixSessionScope);
+  const cached = await loadSessionFromIDB(sessionId, zedSessionScope);
   if (!cached || !Array.isArray(cached.messages) || cached.messages.length === 0) return null;
   return { messages: cached.messages, parts: cached.parts ?? {} };
 }
@@ -106,9 +106,9 @@ export async function readCachedTranscript(
 export function writeCachedTranscript(
   state: TranscriptStoreSlice,
   sessionId: string,
-  kortixSessionScope?: string,
+  zedSessionScope?: string,
 ): Promise<void> {
   const transcript = selectSessionTranscript(state, sessionId);
   if (!transcript) return Promise.resolve();
-  return saveSessionToIDB(sessionId, transcript.messages, transcript.parts, kortixSessionScope);
+  return saveSessionToIDB(sessionId, transcript.messages, transcript.parts, zedSessionScope);
 }

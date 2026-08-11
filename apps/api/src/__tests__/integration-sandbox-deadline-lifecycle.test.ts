@@ -47,30 +47,30 @@ const first = (r: unknown) => ((r as Rows).rows ?? (r as Rows))[0];
 async function minutesLeft(): Promise<number> {
   const r = await db.execute(sql`
     SELECT round(extract(epoch from (deadline_at - now())) / 60)::int AS mins
-      FROM kortix.session_sandboxes WHERE sandbox_id = ${SANDBOX_ID}::uuid`);
+      FROM zed.session_sandboxes WHERE sandbox_id = ${SANDBOX_ID}::uuid`);
   return Number(first(r).mins);
 }
 
 async function statusOf(): Promise<{ sandbox: string; session: string }> {
   const r = await db.execute(sql`
     SELECT s.status AS sandbox, p.status AS session
-      FROM kortix.session_sandboxes s
-      JOIN kortix.project_sessions p ON p.session_id = s.session_id
+      FROM zed.session_sandboxes s
+      JOIN zed.project_sessions p ON p.session_id = s.session_id
      WHERE s.sandbox_id = ${SANDBOX_ID}::uuid`);
   return first(r) as { sandbox: string; session: string };
 }
 
 beforeAll(async () => {
   await db.execute(sql`
-    INSERT INTO kortix.accounts (account_id, name) VALUES (${ACCOUNT_ID}::uuid, 'deadline-it')`);
+    INSERT INTO zed.accounts (account_id, name) VALUES (${ACCOUNT_ID}::uuid, 'deadline-it')`);
   await db.execute(sql`
-    INSERT INTO kortix.projects (project_id, account_id, name, repo_url)
+    INSERT INTO zed.projects (project_id, account_id, name, repo_url)
     VALUES (${PROJECT_ID}::uuid, ${ACCOUNT_ID}::uuid, 'deadline-it', 'https://example.invalid/r.git')`);
   await db.execute(sql`
-    INSERT INTO kortix.project_sessions (session_id, account_id, project_id, branch_name, status)
+    INSERT INTO zed.project_sessions (session_id, account_id, project_id, branch_name, status)
     VALUES (${SESSION_ID}, ${ACCOUNT_ID}::uuid, ${PROJECT_ID}::uuid, ${`br-${SANDBOX_ID}`}, 'running')`);
   await db.execute(sql`
-    INSERT INTO kortix.session_sandboxes
+    INSERT INTO zed.session_sandboxes
       (sandbox_id, session_id, account_id, project_id, status, external_id)
     VALUES (${SANDBOX_ID}::uuid, ${SESSION_ID}, ${ACCOUNT_ID}::uuid, ${PROJECT_ID}::uuid,
             'active', ${EXTERNAL_ID})`);
@@ -79,7 +79,7 @@ beforeAll(async () => {
   // deadline makes the sweep skip them) so this test cannot mutate a
   // developer's other work, and restore them afterwards.
   await db.execute(sql`
-    UPDATE kortix.session_sandboxes
+    UPDATE zed.session_sandboxes
        SET deadline_at = LEAST(active_since + interval '24 hours', now() + interval '1 hour')
      WHERE status = 'active' AND sandbox_id <> ${SANDBOX_ID}::uuid`);
 });
@@ -89,7 +89,7 @@ afterAll(async () => {
   await db
     .execute(
       sql`
-      UPDATE kortix.session_sandboxes SET deadline_at = now()
+      UPDATE zed.session_sandboxes SET deadline_at = now()
        WHERE status = 'active' AND sandbox_id <> ${SANDBOX_ID}::uuid`,
     )
     .catch(() => undefined);
@@ -98,22 +98,22 @@ afterAll(async () => {
   await db
     .execute(
       sql`
-      UPDATE kortix.project_sessions
+      UPDATE zed.project_sessions
          SET metadata = coalesce(metadata, '{}'::jsonb) || '{"deletedAt":"now"}'::jsonb
        WHERE session_id = ${SESSION_ID}`,
     )
     .catch(() => undefined);
   await db
-    .execute(sql`DELETE FROM kortix.session_sandboxes WHERE sandbox_id = ${SANDBOX_ID}::uuid`)
+    .execute(sql`DELETE FROM zed.session_sandboxes WHERE sandbox_id = ${SANDBOX_ID}::uuid`)
     .catch(() => undefined);
   await db
-    .execute(sql`DELETE FROM kortix.project_sessions WHERE session_id = ${SESSION_ID}`)
+    .execute(sql`DELETE FROM zed.project_sessions WHERE session_id = ${SESSION_ID}`)
     .catch(() => undefined);
   await db
-    .execute(sql`DELETE FROM kortix.projects WHERE project_id = ${PROJECT_ID}::uuid`)
+    .execute(sql`DELETE FROM zed.projects WHERE project_id = ${PROJECT_ID}::uuid`)
     .catch(() => undefined);
   await db
-    .execute(sql`DELETE FROM kortix.accounts WHERE account_id = ${ACCOUNT_ID}::uuid`)
+    .execute(sql`DELETE FROM zed.accounts WHERE account_id = ${ACCOUNT_ID}::uuid`)
     .catch(() => undefined);
 });
 
@@ -152,7 +152,7 @@ describe('a sandbox lifetime, start to death', () => {
 
   test('6. past its deadline, the REAL reaper stops it and closes the session', async () => {
     await db.execute(sql`
-      UPDATE kortix.session_sandboxes SET deadline_at = now() - interval '1 second'
+      UPDATE zed.session_sandboxes SET deadline_at = now() - interval '1 second'
        WHERE sandbox_id = ${SANDBOX_ID}::uuid`);
 
     await reapAndReconcileSandboxes(new Date());

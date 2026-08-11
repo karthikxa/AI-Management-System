@@ -13,7 +13,7 @@
 
 import { useCallback, useState } from 'react';
 
-import { setProjectOnboardingProfile, type OnboardingProfile } from '@kortix/sdk';
+import { setProjectOnboardingProfile, type OnboardingProfile } from '@zed/sdk';
 
 export function useOnboardingAnswers(projectId: string) {
   const [answers, setAnswers] = useState<OnboardingProfile>({});

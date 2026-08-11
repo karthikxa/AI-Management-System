@@ -1,15 +1,15 @@
-# `@kortix/sdk` v2 — structure, public surface, and no-bundler distribution
+# `@zed/sdk` v2 — structure, public surface, and no-bundler distribution
 
 **Date:** 2026-07-10
 **Owner:** Jay Suthar (handed over from Marko Kraemer)
-**Package:** `packages/sdk` → `@kortix/sdk`
+**Package:** `packages/sdk` → `@zed/sdk`
 **Status:** design, awaiting implementation plan
 
 ---
 
 ## Context
 
-`@kortix/sdk` was published to npm on 2026-07-07 to establish the package, not to
+`@zed/sdk` was published to npm on 2026-07-07 to establish the package, not to
 freeze a design. It works, it is well tested, and its shape is accidental.
 Ownership has moved to Jay, who will maintain it long-term and who is building an
 SDK for the first time. The goal of this spec is a structure that is **obvious to
@@ -31,9 +31,9 @@ Everything below was verified against the repo, not assumed.
 
 | Claim | Evidence |
 |---|---|
-| Package is live on npm | `npm view @kortix/sdk version` → `0.9.100` |
+| Package is live on npm | `npm view @zed/sdk version` → `0.9.100` |
 | Real adoption is ~zero | 436 downloads/month, package `created` 2026-07-07 (2 days). The former standalone Connector client had 5,854 downloads/month for scale. |
-| The 400k Kortix users are **not** SDK installers | They consume it transitively via `apps/web`; a break surfaces at *our* build time, not their runtime |
+| The 400k Zed users are **not** SDK installers | They consume it transitively via `apps/web`; a break surfaces at *our* build time, not their runtime |
 | `version` in `package.json` is inert | `scripts/stage-npm-publish.mjs:32` — `pkg.version = version` from the root `VERSION` file (`0.9.102`) |
 | Baseline is green | 1046 tests pass / 0 fail across 65 files; `typecheck` exits 0 |
 | Nothing tests an actual install | CI runs `npm pack --dry-run` (file list only). `publishConfig.exports` is a hand-maintained parallel map with zero coverage. |
@@ -47,7 +47,7 @@ Everything below was verified against the repo, not assumed.
 | A transport seam fits the existing design | `openEventStream` already accepts an injectable `EventStreamTimers` seam (`src/state/event-stream.ts:54`) |
 | A single root barrel is feasible | `tsc` on a merged barrel → **8** `TS2308` ambiguities, not hundreds |
 | 7 of those 8 are trivial | `ApiError`, `FileContent`, `FileNode`, `QuestionOption`, `PermissionAction/Rule/Config` are each **declared once**, reachable via two `export *` paths |
-| 1 is a real bug | **`KortixProject` is declared twice** — `platform/projects-client/projects.ts:31` and `opencode/kortix-master.ts:577` — as two different interfaces |
+| 1 is a real bug | **`ZedProject` is declared twice** — `platform/projects-client/projects.ts:31` and `opencode/zed-master.ts:577` — as two different interfaces |
 
 That last row is the thesis in miniature: the 25-subpath surface **hid** a real
 naming collision. A single barrel turns that class of bug into a compile error.
@@ -109,10 +109,10 @@ sits next to the isomorphic core.
 ```
 src/
   core/            ← isomorphic-core: no react, no zustand, no node:, no DOM
-    client/          createKortix facade         (kortix.ts, 941 loc → split)
+    client/          createZed facade         (zed.ts, 941 loc → split)
     http/            api-client, auth, config, errors
     rest/            projects-client, platform-client
-    runtime/         opencode client, kortix-master
+    runtime/         opencode client, zed-master
     session/         session handle + url
     turns/           classify, view-model, parts, grouping, shell, state
     files/
@@ -153,15 +153,15 @@ No exported name changes. Consumers see nothing.
 ### Axis 2 — four entry points, and a rule for the fifth
 
 ```ts
-import { createKortix, classifyTurn, ApiError } from '@kortix/sdk'
-import { useSession }                           from '@kortix/sdk/react'
-import { createScopedKortix }                   from '@kortix/sdk/server'
-import { useSyncStore }                         from '@kortix/sdk/internal/sync-store'
+import { createZed, classifyTurn, ApiError } from '@zed/sdk'
+import { useSession }                           from '@zed/sdk/react'
+import { createScopedZed }                   from '@zed/sdk/server'
+import { useSyncStore }                         from '@zed/sdk/internal/sync-store'
 ```
 
-For most work, root is the only door — `createKortix` already unifies the REST
-and runtime surface behind one object (`kortix.projects.list()`,
-`kortix.session(pid, sid).send()`). The 21 client subpaths were never the
+For most work, root is the only door — `createZed` already unifies the REST
+and runtime surface behind one object (`zed.projects.list()`,
+`zed.session(pid, sid).send()`). The 21 client subpaths were never the
 ergonomic path; they were escape hatches promoted to the front door.
 
 **A single entry is impossible, and the reason is not stylistic.** The tier
@@ -169,10 +169,10 @@ boundary *is* the subpath boundary:
 
 | Entry | Why it cannot live at root |
 |---|---|
-| `@kortix/sdk` | — (the framework-free core) |
-| `@kortix/sdk/react` | React is a peer dependency; rooting it forces React on every vanilla, CDN, and Node consumer |
-| `@kortix/sdk/server` | imports `node:async_hooks`, which breaks in a browser |
-| `@kortix/sdk/internal/*` | `apps/web` needs the zustand stores; explicitly unsupported, outside semver |
+| `@zed/sdk` | — (the framework-free core) |
+| `@zed/sdk/react` | React is a peer dependency; rooting it forces React on every vanilla, CDN, and Node consumer |
+| `@zed/sdk/server` | imports `node:async_hooks`, which breaks in a browser |
+| `@zed/sdk/internal/*` | `apps/web` needs the zustand stores; explicitly unsupported, outside semver |
 
 **The standing rule, applied at review time in five seconds:**
 
@@ -206,7 +206,7 @@ Consequences, all good:
 - **Zero import sites need rewriting.** Not 340, not the 16 stores. `apps/web`,
   `apps/mobile`, and `whitelabel-demo` keep compiling untouched.
 - **No breaking change ships**, so nothing here forces a major.
-- The docs, README, and examples teach **one import**: `@kortix/sdk`.
+- The docs, README, and examples teach **one import**: `@zed/sdk`.
 - Migrating the 340 sites becomes an optional, mechanical, do-it-whenever
   follow-up — decoupled from this spec entirely.
 - New code physically cannot reach for a deprecated path without an editor
@@ -226,36 +226,36 @@ Seven need a one-line explicit re-export each (each symbol is declared once,
 merely reachable twice). The eighth is a real defect and must be resolved before
 the surface is declared stable:
 
-**Resolved (Jay, 2026-07-10): `KortixProject` keeps its name.** It is the platform
+**Resolved (Jay, 2026-07-10): `ZedProject` keeps its name.** It is the platform
 entity — `project_id`, `account_id`, `repo_url`, `manifest_path`, `warm_pool` — the
-thing `kortix.projects.list()` returns and the thing everyone means. It is already
+thing `zed.projects.list()` returns and the thing everyone means. It is already
 published under that name; renaming it would be a breaking change for zero gain.
 
-The **other** one is what moves. `opencode/kortix-master.ts:577` models something
-unrelated: a project inside the sandbox's kortix-master daemon — `id`, `name`,
+The **other** one is what moves. `opencode/zed-master.ts:577` models something
+unrelated: a project inside the sandbox's zed-master daemon — `id`, `name`,
 `path`, `opencode_id`, `structure_version` (1 = legacy tasks, 2 = tickets/board),
 `sessionCount`, `worktree`. It is a **project-management board**, not a platform
 project. Same word, different concept.
 
 ```ts
-// core/runtime/kortix-master.ts
-export interface KortixMasterProject { id: string; path: string; /* … */ }
+// core/runtime/zed-master.ts
+export interface ZedMasterProject { id: string; path: string; /* … */ }
 
-/** @deprecated Renamed to `KortixMasterProject` — it models the kortix-master
+/** @deprecated Renamed to `ZedMasterProject` — it models the zed-master
  *  daemon's board project, not the platform project. Removed in the next major. */
-export type KortixProject = KortixMasterProject;
+export type ZedProject = ZedMasterProject;
 ```
 
-`KortixMasterProject` is currently unused as a name (verified), matches its module,
-and needs no change to its sibling functions (`listKortixProjects`,
-`getKortixProject`, `patchKortixProject` — none of which collide). Rename
-`PatchKortixProjectInput` → `PatchKortixMasterProjectInput` with an alias, for
+`ZedMasterProject` is currently unused as a name (verified), matches its module,
+and needs no change to its sibling functions (`listZedProjects`,
+`getZedProject`, `patchZedProject` — none of which collide). Rename
+`PatchZedProjectInput` → `PatchZedMasterProjectInput` with an alias, for
 consistency.
 
-**Back-compat is exact.** The deprecated `@kortix/sdk/opencode-client` shim keeps
-exporting `KortixProject` (aliased to `KortixMasterProject`), so every existing
+**Back-compat is exact.** The deprecated `@zed/sdk/opencode-client` shim keeps
+exporting `ZedProject` (aliased to `ZedMasterProject`), so every existing
 importer of *that subpath* compiles unchanged. The **root barrel** exports
-`KortixProject` (the platform one) and `KortixMasterProject` (the daemon one) —
+`ZedProject` (the platform one) and `ZedMasterProject` (the daemon one) —
 two distinct names, no `TS2308`, nobody broken.
 
 The remaining seven ambiguities (`ApiError`, `FileContent`, `FileNode`,
@@ -264,10 +264,10 @@ each declared once and need only an explicit re-export at the barrel.
 
 #### A pleasant consequence
 
-An earlier decision — what goes in the `window.Kortix` IIFE global — chose
+An earlier decision — what goes in the `window.Zed` IIFE global — chose
 "root barrel **plus** curated `turns` / `files` / `session` namespaces", because
 `classifyTurn` lived at `./turns` and a CDN page could stream but not render.
-Once those modules fold into root, **the question dissolves**: `window.Kortix`
+Once those modules fold into root, **the question dissolves**: `window.Zed`
 *is* the root barrel, and it already contains `classifyTurn`. One flat global, no
 namespaces, no curation list to maintain.
 
@@ -284,9 +284,9 @@ Exported names are the API. This is now written into `packages/sdk/AGENTS.md`
 - To rename, **alias — never replace**: keep the old name as a `@deprecated`
   type alias, remove only on a major.
 - Conventions: `createX` factories, `XError` errors, `useX` hooks, `PascalCase`
-  types, no `I` prefix, no abbreviations. Do **not** prefix with `Kortix` unless
+  types, no `I` prefix, no abbreviations. Do **not** prefix with `Zed` unless
   the bare name collides with a common global (`File`, `Event`, `Response`).
-  `Project` beats `KortixProject`.
+  `Project` beats `ZedProject`.
 
 **Enforcement.** Documentation gets skimmed, so the rule gets teeth: a committed
 snapshot of every public export name, asserted in CI. Any add, rename, or removal
@@ -400,7 +400,7 @@ maintained in parallel forever.
 
 Streaming is not "done" because `state/event-stream.test.ts` passes (28 tests).
 It is done when events are **observed arriving** in the ESM `dist/`, the CDN ESM
-bundle, the `window.Kortix` IIFE global, and under the RN transport.
+bundle, the `window.Zed` IIFE global, and under the RN transport.
 
 ### The tripwire has a hole, and RN is how you fall in it
 
@@ -422,7 +422,7 @@ and ships a `safeEnv()` helper for it. `shared.ts` does not use it.
 
 So the tripwire gains a second check: **the isomorphic core may not touch a bare
 `process` / `window` / `document` / `localStorage` global.** Guarded reads
-(`typeof window !== 'undefined'`) are fine; `kortix.ts:102` and
+(`typeof window !== 'undefined'`) are fine; `zed.ts:102` and
 `platform/instance-routes.ts` already do this correctly. Enforce it statically,
 and ideally also by evaluating the core in a VM with those globals deleted.
 
@@ -439,7 +439,7 @@ npm consumers resolve. Add `tsup` as an SDK-only devDependency producing two
 additional artifacts:
 
 - a minified ESM bundle for `<script type="module">` / CDN
-- an IIFE `dist/kortix.global.js` exposing `window.Kortix` (the root barrel)
+- an IIFE `dist/zed.global.js` exposing `window.Zed` (the root barrel)
 
 Wire `browser` / `unpkg` / `jsdelivr` fields. Both are **purely additive**; no
 existing consumer is affected. The tripwire extends to cover the bundle entries.
@@ -449,7 +449,7 @@ existing consumer is affected. The tripwire extends to cover the bundle entries.
 `publishConfig` maintains a *second, parallel* export map rewriting all entries
 from `src/*.ts` to `dist/*.js`. Nothing tests it. CI's `npm pack --dry-run` only
 lists tarball contents. **Add one export, forget the `publishConfig` half, and CI
-stays green while every `npm install @kortix/sdk` gets a module-not-found.**
+stays green while every `npm install @zed/sdk` gets a module-not-found.**
 
 So before anything else: `npm pack` → install the tarball into a throwaway
 project → `import` it in Node ESM and in a `<script type="module">` page. Wired
@@ -463,13 +463,13 @@ do the trapeze.
 
 ## Lumen ships anonymous — and none of that is SDK work
 
-`apps/whitelabel-demo` (Lumen) will let visitors try Kortix **without logging in**.
+`apps/whitelabel-demo` (Lumen) will let visitors try Zed **without logging in**.
 Two conclusions, and the second is the important one.
 
 **1. The SDK needs zero changes for this. It is a validation, not a gap.**
 
-Lumen already runs "wrapper mode": the Kortix PAT lives only on the server, the
-browser talks to `/api/kortix/[...path]`, and the SDK is configured with Lumen's
+Lumen already runs "wrapper mode": the Zed PAT lives only on the server, the
+browser talks to `/api/zed/[...path]`, and the SDK is configured with Lumen's
 *own* HMAC-signed session token via `getToken()`. The SDK never knew or cared what
 identity backed that token — which is precisely what the `getToken` seam is for.
 
@@ -480,7 +480,7 @@ below `getToken` changes.
 
 Two properties already verified and worth protecting:
 
-- **The proxy streams SSE.** `api/kortix/[...path]/route.ts` buffers *request*
+- **The proxy streams SSE.** `api/zed/[...path]/route.ts` buffers *request*
   bodies deliberately (an ALB rejects chunked ones) but passes **response bodies
   through untouched**, except on two ownership-tracking routes. Streaming survives
   the proxy. Any future change there must preserve this.
@@ -509,9 +509,9 @@ than it looks.
 
 Neither blocks steps 1–3. Both must close before step 4 (Axis 2).
 
-- ~~**What is the second `KortixProject` actually called?**~~ **RESOLVED
-  (Jay, 2026-07-10):** the platform type keeps `KortixProject`; the kortix-master
-  daemon's becomes `KortixMasterProject`, with a `@deprecated` alias on the
+- ~~**What is the second `ZedProject` actually called?**~~ **RESOLVED
+  (Jay, 2026-07-10):** the platform type keeps `ZedProject`; the zed-master
+  daemon's becomes `ZedMasterProject`, with a `@deprecated` alias on the
   `opencode-client` shim. See "Collapsing the barrel" above. Step 4 is unblocked.
 
 - **Scope input: "shift the cortex tab to SDK."** Raised verbally, never
@@ -538,15 +538,15 @@ Each step is the guardrail for the next. This ordering is load-bearing.
    + `publishConfig.exports` + `SUBPATH_TIERS`. Add the path-based tier rule to
    the tripwire. *Snapshot must not change.* That is the proof it was invisible.
 4. **Axis 2 — narrow the public surface, additively.** Make root canonical; fix
-   the 8 ambiguities; resolve `KortixProject`; add `internal/*`; turn the 21
+   the 8 ambiguities; resolve `ZedProject`; add `internal/*`; turn the 21
    subpaths into `@deprecated` aliases under `src/deprecated/`. **No consumer
    changes. No import site rewritten. No breaking change.** *Snapshot grows;
    review the diff — every entry should be additive.*
 5. **Dogfood on `whitelabel-demo` — the acceptance gate.** Three things, together:
-   - Migrate its **39 SDK import sites to root-only `@kortix/sdk`** (14 already
+   - Migrate its **39 SDK import sites to root-only `@zed/sdk`** (14 already
      are; the rest are `projects-client` 10, `react` 9, `turns` 4, `session` 1,
      `opencode-client` 1 — `react` stays a subpath, by rule).
-   - Replace the two raw-transport routes with `@kortix/sdk/server`.
+   - Replace the two raw-transport routes with `@zed/sdk/server`.
      **Both endpoints already exist in the SDK** — `projects-client/tokens.ts:127`
      (`POST /projects/:id/cli-token`) and `projects-client/gateway.ts:210`
      (`GET /projects/:id/gateway/sessions`). These routes duplicate the SDK, they
@@ -563,10 +563,10 @@ Each step is the guardrail for the next. This ordering is load-bearing.
    **This is browser work, not RN work.** A bare `process.env` read throws a
    `ReferenceError` in the CDN `<script>` bundle (step 7). RN is merely the *other*
    place it breaks. Not skippable.
-7. **`tsup` bundles** on the final shape — CDN ESM + `window.Kortix`.
+7. **`tsup` bundles** on the final shape — CDN ESM + `window.Zed`.
 8. **Tripwire over `examples/`** — asserts the framework-free claim in CI.
 9. **`examples/07-vanilla.ts`** (full flow, plain TS) and **`examples/08-cdn.html`**
-   (no build step, streams and renders via `Kortix.classifyTurn`).
+   (no build step, streams and renders via `Zed.classifyTurn`).
 10. **Docs** — CHANGELOG, README, API-MAP with a stability table. The README's
     install-and-first-call section is now the front door for a shipping product,
     not a demo.
@@ -579,10 +579,10 @@ stamp itself.
 
 ## Done when
 
-- **D1** A plain `.ts` file runs `createKortix → projects.list() → session().send()
+- **D1** A plain `.ts` file runs `createZed → projects.list() → session().send()
   → session.stream() → classifyTurn`, with zero React/DOM/Node in the import
   graph, asserted by the tripwire.
-- **D2** A `<script type="module">` page and a `window.Kortix` IIFE page both
+- **D2** A `<script type="module">` page and a `window.Zed` IIFE page both
   stream a session and render its transcript, with no build step.
 - **D2a** **Streaming is observed delivering events in all three distribution
   targets** — the ESM `dist/`, the CDN ESM bundle, and the IIFE global. Not
@@ -606,11 +606,11 @@ has been deferred with the seam. It returns with the follow-up spec.)*
 - **D5** `npm pack` → install → import passes in CI for Node ESM and a script tag.
 - **D6** The public-export snapshot is committed, and its diff across the whole
   restructure is reviewed and intentional.
-- **D7** `@kortix/sdk/react` consumes only the public contract.
+- **D7** `@zed/sdk/react` consumes only the public contract.
 - **D8** `apps/whitelabel-demo` — **the first production ship** — reaches the
-  Kortix backend exclusively through `@kortix/sdk*`, imports it via the **root
+  Zed backend exclusively through `@zed/sdk*`, imports it via the **root
   entry only** (plus `/react` and `/server`, by rule), typechecks, and passes
-  `bun test tests/e2e`. No raw `fetch` to the Kortix API remains. This is the
+  `bun test tests/e2e`. No raw `fetch` to the Zed API remains. This is the
   acceptance test for the whole spec: if the public surface cannot power a real
   shipping app, the surface is wrong.
 - **D9** `typecheck` + `test` + tripwire green at every step, not just the last.
@@ -624,7 +624,7 @@ has been deferred with the seam. It returns with the follow-up spec.)*
   at `dist/`, which does not exist in the workspace). The install smoke test is
   the only thing that catches a missing entry. It must not be skippable in CI.
 - **`workspace:*` dependencies are pinned to the lockstep version at publish.**
-  `@kortix/llm-catalog` must publish alongside. Do not add new `workspace:*`
+  `@zed/llm-catalog` must publish alongside. Do not add new `workspace:*`
   dependencies to this package.
 - **`apps/web` stays untouched, and that is now a hard constraint, not a hope.**
   An earlier draft of this spec proposed collapsing 21 subpaths and "updating 16

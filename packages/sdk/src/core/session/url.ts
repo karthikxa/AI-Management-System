@@ -43,13 +43,13 @@ export interface ParsedLocalhostUrl {
 export interface SubdomainUrlOptions {
   /** Sandbox ID (the sandbox's external id — the Daytona sandbox ID). */
   sandboxId: string;
-  /** Backend port (e.g. 8008) — the port kortix-api listens on */
+  /** Backend port (e.g. 8008) — the port zed-api listens on */
   backendPort: number;
   /**
-   * The public-facing API base URL (e.g. 'https://e2e-test.kortix.cloud/v1').
+   * The public-facing API base URL (e.g. 'https://e2e-test.zed.cloud/v1').
    * When the user's browser is NOT on localhost, path-based proxy URLs are
    * generated from this:
-   *   https://e2e-test.kortix.cloud/v1/p/{sandboxId}/{port}/{path}
+   *   https://e2e-test.zed.cloud/v1/p/{sandboxId}/{port}/{path}
    *
    * This makes proxy URLs work on VPS/self-hosted deployments where
    * *.localhost subdomain DNS resolution isn't available.
@@ -81,8 +81,8 @@ const SUBDOMAIN_URL_REGEX =
  */
 const EXCLUDED_PORTS = new Set([
   22, // SSH daemon — never preview/probe as HTTP
-  4096, // OpenCode API (proxied by Kortix Master)
-  parseInt(SANDBOX_PORTS.KORTIX_MASTER, 10), // Kortix Master itself
+  4096, // OpenCode API (proxied by Zed Master)
+  parseInt(SANDBOX_PORTS.ZED_MASTER, 10), // Zed Master itself
 ]);
 
 // ── Internal helpers ─────────────────────────────────────────────────────────
@@ -148,11 +148,11 @@ function extractLocalhostCandidate(text: string): string | null {
 // ── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * Regex to detect Kortix Master proxy URLs: localhost:8000/proxy/{port}/...
+ * Regex to detect Zed Master proxy URLs: localhost:8000/proxy/{port}/...
  * The agent inside the sandbox sees these URLs; the frontend needs to
  * extract the real service port and remaining path.
  */
-const KORTIX_MASTER_PROXY_REGEX = /^\/proxy\/(\d{1,5})(\/.*)?$/;
+const ZED_MASTER_PROXY_REGEX = /^\/proxy\/(\d{1,5})(\/.*)?$/;
 
 /**
  * Known frontend app route prefixes. URLs with these pathnames on
@@ -176,7 +176,7 @@ export function isAppRouteUrl(rawUrl: string | undefined): boolean {
  * Parse a localhost URL in one place so all consumers share identical rules.
  *
  * Handles a special case: `http://localhost:8000/proxy/{port}/{path}` URLs
- * from inside the sandbox (Kortix Master). These are rewritten to appear as
+ * from inside the sandbox (Zed Master). These are rewritten to appear as
  * `localhost:{port}/{path}` so they get proxied correctly.
  */
 export function parseLocalhostUrl(
@@ -213,11 +213,11 @@ export function parseLocalhostUrl(
 
     let pathStr = `${parsed.pathname || '/'}${parsed.search}${parsed.hash}`;
 
-    // Special case: localhost:8000/proxy/{port}/... (Kortix Master proxy URL).
+    // Special case: localhost:8000/proxy/{port}/... (Zed Master proxy URL).
     // Extract the real port and remaining path so detection/rewriting works.
-    const kortixMasterPort = parseInt(SANDBOX_PORTS.KORTIX_MASTER, 10);
-    if (port === kortixMasterPort) {
-      const proxyMatch = parsed.pathname.match(KORTIX_MASTER_PROXY_REGEX);
+    const zedMasterPort = parseInt(SANDBOX_PORTS.ZED_MASTER, 10);
+    if (port === zedMasterPort) {
+      const proxyMatch = parsed.pathname.match(ZED_MASTER_PROXY_REGEX);
       if (proxyMatch) {
         const realPort = parseInt(proxyMatch[1], 10);
         if (realPort >= 1 && realPort <= 65535) {
@@ -340,13 +340,13 @@ export function hasLocalhostUrls(text: string): boolean {
 }
 
 /**
- * Detect whether the kortix-api backend is on the user's own machine
+ * Detect whether the zed-api backend is on the user's own machine
  * (i.e. apiBaseUrl hostname is localhost/127.0.0.1).
  *
  * This — NOT where the browser is running — is the correct trigger for picking
  * between subdomain and path-based proxy. The subdomain proxy works by having
  * `*.localhost:{backendPort}` resolve to 127.0.0.1 on the user's machine. That
- * only reaches kortix-api if kortix-api is ALSO running on the user's machine.
+ * only reaches zed-api if zed-api is ALSO running on the user's machine.
  * If the backend lives remotely, *.localhost:8008 points at whatever the user
  * happens to have running locally — which is exactly the "internal browser
  * literally loads localhost" bug.
@@ -382,13 +382,13 @@ export function hasPreviewTarget(subdomainOpts: SubdomainUrlOptions): boolean {
  * Build a preview proxy URL for a sandbox service port.
  *
  * Both modes are proxy URLs — neither connects to the user's raw localhost.
- * The provider is irrelevant; the only thing that matters is whether kortix-api
+ * The provider is irrelevant; the only thing that matters is whether zed-api
  * is running on the user's local machine, because that determines whether
  * *.localhost DNS can reach it.
  *
  *   - **Subdomain** (backend local): `http://p{port}-{sandboxId}.localhost:{backendPort}/{path}`
  *     Transparent mode — the proxied app thinks it's at root `/`. Only works
- *     when kortix-api is on 127.0.0.1.
+ *     when zed-api is on 127.0.0.1.
  *
  *   - **Path-based** (backend remote): `{apiBaseUrl}/p/{sandboxId}/{port}/{path}`
  *     Goes through Caddy → API → sandbox. Used for all deployed setups.
@@ -403,7 +403,7 @@ export function hasPreviewTarget(subdomainOpts: SubdomainUrlOptions): boolean {
  *
  * @example
  *   // Local dev:      → 'http://p3210-sb-abc123.localhost:8008/viewer.html'
- *   // Deployed back:  → 'https://e2e-test.kortix.cloud/v1/p/sb-abc123/3210/viewer.html'
+ *   // Deployed back:  → 'https://e2e-test.zed.cloud/v1/p/sb-abc123/3210/viewer.html'
  *   // No runtime yet: → 'http://localhost:3210/viewer.html'
  */
 export function rewriteLocalhostUrl(
@@ -417,7 +417,7 @@ export function rewriteLocalhostUrl(
 
   // Path-based proxy whenever the backend is NOT on the user's machine.
   // The subdomain scheme below relies on *.localhost DNS pointing at 127.0.0.1
-  // (browser-native) to reach kortix-api. That only works when kortix-api is
+  // (browser-native) to reach zed-api. That only works when zed-api is
   // actually on the user's box. Otherwise we always go path-based through the
   // public API base URL (which terminates at whichever ingress fronts the API).
   if (!isBackendOnLocalhost(subdomainOpts.apiBaseUrl)) {
@@ -555,7 +555,7 @@ const PATH_PROXY_URL_REGEX =
  * Handles both subdomain and path-based formats:
  *
  * Subdomain: http://p3210-sb-abc123.localhost:8008/viewer.html
- * Path:      https://e2e-test.kortix.cloud/v1/p/sb-abc123/3210/viewer.html
+ * Path:      https://e2e-test.zed.cloud/v1/p/sb-abc123/3210/viewer.html
  */
 export function parseSubdomainUrl(url: string): {
   port: number;
@@ -627,7 +627,7 @@ export function isPreviewUrl(url: string): boolean {
  *
  * Note the asymmetry with `isPreviewUrl`: the subdomain preview form
  * (`p3000-sb.localhost:8008`) is NOT internal, because that hostname resolves
- * to the local kortix-api, which forwards to the sandbox. Only the bare host is.
+ * to the local zed-api, which forwards to the sandbox. Only the bare host is.
  *
  * This is the guard for anywhere a URL becomes a *fetch or a frame* rather than
  * a link: rendering a bare localhost URL into an `<iframe src>` loads whatever
@@ -649,10 +649,10 @@ export function isInternalLocalhostUrl(url: string): boolean {
 const WEB_PROXY_PATH_PREFIX = '/web-proxy/';
 
 /**
- * Build a web proxy URL that routes through the Kortix Master (port 8000)
+ * Build a web proxy URL that routes through the Zed Master (port 8000)
  * which hosts the /web-proxy/ forward proxy.
  *
- * The web proxy lives on Kortix Master, NOT the OpenCode server, so we
+ * The web proxy lives on Zed Master, NOT the OpenCode server, so we
  * construct a URL targeting port 8000 via the standard sandbox preview proxy.
  */
 export function buildWebProxyUrl(
@@ -665,7 +665,7 @@ export function buildWebProxyUrl(
     const scheme = parsed.protocol.replace(':', '');
     const proxyPath = `${WEB_PROXY_PATH_PREFIX}${scheme}/${parsed.host}${parsed.pathname}${parsed.search}${parsed.hash}`;
 
-    const kmPort = parseInt(SANDBOX_PORTS.KORTIX_MASTER, 10); // 8000
+    const kmPort = parseInt(SANDBOX_PORTS.ZED_MASTER, 10); // 8000
     const baseUrl = rewriteLocalhostUrl(kmPort, '/', subdomainOpts);
     return `${baseUrl.replace(/\/$/, '')}${proxyPath}`;
   } catch {

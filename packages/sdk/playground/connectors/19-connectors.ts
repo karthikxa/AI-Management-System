@@ -5,14 +5,14 @@
  *
  * Run (from packages/sdk):  bun run playground/connectors/19-connectors.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("connectors", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
-  const connectors = kortix.project(projectId).connectors;
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
+  const connectors = zed.project(projectId).connectors;
 
-  const status = await kortix.connectStatus();
+  const status = await zed.connectStatus();
   console.log(`✓ connectStatus(): ${JSON.stringify(status)}`);
 
   const list = await connectors.list();

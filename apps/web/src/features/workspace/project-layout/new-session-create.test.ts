@@ -105,18 +105,18 @@ describe('buildNewSessionCreateInput', () => {
 
     expect(
       buildNewSessionCreateInput({
-        agent: 'kortix',
+        agent: 'zed',
         scope: initialization.commit,
       }),
     ).toEqual({
-      agent_name: 'kortix',
+      agent_name: 'zed',
     });
   });
 
   it('keeps an explicit empty connector selection fail-closed', () => {
     expect(
       buildNewSessionCreateInput({
-        agent: 'kortix',
+        agent: 'zed',
         scope: {
           draft: {
             connector_bindings: {},
@@ -125,7 +125,7 @@ describe('buildNewSessionCreateInput', () => {
         },
       }),
     ).toEqual({
-      agent_name: 'kortix',
+      agent_name: 'zed',
       connector_bindings: {},
       inherit_unbound: false,
     });

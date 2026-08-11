@@ -1,6 +1,6 @@
 'use client';
 
-import type { CostSummary } from '@kortix/sdk';
+import type { CostSummary } from '@zed/sdk';
 
 import { DateRangePicker, type CostRange } from '@/components/ui/date-range-picker';
 import { InfoBanner } from '@/components/ui/info-banner';

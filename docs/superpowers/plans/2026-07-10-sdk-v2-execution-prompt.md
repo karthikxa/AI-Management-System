@@ -1,10 +1,10 @@
-# Execution prompt — `@kortix/sdk` v2
+# Execution prompt — `@zed/sdk` v2
 
 > Paste everything below the line into a fresh session. Nothing else is needed.
 
 ---
 
-Execute the `@kortix/sdk` v2 restructure using **subagent-driven development**.
+Execute the `@zed/sdk` v2 restructure using **subagent-driven development**.
 
 **Read these four first, in order. They are the contract; do not re-derive them:**
 
@@ -26,7 +26,7 @@ Correctness beats speed, every time. There is no deadline that justifies a green
 - **TDD.** Invoke `/tdd`. RED → GREEN → REFACTOR. Write the failing test, **run it and watch it fail for the right reason**, then implement. *A test you have never seen fail is not a test.*
 - **Never hand back a red suite.** Loop: run → read → fix → re-run, until green.
 - **Loop on the CODE, never on the TEST.** Deleting, `skip`-ing, weakening an assertion, filtering the run, re-recording a snapshot, or `catch {}`-ing the throw to reach green is **forbidden**. If the test itself is wrong, that is a decision — stop and tell me.
-- **Finish on the full suite.** `pnpm --filter @kortix/sdk test`. Check the count against the **1046** baseline. `Ran 0 tests` is not a green run. `typecheck` is **not** verification.
+- **Finish on the full suite.** `pnpm --filter @zed/sdk test`. Check the count against the **1046** baseline. `Ran 0 tests` is not a green run. `typecheck` is **not** verification.
 - **Never edit `version` in `packages/sdk/package.json`.** It is inert; the release stamps it.
 - **Exported names are the public API — including types.** Rename ⇒ breaking. Alias, never replace.
 - Commit after each task, on this branch. **Do not push, do not open a PR** without asking.
@@ -58,7 +58,7 @@ Model: **Fable orchestrates. Sonnet 5 executes.** But not uniformly — the plan
 1. **Task 2, first run.** Nothing has ever installed and imported the tarball. If the smoke test fails, that is a **real pre-existing bug**, not something to loop on. Report it.
 2. **Task 3, before committing the snapshot.** Show me it. It becomes ground truth for everything after.
 3. **Task 5, Step 12 — the snapshot diff.** Additions are fine. **A removal or rename means a broken consumer.** Never accept that diff to get green.
-4. **Task 9, Step 6.** Loading `dist/kortix.global.js` in a real browser, streaming through a live stack, asserting `instanceof Kortix.ApiError` under the bundle. Needs `pnpm dev` + a real PAT + a real sandbox. Do not claim D2a/D3 without it.
+4. **Task 9, Step 6.** Loading `dist/zed.global.js` in a real browser, streaming through a live stack, asserting `instanceof Zed.ApiError` under the bundle. Needs `pnpm dev` + a real PAT + a real sandbox. Do not claim D2a/D3 without it.
 
 Also stop if: the same failure survives three different fixes (invoke `superpowers:systematic-debugging` instead of guessing), or you are about to change what a test asserts.
 
@@ -93,8 +93,8 @@ git commit -m "docs(sdk): v2 spec, plan, execution prompt, agent rules, and prog
 **Step 2 — verify the baseline before changing anything:**
 
 ```bash
-pnpm --filter @kortix/sdk typecheck    # expect exit 0
-pnpm --filter @kortix/sdk test         # expect 1046 pass, 0 fail, 65 files
+pnpm --filter @zed/sdk typecheck    # expect exit 0
+pnpm --filter @zed/sdk test         # expect 1046 pass, 0 fail, 65 files
 ```
 
 If that is not what you see, **stop and say so.** Something changed under us, and every number in these documents is suspect until you know what.

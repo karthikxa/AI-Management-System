@@ -1,8 +1,8 @@
 /**
- * `kortix sandboxes build --local [slug]` — build a project's sandbox image on
+ * `zed sandboxes build --local [slug]` — build a project's sandbox image on
  * THIS machine, the way the cloud would.
  *
- * `kortix validate`'s Dockerfile lint catches everything decidable from text.
+ * `zed validate`'s Dockerfile lint catches everything decidable from text.
  * This catches the rest: the failures that only exist once apt/pip/npm actually
  * run. The motivating one is the Python floor colliding with a user's
  * dpkg-owned packages ("Cannot uninstall numpy 1.26.4, RECORD file not found")
@@ -10,8 +10,8 @@
  *
  * Two choices make this an honest reproduction rather than a lookalike:
  *
- *   • The layer is `kortixToolchainLayer` ONLY — not the artifact tail. That
- *     tail COPYs staged Kortix build outputs (kortix-agent.gz, scaffold.git, …)
+ *   • The layer is `zedToolchainLayer` ONLY — not the artifact tail. That
+ *     tail COPYs staged Zed build outputs (zed-agent.gz, scaffold.git, …)
  *     that a consumer developer has no way to produce, and it installs nothing:
  *     everything that can FAIL on a user's base image lives in the toolchain
  *     half. Skipping it costs no coverage and makes the command runnable by
@@ -26,7 +26,7 @@
  *
  * What it is NOT: a guarantee. The cloud composes the artifact tail on top,
  * builds linux/amd64, and may use buildah rather than BuildKit. A green local
- * build means the user's own Dockerfile + the Kortix floor agree — the most
+ * build means the user's own Dockerfile + the Zed floor agree — the most
  * common failure, not every failure.
  */
 import { spawnSync } from 'node:child_process';
@@ -38,10 +38,10 @@ import {
   type SandboxTemplate,
   extractSandboxDefault,
   extractSandboxTemplates,
-  kortixToolchainLayer,
+  zedToolchainLayer,
   normalizeUserDockerfileForSnapshot,
-} from '@kortix/shared/sandbox';
-import { AGENT_BROWSER_VERSION, OPENCODE_VERSION } from '@kortix/shared/runtime-versions';
+} from '@zed/shared/sandbox';
+import { AGENT_BROWSER_VERSION, OPENCODE_VERSION } from '@zed/shared/runtime-versions';
 import { emitJson, takeFlagBool, takeFlagValue } from '../command-helpers.ts';
 import { dockerAvailable, hostPlatform } from '../docker.ts';
 import { loadLocalManifest, resolveLocalManifest } from '../manifest.ts';
@@ -78,7 +78,7 @@ export function resolveLocalTemplate(
 ): { template: SandboxTemplate } | { error: string } {
   const listSlugs = () =>
     templates.length === 0
-      ? 'This project declares no `sandbox.templates` in kortix.yaml.'
+      ? 'This project declares no `sandbox.templates` in zed.yaml.'
       : `Declared templates: ${templates.map((t) => t.slug).join(', ')}.`;
 
   if (slugArg) {
@@ -138,7 +138,7 @@ export function userDockerfileForTemplate(
 
 /**
  * Compose what gets built: the user's Dockerfile (normalized the same way the
- * snapshot builder normalizes it) plus the Kortix toolchain layer.
+ * snapshot builder normalizes it) plus the Zed toolchain layer.
  *
  * `opencodeConfigPath` and `warmRepo` are deliberately OMITTED — both make the
  * layer emit steps that read staged context (`COPY <config>/ …`) or clone with
@@ -149,7 +149,7 @@ export function userDockerfileForTemplate(
 export function composeSandboxDockerfile(userDockerfile: string, opts: { layer: boolean }): string {
   const user = normalizeUserDockerfileForSnapshot(userDockerfile).trimEnd();
   if (!opts.layer) return `${user}\n`;
-  return `${user}\n${kortixToolchainLayer({
+  return `${user}\n${zedToolchainLayer({
     opencodeVersion: OPENCODE_VERSION,
     agentBrowserVersion: AGENT_BROWSER_VERSION,
   })}`;
@@ -177,7 +177,7 @@ export function dockerBuildArgs(opts: { platform: string; tag: string; noCache: 
 }
 
 /**
- * `--local` needs no auth and no linked project — it only reads kortix.yaml,
+ * `--local` needs no auth and no linked project — it only reads zed.yaml,
  * a Dockerfile, and the local Docker daemon. `sandboxes.ts` therefore routes it
  * above `resolveProjectContext`, alongside add/update/rm, and hands over the
  * argv it has already taken the shared flags (`--json`, `--project`, …) out of.
@@ -214,7 +214,7 @@ export function runSandboxBuildLocal(argv: string[], opts: { json: boolean }): n
   const manifest = resolveLocalManifest(process.cwd());
   if (!manifest) {
     process.stderr.write(
-      `${status.err('No kortix.yaml here.')} ${C.dim}Run from your project root.${C.reset}\n`,
+      `${status.err('No zed.yaml here.')} ${C.dim}Run from your project root.${C.reset}\n`,
     );
     return 2;
   }
@@ -222,7 +222,7 @@ export function runSandboxBuildLocal(argv: string[], opts: { json: boolean }): n
   try {
     parsed = loadLocalManifest(process.cwd())?.data ?? null;
   } catch (err) {
-    process.stderr.write(`${status.err(`kortix.yaml doesn't parse: ${(err as Error).message}`)}\n`);
+    process.stderr.write(`${status.err(`zed.yaml doesn't parse: ${(err as Error).message}`)}\n`);
     return 2;
   }
 
@@ -256,7 +256,7 @@ export function runSandboxBuildLocal(argv: string[], opts: { json: boolean }): n
   }
 
   const platform = flags.platform ?? hostPlatform();
-  const tag = flags.tag ?? `kortix-local/${template.slug}:latest`;
+  const tag = flags.tag ?? `zed-local/${template.slug}:latest`;
 
   if (!dockerAvailable()) {
     // Environment/usage, not a crash: exit 2, no stack trace, and point at the
@@ -264,8 +264,8 @@ export function runSandboxBuildLocal(argv: string[], opts: { json: boolean }): n
     process.stderr.write(
       `${status.err('Docker is not available (need the `docker` CLI AND a running daemon).')}\n` +
         `  ${C.dim}Start Docker Desktop / the daemon, or install Docker, then re-run.${C.reset}\n` +
-        `  ${C.dim}The static checks need no Docker at all:${C.reset} ${C.cyan}kortix validate${C.reset}\n` +
-        `  ${C.dim}To see the composed Dockerfile without building:${C.reset} ${C.cyan}kortix sandboxes build --local --print${C.reset}\n`,
+        `  ${C.dim}The static checks need no Docker at all:${C.reset} ${C.cyan}zed validate${C.reset}\n` +
+        `  ${C.dim}To see the composed Dockerfile without building:${C.reset} ${C.cyan}zed sandboxes build --local --print${C.reset}\n`,
     );
     return 2;
   }
@@ -300,8 +300,8 @@ export function runSandboxBuildLocal(argv: string[], opts: { json: boolean }): n
     }
     process.stdout.write(
       flags.layer
-        ? `  ${C.dim}Kortix toolchain layer ${C.reset}on${C.dim} (apt + pip floor + opencode + chromium) — expect ${C.reset}10–25 min${C.dim} cold, minutes warm.${C.reset}\n`
-        : `  ${C.dim}Kortix toolchain layer ${C.reset}off${C.dim} (--no-layer) — your Dockerfile alone; this skips the floor most build failures come from.${C.reset}\n`,
+        ? `  ${C.dim}Zed toolchain layer ${C.reset}on${C.dim} (apt + pip floor + opencode + chromium) — expect ${C.reset}10–25 min${C.dim} cold, minutes warm.${C.reset}\n`
+        : `  ${C.dim}Zed toolchain layer ${C.reset}off${C.dim} (--no-layer) — your Dockerfile alone; this skips the floor most build failures come from.${C.reset}\n`,
     );
     process.stdout.write(`  ${C.dim}Empty build context — your repo is not in it (same as the cloud).${C.reset}\n`);
     process.stdout.write(`  ${C.dim}Tag ${C.reset}${tag}\n\n`);
@@ -318,14 +318,14 @@ export function runSandboxBuildLocal(argv: string[], opts: { json: boolean }): n
   if (res.status !== 0) {
     process.stderr.write(`\n${status.err(`Build failed (docker exited ${res.status}) — see the output above.`)}\n`);
     process.stderr.write(
-      `  ${C.dim}Read the composed Dockerfile:${C.reset} ${C.cyan}kortix sandboxes build --local ${template.slug} --print${C.reset}\n`,
+      `  ${C.dim}Read the composed Dockerfile:${C.reset} ${C.cyan}zed sandboxes build --local ${template.slug} --print${C.reset}\n`,
     );
     return 1;
   }
 
   process.stdout.write(`\n${status.ok(`Built ${C.bold}${tag}${C.reset}`)}\n`);
   process.stdout.write(
-    `  ${C.yellow}Not a guarantee the cloud build passes.${C.reset}${C.dim} The cloud stages Kortix's own artifacts and appends a layer this build skips${platform !== 'linux/amd64' ? `, and it builds linux/amd64` : ''}.${C.reset}\n`,
+    `  ${C.yellow}Not a guarantee the cloud build passes.${C.reset}${C.dim} The cloud stages Zed's own artifacts and appends a layer this build skips${platform !== 'linux/amd64' ? `, and it builds linux/amd64` : ''}.${C.reset}\n`,
   );
   process.stdout.write(`  ${C.dim}Run it: ${C.reset}${C.cyan}docker run --rm -it ${tag} bash${C.reset}\n`);
   return 0;

@@ -7,7 +7,7 @@ import { join, resolve } from 'node:path';
 import {
   buildCliConnectorSourceDigest,
   buildFileSha256,
-} from '@kortix/shared/sandbox-runtime-artifact';
+} from '@zed/shared/sandbox-runtime-artifact';
 
 function setTestEnv(name: string, value: string): void {
   if (!process.env[name] || process.env[name]?.startsWith('encrypted:')) {
@@ -25,12 +25,12 @@ setTestEnv('DAYTONA_API_KEY', 'test-daytona-key');
 setTestEnv('DAYTONA_SERVER_URL', 'https://daytona.example.test');
 setTestEnv('DAYTONA_TARGET', 'test-target');
 setTestEnv('FRONTEND_URL', 'http://localhost:3000');
-setTestEnv('INTERNAL_KORTIX_ENV', 'dev');
+setTestEnv('INTERNAL_ZED_ENV', 'dev');
 
-const fixtureRoot = mkdtempSync(join(tmpdir(), 'kortix-daytona-context-test-'));
-const agentPath = join(fixtureRoot, 'kortix-agent');
-const cliPath = join(fixtureRoot, 'kortix');
-const cliAttestationPath = join(fixtureRoot, 'kortix-connectors-runtime.attestation.json');
+const fixtureRoot = mkdtempSync(join(tmpdir(), 'zed-daytona-context-test-'));
+const agentPath = join(fixtureRoot, 'zed-agent');
+const cliPath = join(fixtureRoot, 'zed');
+const cliAttestationPath = join(fixtureRoot, 'zed-connectors-runtime.attestation.json');
 const entrypointPath = join(fixtureRoot, 'entrypoint.sh');
 const slackCliPath = join(fixtureRoot, 'slack-cli');
 const opencodeConfigPath = join(fixtureRoot, 'opencode-config');
@@ -59,12 +59,12 @@ await mkdir(opencodeConfigPath, { recursive: true });
 // them in beforeEach makes THIS suite's fixtures win during its own tests without
 // leaking into sibling suites that override the same vars in a combined run.
 beforeEach(() => {
-  process.env.KORTIX_SNAPSHOT_AGENT_BIN_PATH = agentPath;
-  process.env.KORTIX_SNAPSHOT_CLI_BIN_PATH = cliPath;
-  process.env.KORTIX_SNAPSHOT_CLI_ATTESTATION_PATH = cliAttestationPath;
-  process.env.KORTIX_SNAPSHOT_ENTRYPOINT_PATH = entrypointPath;
-  process.env.KORTIX_SNAPSHOT_SLACK_CLI_PATH = slackCliPath;
-  process.env.KORTIX_SNAPSHOT_OPENCODE_CONFIG_PATH = opencodeConfigPath;
+  process.env.ZED_SNAPSHOT_AGENT_BIN_PATH = agentPath;
+  process.env.ZED_SNAPSHOT_CLI_BIN_PATH = cliPath;
+  process.env.ZED_SNAPSHOT_CLI_ATTESTATION_PATH = cliAttestationPath;
+  process.env.ZED_SNAPSHOT_ENTRYPOINT_PATH = entrypointPath;
+  process.env.ZED_SNAPSHOT_SLACK_CLI_PATH = slackCliPath;
+  process.env.ZED_SNAPSHOT_OPENCODE_CONFIG_PATH = opencodeConfigPath;
   getSnapshotImpl = async () => ({ state: snapshotState() });
   deleteSnapshotImpl = async () => {};
 });
@@ -96,7 +96,7 @@ mock.module('@daytonaio/sdk', () => ({
           encoding: 'utf8',
         }).trim() === 'true';
       warmGitArchivePresentAtDaytonaBoundary = existsSync(
-        join(path, '..', 'kortix-warm-repo-git.tar'),
+        join(path, '..', 'zed-warm-repo-git.tar'),
       );
       contextPaths.push(path);
       return { kind: 'mock-image', path };
@@ -135,9 +135,9 @@ describe('Daytona snapshot build context', () => {
     createImpl = async () => {};
     snapshotState = () => 'active';
 
-    await daytonaProvider.buildSnapshot(buildInput('kortix-test-context'));
+    await daytonaProvider.buildSnapshot(buildInput('zed-test-context'));
 
-    expect(dockerfileSeen).toContain('COPY scaffold.git /opt/kortix/scaffold.git');
+    expect(dockerfileSeen).toContain('COPY scaffold.git /opt/zed/scaffold.git');
     expect(scaffoldPresentAtDaytonaBoundary).toBe(true);
     expect(scaffoldBareAtDaytonaBoundary).toBe(true);
   });
@@ -149,10 +149,10 @@ describe('Daytona snapshot build context', () => {
     writeFileSync(join(source, 'README.md'), '# warm\n');
     const gitEnv = {
       ...process.env,
-      GIT_AUTHOR_NAME: 'Kortix Test',
-      GIT_AUTHOR_EMAIL: 'test@kortix.test',
-      GIT_COMMITTER_NAME: 'Kortix Test',
-      GIT_COMMITTER_EMAIL: 'test@kortix.test',
+      GIT_AUTHOR_NAME: 'Zed Test',
+      GIT_AUTHOR_EMAIL: 'test@zed.test',
+      GIT_COMMITTER_NAME: 'Zed Test',
+      GIT_COMMITTER_EMAIL: 'test@zed.test',
     };
     execFileSync('git', ['init', '-b', 'main'], { cwd: source, env: gitEnv });
     execFileSync('git', ['add', '-A'], { cwd: source, env: gitEnv });
@@ -165,8 +165,8 @@ describe('Daytona snapshot build context', () => {
 
     warmGitArchivePresentAtDaytonaBoundary = false;
     await daytonaProvider.buildSnapshot({
-      snapshotName: 'kortix-warm-git-archive',
-      baseImageRef: 'registry.example.test/kortix-default:latest',
+      snapshotName: 'zed-warm-git-archive',
+      baseImageRef: 'registry.example.test/zed-default:latest',
       spec: {},
       slug: 'default',
       warmRepo: {
@@ -180,25 +180,25 @@ describe('Daytona snapshot build context', () => {
 
     expect(warmGitArchivePresentAtDaytonaBoundary).toBe(true);
     expect(dockerfileSeen).toContain(
-      'COPY kortix-warm-repo-git.tar /tmp/kortix-warm-repo-git.tar',
+      'COPY zed-warm-repo-git.tar /tmp/zed-warm-repo-git.tar',
     );
     expect(dockerfileSeen).toContain(
-      'tar -xf /tmp/kortix-warm-repo-git.tar -C /workspace/.git --strip-components=1',
+      'tar -xf /tmp/zed-warm-repo-git.tar -C /workspace/.git --strip-components=1',
     );
-    expect(dockerfileSeen).not.toContain('rm -f /tmp/kortix-warm-repo-git.tar');
+    expect(dockerfileSeen).not.toContain('rm -f /tmp/zed-warm-repo-git.tar');
   }, 30_000);
 });
 
 describe('Daytona snapshot state', () => {
   test('reports a Daytona 404 as missing so a new template can be built', async () => {
     getSnapshotImpl = async () => {
-      throw Object.assign(new Error('Snapshot with name kortix-new-template not found'), {
+      throw Object.assign(new Error('Snapshot with name zed-new-template not found'), {
         name: 'DaytonaNotFoundError',
         statusCode: 404,
       });
     };
 
-    expect(await daytonaProvider.getSnapshotState('kortix-new-template')).toBe('missing');
+    expect(await daytonaProvider.getSnapshotState('zed-new-template')).toBe('missing');
   });
 
   test('keeps a transient Daytona probe failure unknown', async () => {
@@ -208,20 +208,20 @@ describe('Daytona snapshot state', () => {
       });
     };
 
-    expect(await daytonaProvider.getSnapshotState('kortix-transient-probe')).toBe('unknown');
+    expect(await daytonaProvider.getSnapshotState('zed-transient-probe')).toBe('unknown');
   });
 
   test('briefly caches a negative probe result per name (burst collapse)', async () => {
     let calls = 0;
     getSnapshotImpl = async () => {
       calls += 1;
-      throw Object.assign(new Error('Snapshot with name kortix-neg-cache not found'), {
+      throw Object.assign(new Error('Snapshot with name zed-neg-cache not found'), {
         statusCode: 404,
       });
     };
 
-    expect(await daytonaProvider.getSnapshotState('kortix-neg-cache')).toBe('missing');
-    expect(await daytonaProvider.getSnapshotState('kortix-neg-cache')).toBe('missing');
+    expect(await daytonaProvider.getSnapshotState('zed-neg-cache')).toBe('missing');
+    expect(await daytonaProvider.getSnapshotState('zed-neg-cache')).toBe('missing');
     expect(calls).toBe(1);
   });
 
@@ -230,18 +230,18 @@ describe('Daytona snapshot state', () => {
       throw Object.assign(new Error('upstream unavailable'), { statusCode: 503 });
     };
 
-    expect(await daytonaProvider.getSnapshotState('kortix-outage-recovery')).toBe('unknown');
+    expect(await daytonaProvider.getSnapshotState('zed-outage-recovery')).toBe('unknown');
 
     getSnapshotImpl = async () => ({ state: 'active' });
-    expect(await daytonaProvider.getSnapshotState('kortix-outage-recovery')).toBe('active');
+    expect(await daytonaProvider.getSnapshotState('zed-outage-recovery')).toBe('active');
   });
 
   test('keeps a timed-out Daytona probe unknown', async () => {
     getSnapshotImpl = async () => {
-      throw new Error('Daytona snapshot.get(kortix-timeout-template) timed out');
+      throw new Error('Daytona snapshot.get(zed-timeout-template) timed out');
     };
 
-    expect(await daytonaProvider.getSnapshotState('kortix-timeout-template')).toBe('unknown');
+    expect(await daytonaProvider.getSnapshotState('zed-timeout-template')).toBe('unknown');
   });
 
   test('suppresses confirmed not-found delete errors and invalidates cached active state', async () => {
@@ -251,24 +251,24 @@ describe('Daytona snapshot state', () => {
       return { state: 'active' };
     };
 
-    expect(await daytonaProvider.getSnapshotState('kortix-delete-missing')).toBe('active');
+    expect(await daytonaProvider.getSnapshotState('zed-delete-missing')).toBe('active');
 
     deleteSnapshotImpl = async () => {
-      throw Object.assign(new Error('Snapshot with name kortix-delete-missing not found'), {
+      throw Object.assign(new Error('Snapshot with name zed-delete-missing not found'), {
         response: { status: 404 },
       });
     };
 
-    await daytonaProvider.deleteSnapshot('kortix-delete-missing');
+    await daytonaProvider.deleteSnapshot('zed-delete-missing');
 
     getSnapshotImpl = async () => {
       getCalls += 1;
-      throw Object.assign(new Error('Snapshot with name kortix-delete-missing not found'), {
+      throw Object.assign(new Error('Snapshot with name zed-delete-missing not found'), {
         statusCode: 404,
       });
     };
 
-    expect(await daytonaProvider.getSnapshotState('kortix-delete-missing')).toBe('missing');
+    expect(await daytonaProvider.getSnapshotState('zed-delete-missing')).toBe('missing');
     expect(getCalls).toBe(3);
   });
 
@@ -279,24 +279,24 @@ describe('Daytona snapshot state', () => {
       return { state: 'active' };
     };
 
-    expect(await daytonaProvider.getSnapshotState('kortix-delete-outage')).toBe('active');
+    expect(await daytonaProvider.getSnapshotState('zed-delete-outage')).toBe('active');
 
     deleteSnapshotImpl = async () => {
       throw Object.assign(new Error('upstream unavailable'), { statusCode: 503 });
     };
 
-    await expect(daytonaProvider.deleteSnapshot('kortix-delete-outage')).rejects.toThrow(
+    await expect(daytonaProvider.deleteSnapshot('zed-delete-outage')).rejects.toThrow(
       'upstream unavailable',
     );
 
     getSnapshotImpl = async () => {
       getCalls += 1;
-      throw Object.assign(new Error('Snapshot with name kortix-delete-outage not found'), {
+      throw Object.assign(new Error('Snapshot with name zed-delete-outage not found'), {
         statusCode: 404,
       });
     };
 
-    expect(await daytonaProvider.getSnapshotState('kortix-delete-outage')).toBe('missing');
+    expect(await daytonaProvider.getSnapshotState('zed-delete-outage')).toBe('missing');
     expect(getCalls).toBe(3);
   });
 });
@@ -311,7 +311,7 @@ describe('Daytona auto-build self-heal', () => {
       attempt += 1;
       if (attempt === 1) {
         throw new Error(
-          'Snapshot with name "kortix-default-7f989bb9735b" already exists for this organization',
+          'Snapshot with name "zed-default-7f989bb9735b" already exists for this organization',
         );
       }
       built = true;
@@ -321,7 +321,7 @@ describe('Daytona auto-build self-heal', () => {
       deleted = true;
     };
 
-    await daytonaProvider.buildSnapshot(buildInput('kortix-default-7f989bb9735b'));
+    await daytonaProvider.buildSnapshot(buildInput('zed-default-7f989bb9735b'));
 
     expect(deleted).toBe(true);
     expect(attempt).toBe(2);
@@ -336,13 +336,13 @@ describe('Daytona auto-build self-heal', () => {
       attempt += 1;
       if (attempt === 1) {
         // exactly the reported symptom: the SDK can't find scaffold.git in the context
-        throw new Error('Path does not exist: /tmp/kortix-snap-OxOgZY/scaffold.git');
+        throw new Error('Path does not exist: /tmp/zed-snap-OxOgZY/scaffold.git');
       }
       built = true; // 2nd attempt succeeds
     };
     snapshotState = () => (built ? 'active' : 'error');
 
-    await daytonaProvider.buildSnapshot(buildInput('kortix-selfheal'));
+    await daytonaProvider.buildSnapshot(buildInput('zed-selfheal'));
 
     expect(attempt).toBe(2); // retried once — did NOT require a manual rebuild
     expect(contextPaths.length).toBe(2); // staged twice
@@ -360,7 +360,7 @@ describe('Daytona auto-build self-heal', () => {
     };
     snapshotState = () => 'error';
 
-    await expect(daytonaProvider.buildSnapshot(buildInput('kortix-realfail'))).rejects.toThrow(
+    await expect(daytonaProvider.buildSnapshot(buildInput('zed-realfail'))).rejects.toThrow(
       /Snapshot build failed/,
     );
     expect(attempt).toBe(1); // a real build error is NOT re-staged/retried

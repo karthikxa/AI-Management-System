@@ -4,8 +4,8 @@ import { applyAgentScopeV2 } from './agent-config-v2';
 const manifest = (agents: Record<string, unknown>) => ({
   schemaVersion: 2,
   format: 'yaml' as const,
-  path: 'kortix.yaml',
-  raw: { kortix_version: 2, default_agent: 'support', agents },
+  path: 'zed.yaml',
+  raw: { zed_version: 2, default_agent: 'support', agents },
 });
 
 const blockOf = (result: { ok: boolean; raw?: Record<string, unknown> }, name = 'support') =>
@@ -87,12 +87,12 @@ describe('applyAgentScopeV2 — connectors_required', () => {
 
   test('leaves other governance keys on the block untouched', () => {
     const res = applyAgentScopeV2(
-      manifest({ support: { connectors: ['gmail'], secrets: 'all', kortix_cli: ['project.read'] } }),
+      manifest({ support: { connectors: ['gmail'], secrets: 'all', zed_cli: ['project.read'] } }),
       'support',
       { connectorsRequired: ['gmail'] },
     );
     expect(res.ok).toBe(true);
     expect(blockOf(res).support.secrets).toBe('all');
-    expect(blockOf(res).support.kortix_cli).toEqual(['project.read']);
+    expect(blockOf(res).support.zed_cli).toEqual(['project.read']);
   });
 });

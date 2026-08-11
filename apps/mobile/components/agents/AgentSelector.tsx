@@ -15,7 +15,7 @@ const ANDROID_HIT_SLOP =
 function isAdvancedModel(modelId: string | undefined): boolean {
   if (!modelId) return false;
   return (
-    modelId === 'kortix/claude-opus-4.8' ||
+    modelId === 'zed/claude-opus-4.8' ||
     modelId === 'claude-opus-4.8' ||
     modelId.includes('claude-opus') ||
     modelId.includes('opus')

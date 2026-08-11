@@ -2,12 +2,12 @@ import { authFileLocation, clearAuth } from '../api/auth.ts';
 import { activeHostName, getHost } from '../api/config.ts';
 import { C, help, status } from '../style.ts';
 
-const HELP = help`Usage: kortix logout [options]
+const HELP = help`Usage: zed logout [options]
 
-Remove the Kortix auth token for one host.
+Remove the Zed auth token for one host.
 
-Shortcut for the active host — same as \`kortix hosts logout\`. Use
-\`kortix hosts logout <name>\` to sign out of a different instance.
+Shortcut for the active host — same as \`zed hosts logout\`. Use
+\`zed hosts logout <name>\` to sign out of a different instance.
 
 Options:
   --host <name>     Log out of a specific named host (default: active).
@@ -53,8 +53,8 @@ export async function runLogout(argv: string[]): Promise<number> {
 }
 
 /**
- * Shared logout implementation used by both the top-level `kortix logout`
- * alias and the `kortix hosts logout` subcommand. Clears the stored token
+ * Shared logout implementation used by both the top-level `zed logout`
+ * alias and the `zed hosts logout` subcommand. Clears the stored token
  * for the named host, defaulting to the active host when omitted.
  */
 export async function performLogout(hostName?: string): Promise<number> {

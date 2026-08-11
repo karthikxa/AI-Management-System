@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { KortixHyperLogo } from '@/components/ui/marketing/kortix-hyper-logo';
+import { ZedHyperLogo } from '@/components/ui/marketing/zed-hyper-logo';
 import * as Sentry from '@sentry/nextjs';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -58,7 +58,7 @@ export default function Error({
       console.debug('[runtime] not ready yet (sandbox still loading) — retrying', error?.message);
       return;
     }
-    console.error('[Kortix Home Error]', error);
+    console.error('[Zed Home Error]', error);
     Sentry.captureException(error);
   }, [error, runtimeNotReady]);
 
@@ -75,7 +75,7 @@ export default function Error({
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="flex max-w-xl flex-col items-center justify-center space-y-6 text-center">
-        <KortixHyperLogo size={50} />
+        <ZedHyperLogo size={50} />
 
         <div className="space-y-4">
           <h1 className="text-base-900 text-base sm:text-lg md:text-xl">

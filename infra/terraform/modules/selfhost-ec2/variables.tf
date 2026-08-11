@@ -1,21 +1,21 @@
 # ── Required ───────────────────────────────────────────────────────────────
 
 variable "domain" {
-  description = "Public domain to run Kortix self-host on (e.g. kortix.example.com). Passed straight through to `kortix self-host init --domain`; the API domain defaults to api.<domain> (the CLI's own default — see var.api_domain to override)."
+  description = "Public domain to run Zed self-host on (e.g. zed.example.com). Passed straight through to `zed self-host init --domain`; the API domain defaults to api.<domain> (the CLI's own default — see var.api_domain to override)."
   type        = string
 
   validation {
     condition     = length(trimspace(var.domain)) > 0 && !can(regex("^https?://", var.domain))
-    error_message = "domain is required and must be a bare hostname (no https:// prefix), e.g. kortix.example.com."
+    error_message = "domain is required and must be a bare hostname (no https:// prefix), e.g. zed.example.com."
   }
 }
 
 # ── Naming / tags ──────────────────────────────────────────────────────────
 
 variable "name" {
-  description = "Name prefix for all AWS resources (e.g. kortix-selfhost)."
+  description = "Name prefix for all AWS resources (e.g. zed-selfhost)."
   type        = string
-  default     = "kortix-selfhost"
+  default     = "zed-selfhost"
 }
 
 variable "tags" {
@@ -50,7 +50,7 @@ variable "ami_ssm_parameter" {
 }
 
 variable "root_volume_size_gb" {
-  description = "Root (OS) EBS volume size. Docker data lives on the separate data volume, not here — this only needs to hold the OS + kortix CLI. Growing this is in-place (gp3 elastic volume resize), but — unlike the data volume — the guest filesystem is on a partition, not a whole disk, so picking up the extra space relies on Ubuntu's stock cloud-init growpart/resizefs modules (already on by every boot in the default 24.04 cloud image; this module doesn't need to configure anything extra for it), which only run at boot — a plain reboot after the EBS-side resize is enough, no manual growpart/resize2fs needed."
+  description = "Root (OS) EBS volume size. Docker data lives on the separate data volume, not here — this only needs to hold the OS + zed CLI. Growing this is in-place (gp3 elastic volume resize), but — unlike the data volume — the guest filesystem is on a partition, not a whole disk, so picking up the extra space relies on Ubuntu's stock cloud-init growpart/resizefs modules (already on by every boot in the default 24.04 cloud image; this module doesn't need to configure anything extra for it), which only run at boot — a plain reboot after the EBS-side resize is enough, no manual growpart/resize2fs needed."
   type        = number
   default     = 30
 
@@ -108,7 +108,7 @@ variable "ssh_ingress_cidrs" {
 # ── Data volume (all Docker volumes, incl. Postgres, live here) ────────────
 
 variable "data_volume_size_gb" {
-  description = "Size of the separate EBS data volume that holds all durable self-host state: Docker's own data-root (images, containers, the updater/Caddy named volumes) AND the kortix CLI's instance directory (.env, compose file, and — critically — Postgres and Supabase Storage, which the CLI persists as bind mounts under its instance directory, not as Docker named volumes). Sizing this is really about your database + object storage growth, not the OS. Increasing this is a live, in-place gp3 resize (no downtime at the AWS layer) — templates/user-data.sh.tftpl installs a small systemd timer that notices the bigger block device and runs `resize2fs` on its own, so bumping this and `terraform apply` is the entire runbook (no SSM/manual step) — see the README's \"Scaling\" section. NOTE: EBS does not support shrinking a volume; decreasing this value fails loudly at apply time with a clear AWS API error rather than doing anything destructive."
+  description = "Size of the separate EBS data volume that holds all durable self-host state: Docker's own data-root (images, containers, the updater/Caddy named volumes) AND the zed CLI's instance directory (.env, compose file, and — critically — Postgres and Supabase Storage, which the CLI persists as bind mounts under its instance directory, not as Docker named volumes). Sizing this is really about your database + object storage growth, not the OS. Increasing this is a live, in-place gp3 resize (no downtime at the AWS layer) — templates/user-data.sh.tftpl installs a small systemd timer that notices the bigger block device and runs `resize2fs` on its own, so bumping this and `terraform apply` is the entire runbook (no SSM/manual step) — see the README's \"Scaling\" section. NOTE: EBS does not support shrinking a volume; decreasing this value fails loudly at apply time with a clear AWS API error rather than doing anything destructive."
   type        = number
   default     = 100
 
@@ -163,7 +163,7 @@ variable "zone_id" {
 }
 
 variable "api_domain" {
-  description = "API hostname to point at this box. Leave empty to default to api.<var.domain> (matches the kortix CLI's own default, so you normally don't need to set this)."
+  description = "API hostname to point at this box. Leave empty to default to api.<var.domain> (matches the zed CLI's own default, so you normally don't need to set this)."
   type        = string
   default     = ""
 }
@@ -174,45 +174,45 @@ variable "dns_ttl" {
   default     = 300
 }
 
-# ── kortix self-host bootstrap (see user-data) ──────────────────────────────
+# ── zed self-host bootstrap (see user-data) ──────────────────────────────
 
 variable "instance_name" {
-  description = "The kortix self-host `--instance` name (lets one box run multiple isolated stacks; almost always leave at the default)."
+  description = "The zed self-host `--instance` name (lets one box run multiple isolated stacks; almost always leave at the default)."
   type        = string
   default     = "default"
 }
 
-variable "kortix_channel" {
-  description = "Image channel the stack tracks (`stable` or `latest`) — passed to `kortix self-host init --channel`. Ongoing updates are applied by the in-compose auto-updater, not by re-running Terraform."
+variable "zed_channel" {
+  description = "Image channel the stack tracks (`stable` or `latest`) — passed to `zed self-host init --channel`. Ongoing updates are applied by the in-compose auto-updater, not by re-running Terraform."
   type        = string
   default     = "stable"
 
   validation {
-    condition     = contains(["stable", "latest"], var.kortix_channel)
-    error_message = "kortix_channel must be \"stable\" or \"latest\"."
+    condition     = contains(["stable", "latest"], var.zed_channel)
+    error_message = "zed_channel must be \"stable\" or \"latest\"."
   }
 }
 
-variable "kortix_version" {
-  description = "Optional exact version/tag to pin instead of tracking a channel (passed as `kortix self-host init --tag`). Leave empty to track var.kortix_channel."
+variable "zed_version" {
+  description = "Optional exact version/tag to pin instead of tracking a channel (passed as `zed self-host init --tag`). Leave empty to track var.zed_channel."
   type        = string
   default     = ""
 }
 
-variable "kortix_cli_install_url" {
-  description = "URL for the one-click kortix CLI installer (the canonical published path)."
+variable "zed_cli_install_url" {
+  description = "URL for the one-click zed CLI installer (the canonical published path)."
   type        = string
-  default     = "https://kortix.com/install"
+  default     = "https://zed.com/install"
 }
 
-variable "kortix_cli_channel" {
-  description = "Which CLI build the installer fetches: `prod` (default — latest tagged vX.Y.Z GitHub Release) or `dev` (the continuously-rebuilt `dev-latest` prerelease, tracking `main`). The published `prod` CLI can lag newly merged self-host flags/behavior (e.g. right after a feature merges to main but before the next version is cut) — set this to `dev` if `var.kortix_version`/other flags this module passes to `kortix self-host init` aren't recognized by the current prod CLI yet. Passed as `KORTIX_CHANNEL` to the installer, not to the app itself."
+variable "zed_cli_channel" {
+  description = "Which CLI build the installer fetches: `prod` (default — latest tagged vX.Y.Z GitHub Release) or `dev` (the continuously-rebuilt `dev-latest` prerelease, tracking `main`). The published `prod` CLI can lag newly merged self-host flags/behavior (e.g. right after a feature merges to main but before the next version is cut) — set this to `dev` if `var.zed_version`/other flags this module passes to `zed self-host init` aren't recognized by the current prod CLI yet. Passed as `ZED_CHANNEL` to the installer, not to the app itself."
   type        = string
   default     = "prod"
 
   validation {
-    condition     = contains(["prod", "dev"], var.kortix_cli_channel)
-    error_message = "kortix_cli_channel must be \"prod\" or \"dev\"."
+    condition     = contains(["prod", "dev"], var.zed_cli_channel)
+    error_message = "zed_cli_channel must be \"prod\" or \"dev\"."
   }
 }
 
@@ -228,7 +228,7 @@ variable "auto_update" {
 }
 
 variable "admin_email" {
-  description = "Optional admin email granted platform-admin on first boot (`kortix self-host init --admin-email`). Leave empty to skip and configure later via `kortix self-host configure`."
+  description = "Optional admin email granted platform-admin on first boot (`zed self-host init --admin-email`). Leave empty to skip and configure later via `zed self-host configure`."
   type        = string
   default     = ""
 }
@@ -292,7 +292,7 @@ variable "enable_auto_recovery" {
 }
 
 variable "enable_auto_reboot" {
-  description = "Whether to alarm on StatusCheckFailed_Instance and take AWS's `ec2:reboot` action — an OS-level reboot when the INSTANCE itself (not the underlying host) fails its health check (e.g. a wedged kernel/network stack that only a reboot clears). Unlike enable_auto_recovery, this does touch the guest OS, but it's safe as this box's default specifically because of how it bootstraps: Docker and containerd are `systemctl enable`d (auto-start on boot) and kortix-selfhost-bootstrap.service is `enable`d with `WantedBy=multi-user.target` (see templates/user-data.sh.tftpl and the README's \"Bootstrap resilience\" section) — a reboot always comes back with the whole stack self-starting, with no operator intervention. Default on, for the same reason enable_auto_recovery is: a self-healing single box is this module's whole point, and 3 consecutive minutes of instance-check failure (see monitoring.tf) is a real, not transient, signal. Set to false if you'd rather investigate an instance-check failure by hand (e.g. to preserve state for a postmortem) before the box reboots out from under an in-flight session."
+  description = "Whether to alarm on StatusCheckFailed_Instance and take AWS's `ec2:reboot` action — an OS-level reboot when the INSTANCE itself (not the underlying host) fails its health check (e.g. a wedged kernel/network stack that only a reboot clears). Unlike enable_auto_recovery, this does touch the guest OS, but it's safe as this box's default specifically because of how it bootstraps: Docker and containerd are `systemctl enable`d (auto-start on boot) and zed-selfhost-bootstrap.service is `enable`d with `WantedBy=multi-user.target` (see templates/user-data.sh.tftpl and the README's \"Bootstrap resilience\" section) — a reboot always comes back with the whole stack self-starting, with no operator intervention. Default on, for the same reason enable_auto_recovery is: a self-healing single box is this module's whole point, and 3 consecutive minutes of instance-check failure (see monitoring.tf) is a real, not transient, signal. Set to false if you'd rather investigate an instance-check failure by hand (e.g. to preserve state for a postmortem) before the box reboots out from under an in-flight session."
   type        = bool
   default     = true
 }

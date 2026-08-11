@@ -4,7 +4,7 @@ import {
   type AdminConnector,
   type ConnectorAuthorizationStrategy,
   deleteConnector,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { TrashIcon } from '@phosphor-icons/react';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';

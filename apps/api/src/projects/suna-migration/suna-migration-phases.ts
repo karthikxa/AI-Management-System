@@ -18,7 +18,7 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, renameSync, rmSync, w
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { sql } from 'drizzle-orm';
-import { projects, projectGitConnections, projectSessions } from '@kortix/db';
+import { projects, projectGitConnections, projectSessions } from '@zed/db';
 import { uploadOpencodeArchive } from '../legacy-migration-storage';
 import { extractWorkspace, slugify } from './suna-extract';
 import { normalizeAgentpressThread, type AgentpressMessageRow } from './agentpress-mapper';
@@ -176,8 +176,8 @@ export async function dbStep(ctx: SunaMigrationContext): Promise<void> {
     await tx.insert(projects).values({
       projectId, accountId: ctx.accountId, name: 'Legacy (Suna) projects',
       // pushBundleAsRepo (suna-push.ts) seeds the new repo with
-      // @kortix/starter, which ships the current v2 kortix.yaml.
-      repoUrl, defaultBranch, manifestPath: 'kortix.yaml', status: 'active',
+      // @zed/starter, which ships the current v2 zed.yaml.
+      repoUrl, defaultBranch, manifestPath: 'zed.yaml', status: 'active',
       metadata: {
         git: { url: repoUrl, upstream_url: repoUrl, default_branch: defaultBranch, provider, managed: true,
                owner: ctx.progress.repo_owner, name: ctx.progress.repo_name },

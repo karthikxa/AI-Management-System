@@ -31,8 +31,8 @@ import {
   fixSandboxWithAgent,
   getProjectSandboxHealth,
   rebuildProjectSnapshot,
-} from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 import {
   WarningIcon as DangerTriangleSolid,
   SparkleIcon as SparklesSolid,
@@ -47,14 +47,14 @@ const SEVERITY_TONE: Record<SandboxAlertSeverity, { text: string; icon: string; 
     dot: 'bg-destructive',
   },
   warning: {
-    text: 'text-kortix-orange',
-    icon: 'text-kortix-orange',
-    dot: 'bg-kortix-orange',
+    text: 'text-zed-orange',
+    icon: 'text-zed-orange',
+    dot: 'bg-zed-orange',
   },
   building: {
     text: 'text-muted-foreground',
     icon: 'text-muted-foreground',
-    dot: 'bg-kortix-yellow',
+    dot: 'bg-zed-yellow',
   },
 };
 

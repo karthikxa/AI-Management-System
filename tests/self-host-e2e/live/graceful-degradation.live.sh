@@ -3,7 +3,7 @@
 # CASE 6 (spec §6): feature-flag graceful degradation AT THE HTTP LAYER.
 #
 # Opt-in live test — brings up a real (throwaway) self-host data plane
-# (Postgres + Supabase auth/rest/kong + the kortix-migrate one-shot + the
+# (Postgres + Supabase auth/rest/kong + the zed-migrate one-shot + the
 # API; no frontend/gateway/sandbox needed for this) and asserts the API
 # degrades gracefully instead of 500ing when three optional integrations are
 # deliberately left unconfigured:
@@ -19,7 +19,7 @@
 # leg, another agent's live run) on the same machine.
 #
 # Requires: Docker + Docker Compose, `bun`, and the API image to exist
-# locally (default kortix/kortix-api:selfhost-local — override via API_IMAGE).
+# locally (default zed/zed-api:selfhost-local — override via API_IMAGE).
 
 set -Eeuo pipefail
 
@@ -33,10 +33,10 @@ REPO_ROOT=$(cd "$SCRIPT_DIR/../../.." && pwd)
 CLI="bun run $REPO_ROOT/apps/cli/src/index.ts"
 
 INSTANCE=${INSTANCE:-selfhost-e2e-degrade-$(date +%s)-$RANDOM}
-API_IMAGE=${API_IMAGE:-kortix/kortix-api:selfhost-local}
-EMAIL=${EMAIL:-owner-$INSTANCE@kortix.local}
-PASSWORD=${PASSWORD:-kortix-e2e-password}
-CONFIG_DIR="$HOME/.config/kortix/self-host/$INSTANCE"
+API_IMAGE=${API_IMAGE:-zed/zed-api:selfhost-local}
+EMAIL=${EMAIL:-owner-$INSTANCE@zed.local}
+PASSWORD=${PASSWORD:-zed-e2e-password}
+CONFIG_DIR="$HOME/.config/zed/self-host/$INSTANCE"
 CLI_CONFIG_FILE="$SCRIPT_DIR/.work-$INSTANCE-cli-config.json"
 KEEP_ON_FAIL=${KEEP_ON_FAIL:-false}
 
@@ -46,9 +46,9 @@ ok() { printf "  ${GREEN}✓${RESET} %s\n" "$1"; }
 note() { printf "  ${DIM}%s${RESET}\n" "$1"; }
 die() { printf "  ${RED}✗${RESET} %s\n" "$1" >&2; exit 1; }
 
-export KORTIX_CONFIG_FILE="$CLI_CONFIG_FILE"
+export ZED_CONFIG_FILE="$CLI_CONFIG_FILE"
 
-compose() { docker compose --project-name "kortix-$INSTANCE" --env-file "$CONFIG_DIR/.env" -f "$CONFIG_DIR/docker-compose.yml" "$@"; }
+compose() { docker compose --project-name "zed-$INSTANCE" --env-file "$CONFIG_DIR/.env" -f "$CONFIG_DIR/docker-compose.yml" "$@"; }
 container_id() { compose ps -aq "$1"; }
 
 wait_healthy() {
@@ -97,7 +97,7 @@ cleanup() {
   set +e
   if [ "$rc" -ne 0 ] && [ "$KEEP_ON_FAIL" = "true" ]; then
     note "Keeping failed stack for inspection: $INSTANCE"
-    note "Inspect with: kortix self-host logs --instance $INSTANCE"
+    note "Inspect with: zed self-host logs --instance $INSTANCE"
     return "$rc"
   fi
   compose down --remove-orphans --volumes >/dev/null 2>&1
@@ -130,9 +130,9 @@ $CLI self-host env set --instance "$INSTANCE" \
   "DAYTONA_SERVER_URL=https://daytona.invalid" \
   "DAYTONA_TARGET=degrade-check" \
   "OPENROUTER_API_KEY=degrade-check-dummy" \
-  "KORTIX_LOCAL_IMAGES=true" \
+  "ZED_LOCAL_IMAGES=true" \
   "API_IMAGE=$API_IMAGE" >/dev/null
-# Deliberately leave every MANAGED_GIT_* / KORTIX_GITHUB_APP_* key unset —
+# Deliberately leave every MANAGED_GIT_* / ZED_GITHUB_APP_* key unset —
 # that's the exact condition case 6 tests against.
 ok "config initialized: billing off (default), managed-git unset"
 
@@ -142,17 +142,17 @@ wait_healthy supabase-db 120
 compose up -d --no-deps supabase-auth supabase-rest
 wait_healthy supabase-auth 120
 wait_healthy supabase-rest 120
-compose up -d --no-deps kortix-migrate
-wait_completed kortix-migrate 180
+compose up -d --no-deps zed-migrate
+wait_completed zed-migrate 180
 compose up -d --no-deps supabase-kong
 wait_healthy supabase-kong 120
-compose up -d --no-deps kortix-api
+compose up -d --no-deps zed-api
 ok "compose up"
 
 section "API Health"
 START=$(date +%s)
 until curl -fsS "http://localhost:$API_PORT/v1/health" >/dev/null 2>&1; do
-  [ $(( $(date +%s) - START )) -ge 120 ] && { compose logs kortix-api 2>&1 | tail -30 >&2; die "API never became healthy"; }
+  [ $(( $(date +%s) - START )) -ge 120 ] && { compose logs zed-api 2>&1 | tail -30 >&2; die "API never became healthy"; }
   sleep 2
 done
 ok "API healthy"

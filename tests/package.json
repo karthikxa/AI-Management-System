@@ -1,9 +1,9 @@
 {
-  "name": "@kortix/tests",
+  "name": "@zed/tests",
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Unified Kortix test suite: Playwright, Gate 5, and ke2e live API verification",
+  "description": "Unified Zed test suite: Playwright, Gate 5, and ke2e live API verification",
   "bin": {
     "ke2e": "bin/ke2e.ts"
   },

@@ -67,7 +67,7 @@ describe('session-title invariant', () => {
         'projects/session-lifecycle/engine.ts',
         'sandbox-proxy/routes/preview.ts',
         // Turn-end second-chance retry: a session whose only prompt was baked
-        // in-guest (KORTIX_INITIAL_PROMPT) never crosses another titling hook.
+        // in-guest (ZED_INITIAL_PROMPT) never crosses another titling hook.
         // The generator stays the single writer (needsTitle + CAS), so this is
         // a retry of Hook 1, not a new title author.
         'projects/routes/r4.ts',

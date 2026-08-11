@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 import { hashSecretKey } from '../shared/crypto';
 
-// OAuth access/refresh tokens (kortix_oat_ / kortix_ort_) are stored under the
+// OAuth access/refresh tokens (zed_oat_ / zed_ort_) are stored under the
 // same peppered-scrypt scheme as the rest of the credential system
 // (crypto.hashSecretKey), rather than the bare unpeppered sha256 they used to
 // use. Both schemes are deterministic — scrypt here is peppered with

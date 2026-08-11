@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { mkdtemp, open, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
-import type { AppBlockV2 } from '@kortix/manifest-schema';
+import type { AppBlockV2 } from '@zed/manifest-schema';
 import type {
   App,
   AppDeployment,
@@ -10,11 +10,11 @@ import type {
   AppAccessMode,
   AppSource,
   ProjectHandle,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import ignore from 'ignore';
 import * as tar from 'tar';
 
-import { kortixFromAuth, withKortixScope } from '../api/sdk.ts';
+import { zedFromAuth, withZedScope } from '../api/sdk.ts';
 import {
   emitJson,
   resolveProjectContext,
@@ -25,9 +25,9 @@ import {
 import { C, help, pad, status } from '../style.ts';
 import { loadLocalManifest } from '../manifest.ts';
 
-const HELP = help`Usage: kortix apps <subcommand> [options]
+const HELP = help`Usage: zed apps <subcommand> [options]
 
-Deploy and operate serverless Kortix Apps. Each App owns one stable URL.
+Deploy and operate serverless Zed Apps. Each App owns one stable URL.
 Deployments are immutable. A failed deployment never replaces live traffic.
 
 Subcommands:
@@ -40,7 +40,7 @@ Subcommands:
     --idle-timeout <seconds>        Default: 300.
     --budget <usd>                  Monthly compute budget. Default: 5.
   deploy [path]                     Deploy a directory or .tar.gz archive.
-    --manifest-app <name>           Use one apps.<name> block from kortix.yaml.
+    --manifest-app <name>           Use one apps.<name> block from zed.yaml.
     --app <id|slug>                 Existing App. Omit to create one.
     --slug <slug> --name <name>     New App identity.
     --type static|bundle|dockerfile Source type. Auto-detected for directories.
@@ -72,7 +72,7 @@ Subcommands:
 
 Global options:
   --project <id>     Operate on this project id.
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   --json             Machine-readable output.
   -h, --help         Show this help.
 `;
@@ -156,9 +156,9 @@ async function context(options: ContextOptions): Promise<{
 } | null> {
   const resolved = await resolveProjectContext(options);
   if (!resolved) return null;
-  const kortix = kortixFromAuth(resolved.auth);
-  const project = await withKortixScope(resolved.auth, () =>
-    kortix.project(resolved.projectId).get(),
+  const zed = zedFromAuth(resolved.auth);
+  const project = await withZedScope(resolved.auth, () =>
+    zed.project(resolved.projectId).get(),
   );
   // Client-side pre-check: saves a wasted round trip when the flag is off. The
   // wording matches the server's gate verbatim (feature-flags/gate.ts), so the
@@ -172,12 +172,12 @@ async function context(options: ContextOptions): Promise<{
   return {
     projectId: resolved.projectId,
     auth: resolved.auth,
-    apps: kortix.project(resolved.projectId).apps,
+    apps: zed.project(resolved.projectId).apps,
   };
 }
 
 async function scoped<T>(ctx: NonNullable<Awaited<ReturnType<typeof context>>>, fn: () => Promise<T>) {
-  return withKortixScope(ctx.auth, fn);
+  return withZedScope(ctx.auth, fn);
 }
 
 async function resolveApp(apps: AppsHandle, target: string): Promise<App> {
@@ -378,7 +378,7 @@ export function loadManifestAppDefaults(
   allowSingleDefault = false,
 ): ManifestAppDefaults | null {
   const manifest = loadLocalManifest(cwd);
-  if (!manifest || manifest.data.kortix_version !== 2) return null;
+  if (!manifest || manifest.data.zed_version !== 2) return null;
   const rawApps = manifest.data.apps;
   if (!rawApps || typeof rawApps !== 'object' || Array.isArray(rawApps)) return null;
   const entries = Object.entries(rawApps as Record<string, AppBlockV2>);
@@ -386,7 +386,7 @@ export function loadManifestAppDefaults(
     ? entries.find(([name]) => name === requestedName)
     : allowSingleDefault && entries.length === 1 ? entries[0] : undefined;
   if (!selected) {
-    if (requestedName) throw new Error(`kortix.yaml has no apps.${requestedName} block`);
+    if (requestedName) throw new Error(`zed.yaml has no apps.${requestedName} block`);
     return null;
   }
   return { name: selected[0], root: dirname(manifest.path), block: selected[1] };
@@ -439,10 +439,10 @@ export async function archiveAppDirectory(source: string, includeNodeModules: bo
   bytes: Uint8Array;
   cleanup: () => Promise<void>;
 }> {
-  const temporary = await mkdtemp(join(tmpdir(), 'kortix-app-cli-'));
+  const temporary = await mkdtemp(join(tmpdir(), 'zed-app-cli-'));
   const output = join(temporary, 'source.tar.gz');
   const matcher = ignore();
-  for (const filename of ['.gitignore', '.dockerignore', '.kortixignore']) {
+  for (const filename of ['.gitignore', '.dockerignore', '.zedignore']) {
     const path = join(source, filename);
     if (existsSync(path)) matcher.add(await readFile(path, 'utf8'));
   }
@@ -451,10 +451,10 @@ export async function archiveAppDirectory(source: string, includeNodeModules: bo
     '.git/**',
     '**/.git',
     '**/.git/**',
-    '.kortix',
-    '.kortix/**',
-    '**/.kortix',
-    '**/.kortix/**',
+    '.zed',
+    '.zed/**',
+    '**/.zed',
+    '**/.zed/**',
     '.env*',
     '**/.env*',
     ...(includeNodeModules ? [] : ['node_modules', 'node_modules/**', '**/node_modules/**']),

@@ -24,7 +24,7 @@ notify — anything the rules don't clearly cover waits for a human.
    scoring criteria, and the escalation rules.
 2. **Scope to what's new.** Query HubSpot for leads on
    {{hubspot_lifecycle_stage}} that don't yet carry the
-   `kortix_routing_status` marker. There is no local ledger — the HubSpot
+   `zed_routing_status` marker. There is no local ledger — the HubSpot
    record itself is the memory of what's already been handled. A sweep can
    turn up several new leads at once — handle each as an independent unit; a
    failure on one never blocks the others.
@@ -45,10 +45,10 @@ notify — anything the rules don't clearly cover waits for a human.
    {{escalation_channel}} instead, with what you tried and why it didn't
    resolve, for a human to assign by hand.
 7. **Never delete or merge a lead.** Your only writes are the HubSpot owner
-   field and the `kortix_routing_status` marker (plus the reason you routed
+   field and the `zed_routing_status` marker (plus the reason you routed
    it). No other field, no bulk operation, no deletion, no merge — ever,
    regardless of how confident the match is.
-8. **Mark every lead you touch.** Set `kortix_routing_status` to `routed` or
+8. **Mark every lead you touch.** Set `zed_routing_status` to `routed` or
    `flagged` (with a timestamp and the reason) so the next sweep doesn't
    reprocess it.
 

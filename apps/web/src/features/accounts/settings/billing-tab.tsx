@@ -17,7 +17,7 @@ import {
   invalidateAccountState,
   useCreatePortalSession,
 } from '@/hooks/billing';
-import { getAccountState, type AccountState } from '@kortix/sdk';
+import { getAccountState, type AccountState } from '@zed/sdk';
 import { isBillingEnabled } from '@/lib/config';
 import { useBillingAccountId } from '@/stores/billing-account-context';
 import { useUpgradeDialogStore } from '@/stores/upgrade-dialog-store';
@@ -104,7 +104,7 @@ export function BillingTab({ returnUrl, isActive }: { returnUrl: string; isActiv
       {showTeamCheckout ? (
         <section className="space-y-4">
           <div className="space-y-1">
-            <Label>Kortix Team</Label>
+            <Label>Zed Team</Label>
             <p className="text-muted-foreground text-xs">
               {tI18nHardcoded.raw(
                 'autoFeaturesAccountsSettingsBillingTabJsxTextSubscribeToPut67032571',
@@ -194,7 +194,7 @@ export function BillingTab({ returnUrl, isActive }: { returnUrl: string; isActiv
           )}
 
           {/* The Stripe billing portal doesn't exist without billing enabled
-              (self-host with KORTIX_BILLING_INTERNAL_ENABLED=false) — hide the
+              (self-host with ZED_BILLING_INTERNAL_ENABLED=false) — hide the
               button rather than let it 404/error on click. */}
           {isBillingEnabled() ? (
             <section className="space-y-4">

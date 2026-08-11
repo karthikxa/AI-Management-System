@@ -2,7 +2,7 @@ export type NavSubLink = {
   href: string;
   name: string;
   description?: string;
-  /** Absolute destination off kortix.com — opens in a new tab. */
+  /** Absolute destination off zed.com — opens in a new tab. */
   external?: boolean;
 };
 
@@ -168,8 +168,8 @@ export const companyMenu: NavMenu = {
         { name: 'About', href: '/about' },
         { name: 'Careers', href: '/careers' },
         { name: 'Blog', href: '/blog' },
-        { name: 'X', href: 'https://x.com/kortix', external: true },
-        { name: 'LinkedIn', href: 'https://linkedin.com/company/kortix', external: true },
+        { name: 'X', href: 'https://x.com/zed', external: true },
+        { name: 'LinkedIn', href: 'https://linkedin.com/company/zed', external: true },
       ],
     },
   ],
@@ -196,8 +196,8 @@ export const siteConfig = {
       title: 'Product',
       links: [
         { id: 4, title: 'Support', url: '/support' },
-        { id: 5, title: 'Contact', url: 'mailto:hey@kortix.com' },
-        { id: 13, title: 'Status', url: 'https://status.kortix.com' },
+        { id: 5, title: 'Contact', url: 'mailto:hey@zed.com' },
+        { id: 13, title: 'Status', url: 'https://status.zed.com' },
       ],
     },
     {
@@ -205,7 +205,7 @@ export const siteConfig = {
       links: [
         { id: 7, title: 'Documentation', url: '/docs' },
         { id: 8, title: 'Discord', url: 'https://discord.com/invite/RvFhXUdZ9H' },
-        { id: 9, title: 'GitHub', url: 'https://github.com/kortix-ai/suna' },
+        { id: 9, title: 'GitHub', url: 'https://github.com/zed-ai/suna' },
       ],
     },
     {
@@ -213,7 +213,7 @@ export const siteConfig = {
       links: [
         { id: 10, title: 'Privacy Policy', url: '/legal?tab=privacy' },
         { id: 11, title: 'Terms of Service', url: '/legal/terms' },
-        { id: 12, title: 'License', url: 'https://github.com/kortix-ai/suna/blob/main/LICENSE' },
+        { id: 12, title: 'License', url: 'https://github.com/zed-ai/suna/blob/main/LICENSE' },
       ],
     },
   ],

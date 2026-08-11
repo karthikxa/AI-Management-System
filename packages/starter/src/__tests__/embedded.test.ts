@@ -4,7 +4,7 @@ import embeddedStarter from '../embedded.generated.json' with { type: 'json' };
 import { buildEmbeddedSnapshot } from '../../scripts/generate-embedded';
 
 /**
- * Guards against a stale committed snapshot. The compiled `kortix` binary
+ * Guards against a stale committed snapshot. The compiled `zed` binary
  * serves starter files from `embedded.generated.json`, so if a template file
  * changes without regenerating the snapshot, the binary would ship the old
  * content. Regenerate with `bun run scripts/generate-embedded.ts`.
@@ -20,7 +20,7 @@ describe('embedded starter snapshot', () => {
       'general-knowledge-worker'
     ];
     const skillFiles = gkw.files.filter((f) =>
-      f.path.startsWith('.kortix/opencode/skills/'),
+      f.path.startsWith('.zed/opencode/skills/'),
     );
     expect(skillFiles.length).toBeGreaterThan(0);
   });

@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { createGateway } from '@kortix/llm-gateway';
-import type { GatewayHooks, UpstreamDescriptor, UsageEvent } from '@kortix/llm-gateway';
+import { createGateway } from '@zed/llm-gateway';
+import type { GatewayHooks, UpstreamDescriptor, UsageEvent } from '@zed/llm-gateway';
 
 // Live e2e against real OpenRouter through the UNIFIED pipeline (the same
-// @kortix/llm-gateway code that runs in-API and in the standalone pod). Skipped
+// @zed/llm-gateway code that runs in-API and in the standalone pod). Skipped
 // unless RUN_LIVE_LLM_TESTS=1 and OPENROUTER_API_KEY are set — it spends real
 // (tiny) credits. Run: `bash scripts/test.sh live`.
 const LIVE_KEY = process.env.OPENROUTER_API_KEY ?? '';
@@ -22,7 +22,7 @@ function makeGateway() {
     billingMode: 'credits',
     markup: 1.2,
     resolvedModel: CHEAP_MODEL,
-    appName: 'Kortix-LiveTests',
+    appName: 'Zed-LiveTests',
   };
   const hooks: GatewayHooks = {
     authenticate: async () => ({ userId: 'live-user', accountId: 'live-acct' }),

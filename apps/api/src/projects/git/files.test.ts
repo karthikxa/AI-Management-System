@@ -25,13 +25,13 @@ const { readRepoFile } = await import('./files');
 const project = {
   projectId: 'test-project',
   defaultBranch: 'main',
-  repoUrl: 'https://github.com/kortix-ai/test.git',
+  repoUrl: 'https://github.com/zed-ai/test.git',
   gitAuthToken: null,
   gitAuthHeaders: {},
 } as any;
 
 beforeEach(async () => {
-  repoPath = await mkdtemp(join(tmpdir(), 'kortix-readrepofile-test-'));
+  repoPath = await mkdtemp(join(tmpdir(), 'zed-readrepofile-test-'));
   runGitImpl = realRunGit;
 });
 

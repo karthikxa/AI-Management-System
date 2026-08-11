@@ -33,13 +33,13 @@ variable "cloudflare_zone_id" {
 }
 
 variable "alb_hostname" {
-  description = "Dev ALB DNS name the qa.kortix.com record CNAMEs to (from `kubectl -n kortix-qa get ingress qa-portal`). Update if the ALB is recreated."
+  description = "Dev ALB DNS name the qa.zed.com record CNAMEs to (from `kubectl -n zed-qa get ingress qa-portal`). Update if the ALB is recreated."
   type        = string
-  default     = "k8s-kortixqaportal-8ff35a5ffe-699499126.us-west-2.elb.amazonaws.com"
+  default     = "k8s-zedqaportal-8ff35a5ffe-699499126.us-west-2.elb.amazonaws.com"
 }
 
 variable "manage_dns_record" {
-  description = "Terraform owns the qa.kortix.com Cloudflare record. Keep true so applies don't drop it."
+  description = "Terraform owns the qa.zed.com Cloudflare record. Keep true so applies don't drop it."
   type        = bool
   default     = true
 }
@@ -48,27 +48,27 @@ module "qa_portal" {
   source = "../../modules/qa-portal"
 
   name        = "qa-portal"
-  bucket_name = "kortix-qa-reports"
+  bucket_name = "zed-qa-reports"
 
   oidc_provider_arn = ""
   oidc_provider_url = ""
 
-  namespace       = "kortix-qa"
+  namespace       = "zed-qa"
   service_account = "qa-portal"
 
-  host = "qa.kortix.com"
+  host = "qa.zed.com"
 
   manage_dns_record = var.manage_dns_record
   dns_zone_id       = var.cloudflare_zone_id
   alb_hostname      = var.alb_hostname
 
   enable_access                = true
-  create_access_policy         = false # account attaches reusable "kortix internal" org policies
+  create_access_policy         = false # account attaches reusable "zed internal" org policies
   cloudflare_account_id        = var.cloudflare_account_id
-  access_allowed_email_domains = ["kortix.com"]
+  access_allowed_email_domains = ["zed.com"]
 
   tags = {
-    Project   = "kortix"
+    Project   = "zed"
     Component = "qa-portal"
     ManagedBy = "terraform"
   }
@@ -87,7 +87,7 @@ output "access_application_id" {
 }
 
 # ── GitHub Actions OIDC role that publishes QA reports to the bucket ──────────
-# Trusts the kortix-ai/suna main/staging/prod branches (qa-staging) and pull_requests
+# Trusts the zed-ai/suna main/staging/prod branches (qa-staging) and pull_requests
 # (qa-pr/qa-release per-PR reports). Least privilege: S3 write under reports/*
 # of the QA bucket only. Used as QA_REPORTS_ROLE_ARN in the qa workflows.
 data "aws_iam_policy_document" "qa_publisher_assume" {
@@ -107,20 +107,20 @@ data "aws_iam_policy_document" "qa_publisher_assume" {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
-        "repo:kortix-ai/suna:ref:refs/heads/main",
-        "repo:kortix-ai/suna:ref:refs/heads/staging",
-        "repo:kortix-ai/suna:ref:refs/heads/prod",
-        "repo:kortix-ai/suna:pull_request",
+        "repo:zed-ai/suna:ref:refs/heads/main",
+        "repo:zed-ai/suna:ref:refs/heads/staging",
+        "repo:zed-ai/suna:ref:refs/heads/prod",
+        "repo:zed-ai/suna:pull_request",
       ]
     }
   }
 }
 
 resource "aws_iam_role" "qa_publisher" {
-  name               = "kortix-qa-publisher"
+  name               = "zed-qa-publisher"
   assume_role_policy = data.aws_iam_policy_document.qa_publisher_assume.json
   tags = {
-    Project   = "kortix"
+    Project   = "zed"
     Component = "qa-portal"
     ManagedBy = "terraform"
   }

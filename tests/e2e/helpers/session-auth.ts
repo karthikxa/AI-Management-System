@@ -30,20 +30,20 @@ function envFiles(options: AuthOptions): string[] {
 function authCookieName(options: AuthOptions): string {
   const files = envFiles(options);
   const appUrl =
-    optionalEnvValue('KORTIX_PUBLIC_APP_URL', ...files)
+    optionalEnvValue('ZED_PUBLIC_APP_URL', ...files)
     || optionalEnvValue('NEXT_PUBLIC_APP_URL', ...files)
     || optionalEnvValue('NEXT_PUBLIC_URL', ...files)
     || optionalEnvValue('PUBLIC_URL', ...files);
-  if (!appUrl) return 'sb-kortix-auth-token';
+  if (!appUrl) return 'sb-zed-auth-token';
   try {
     const url = new URL(appUrl);
     if (['localhost', '127.0.0.1'].includes(url.hostname) && url.port) {
-      return `sb-kortix-auth-token-${url.port}`;
+      return `sb-zed-auth-token-${url.port}`;
     }
   } catch {
     // Match the application fallback for invalid or missing app URLs.
   }
-  return 'sb-kortix-auth-token';
+  return 'sb-zed-auth-token';
 }
 
 function trustedAuthHeader(value: string, name: string): string {
@@ -139,7 +139,7 @@ export async function installBrowserSession(
   await page.goto('/favicon.png', { waitUntil: 'domcontentloaded' });
   if (vercelBypass) {
     // The first request creates the web-origin _vercel_jwt cookie. Remove the
-    // Vercel-only headers before cross-origin requests reach the Kortix API.
+    // Vercel-only headers before cross-origin requests reach the Zed API.
     await page.context().setExtraHTTPHeaders({});
   }
   await page.evaluate(() => {
@@ -242,7 +242,7 @@ export async function installBrowserSessionDirect(
   const originUrl = new URL(origin);
   const key =
     ['localhost', '127.0.0.1'].includes(originUrl.hostname) && originUrl.port
-      ? `sb-kortix-auth-token-${originUrl.port}`
+      ? `sb-zed-auth-token-${originUrl.port}`
       : authCookieName(options);
   const chunks = encoded.match(/.{1,3180}/g) ?? [];
   await page.context().addCookies(

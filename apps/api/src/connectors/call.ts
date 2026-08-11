@@ -9,7 +9,7 @@
  * works.) See docs/specs/connector.md §7.
  */
 import { createHash, createHmac, randomBytes } from 'node:crypto';
-import { sanitizeConnectorHeaders } from '@kortix/manifest-schema';
+import { sanitizeConnectorHeaders } from '@zed/manifest-schema';
 import type { ActionBinding } from './types';
 
 export interface ConnectorAuth {
@@ -227,7 +227,7 @@ function applyAdvancedAuth(
 }
 
 /**
- * Merge a connector's static `headers` (kortix.yaml) into the outbound request.
+ * Merge a connector's static `headers` (zed.yaml) into the outbound request.
  *
  * Call this BEFORE the credential is attached — the credential must win:
  *   - any static header whose name matches the auth header (case-INsensitively,
@@ -389,7 +389,7 @@ function buildHttpRequest(opts: {
   method: string;
   pathTemplate: string;
   auth?: ConnectorAuth;
-  /** Connector-level static headers (kortix.yaml `headers:`). */
+  /** Connector-level static headers (zed.yaml `headers:`). */
   headers?: Record<string, string> | null;
   secret?: string | null;
   args?: Record<string, unknown>;
@@ -493,7 +493,7 @@ function setDefaultHeader(headers: Record<string, string>, name: string, value: 
 function buildPostmanRequest(opts: {
   binding: Extract<ActionBinding, { kind: 'postman' }>;
   auth?: ConnectorAuth;
-  /** Connector-level static headers (kortix.yaml `headers:`). */
+  /** Connector-level static headers (zed.yaml `headers:`). */
   headers?: Record<string, string> | null;
   secret?: string | null;
   args?: Record<string, unknown>;
@@ -560,7 +560,7 @@ function buildGraphqlRequest(opts: {
   operation: 'query' | 'mutation';
   field: string;
   auth?: ConnectorAuth;
-  /** Connector-level static headers (kortix.yaml `headers:`). */
+  /** Connector-level static headers (zed.yaml `headers:`). */
   headers?: Record<string, string> | null;
   secret?: string | null;
   args?: Record<string, unknown>;
@@ -587,7 +587,7 @@ function buildGraphqlRequest(opts: {
 function buildMcpRequest(opts: {
   url: string;
   auth?: ConnectorAuth;
-  /** Connector-level static headers (kortix.yaml `headers:`). */
+  /** Connector-level static headers (zed.yaml `headers:`). */
   headers?: Record<string, string> | null;
   secret?: string | null;
   toolName: string;
@@ -679,7 +679,7 @@ export async function executeCall(opts: {
   baseUrl?: string | null;
   auth?: ConnectorAuth;
   /**
-   * The connector's static `headers:` table (kortix.yaml) — sent on every
+   * The connector's static `headers:` table (zed.yaml) — sent on every
    * request this connector makes. Merged in BEFORE the credential, so the auth
    * header always wins on a (case-insensitive) name collision.
    */

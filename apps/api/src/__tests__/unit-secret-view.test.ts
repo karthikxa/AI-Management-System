@@ -113,11 +113,11 @@ describe('buildSecretView — identifier model', () => {
     expect(v.effective_source).toBe('shared');
   });
 
-  test('can_manage_shared is false for system (KORTIX_*) secrets regardless of role', () => {
+  test('can_manage_shared is false for system (ZED_*) secrets regardless of role', () => {
     const v = buildSecretView({
-      identifier: 'KORTIX_INTERNAL',
-      name: 'KORTIX_INTERNAL',
-      shared: sharedRow({ identifier: 'KORTIX_INTERNAL', name: 'KORTIX_INTERNAL' }),
+      identifier: 'ZED_INTERNAL',
+      name: 'ZED_INTERNAL',
+      shared: sharedRow({ identifier: 'ZED_INTERNAL', name: 'ZED_INTERNAL' }),
       canManageShared: true,
     });
     expect(v.system).toBe(true);

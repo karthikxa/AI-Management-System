@@ -3,9 +3,9 @@
 import { isManagedProviderEnabled } from '@/lib/config';
 import { isLlmGatewayEnabled } from '@/lib/llm-gateway';
 import { LLM_PROVIDERS, type LlmProviderEntry, type LlmProviderModel } from '@/lib/llm-providers';
-import { getManagedModel, isProviderAuthSatisfied } from '@kortix/llm-catalog';
-import { getProjectDetail, listProjectSecrets } from '@kortix/sdk';
-import { contract, qk, useRuntimeProviders } from '@kortix/sdk/react';
+import { getManagedModel, isProviderAuthSatisfied } from '@zed/llm-catalog';
+import { getProjectDetail, listProjectSecrets } from '@zed/sdk';
+import { contract, qk, useRuntimeProviders } from '@zed/sdk/react';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
@@ -44,30 +44,30 @@ export function useConnectedProviders(projectId: string, enabled: boolean) {
     return new Set(items.map((item) => item.name));
   }, [secretsQuery.data]);
 
-  // The managed Kortix gateway exists only for projects that explicitly opt
+  // The managed Zed gateway exists only for projects that explicitly opt
   // into the LLM Gateway. Native OpenCode projects should show only providers
   // backed by project secrets, even if an old running sandbox still exposes a
-  // stale `kortix` provider.
+  // stale `zed` provider.
   const runtimeProvidersQuery = useRuntimeProviders();
   const { data: ocProviders } = runtimeProvidersQuery;
 
-  const kortixProvider = useMemo<LlmProviderEntry | null>(() => {
+  const zedProvider = useMemo<LlmProviderEntry | null>(() => {
     // CLOUD-ONLY: the served catalog already excludes every managed model on a
-    // self-host (KORTIX_MANAGED_PROVIDER_ENABLED off), which would leave this
+    // self-host (ZED_MANAGED_PROVIDER_ENABLED off), which would leave this
     // entry with `models: []` — check the public flag directly so the
     // "Managed · Included with your plan" row simply doesn't render instead of
     // showing a managed provider with zero models.
     if (!llmGatewayEnabled || !isManagedProviderEnabled()) return null;
     const connectedIds = new Set(ocProviders?.connected ?? []);
-    const kortix = (ocProviders?.all ?? []).find((p) => p.id === 'kortix');
-    if (!kortix || !connectedIds.has('kortix')) return null;
-    const models: LlmProviderModel[] = Object.entries(kortix.models ?? {})
+    const zed = (ocProviders?.all ?? []).find((p) => p.id === 'zed');
+    if (!zed || !connectedIds.has('zed')) return null;
+    const models: LlmProviderModel[] = Object.entries(zed.models ?? {})
       .filter(([id]) => MANAGED_MODEL_ID_SET.has(id))
       .map(([id, m]) => {
         // Best-effort capability/limit passthrough for the "Models in depth"
         // display (models-tab.tsx / catalog-tab.tsx) — the opencode provider
         // snapshot mirrors these when it has them; `vision`/`limit` otherwise
-        // fall back to `@kortix/llm-catalog`'s curated managed-model table,
+        // fall back to `@zed/llm-catalog`'s curated managed-model table,
         // the canonical home for both (see MANAGED_MODELS' doc comment —
         // managed slugs aren't reliably on models.dev, so this table is
         // authoritative for them, not a guess).
@@ -90,8 +90,8 @@ export function useConnectedProviders(projectId: string, enabled: boolean) {
         };
       });
     return {
-      id: 'kortix',
-      label: kortix.name || 'Kortix',
+      id: 'zed',
+      label: zed.name || 'Zed',
       envVars: [],
       authRequirement: { methods: [] },
       helpUrl: null,
@@ -108,12 +108,12 @@ export function useConnectedProviders(projectId: string, enabled: boolean) {
       secretNames.has(LEGACY_RUNTIME_AUTH_JSON_SECRET_NAME);
     const byo = LLM_PROVIDERS.filter(
       (p) =>
-        p.id !== 'kortix' && isProviderAuthSatisfied(p.authRequirement, (v) => secretNames.has(v)),
+        p.id !== 'zed' && isProviderAuthSatisfied(p.authRequirement, (v) => secretNames.has(v)),
     );
     const subscription = hasCodexSubscription ? [buildCodexProvider(ocProviders)] : [];
-    return kortixProvider ? [kortixProvider, ...subscription, ...byo] : [...subscription, ...byo];
+    return zedProvider ? [zedProvider, ...subscription, ...byo] : [...subscription, ...byo];
     // eslint-disable-next-line react-hooks/exhaustive-deps -- catalogRevision drives a re-read of the module-level LLM_PROVIDERS binding, not a value used directly here
-  }, [secretNames, kortixProvider, ocProviders, catalogRevision]);
+  }, [secretNames, zedProvider, ocProviders, catalogRevision]);
 
   const providerStateLoading = isProviderStateLoading({
     projectDetailLoading: projectDetailQuery.isLoading,

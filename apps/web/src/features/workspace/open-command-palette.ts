@@ -5,7 +5,7 @@
  *
  * The palette owns `open` as local state and is lazily mounted by the shell,
  * so there is no store to write and no ref to reach for. It already listens
- * for `kortix:open-file-search` to be summoned onto its Files page; this is
+ * for `zed:open-file-search` to be summoned onto its Files page; this is
  * the same door onto its root page.
  *
  * The request is BUFFERED, not just dispatched. The search button paints as
@@ -17,7 +17,7 @@
  * consumed on mount, so an early click opens the palette the moment it exists.
  */
 
-export const OPEN_COMMAND_PALETTE_EVENT = 'kortix:open-command-palette';
+export const OPEN_COMMAND_PALETTE_EVENT = 'zed:open-command-palette';
 
 let requested = false;
 

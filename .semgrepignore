@@ -9,8 +9,8 @@ test-results/
 .expo/
 
 .claude/
-.kortix/
-**/templates/**/.kortix/
+.zed/
+**/templates/**/.zed/
 packages/starter/templates/
 
 apps/web/translations/

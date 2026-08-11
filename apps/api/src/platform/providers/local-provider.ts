@@ -68,7 +68,7 @@ interface LocalSandboxConfig {
 // ─── Constants ─────────────────────────────────────────────────────────────
 
 const DEFAULT_CONFIG: LocalSandboxConfig = {
-  workspaceDir: join(tmpdir(), 'kortix-local'),
+  workspaceDir: join(tmpdir(), 'zed-local'),
   defaultBranch: 'main',
   commandTimeoutMs: 300_000, // 5 minutes
   maxConcurrent: 10,
@@ -211,7 +211,7 @@ export class LocalProvider implements SandboxProvider {
 
       return {
         externalId: sandboxId,
-        baseUrl: `http://localhost:${process.env.KORTIX_SERVICE_PORT || '8000'}`,
+        baseUrl: `http://localhost:${process.env.ZED_SERVICE_PORT || '8000'}`,
         metadata: {
           dir,
           pid: process.pid,
@@ -233,9 +233,9 @@ export class LocalProvider implements SandboxProvider {
     opts: CreateSandboxOpts
   ): Promise<void> {
     // Clone repository if provided
-    const repoUrl = opts.envVars?.KORTIX_REPO_URL;
+    const repoUrl = opts.envVars?.ZED_REPO_URL;
     if (repoUrl) {
-      const branch = opts.envVars?.KORTIX_BRANCH || config.defaultBranch;
+      const branch = opts.envVars?.ZED_BRANCH || config.defaultBranch;
 
       // Embed credentials for private repos so the clone doesn't hang on auth.
       // The GitHub PAT comes from the server env (MANAGED_GIT_GITHUB_TOKEN or
@@ -289,9 +289,9 @@ export class LocalProvider implements SandboxProvider {
   /**
    * Ensure the agent runtime daemon is started inside the local sandbox.
    *
-   * In cloud mode the sandbox image boots `kortix-sandbox-agent-server` (the
+   * In cloud mode the sandbox image boots `zed-sandbox-agent-server` (the
    * daemon that runs OpenCode — the actual agent brain with tools, skills, and
-   * connectors) on KORTIX_SERVICE_PORT. For local parity we spawn the same
+   * connectors) on ZED_SERVICE_PORT. For local parity we spawn the same
    * daemon from the monorepo against the sandbox directory, so prompts are
    * actually processed instead of dying silently.
    */
@@ -306,8 +306,8 @@ export class LocalProvider implements SandboxProvider {
     }
 
     const daemonEntry =
-      process.env.KORTIX_SANDBOX_AGENT_SERVER_ENTRY ||
-      join(process.cwd(), '..', 'kortix-sandbox-agent-server', 'src', 'main.ts');
+      process.env.ZED_SANDBOX_AGENT_SERVER_ENTRY ||
+      join(process.cwd(), '..', 'zed-sandbox-agent-server', 'src', 'main.ts');
 
     // The sandbox credential + env vars were written to the sandbox .env file
     // during create(); pass them to the daemon process too.
@@ -316,12 +316,12 @@ export class LocalProvider implements SandboxProvider {
       | undefined;
     const daemonEnv: Record<string, string> = {
       ...process.env,
-      KORTIX_WORKSPACE: sandbox.dir,
-      KORTIX_PROJECT_TARGET: sandbox.dir,
-      KORTIX_SERVICE_PORT: envVars?.KORTIX_SERVICE_PORT || '8000',
-      KORTIX_OPENCODE_INTERNAL_PORT: '4096',
-      KORTIX_OPENCODE_STANDBY_PORT: '4097',
-      KORTIX_STATIC_PORT: '3211',
+      ZED_WORKSPACE: sandbox.dir,
+      ZED_PROJECT_TARGET: sandbox.dir,
+      ZED_SERVICE_PORT: envVars?.ZED_SERVICE_PORT || '8000',
+      ZED_OPENCODE_INTERNAL_PORT: '4096',
+      ZED_OPENCODE_STANDBY_PORT: '4097',
+      ZED_STATIC_PORT: '3211',
       ...envVars,
     };
 

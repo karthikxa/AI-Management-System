@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from 'bun:test';
 
 import { configuredTimeoutMs, TimeoutError, withTimeout } from './with-timeout';
 
-const ENV_KEY = 'KORTIX_TEST_TIMEOUT_BUDGET_MS';
+const ENV_KEY = 'ZED_TEST_TIMEOUT_BUDGET_MS';
 
 afterEach(() => {
   delete process.env[ENV_KEY];

@@ -82,17 +82,17 @@ export function UpgradesViewContent({
             {upgrades.map((upgrade: ProjectUpgrade) => (
               <li
                 key={upgrade.id}
-                className="border-kortix-base/30 bg-kortix-base/[0.06] shadow-kortix-base/20 hover:border-kortix-base/45 hover:bg-kortix-base/[0.09] flex items-center gap-3 rounded-md border px-4 py-3 shadow-md transition-colors"
+                className="border-zed-base/30 bg-zed-base/[0.06] shadow-zed-base/20 hover:border-zed-base/45 hover:bg-zed-base/[0.09] flex items-center gap-3 rounded-md border px-4 py-3 shadow-md transition-colors"
               >
-                <span className="bg-kortix-base/15 ring-kortix-base/25 flex size-9 shrink-0 items-center justify-center rounded-sm ring-1 ring-inset">
-                  <ArrowUpCircle className="text-kortix-base size-5" />
+                <span className="bg-zed-base/15 ring-zed-base/25 flex size-9 shrink-0 items-center justify-center rounded-sm ring-1 ring-inset">
+                  <ArrowUpCircle className="text-zed-base size-5" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <p className="text-foreground text-sm font-medium text-balance">
                       {upgrade.title}
                     </p>
-                    <Badge variant="kortix" size="xs" className="shrink-0">
+                    <Badge variant="zed" size="xs" className="shrink-0">
                       Recommended
                     </Badge>
                   </div>

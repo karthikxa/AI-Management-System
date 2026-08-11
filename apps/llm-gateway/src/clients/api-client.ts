@@ -1,4 +1,4 @@
-import { withRetry } from '@kortix/llm-gateway';
+import { withRetry } from '@zed/llm-gateway';
 import {
   GatewayResolutionError,
   type AuthedPrincipal,
@@ -9,7 +9,7 @@ import {
   type ModelRoutePlan,
   type UpstreamDescriptor,
   type UsageEvent,
-} from '@kortix/llm-gateway';
+} from '@zed/llm-gateway';
 
 export type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
 
@@ -25,7 +25,7 @@ export class ApiUnavailableError extends Error {
     readonly path: string,
     readonly status?: number,
   ) {
-    super(`kortix api ${path} unavailable${status ? ` (${status})` : ''}`);
+    super(`zed api ${path} unavailable${status ? ` (${status})` : ''}`);
     this.name = 'ApiUnavailableError';
   }
 }

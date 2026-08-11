@@ -50,7 +50,7 @@ const TRACEBACK = [
 
 // `parseSessionMetadataOutput` needs `===` + a JSON blob carrying `id` + `time`.
 const SESSION_META = [
-  '=== /workspace/.kortix/sessions/ses_abc.json',
+  '=== /workspace/.zed/sessions/ses_abc.json',
   JSON.stringify({
     id: 'ses_abc',
     slug: 'refactor-pricing',
@@ -80,7 +80,7 @@ describe('BashTool renders rich output without pushing elements through Shiki', 
 
   test('session metadata output renders the session list', () => {
     const html = renderToStaticMarkup(
-      withProviders(<BashTool part={makePart('kortix sessions list', SESSION_META)} defaultOpen />),
+      withProviders(<BashTool part={makePart('zed sessions list', SESSION_META)} defaultOpen />),
     );
 
     expect(html).toContain('Refactor pricing');
@@ -90,7 +90,7 @@ describe('BashTool renders rich output without pushing elements through Shiki', 
   test('session messages output renders the message list', () => {
     const html = renderToStaticMarkup(
       withProviders(
-        <BashTool part={makePart('kortix sessions messages', SESSION_MESSAGES)} defaultOpen />,
+        <BashTool part={makePart('zed sessions messages', SESSION_MESSAGES)} defaultOpen />,
       ),
     );
 

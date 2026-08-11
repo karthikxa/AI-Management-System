@@ -6,13 +6,13 @@ import { fileURLToPath } from 'node:url';
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
 
 export function appdBinaryPath(): string {
-  return process.env.KORTIX_APPD_BIN_PATH
-    || resolve(REPO_ROOT, 'apps/kortix-app-runtime/dist/kortix-appd-linux-amd64');
+  return process.env.ZED_APPD_BIN_PATH
+    || resolve(REPO_ROOT, 'apps/zed-app-runtime/dist/zed-appd-linux-amd64');
 }
 
 export function appCaddyBinaryPath(): string {
-  return process.env.KORTIX_APP_CADDY_BIN_PATH
-    || resolve(REPO_ROOT, 'apps/kortix-app-runtime/dist/caddy-linux-amd64');
+  return process.env.ZED_APP_CADDY_BIN_PATH
+    || resolve(REPO_ROOT, 'apps/zed-app-runtime/dist/caddy-linux-amd64');
 }
 
 type AppRuntimeArtifactDigestOptions = {
@@ -33,11 +33,11 @@ export function appRuntimeArtifactDigest(
   const paths = binaryPaths.every(existsSync)
     ? binaryPaths
     : [
-        resolve(repoRoot, 'apps/kortix-app-runtime/main.go'),
-        resolve(repoRoot, 'apps/kortix-app-runtime/go.mod'),
-        resolve(repoRoot, 'apps/kortix-app-runtime/caddy/main.go'),
-        resolve(repoRoot, 'apps/kortix-app-runtime/caddy/go.mod'),
-        resolve(repoRoot, 'apps/kortix-app-runtime/caddy/go.sum'),
+        resolve(repoRoot, 'apps/zed-app-runtime/main.go'),
+        resolve(repoRoot, 'apps/zed-app-runtime/go.mod'),
+        resolve(repoRoot, 'apps/zed-app-runtime/caddy/main.go'),
+        resolve(repoRoot, 'apps/zed-app-runtime/caddy/go.mod'),
+        resolve(repoRoot, 'apps/zed-app-runtime/caddy/go.sum'),
       ];
   const hash = createHash('sha256');
   for (const path of paths) {

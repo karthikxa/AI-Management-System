@@ -16,11 +16,11 @@ describe('unionRequiredAliases', () => {
   });
 
   test('the running agent manifest counts', () => {
-    // Canonical, not the public spelling: `slack` is stored as `kortix_slack`,
+    // Canonical, not the public spelling: `slack` is stored as `zed_slack`,
     // and the resolver this feeds looks the alias up by its stored slug.
     expect(
       unionRequiredAliases({ sessionRequired: null, manifestRequired: ['slack'], boundAliases: [] }),
-    ).toEqual(['kortix_slack']);
+    ).toEqual(['zed_slack']);
   });
 
   test('an existing binding counts — it catches a connection revoked after create', () => {
@@ -37,16 +37,16 @@ describe('unionRequiredAliases', () => {
       manifestRequired: ['gmail', 'slack'],
       boundAliases: ['notion'],
     });
-    expect(result.sort()).toEqual(['gmail', 'kortix_slack', 'notion']);
+    expect(result.sort()).toEqual(['gmail', 'zed_slack', 'notion']);
   });
 
   test('aliases are canonicalised, so a public spelling is not counted twice', () => {
-    // `email` and `kortix_email` are the same connector; treating them as two
+    // `email` and `zed_email` are the same connector; treating them as two
     // would ask the pre-flight to resolve an alias that does not exist.
     expect(
       unionRequiredAliases({
         sessionRequired: ['email'],
-        manifestRequired: ['kortix_email'],
+        manifestRequired: ['zed_email'],
         boundAliases: [],
       }),
     ).toHaveLength(1);

@@ -97,7 +97,7 @@ export async function resolveCommitSha(project: GitBackedProject, ref?: string):
   const result = await runGit(['rev-parse', '--verify', `${treeRef}^{commit}`], repoPath, false).catch(() => ({ stdout: '' }));
   const sha = result.stdout.trim();
   if (!/^[0-9a-f]{40}$/.test(sha)) {
-    if (process.env.KORTIX_LOCAL_DEV === '1') {
+    if (process.env.ZED_LOCAL_DEV === '1') {
       return '0000000000000000000000000000000000000000';
     }
     throw new Error(`Unexpected git rev-parse output for ${treeRef}: ${sha}`);

@@ -16,11 +16,11 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DemoQualifierModal } from '@/features/contact/demo-qualifier-modal';
 
-const CONTACT_EMAIL = 'hey@kortix.ai';
+const CONTACT_EMAIL = 'hey@zed.ai';
 
-// Public demo event (cal.com/team/kortix/demo) + a namespace unique to it.
-const CAL_LINK = 'team/kortix/demo';
-const CAL_NAMESPACE = 'kortix-enterprise-demo';
+// Public demo event (cal.com/team/zed/demo) + a namespace unique to it.
+const CAL_LINK = 'team/zed/demo';
+const CAL_NAMESPACE = 'zed-enterprise-demo';
 
 const VALUE_PROPS = [
   {
@@ -68,7 +68,7 @@ export default function ContactPage() {
         </div>
 
         <h1 className="text-foreground mt-6 text-4xl leading-[1.04] font-medium tracking-tight sm:text-5xl md:text-6xl">
-          {tI18nHardcoded.raw('autoAppPublicMarketingContactPageJsxTextSeeKortixRun82bdbdad')}
+          {tI18nHardcoded.raw('autoAppPublicMarketingContactPageJsxTextSeeZedRun82bdbdad')}
           <br />
           <span className="text-muted-foreground">
             {tI18nHardcoded.raw('autoAppPublicMarketingContactPageJsxTextYourCompanyS9f04147b')}

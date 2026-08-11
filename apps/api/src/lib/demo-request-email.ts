@@ -76,7 +76,7 @@ function renderHtml(lead: DemoRequestLead): string {
             </table>
           </div>
           <div style="padding:16px 28px;text-align:center;border-top:1px solid #e5e7eb;background:#ffffff;">
-            <p style="font-size:12px;color:#9ca3af;margin:0;">Kortix — automated lead notification</p>
+            <p style="font-size:12px;color:#9ca3af;margin:0;">Zed — automated lead notification</p>
           </div>
         </div>
       </td></tr>
@@ -88,7 +88,7 @@ function renderHtml(lead: DemoRequestLead): string {
 /**
  * Send the internal "new demo request" notification. Never throws — returns a
  * result the caller can log. Recipients come from config.DEMO_LEAD_NOTIFY_EMAIL,
- * a comma-separated list (default marko@kortix.ai,hey@kortix.ai) — every
+ * a comma-separated list (default marko@zed.ai,hey@zed.ai) — every
  * address gets every submission.
  */
 export async function sendDemoRequestNotification(
@@ -98,7 +98,7 @@ export async function sendDemoRequestNotification(
     return { ok: false, skipped: true, reason: 'email_not_configured' };
   }
 
-  const recipients = (config.DEMO_LEAD_NOTIFY_EMAIL || 'marko@kortix.ai,hey@kortix.ai')
+  const recipients = (config.DEMO_LEAD_NOTIFY_EMAIL || 'marko@zed.ai,hey@zed.ai')
     .split(',')
     .map((address) => address.trim())
     .filter(Boolean);

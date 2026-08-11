@@ -1,5 +1,5 @@
 import { eq, and, inArray } from 'drizzle-orm';
-import { kortixApiKeys } from '@kortix/db';
+import { zedApiKeys } from '@zed/db';
 import { db } from '../shared/db';
 import {
   hashSecretKey,
@@ -7,7 +7,7 @@ import {
   generateApiKeyPair,
   generateSandboxKeyPair,
   isApiKeySecretConfigured,
-  isKortixToken,
+  isZedToken,
 } from '../shared/crypto';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -56,8 +56,8 @@ const lastUsedCache = new Map<string, number>();
  * Create a new API key scoped to a sandbox.
  * Returns the secret key in plaintext ONCE — only the hash is stored.
  *
- * type='user'    → kortix_<32> secret key (user-created, external access)
- * type='sandbox' → kortix_sb_<32> secret key (auto-managed, injected into sandbox)
+ * type='user'    → zed_<32> secret key (user-created, external access)
+ * type='sandbox' → zed_sb_<32> secret key (auto-managed, injected into sandbox)
  */
 export async function createApiKey(params: CreateApiKeyParams): Promise<CreateApiKeyResult> {
   if (!isApiKeySecretConfigured()) {
@@ -71,7 +71,7 @@ export async function createApiKey(params: CreateApiKeyParams): Promise<CreateAp
   const secretKeyHash = hashSecretKey(secretKey);
 
   const [row] = await db
-    .insert(kortixApiKeys)
+    .insert(zedApiKeys)
     .values({
       sandboxId: params.sandboxId,
       accountId: params.accountId,
@@ -108,19 +108,19 @@ export async function createApiKey(params: CreateApiKeyParams): Promise<CreateAp
 export async function listApiKeys(sandboxId: string) {
   return db
     .select({
-      keyId: kortixApiKeys.keyId,
-      publicKey: kortixApiKeys.publicKey,
-      title: kortixApiKeys.title,
-      description: kortixApiKeys.description,
-      type: kortixApiKeys.type,
-      status: kortixApiKeys.status,
-      sandboxId: kortixApiKeys.sandboxId,
-      expiresAt: kortixApiKeys.expiresAt,
-      lastUsedAt: kortixApiKeys.lastUsedAt,
-      createdAt: kortixApiKeys.createdAt,
+      keyId: zedApiKeys.keyId,
+      publicKey: zedApiKeys.publicKey,
+      title: zedApiKeys.title,
+      description: zedApiKeys.description,
+      type: zedApiKeys.type,
+      status: zedApiKeys.status,
+      sandboxId: zedApiKeys.sandboxId,
+      expiresAt: zedApiKeys.expiresAt,
+      lastUsedAt: zedApiKeys.lastUsedAt,
+      createdAt: zedApiKeys.createdAt,
     })
-    .from(kortixApiKeys)
-    .where(eq(kortixApiKeys.sandboxId, sandboxId));
+    .from(zedApiKeys)
+    .where(eq(zedApiKeys.sandboxId, sandboxId));
 }
 
 /**
@@ -128,16 +128,16 @@ export async function listApiKeys(sandboxId: string) {
  */
 export async function revokeApiKey(keyId: string, accountId: string): Promise<boolean> {
   const result = await db
-    .update(kortixApiKeys)
+    .update(zedApiKeys)
     .set({ status: 'revoked' })
     .where(
       and(
-        eq(kortixApiKeys.keyId, keyId),
-        eq(kortixApiKeys.accountId, accountId),
-        eq(kortixApiKeys.status, 'active'),
+        eq(zedApiKeys.keyId, keyId),
+        eq(zedApiKeys.accountId, accountId),
+        eq(zedApiKeys.status, 'active'),
       ),
     )
-    .returning({ keyId: kortixApiKeys.keyId });
+    .returning({ keyId: zedApiKeys.keyId });
 
   return result.length > 0;
 }
@@ -147,14 +147,14 @@ export async function revokeApiKey(keyId: string, accountId: string): Promise<bo
  */
 export async function deleteApiKey(keyId: string, accountId: string): Promise<boolean> {
   const result = await db
-    .delete(kortixApiKeys)
+    .delete(zedApiKeys)
     .where(
       and(
-        eq(kortixApiKeys.keyId, keyId),
-        eq(kortixApiKeys.accountId, accountId),
+        eq(zedApiKeys.keyId, keyId),
+        eq(zedApiKeys.accountId, accountId),
       ),
     )
-    .returning({ keyId: kortixApiKeys.keyId });
+    .returning({ keyId: zedApiKeys.keyId });
 
   return result.length > 0;
 }
@@ -162,7 +162,7 @@ export async function deleteApiKey(keyId: string, accountId: string): Promise<bo
 // ─── Validation ──────────────────────────────────────────────────────────────
 
 /**
- * Validate a Kortix API key (kortix_ or kortix_sb_ prefix).
+ * Validate a Zed API key (zed_ or zed_sb_ prefix).
  * Single validation path for all key types — returns account_id, sandbox_id, and key type.
  */
 export async function validateSecretKey(secretKey: string): Promise<ApiKeyValidationResult> {
@@ -170,8 +170,8 @@ export async function validateSecretKey(secretKey: string): Promise<ApiKeyValida
     return { isValid: false, error: 'API_KEY_SECRET not configured' };
   }
 
-  if (!isKortixToken(secretKey)) {
-    return { isValid: false, error: 'Invalid API key format — expected kortix_ prefix' };
+  if (!isZedToken(secretKey)) {
+    return { isValid: false, error: 'Invalid API key format — expected zed_ prefix' };
   }
 
   try {
@@ -179,24 +179,24 @@ export async function validateSecretKey(secretKey: string): Promise<ApiKeyValida
 
     const [row] = await db
       .select({
-        keyId: kortixApiKeys.keyId,
-        accountId: kortixApiKeys.accountId,
-        sandboxId: kortixApiKeys.sandboxId,
-        type: kortixApiKeys.type,
-        status: kortixApiKeys.status,
-        expiresAt: kortixApiKeys.expiresAt,
+        keyId: zedApiKeys.keyId,
+        accountId: zedApiKeys.accountId,
+        sandboxId: zedApiKeys.sandboxId,
+        type: zedApiKeys.type,
+        status: zedApiKeys.status,
+        expiresAt: zedApiKeys.expiresAt,
       })
-      .from(kortixApiKeys)
+      .from(zedApiKeys)
       .where(
         and(
-          inArray(kortixApiKeys.secretKeyHash, secretKeyHashes),
-          eq(kortixApiKeys.status, 'active'),
+          inArray(zedApiKeys.secretKeyHash, secretKeyHashes),
+          eq(zedApiKeys.status, 'active'),
         ),
       )
       .limit(1);
 
     if (!row) {
-      const hasAnyKeys = await db.select({ keyId: kortixApiKeys.keyId }).from(kortixApiKeys).limit(1);
+      const hasAnyKeys = await db.select({ keyId: zedApiKeys.keyId }).from(zedApiKeys).limit(1);
       console.warn(`[validateSecretKey] Token not found in DB. hash=${secretKeyHashes[0]!.slice(0, 16)}... prefix="${secretKey.slice(0, 20)}..." anyKeysInDb=${hasAnyKeys.length > 0}`);
       return { isValid: false, error: 'API key not found or invalid' };
     }
@@ -244,9 +244,9 @@ async function updateLastUsedThrottled(keyId: string): Promise<void> {
 
   try {
     await db
-      .update(kortixApiKeys)
+      .update(zedApiKeys)
       .set({ lastUsedAt: new Date() })
-      .where(eq(kortixApiKeys.keyId, keyId));
+      .where(eq(zedApiKeys.keyId, keyId));
   } catch (err) {
     console.warn('Failed to update last_used_at:', err);
   }

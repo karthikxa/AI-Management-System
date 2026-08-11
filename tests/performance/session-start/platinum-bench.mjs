@@ -1,8 +1,8 @@
 // Platinum (our microVM platform) create->running benchmark. Plain REST, Bearer
 // key — mirrors apps/api/src/platform/providers/platinum.ts create(): POST
-// /v1/sandboxes?wait_for_state=running&wait_timeout_ms=60000 with a kortix-default
+// /v1/sandboxes?wait_for_state=running&wait_timeout_ms=60000 with a zed-default
 // template (which bakes our daemon), measure, then DELETE. Env: PLATINUM_API_URL,
-// PLATINUM_API_KEY, N (default 1), PLATINUM_TEMPLATE (else first kortix-default).
+// PLATINUM_API_KEY, N (default 1), PLATINUM_TEMPLATE (else first zed-default).
 const URL_ = process.env.PLATINUM_API_URL;
 const KEY = process.env.PLATINUM_API_KEY;
 const N = Number(process.env.N || 1);
@@ -23,7 +23,7 @@ const j = async (p, o = {}) => {
   if (!template) {
     const t = await j('/v1/templates');
     const tpls = Array.isArray(t.body) ? t.body : [];
-    const def = tpls.find((x) => /kortix-default/.test(x.name) && String(x.state).toLowerCase() === 'ready') || tpls[0];
+    const def = tpls.find((x) => /zed-default/.test(x.name) && String(x.state).toLowerCase() === 'ready') || tpls[0];
     template = def?.id;
     console.log(`template: ${template} (${def?.name}, region=${def?.region}, ${def?.defaultCpu}cpu/${def?.defaultRamMb}mb)`);
   }

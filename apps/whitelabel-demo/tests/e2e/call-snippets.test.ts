@@ -80,7 +80,7 @@ describe('call snippets never render credentials', () => {
   test('the bearer is only ever the placeholder', () => {
     const text = renderedAll({ projectId: PROJECT_ID });
     // Any `Bearer` that is not the placeholder is a real token in a snippet.
-    expect(text.match(/Bearer (?!\$KORTIX_API_KEY)\S+/)).toBeNull();
+    expect(text.match(/Bearer (?!\$ZED_API_KEY)\S+/)).toBeNull();
   });
 
   test('every HTTP request carries the placeholder authorization line', () => {

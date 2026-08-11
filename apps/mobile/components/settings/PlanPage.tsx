@@ -31,7 +31,7 @@ export function PlanPage({ visible = true, onClose }: PlanPageProps) {
 
   const handleOpenWeb = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Linking.openURL('https://www.kortix.com');
+    Linking.openURL('https://www.zed.com');
   };
 
   if (!visible) return null;
@@ -95,7 +95,7 @@ export function PlanPage({ visible = true, onClose }: PlanPageProps) {
           <Text className="mb-8 text-center text-base leading-relaxed text-muted-foreground">
             {t(
               'billing.checkoutUnavailableMessage',
-              'To subscribe to a plan, please visit kortix.com on the web.'
+              'To subscribe to a plan, please visit zed.com on the web.'
             )}
           </Text>
 
@@ -103,7 +103,7 @@ export function PlanPage({ visible = true, onClose }: PlanPageProps) {
             onPress={handleOpenWeb}
             className="flex-row items-center gap-2 rounded-full bg-primary px-6 py-3">
             <Text className="font-roobert-medium text-base text-primary-foreground">
-              {t('billing.goToWeb', 'Go to kortix.com')}
+              {t('billing.goToWeb', 'Go to zed.com')}
             </Text>
             <Icon as={ExternalLink} size={18} className="text-primary-foreground" strokeWidth={2} />
           </Pressable>

@@ -5,14 +5,14 @@ import type { LoadedAgents } from '../projects/agents';
 
 const nativeAgents = [
   {
-    name: 'kortix',
-    path: '.kortix/opencode/agents/kortix.md',
-    description: 'Default Kortix agent',
+    name: 'zed',
+    path: '.zed/opencode/agents/zed.md',
+    description: 'Default Zed agent',
     mode: 'primary',
   },
   {
     name: 'release-bot',
-    path: '.kortix/opencode/agents/release-bot.md',
+    path: '.zed/opencode/agents/release-bot.md',
     description: 'Ships releases',
     mode: 'subagent',
   },
@@ -34,31 +34,31 @@ describe('project config agent discovery', () => {
       errors: [],
       specs: [
         {
-          name: 'kortix',
-          path: 'kortix.yaml#agents.kortix',
+          name: 'zed',
+          path: 'zed.yaml#agents.zed',
           enabled: true,
           connectors: 'all',
-          kortixCli: 'all',
+          zedCli: 'all',
           env: 'all',
           file: null,
           model: null,
         },
         {
           name: 'triage',
-          path: 'kortix.yaml#agents.triage',
+          path: 'zed.yaml#agents.triage',
           enabled: true,
           connectors: [],
-          kortixCli: [],
+          zedCli: [],
           env: 'all',
-          file: '.kortix/opencode/agents/release-bot.md',
+          file: '.zed/opencode/agents/release-bot.md',
           model: null,
         },
         {
           name: 'disabled',
-          path: 'kortix.yaml#agents.disabled',
+          path: 'zed.yaml#agents.disabled',
           enabled: false,
           connectors: [],
-          kortixCli: [],
+          zedCli: [],
           env: 'all',
           file: null,
           model: null,
@@ -71,24 +71,24 @@ describe('project config agent discovery', () => {
     expect(result.agent_discovery).toBe('declarative');
     expect(result.agents).toEqual([
       {
-        name: 'kortix',
-        path: '.kortix/opencode/agents/kortix.md',
-        description: 'Default Kortix agent',
+        name: 'zed',
+        path: '.zed/opencode/agents/zed.md',
+        description: 'Default Zed agent',
         mode: 'primary',
-        source: 'kortix.yaml',
+        source: 'zed.yaml',
         enabled: true,
         sandbox: null,
-        scope: { env: 'all', connectors: 'all', kortix_cli: 'all' },
+        scope: { env: 'all', connectors: 'all', zed_cli: 'all' },
       },
       {
         name: 'triage',
-        path: '.kortix/opencode/agents/release-bot.md',
+        path: '.zed/opencode/agents/release-bot.md',
         description: 'Ships releases',
         mode: 'subagent',
-        source: 'kortix.yaml',
+        source: 'zed.yaml',
         enabled: true,
         sandbox: null,
-        scope: { env: 'all', connectors: [], kortix_cli: [] },
+        scope: { env: 'all', connectors: [], zed_cli: [] },
       },
     ]);
   });
@@ -99,10 +99,10 @@ describe('project config agent discovery', () => {
       specs: [
         {
           name: 'support_bot',
-          path: 'kortix.yaml#agents.support_bot',
+          path: 'zed.yaml#agents.support_bot',
           enabled: true,
           connectors: ['stripe'],
-          kortixCli: ['project.read'],
+          zedCli: ['project.read'],
           env: ['GITHUB_TOKEN', 'OPENAI_API_KEY'],
           file: null,
           model: null,
@@ -112,11 +112,11 @@ describe('project config agent discovery', () => {
 
     const [agent] = resolveConfigAgents(nativeAgents, loaded).agents;
     // The UI reads exactly this to render the per-agent scope panel — note the
-    // wire key is `kortix_cli` (snake_case), mapped from the spec's `kortixCli`.
+    // wire key is `zed_cli` (snake_case), mapped from the spec's `zedCli`.
     expect(agent?.scope).toEqual({
       env: ['GITHUB_TOKEN', 'OPENAI_API_KEY'],
       connectors: ['stripe'],
-      kortix_cli: ['project.read'],
+      zed_cli: ['project.read'],
     });
   });
 
@@ -130,7 +130,7 @@ describe('project config agent discovery', () => {
       specs: [],
       errors: [{
         name: '(top-level)',
-        path: 'kortix.yaml',
+        path: 'zed.yaml',
         error: '`agents` must use [[agents]]',
       }],
     });

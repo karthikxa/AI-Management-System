@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
-import { DEFAULT_MANAGED_MODEL_IDS, isManagedModelId } from '@kortix/llm-catalog';
+import { DEFAULT_MANAGED_MODEL_IDS, isManagedModelId } from '@zed/llm-catalog';
 
 const TEMPLATES_ROOT = join(import.meta.dir, '..', '..', 'templates');
 
@@ -54,7 +54,7 @@ function declaredAgentModels(): AgentModelDeclaration[] {
 }
 
 function resolvesToManagedModel(model: string): boolean {
-  const bare = model.startsWith('kortix/') ? model.slice('kortix/'.length) : model;
+  const bare = model.startsWith('zed/') ? model.slice('zed/'.length) : model;
   return isManagedModelId(bare);
 }
 
@@ -63,7 +63,7 @@ describe('starter template agent model declarations', () => {
     const files = agentDefinitionFiles();
 
     expect(files.length).toBeGreaterThan(50);
-    expect(files.some((f) => f.endsWith('templates/base/.kortix/opencode/agents/kortix.md'))).toBe(
+    expect(files.some((f) => f.endsWith('templates/base/.zed/opencode/agents/zed.md'))).toBe(
       true,
     );
     expect(
@@ -86,24 +86,24 @@ describe('starter template agent model declarations', () => {
     expect(declaredAgentModels()).toEqual([]);
   });
 
-  test('rejects a provider-qualified inner id under the kortix provider', () => {
-    expect(resolvesToManagedModel('kortix/anthropic/claude-sonnet-5')).toBe(false);
-    expect(resolvesToManagedModel('kortix/codex/gpt-5.5')).toBe(false);
+  test('rejects a provider-qualified inner id under the zed provider', () => {
+    expect(resolvesToManagedModel('zed/anthropic/claude-sonnet-5')).toBe(false);
+    expect(resolvesToManagedModel('zed/codex/gpt-5.5')).toBe(false);
   });
 
-  test('accepts every managed catalog id in both bare and kortix-prefixed form', () => {
+  test('accepts every managed catalog id in both bare and zed-prefixed form', () => {
     for (const id of DEFAULT_MANAGED_MODEL_IDS) {
       expect(resolvesToManagedModel(id)).toBe(true);
-      expect(resolvesToManagedModel(`kortix/${id}`)).toBe(true);
+      expect(resolvesToManagedModel(`zed/${id}`)).toBe(true);
     }
   });
 
   test('parses the frontmatter model key it relies on', () => {
-    expect(frontmatterModel('---\nmode: primary\nmodel: kortix/glm-5.2\n---\nbody\n')).toBe(
-      'kortix/glm-5.2',
+    expect(frontmatterModel('---\nmode: primary\nmodel: zed/glm-5.2\n---\nbody\n')).toBe(
+      'zed/glm-5.2',
     );
     expect(frontmatterModel('---\nmode: primary\n---\nbody\n')).toBeUndefined();
-    expect(frontmatterModel('# not frontmatter\nmodel: kortix/glm-5.2\n')).toBeUndefined();
-    expect(frontmatterModel('---\nmodel: "kortix/glm-5.2"\n---\n')).toBe('kortix/glm-5.2');
+    expect(frontmatterModel('# not frontmatter\nmodel: zed/glm-5.2\n')).toBeUndefined();
+    expect(frontmatterModel('---\nmodel: "zed/glm-5.2"\n---\n')).toBe('zed/glm-5.2');
   });
 });

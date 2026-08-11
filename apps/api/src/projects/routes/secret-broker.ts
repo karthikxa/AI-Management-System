@@ -1,8 +1,8 @@
 import {
   SecretBrokerRequestSchema,
   SecretBrokerResponseSchema,
-} from '@kortix/api-contract';
-import { projectSecrets, projectSessionSecretHandles, projectSessions } from '@kortix/db';
+} from '@zed/api-contract';
+import { projectSecrets, projectSessionSecretHandles, projectSessions } from '@zed/db';
 import { createRoute, z } from '@hono/zod-openapi';
 import { and, desc, eq, inArray, isNull, or } from 'drizzle-orm';
 import { getAgentGrant } from '../../iam/agent-scope';
@@ -152,7 +152,7 @@ projectsApp.openapi(
       }
       if (
         shared.strategy !== 'broker' ||
-        shared.egressPolicy?.backend !== 'kortix_fetch'
+        shared.egressPolicy?.backend !== 'zed_fetch'
       ) {
         await recordAuditEvent({
           ...auditBase,
@@ -189,7 +189,7 @@ projectsApp.openapi(
       if (
         !handle ||
         (handle.expiresAt !== null && handle.expiresAt.getTime() <= Date.now()) ||
-        handle.policySnapshot.backend !== 'kortix_fetch'
+        handle.policySnapshot.backend !== 'zed_fetch'
       ) {
         await recordAuditEvent({
           ...auditBase,

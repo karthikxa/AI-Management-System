@@ -9,29 +9,29 @@
  *
  * ACCURACY GATE for this page specifically — verified against the tree, not the
  * pitch. Re-check before editing a claim:
- *  - An agent is `.kortix/opencode/agents/<name>.md` (behavior) PLUS an
- *    `agents.<name>` block in `kortix.yaml` (governance). Two homes, one agent.
+ *  - An agent is `.zed/opencode/agents/<name>.md` (behavior) PLUS an
+ *    `agents.<name>` block in `zed.yaml` (governance). Two homes, one agent.
  *  - MARKDOWN IS THE FLOOR, NOT THE CEILING. Do not write "an agent is a
  *    markdown persona" and stop. The `.md` is a STOCK OpenCode agent file —
  *    `compile-agent-config.ts` passes its frontmatter straight through
  *    (description, mode, model, variant, temperature, top_p, prompt, disable,
- *    hidden, options, color, steps, permission), so Kortix adds no dialect. The
+ *    hidden, options, color, steps, permission), so Zed adds no dialect. The
  *    rest of the OpenCode surface sits in the same repo and is editable:
  *    `tools/` (real TypeScript, auto-discovered), `plugins/` (the starter ships
  *    a PTY plugin), `skills/`, `opencode.jsonc` (models/providers) and a
  *    `package.json` OpenCode `bun install`s at startup.
  *  - THE GRANT COVERS MORE THAN TOOLS. `AgentBlockV2` (`index.v2.ts`):
  *    `sandbox` (which machine it boots), `connectors` + `connectors_required`,
- *    `secrets`, `skills`, `kortix_cli`, `workspace`, `enabled`. Channels fall
+ *    `secrets`, `skills`, `zed_cli`, `workspace`, `enabled`. Channels fall
  *    under `connectors` because a connected channel IS a connector with
  *    `provider: 'channel'` (`apps/api/src/projects/connectors.ts:61`).
  *  - Depth is not a harness menu. OpenCode is the only shipped runtime; ACP and
- *    the other harnesses are behind `KORTIX_ACP_RUNTIME`, default false.
+ *    the other harnesses are behind `ZED_ACP_RUNTIME`, default false.
  *  - The scoping field is `permission`. It is NOT called `tools` —
  *    `packages/manifest-schema/src/index.v2.ts` raises a hard error on `tools`:
  *    "`tools` is deprecated upstream — use `permission` instead."
  *    Values are exactly `allow` | `ask` | `deny`.
- *  - Governance is deny-by-default. `packages/starter/templates/base/kortix.yaml`:
+ *  - Governance is deny-by-default. `packages/starter/templates/base/zed.yaml`:
  *    "Omitted grants resolve to `none` in this schema version. Grant explicitly."
  *  - The ceiling is real and quotable — `apps/api/src/projects/agents.ts:19-21`:
  *    the effective grant is `declared ∩ launching-user role`. An agent can never
@@ -39,8 +39,8 @@
  *  - A skill is a DIRECTORY with a `SKILL.md` at its root. Frontmatter is
  *    `name` + `description`; the directory name must equal `name`.
  *  - Counts: 10 skills committed into a new project repo, plus 10 platform
- *    skills injected into every session at boot (`kortix-cli` is in both lists,
- *    so 19 distinct). 2 agents ship: `kortix` and `memory-reflector`.
+ *    skills injected into every session at boot (`zed-cli` is in both lists,
+ *    so 19 distinct). 2 agents ship: `zed` and `memory-reflector`.
  *  - MARKETPLACE: ships, labelled beta, ON by default. But the deterministic
  *    installer WAS REMOVED (`apps/api/src/projects/routes/r10.ts`): "The
  *    deterministic install/lock/update/remove engine … has been removed …
@@ -48,7 +48,7 @@
  *    import." So: one click to ADD, and what happens next is an agent session
  *    that opens a change request. Never imply a lockfile-backed package install.
  *  - "Agents rewrite themselves" is TRUE and must always carry "human-merged".
- *    An agent cannot escalate its own grants by editing kortix.yaml, because the
+ *    An agent cannot escalate its own grants by editing zed.yaml, because the
  *    runtime grant is intersected with the launching user's role.
  *  - Say "agent computer" / "cloud computer" / "sandbox". NEVER "container".
  *  - Never claim a certification. Never name a licence — "open source" and stop.
@@ -57,7 +57,7 @@
 export const hero = {
   eyebrow: 'Agents & skills',
   title: 'The workforce that compounds.',
-  sub: 'An agent is an OpenCode agent: markdown at baseline, and past that your own tools, plugins, models and a per-capability permission tree. A grant in kortix.yaml decides what it reaches — its machine, its connectors and channels, its secrets, its skills. A skill encodes how your company does one specific job. Both are files in your repo. Both are reviewed like code.',
+  sub: 'An agent is an OpenCode agent: markdown at baseline, and past that your own tools, plugins, models and a per-capability permission tree. A grant in zed.yaml decides what it reaches — its machine, its connectors and channels, its secrets, its skills. A skill encodes how your company does one specific job. Both are files in your repo. Both are reviewed like code.',
   ctaPrimary: 'Start a session',
   ctaPrimaryHref: '/auth',
   ctaSecondary: 'Read the docs',
@@ -75,13 +75,13 @@ export const hero = {
 export const agent = {
   eyebrow: 'What an agent is',
   title: 'Two files. No hidden object behind them.',
-  sub: 'An agent has exactly two homes. The markdown file carries how it thinks — its prompt, its mode, its model, its permission tree — and it is a stock OpenCode agent file, because Kortix adds no dialect to it. The manifest block carries what it may touch. Nothing about an agent lives in a database you cannot read.',
+  sub: 'An agent has exactly two homes. The markdown file carries how it thinks — its prompt, its mode, its model, its permission tree — and it is a stock OpenCode agent file, because Zed adds no dialect to it. The manifest block carries what it may touch. Nothing about an agent lives in a database you cannot read.',
   md: {
-    title: '.kortix/opencode/agents/kortix.md',
-    caption: 'Excerpt of the default agent in every new Kortix project.',
+    title: '.zed/opencode/agents/zed.md',
+    caption: 'Excerpt of the default agent in every new Zed project.',
     lines: [
       '---',
-      'description: "Generic Kortix general knowledge worker.',
+      'description: "Generic Zed general knowledge worker.',
       '  Hands-on, full tool access, handles coding / research /',
       '  content / ops / data tasks end-to-end in an isolated',
       '  session sandbox. Edit this file to specialize."',
@@ -89,7 +89,7 @@ export const agent = {
       'permission: allow',
       '---',
       '',
-      'You are a **Kortix general knowledge worker**.',
+      'You are a **Zed general knowledge worker**.',
       '',
       'You are hands-on: you read, edit, run, search, fetch, and',
       'ship. The session you are in is an isolated sandbox — an',
@@ -111,23 +111,23 @@ export const agent = {
     ],
   },
   yaml: {
-    title: 'kortix.yaml',
+    title: 'zed.yaml',
     lines: [
       '# behavior lives in the .md — this block is governance only',
-      'default_agent: kortix',
+      'default_agent: zed',
       '',
       'agents:',
-      '  kortix:',
+      '  zed:',
       '    connectors: all',
       '    secrets: all',
       '    skills: all',
-      '    kortix_cli: all',
+      '    zed_cli: all',
       '',
       '  release-bot:',
       '    # this one gets almost nothing, on purpose',
       '    connectors: [github]',
       '    secrets: [GITHUB_AGENT_TOKEN]',
-      '    kortix_cli: [project.cr.open]',
+      '    zed_cli: [project.cr.open]',
       '',
       '# a grant you leave out resolves to none.',
       '# there is no implicit access. grant explicitly.',
@@ -138,21 +138,21 @@ export const agent = {
   notes: [
     'The manifest rejects a behavioral field in the governance block, with an error pointing at the agent’s own .md file.',
     'Markdown is the floor, not the ceiling: the whole OpenCode surface sits beside it in the same repo — your own TypeScript tools, plugins that hook the runtime, the model and provider config. An agent can pin its own model, or inherit the project, account and platform default in that order.',
-    'Two agents ship in every new project: kortix, the generalist, and memory-reflector, which curates the project brain.',
+    'Two agents ship in every new project: zed, the generalist, and memory-reflector, which curates the project brain.',
   ],
 } as const;
 
 export const reach = {
   eyebrow: 'Scoped reach',
   title: 'Deny by default. Never above the human.',
-  sub: 'The grant block covers the whole surface, not just tools: which sandbox image the agent boots, which connectors and channels it may call, which secrets it may receive, which skills it may invoke, and what it may do to Kortix itself. An agent with no grants gets none of it. You grant explicitly, or the answer is no — and on top of that sits a ceiling nothing in the config can lift.',
+  sub: 'The grant block covers the whole surface, not just tools: which sandbox image the agent boots, which connectors and channels it may call, which secrets it may receive, which skills it may invoke, and what it may do to Zed itself. An agent with no grants gets none of it. You grant explicitly, or the answer is no — and on top of that sits a ceiling nothing in the config can lift.',
   md: {
-    title: '.kortix/opencode/agents/memory-reflector.md',
+    title: '.zed/opencode/agents/memory-reflector.md',
     caption: 'A real permission tree, from a real agent that ships.',
     lines: [
       '---',
       'description: "Reflects on recent project activity and',
-      '  curates .kortix/memory/ — the project brain. Runs on a',
+      '  curates .zed/memory/ — the project brain. Runs on a',
       '  cron and ends every run by opening a single change',
       '  request."',
       'mode: primary',
@@ -160,8 +160,8 @@ export const reach = {
       '  edit: allow',
       '  bash:',
       '    "git *": allow',
-      '    "kortix cr *": allow',
-      '    "kortix sessions *": allow',
+      '    "zed cr *": allow',
+      '    "zed sessions *": allow',
       '    "*": ask',
       '---',
     ],
@@ -192,7 +192,7 @@ export const reach = {
     {
       id: 'escalate',
       k: 'It cannot vote itself a raise',
-      v: 'An agent can edit kortix.yaml — it is a file. But the edit only applies to sessions started after a person merges the change request, and even then the ceiling still holds.',
+      v: 'An agent can edit zed.yaml — it is a file. But the edit only applies to sessions started after a person merges the change request, and even then the ceiling still holds.',
     },
   ],
 } as const;
@@ -202,7 +202,7 @@ export const skill = {
   title: 'How your company does one job, written down once.',
   sub: 'A skill is a directory with a SKILL.md at its root. Frontmatter names it and says when to reach for it; the body is the procedure. Every session can load it, so the thing you explained to one agent in March is still true for every agent in November.',
   md: {
-    title: '.kortix/opencode/skills/agent-browser/SKILL.md',
+    title: '.zed/opencode/skills/agent-browser/SKILL.md',
     caption: 'Excerpt of a skill that ships in every new project.',
     lines: [
       '---',
@@ -221,7 +221,7 @@ export const skill = {
       'with accessibility-tree snapshots and compact `@eN` refs.',
       '',
       'The CLI and a headless Chromium are **already installed**',
-      'in this Kortix sandbox and on `$PATH` — you do not need to',
+      'in this Zed sandbox and on `$PATH` — you do not need to',
       'run any install step.',
       '',
       '## Start here',
@@ -264,10 +264,10 @@ export const repo = {
   sub: 'Agents and skills are not rows in a table you cannot see. They are markdown in the repo the cloud computer clones, so changing your workforce is the same act as changing your code — and it gets the same review.',
   tree: [
     { path: 'your-company/', note: '', depth: 0 },
-    { path: 'kortix.yaml', note: 'governance: what each agent may touch', depth: 1 },
-    { path: '.kortix/opencode/', note: 'the runtime your agents think in', depth: 1 },
+    { path: 'zed.yaml', note: 'governance: what each agent may touch', depth: 1 },
+    { path: '.zed/opencode/', note: 'the runtime your agents think in', depth: 1 },
     { path: 'agents/', note: 'one OpenCode agent per file', depth: 2 },
-    { path: 'kortix.md', note: 'the generalist, in every project', depth: 3 },
+    { path: 'zed.md', note: 'the generalist, in every project', depth: 3 },
     { path: 'memory-reflector.md', note: 'curates the project brain on a cron', depth: 3 },
     { path: 'skills/', note: 'one directory per skill', depth: 2 },
     { path: 'agent-browser/SKILL.md', note: 'how this company drives a browser', depth: 3 },
@@ -299,7 +299,7 @@ export const marketplace = {
     {
       n: '00',
       title: 'Find it',
-      body: 'Browse the marketplace without signing in. Kortix ships its own registry — 62 agents, 61 skills and 62 project templates — and you can switch on curated outside registries with one click. None load by default.',
+      body: 'Browse the marketplace without signing in. Zed ships its own registry — 62 agents, 61 skills and 62 project templates — and you can switch on curated outside registries with one click. None load by default.',
     },
     {
       n: '01',
@@ -326,7 +326,7 @@ export const marketplace = {
 export const closing = {
   eyebrow: 'Build the workforce',
   title: 'Write it once. Every session knows it.',
-  sub: 'Open source and self-hostable. Any model, your keys. Kortix Cloud, your own VPC, or fully on-prem.',
+  sub: 'Open source and self-hostable. Any model, your keys. Zed Cloud, your own VPC, or fully on-prem.',
   ctaPrimary: 'Start a session',
   ctaPrimaryHref: '/auth',
   ctaSecondary: 'Read the agent docs',

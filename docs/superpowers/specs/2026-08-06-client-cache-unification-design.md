@@ -121,8 +121,8 @@ silent staleness bug — the same class this work exists to remove.
 A third duplicate surfaced with them: `schedule-view.tsx` held
 `['project-sessions', id, 'trigger-pin']` over identical default-scope data.
 
-`@kortix/sdk` already ships the correct pattern beside its fetchers —
-`kortixKeys`, `taskKeys`, `serviceKeys`, `opencodeKeys`. `apps/web` bypasses it
+`@zed/sdk` already ships the correct pattern beside its fetchers —
+`zedKeys`, `taskKeys`, `serviceKeys`, `opencodeKeys`. `apps/web` bypasses it
 with 75+ hand-typed literals, which inverts the repo's
 "SDK is the source of truth, apps are thin consumers" rule.
 
@@ -179,25 +179,25 @@ and it remains the correct cold-navigation state.
 not exist: a return visit renders cached content immediately while any refetch
 runs behind it.
 
-### 3. Key factory in `@kortix/sdk/react`
+### 3. Key factory in `@zed/sdk/react`
 
 A new module, `packages/sdk/src/react/query-keys.ts`. It is not an extension of
-`kortixKeys`, which belongs to the Kortix-Master multi-server surface
-(`use-kortix-master.ts:276`) and means a different thing.
+`zedKeys`, which belongs to the Zed-Master multi-server surface
+(`use-zed-master.ts:276`) and means a different thing.
 
-**The root segment is `kx`, not `kortix`.** The `kortix` root is already taken:
+**The root segment is `kx`, not `zed`.** The `zed` root is already taken:
 
 ```
-kortixKeys.projects()  = ['kortix', 'projects']       // published
-kortixKeys.project(id) = ['kortix', 'projects', id]   // published
+zedKeys.projects()  = ['zed', 'projects']       // published
+zedKeys.project(id) = ['zed', 'projects', id]   // published
 ```
 
-Rooting `qk` at `kortix` made `qk.projects.list(accountId)` the *same array* as
-`kortixKeys.project(id)`, and put every `qk` project key under the
-`['kortix', 'projects']` prefix that `use-kortix-master.ts:371,384` already
+Rooting `qk` at `zed` made `qk.projects.list(accountId)` the *same array* as
+`zedKeys.project(id)`, and put every `qk` project key under the
+`['zed', 'projects']` prefix that `use-zed-master.ts:371,384` already
 passes to `invalidateQueries`. TanStack prefix-matches by default, so one
 factory's invalidation would have reached the other's entries — a new instance
-of the exact bug this work removes, inside a published package. `kortixKeys` is
+of the exact bug this work removes, inside a published package. `zedKeys` is
 public API and cannot move; `qk` had no consumers, so `qk` moved. A test asserts
 the two factories never prefix each other in either direction.
 
@@ -265,7 +265,7 @@ staleness.
 Adding an invalidation to the rename mutation fixes the current symptom and
 leaves the cause. Two sources for one fact can diverge again.
 
-`@kortix/sdk/react` gains `useProjectName(projectId)`. `project-home.tsx` and
+`@zed/sdk/react` gains `useProjectName(projectId)`. `project-home.tsx` and
 `project-switcher.tsx` both call it, and the `??` fallback at
 `project-switcher.tsx:137` is deleted. One function returns one value, so two
 different names on screen becomes structurally impossible rather than merely
@@ -277,7 +277,7 @@ invalidated on settle. The title changes in the frame the modal closes.
 
 ### 6. Invalidation helpers
 
-Mutations stop hand-assembling invalidation sets. `@kortix/sdk/react` exports
+Mutations stop hand-assembling invalidation sets. `@zed/sdk/react` exports
 the declared set per write:
 
 ```ts
@@ -298,7 +298,7 @@ CI, not by review:
   selector:
     "Property[key.name='queryKey'] > ArrayExpression > " +
     "Literal[value=/^projects?(-[a-z-]+)?$/]",
-  message: 'Query keys come from `qk` in @kortix/sdk/react. Never hand-type an entity key.',
+  message: 'Query keys come from `qk` in @zed/sdk/react. Never hand-type an entity key.',
 }
 ```
 
@@ -377,8 +377,8 @@ all three paths that can change who the cache belongs to:
     is deliberate and documented in its own header comment: it always resolves
     server-side to the caller's primary account, independent of the account
     switcher, for the one "add to project" modal that wants that behavior.
-  - `kortixKeys`'s `identity.userId` segment (`packages/sdk/src/react/use-kortix-master.ts:292,306`)
-    solves a different problem — disambiguating *self-hosted Kortix Master
+  - `zedKeys`'s `identity.userId` segment (`packages/sdk/src/react/use-zed-master.ts:292,306`)
+    solves a different problem — disambiguating *self-hosted Zed Master
     servers* (`serverUrl` varies) — not multi-account partitioning on the one
     hosted backend `qk` talks to.
 

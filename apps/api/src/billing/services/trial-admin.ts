@@ -6,7 +6,7 @@
 // Stripe webhook flips an active trial to 'converted' when a real subscription
 // lands (webhooks.ts) so a purchased plan is never masked by the overlay.
 
-import { creditAccounts } from '@kortix/db';
+import { creditAccounts } from '@zed/db';
 import { and, eq, lte } from 'drizzle-orm';
 import { db } from '../../shared/db';
 import { clearAccountLimitCache } from '../../shared/account-limits';

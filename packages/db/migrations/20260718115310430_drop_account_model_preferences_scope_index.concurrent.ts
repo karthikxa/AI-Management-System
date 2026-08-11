@@ -31,7 +31,7 @@
 export const shorthands = undefined;
 
 // Contract step 5/5 of the agent-model-pin project-scoping fix (see the doc
-// comment on accountModelPreferences in packages/db/src/schema/kortix.ts).
+// comment on accountModelPreferences in packages/db/src/schema/zed.ts).
 // By the time this runs, every row is already covered by one of the two
 // replacement partial indexes created in the two migrations immediately
 // before this one (…scope_global_index, …scope_project_index), so dropping
@@ -47,7 +47,7 @@ export const shorthands = undefined;
 // WHERE predicate (it doesn't, for the pre-fix code). This is the exact
 // class of incident documented as "Worked example #1" in MIGRATIONS.md. The
 // risk is accepted rather than split into a second deploy because: (1) this
-// table is written ONLY on an explicit user action (Settings UI / `kortix
+// table is written ONLY on an explicit user action (Settings UI / `zed
 // agents model` CLI / a project's PUT model-defaults) -- never a per-request
 // hot path like the projects.account_id/repo_url incident was: (2) the app
 // code in THIS SAME PR always supplies a matching targetWhere alongside the
@@ -68,7 +68,7 @@ export const up = (pgm) => {
   // working correctly at the node-pg-migrate level. One statement per call.
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
-    drop index concurrently if exists kortix.idx_account_model_preferences_scope
+    drop index concurrently if exists zed.idx_account_model_preferences_scope
   `);
 };
 

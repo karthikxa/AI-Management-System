@@ -4,7 +4,7 @@
 set lock_timeout = '2s';
 set statement_timeout = '30s';
 
--- Kortix-as-a-Backend per-end-user metering: which of the wrapper's END-USERS a
+-- Zed-as-a-Backend per-end-user metering: which of the wrapper's END-USERS a
 -- unit of spend belongs to. A server-derived copy of project_sessions.origin_ref,
 -- resolved from the session when the usage event is emitted -- never read from a
 -- request body. Denormalized rather than joined at read time because the legacy
@@ -20,4 +20,4 @@ set statement_timeout = '30s';
 --   [x] No CHECK/FK/unique. The matching partial index ships as its own
 --       CONCURRENTLY migration (index create cannot run in this transaction).
 
-ALTER TABLE "kortix"."usage_events" ADD COLUMN "origin_ref" text;
+ALTER TABLE "zed"."usage_events" ADD COLUMN "origin_ref" text;

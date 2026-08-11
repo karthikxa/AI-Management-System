@@ -17,7 +17,7 @@ export { useVisibleAgents } from '../use-visible-agents';
 
 /**
  * Load agents. With `projectId`, the server-side project config is source of
- * truth: it returns declarative `kortix.yaml` `agents:` entries for adopted
+ * truth: it returns declarative `zed.yaml` `agents:` entries for adopted
  * projects and OpenCode file discovery for legacy projects. Without `projectId`,
  * this falls back to the sandbox OpenCode runtime.
  */
@@ -57,7 +57,7 @@ export function useOpenCodeAgents(options?: { directory?: string; projectId?: st
       const agents: Agent[] = Array.isArray(data)
         ? data
         : Object.values(data as Record<string, Agent>);
-      // Agents are defined in the project repo (.kortix/opencode/agents), so the
+      // Agents are defined in the project repo (.zed/opencode/agents), so the
       // roster is stable across every session that shares a working directory.
       // Cache under a directory-scoped (or global) STABLE key — not the
       // ephemeral per-sandbox server id — so a new session's picker paints from

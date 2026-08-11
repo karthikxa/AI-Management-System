@@ -4,19 +4,19 @@ import { defaultProject } from './api/config.ts';
 import { sandboxEnvValue } from './api/sandbox-env.ts';
 
 /**
- * `.kortix/link.json` — the per-repo binding between a working
- * directory and a Kortix cloud project.
+ * `.zed/link.json` — the per-repo binding between a working
+ * directory and a Zed cloud project.
  *
- * Lives inside `.kortix/` (alongside `Dockerfile` + `opencode/`), so
+ * Lives inside `.zed/` (alongside `Dockerfile` + `opencode/`), so
  * the link travels with the branch when teammates clone the repo —
  * they don't have to re-link. Also stores which host the project
- * belongs to so commands always hit the right Kortix instance even if
+ * belongs to so commands always hit the right Zed instance even if
  * the user's globally-active host is a different one.
  */
 export interface ProjectLink {
   project_id: string;
   account_id: string;
-  /** Named host (from ~/.config/kortix/config.json) this project lives on. */
+  /** Named host (from ~/.config/zed/config.json) this project lives on. */
   host?: string;
   /** Snapshot of the host's URL at link time. Informational. */
   host_url?: string;
@@ -24,19 +24,19 @@ export interface ProjectLink {
 }
 
 export function linkFilePath(cwd = process.cwd()): string {
-  return resolve(cwd, '.kortix', 'link.json');
+  return resolve(cwd, '.zed', 'link.json');
 }
 
-/** Is the cwd plausibly a Kortix project? We require either an existing
- *  `.kortix/` directory (from `kortix init`) or a manifest (`kortix.toml`
- *  or `kortix.yaml`) at the root. Refusing to auto-create `.kortix/` from a
+/** Is the cwd plausibly a Zed project? We require either an existing
+ *  `.zed/` directory (from `zed init`) or a manifest (`zed.toml`
+ *  or `zed.yaml`) at the root. Refusing to auto-create `.zed/` from a
  *  random directory prevents stray folders. */
-export function isKortixProject(cwd = process.cwd()): boolean {
+export function isZedProject(cwd = process.cwd()): boolean {
   return (
-    existsSync(resolve(cwd, '.kortix')) ||
-    existsSync(resolve(cwd, 'kortix.toml')) ||
-    existsSync(resolve(cwd, 'kortix.yaml')) ||
-    existsSync(resolve(cwd, 'kortix.yml'))
+    existsSync(resolve(cwd, '.zed')) ||
+    existsSync(resolve(cwd, 'zed.toml')) ||
+    existsSync(resolve(cwd, 'zed.yaml')) ||
+    existsSync(resolve(cwd, 'zed.yml'))
   );
 }
 
@@ -81,14 +81,14 @@ export function clearLink(cwd = process.cwd()): void {
 /**
  * Resolve which project a CLI command should operate on, in order:
  *   1. --project / projectArg
- *   2. KORTIX_PROJECT_ID env (platform-injected inside a sandbox)
- *   3. .kortix/link.json in cwd (per-repo binding)
- *   4. the active host's global default project (`kortix projects use`)
+ *   2. ZED_PROJECT_ID env (platform-injected inside a sandbox)
+ *   3. .zed/link.json in cwd (per-repo binding)
+ *   4. the active host's global default project (`zed projects use`)
  * Returns null if none of those are set.
  */
 export function resolveProjectId(projectArg?: string): string | null {
   if (projectArg) return projectArg;
-  const envProjectId = sandboxEnvValue('KORTIX_PROJECT_ID');
+  const envProjectId = sandboxEnvValue('ZED_PROJECT_ID');
   if (envProjectId) return envProjectId;
   const link = loadLink();
   if (link?.project_id) return link.project_id;

@@ -124,7 +124,7 @@ export function GlobalUpgradeSheet() {
             fontFamily: 'Roobert-Medium',
             fontSize: 12,
           }}>
-          KORTIX TEAM
+          ZED TEAM
           </Text>
         </Badge>
 

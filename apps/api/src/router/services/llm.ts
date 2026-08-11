@@ -1,4 +1,4 @@
-import { config, KORTIX_MARKUP } from '../../config';
+import { config, ZED_MARKUP } from '../../config';
 import { OPENROUTER_APP_REFERER, OPENROUTER_APP_TITLE } from '../../openrouter-attribution';
 import { getModel, getAllModels, resolveOpenRouterId, type ModelConfig } from '../config/models';
 
@@ -7,7 +7,7 @@ import { getModel, getAllModels, resolveOpenRouterId, type ModelConfig } from '.
  * When cache metrics are available, uses differential pricing for cached/written tokens.
  *
  * @param markup - Multiplier applied to the raw provider cost.
- *   Defaults to KORTIX_MARKUP (1.2× = 20% markup) when Kortix provides the key.
+ *   Defaults to ZED_MARKUP (1.2× = 20% markup) when Zed provides the key.
  *   Pass PLATFORM_FEE_MARKUP (0.1× = 10% platform fee) for user-owned keys.
  */
 export function calculateCost(
@@ -16,7 +16,7 @@ export function calculateCost(
   completionTokens: number,
   cachedTokens: number = 0,
   cacheWriteTokens: number = 0,
-  markup: number = KORTIX_MARKUP,
+  markup: number = ZED_MARKUP,
   upstreamCostHint?: number,
 ): number {
   if (typeof upstreamCostHint === 'number' && upstreamCostHint >= 0) {

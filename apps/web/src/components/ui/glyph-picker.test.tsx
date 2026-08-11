@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { PROJECT_GLYPH_GROUPS } from '@kortix/shared';
+import { PROJECT_GLYPH_GROUPS } from '@zed/shared';
 import { GlyphPicker, matchesSearch } from './glyph-picker';
 
 /**

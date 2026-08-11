@@ -4,7 +4,7 @@
 
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { mapLimit } from '@kortix/registry';
+import { mapLimit } from '@zed/registry';
 import { validateRef } from '../git-ref';
 import { createBranchRef, getBranchCommitSha, parseGitHubRepoUrl } from '../github';
 import { isMissingRemoteBranchError } from '../managed-repo-seed';
@@ -260,7 +260,7 @@ export async function remoteBranchExists(
   project: GitBackedProject,
   branch: string,
 ): Promise<boolean> {
-  if (process.env.KORTIX_LOCAL_DEV === '1') return true;
+  if (process.env.ZED_LOCAL_DEV === '1') return true;
   const ref = validateRef(branch);
   const result = await runGit(
     ['ls-remote', '--heads', project.repoUrl, `refs/heads/${ref}`],
@@ -501,8 +501,8 @@ export async function commitMultipleFilesToBranch(
     }
   }
 
-  const author = opts.authorName || 'Kortix';
-  const email = opts.authorEmail || 'noreply@kortix.ai';
+  const author = opts.authorName || 'Zed';
+  const email = opts.authorEmail || 'noreply@zed.ai';
   const identEnv = {
     GIT_AUTHOR_NAME: author,
     GIT_AUTHOR_EMAIL: email,
@@ -510,7 +510,7 @@ export async function commitMultipleFilesToBranch(
     GIT_COMMITTER_EMAIL: email,
   };
 
-  const tempDir = await mkdtemp(join(repoPath, '.kortix-tmp-'));
+  const tempDir = await mkdtemp(join(repoPath, '.zed-tmp-'));
   const indexFile = join(tempDir, 'index');
   const indexEnv = { GIT_INDEX_FILE: indexFile };
 

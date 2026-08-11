@@ -16,7 +16,7 @@ describe('create session command payload', () => {
         secretDefaultStrategy: 'runtime' as const,
         repoUrl: 'https://example.test/queue-principal.git',
         defaultBranch: 'main',
-        manifestPath: 'kortix.yaml',
+        manifestPath: 'zed.yaml',
         idempotencyKey: null,
         metadata: null,
         createdAt: now,

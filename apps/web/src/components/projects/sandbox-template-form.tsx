@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
  * Create / edit dialog for a project's sandbox template.
  *
  * Mirrors the Daytona "Create Snapshot" form (image + resources + entrypoint)
- * but adapted for Kortix: a template can be defined either by a `dockerfile`
- * path in the project repo OR a public `image` reference. The Kortix runtime
+ * but adapted for Zed: a template can be defined either by a `dockerfile`
+ * path in the project repo OR a public `image` reference. The Zed runtime
  * layer is added automatically — the user only defines their workspace base.
  */
 
@@ -37,8 +37,8 @@ import {
   createSandboxTemplate,
   updateSandboxTemplate,
   type SandboxTemplate,
-} from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 
 type Mode = 'image' | 'dockerfile';
 
@@ -304,7 +304,7 @@ export function SandboxTemplateForm({
                   </Label>
                   <Input
                     id="tpl-df"
-                    placeholder=".kortix/Dockerfile.ml"
+                    placeholder=".zed/Dockerfile.ml"
                     value={dockerfilePath}
                     onChange={(e) => setDockerfilePath(e.target.value)}
                   />

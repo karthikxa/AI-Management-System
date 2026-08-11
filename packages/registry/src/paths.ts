@@ -1,12 +1,12 @@
 /**
- * Resolve a file `target` (which may use a Kortix alias) to a concrete
+ * Resolve a file `target` (which may use a Zed alias) to a concrete
  * repo-relative POSIX path in the consuming project.
  */
 
 export interface TargetContext {
-  /** The OpenCode config dir, e.g. ".kortix/opencode". */
+  /** The OpenCode config dir, e.g. ".zed/opencode". */
   configDir: string;
-  /** Memory dir, e.g. ".kortix/memory". */
+  /** Memory dir, e.g. ".zed/memory". */
   memoryDir?: string;
 }
 
@@ -18,7 +18,7 @@ export function trimTrailingSlashes(value: string): string {
 
 export function expandTarget(target: string, ctx: TargetContext): string {
   const cd = trimTrailingSlashes(ctx.configDir);
-  const mem = trimTrailingSlashes(ctx.memoryDir ?? '.kortix/memory');
+  const mem = trimTrailingSlashes(ctx.memoryDir ?? '.zed/memory');
   let out: string;
 
   if (target === '~' || target === '~/') {
@@ -64,7 +64,7 @@ export function expandTarget(target: string, ctx: TargetContext): string {
   return out;
 }
 
-// --- target builders (used by `kortix registry build`) ---------------------
+// --- target builders (used by `zed registry build`) ---------------------
 
 export const buildTarget = {
   skill: (name: string, rel: string) => `@skills/${name}/${rel}`,

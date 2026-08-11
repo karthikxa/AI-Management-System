@@ -1,9 +1,9 @@
-import { createDb, type Database } from '@kortix/db';
+import { createDb, type Database } from '@zed/db';
 import { config } from '../config';
 
 const globalForDb = globalThis as typeof globalThis & {
-  __kortixApiDb?: Database;
-  __kortixApiDbUrl?: string;
+  __zedApiDb?: Database;
+  __zedApiDbUrl?: string;
 };
 
 /**
@@ -34,13 +34,13 @@ function getDb(): Database {
     }) as Database;
   }
 
-  if (globalForDb.__kortixApiDb && globalForDb.__kortixApiDbUrl === config.DATABASE_URL) {
-    return globalForDb.__kortixApiDb;
+  if (globalForDb.__zedApiDb && globalForDb.__zedApiDbUrl === config.DATABASE_URL) {
+    return globalForDb.__zedApiDb;
   }
 
-  globalForDb.__kortixApiDb = createDb(config.DATABASE_URL);
-  globalForDb.__kortixApiDbUrl = config.DATABASE_URL;
-  return globalForDb.__kortixApiDb;
+  globalForDb.__zedApiDb = createDb(config.DATABASE_URL);
+  globalForDb.__zedApiDbUrl = config.DATABASE_URL;
+  return globalForDb.__zedApiDb;
 }
 
 export const db: Database = getDb();

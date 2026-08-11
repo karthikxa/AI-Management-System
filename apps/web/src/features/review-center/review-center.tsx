@@ -37,7 +37,7 @@ import { infoToast, successToast } from '@/components/ui/toast';
 import { EmptyState } from '@/features/layout/section/empty-state';
 import { ErrorState } from '@/features/layout/section/error-state';
 import { cn } from '@/lib/utils';
-import type { ReviewVerdict } from '@kortix/sdk';
+import type { ReviewVerdict } from '@zed/sdk';
 import {
   CheckCircleIcon as CheckCircleSolid,
   CaretDownIcon as ChevronDown,
@@ -207,9 +207,9 @@ function ItemRow({
         'group relative flex items-center gap-3.5 py-3 pr-4 pl-5 transition-colors',
         'before:absolute before:inset-y-0 before:left-0 before:w-[3px]',
         barClass,
-        focused ? 'bg-primary/[0.06] ring-kortix-blue/40 ring-1 ring-inset' : 'hover:bg-muted/40',
+        focused ? 'bg-primary/[0.06] ring-zed-blue/40 ring-1 ring-inset' : 'hover:bg-muted/40',
         selected && 'bg-primary/[0.09]',
-        fresh && 'bg-kortix-blue/[0.05]',
+        fresh && 'bg-zed-blue/[0.05]',
       )}
     >
       {segment === 'needs_you' && bulkSelectable && (
@@ -232,7 +232,7 @@ function ItemRow({
       <button
         type="button"
         onClick={onOpen}
-        className="focus-visible:ring-kortix-blue min-w-0 flex-1 rounded-sm text-left focus-visible:ring-2 focus-visible:outline-none"
+        className="focus-visible:ring-zed-blue min-w-0 flex-1 rounded-sm text-left focus-visible:ring-2 focus-visible:outline-none"
       >
         <div className="flex items-center gap-2">
           <span className="text-foreground truncate text-sm font-medium">{item.title}</span>
@@ -752,8 +752,8 @@ export function ReviewCenter({
             <header className="flex flex-col gap-2 pt-10 sm:flex-row sm:items-start sm:justify-between lg:pt-16">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="bg-kortix-base/15 flex size-7 items-center justify-center rounded-sm">
-                    <InboxSolid weight="fill" className="text-kortix-base size-4" />
+                  <span className="bg-zed-base/15 flex size-7 items-center justify-center rounded-sm">
+                    <InboxSolid weight="fill" className="text-zed-base size-4" />
                   </span>
                   <h1 className="text-foreground text-xl font-medium tracking-tight text-balance">
                     Review Center
@@ -824,7 +824,7 @@ export function ReviewCenter({
                   >
                     <span
                       className={cn(
-                        'bg-kortix-green size-1.5 rounded-full',
+                        'bg-zed-green size-1.5 rounded-full',
                         isFetching && !reduce && 'animate-pulse',
                       )}
                     />

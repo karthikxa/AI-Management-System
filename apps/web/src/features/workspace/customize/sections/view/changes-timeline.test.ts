@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'bun:test';
 import type { ChangeRequest } from '@/features/project-files/api/change-requests';
-import type { ProjectCommit } from '@kortix/sdk';
+import type { ProjectCommit } from '@zed/sdk';
 import {
-  KORTIX_AGENT_EMAIL,
+  ZED_AGENT_EMAIL,
   buildTimeline,
   commitTime,
   crTime,
   dayLabel,
   groupTimeline,
-  isKortixAgent,
+  isZedAgent,
 } from './changes-timeline';
 
 function localMidday(year: number, month: number, day: number): number {
@@ -65,24 +65,24 @@ function changeRequest(overrides: Partial<ChangeRequest> = {}): ChangeRequest {
   };
 }
 
-describe('isKortixAgent', () => {
+describe('isZedAgent', () => {
   test('matches the stable sandbox agent email', () => {
-    expect(isKortixAgent(commit({ author_email: KORTIX_AGENT_EMAIL, author_name: 'Anyone' }))).toBe(
+    expect(isZedAgent(commit({ author_email: ZED_AGENT_EMAIL, author_name: 'Anyone' }))).toBe(
       true,
     );
   });
 
   test('matches legacy display names case-insensitively', () => {
-    expect(isKortixAgent(commit({ author_email: 'other@example.com', author_name: 'Kortix Agent' }))).toBe(
+    expect(isZedAgent(commit({ author_email: 'other@example.com', author_name: 'Zed Agent' }))).toBe(
       true,
     );
-    expect(isKortixAgent(commit({ author_email: 'other@example.com', author_name: 'Cortex Agent' }))).toBe(
+    expect(isZedAgent(commit({ author_email: 'other@example.com', author_name: 'Cortex Agent' }))).toBe(
       true,
     );
   });
 
   test('does not match human authors', () => {
-    expect(isKortixAgent(commit({ author_email: 'jane@example.com', author_name: 'Jane' }))).toBe(
+    expect(isZedAgent(commit({ author_email: 'jane@example.com', author_name: 'Jane' }))).toBe(
       false,
     );
   });

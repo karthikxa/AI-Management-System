@@ -35,7 +35,7 @@ export async function inspectSandboxRuntime(
       serviceKey,
       providerHeaders: ingress.headers,
     });
-    const response = await fetch(`${ingress.url.replace(/\/$/, '')}/kortix/health`, {
+    const response = await fetch(`${ingress.url.replace(/\/$/, '')}/zed/health`, {
       headers,
       signal: AbortSignal.timeout(3_000),
     });

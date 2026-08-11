@@ -1,15 +1,15 @@
 import { cors } from 'hono/cors';
 
 const CLOUD_ORIGINS = [
-  'https://www.kortix.com',
-  'https://kortix.com',
-  'https://dev.kortix.com',
-  'https://new-dev.kortix.com',
-  'https://dev-new.kortix.com',
-  'https://staging.kortix.com',
-  'https://kortix.cloud',
-  'https://www.kortix.cloud',
-  'https://new.kortix.com',
+  'https://www.zed.com',
+  'https://zed.com',
+  'https://dev.zed.com',
+  'https://new-dev.zed.com',
+  'https://dev-new.zed.com',
+  'https://staging.zed.com',
+  'https://zed.cloud',
+  'https://www.zed.cloud',
+  'https://new.zed.com',
 ];
 
 const LOCAL_ORIGINS = [
@@ -21,7 +21,7 @@ const LOCAL_ORIGINS = [
   'http://127.0.0.1:3010',
 ];
 
-const PREVIEW_ORIGIN = /^https:\/\/[a-z0-9-]+\.(vercel\.app|preview\.kortix\.com)$/i;
+const PREVIEW_ORIGIN = /^https:\/\/[a-z0-9-]+\.(vercel\.app|preview\.zed\.com)$/i;
 
 interface CorsMiddlewareOptions {
   internalEnvironment: string;
@@ -47,16 +47,16 @@ export function createCorsMiddleware(options: CorsMiddlewareOptions) {
     allowHeaders: [
       'Content-Type',
       'Authorization',
-      'X-Kortix-Token',
+      'X-Zed-Token',
       'X-Api-Key',
       'Accept',
-      'X-Kortix-Signature',
+      'X-Zed-Signature',
       'X-Hub-Signature-256',
       'traceparent',
       'tracestate',
       'X-Request-Id',
       'Last-Event-ID',
-      'X-Kortix-Client',
+      'X-Zed-Client',
     ],
     exposeHeaders: [
       'X-Next-Cursor',

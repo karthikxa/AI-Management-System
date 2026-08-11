@@ -10,4 +10,4 @@ set statement_timeout = '30s';
 --   [x] New API versions read existing rows as not explicitly configured.
 --   [x] No index, constraint validation, drop, rename, or backfill is required.
 
-ALTER TABLE "kortix"."project_sessions" ADD COLUMN "connector_bindings_configured" boolean DEFAULT false NOT NULL;
+ALTER TABLE "zed"."project_sessions" ADD COLUMN "connector_bindings_configured" boolean DEFAULT false NOT NULL;

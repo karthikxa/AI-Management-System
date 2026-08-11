@@ -18,24 +18,24 @@
 --
 -- Enum disposition: Postgres cannot cleanly DROP a value from an existing enum
 -- type (would require rebuilding the type + every column using it). We leave
--- `per_user` as an ORPHANED value in `kortix.executor_credential_mode` — it
+-- `per_user` as an ORPHANED value in `zed.executor_credential_mode` — it
 -- still exists as a possible enum literal, but nothing in the application
 -- writes it anymore (removed from every write path in this same change), and
 -- this migration guarantees no existing row carries it. The CHECK constraint
 -- below is belt-and-suspenders: it makes `shared` the only value Postgres will
 -- accept for this column going forward, independent of app-layer discipline.
 
-DELETE FROM "kortix"."executor_credentials" AS ec
-USING "kortix"."executor_connectors" AS conn
+DELETE FROM "zed"."executor_credentials" AS ec
+USING "zed"."executor_connectors" AS conn
 WHERE ec.connector_id = conn.connector_id
   AND conn.credential_mode = 'per_user'
   AND ec.user_id IS NOT NULL;
 
-UPDATE "kortix"."executor_connectors"
+UPDATE "zed"."executor_connectors"
 SET credential_mode = 'shared', updated_at = now()
 WHERE credential_mode = 'per_user';
 
-ALTER TABLE "kortix"."executor_connectors"
+ALTER TABLE "zed"."executor_connectors"
   ADD CONSTRAINT "executor_connectors_credential_mode_shared_only"
   CHECK (credential_mode = 'shared');
 
@@ -44,5 +44,5 @@ ALTER TABLE "kortix"."executor_connectors"
 -- Reversible only in the narrow "undo the constraint" sense — the deleted
 -- per-member credential rows and the prior `per_user` flags are NOT
 -- recoverable (this is a deliberate, safety-motivated data removal).
-ALTER TABLE "kortix"."executor_connectors"
+ALTER TABLE "zed"."executor_connectors"
   DROP CONSTRAINT IF EXISTS "executor_connectors_credential_mode_shared_only";

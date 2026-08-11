@@ -1,5 +1,5 @@
 // SAML SSO data access. The Supabase auth.sso_providers row drives the
-// SAML handshake itself; this module manages the kortix-side mapping —
+// SAML handshake itself; this module manages the zed-side mapping —
 // which account owns which provider, plus claim-value → IAM group rules.
 
 import { and, asc, eq } from 'drizzle-orm';
@@ -7,7 +7,7 @@ import {
   accountSsoGroupMappings,
   accountSsoProviders,
   accountGroups,
-} from '@kortix/db';
+} from '@zed/db';
 import { db } from '../shared/db';
 
 export type SsoProvider = {
@@ -49,7 +49,7 @@ export async function getSsoProvider(accountId: string): Promise<SsoProvider | n
 
 /**
  * Reverse lookup used by auth middleware: given a Supabase sso_provider
- * UUID from a JWT, find which kortix account it belongs to.
+ * UUID from a JWT, find which zed account it belongs to.
  */
 export async function getSsoProviderBySupabaseId(
   supabaseSsoProviderId: string,

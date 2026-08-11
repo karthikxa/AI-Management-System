@@ -47,9 +47,9 @@ export type {
   Provider,
   Todo,
   SnapshotFileDiff,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
-export type FileDiff = Omit<import('@kortix/sdk').SnapshotFileDiff, 'patch'> & {
+export type FileDiff = Omit<import('@zed/sdk').SnapshotFileDiff, 'patch'> & {
   patch?: string;
   before?: string;
   after?: string;
@@ -64,8 +64,8 @@ export type FileDiff = Omit<import('@kortix/sdk').SnapshotFileDiff, 'patch'> & {
  * `session.messages()`.
  */
 export interface MessageWithParts {
-  info: import('@kortix/sdk').Message;
-  parts: import('@kortix/sdk').Part[];
+  info: import('@zed/sdk').Message;
+  parts: import('@zed/sdk').Part[];
 }
 
 /**
@@ -81,7 +81,7 @@ export interface Turn {
 // Tool rendering types (shared between web & mobile tool renderers)
 // ---------------------------------------------------------------------------
 
-export type { Diagnostic, RetryInfo, ToolInfo, TurnCostInfo } from '@kortix/sdk/turns';
+export type { Diagnostic, RetryInfo, ToolInfo, TurnCostInfo } from '@zed/sdk/turns';
 
 /** Structured trigger data for the BasicTool wrapper. */
 export interface TriggerTitle {

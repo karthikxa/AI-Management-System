@@ -3,16 +3,16 @@
 /**
  * All · Pick · None — the one governance grant-mode machine, parameterized so
  * both a flat checklist (skills/connectors/secrets) and a grouped catalog
- * (kortix_cli) share the same state transitions instead of re-implementing
+ * (zed_cli) share the same state transitions instead of re-implementing
  * them twice.
  */
 
 import { Tabs, TabsListCompact, TabsTriggerCompact } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import type { AgentGrantSetV2 } from '@kortix/sdk';
+import type { AgentGrantSetV2 } from '@zed/sdk';
 import { CheckIcon } from '@phosphor-icons/react';
 import { type ReactNode, useState } from 'react';
-import { KORTIX_CLI_CATALOG } from './agent-editor-catalog';
+import { ZED_CLI_CATALOG } from './agent-editor-catalog';
 
 type GrantMode = 'all' | 'pick' | 'none';
 
@@ -149,7 +149,7 @@ export function GrantSetField({
                     {isSel ? <CheckIcon className="size-2.5" /> : null}
                   </span>
                   <span className="min-w-0 flex-1 truncate font-mono">{o.label}</span>
-                  {isOrphan && <span className="text-kortix-orange shrink-0">missing</span>}
+                  {isOrphan && <span className="text-zed-orange shrink-0">missing</span>}
                 </button>
               );
               return accessory ? (
@@ -169,7 +169,7 @@ export function GrantSetField({
 }
 
 /** All · Pick · None over the grouped grantable CLI action catalog. */
-export function KortixCliField({
+export function ZedCliField({
   value,
   onChange,
 }: {
@@ -185,7 +185,7 @@ export function KortixCliField({
     >
       {({ selected, toggle }) => (
         <div className="border-border/60 max-h-64 space-y-3 overflow-y-auto rounded-md border p-2.5">
-          {KORTIX_CLI_CATALOG.map((grp) => (
+          {ZED_CLI_CATALOG.map((grp) => (
             <div key={grp.group} className="space-y-1.5">
               <p className="text-muted-foreground text-xs font-medium">{grp.group}</p>
               <div className="flex flex-wrap gap-1">

@@ -18,7 +18,7 @@ import { EntityAvatar } from '../../../components/ui/entity-avatar';
  * `ProjectSwitcher` needs a router, three react-query caches and two zustand
  * stores, and its list lives inside a `DropdownMenuContent` that renders
  * nothing while the menu is closed — which it always is on a first paint. The
- * alternative, `mock.module`-ing next/navigation and @kortix/sdk, is
+ * alternative, `mock.module`-ing next/navigation and @zed/sdk, is
  * process-wide in `bun test src` and would leak into the other 293 files.
  *
  *   1. the source scan below pins the exact props the row hands EntityAvatar;
@@ -61,7 +61,7 @@ describe('project switcher: the row the source renders', () => {
     // The switcher renders three EntityAvatars: the active-project tile, its
     // no-project fallback, and this row. The trigger tile (`switcherLabel`) is
     // DELIBERATELY untouched — it is fed a plain string resolved from the
-    // project name, with no `KortixProject` in scope, so wiring it needs real
+    // project name, with no `ZedProject` in scope, so wiring it needs real
     // plumbing and is a separate change. This pins that, and it also fails on
     // the tempting wrong fix: passing `emoji={switcherLabel}` would render the
     // project's first letter as an "emoji" and drop the tile's chalk fill.
@@ -95,7 +95,7 @@ describe('project switcher: what those props render', () => {
   test('a project with no icon is unchanged — which is nearly every project', () => {
     // `null` is what the API returns for everything created before the feature,
     // and `undefined` is what a stale cached payload has, since `icon` is
-    // optional on KortixProject.
+    // optional on ZedProject.
     expect(textOf(rowTile({ name: 'Turtle Shop', icon: null }))).toBe('T');
     expect(textOf(rowTile({ name: 'Turtle Shop' }))).toBe('T');
   });

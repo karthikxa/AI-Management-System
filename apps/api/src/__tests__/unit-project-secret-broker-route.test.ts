@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { projectSecrets, projectSessionSecretHandles, projectSessions } from '@kortix/db';
+import { projectSecrets, projectSessionSecretHandles, projectSessions } from '@zed/db';
 import { Hono } from 'hono';
 import * as realAccess from '../projects/lib/access';
 import * as realProjectSecrets from '../projects/secrets';
@@ -10,12 +10,12 @@ const USER_ID = '11111111-1111-4111-8111-111111111111';
 const SESSION_ID = '55555555-5555-4555-8555-555555555555';
 const SECRET_ID = '66666666-6666-4666-8666-666666666666';
 const POLICY = {
-  backend: 'kortix_fetch' as const,
+  backend: 'zed_fetch' as const,
   rules: [{ host: 'api.example.com', methods: ['POST'], path: '/v1/*' }],
   inject: { kind: 'header' as const, name: 'authorization', template: 'Bearer {{secret}}' },
 };
 const FROZEN_POLICY = {
-  backend: 'kortix_fetch' as const,
+  backend: 'zed_fetch' as const,
   rules: [{ host: 'api.example.com', methods: ['POST'], path: '/v1/*' }],
   inject: { kind: 'header' as const, name: 'x-api-key' },
 };
@@ -25,7 +25,7 @@ let tokenProjectId: string | undefined = PROJECT_ID;
 let sessionId: string | undefined = SESSION_ID;
 let agentGrant: Record<string, unknown> | null = {
   agent: 'default',
-  kortixCli: 'all',
+  zedCli: 'all',
   connectors: 'all',
   env: ['PRIMARY'],
 };
@@ -160,7 +160,7 @@ describe('POST /v1/projects/:projectId/secrets/:identifier/broker', () => {
     sessionId = SESSION_ID;
     agentGrant = {
       agent: 'default',
-      kortixCli: 'all',
+      zedCli: 'all',
       connectors: 'all',
       env: ['PRIMARY'],
     };
@@ -188,7 +188,7 @@ describe('POST /v1/projects/:projectId/secrets/:identifier/broker', () => {
   test('intersects the immutable agent grant with the session allowlist before decryption', async () => {
     agentGrant = {
       agent: 'default',
-      kortixCli: 'all',
+      zedCli: 'all',
       connectors: 'all',
       env: ['OTHER'],
     };
@@ -200,7 +200,7 @@ describe('POST /v1/projects/:projectId/secrets/:identifier/broker', () => {
 
     agentGrant = {
       agent: 'default',
-      kortixCli: 'all',
+      zedCli: 'all',
       connectors: 'all',
       env: ['PRIMARY'],
     };
@@ -217,7 +217,7 @@ describe('POST /v1/projects/:projectId/secrets/:identifier/broker', () => {
   test('accepts a broker handle materialized from an all grant narrowed by the session allowlist', async () => {
     agentGrant = {
       agent: 'default',
-      kortixCli: 'all',
+      zedCli: 'all',
       connectors: 'all',
       env: 'all',
     };

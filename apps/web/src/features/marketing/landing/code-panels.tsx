@@ -161,42 +161,42 @@ function CodeSurface({
 /* ── CLI ─────────────────────────────────────────────────────────────────── */
 
 const CLI_LINES = [
-  '$ curl -fsSL https://kortix.com/install | bash',
-  '  ✓ Kortix CLI installed',
+  '$ curl -fsSL https://zed.com/install | bash',
+  '  ✓ Zed CLI installed',
   '',
-  '$ kortix init',
-  '  ✓ wrote kortix.yaml, agents, skills',
+  '$ zed init',
+  '  ✓ wrote zed.yaml, agents, skills',
   '',
-  '$ kortix ship',
+  '$ zed ship',
   '  ✓ pushed · live in the cloud',
   '',
-  '$ kortix sessions new --prompt "Close the month"',
+  '$ zed sessions new --prompt "Close the month"',
   '  → session/close-month · agent computer ready',
   '',
-  '$ kortix cr ls',
+  '$ zed cr ls',
   '  → 1 change request awaiting your review',
 ];
 
-const CLI_COPY = `curl -fsSL https://kortix.com/install | bash
-kortix init
-kortix ship`;
+const CLI_COPY = `curl -fsSL https://zed.com/install | bash
+zed init
+zed ship`;
 
 export function CliSurface({ cta }: { cta?: React.ReactNode }) {
-  return <CodeSurface title="kortix — terminal" lines={CLI_LINES} lang="sh" copyText={CLI_COPY} footer={cta} />;
+  return <CodeSurface title="zed — terminal" lines={CLI_LINES} lang="sh" copyText={CLI_COPY} footer={cta} />;
 }
 
 /* ── SDK ─────────────────────────────────────────────────────────────────── */
 
 const SDK_LINES = [
-  "import { createKortix } from '@kortix/sdk';",
+  "import { createZed } from '@zed/sdk';",
   '',
-  'const kortix = createKortix({',
-  "  backendUrl: 'https://api.kortix.com/v1',",
+  'const zed = createZed({',
+  "  backendUrl: 'https://api.zed.com/v1',",
   '  getToken,',
   '});',
   '',
   '// one hook owns the whole session lifecycle',
-  'const session = kortix.session(projectId, sessionId);',
+  'const session = zed.session(projectId, sessionId);',
   '',
   "await session.send('Draft the renewal for Northwind');",
   '',

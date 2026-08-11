@@ -10,4 +10,4 @@
 -- migration and returned `postman` from pg_enum before connector insertion.
 set statement_timeout = '5s';
 set lock_timeout = '1s';
-ALTER TYPE "kortix"."executor_connector_provider" ADD VALUE IF NOT EXISTS 'postman' BEFORE 'graphql';
+ALTER TYPE "zed"."executor_connector_provider" ADD VALUE IF NOT EXISTS 'postman' BEFORE 'graphql';

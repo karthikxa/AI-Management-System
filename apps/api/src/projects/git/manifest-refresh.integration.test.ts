@@ -24,9 +24,9 @@ async function git(args: string[], cwd?: string): Promise<void> {
 
 async function writeManifest(required: boolean): Promise<void> {
   await writeFile(
-    join(repositoryPath, 'kortix.yaml'),
+    join(repositoryPath, 'zed.yaml'),
     [
-      'kortix_version: 2',
+      'zed_version: 2',
       'default_agent: support',
       'agents:',
       '  support:',
@@ -39,27 +39,27 @@ async function writeManifest(required: boolean): Promise<void> {
 
 async function pushRequiredManifest(): Promise<void> {
   await writeManifest(true);
-  await git(['add', 'kortix.yaml'], repositoryPath);
+  await git(['add', 'zed.yaml'], repositoryPath);
   await git(['commit', '-m', 'require connector'], repositoryPath);
   await git(['push', 'origin', 'main'], repositoryPath);
 }
 
 beforeEach(async () => {
-  testRoot = await mkdtemp(join(tmpdir(), 'kortix-manifest-refresh-'));
+  testRoot = await mkdtemp(join(tmpdir(), 'zed-manifest-refresh-'));
   remotePath = join(testRoot, 'remote.git');
   repositoryPath = join(testRoot, 'repository');
-  previousCacheDir = process.env.KORTIX_GIT_CACHE_DIR;
-  previousRefreshInterval = process.env.KORTIX_GIT_REFRESH_INTERVAL_MS;
-  process.env.KORTIX_GIT_CACHE_DIR = join(testRoot, 'git-cache');
-  process.env.KORTIX_GIT_REFRESH_INTERVAL_MS = '3600000';
+  previousCacheDir = process.env.ZED_GIT_CACHE_DIR;
+  previousRefreshInterval = process.env.ZED_GIT_REFRESH_INTERVAL_MS;
+  process.env.ZED_GIT_CACHE_DIR = join(testRoot, 'git-cache');
+  process.env.ZED_GIT_REFRESH_INTERVAL_MS = '3600000';
 
   await mkdir(repositoryPath);
   await git(['init', '--bare', remotePath]);
   await git(['init', '--initial-branch=main', repositoryPath]);
-  await git(['config', 'user.name', 'Kortix Test'], repositoryPath);
-  await git(['config', 'user.email', 'test@kortix.invalid'], repositoryPath);
+  await git(['config', 'user.name', 'Zed Test'], repositoryPath);
+  await git(['config', 'user.email', 'test@zed.invalid'], repositoryPath);
   await writeManifest(false);
-  await git(['add', 'kortix.yaml'], repositoryPath);
+  await git(['add', 'zed.yaml'], repositoryPath);
   await git(['commit', '-m', 'seed manifest'], repositoryPath);
   await git(['remote', 'add', 'origin', remotePath], repositoryPath);
   await git(['push', 'origin', 'main'], repositoryPath);
@@ -69,16 +69,16 @@ beforeEach(async () => {
     projectId: `manifest-refresh-${crypto.randomUUID()}`,
     repoUrl: remotePath,
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     gitAuthToken: 'local-test',
   };
 });
 
 afterEach(async () => {
-  if (previousCacheDir === undefined) delete process.env.KORTIX_GIT_CACHE_DIR;
-  else process.env.KORTIX_GIT_CACHE_DIR = previousCacheDir;
-  if (previousRefreshInterval === undefined) delete process.env.KORTIX_GIT_REFRESH_INTERVAL_MS;
-  else process.env.KORTIX_GIT_REFRESH_INTERVAL_MS = previousRefreshInterval;
+  if (previousCacheDir === undefined) delete process.env.ZED_GIT_CACHE_DIR;
+  else process.env.ZED_GIT_CACHE_DIR = previousCacheDir;
+  if (previousRefreshInterval === undefined) delete process.env.ZED_GIT_REFRESH_INTERVAL_MS;
+  else process.env.ZED_GIT_REFRESH_INTERVAL_MS = previousRefreshInterval;
   await rm(testRoot, { recursive: true, force: true });
 });
 

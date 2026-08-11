@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, mock, test } from 'bun:test';
 import {
   connectors as connectorsTable,
   projectSessionConnectorBindings,
-} from '@kortix/db';
+} from '@zed/db';
 import * as realConnectorSync from './sync';
 
 let storedConnectors: Record<string, unknown>[] = [];
@@ -50,7 +50,7 @@ const fakeDb: any = {
             accountId: 'account-1',
             name: 'Connector test',
             repoUrl: 'https://example.test/connectors.git',
-            manifestPath: 'kortix.yaml',
+            manifestPath: 'zed.yaml',
             defaultBranch: 'main',
             metadata: {},
           },
@@ -79,10 +79,10 @@ mock.module('../projects/index', () => ({
     const manifest = {
       schemaVersion: 2,
       format: 'yaml',
-      path: 'kortix.yaml',
+      path: 'zed.yaml',
       revision: String(manifestRevision),
       raw: {
-        kortix_version: 2,
+        zed_version: 2,
         connectors: structuredClone(storedConnectors),
       },
     };
@@ -113,13 +113,13 @@ mock.module('../projects/index', () => ({
       if (forcedCommitConflicts > 0) {
         forcedCommitConflicts -= 1;
         return {
-          error: 'File "kortix.yaml" changed since it was read',
+          error: 'File "zed.yaml" changed since it was read',
           status: 409,
         };
       }
       if (manifest.revision !== String(manifestRevision)) {
         return {
-          error: 'File "kortix.yaml" changed since it was read',
+          error: 'File "zed.yaml" changed since it was read',
           status: 409,
         };
       }
@@ -290,7 +290,7 @@ describe('upsertConnectorInManifest create-only requests', () => {
     expect(result).toEqual({
       ok: false,
       error:
-        'kortix.yaml changed twice while the connector mail-primary was being updated. Retry the command.',
+        'zed.yaml changed twice while the connector mail-primary was being updated. Retry the command.',
       status: 409,
     });
     expect(manifestReads).toBe(2);
@@ -412,7 +412,7 @@ describe('every connector manifest mutation retries one revision conflict', () =
     expect(result).toEqual({
       ok: false,
       error:
-        'kortix.yaml changed twice while the connector mail-primary name was being updated. Retry the command.',
+        'zed.yaml changed twice while the connector mail-primary name was being updated. Retry the command.',
       status: 409,
     });
     expect(manifestReads).toBe(2);
@@ -433,7 +433,7 @@ describe('channel connector manifest mutations retry one revision conflict', () 
     expect(commitCalls).toBe(1);
     expect(storedConnectors).toEqual([
       {
-        slug: 'kortix_slack',
+        slug: 'zed_slack',
         name: 'Slack',
         provider: 'channel',
         platform: 'slack',
@@ -444,7 +444,7 @@ describe('channel connector manifest mutations retry one revision conflict', () 
   test('channel removal reloads and commits after one conflict', async () => {
     storedConnectors = [
       {
-        slug: 'kortix_slack',
+        slug: 'zed_slack',
         name: 'Slack',
         provider: 'channel',
         platform: 'slack',

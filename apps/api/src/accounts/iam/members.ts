@@ -10,7 +10,7 @@ import {
   projectGroupGrants,
   projectMembers,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { db } from '../../shared/db';
 import { logger } from '../../lib/logger';
 import { invalidateIamCacheForUser } from '../../iam/cache-invalidation';

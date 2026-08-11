@@ -16,26 +16,26 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
     client = new pg.Client({ connectionString: databaseUrl });
     await client.connect();
     await client.query(
-      `INSERT INTO kortix.accounts(account_id, name) VALUES
+      `INSERT INTO zed.accounts(account_id, name) VALUES
          ($1, 'audit-v2'), ($2, 'audit-v2-delete')
        ON CONFLICT (account_id) DO NOTHING`,
       [ACCOUNT, DELETE_ACCOUNT],
     );
     await client.query(
-      `INSERT INTO kortix.projects(project_id, account_id, name, repo_url)
+      `INSERT INTO zed.projects(project_id, account_id, name, repo_url)
        VALUES ($1, $2, 'audit-v2', 'https://example.test/audit-v2.git')
        ON CONFLICT (project_id) DO NOTHING`,
       [PROJECT, ACCOUNT],
     );
     await client.query(
-      `INSERT INTO kortix.project_sessions
+      `INSERT INTO zed.project_sessions
          (session_id, account_id, project_id, branch_name, created_by)
        VALUES ($1, $2, $3, 'audit-v2', $4)
        ON CONFLICT (session_id) DO NOTHING`,
       [SESSION, ACCOUNT, PROJECT, ACTOR],
     );
     await client.query(
-      `INSERT INTO kortix.tunnel_connections(tunnel_id, account_id, name)
+      `INSERT INTO zed.tunnel_connections(tunnel_id, account_id, name)
        VALUES ($1, $2, 'audit-v2-computer')
        ON CONFLICT (tunnel_id) DO NOTHING`,
       [TUNNEL, ACCOUNT],
@@ -44,26 +44,26 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
 
   afterAll(async () => {
     if (!client) return;
-    await client.query(`SET kortix.audit_maintenance = 'on'`);
+    await client.query(`SET zed.audit_maintenance = 'on'`);
     await client.query(
-      `DELETE FROM kortix.audit_webhook_deliveries WHERE event_id IN
-      (SELECT event_id FROM kortix.audit_events WHERE account_id IN ($1, $2))`,
+      `DELETE FROM zed.audit_webhook_deliveries WHERE event_id IN
+      (SELECT event_id FROM zed.audit_events WHERE account_id IN ($1, $2))`,
       [ACCOUNT, DELETE_ACCOUNT],
     );
-    await client.query(`DELETE FROM kortix.audit_events WHERE account_id IN ($1, $2)`, [
+    await client.query(`DELETE FROM zed.audit_events WHERE account_id IN ($1, $2)`, [
       ACCOUNT,
       DELETE_ACCOUNT,
     ]);
-    await client.query(`DELETE FROM kortix.audit_session_sequences WHERE session_id = $1`, [
+    await client.query(`DELETE FROM zed.audit_session_sequences WHERE session_id = $1`, [
       SESSION,
     ]);
-    await client.query(`DELETE FROM kortix.audit_session_sequences WHERE session_id = $1`, [
+    await client.query(`DELETE FROM zed.audit_session_sequences WHERE session_id = $1`, [
       'a7300000-0000-4000-a000-000000000099',
     ]);
-    await client.query(`DELETE FROM kortix.audit_webhooks WHERE account_id = $1`, [ACCOUNT]);
-    await client.query(`DELETE FROM kortix.tunnel_connections WHERE tunnel_id = $1`, [TUNNEL]);
-    await client.query(`DELETE FROM kortix.projects WHERE project_id = $1`, [PROJECT]);
-    await client.query(`DELETE FROM kortix.accounts WHERE account_id = ANY($1::uuid[])`, [
+    await client.query(`DELETE FROM zed.audit_webhooks WHERE account_id = $1`, [ACCOUNT]);
+    await client.query(`DELETE FROM zed.tunnel_connections WHERE tunnel_id = $1`, [TUNNEL]);
+    await client.query(`DELETE FROM zed.projects WHERE project_id = $1`, [PROJECT]);
+    await client.query(`DELETE FROM zed.accounts WHERE account_id = ANY($1::uuid[])`, [
       [ACCOUNT, DELETE_ACCOUNT],
     ]);
     await client.end();
@@ -81,7 +81,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
       await Promise.all(
         ['one', 'two', 'three'].map((id, index) =>
           writers[index]!.query(
-            `INSERT INTO kortix.audit_events
+            `INSERT INTO zed.audit_events
              (account_id, project_id, session_id, action, resource_type,
               source_ledger, source_record_id, phase, authoritative_source)
            VALUES ($1, $2, $3, 'test.sequence', 'project_session',
@@ -103,7 +103,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
               encode(extensions.digest(
                 convert_to((to_jsonb(a) - 'integrity_hash')::text, 'UTF8'), 'sha256'
               ), 'hex') AS recomputed_hash
-       FROM kortix.audit_events
+       FROM zed.audit_events
        AS a
        WHERE source_ledger = 'audit_v2_test'
        ORDER BY session_sequence`,
@@ -120,11 +120,11 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
 
   test('rejects updates and deletes from the canonical ledger', async () => {
     await expect(
-      client!.query(`UPDATE kortix.audit_events SET action = 'tampered'
+      client!.query(`UPDATE zed.audit_events SET action = 'tampered'
                      WHERE source_ledger = 'audit_v2_test'`),
     ).rejects.toMatchObject({ code: 'P0001' });
     await expect(
-      client!.query(`DELETE FROM kortix.audit_events WHERE source_ledger = 'audit_v2_test'`),
+      client!.query(`DELETE FROM zed.audit_events WHERE source_ledger = 'audit_v2_test'`),
     ).rejects.toMatchObject({ code: 'P0001' });
   });
 
@@ -133,7 +133,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
       session_sequence: string;
       integrity_hash: string;
     }>(
-      `INSERT INTO kortix.audit_events
+      `INSERT INTO zed.audit_events
          (account_id, project_id, session_id, action, resource_type,
           source_ledger, source_record_id, phase, authoritative_source)
        VALUES ($1, $2, $3, 'test.replay', 'project_session',
@@ -142,7 +142,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
       [ACCOUNT, PROJECT, SESSION],
     );
     const duplicate = await client!.query(
-      `INSERT INTO kortix.audit_events
+      `INSERT INTO zed.audit_events
          (account_id, project_id, session_id, action, resource_type,
           source_ledger, source_record_id, phase, authoritative_source)
        VALUES ($1, $2, $3, 'test.replay', 'project_session',
@@ -155,7 +155,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
       session_sequence: string;
       integrity_previous_hash: string;
     }>(
-      `INSERT INTO kortix.audit_events
+      `INSERT INTO zed.audit_events
          (account_id, project_id, session_id, action, resource_type,
           source_ledger, source_record_id, phase, authoritative_source)
        VALUES ($1, $2, $3, 'test.replay.next', 'project_session',
@@ -172,7 +172,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
 
   test('keeps repeated phases when the durable source revision changes', async () => {
     const inserted = await client!.query<{ source_revision: string; session_sequence: string }>(
-      `INSERT INTO kortix.audit_events
+      `INSERT INTO zed.audit_events
          (account_id, project_id, session_id, action, resource_type,
           source_ledger, source_record_id, phase, source_revision, authoritative_source)
        VALUES
@@ -191,7 +191,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
 
   test('projects connector and lifecycle state in the source transaction', async () => {
     const connector = await client!.query<{ execution_id: string }>(
-      `INSERT INTO kortix.connector_calls
+      `INSERT INTO zed.connector_calls
          (account_id, project_id, action_path, acting_user_id, session_id, status,
           request_digest, result_summary)
        VALUES ($1, $2, 'gmail.send_email', $3, $4, 'pending_approval', repeat('a', 64),
@@ -201,14 +201,14 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
       [ACCOUNT, PROJECT, ACTOR, SESSION],
     );
     const lifecycle = await client!.query<{ command_id: string }>(
-      `INSERT INTO kortix.session_lifecycle_commands
+      `INSERT INTO zed.session_lifecycle_commands
          (command_type, source, project_id, session_id, account_id, actor_user_id)
        VALUES ('continue', 'cli', $1, $2, $3, $4)
        RETURNING command_id`,
       [PROJECT, SESSION, ACCOUNT, ACTOR],
     );
     await client!.query(
-      `UPDATE kortix.session_lifecycle_commands
+      `UPDATE zed.session_lifecycle_commands
        SET attempts = 1, result = '{"private":"raw prompt and output"}'::jsonb,
            last_error = 'Bearer private-credential'
        WHERE command_id = $1`,
@@ -223,7 +223,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
       error_message: string | null;
     }>(
       `SELECT source_ledger, phase, source_revision, output_summary, output_sha256, error_message
-       FROM kortix.audit_events
+       FROM zed.audit_events
        WHERE (source_ledger = 'connector_calls' AND source_record_id = $1)
           OR (source_ledger = 'session_lifecycle_commands' AND source_record_id = $2)
        ORDER BY source_ledger, source_revision`,
@@ -253,7 +253,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
 
   test('stores computer intent before relay and a terminal phase after completion', async () => {
     const started = await client!.query<{ log_id: string }>(
-      `INSERT INTO kortix.tunnel_audit_logs
+      `INSERT INTO zed.tunnel_audit_logs
          (tunnel_id, account_id, project_id, session_id, actor_user_id, actor_type,
           capability, operation, request_summary, phase, success)
        VALUES ($1, $2, $3, $4, $5, 'agent', 'shell', 'shell.exec',
@@ -266,7 +266,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
     if (!logId) throw new Error('tunnel audit start did not return a log id');
 
     await client!.query(
-      `UPDATE kortix.tunnel_audit_logs
+      `UPDATE zed.tunnel_audit_logs
           SET phase = 'completed', success = true, duration_ms = 42, bytes_transferred = 128
         WHERE log_id = $1`,
       [logId],
@@ -280,7 +280,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
       output_summary: Record<string, unknown>;
     }>(
       `SELECT phase, outcome, source_revision, input_summary, output_summary
-         FROM kortix.audit_events
+         FROM zed.audit_events
         WHERE source_ledger = 'tunnel_audit_logs' AND source_record_id = $1
         ORDER BY session_sequence`,
       [logId],
@@ -307,7 +307,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
   test('projects session creation and status changes in the source transaction', async () => {
     const sessionId = 'a7300000-0000-4000-a000-000000000099';
     await client!.query(
-      `INSERT INTO kortix.project_sessions
+      `INSERT INTO zed.project_sessions
          (session_id, account_id, project_id, branch_name, created_by, origin, status, error,
           metadata)
        VALUES ($1, $2, $3, 'audit-v2-projected', $4, 'user', 'queued',
@@ -318,7 +318,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
       [sessionId, ACCOUNT, PROJECT, ACTOR],
     );
     await client!.query(
-      `UPDATE kortix.project_sessions
+      `UPDATE zed.project_sessions
           SET status = 'failed', error = 'Bearer private-status-error', updated_at = now()
         WHERE session_id = $1`,
       [sessionId],
@@ -342,7 +342,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
               output_sha256, error_message, actor_type, authoritative_source,
               client_reported_source, initiator_actor_type, initiator_actor_id,
               delegation_depth
-         FROM kortix.audit_events
+         FROM zed.audit_events
         WHERE source_ledger = 'project_sessions' AND source_record_id = $1
         ORDER BY session_sequence`,
       [sessionId],
@@ -373,18 +373,18 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
 
   test('queues every matching webhook delivery in the event transaction', async () => {
     const webhook = await client!.query<{ webhook_id: string }>(
-      `INSERT INTO kortix.audit_webhooks(account_id, url, secret, name, action_prefix)
+      `INSERT INTO zed.audit_webhooks(account_id, url, secret, name, action_prefix)
        VALUES ($1, 'https://example.test/audit', 'test-secret', 'test', 'webhook.')
        RETURNING webhook_id`,
       [ACCOUNT],
     );
     const event = await client!.query<{ event_id: string }>(
-      `INSERT INTO kortix.audit_events(account_id, action, resource_type, authoritative_source)
+      `INSERT INTO zed.audit_events(account_id, action, resource_type, authoritative_source)
        VALUES ($1, 'webhook.delivery.test', 'test', 'system') RETURNING event_id`,
       [ACCOUNT],
     );
     const delivery = await client!.query<{ status: string; attempts: number }>(
-      `SELECT status, attempts FROM kortix.audit_webhook_deliveries
+      `SELECT status, attempts FROM zed.audit_webhook_deliveries
        WHERE webhook_id = $1 AND event_id = $2`,
       [webhook.rows[0]!.webhook_id, event.rows[0]!.event_id],
     );
@@ -393,24 +393,24 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — migrated PostgreSQL', ()
 
   test('preserves canonical events after account deletion', async () => {
     await client!.query(
-      `INSERT INTO kortix.audit_webhooks(account_id, url, secret, name)
+      `INSERT INTO zed.audit_webhooks(account_id, url, secret, name)
        VALUES ($1, 'https://example.test/delete-audit', 'test-secret', 'delete-test')`,
       [DELETE_ACCOUNT],
     );
     const event = await client!.query<{ event_id: string }>(
-      `INSERT INTO kortix.audit_events(account_id, action, resource_type, authoritative_source)
+      `INSERT INTO zed.audit_events(account_id, action, resource_type, authoritative_source)
        VALUES ($1, 'account.deleted', 'account', 'system') RETURNING event_id`,
       [DELETE_ACCOUNT],
     );
-    await client!.query(`DELETE FROM kortix.accounts WHERE account_id = $1`, [DELETE_ACCOUNT]);
+    await client!.query(`DELETE FROM zed.accounts WHERE account_id = $1`, [DELETE_ACCOUNT]);
     const persisted = await client!.query<{ account_id: string }>(
-      `SELECT account_id FROM kortix.audit_events WHERE event_id = $1`,
+      `SELECT account_id FROM zed.audit_events WHERE event_id = $1`,
       [event.rows[0]!.event_id],
     );
     expect(persisted.rows).toEqual([{ account_id: DELETE_ACCOUNT }]);
     const deliveries = await client!.query<{ count: string }>(
       `SELECT count(*)::text AS count
-       FROM kortix.audit_webhook_deliveries
+       FROM zed.audit_webhook_deliveries
        WHERE event_id = $1`,
       [event.rows[0]!.event_id],
     );

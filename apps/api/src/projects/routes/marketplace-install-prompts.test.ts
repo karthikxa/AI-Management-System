@@ -33,24 +33,24 @@ function templateEntry(over: Record<string, unknown> = {}) {
 
 describe('buildTemplateInstallPrompt', () => {
   test('tells the agent to read the full declaration from one show --json call', () => {
-    const p = buildTemplateInstallPrompt(templateEntry(), 'kortix-starter:customer-support');
+    const p = buildTemplateInstallPrompt(templateEntry(), 'zed-starter:customer-support');
     expect(p).toContain('Customer support on autopilot');
-    expect(p).toContain('kortix marketplace show kortix-starter:customer-support --json');
+    expect(p).toContain('zed marketplace show zed-starter:customer-support --json');
     expect(p).toContain('.inputs');
     expect(p).toContain('.template');
     expect(p).toContain('do not search');
   });
 
   test('gives dependency parts as fully-qualified ids + the exact file-content endpoint', () => {
-    const p = buildTemplateInstallPrompt(templateEntry(), 'kortix-starter:customer-support');
+    const p = buildTemplateInstallPrompt(templateEntry(), 'zed-starter:customer-support');
     // namespaced from the template id, not a bare "support-agent"
-    expect(p).toContain('kortix-starter:support-agent');
-    expect(p).toContain('$KORTIX_API_URL/marketplace/items/<part-id>/file?path=<target>');
-    expect(p).toContain('.kortix/opencode/agents/');
+    expect(p).toContain('zed-starter:support-agent');
+    expect(p).toContain('$ZED_API_URL/marketplace/items/<part-id>/file?path=<target>');
+    expect(p).toContain('.zed/opencode/agents/');
   });
 
   test('wires the trigger from the show output and ships it DISABLED', () => {
-    const p = buildTemplateInstallPrompt(templateEntry(), 'kortix-starter:customer-support');
+    const p = buildTemplateInstallPrompt(templateEntry(), 'zed-starter:customer-support');
     expect(p).toContain('.template.triggers');
     expect(p).toContain('{{key}}');
     expect(p).toContain('enabled: false');
@@ -58,7 +58,7 @@ describe('buildTemplateInstallPrompt', () => {
   });
 
   test('walks the required secrets and holds the run behind a confirmation', () => {
-    const p = buildTemplateInstallPrompt(templateEntry(), 'kortix-starter:customer-support');
+    const p = buildTemplateInstallPrompt(templateEntry(), 'zed-starter:customer-support');
     expect(p).toContain('PLAIN_API_KEY');
     expect(p).toContain('STRIPE_SECRET_KEY');
     expect(p).toContain('never ask me to paste a raw key');
@@ -66,8 +66,8 @@ describe('buildTemplateInstallPrompt', () => {
   });
 
   test('handles a template with no dependencies without erroring', () => {
-    const p = buildTemplateInstallPrompt(templateEntry({ registryDependencies: [] }), 'kortix-starter:x');
-    expect(p).toContain('kortix marketplace show kortix-starter:x');
+    const p = buildTemplateInstallPrompt(templateEntry({ registryDependencies: [] }), 'zed-starter:x');
+    expect(p).toContain('zed marketplace show zed-starter:x');
     expect(p).not.toContain('Install its parts');
   });
 });
@@ -84,20 +84,20 @@ describe('buildRegistryProjectInstallPrompt', () => {
           registryDependencies: ['technical-seo-audit'],
           files: [
             {
-              path: 'kortix.yaml',
+              path: 'zed.yaml',
               content: 'default_agent: seo-director\nagents:\n  seo-director:\n    skills: all\n',
             },
             { path: 'install.md', content: '# SEO Department Install Guide\n' },
           ],
         },
       } as never,
-      'kortix_version: 2\n',
+      'zed_version: 2\n',
     );
 
     expect(p).toContain('read it from the supplied file block');
     expect(p).toContain('ask whether to apply/merge it now');
     expect(p).toContain('Do not merge without explicit approval');
-    expect(p).toContain('kortix cr merge <number-or-id>');
+    expect(p).toContain('zed cr merge <number-or-id>');
     expect(p).toContain('structured session-start/background-session tool');
     expect(p).toContain('Open session button');
     expect(p).not.toContain('Once merged, start a session');

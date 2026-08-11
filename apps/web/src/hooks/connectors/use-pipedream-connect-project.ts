@@ -9,7 +9,7 @@ import {
   pipedreamConnectConnection,
   pipedreamFinalizeConnection,
   reconcileConnection,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 /**
  * Create and connect one project-owned connection.

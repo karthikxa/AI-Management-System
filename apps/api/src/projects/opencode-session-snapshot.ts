@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 
-import { projectSessions } from '@kortix/db';
+import { projectSessions } from '@zed/db';
 import { logger as appLogger } from '../lib/logger';
 import { db } from '../shared/db';
 import type { ProjectSessionRow } from './lib/serializers';

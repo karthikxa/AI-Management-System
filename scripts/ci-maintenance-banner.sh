@@ -21,14 +21,14 @@
 #
 # Env:
 #   MAINTENANCE_TOKEN     (required) platform-admin bearer
-#   MAINTENANCE_URL       (optional) full endpoint, default https://kortix.com/api/maintenance
+#   MAINTENANCE_URL       (optional) full endpoint, default https://zed.com/api/maintenance
 #
 # Best-effort: the caller runs this with continue-on-error so a banner hiccup
 # never fails the release.
 
 set -euo pipefail
 
-ENDPOINT="${MAINTENANCE_URL:-https://kortix.com/api/maintenance}"
+ENDPOINT="${MAINTENANCE_URL:-https://zed.com/api/maintenance}"
 ROLLOUT_TITLE="Release in progress"
 
 CMD="${1:-}"
@@ -67,8 +67,8 @@ case "$CMD" in
       echo "An active incident banner ($level: '${title}') is up — leaving it in place, not showing the rollout notice."
       exit 0
     fi
-    msg="Deploying a new version — Kortix may be briefly unavailable."
-    [[ -n "$version" ]] && msg="Deploying ${version} — Kortix may be briefly unavailable."
+    msg="Deploying a new version — Zed may be briefly unavailable."
+    [[ -n "$version" ]] && msg="Deploying ${version} — Zed may be briefly unavailable."
     put "critical" "$ROLLOUT_TITLE" "$msg"
     echo "Rollout critical banner activated${version:+ for $version}."
     ;;

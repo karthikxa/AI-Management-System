@@ -1,23 +1,23 @@
 <div align="center">
 
-<img src="apps/web/public/kortix-symbol.svg" alt="Kortix" width="80" />
+<img src="apps/web/public/zed-symbol.svg" alt="Zed" width="80" />
 
-# Kortix
+# Zed
 
 **The open-source AI Management System**
 
 **The leading open-source alternative to Claude Cowork and ChatGPT Work.**
 
-[![GitHub stars](https://img.shields.io/github/stars/kortix-ai/suna?style=flat&color=111111&label=Stars)](https://github.com/kortix-ai/suna/stargazers)
-[![Release](https://img.shields.io/github/v/release/kortix-ai/suna?style=flat&color=111111&label=Release)](https://github.com/kortix-ai/suna/releases/latest)
-[![Docs](https://img.shields.io/badge/Docs-kortix.com%2Fdocs-111111.svg)](https://kortix.com/docs)
+[![GitHub stars](https://img.shields.io/github/stars/zed-ai/suna?style=flat&color=111111&label=Stars)](https://github.com/zed-ai/suna/stargazers)
+[![Release](https://img.shields.io/github/v/release/zed-ai/suna?style=flat&color=111111&label=Release)](https://github.com/zed-ai/suna/releases/latest)
+[![Docs](https://img.shields.io/badge/Docs-zed.com%2Fdocs-111111.svg)](https://zed.com/docs)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-111111.svg)](#contributing)
 
-[Website](https://kortix.com) · [Documentation](https://kortix.com/docs) · [Cloud](https://kortix.com) · [Manifesto](MANIFESTO.md)
+[Website](https://zed.com) · [Documentation](https://zed.com/docs) · [Cloud](https://zed.com) · [Manifesto](MANIFESTO.md)
 
 <br />
 
-<img src="apps/web/public/media/showcase/kortix-showcase.gif" alt="Ask a project for real work, connect 3,000+ apps, manage agents, skills and schedules, then watch an agent research on a cloud computer and return a finished pitch deck" width="900" />
+<img src="apps/web/public/media/showcase/zed-showcase.gif" alt="Ask a project for real work, connect 3,000+ apps, manage agents, skills and schedules, then watch an agent research on a cloud computer and return a finished pitch deck" width="900" />
 
 </div>
 
@@ -27,7 +27,7 @@ Agents that deliver finished work — reports, decks, code, replies, deployed ch
 product category. Every version of it runs inside a model lab, on that lab's model, with your
 company's brain on their side of the wall.
 
-**Kortix is the one you own.** It's an open-source **AI Management System**: your agents, the
+**Zed is the one you own.** It's an open-source **AI Management System**: your agents, the
 skills they share, your company memory, and every connector live in one git repo — versioned,
 diffable, and shared by the whole company. The agents work on real **cloud computers** — an
 isolated sandbox per session, on its own branch — and land what they produce through a **change
@@ -39,7 +39,7 @@ Any model, your own API keys, your own infrastructure or our managed cloud.
 
 ## How it compares
 
-| | Claude Cowork | ChatGPT Work | **Kortix** |
+| | Claude Cowork | ChatGPT Work | **Zed** |
 | --- | --- | --- | --- |
 | **Source** | Closed | Closed | **Open source — read it, fork it, audit it** |
 | **Models** | Anthropic only | GPT-5.6 only | **Any provider, your own API keys** |
@@ -57,25 +57,25 @@ Three commands. Build your company like a codebase, then bring it live.
 
 ```bash
 # 1 · Install the CLI
-curl -fsSL https://kortix.com/install | bash
+curl -fsSL https://zed.com/install | bash
 
-# 2 · Scaffold a project — creates kortix.yaml + your agents, skills and runtime config
-kortix init
+# 2 · Scaffold a project — creates zed.yaml + your agents, skills and runtime config
+zed init
 
 # 3 · Ship it — pushes your repo and brings the whole thing live in the cloud
-kortix ship
+zed ship
 ```
 
 That's the loop. From here:
 
 ```bash
-kortix sessions new --prompt "Summarize this week's commits and open a change request"
-kortix cr ls          # review what an agent proposes — merge to keep it
-kortix chat           # talk to a session's agent from your terminal
+zed sessions new --prompt "Summarize this week's commits and open a change request"
+zed cr ls          # review what an agent proposes — merge to keep it
+zed chat           # talk to a session's agent from your terminal
 ```
 
-Prefer zero setup? Sign up at **[kortix.com](https://kortix.com)**, create a project, and start a
-session — nothing to install. Full command surface: **[CLI reference](https://kortix.com/docs/cli)**.
+Prefer zero setup? Sign up at **[zed.com](https://zed.com)**, create a project, and start a
+session — nothing to install. Full command surface: **[CLI reference](https://zed.com/docs/cli)**.
 
 ---
 
@@ -86,7 +86,7 @@ built up, the way the work actually gets done, every fact the company has learne
 definition of the machines it all runs on. **Versioned. Diffable. Owned outright.**
 
 ```
-project  (git repo + kortix.yaml)
+project  (git repo + zed.yaml)
    └─ session ──> cloud computer: an isolated sandbox on a branch named after the session
                      └─ the OpenCode agent works
                            └─ change request ──> you review & merge ──> main
@@ -121,7 +121,7 @@ end).
 
 ---
 
-## Why Kortix
+## Why Zed
 
 - **Open & yours.** Open source and self-hostable — your data, your models, your infrastructure. No lock-in, fully auditable.
 - **A workforce, not one assistant.** Org-scale specialist agents that run in parallel and compound a shared memory.
@@ -133,13 +133,13 @@ end).
 
 ## Self-host
 
-Kortix runs on your own infrastructure — a laptop, a VPS, your own VPC, or your own on-prem
+Zed runs on your own infrastructure — a laptop, a VPS, your own VPC, or your own on-prem
 network. Start a production-style local instance from Docker images, then switch the CLI between
 Cloud and your own hosts:
 
 ```bash
-kortix self-host start
-kortix hosts use selfhost  # ↔  kortix hosts use cloud
+zed self-host start
+zed hosts use selfhost  # ↔  zed hosts use cloud
 ```
 
 The first interactive setup asks only for the integration credentials that unlock managed git,
@@ -147,7 +147,7 @@ GitHub access, and Pipedream connectors — ports, local URLs, keys and Docker C
 generated for you. Note that `self-host start` pulls its images from Docker Hub, so this is a
 self-hosted install rather than a disconnected one.
 
-Managed hosting is **[Kortix Cloud](https://kortix.com)**.
+Managed hosting is **[Zed Cloud](https://zed.com)**.
 
 ---
 
@@ -190,5 +190,5 @@ pull requests are welcome.
 <br />
 <strong>We're building the thing that takes a company from human to AGI — and lets it keep every byte of itself on the way there.</strong>
 <br /><br />
-<a href="https://kortix.com">kortix.com</a>
+<a href="https://zed.com">zed.com</a>
 </div>

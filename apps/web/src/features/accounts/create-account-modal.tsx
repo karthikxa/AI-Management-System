@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/modal';
 import { errorToast, successToast } from '@/components/ui/toast';
 import { Plus } from '@/features/icon/icons/plus';
-import { createAccount, type KortixAccount } from '@kortix/sdk';
+import { createAccount, type ZedAccount } from '@zed/sdk';
 import { useMutation } from '@tanstack/react-query';
 import { FormEvent, useState } from 'react';
 
@@ -28,7 +28,7 @@ export function CreateAccountModal({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated?: (account: KortixAccount) => void;
+  onCreated?: (account: ZedAccount) => void;
 }) {
   const tHardcodedUi = useTranslations('hardcodedUi');
   const [name, setName] = useState('');

@@ -10,7 +10,7 @@ data "aws_sns_topic" "usw2_alerts" {
 
 data "aws_sns_topic" "euw2_alerts" {
   provider = aws.euw2
-  name     = "kortix-compliance-alerts"
+  name     = "zed-compliance-alerts"
 }
 
 data "aws_lbs" "usw2" {}
@@ -32,13 +32,13 @@ data "aws_instances" "euw2" {
 }
 
 data "aws_wafv2_web_acl" "usw2" {
-  name  = "kortix-alb-waf"
+  name  = "zed-alb-waf"
   scope = "REGIONAL"
 }
 
 data "aws_wafv2_web_acl" "euw2" {
   provider = aws.euw2
-  name     = "kortix-alb-waf"
+  name     = "zed-alb-waf"
   scope    = "REGIONAL"
 }
 
@@ -56,7 +56,7 @@ locals {
     }
   }
   alarm_tags = {
-    ManagedBy = "kortix-compliance"
+    ManagedBy = "zed-compliance"
     Control   = "DCF-86"
   }
   # Drata's AWS connection assumes this account-local role. Keep its SNS
@@ -109,7 +109,7 @@ resource "aws_wafv2_web_acl_association" "euw2" {
 
 resource "aws_cloudwatch_metric_alarm" "usw2_target_response_time" {
   for_each            = local.usw2_albs
-  alarm_name          = "kortix-alb-${each.value.name}-target-response-time"
+  alarm_name          = "zed-alb-${each.value.name}-target-response-time"
   alarm_description   = "SOC2 DCF-86: ALB target response time is elevated"
   namespace           = "AWS/ApplicationELB"
   metric_name         = "TargetResponseTime"
@@ -127,7 +127,7 @@ resource "aws_cloudwatch_metric_alarm" "usw2_target_response_time" {
 
 resource "aws_cloudwatch_metric_alarm" "usw2_elb_5xx" {
   for_each            = local.usw2_albs
-  alarm_name          = "kortix-alb-${each.value.name}-elb-5xx"
+  alarm_name          = "zed-alb-${each.value.name}-elb-5xx"
   alarm_description   = "SOC2 DCF-86: ALB server errors detected"
   namespace           = "AWS/ApplicationELB"
   metric_name         = "HTTPCode_ELB_5XX_Count"
@@ -145,7 +145,7 @@ resource "aws_cloudwatch_metric_alarm" "usw2_elb_5xx" {
 
 resource "aws_cloudwatch_metric_alarm" "usw2_unhealthy_hosts" {
   for_each            = local.usw2_albs
-  alarm_name          = "kortix-alb-${each.value.name}-unhealthy-hosts"
+  alarm_name          = "zed-alb-${each.value.name}-unhealthy-hosts"
   alarm_description   = "SOC2 DCF-86: ALB has unhealthy targets"
   namespace           = "AWS/ApplicationELB"
   metric_name         = "UnHealthyHostCount"
@@ -164,7 +164,7 @@ resource "aws_cloudwatch_metric_alarm" "usw2_unhealthy_hosts" {
 resource "aws_cloudwatch_metric_alarm" "euw2_target_response_time" {
   provider            = aws.euw2
   for_each            = local.euw2_albs
-  alarm_name          = "kortix-alb-${each.value.name}-target-response-time"
+  alarm_name          = "zed-alb-${each.value.name}-target-response-time"
   alarm_description   = "SOC2 DCF-86: ALB target response time is elevated"
   namespace           = "AWS/ApplicationELB"
   metric_name         = "TargetResponseTime"
@@ -183,7 +183,7 @@ resource "aws_cloudwatch_metric_alarm" "euw2_target_response_time" {
 resource "aws_cloudwatch_metric_alarm" "euw2_elb_5xx" {
   provider            = aws.euw2
   for_each            = local.euw2_albs
-  alarm_name          = "kortix-alb-${each.value.name}-elb-5xx"
+  alarm_name          = "zed-alb-${each.value.name}-elb-5xx"
   alarm_description   = "SOC2 DCF-86: ALB server errors detected"
   namespace           = "AWS/ApplicationELB"
   metric_name         = "HTTPCode_ELB_5XX_Count"
@@ -202,7 +202,7 @@ resource "aws_cloudwatch_metric_alarm" "euw2_elb_5xx" {
 resource "aws_cloudwatch_metric_alarm" "euw2_unhealthy_hosts" {
   provider            = aws.euw2
   for_each            = local.euw2_albs
-  alarm_name          = "kortix-alb-${each.value.name}-unhealthy-hosts"
+  alarm_name          = "zed-alb-${each.value.name}-unhealthy-hosts"
   alarm_description   = "SOC2 DCF-86: ALB has unhealthy targets"
   namespace           = "AWS/ApplicationELB"
   metric_name         = "UnHealthyHostCount"
@@ -286,7 +286,7 @@ data "aws_iam_policy_document" "usw2_alerts" {
     condition {
       test     = "ArnLike"
       variable = "aws:SourceArn"
-      values   = ["arn:aws:events:us-west-2:${local.account_id}:rule/kortix-*failures"]
+      values   = ["arn:aws:events:us-west-2:${local.account_id}:rule/zed-*failures"]
     }
   }
   statement {
@@ -337,7 +337,7 @@ data "aws_iam_policy_document" "euw2_alerts" {
     condition {
       test     = "ArnLike"
       variable = "aws:SourceArn"
-      values   = ["arn:aws:events:eu-west-2:${local.account_id}:rule/kortix-*failures"]
+      values   = ["arn:aws:events:eu-west-2:${local.account_id}:rule/zed-*failures"]
     }
   }
   statement {
@@ -381,14 +381,14 @@ locals {
 }
 
 resource "aws_cloudwatch_event_rule" "usw2_backup_failures" {
-  name          = "kortix-backup-job-failures"
+  name          = "zed-backup-job-failures"
   description   = "Alert on failed, aborted, or expired AWS Backup jobs"
   event_pattern = local.backup_failure_pattern
   tags          = merge(local.tags, { Control = "DCF-99" })
 }
 
 resource "aws_cloudwatch_event_rule" "usw2_snapshot_failures" {
-  name          = "kortix-ebs-snapshot-failures"
+  name          = "zed-ebs-snapshot-failures"
   description   = "Alert on failed EBS snapshot operations"
   event_pattern = local.snapshot_failure_pattern
   tags          = merge(local.tags, { Control = "DCF-99" })
@@ -408,7 +408,7 @@ resource "aws_cloudwatch_event_target" "usw2_snapshot_failures" {
 
 resource "aws_cloudwatch_event_rule" "euw2_backup_failures" {
   provider      = aws.euw2
-  name          = "kortix-backup-job-failures"
+  name          = "zed-backup-job-failures"
   description   = "Alert on failed, aborted, or expired AWS Backup jobs"
   event_pattern = local.backup_failure_pattern
   tags          = merge(local.tags, { Control = "DCF-99" })
@@ -416,7 +416,7 @@ resource "aws_cloudwatch_event_rule" "euw2_backup_failures" {
 
 resource "aws_cloudwatch_event_rule" "euw2_snapshot_failures" {
   provider      = aws.euw2
-  name          = "kortix-ebs-snapshot-failures"
+  name          = "zed-ebs-snapshot-failures"
   description   = "Alert on failed EBS snapshot operations"
   event_pattern = local.snapshot_failure_pattern
   tags          = merge(local.tags, { Control = "DCF-99" })

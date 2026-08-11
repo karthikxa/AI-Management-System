@@ -50,18 +50,18 @@
  *    email and voice are experimental, per-project opt-in. Telegram, WhatsApp,
  *    SMS and Discord are NOT channels, in any tense. And `channels:` is REJECTED
  *    by the v2 manifest validator — channel routing is live project state, never
- *    repo config, so no passage may say `kortix.yaml` declares a channel.
+ *    repo config, so no passage may say `zed.yaml` declares a channel.
  *  - ONE THREAD IS ONE SESSION is a database guarantee, not a convention:
  *    `uniqueIndex('idx_chat_threads_thread')` on (platform, workspace_id,
- *    thread_id) in `packages/db/src/schema/kortix.ts:1341`.
- *  - HARNESS. OpenCode only. ACP, `kortix_version: 3` and the Claude Code /
- *    Codex / Pi harnesses sit behind `KORTIX_ACP_RUNTIME` (`config.ts:272`,
+ *    thread_id) in `packages/db/src/schema/zed.ts:1341`.
+ *  - HARNESS. OpenCode only. ACP, `zed_version: 3` and the Claude Code /
+ *    Codex / Pi harnesses sit behind `ZED_ACP_RUNTIME` (`config.ts:272`,
  *    default false) and are not shipped. Never name them. Saying "an agent is
  *    an OpenCode agent" is a statement about depth, not about choice — do not
  *    let it imply a harness menu.
  *  - WHAT AN AGENT IS. Markdown is the FLOOR, never the ceiling. Do not write
  *    "an agent is a markdown file" and stop there. Verified:
- *      · Behavior is a stock OpenCode agent `.md` — Kortix adds no dialect.
+ *      · Behavior is a stock OpenCode agent `.md` — Zed adds no dialect.
  *        `compile-agent-config.ts` passes the frontmatter straight through as
  *        `OpencodeAgentConfig`: description, mode, model, variant, temperature,
  *        top_p, prompt, disable, hidden, options, color, steps, permission.
@@ -78,7 +78,7 @@
  *        OpenCode `bun install`s at startup.
  *      · The GRANT covers more than tools. `AgentBlockV2` fields: `sandbox`
  *        (which machine it boots), `connectors` + `connectors_required`,
- *        `secrets`, `skills`, `kortix_cli`, `workspace`, `enabled`. CHANNELS
+ *        `secrets`, `skills`, `zed_cli`, `workspace`, `enabled`. CHANNELS
  *        are covered by `connectors` because a connected channel IS a connector
  *        with `provider: 'channel'` (`apps/api/src/projects/connectors.ts:61`).
  *  - TRIGGERS are exactly two kinds. A webhook with no `secret_env` is rejected
@@ -103,7 +103,7 @@
  *    `declared ∩ launching-user role` (`apps/api/src/projects/agents.ts:19-21`).
  *  - AUDIT. Recording is never gated; only read/export/stream is
  *    (`apps/api/src/types.ts:129-135`).
- *  - SELF-HOST is NOT air-gapped. `kortix self-host start` pulls images over the
+ *  - SELF-HOST is NOT air-gapped. `zed self-host start` pulls images over the
  *    internet and the default sandbox provider is remote. No passage claims this
  *    today — the rule stands in case one is ever re-added.
  *  - LICENCE. Say "open source" and stop. Never name one.
@@ -139,10 +139,10 @@ export type Passage = {
  * recorded here so nobody re-adds one without the argument:
  *
  *  - THE REPO. `how-it-works-content.ts` layer 01 already carries all of it:
- *    "kortix.yaml declares the machine image, the connectors and the triggers",
+ *    "zed.yaml declares the machine image, the connectors and the triggers",
  *    "Agents and skills are markdown", "grep the whole company, diff any
- *    change, roll any part of it back". The only residue was `kortix init` /
- *    `kortix ship`, which the hero CLI panel and the open-source terminal both
+ *    change, roll any part of it back". The only residue was `zed init` /
+ *    `zed ship`, which the hero CLI panel and the open-source terminal both
  *    already show.
  *  - THE AGENT COMPUTER. Layer 05 carries all three beats, and its "Session id,
  *    sandbox id and branch name are one and the same string" is sharper than
@@ -163,7 +163,7 @@ export type Passage = {
  * "An OpenCode agent: markdown, plus the tools and plugins beside it" — true,
  * and far too small for what the frontmatter and the grant actually hold. Cut
  * this passage and the grant surface (the machine it boots, its connectors and
- * channels, its secrets, its skills, its Kortix verbs) appears in no card at all.
+ * channels, its secrets, its skills, its Zed verbs) appears in no card at all.
  *
  * `control` is the strongest structural case: `how-it-works-content.ts:11-13`
  * says in as many words that "Security and governance is deliberately not a
@@ -180,7 +180,7 @@ export const agents: Passage = {
   title: 'An agent is a prompt and a set of grants.',
   paragraphs: [
     'An agent is an OpenCode agent. At baseline that is one markdown file — frontmatter setting its mode, its model and a per-capability permission tree, a body that is the system prompt — but markdown is the floor, not the ceiling. The whole OpenCode surface sits in the same repo and is yours to edit: your own TypeScript tools, plugins that hook the runtime, the skills it loads, the model and provider config.',
-    'What it may reach is a block in kortix.yaml, and it covers far more than tools: which sandbox image it boots, which connectors and channels it can call, which secrets it may receive, which skills it may invoke, and what it may do to Kortix itself. A grant left out resolves to none. Whatever is granted is then intersected with the role of whoever started the session, so an agent never exceeds its human.',
+    'What it may reach is a block in zed.yaml, and it covers far more than tools: which sandbox image it boots, which connectors and channels it can call, which secrets it may receive, which skills it may invoke, and what it may do to Zed itself. A grant left out resolves to none. Whatever is granted is then intersected with the role of whoever started the session, so an agent never exceeds its human.',
   ],
   facts: ['OpenCode agent', 'Tools, plugins, models', 'Omitted grants are none'],
   href: '/agents-and-skills',
@@ -214,9 +214,9 @@ export const automations: Passage = {
   title: 'A trigger starts a session at 3am.',
   paragraphs: [
     'Work that starts itself has two shapes and no third: a cron schedule, stored against an IANA timezone name rather than an offset, or a webhook signed with HMAC-SHA256. A webhook trigger that names no signing secret is rejected at validation, so there is no unsigned path to forget to lock down later.',
-    'The prompt a trigger fires is a template. A webhook fire renders {{ body.* }}; a cron fire renders {{ cron.schedule }}, {{ cron.timezone }} and {{ cron.scheduled_for }}. Each fire is a clean slate by default, or a trigger can re-prompt a session it already owns, keyed off the payload so one customer keeps one thread. Both shapes are entries in kortix.yaml and both run as an agent you name, so the 3am job has an author, a diff and a history like everything else in the repo.',
+    'The prompt a trigger fires is a template. A webhook fire renders {{ body.* }}; a cron fire renders {{ cron.schedule }}, {{ cron.timezone }} and {{ cron.scheduled_for }}. Each fire is a clean slate by default, or a trigger can re-prompt a session it already owns, keyed off the payload so one customer keeps one thread. Both shapes are entries in zed.yaml and both run as an agent you name, so the 3am job has an author, a diff and a history like everything else in the repo.',
   ],
-  facts: ['Cron and signed webhook', 'Declared in kortix.yaml', 'Runs as an agent you name'],
+  facts: ['Cron and signed webhook', 'Declared in zed.yaml', 'Runs as an agent you name'],
   href: '/automations',
   linkLabel: 'Automations',
 };
@@ -239,7 +239,7 @@ export const control: Passage = {
   paragraphs: [
     'People, groups and service accounts are all principals, and a permission attaches to a principal for an action on a resource type. A service account never inherits the reach of whoever created it. Secrets are sealed with AES-256-GCM under a key derived per project, and an agent receives only the ones its grant names.',
     'We will not tell you a granted secret is invisible to the model: once delivered it is a real environment value in the session, because that is how a tool uses it. What holds is narrower — connector credentials never enter the machine at all, and the machine is destroyed with everything on it. Account administration — members, billing, creating projects — is outside the set an agent can hold at all.',
-    'Approval gates are not on by default, so set the default you want. When one fires it holds the call open rather than failing it, so the run resumes from exactly where it stopped — a gate that errors out just teaches an agent to retry around it. Work reaches main one way: a change request, and merge is refused to every agent unless an admin grants it in kortix.yaml, which is itself an edit a person has to merge.',
+    'Approval gates are not on by default, so set the default you want. When one fires it holds the call open rather than failing it, so the run resumes from exactly where it stopped — a gate that errors out just teaches an agent to retry around it. Work reaches main one way: a change request, and merge is refused to every agent unless an admin grants it in zed.yaml, which is itself an edit a person has to merge.',
   ],
   facts: ['AES-256-GCM per project', 'Gates off until you set them', 'Merge default-deny'],
   href: '/security',

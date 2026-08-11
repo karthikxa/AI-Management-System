@@ -62,28 +62,28 @@ export const up = (pgm) => {
   // ── EXPAND: build every replacement first ────────────────────────────────
   pgm.sql(`
     create unique index concurrently if not exists idx_executor_connection_profiles_default_project
-      on kortix.executor_connection_profiles (connector_id)
+      on zed.executor_connection_profiles (connector_id)
       where is_default = true and owner_type = 'project'
   `);
   pgm.sql(`
     create unique index concurrently if not exists idx_executor_connection_profiles_default_owner
-      on kortix.executor_connection_profiles (connector_id, owner_type, owner_id)
+      on zed.executor_connection_profiles (connector_id, owner_type, owner_id)
       where is_default = true and owner_id is not null
   `);
   pgm.sql(`
     create unique index concurrently if not exists idx_executor_connection_profiles_owner_label
-      on kortix.executor_connection_profiles (connector_id, owner_type, owner_id, label)
+      on zed.executor_connection_profiles (connector_id, owner_type, owner_id, label)
       where owner_id is not null
   `);
   pgm.sql(`
     create unique index concurrently if not exists idx_executor_connection_profiles_project_label
-      on kortix.executor_connection_profiles (connector_id, label)
+      on zed.executor_connection_profiles (connector_id, label)
       where owner_id is null
   `);
 
   // ── CONTRACT: only now retire the originals ──────────────────────────────
-  pgm.sql(`drop index concurrently if exists kortix.idx_executor_connection_profiles_default`);
-  pgm.sql(`drop index concurrently if exists kortix.idx_executor_connection_profiles_owner`);
+  pgm.sql(`drop index concurrently if exists zed.idx_executor_connection_profiles_default`);
+  pgm.sql(`drop index concurrently if exists zed.idx_executor_connection_profiles_owner`);
 };
 
 // Most CONCURRENTLY migrations are one-way in practice (see MIGRATIONS.md --

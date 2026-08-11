@@ -34,7 +34,7 @@ mock.module('../participants', () => ({
 
 const { handleSlashCommand } = await import('../commands');
 
-const ctx = { teamId: 'T1', channelId: 'C1', slackUserId: 'U1', command: '/kortix' };
+const ctx = { teamId: 'T1', channelId: 'C1', slackUserId: 'U1', command: '/zed' };
 
 function actionIds(resp: any): string[] {
   const ids: string[] = [];

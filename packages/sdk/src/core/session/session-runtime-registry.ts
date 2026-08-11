@@ -1,12 +1,12 @@
 /**
- * Session runtime registry — a process-wide map from a Kortix `sessionId` to
+ * Session runtime registry — a process-wide map from a Zed `sessionId` to
  * its last-resolved runtime (opencode session id + runtime URL + sandbox id).
  *
- * Why this exists: `kortix.session(pid, sid)` hands out a FRESH handle on
+ * Why this exists: `zed.session(pid, sid)` hands out a FRESH handle on
  * every call, with its own `_ready` cache that starts `null`. That is correct
- * isolation between two DIFFERENT sessions (see kortix.test.ts), but it also
+ * isolation between two DIFFERENT sessions (see zed.test.ts), but it also
  * means a second handle for the SAME session — e.g. a host polling
- * `.health()` on an interval with a new inline `kortix.session(...)` call each
+ * `.health()` on an interval with a new inline `zed.session(...)` call each
  * tick, or the React `useSession` hook resolving the runtime independently of
  * a facade handle — has no way to know the session is already up.
  *
@@ -26,7 +26,7 @@
  */
 
 export interface SessionRuntimeEntry {
-  /** OpenCode's own session id for this Kortix session (resolved at /start). */
+  /** OpenCode's own session id for this Zed session (resolved at /start). */
   opencodeSessionId: string;
   /** This session's resolved runtime proxy URL (`${backendUrl}/p/{externalId}/8000`). */
   runtimeUrl: string;
@@ -40,7 +40,7 @@ export interface SessionRuntimeEntry {
  * restart/delete/stop ever removed an entry). Eviction is safe by
  * construction: an evicted entry is indistinguishable from a session whose
  * runtime was simply never resolved yet — `tryResolveReady()` in
- * `kortix.ts` treats a registry miss as "not cached", falling back to
+ * `zed.ts` treats a registry miss as "not cached", falling back to
  * `ensureReady()` → `startProjectSession`, which re-resolves (and
  * re-populates) the entry. No consumer treats a miss as an error on its own;
  * `requireReady()` is the only place a miss becomes a thrown

@@ -9,7 +9,7 @@ import * as realUsageBreakdown from './usage-breakdown';
 // response shape is unchanged. Mirrors the mock.module + dynamic import
 // pattern in ./billing-gate.test.ts.
 import { describe, expect, mock, test } from 'bun:test';
-import { sandboxes } from '@kortix/db';
+import { sandboxes } from '@zed/db';
 
 let getCreditAccountCalls = 0;
 let account: Record<string, unknown> | null = null;
@@ -28,8 +28,8 @@ async function trackedDelay<T>(value: T, ms = 15): Promise<T> {
 mock.module('../../config', () => ({
   config: {
     ENTERPRISE_LICENSE_AVAILABLE: false,
-    KORTIX_BILLING_INTERNAL_ENABLED: true,
-    INTERNAL_KORTIX_ENV: 'dev',
+    ZED_BILLING_INTERNAL_ENABLED: true,
+    INTERNAL_ZED_ENV: 'dev',
   },
 }));
 

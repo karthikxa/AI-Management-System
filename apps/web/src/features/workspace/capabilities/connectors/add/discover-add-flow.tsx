@@ -6,7 +6,7 @@ import {
   type ConnectorDraftInput,
   type DiscoverConnector,
   type DiscoverConnectorTemplate,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { ArrowSquareOutIcon, CubeIcon, GlobeIcon } from '@phosphor-icons/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -198,7 +198,7 @@ export function DiscoverAddFlow({
                       key={`${variant.kind}:${variant.id}`}
                       className="bg-popover flex items-center gap-3 rounded-md border px-4 py-3"
                     >
-                      <span className="bg-kortix-blue/15 text-kortix-blue flex size-9 shrink-0 items-center justify-center rounded-sm">
+                      <span className="bg-zed-blue/15 text-zed-blue flex size-9 shrink-0 items-center justify-center rounded-sm">
                         {variant.kind === 'mcp' ? (
                           <CubeIcon className="size-5" />
                         ) : (

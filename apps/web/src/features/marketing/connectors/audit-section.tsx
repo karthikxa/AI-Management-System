@@ -7,7 +7,7 @@ import { Eyebrow, Section, SectionHeader } from './shared';
 
 /**
  * The ledger. Every field named here is a real column on
- * `kortix.connector_calls` — do not add a field to sound thorough.
+ * `zed.connector_calls` — do not add a field to sound thorough.
  */
 export function AuditSection() {
   return (

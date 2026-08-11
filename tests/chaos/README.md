@@ -1,6 +1,6 @@
 # Chaos / Failover / DR Tests
 
-Resilience experiments for Kortix using OSS chaos tooling, all invoked through
+Resilience experiments for Zed using OSS chaos tooling, all invoked through
 Docker (no local installs):
 
 - **[Toxiproxy](https://github.com/Shopify/toxiproxy)** (MIT) — inject latency
@@ -83,14 +83,14 @@ docker compose -f tests/chaos/docker-compose.toxiproxy.yml down
 
 ## 2. Container chaos with pumba
 
-Run on the host where the Kortix containers live:
+Run on the host where the Zed containers live:
 
 ```bash
 # hard-kill one API container, assert the service recovers
-TARGET=kortix-api ACTION=kill tests/chaos/container-chaos-pumba.sh
+TARGET=zed-api ACTION=kill tests/chaos/container-chaos-pumba.sh
 
 # pause a container for 20s (simulates a stuck/GC'd instance)
-TARGET=kortix-api ACTION=pause DURATION=20s tests/chaos/container-chaos-pumba.sh
+TARGET=zed-api ACTION=pause DURATION=20s tests/chaos/container-chaos-pumba.sh
 ```
 
 `TARGET` is a regex matched via pumba's `re2:` selector. The script verifies
@@ -102,7 +102,7 @@ returns to steady state (or fails after 60s).
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `BASE_URL` | `http://localhost:8008/v1` | API base url to probe. |
-| `TARGET` | `kortix-api` | Container name/regex to disrupt. |
+| `TARGET` | `zed-api` | Container name/regex to disrupt. |
 | `ACTION` | `kill` | `kill` / `pause` / `stop`. |
 | `DURATION` | `15s` | Window for `pause`/`stop`. |
 | `SIGNAL` | `SIGKILL` | Signal for `kill`. |

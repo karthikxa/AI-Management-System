@@ -4,7 +4,7 @@ SET statement_timeout = '5min';
 -- Preserve sub-cent wallet values inside every active credit RPC.
 -- Unconstrained numeric variables inherit the precision of the table columns.
 
-UPDATE kortix.credit_accounts
+UPDATE zed.credit_accounts
 SET balance_precise = balance,
     lifetime_granted_precise = lifetime_granted,
     lifetime_purchased_precise = lifetime_purchased,
@@ -13,11 +13,11 @@ SET balance_precise = balance,
     non_expiring_credits_precise = non_expiring_credits,
     daily_credits_balance_precise = daily_credits_balance;
 
-UPDATE kortix.credit_ledger
+UPDATE zed.credit_ledger
 SET amount_precise = amount,
     balance_after_precise = balance_after;
 
-CREATE FUNCTION kortix.sync_credit_account_precision_columns()
+CREATE FUNCTION zed.sync_credit_account_precision_columns()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path TO ''
@@ -116,11 +116,11 @@ END;
 $function$;
 
 CREATE TRIGGER sync_credit_account_precision_columns
-BEFORE INSERT OR UPDATE ON kortix.credit_accounts
+BEFORE INSERT OR UPDATE ON zed.credit_accounts
 FOR EACH ROW
-EXECUTE FUNCTION kortix.sync_credit_account_precision_columns();
+EXECUTE FUNCTION zed.sync_credit_account_precision_columns();
 
-CREATE FUNCTION kortix.sync_credit_ledger_precision_columns()
+CREATE FUNCTION zed.sync_credit_ledger_precision_columns()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path TO ''
@@ -159,9 +159,9 @@ END;
 $function$;
 
 CREATE TRIGGER sync_credit_ledger_precision_columns
-BEFORE INSERT OR UPDATE ON kortix.credit_ledger
+BEFORE INSERT OR UPDATE ON zed.credit_ledger
 FOR EACH ROW
-EXECUTE FUNCTION kortix.sync_credit_ledger_precision_columns();
+EXECUTE FUNCTION zed.sync_credit_ledger_precision_columns();
 
 CREATE OR REPLACE FUNCTION public.atomic_add_credits(
   p_account_id uuid,
@@ -189,7 +189,7 @@ DECLARE
 BEGIN
   IF p_stripe_event_id IS NOT NULL AND EXISTS (
     SELECT 1
-    FROM kortix.credit_ledger
+    FROM zed.credit_ledger
     WHERE stripe_event_id = p_stripe_event_id
   ) THEN
     RETURN jsonb_build_object(
@@ -201,7 +201,7 @@ BEGIN
 
   IF p_idempotency_key IS NOT NULL AND EXISTS (
     SELECT 1
-    FROM kortix.credit_ledger
+    FROM zed.credit_ledger
     WHERE idempotency_key = p_idempotency_key
       AND created_at > NOW() - INTERVAL '1 hour'
   ) THEN
@@ -214,7 +214,7 @@ BEGIN
 
   SELECT expiring_credits_precise, non_expiring_credits_precise, balance_precise, tier
   INTO v_current_expiring, v_current_non_expiring, v_current_balance, v_tier
-  FROM kortix.credit_accounts
+  FROM zed.credit_accounts
   WHERE account_id = p_account_id
   FOR UPDATE;
 
@@ -224,7 +224,7 @@ BEGIN
     v_current_balance := 0;
     v_tier := 'none';
 
-    INSERT INTO kortix.credit_accounts (
+    INSERT INTO zed.credit_accounts (
       account_id, expiring_credits_precise, non_expiring_credits_precise, balance_precise, tier
     ) VALUES (
       p_account_id, 0, 0, 0, v_tier
@@ -241,14 +241,14 @@ BEGIN
 
   v_new_total := v_new_expiring + v_new_non_expiring;
 
-  UPDATE kortix.credit_accounts
+  UPDATE zed.credit_accounts
   SET expiring_credits_precise = v_new_expiring,
       non_expiring_credits_precise = v_new_non_expiring,
       balance_precise = v_new_total,
       updated_at = NOW()
   WHERE account_id = p_account_id;
 
-  INSERT INTO kortix.credit_ledger (
+  INSERT INTO zed.credit_ledger (
     account_id, amount_precise, balance_after_precise, type, description,
     is_expiring, expires_at, stripe_event_id, idempotency_key, processing_source
   ) VALUES (
@@ -307,7 +307,7 @@ BEGIN
     COALESCE(non_expiring_credits_precise, 0),
     COALESCE(balance_precise, 0)
   INTO v_daily, v_exp, v_nonexp, v_total
-  FROM kortix.credit_accounts
+  FROM zed.credit_accounts
   WHERE account_id = p_account_id
   FOR UPDATE;
 
@@ -354,7 +354,7 @@ BEGIN
   v_nn := v_nonexp - v_fn;
   v_nt := v_nd + v_ne + v_nn;
 
-  UPDATE kortix.credit_accounts
+  UPDATE zed.credit_accounts
   SET daily_credits_balance_precise = v_nd,
       expiring_credits_precise = v_ne,
       non_expiring_credits_precise = v_nn,
@@ -362,7 +362,7 @@ BEGIN
       updated_at = NOW()
   WHERE account_id = p_account_id;
 
-  INSERT INTO kortix.credit_ledger (
+  INSERT INTO zed.credit_ledger (
     account_id, amount_precise, balance_after_precise, type, description, metadata
   ) VALUES (
     p_account_id, -p_amount, v_nt, 'usage', p_description,
@@ -424,7 +424,7 @@ BEGIN
     COALESCE(balance_precise, 0)
   INTO
     v_daily_balance, v_expiring_balance, v_non_expiring_balance, v_total_balance
-  FROM kortix.credit_accounts
+  FROM zed.credit_accounts
   WHERE account_id = p_account_id
   FOR UPDATE;
 
@@ -480,7 +480,7 @@ BEGIN
   v_new_non_expiring := v_non_expiring_balance - v_amount_from_non_expiring;
   v_new_total := v_new_daily + v_new_expiring + v_new_non_expiring;
 
-  UPDATE kortix.credit_accounts
+  UPDATE zed.credit_accounts
   SET daily_credits_balance_precise = v_new_daily,
       expiring_credits_precise = v_new_expiring,
       non_expiring_credits_precise = v_new_non_expiring,
@@ -488,7 +488,7 @@ BEGIN
       updated_at = NOW()
   WHERE account_id = p_account_id;
 
-  INSERT INTO kortix.credit_ledger (
+  INSERT INTO zed.credit_ledger (
     account_id, amount_precise, balance_after_precise, type, description, metadata
   ) VALUES (
     p_account_id, -p_amount, v_new_total, 'usage', p_description,

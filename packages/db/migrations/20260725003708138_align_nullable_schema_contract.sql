@@ -18,12 +18,12 @@ BEGIN
   IF EXISTS (
     SELECT 1
     FROM pg_attribute
-    WHERE attrelid = 'kortix.account_deletion_requests'::regclass
+    WHERE attrelid = 'zed.account_deletion_requests'::regclass
       AND attname = 'requested_at'
       AND NOT attisdropped
       AND attnotnull
   ) THEN
-    ALTER TABLE kortix.account_deletion_requests
+    ALTER TABLE zed.account_deletion_requests
       ALTER COLUMN requested_at DROP NOT NULL;
   END IF;
 END
@@ -34,12 +34,12 @@ BEGIN
   IF EXISTS (
     SELECT 1
     FROM pg_attribute
-    WHERE attrelid = 'kortix.change_requests'::regclass
+    WHERE attrelid = 'zed.change_requests'::regclass
       AND attname = 'metadata'
       AND NOT attisdropped
       AND attnotnull
   ) THEN
-    ALTER TABLE kortix.change_requests
+    ALTER TABLE zed.change_requests
       ALTER COLUMN metadata DROP NOT NULL;
   END IF;
 END

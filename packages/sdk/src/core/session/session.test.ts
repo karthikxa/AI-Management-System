@@ -82,11 +82,11 @@ describe('session/health', () => {
 });
 
 describe('session/url', () => {
-  const opts = { sandboxId: 'sbx1', backendPort: 8008, apiBaseUrl: 'https://api.kortix.cloud/v1' };
+  const opts = { sandboxId: 'sbx1', backendPort: 8008, apiBaseUrl: 'https://api.zed.cloud/v1' };
 
   it('path-based proxy when the backend is remote', () => {
     expect(rewriteLocalhostUrl(3000, '/x', opts)).toBe(
-      'https://api.kortix.cloud/v1/p/sbx1/3000/x',
+      'https://api.zed.cloud/v1/p/sbx1/3000/x',
     );
   });
 
@@ -99,24 +99,24 @@ describe('session/url', () => {
   it('parses + proxies a localhost url', () => {
     expect(parseLocalhostUrl('http://localhost:3000/foo')?.port).toBe(3000);
     expect(proxyLocalhostUrl('http://localhost:3000/foo', opts)).toBe(
-      'https://api.kortix.cloud/v1/p/sbx1/3000/foo',
+      'https://api.zed.cloud/v1/p/sbx1/3000/foo',
     );
   });
 
   it('isPreviewUrl recognizes proxied urls only', () => {
-    expect(isPreviewUrl('https://api.kortix.cloud/v1/p/sbx1/3000/foo')).toBe(true);
+    expect(isPreviewUrl('https://api.zed.cloud/v1/p/sbx1/3000/foo')).toBe(true);
     expect(isPreviewUrl('http://localhost:3000/foo')).toBe(false);
   });
 
   // ── No sandbox id → no proxy URL ──
   //
   // Regression: with an unresolved runtime the sandbox-id slot went in empty and
-  // produced `https://staging-api.kortix.com/v1/p//3000/` — a structurally
+  // produced `https://staging-api.zed.com/v1/p//3000/` — a structurally
   // invalid proxy URL that 404s (`{"error":true,"message":"Not found"}`) while
   // looking to the reader like a real preview link. There is no valid preview
   // target without a sandbox id, so the only honest answer is to not rewrite.
   describe('with no resolvable sandbox id', () => {
-    const noSandbox = { sandboxId: '', backendPort: 443, apiBaseUrl: 'https://staging-api.kortix.com/v1' };
+    const noSandbox = { sandboxId: '', backendPort: 443, apiBaseUrl: 'https://staging-api.zed.com/v1' };
 
     it('hasPreviewTarget is false, so callers can hold off instead of guessing', () => {
       expect(hasPreviewTarget(opts)).toBe(true);
@@ -169,7 +169,7 @@ describe('session/url', () => {
       expect(isInternalLocalhostUrl('http://127.0.0.1:8080/a/b?c=1')).toBe(true);
     });
 
-    it('is false for the subdomain preview form — that host reaches kortix-api', () => {
+    it('is false for the subdomain preview form — that host reaches zed-api', () => {
       // The asymmetry that matters: `p3000-sbx1.localhost` is a PROXY hostname,
       // not the viewer's own machine. Treating it as internal would break every
       // local self-hosted preview.
@@ -181,7 +181,7 @@ describe('session/url', () => {
     });
 
     it('is false for path-based previews, remote hosts, and unparseable input', () => {
-      expect(isInternalLocalhostUrl('https://api.kortix.cloud/v1/p/sbx1/3000/x')).toBe(false);
+      expect(isInternalLocalhostUrl('https://api.zed.cloud/v1/p/sbx1/3000/x')).toBe(false);
       expect(isInternalLocalhostUrl('https://example.com/')).toBe(false);
       expect(isInternalLocalhostUrl('http://localhost/')).toBe(false); // no port
       expect(isInternalLocalhostUrl('not a url')).toBe(false);
@@ -216,8 +216,8 @@ describe('session/preview', () => {
     expect(buildStaticFileHealthPreviewUrl({
       sandboxId: 'sbx1',
       backendPort: 8008,
-      apiBaseUrl: 'https://api.kortix.cloud/v1',
-    })).toBe('https://api.kortix.cloud/v1/p/sbx1/3211/health');
+      apiBaseUrl: 'https://api.zed.cloud/v1',
+    })).toBe('https://api.zed.cloud/v1/p/sbx1/3211/health');
   });
 
   it('isSubdomainPreviewUrl + appendPreviewToken', () => {

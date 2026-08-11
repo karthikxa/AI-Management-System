@@ -21,8 +21,8 @@
 
 import type { PermissionProbeInput, PermissionProbeTarget } from '@/lib/iam-client';
 import { usePermission, usePermissions, type UsePermissionResult } from '@/lib/use-permission';
-import { getProject } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+import { getProject } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 

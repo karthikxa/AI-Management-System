@@ -13,12 +13,12 @@ let billingEnabled = true;
 let currentTier: string | null = 'free';
 
 // A Proxy config so any unrelated key read elsewhere is a harmless `undefined`;
-// only KORTIX_BILLING_INTERNAL_ENABLED matters to the policy.
+// only ZED_BILLING_INTERNAL_ENABLED matters to the policy.
 mock.module('../config', () => ({
   config: new Proxy(
     {},
     {
-      get: (_t, key) => (key === 'KORTIX_BILLING_INTERNAL_ENABLED' ? billingEnabled : undefined),
+      get: (_t, key) => (key === 'ZED_BILLING_INTERNAL_ENABLED' ? billingEnabled : undefined),
     },
   ),
 }));

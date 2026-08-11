@@ -39,11 +39,11 @@ describe('self-host init: fresh render (fast, no Docker)', () => {
       'supabase-auth',
       'supabase-rest',
       'supabase-kong',
-      'kortix-migrate',
-      'kortix-api',
+      'zed-migrate',
+      'zed-api',
       'llm-gateway',
       'frontend',
-      'kortix-updater',
+      'zed-updater',
     ]) {
       expect(services).toContain(required);
     }
@@ -78,7 +78,7 @@ describe('self-host init: fresh render (fast, no Docker)', () => {
     expect(env.DISABLE_SIGNUP).toBe('false');
     expect(env.ENABLE_EMAIL_SIGNUP).toBe('true');
     expect(env.ENABLE_EMAIL_AUTOCONFIRM).toBe('true');
-    expect(env.KORTIX_PUBLIC_AUTH_METHODS).toBe('password');
+    expect(env.ZED_PUBLIC_AUTH_METHODS).toBe('password');
 
     // Sandbox: daytona is the only allowed provider by default.
     expect(env.ALLOWED_SANDBOX_PROVIDERS).toBe('daytona');
@@ -110,8 +110,8 @@ describe('self-host init: fresh render (fast, no Docker)', () => {
     expect(code).toBe(0);
     expect(stdout).toContain('No admin email set');
     expect(stdout).toContain('--admin-email you@example.com');
-    expect(stdout).toContain('kortix self-host env set KORTIX_PLATFORM_ADMIN_EMAILS=');
-    expect(sandbox.readEnv().KORTIX_PLATFORM_ADMIN_EMAILS ?? '').toBe('');
+    expect(stdout).toContain('zed self-host env set ZED_PLATFORM_ADMIN_EMAILS=');
+    expect(sandbox.readEnv().ZED_PLATFORM_ADMIN_EMAILS ?? '').toBe('');
   });
 
   test('non-interactive fresh init WITH --admin-email does not warn, and sets the admin email', async () => {
@@ -119,7 +119,7 @@ describe('self-host init: fresh render (fast, no Docker)', () => {
 
     expect(code).toBe(0);
     expect(stdout).not.toContain('No admin email set');
-    expect(sandbox.readEnv().KORTIX_PLATFORM_ADMIN_EMAILS).toBe('owner@example.com');
+    expect(sandbox.readEnv().ZED_PLATFORM_ADMIN_EMAILS).toBe('owner@example.com');
   });
 
   test('a re-run of init on an already-configured instance never re-warns, even with no admin email set', async () => {

@@ -34,9 +34,9 @@ function projectRow(over: Partial<ProjectRow> = {}): ProjectRow {
     projectId: '00000000-0000-4000-a000-0000000050ff',
     accountId: ACCOUNT,
     name: 'My First Project',
-    repoUrl: 'https://github.com/kortix-managed/my-first-project.git',
+    repoUrl: 'https://github.com/zed-managed/my-first-project.git',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     status: 'active',
     secretDefaultStrategy: 'runtime',
     metadata: {},
@@ -224,7 +224,7 @@ describe('classifyProvisionReplay', () => {
   });
 
   test('a deliberate seed opt-out is a replay however fresh it is', () => {
-    // `expected: false` (kortix ship) never enters the seed try/catch, so no
+    // `expected: false` (zed ship) never enters the seed try/catch, so no
     // rollback can delete the row. There is no window to protect.
     const project = projectRow({ metadata: optedOut, createdAt: new Date(T0 - 1) });
 
@@ -342,7 +342,7 @@ describe('findIdempotentProvision', () => {
 
 describe('isProvisionIdempotencyConflict', () => {
   test('recognises the unique violation drizzle wraps as `cause`', () => {
-    const error = Object.assign(new Error('Failed query: insert into "kortix"."projects" …'), {
+    const error = Object.assign(new Error('Failed query: insert into "zed"."projects" …'), {
       cause: { code: '23505', constraint_name: PROVISION_IDEMPOTENCY_UNIQUE_INDEX },
     });
     expect(isProvisionIdempotencyConflict(error)).toBe(true);
@@ -435,7 +435,7 @@ describe('provisionReplayResponse', () => {
 
   test('does not leak the idempotency key back to the caller', () => {
     // It is an input, not part of the project representation, and the response
-    // contract (@kortix/api-contract ProjectSchema) has no field for it.
+    // contract (@zed/api-contract ProjectSchema) has no field for it.
     expect(JSON.stringify(provisionReplayResponse(seededRow, REPLAY_ACCESS))).not.toContain(KEY);
   });
 

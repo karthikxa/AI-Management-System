@@ -102,7 +102,7 @@ class ReconcilerTest(unittest.TestCase):
         target_alarm = next(
             alarm
             for alarm in cloudwatch.put_calls
-            if alarm["AlarmName"] == "kortix-alb-a-target-response-time"
+            if alarm["AlarmName"] == "zed-alb-a-target-response-time"
         )
         self.assertEqual(target_alarm["Namespace"], "AWS/ApplicationELB")
         self.assertEqual(target_alarm["MetricName"], "TargetResponseTime")
@@ -127,7 +127,7 @@ class ReconcilerTest(unittest.TestCase):
         zero_healthy_alarm = next(
             alarm
             for alarm in cloudwatch.put_calls
-            if alarm["AlarmName"] == "kortix-alb-a-zero-healthy-hosts"
+            if alarm["AlarmName"] == "zed-alb-a-zero-healthy-hosts"
         )
         self.assertEqual(zero_healthy_alarm["MetricName"], "HealthyHostCount")
         self.assertEqual(zero_healthy_alarm["Statistic"], "Minimum")
@@ -160,13 +160,13 @@ class ReconcilerTest(unittest.TestCase):
         self.assertEqual(
             set(result["updated_alarms"]),
             {
-                "kortix-alb-a-elb-5xx",
-                "kortix-alb-a-blue-target-response-time",
-                "kortix-alb-a-blue-unhealthy-hosts",
-                "kortix-alb-a-blue-zero-healthy-hosts",
-                "kortix-alb-a-green-target-response-time",
-                "kortix-alb-a-green-unhealthy-hosts",
-                "kortix-alb-a-green-zero-healthy-hosts",
+                "zed-alb-a-elb-5xx",
+                "zed-alb-a-blue-target-response-time",
+                "zed-alb-a-blue-unhealthy-hosts",
+                "zed-alb-a-blue-zero-healthy-hosts",
+                "zed-alb-a-green-target-response-time",
+                "zed-alb-a-green-unhealthy-hosts",
+                "zed-alb-a-green-zero-healthy-hosts",
             },
         )
 
@@ -197,8 +197,8 @@ class ReconcilerTest(unittest.TestCase):
         self.assertEqual(
             result["updated_alarms"],
             [
-                "kortix-alb-previews-target-response-time",
-                "kortix-alb-previews-elb-5xx",
+                "zed-alb-previews-target-response-time",
+                "zed-alb-previews-elb-5xx",
             ],
         )
         self.assertEqual(len(cloudwatch.put_calls), 2)

@@ -1,5 +1,5 @@
 import { BlogCta } from '@/components/blog/blog-cta';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { CheckIcon as Check, MinusIcon as Minus } from '@/lib/icons/ssr';
@@ -14,12 +14,12 @@ import { Fragment, type ReactNode } from 'react';
  * marketing comparison pages.
  */
 
-type RowLean = 'them' | 'kortix' | 'both';
+type RowLean = 'them' | 'zed' | 'both';
 
 export type CompareRow = {
   dimension: string;
   them: string;
-  kortix: string;
+  zed: string;
   lean?: RowLean;
 };
 
@@ -33,7 +33,7 @@ export type Block =
   | { type: 'code'; code: string }
   | { type: 'callout'; text: string }
   | { type: 'logos'; label?: string; items: Logo[] }
-  | { type: 'verdict'; themLabel: string; them: string; kortix: string }
+  | { type: 'verdict'; themLabel: string; them: string; zed: string }
   | { type: 'compare'; them: string; rows: CompareRow[] }
   | { type: 'cta'; title: string; body?: string };
 
@@ -118,16 +118,16 @@ function LogosBlock({ label, items }: { label?: string; items: Logo[] }) {
   );
 }
 
-/* ── verdict (Choose X if / Choose Kortix if) ────────────────────────────── */
+/* ── verdict (Choose X if / Choose Zed if) ────────────────────────────── */
 
 function VerdictBlock({
   themLabel,
   them,
-  kortix,
+  zed,
 }: {
   themLabel: string;
   them: string;
-  kortix: string;
+  zed: string;
 }) {
   return (
     <div className="my-10 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -135,11 +135,11 @@ function VerdictBlock({
         <span className="text-muted-foreground text-sm font-medium">Choose {themLabel} if…</span>
         <p className="text-foreground mt-3 text-base leading-relaxed">{renderInline(them)}</p>
       </div>
-      <div className="border-kortix-green/30 bg-kortix-green/[0.06] flex flex-col rounded-2xl border p-6">
+      <div className="border-zed-green/30 bg-zed-green/[0.06] flex flex-col rounded-2xl border p-6">
         <span className="text-foreground flex items-center gap-2 text-sm font-semibold">
-          <span className="bg-kortix-green size-2 rounded-full" /> Choose Kortix if…
+          <span className="bg-zed-green size-2 rounded-full" /> Choose Zed if…
         </span>
-        <p className="text-foreground mt-3 text-base leading-relaxed">{renderInline(kortix)}</p>
+        <p className="text-foreground mt-3 text-base leading-relaxed">{renderInline(zed)}</p>
       </div>
     </div>
   );
@@ -147,11 +147,11 @@ function VerdictBlock({
 
 /* ── compare matrix (reuses the comparison-page look) ────────────────────── */
 
-function LeanMark({ side, lean }: { side: 'them' | 'kortix'; lean: RowLean }) {
+function LeanMark({ side, lean }: { side: 'them' | 'zed'; lean: RowLean }) {
   const on = lean === side || lean === 'both';
-  if (side === 'kortix') {
+  if (side === 'zed') {
     return on ? (
-      <Check className="text-kortix-green mt-0.5 size-4 shrink-0" />
+      <Check className="text-zed-green mt-0.5 size-4 shrink-0" />
     ) : (
       <Minus
         className="text-background/40 mt-0.5 size-4 shrink-0"
@@ -180,10 +180,10 @@ function CompareBlock({ them, rows }: { them: string; rows: CompareRow[] }) {
         <span className="text-muted-foreground text-sm font-medium">{them}</span>
       </div>
       <div className="bg-foreground flex items-center gap-2 rounded-t-2xl px-2.5 pt-5 pb-4 sm:px-4">
-        <KortixLogo size={15} variant="logomark" className="text-background" />
+        <ZedLogo size={15} variant="logomark" className="text-background" />
       </div>
       {rows.map((row, i) => {
-        const lean = row.lean ?? 'kortix';
+        const lean = row.lean ?? 'zed';
         const last = i === rows.length - 1;
         return (
           <Fragment key={row.dimension}>
@@ -210,8 +210,8 @@ function CompareBlock({ them, rows }: { them: string; rows: CompareRow[] }) {
                 last ? 'rounded-b-2xl' : 'border-background/15 border-b',
               )}
             >
-              <LeanMark side="kortix" lean={lean} />
-              <span>{row.kortix}</span>
+              <LeanMark side="zed" lean={lean} />
+              <span>{row.zed}</span>
             </div>
           </Fragment>
         );
@@ -269,7 +269,7 @@ function BlockView({ block }: { block: Block }) {
     case 'logos':
       return <LogosBlock label={block.label} items={block.items} />;
     case 'verdict':
-      return <VerdictBlock themLabel={block.themLabel} them={block.them} kortix={block.kortix} />;
+      return <VerdictBlock themLabel={block.themLabel} them={block.them} zed={block.zed} />;
     case 'compare':
       return <CompareBlock them={block.them} rows={block.rows} />;
     case 'cta':

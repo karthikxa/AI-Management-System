@@ -12,13 +12,13 @@
 # ║    supabase stop           (stop all containers)                           ║
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
-project_id = "kortix-local"
+project_id = "zed-local"
 
 # ─── API (PostgREST) ─────────────────────────────────────────────────────────
 [api]
 enabled = true
 port = 54321
-# `kortix` is created by the node-pg-migrate migrations, which can only run
+# `zed` is created by the node-pg-migrate migrations, which can only run
 # once the stack is up — listing it here 503s PostgREST on a fresh start.
 schemas = ["public"]
 extra_search_path = ["public", "extensions"]

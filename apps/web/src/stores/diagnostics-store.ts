@@ -381,7 +381,7 @@ export const useDiagnosticsStore = create<DiagnosticsState>()(
   },
 }),
   {
-    name: 'kortix-diagnostics',
+    name: 'zed-diagnostics',
     storage: {
       getItem: (name) => {
         if (typeof window === 'undefined') return null;

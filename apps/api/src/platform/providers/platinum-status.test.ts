@@ -4,9 +4,9 @@ mock.module('../../config', () => ({
   config: {
     PLATINUM_API_KEY: 'pt_test',
     PLATINUM_API_URL: 'https://platinum.example.test',
-    KORTIX_URL: 'https://api.example.test',
-    KORTIX_SANDBOX_AUTOSTOP_MINUTES: 15,
-    PLATINUM_TEMPLATE: 'kortix-computer',
+    ZED_URL: 'https://api.example.test',
+    ZED_SANDBOX_AUTOSTOP_MINUTES: 15,
+    PLATINUM_TEMPLATE: 'zed-computer',
   },
   SANDBOX_VERSION: 'test-version',
 }));

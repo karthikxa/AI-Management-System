@@ -18,19 +18,19 @@ let tokenId: string | null = null;
 beforeAll(async () => {
   // Idempotently ensure the columns createAccountToken writes (local DB may be
   // behind on migrations).
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists agent_grant jsonb`);
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists session_id text`);
-  await db.execute(sql`alter table kortix.account_tokens add column if not exists service_account_id uuid`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists agent_grant jsonb`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists session_id text`);
+  await db.execute(sql`alter table zed.account_tokens add column if not exists service_account_id uuid`);
 });
 
 afterAll(async () => {
-  if (tokenId) await db.execute(sql`delete from kortix.account_tokens where token_id = ${tokenId}`);
+  if (tokenId) await db.execute(sql`delete from zed.account_tokens where token_id = ${tokenId}`);
 });
 
 describe('agent_grant — real DB round-trip + enforcement', () => {
   test('mint with grant → validate returns it → gates allow/deny correctly', async () => {
     const rows = (await db.execute(
-      sql`select project_id, account_id from kortix.projects limit 1`,
+      sql`select project_id, account_id from zed.projects limit 1`,
     )) as unknown as Array<{ project_id: string; account_id: string }>;
     const proj = rows[0];
     if (!proj) {
@@ -38,7 +38,7 @@ describe('agent_grant — real DB round-trip + enforcement', () => {
       return;
     }
 
-    const grant = { agent: 'release-bot', kortixCli: ['project.cr.open'], connectors: ['github'] };
+    const grant = { agent: 'release-bot', zedCli: ['project.cr.open'], connectors: ['github'] };
 
     const minted = await createAccountToken({
       accountId: proj.account_id,
@@ -64,7 +64,7 @@ describe('agent_grant — real DB round-trip + enforcement', () => {
 
   test('a token minted WITHOUT a grant returns null (full access — backward compatible)', async () => {
     const rows = (await db.execute(
-      sql`select project_id, account_id from kortix.projects limit 1`,
+      sql`select project_id, account_id from zed.projects limit 1`,
     )) as unknown as Array<{ project_id: string; account_id: string }>;
     const proj = rows[0];
     if (!proj) return;
@@ -75,7 +75,7 @@ describe('agent_grant — real DB round-trip + enforcement', () => {
       name: 'test-no-grant',
     });
     const v = await validateAccountToken(minted.secretKey);
-    await db.execute(sql`delete from kortix.account_tokens where token_id = ${minted.tokenId}`);
+    await db.execute(sql`delete from zed.account_tokens where token_id = ${minted.tokenId}`);
     expect(v.agentGrant ?? null).toBeNull();
     expect(agentMayPerform(v.agentGrant ?? null, 'project.cr.merge')).toBe(true); // no grant = no restriction
   });

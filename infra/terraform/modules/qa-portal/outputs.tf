@@ -22,11 +22,11 @@ output "dns_record_hostname" {
 }
 
 output "access_application_id" {
-  description = "Cloudflare Access application ID gating qa.kortix.com (empty when enable_access = false)."
+  description = "Cloudflare Access application ID gating qa.zed.com (empty when enable_access = false)."
   value       = var.enable_access ? cloudflare_zero_trust_access_application.qa[0].id : ""
 }
 
 output "access_enabled" {
-  description = "Whether qa.kortix.com is gated by Cloudflare Access."
+  description = "Whether qa.zed.com is gated by Cloudflare Access."
   value       = var.enable_access
 }

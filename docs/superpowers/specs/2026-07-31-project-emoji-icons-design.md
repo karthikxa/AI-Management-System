@@ -1,7 +1,7 @@
 # Project emoji icons — design
 
 **Date:** 2026-07-31
-**Branch:** `emoji` (worktree `/Users/jay/root/kortix/suna-emoji`)
+**Branch:** `emoji` (worktree `/Users/jay/root/zed/suna-emoji`)
 **Status:** approved
 
 ---
@@ -49,8 +49,8 @@ Store the icon on the existing `projects.metadata` jsonb column:
 metadata.icon: string   // one emoji grapheme cluster, e.g. "🚀"
 ```
 
-**No database migration.** `kortix.projects.metadata` already exists
-(`packages/db/src/schema/kortix.ts:330`).
+**No database migration.** `zed.projects.metadata` already exists
+(`packages/db/src/schema/zed.ts:330`).
 
 This follows the established pattern in this codebase. The comment at
 `apps/api/src/projects/routes/r5.ts:706` states it for onboarding state:
@@ -186,7 +186,7 @@ Exported-type changes (all additive; no existing name is renamed or removed):
 
 | Type | File | Change |
 |---|---|---|
-| `KortixProject` | `core/rest/projects-client/projects.ts:39` | `+ icon?: string \| null` |
+| `ZedProject` | `core/rest/projects-client/projects.ts:39` | `+ icon?: string \| null` |
 | `ProvisionProjectInput` | `core/rest/projects-client/projects.ts:196` | `+ icon?: string` |
 | `CreateProjectRepoInput` | `core/rest/projects-client/projects.ts:185` | `+ icon?: string` |
 | `LinkRepositoryInput` | `core/rest/projects-client/github.ts:40` | `+ icon?: string` |
@@ -199,7 +199,7 @@ apply.
 
 ### 6.1 `components/ui/emoji-picker.tsx` — new
 
-The frimousse primitive, styled with Kortix tokens. Composed from
+The frimousse primitive, styled with Zed tokens. Composed from
 `EmojiPicker.Root` / `Search` / `Viewport` / `List` / `Loading` / `Empty`, plus
 `SkinToneSelector` and `ActiveEmoji`.
 
@@ -330,11 +330,11 @@ Pass the icon through:
 ## 7. Dependency
 
 ```
-pnpm add frimousse --filter Kortix-Computer-Frontend
+pnpm add frimousse --filter Zed-Computer-Frontend
 ```
 
 Install the package and hand-author `components/ui/emoji-picker.tsx` against
-Kortix tokens. Do **not** use `npx shadcn@latest add`: it emits a component styled
+Zed tokens. Do **not** use `npx shadcn@latest add`: it emits a component styled
 for stock shadcn defaults, which would need rewriting to meet the design standard
 in `CLAUDE.md`, and it writes to the workspace without going through pnpm.
 
@@ -346,7 +346,7 @@ in `CLAUDE.md`, and it writes to the workspace without going through pnpm.
 | SDK | Failing test first per `AGENTS.md`. Gates run, real output pasted, explicit shippable YES/NO. |
 | API | Real HTTP against local `:8008` with a minted Supabase JWT. For each of the three routes: create with `icon` → assert `201`, then `GET /v1/projects/:id` → assert `icon` in the body. Then create with a 5 KB `icon` → assert the project is created and `icon` is `null`. |
 | Web | Playwright against the real modal. Open modal → click the icon trigger → type in Search → assert results narrow → click an emoji → assert the popover closes and the trigger shows that emoji → submit → assert the outgoing POST payload contains `icon` → assert the new card renders it. Also assert `Create` is disabled with an empty name and enabled once a name is typed. |
-| Dev | PR merged to `main`, Deploy Dev run completed, deployed artifact contains the merged SHA, and the create flow re-run on `dev.kortix.com` with the icon visible on the resulting card. |
+| Dev | PR merged to `main`, Deploy Dev run completed, deployed artifact contains the merged SHA, and the create flow re-run on `dev.zed.com` with the icon visible on the resulting card. |
 
 Local verification and dev verification are both required, per `CLAUDE.md`.
 
@@ -363,5 +363,5 @@ Local verification and dev verification are both required, per `CLAUDE.md`.
 ## 10. Delivery
 
 Branch `emoji` → PR into `main` → required checks → merge → follow the Deploy Dev
-workflow to completion → verify on `dev.kortix.com`. Per `CLAUDE.md`, work is not
+workflow to completion → verify on `dev.zed.com`. Per `CLAUDE.md`, work is not
 done when the PR is open, and a `/health` response is not deployment proof.

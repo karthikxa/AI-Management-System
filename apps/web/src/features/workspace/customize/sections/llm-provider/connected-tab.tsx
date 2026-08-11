@@ -8,9 +8,9 @@ import Loading from '@/components/ui/loading';
 import { errorToast, successToast } from '@/components/ui/toast';
 import { EmptyState } from '@/features/layout/section/empty-state';
 import { ProviderLogo } from '@/features/providers/provider-branding';
-import { qk, refreshProjectProviderState } from '@kortix/sdk/react';
+import { qk, refreshProjectProviderState } from '@zed/sdk/react';
 import { LLM_PROVIDER_BY_ID, type LlmProviderEntry } from '@/lib/llm-providers';
-import { deleteProjectProviderOAuth, deleteProjectSecret } from '@kortix/sdk';
+import { deleteProjectProviderOAuth, deleteProjectSecret } from '@zed/sdk';
 import {
   PlugIcon as Plug,
   PlusIcon as Plus,

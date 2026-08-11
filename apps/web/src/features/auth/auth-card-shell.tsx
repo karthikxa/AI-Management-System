@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
  * Shared quiet surface for the auth sub-flows (forgot / reset password).
  *
  * Mirrors the main `/auth` page: flat content on the plain background — no
- * card — with the Kortix mark above a left-aligned heading, and the legal
+ * card — with the Zed mark above a left-aligned heading, and the legal
  * footer pinned to the bottom.
  */
 
@@ -14,7 +14,7 @@ import { CaretLeftIcon as ChevronLeft } from '@phosphor-icons/react';
 import { m, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 
-import { KortixLogo } from '@/components/ui/kortix-logo';
+import { ZedLogo } from '@/components/ui/zed-logo';
 import { AuthMobileLogo } from '@/features/auth/auth-primitives';
 import { openExternalRoute } from '@/lib/desktop';
 
@@ -113,7 +113,7 @@ export function AuthCardShell({
     <AuthFrame>
       <m.div {...rise(0)}>
         <div className="mb-10">
-          <KortixLogo variant="icon" size={22} className="text-foreground hidden md:block" />
+          <ZedLogo variant="icon" size={22} className="text-foreground hidden md:block" />
           <h1 className="text-foreground text-2xl font-medium tracking-tight text-balance md:mt-6">
             {title}
           </h1>

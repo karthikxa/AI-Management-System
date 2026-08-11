@@ -3,7 +3,7 @@
 import { ProjectShell } from '@/components/project-shell';
 import { ProjectAccessPanel } from '@/components/project-access-panel';
 import { Skeleton } from '@/components/ui/skeleton';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { qk } from '@/lib/query-keys';
 import { relativeTime } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
@@ -24,7 +24,7 @@ function ProjectAccess() {
 
   const sessions = useQuery({
     queryKey: qk.sessions(projectId),
-    queryFn: () => kortix.project(projectId).sessions.list(),
+    queryFn: () => zed.project(projectId).sessions.list(),
     retry: false,
   });
 

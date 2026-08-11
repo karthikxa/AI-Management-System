@@ -17,13 +17,13 @@ export interface DetailCaps {
   canSkills: boolean;
   /** project.command.read — the slash-commands summary. */
   canCommands: boolean;
-  /** project.customize.read — the raw project config (kortix.toml / opencode). */
+  /** project.customize.read — the raw project config (zed.toml / opencode). */
   canCustomize: boolean;
 }
 
 /**
  * Blank out the /detail sections the caller lacks the leaf for. Structural
- * signals (is_kortix_repo, signals) are always preserved so the shell renders;
+ * signals (is_zed_repo, signals) are always preserved so the shell renders;
  * only the resource lists / raw config are emptied. Files are capped at 300 (the
  * same cap the handler used inline) and dropped entirely without file.read.
  */

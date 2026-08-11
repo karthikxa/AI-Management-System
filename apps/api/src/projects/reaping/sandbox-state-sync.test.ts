@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, mock, test } from 'bun:test';
 // status" order was carried by a comment repeated in each copy.
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { projectSessions, sessionSandboxes } from '@kortix/db';
+import { projectSessions, sessionSandboxes } from '@zed/db';
 import * as realComputeMetering from '../../billing/services/compute-metering';
 import { RUNTIME_WAKE_LEASE_MS } from '../session-lifecycle/runtime-wake-fence';
 import { mockConfigModule } from './test-support/mock-config';

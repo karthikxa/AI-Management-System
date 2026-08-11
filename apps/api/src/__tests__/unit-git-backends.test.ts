@@ -17,9 +17,9 @@ import {
 function ref(overrides: Partial<GitConnectionRef>): GitConnectionRef {
   return {
     provider: 'github',
-    upstreamUrl: 'https://github.com/kortix-managed/demo.git',
+    upstreamUrl: 'https://github.com/zed-managed/demo.git',
     externalRepoId: '123',
-    repoOwner: 'kortix-managed',
+    repoOwner: 'zed-managed',
     repoName: 'demo',
     installationId: '999',
     credentialRef: null,
@@ -76,7 +76,7 @@ describe('basicAuthHeader', () => {
 describe('buildUpstream', () => {
   test('github: upstream url + basic auth header', () => {
     const up = githubBackend.buildUpstream(ref({}), 'ghs_abc', 'write');
-    expect(up.url).toBe('https://github.com/kortix-managed/demo.git');
+    expect(up.url).toBe('https://github.com/zed-managed/demo.git');
     expect(up.headers.Authorization).toBe(`Basic ${Buffer.from('x-access-token:ghs_abc').toString('base64')}`);
   });
 

@@ -1,19 +1,19 @@
 {
-  "name": "@kortix/sdk",
+  "name": "@zed/sdk",
   "version": "0.3.0",
-  "description": "Official Kortix frontend TypeScript SDK — one typed client for the Kortix agent platform. Unifies project/session lifecycle and live agent streaming behind a single ergonomic Session handle, so web, mobile, and white-label apps never touch the raw HTTP API or OpenCode semantics.",
+  "description": "Official Zed frontend TypeScript SDK — one typed client for the Zed agent platform. Unifies project/session lifecycle and live agent streaming behind a single ergonomic Session handle, so web, mobile, and white-label apps never touch the raw HTTP API or OpenCode semantics.",
   "type": "module",
   "license": "Elastic-2.0",
-  "homepage": "https://github.com/kortix-ai/suna/tree/main/packages/sdk",
+  "homepage": "https://github.com/zed-ai/suna/tree/main/packages/sdk",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kortix-ai/suna.git",
+    "url": "git+https://github.com/zed-ai/suna.git",
     "directory": "packages/sdk"
   },
-  "keywords": ["kortix", "agent", "sdk", "sessions", "streaming", "opencode"],
+  "keywords": ["zed", "agent", "sdk", "sessions", "streaming", "opencode"],
   "sideEffects": false,
   "dependencies": {
-    "@kortix/llm-catalog": "workspace:*",
+    "@zed/llm-catalog": "workspace:*",
     "@opencode-ai/sdk": "1.17.11",
     "zustand": "^5.0.3"
   },
@@ -156,9 +156,9 @@
         "import": "./dist/deprecated/idb-sync-cache.js"
       }
     },
-    "browser": "./dist/kortix.esm.min.js",
-    "unpkg": "./dist/kortix.global.js",
-    "jsdelivr": "./dist/kortix.global.js",
+    "browser": "./dist/zed.esm.min.js",
+    "unpkg": "./dist/zed.global.js",
+    "jsdelivr": "./dist/zed.global.js",
     "files": ["dist", "README.md"]
   },
   "files": ["dist", "src", "README.md"],

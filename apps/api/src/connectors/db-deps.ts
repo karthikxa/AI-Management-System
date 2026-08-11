@@ -11,8 +11,8 @@ import {
   projectSessions,
   projects,
   tunnelConnections,
-} from '@kortix/db';
-import { sanitizeConnectorHeaders, SLUG_RE } from '@kortix/manifest-schema';
+} from '@zed/db';
+import { sanitizeConnectorHeaders, SLUG_RE } from '@zed/manifest-schema';
 import { and, desc, eq, gt, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 /**
  * Production wiring for the connector router — DB-backed ConnectorRouterDeps +
@@ -39,7 +39,7 @@ import { mintJoinLink } from '../channels/voice/join-links';
 import { approvalPageUrl } from '../setup-links/token';
 import { endCall, isCallLive, promptVoiceAgent, startCall } from '../channels/voice/runtime';
 import { readTranscriptForAgent } from '../channels/voice/transcript-read';
-import { kortixSay } from '../channels/voice/utterance';
+import { zedSay } from '../channels/voice/utterance';
 import { config } from '../config';
 import { projectFeatureFlagEnabled } from '../feature-flags/for-project';
 import { authorize, PROJECT_ACTIONS } from '../iam';
@@ -302,7 +302,7 @@ function authOf(row: ConnectorRow): { auth: ConnectorAuth; hasAuth: boolean } {
 }
 
 /**
- * The connector's static request headers (kortix.yaml `headers:`, persisted
+ * The connector's static request headers (zed.yaml `headers:`, persisted
  * into `config` by the materializer). Sanitized on the way out — a row written
  * before the header rules existed can never inject an illegal header.
  */
@@ -677,14 +677,14 @@ export function makeDbGatewayDeps(principal: ConnectorPrincipal): GatewayDeps {
             message: 'send_prompt requires `text`',
           };
         }
-        // `kortixSay` carries both halves of this utterance: the framing the
+        // `zedSay` carries both halves of this utterance: the framing the
         // voice model needs (it is handed the text as INSTRUCTIONS, so raw text
         // reads as an unattributed order — that is what made the call answer
         // statements as questions) AND the plain line that gets written to
         // voice_call_turns, so what this agent says into the call is actually in
         // the call's record. `projectId` is passed because we have it here; the
         // in-call paths (turn.ts, answer-watch.ts) look it up instead.
-        const result = await promptVoiceAgent(sessionId, kortixSay(text), {
+        const result = await promptVoiceAgent(sessionId, zedSay(text), {
           projectId,
         });
         if (!result.delivered) {
@@ -823,8 +823,8 @@ export type ConnectLinkEligibility =
  * Why a connect link can or cannot be minted for this slug.
  *
  * `loadPipedreamConnector` answers all three failures with `null`, so the mint
- * route told everyone to "add it to kortix.yaml first" — including the people
- * whose connector is already in kortix.yaml and simply is not Pipedream-backed.
+ * route told everyone to "add it to zed.yaml first" — including the people
+ * whose connector is already in zed.yaml and simply is not Pipedream-backed.
  * That sends someone to edit a file that already has the entry they are being
  * asked to add, and the connector they actually need is reachable by a route
  * this one cannot offer.
@@ -872,7 +872,7 @@ export function resolveTokenBoundSessionId(
 }
 
 /**
- * Only project-scoped tokens carry a Kortix project session identity.
+ * Only project-scoped tokens carry a Zed project session identity.
  * Supabase JWTs also set `sessionId`, but that value identifies the Supabase
  * authentication session. It must not enter connection resolution.
  */
@@ -891,7 +891,7 @@ async function resolvePrincipal(c: Context): Promise<ConnectorPrincipal | null> 
   if (!result.isValid || !result.userId || !result.accountId || !result.projectId) return null;
   const sessionIdentity = resolveTokenBoundSessionId(
     result.sessionId ?? null,
-    c.req.header('X-Kortix-Session-Id') ?? null,
+    c.req.header('X-Zed-Session-Id') ?? null,
   );
   if (!sessionIdentity.ok) return null;
   const agentGrant = sessionIdentity.sessionId
@@ -957,7 +957,7 @@ async function resolveProjectPrincipal(
   if (!accountId) return null;
   const sessionIdentity = resolveTokenBoundSessionId(
     projectSessionIdForProjectPrincipal(tokenProjectId, c.get('sessionId') as string | undefined),
-    c.req.header('X-Kortix-Session-Id') ?? null,
+    c.req.header('X-Zed-Session-Id') ?? null,
   );
   if (!sessionIdentity.ok) return null;
 
@@ -1299,7 +1299,7 @@ async function setConnectorSecretBinding(
  * Read a connector's per-tool policies for the dashboard/settings surface.
  *
  * Return materialized policy rows when the connector exists in the runtime
- * catalog. The write route commits kortix.yaml and then synchronizes these rows.
+ * catalog. The write route commits zed.yaml and then synchronizes these rows.
  * Reading the manifest again can return a stale git view immediately after the
  * write, which makes the CLI report no rules while the gateway enforces them.
  * Synthetic channel/computer connectors also exist only in the runtime catalog.
@@ -1387,7 +1387,7 @@ async function getConnectorPolicies(
 /**
  * Read a connector's definition for the editor. Same manifest-first / DB-fallback
  * rule as getConnectorPolicies: synthetic channel/computer connectors aren't in
- * kortix.yaml, so reconstruct the view from the materialized row instead of 404ing.
+ * zed.yaml, so reconstruct the view from the materialized row instead of 404ing.
  */
 async function getConnectorConfig(
   projectId: string,

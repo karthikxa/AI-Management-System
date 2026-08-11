@@ -3,7 +3,7 @@
  * (routes/github-app.ts) writes here instead of requiring an operator to edit
  * `.env` and restart the container.
  *
- * Stored in kortix.platform_settings under key `managed_github_app` (one row,
+ * Stored in zed.platform_settings under key `managed_github_app` (one row,
  * jsonb value) — mirrors runtime-settings.ts: a sync accessor backed by a
  * 30s-TTL cache that refreshes in the background, so hot paths (App-JWT
  * signing, git backend auth) never block on the DB. `updateManagedGithubAppConfig`
@@ -98,7 +98,7 @@ export async function refreshManagedGithubAppConfig(): Promise<void> {
   try {
     const { hasDatabase, db } = await import('../../shared/db');
     if (hasDatabase) {
-      const { platformSettings } = await import('@kortix/db');
+      const { platformSettings } = await import('@zed/db');
       const { eq } = await import('drizzle-orm');
       const [row] = await db
         .select({ value: platformSettings.value })
@@ -148,7 +148,7 @@ export async function updateManagedGithubAppConfig(
   if (!hasDatabase) {
     throw new Error('Database not configured — cannot store the managed GitHub App config');
   }
-  const { platformSettings } = await import('@kortix/db');
+  const { platformSettings } = await import('@zed/db');
   const { eq } = await import('drizzle-orm');
 
   const [row] = await db
@@ -184,7 +184,7 @@ export async function resetManagedGithubAppConfig(): Promise<void> {
   if (!hasDatabase) {
     throw new Error('Database not configured — cannot store the managed GitHub App config');
   }
-  const { platformSettings } = await import('@kortix/db');
+  const { platformSettings } = await import('@zed/db');
 
   await db
     .insert(platformSettings)

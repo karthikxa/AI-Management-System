@@ -35,7 +35,7 @@ Reason: user interrupt
 </session_stopped>`,
 
   `<task_failed>
-Command: pnpm --filter @kortix/api test
+Command: pnpm --filter @zed/api test
 Exit code: 1
 
 FAIL src/routes/sessions.test.ts
@@ -50,7 +50,7 @@ Blocker: STAGING_DATABASE_URL is unset, so the staging rollout would fall back t
   `<snapshot_build_queued>
 Provider: daytona
 Region: us-east-1
-Snapshot: kortix-agent-2f9c1ab
+Snapshot: zed-agent-2f9c1ab
 Queued at: 14:02:19Z
 Estimated wait: up to 9 min
 </snapshot_build_queued>`,

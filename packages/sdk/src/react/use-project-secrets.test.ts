@@ -4,11 +4,11 @@ import { describe, expect, test, beforeEach, mock } from 'bun:test';
 // (return the config object passed in) so the hook under test can be called
 // as a plain function — no React render tree needed — while still exercising
 // the exact `queryKey`/`enabled`/`onSuccess` values the real hook builds.
-// Same harness as `./use-kortix-master.test.ts`. This intentionally never
+// Same harness as `./use-zed-master.test.ts`. This intentionally never
 // calls `queryFn`/`mutationFn` — those go through `backendApi`, which needs a
 // configured platform seam; this test only asserts the queryKey/invalidation
 // WIRING, not the network calls (covered at the facade level in
-// `../kortix.test.ts`).
+// `../zed.test.ts`).
 
 let invalidated: unknown[][] = [];
 mock.module('@tanstack/react-query', () => ({

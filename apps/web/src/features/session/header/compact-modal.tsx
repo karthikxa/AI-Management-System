@@ -11,7 +11,7 @@ import {
   ModalTitle,
 } from '@/components/ui/modal';
 import { loadingToast } from '@/components/ui/toast';
-import { useSummarizeRuntimeSession } from '@kortix/sdk/react';
+import { useSummarizeRuntimeSession } from '@zed/sdk/react';
 import { StackIcon as Layers } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';

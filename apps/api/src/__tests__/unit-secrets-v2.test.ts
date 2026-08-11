@@ -15,7 +15,7 @@ import {
   type ResolvedProjectSecret,
 } from '../projects/secrets';
 import { agentMayUseEnv } from '../iam/agent-scope';
-import type { AgentGrant } from '@kortix/db';
+import type { AgentGrant } from '@zed/db';
 
 describe('isValidIdentifier', () => {
   test('accepts env-var-shaped keys (the default/migrated case)', () => {
@@ -132,7 +132,7 @@ describe('resolveGrantedSecretEnv', () => {
 });
 
 describe('agentMayUseEnv — the sole agent secret-access gate, by identifier', () => {
-  const grant = (env: AgentGrant['env']): AgentGrant => ({ agent: 'a', kortixCli: [], connectors: [], env });
+  const grant = (env: AgentGrant['env']): AgentGrant => ({ agent: 'a', zedCli: [], connectors: [], env });
 
   test('no grant (non-agent token) → unrestricted', () => {
     expect(agentMayUseEnv(null, 'GMAPS-primary')).toBe(true);

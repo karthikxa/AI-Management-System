@@ -14,12 +14,12 @@ and there is no request-level trace from ingress to service.
 What is already deployed as GitOps Argo `Application`s (project `platform`,
 single-source, config inline):
 
-- **`kortix-platform-metrics`** — `kube-prometheus-stack` **86.3.2** from the
+- **`zed-platform-metrics`** — `kube-prometheus-stack` **86.3.2** from the
   prometheus-community repo: Prometheus (7d retention, remote-write receiver
   enabled to accept the dev-us cluster's metrics for a cross-region pane), Grafana
   (the single pane, persisted on gp2), and node / kube-state metrics.
   `alertmanager.enabled: false` today.
-- **`kortix-platform-logs`** — `loki-stack` **2.10.3** from the Grafana repo:
+- **`zed-platform-logs`** — `loki-stack` **2.10.3** from the Grafana repo:
   single-binary Loki on a gp2 PVC + Promtail tailing every pod, surfaced through
   the same Grafana via an auto-discovered Loki datasource.
 

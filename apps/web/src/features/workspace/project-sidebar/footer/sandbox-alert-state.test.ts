@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { ProjectSandboxHealth, ProjectSnapshotBuild, SandboxRuntimeStatus } from '@kortix/sdk';
+import type { ProjectSandboxHealth, ProjectSnapshotBuild, SandboxRuntimeStatus } from '@zed/sdk';
 import {
   describeFailedBuild,
   formatSandboxProviders,
@@ -9,8 +9,8 @@ import {
   selectCurrentSandboxFailure,
 } from './sandbox-alert-state';
 
-const CURRENT = 'kortix-default-3e3906a27df1';
-const PREVIOUS = 'kortix-default-11e780692c1d';
+const CURRENT = 'zed-default-3e3906a27df1';
+const PREVIOUS = 'zed-default-11e780692c1d';
 
 function build(overrides: Partial<ProjectSnapshotBuild>): ProjectSnapshotBuild {
   return {

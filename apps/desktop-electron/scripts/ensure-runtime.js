@@ -18,7 +18,7 @@ function hasRuntime() {
 }
 
 if (!hasRuntime()) {
-  console.log('[kortix] Electron runtime missing — downloading…');
+  console.log('[zed] Electron runtime missing — downloading…');
   execFileSync(process.execPath, [require.resolve('electron/install.js')], {
     stdio: 'inherit',
   });

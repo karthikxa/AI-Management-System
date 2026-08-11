@@ -183,7 +183,7 @@ flow(
         .as(member)
         .post(
           '/v1/accounts/:accountId/members',
-          { email: 'x@ke2e.kortix.test', role: 'member' },
+          { email: 'x@ke2e.zed.test', role: 'member' },
           { params: { accountId: team.id } },
         );
       r.status(403);

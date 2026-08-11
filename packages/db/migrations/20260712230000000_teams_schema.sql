@@ -1,4 +1,4 @@
-CREATE TABLE "kortix"."teams_pending_uploads" (
+CREATE TABLE "zed"."teams_pending_uploads" (
 	"upload_id" text PRIMARY KEY NOT NULL,
 	"project_id" uuid NOT NULL,
 	"service_url" text NOT NULL,
@@ -12,5 +12,5 @@ CREATE TABLE "kortix"."teams_pending_uploads" (
 	"expires_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "kortix"."chat_turn_streams" ADD COLUMN "channel_ref" jsonb;--> statement-breakpoint
-CREATE INDEX "idx_teams_pending_uploads_expiry" ON "kortix"."teams_pending_uploads" USING btree ("expires_at");
+ALTER TABLE "zed"."chat_turn_streams" ADD COLUMN "channel_ref" jsonb;--> statement-breakpoint
+CREATE INDEX "idx_teams_pending_uploads_expiry" ON "zed"."teams_pending_uploads" USING btree ("expires_at");

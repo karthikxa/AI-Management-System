@@ -44,13 +44,13 @@ describe.skipIf(!caps.localImages)(
       expect(code).toBe(0);
       const env = sandbox.readEnv();
 
-      expect(env.KORTIX_VERSION).toBe('0.9.107');
-      expect(env.FRONTEND_IMAGE).toBe('kortix/kortix-frontend:0.9.107');
-      expect(env.API_IMAGE).toBe('kortix/kortix-api:0.9.107');
-      expect(env.GATEWAY_IMAGE).toBe('kortix/kortix-gateway:0.9.107');
+      expect(env.ZED_VERSION).toBe('0.9.107');
+      expect(env.FRONTEND_IMAGE).toBe('zed/zed-frontend:0.9.107');
+      expect(env.API_IMAGE).toBe('zed/zed-api:0.9.107');
+      expect(env.GATEWAY_IMAGE).toBe('zed/zed-gateway:0.9.107');
       // Pinning an explicit version doesn't invent/overwrite the channel name.
-      expect(env.KORTIX_CHANNEL).toBe('stable');
-      expect(env.KORTIX_AUTO_UPDATE).toBe('true');
+      expect(env.ZED_CHANNEL).toBe('stable');
+      expect(env.ZED_AUTO_UPDATE).toBe('true');
     });
 
     test('--tag and --release are accepted aliases for --version', async () => {
@@ -61,8 +61,8 @@ describe.skipIf(!caps.localImages)(
         '0.9.55',
       ]);
       expect(viaTag.code).toBe(0);
-      expect(sandbox.readEnv().API_IMAGE).toBe('kortix/kortix-api:0.9.55');
-      expect(sandbox.readEnv().KORTIX_AUTO_UPDATE).toBe('true');
+      expect(sandbox.readEnv().API_IMAGE).toBe('zed/zed-api:0.9.55');
+      expect(sandbox.readEnv().ZED_AUTO_UPDATE).toBe('true');
 
       const other = new SelfHostSandbox();
       try {
@@ -73,8 +73,8 @@ describe.skipIf(!caps.localImages)(
           '0.9.60',
         ]);
         expect(viaRelease.code).toBe(0);
-        expect(other.readEnv().API_IMAGE).toBe('kortix/kortix-api:0.9.60');
-        expect(other.readEnv().KORTIX_AUTO_UPDATE).toBe('true');
+        expect(other.readEnv().API_IMAGE).toBe('zed/zed-api:0.9.60');
+        expect(other.readEnv().ZED_AUTO_UPDATE).toBe('true');
       } finally {
         other.cleanup();
       }
@@ -89,9 +89,9 @@ describe.skipIf(!caps.localImages)(
       ]);
       expect(code).toBe(0);
       const env = sandbox.readEnv();
-      expect(env.KORTIX_CHANNEL).toBe('latest');
-      expect(env.API_IMAGE).toBe('kortix/kortix-api:latest');
-      expect(env.KORTIX_AUTO_UPDATE).toBe('true');
+      expect(env.ZED_CHANNEL).toBe('latest');
+      expect(env.API_IMAGE).toBe('zed/zed-api:latest');
+      expect(env.ZED_AUTO_UPDATE).toBe('true');
     });
 
     test('an explicit --auto-update off always wins over the (now-ON-by-default) pin/channel default', async () => {
@@ -102,7 +102,7 @@ describe.skipIf(!caps.localImages)(
         '0.9.107',
       ]);
       expect(pinnedOn.code).toBe(0);
-      expect(sandbox.readEnv().KORTIX_AUTO_UPDATE).toBe('true');
+      expect(sandbox.readEnv().ZED_AUTO_UPDATE).toBe('true');
 
       const channelOff = new SelfHostSandbox();
       try {
@@ -115,13 +115,13 @@ describe.skipIf(!caps.localImages)(
           'off',
         ]);
         expect(result.code).toBe(0);
-        expect(channelOff.readEnv().KORTIX_AUTO_UPDATE).toBe('false');
+        expect(channelOff.readEnv().ZED_AUTO_UPDATE).toBe('false');
       } finally {
         channelOff.cleanup();
       }
     });
 
-    test('--local-images sets KORTIX_IMAGE_PULL=never and forces auto-update off', async () => {
+    test('--local-images sets ZED_IMAGE_PULL=never and forces auto-update off', async () => {
       const { code } = await sandbox.run([
         'init',
         '--yes',
@@ -131,13 +131,13 @@ describe.skipIf(!caps.localImages)(
       ]);
       expect(code).toBe(0);
       const env = sandbox.readEnv();
-      expect(env.KORTIX_VERSION).toBe('dev-abc123');
-      expect(env.API_IMAGE).toBe('kortix/kortix-api:dev-abc123');
-      expect(env.KORTIX_IMAGE_PULL).toBe('never');
-      expect(env.KORTIX_AUTO_UPDATE).toBe('false');
+      expect(env.ZED_VERSION).toBe('dev-abc123');
+      expect(env.API_IMAGE).toBe('zed/zed-api:dev-abc123');
+      expect(env.ZED_IMAGE_PULL).toBe('never');
+      expect(env.ZED_AUTO_UPDATE).toBe('false');
     });
 
-    // Moving-tag tracking (CI now publishes kortix/kortix-{api,gateway,
+    // Moving-tag tracking (CI now publishes zed/zed-{api,gateway,
     // frontend}:dev / :staging / :prod by re-tagging the deployed build — see
     // .github/workflows/deploy-dev.yml, deploy-staging.yml, deploy-prod.yml).
     // `--channel` itself stays stable|latest only (see isChannel/CHANNELS
@@ -151,14 +151,14 @@ describe.skipIf(!caps.localImages)(
       expect(code).toBe(0);
       const env = sandbox.readEnv();
 
-      expect(env.KORTIX_VERSION).toBe('dev');
-      expect(env.FRONTEND_IMAGE).toBe('kortix/kortix-frontend:dev');
-      expect(env.API_IMAGE).toBe('kortix/kortix-api:dev');
-      expect(env.GATEWAY_IMAGE).toBe('kortix/kortix-gateway:dev');
+      expect(env.ZED_VERSION).toBe('dev');
+      expect(env.FRONTEND_IMAGE).toBe('zed/zed-frontend:dev');
+      expect(env.API_IMAGE).toBe('zed/zed-api:dev');
+      expect(env.GATEWAY_IMAGE).toBe('zed/zed-gateway:dev');
       // "dev" isn't one of CHANNELS (stable|latest), so it doesn't invent a
       // channel name — same rule already covered for a semver pin above.
-      expect(env.KORTIX_CHANNEL).toBe('stable');
-      expect(env.KORTIX_AUTO_UPDATE).toBe('true');
+      expect(env.ZED_CHANNEL).toBe('stable');
+      expect(env.ZED_AUTO_UPDATE).toBe('true');
     });
 
     test('--tag dev --auto-update on: the explicit flag wins (still ON), so the box actually tracks the moving tag nightly', async () => {
@@ -172,24 +172,24 @@ describe.skipIf(!caps.localImages)(
       ]);
       expect(code).toBe(0);
       const env = sandbox.readEnv();
-      expect(env.API_IMAGE).toBe('kortix/kortix-api:dev');
-      expect(env.KORTIX_AUTO_UPDATE).toBe('true');
+      expect(env.API_IMAGE).toBe('zed/zed-api:dev');
+      expect(env.ZED_AUTO_UPDATE).toBe('true');
     });
 
     test('--tag staging / --tag prod render the matching moving-tag images too', async () => {
       const staging = await sandbox.run(['init', '--yes', '--tag', 'staging']);
       expect(staging.code).toBe(0);
-      expect(sandbox.readEnv().API_IMAGE).toBe('kortix/kortix-api:staging');
-      expect(sandbox.readEnv().GATEWAY_IMAGE).toBe('kortix/kortix-gateway:staging');
-      expect(sandbox.readEnv().FRONTEND_IMAGE).toBe('kortix/kortix-frontend:staging');
-      expect(sandbox.readEnv().KORTIX_AUTO_UPDATE).toBe('true');
+      expect(sandbox.readEnv().API_IMAGE).toBe('zed/zed-api:staging');
+      expect(sandbox.readEnv().GATEWAY_IMAGE).toBe('zed/zed-gateway:staging');
+      expect(sandbox.readEnv().FRONTEND_IMAGE).toBe('zed/zed-frontend:staging');
+      expect(sandbox.readEnv().ZED_AUTO_UPDATE).toBe('true');
 
       const prodSandbox = new SelfHostSandbox();
       try {
         const prod = await prodSandbox.run(['init', '--yes', '--tag', 'prod']);
         expect(prod.code).toBe(0);
-        expect(prodSandbox.readEnv().API_IMAGE).toBe('kortix/kortix-api:prod');
-        expect(prodSandbox.readEnv().KORTIX_AUTO_UPDATE).toBe('true');
+        expect(prodSandbox.readEnv().API_IMAGE).toBe('zed/zed-api:prod');
+        expect(prodSandbox.readEnv().ZED_AUTO_UPDATE).toBe('true');
       } finally {
         prodSandbox.cleanup();
       }
@@ -205,16 +205,16 @@ describe.skipIf(!caps.localImages)(
     test('re-running init with --tag dev after a prior pin moves every *_IMAGE to :dev (the update path)', async () => {
       const first = await sandbox.run(['init', '--yes', '--tag', '0.9.107']);
       expect(first.code).toBe(0);
-      expect(sandbox.readEnv().API_IMAGE).toBe('kortix/kortix-api:0.9.107');
+      expect(sandbox.readEnv().API_IMAGE).toBe('zed/zed-api:0.9.107');
 
       const second = await sandbox.run(['init', '--yes', '--tag', 'dev']);
       expect(second.code).toBe(0);
       const env = sandbox.readEnv();
-      expect(env.KORTIX_VERSION).toBe('dev');
-      expect(env.API_IMAGE).toBe('kortix/kortix-api:dev');
-      expect(env.GATEWAY_IMAGE).toBe('kortix/kortix-gateway:dev');
-      expect(env.FRONTEND_IMAGE).toBe('kortix/kortix-frontend:dev');
-      expect(env.KORTIX_AUTO_UPDATE).toBe('true');
+      expect(env.ZED_VERSION).toBe('dev');
+      expect(env.API_IMAGE).toBe('zed/zed-api:dev');
+      expect(env.GATEWAY_IMAGE).toBe('zed/zed-gateway:dev');
+      expect(env.FRONTEND_IMAGE).toBe('zed/zed-frontend:dev');
+      expect(env.ZED_AUTO_UPDATE).toBe('true');
     });
 
     test('--local-images forces auto-update off even on the default stable channel', async () => {
@@ -225,20 +225,20 @@ describe.skipIf(!caps.localImages)(
       ]);
       expect(code).toBe(0);
       const env = sandbox.readEnv();
-      expect(env.KORTIX_IMAGE_PULL).toBe('never');
-      expect(env.KORTIX_AUTO_UPDATE).toBe('false');
+      expect(env.ZED_IMAGE_PULL).toBe('never');
+      expect(env.ZED_AUTO_UPDATE).toBe('false');
     });
 
     test('--no-pull is an accepted alias for --local-images', async () => {
       const { code } = await sandbox.run(['init', '--yes', '--no-pull']);
       expect(code).toBe(0);
-      expect(sandbox.readEnv().KORTIX_IMAGE_PULL).toBe('never');
+      expect(sandbox.readEnv().ZED_IMAGE_PULL).toBe('never');
     });
 
-    test('without --local-images, KORTIX_IMAGE_PULL is left unset (default Docker pull policy)', async () => {
+    test('without --local-images, ZED_IMAGE_PULL is left unset (default Docker pull policy)', async () => {
       const { code } = await sandbox.run(['init', '--yes']);
       expect(code).toBe(0);
-      expect(sandbox.readEnv().KORTIX_IMAGE_PULL ?? '').toBe('');
+      expect(sandbox.readEnv().ZED_IMAGE_PULL ?? '').toBe('');
     });
   },
 );

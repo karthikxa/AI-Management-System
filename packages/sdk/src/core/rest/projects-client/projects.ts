@@ -15,10 +15,10 @@ import {
 /**
  * Stable ids for the platform's per-project feature flags (mirrors
  * `apps/api/src/feature-flags/registry.ts` and `FeatureFlagMapSchema` in
- * `@kortix/api-contract`).
+ * `@zed/api-contract`).
  *
  * The union is hand-written on purpose: this package is framework-free AND
- * dependency-light, and importing `@kortix/api-contract` would drag zod into
+ * dependency-light, and importing `@zed/api-contract` would drag zod into
  * every consumer's bundle. {@link FEATURE_FLAG_KEYS} is the runtime witness of
  * the same list, so other packages can assert the two have not drifted.
  */
@@ -86,7 +86,7 @@ export interface ProjectGlyph {
   color: string;
 }
 
-export interface KortixProject {
+export interface ZedProject {
   project_id: string;
   account_id: string;
   name: string;
@@ -127,7 +127,7 @@ export interface KortixProject {
 }
 
 export interface ProjectConfigSummary {
-  is_kortix_repo: boolean;
+  is_zed_repo: boolean;
   signals: Record<string, boolean>;
   manifest_raw: string | null;
   open_code_raw: string | null;
@@ -141,17 +141,17 @@ export interface ProjectConfigSummary {
     path: string;
     description: string | null;
     mode: string | null;
-    source?: 'opencode' | 'kortix.toml';
+    source?: 'opencode' | 'zed.toml';
     enabled?: boolean;
     /** Agent-specific sandbox template. null or absent inherits the project default. */
     sandbox?: string | null;
-    /** Per-agent governance from `kortix.yaml` `agents:` (read-only mirror).
+    /** Per-agent governance from `zed.yaml` `agents:` (read-only mirror).
      *  `'all'` = unscoped; a list = the allowlist; `[]` = none. Absent for
      *  OpenCode-discovered agents (not governed by `agents:`). */
     scope?: {
       env: string[] | 'all';
       connectors: string[] | 'all';
-      kortix_cli: string[] | 'all';
+      zed_cli: string[] | 'all';
     };
   }>;
   skills: Array<{ name: string; path: string; description: string | null }>;
@@ -160,7 +160,7 @@ export interface ProjectConfigSummary {
 }
 
 export interface ProjectDetail {
-  project: KortixProject;
+  project: ZedProject;
   git_connection?: ProjectGitConnection | null;
   config: ProjectConfigSummary;
   file_count: number;
@@ -187,7 +187,7 @@ export interface GatewayCatalogModel {
   /**
    * The REAL upstream provider serving this model ('anthropic', 'openai',
    * 'amazon-bedrock', ...). Every gateway model is registered under the one
-   * synthetic `kortix` opencode provider, so this is the ONLY reliable way to
+   * synthetic `zed` opencode provider, so this is the ONLY reliable way to
    * group/label a model by who actually serves it — Bedrock ids are
    * dot-namespaced (`us.anthropic.claude-opus-4-8`), so the legacy
    * split-on-slash heuristic cannot recover it.
@@ -287,12 +287,12 @@ export interface CreateProjectRepoInput {
 export interface ProvisionProjectInput {
   account_id?: string;
   name: string;
-  /** Seed the managed repo with the Kortix starter so sessions can boot. */
+  /** Seed the managed repo with the Zed starter so sessions can boot. */
   seed_starter?: boolean;
   starter_template?: 'general-knowledge-worker' | 'minimal';
   marketplace_items?: string[];
   /** Clone a `registry:project` marketplace item instead of the blank
-   *  starter — e.g. `"kortix-projects:support-agent-kit"`. Implies
+   *  starter — e.g. `"zed-projects:support-agent-kit"`. Implies
    *  seed_starter and takes precedence over starter_template. */
   source_item_id?: string;
   /** Optional emoji icon for the new project. Invalid values are dropped
@@ -336,21 +336,21 @@ export interface RepoCollaboratorInvite {
 }
 
 export async function listProjects() {
-  return unwrap(await backendApi.get<KortixProject[]>('/projects'));
+  return unwrap(await backendApi.get<ZedProject[]>('/projects'));
 }
 
 export async function listProjectsForAccount(accountId?: string) {
   const query = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
-  return unwrap(await backendApi.get<KortixProject[]>(`/projects${query}`));
+  return unwrap(await backendApi.get<ZedProject[]>(`/projects${query}`));
 }
 
 export async function getProject(projectId: string, options?: ApiClientOptions) {
-  return unwrap(await backendApi.get<KortixProject>(`/projects/${projectId}`, options));
+  return unwrap(await backendApi.get<ZedProject>(`/projects/${projectId}`, options));
 }
 
 /**
  * Invite a GitHub user as a collaborator on a MANAGED repo — lets the project
- * creator pull "their" Kortix-managed repo into their own GitHub account.
+ * creator pull "their" Zed-managed repo into their own GitHub account.
  */
 export async function inviteRepoCollaborator(
   projectId: string,
@@ -375,8 +375,8 @@ export interface ManifestValidationResult {
 }
 
 /**
- * Validate a `kortix.toml` manifest's raw TOML text server-side — the same
- * schema the CLI (`kortix ship` pre-flight / `kortix validate`) and the CR-merge
+ * Validate a `zed.toml` manifest's raw TOML text server-side — the same
+ * schema the CLI (`zed ship` pre-flight / `zed validate`) and the CR-merge
  * gate exercise. Always resolves (never throws on an invalid manifest) — the
  * verdict is in the body.
  */
@@ -402,7 +402,7 @@ export interface ProjectGitToken {
 
 /**
  * Mint a fresh scoped git push token for a *managed* project (so the CLI can
- * `kortix ship` without persisting credentials in git config). Throws (409)
+ * `zed ship` without persisting credentials in git config). Throws (409)
  * for BYO projects — they push with the user's own git remote auth.
  */
 export async function getProjectGitToken(projectId: string): Promise<ProjectGitToken> {
@@ -412,7 +412,7 @@ export async function getProjectGitToken(projectId: string): Promise<ProjectGitT
   );
 }
 
-/** True when this project's repo is a Kortix-managed GitHub repo (invitable). */
+/** True when this project's repo is a Zed-managed GitHub repo (invitable). */
 export function isManagedGithubProject(project: {
   metadata?: Record<string, unknown> | null;
 }): boolean {
@@ -496,15 +496,15 @@ export async function getProjectLlmCatalogProviders(projectId: string, options?:
 }
 
 export async function createProject(input: ProjectInput) {
-  return unwrap(await backendApi.post<KortixProject>('/projects', input));
+  return unwrap(await backendApi.post<ZedProject>('/projects', input));
 }
 
 export async function createProjectRepo(input: CreateProjectRepoInput) {
-  return unwrap(await backendApi.post<KortixProject>('/projects/create-repo', input));
+  return unwrap(await backendApi.post<ZedProject>('/projects/create-repo', input));
 }
 
 /**
- * Create a project backed by a managed Kortix git repo — the
+ * Create a project backed by a managed Zed git repo — the
  * default. No GitHub account or repo-name uniqueness needed; the starter is
  * seeded server-side so the project boots immediately.
  */
@@ -513,7 +513,7 @@ export async function provisionProject(
   options: ApiClientOptions = {},
 ) {
   return unwrap(
-    await backendApi.post<KortixProject>(
+    await backendApi.post<ZedProject>(
       '/projects/provision',
       {
         seed_starter: true,
@@ -562,7 +562,7 @@ export async function getManagedGitStatus(): Promise<ManagedGitStatus> {
  * Everything else ignores an empty value.
  */
 export async function updateProject(projectId: string, input: Partial<ProjectInput>) {
-  return unwrap(await backendApi.patch<KortixProject>(`/projects/${projectId}`, input));
+  return unwrap(await backendApi.patch<ZedProject>(`/projects/${projectId}`, input));
 }
 
 /**
@@ -577,7 +577,7 @@ export async function updateFeatureFlag(
   enabled: boolean | null,
 ) {
   return unwrap(
-    await backendApi.patch<KortixProject>(`/projects/${projectId}/features`, {
+    await backendApi.patch<ZedProject>(`/projects/${projectId}/features`, {
       feature,
       enabled,
     }),
@@ -597,7 +597,7 @@ export async function updateExperimentalFeature(
   enabled: boolean | null,
 ) {
   return unwrap(
-    await backendApi.patch<KortixProject>(`/projects/${projectId}/experimental`, {
+    await backendApi.patch<ZedProject>(`/projects/${projectId}/experimental`, {
       feature,
       enabled,
     }),
@@ -645,7 +645,7 @@ export interface PreparationView {
  * {@link getProjectSandboxProviderTransition} until it settles.
  */
 export type UpdateProjectSandboxProviderResult =
-  | ({ kind: 'project' } & KortixProject)
+  | ({ kind: 'project' } & ZedProject)
   | PreparationView;
 
 /** Set or clear the per-project sandbox-provider pin (Customize → Settings).
@@ -717,12 +717,12 @@ export async function updateTemplateWarmPool(
   projectId: string,
   input: { slug: string; enabled?: boolean; size?: number },
 ) {
-  return unwrap(await backendApi.patch<KortixProject>(`/projects/${projectId}/warm-pool`, input));
+  return unwrap(await backendApi.patch<ZedProject>(`/projects/${projectId}/warm-pool`, input));
 }
 
 export async function setProjectOnboardingComplete(projectId: string, completed: boolean) {
   return unwrap(
-    await backendApi.patch<KortixProject>(`/projects/${projectId}/onboarding`, { completed }),
+    await backendApi.patch<ZedProject>(`/projects/${projectId}/onboarding`, { completed }),
   );
 }
 
@@ -759,7 +759,7 @@ export interface OnboardingProfile {
  */
 export async function setProjectOnboardingProfile(projectId: string, profile: OnboardingProfile) {
   return unwrap(
-    await backendApi.patch<KortixProject>(`/projects/${projectId}/onboarding`, { profile }),
+    await backendApi.patch<ZedProject>(`/projects/${projectId}/onboarding`, { profile }),
   );
 }
 
@@ -770,7 +770,7 @@ export async function archiveProject(projectId: string) {
 // ── Server-side explicit-token variants ──────────────────────────────────────
 // Next.js server actions / route handlers (post-signup first-project
 // bootstrap) run per-request with an already-resolved Supabase access token —
-// they must not rely on the SDK's process-wide `configureKortix()` seam.
+// they must not rely on the SDK's process-wide `configureZed()` seam.
 
 /**
  * Server-side / explicit-token variant of {@link listProjectsForAccount}.
@@ -779,15 +779,15 @@ export async function archiveProject(projectId: string) {
 export async function fetchProjectsForAccountWithToken(
   opts: ServerTokenOptions,
   accountId: string,
-): Promise<KortixProject[] | null> {
-  return serverTokenGet<KortixProject[]>(
+): Promise<ZedProject[] | null> {
+  return serverTokenGet<ZedProject[]>(
     opts,
     `/v1/projects?account_id=${encodeURIComponent(accountId)}`,
   );
 }
 
 export type ProvisionProjectWithTokenResult =
-  | { ok: true; project: KortixProject }
+  | { ok: true; project: ZedProject }
   | { ok: false; limitReached: boolean };
 
 /**
@@ -813,7 +813,7 @@ export async function provisionProjectWithToken(
       signal: AbortSignal.timeout(opts.timeoutMs ?? 90_000),
     });
     if (res.ok) {
-      const project = (await res.json().catch(() => null)) as KortixProject | null;
+      const project = (await res.json().catch(() => null)) as ZedProject | null;
       // A 200 whose body doesn't actually carry a project_id is not a usable
       // success — report it as not-ok instead of handing the caller a project
       // it can't build a `/projects/{id}` path from.

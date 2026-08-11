@@ -80,10 +80,10 @@ function sleep(delayMs: number, signal?: AbortSignal): Promise<void> {
 }
 
 /**
- * Refetch the authoritative Kortix session until its generated title appears.
+ * Refetch the authoritative Zed session until its generated title appears.
  *
  * OpenCode generates titles asynchronously. This bounded loop refreshes the
- * authoritative Kortix session without permanent sidebar polling.
+ * authoritative Zed session without permanent sidebar polling.
  */
 export async function refreshSessionTitleQueryUntilResolved(
   queryClient: SessionTitleQueryClient,

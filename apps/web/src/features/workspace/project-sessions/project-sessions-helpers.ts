@@ -1,4 +1,4 @@
-import type { ProjectSession } from '@kortix/sdk';
+import type { ProjectSession } from '@zed/sdk';
 
 import { sessionSource, type SessionSourceKind } from '@/components/projects/session-label';
 import {

@@ -1,5 +1,5 @@
 variable "name" {
-  description = "Name prefix for all resources (e.g. kortix-dev / kortix-prod)."
+  description = "Name prefix for all resources (e.g. zed-dev / zed-prod)."
   type        = string
 }
 
@@ -32,7 +32,7 @@ variable "assign_public_ip" {
 
 # ── Container ─────────────────────────────────────────────────────────────────
 variable "image" {
-  description = "Container image (e.g. ghcr.io/kortix-ai/kortix-api:TAG)."
+  description = "Container image (e.g. ghcr.io/zed-ai/zed-api:TAG)."
   type        = string
 }
 
@@ -175,9 +175,9 @@ variable "tags" {
 
 variable "secrets_blob_arn" {
   description = <<-EOT
-    ARN of the environment's Secrets Manager blob (kortix-<env>-env). The
+    ARN of the environment's Secrets Manager blob (zed-<env>-env). The
     execution role is granted GetSecretValue on it. ECS injects the complete
-    JSON document through KORTIX_ENV_JSON. This stable selector survives
+    JSON document through ZED_ENV_JSON. This stable selector survives
     optional key additions and removals.
   EOT
   type        = string

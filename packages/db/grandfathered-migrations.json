@@ -39,7 +39,7 @@
     "20260704130000000_session_tool_approvals.sql",
     "20260704140000000_secret_agent_scope.sql",
     "20260704150000000_connector_agent_scope.sql",
-    "20260704160000000_reassert_kortix_runtime_grants.sql",
+    "20260704160000000_reassert_zed_runtime_grants.sql",
     "20260706120000000_retire_basejump.sql",
     "20260706130000000_remove_per_user_credential_mode.sql",
     "20260706130001000_secrets_v2_identifier_model.sql",

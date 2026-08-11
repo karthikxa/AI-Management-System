@@ -1,8 +1,8 @@
 const MOBILE_CALLBACK_FLAG = 'mobile_callback';
-const KORTIX_CALLBACK_HOSTS = new Set([
-  'kortix.com',
-  'www.kortix.com',
-  'staging.kortix.com',
+const ZED_CALLBACK_HOSTS = new Set([
+  'zed.com',
+  'www.zed.com',
+  'staging.zed.com',
 ]);
 
 type MobileSessionHandoffInput = {
@@ -30,11 +30,11 @@ export function buildMobileSessionHandoffUrl({
   let url: URL;
   try {
     const candidate = new URL(origin);
-    url = candidate.protocol === 'https:' && KORTIX_CALLBACK_HOSTS.has(candidate.hostname)
+    url = candidate.protocol === 'https:' && ZED_CALLBACK_HOSTS.has(candidate.hostname)
       ? new URL('/auth/callback', candidate)
-      : new URL('kortix://auth/callback');
+      : new URL('zed://auth/callback');
   } catch {
-    url = new URL('kortix://auth/callback');
+    url = new URL('zed://auth/callback');
   }
 
   url.searchParams.set(MOBILE_CALLBACK_FLAG, '1');

@@ -81,13 +81,13 @@ export function unwrap<T>(result: {
 // These are backed by ScopedCache, which caps each family to its N
 // most-recently-used scopes. That cap is the whole point: the default scope is
 // the EPHEMERAL per-sandbox server id, so without a cap every new session would
-// leak a fresh `kortix_cache_*:<serverId>` blob forever and eventually blow the
+// leak a fresh `zed_cache_*:<serverId>` blob forever and eventually blow the
 // localStorage quota (which then crashes whatever store writes next). The cache
 // is disposable — a miss just refetches — so small caps are safe.
-export const LS_SESSIONS = 'kortix_cache_sessions';
-export const LS_AGENTS = 'kortix_cache_agents';
-export const LS_COMMANDS = 'kortix_cache_commands';
-export const LS_PROVIDERS = 'kortix_cache_providers';
+export const LS_SESSIONS = 'zed_cache_sessions';
+export const LS_AGENTS = 'zed_cache_agents';
+export const LS_COMMANDS = 'zed_cache_commands';
+export const LS_PROVIDERS = 'zed_cache_providers';
 
 // Session/command lists are keyed per ephemeral sandbox — keep only the few
 // most-recent sandboxes warm. Agents are keyed per directory (+ global), which

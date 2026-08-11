@@ -14,7 +14,7 @@ describe('staging secret synchronization', () => {
 
     expect(syncSecretStart).toBeGreaterThan(-1);
     expect(deployStart).toBeGreaterThan(syncSecretStart);
-    expect(syncSecretJob).toContain('ROLE: arn:aws:iam::935064898258:role/kortix-gha-ecs-deploy');
+    expect(syncSecretJob).toContain('ROLE: arn:aws:iam::935064898258:role/zed-gha-ecs-deploy');
     expect(syncSecretJob).toContain('role-to-assume: ${{ env.ROLE }}');
   });
 
@@ -28,7 +28,7 @@ describe('staging secret synchronization', () => {
     );
     const importsStart = policy.indexOf('# ── One-shot adoption', secretsPolicyStart);
     const secretsPolicy = policy.slice(secretsPolicyStart, importsStart);
-    const readStart = secretsPolicy.indexOf('Sid    = "ReadKortixEnvironmentSecrets"');
+    const readStart = secretsPolicy.indexOf('Sid    = "ReadZedEnvironmentSecrets"');
     const writeStart = secretsPolicy.indexOf('Sid    = "WriteStagingSecret"');
     const readStatement = secretsPolicy.slice(readStart, writeStart);
     const writeStatement = secretsPolicy.slice(writeStart);
@@ -42,7 +42,7 @@ describe('staging secret synchronization', () => {
     expect(writeStatement).toContain('secretsmanager:PutSecretValue');
     expect(writeStatement).toContain('secretsmanager:CreateSecret');
     expect(writeStatement).toContain(
-      'Resource = "arn:aws:secretsmanager:us-west-2:${local.account_id}:secret:kortix-staging-env-*"',
+      'Resource = "arn:aws:secretsmanager:us-west-2:${local.account_id}:secret:zed-staging-env-*"',
     );
   });
 
@@ -53,17 +53,17 @@ describe('staging secret synchronization', () => {
     );
 
     const preserveStart = workflow.indexOf(
-      'if aws secretsmanager describe-secret --secret-id kortix-staging-env',
+      'if aws secretsmanager describe-secret --secret-id zed-staging-env',
     );
     const payloadStart = workflow.indexOf('payload="$(jq -cn');
     const preservationBlock = workflow.slice(preserveStart, payloadStart);
 
     expect(preserveStart).toBeGreaterThan(-1);
     expect(payloadStart).toBeGreaterThan(preserveStart);
-    expect(preservationBlock).toContain('--secret-id kortix-staging-env');
+    expect(preservationBlock).toContain('--secret-id zed-staging-env');
     expect(preservationBlock).toContain('staging_secret_exists=true');
     expect(preservationBlock).toContain('else');
-    expect(preservationBlock).toContain('--secret-id kortix-dev-env');
+    expect(preservationBlock).toContain('--secret-id zed-dev-env');
     expect(preservationBlock).toContain('staging_secret_exists=false');
     expect(workflow).toContain('if [ "$staging_secret_exists" = true ]; then');
   });

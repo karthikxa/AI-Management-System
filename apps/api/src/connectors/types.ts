@@ -71,7 +71,7 @@ export interface PipedreamActionLike {
   }>;
 }
 
-/** A declared HTTP route (provider=http, from `.kortix/connectors/*.http.toml`). */
+/** A declared HTTP route (provider=http, from `.zed/connectors/*.http.toml`). */
 export interface HttpRouteSpec {
   /** Relative tool path, e.g. `users.get`. */
   name: string;

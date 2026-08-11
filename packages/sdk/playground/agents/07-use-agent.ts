@@ -6,10 +6,10 @@
  * `projects.detail().config.agents` — script 05 lists them.
  *
  * Run (from packages/sdk):
- *   KORTIX_MODEL=claude-sonnet-4.6 bun run playground/agents/07-use-agent.ts [agentName]
+ *   ZED_MODEL=claude-sonnet-4.6 bun run playground/agents/07-use-agent.ts [agentName]
  */
 import {
-  makeKortix,
+  makeZed,
   modelOverride,
   pickOrCreateSessionId,
   pickProjectId,
@@ -19,10 +19,10 @@ import {
 } from "../_shared";
 
 run("use-agent", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed);
 
-  const detail = await kortix.projects.detail(projectId);
+  const detail = await zed.projects.detail(projectId);
   const agents = detail.config.agents.map((a) => a.name);
   const agent =
     process.argv[2] ?? detail.config.open_code_default_agent ?? agents[0];
@@ -38,11 +38,11 @@ run("use-agent", async () => {
   console.log(`✓ using agent: ${agent} (available: ${agents.join(", ")})`);
 
   const sessionId = await pickOrCreateSessionId(
-    kortix,
+    zed,
     projectId,
     `sdk agent ${agent}`,
   );
-  const session = kortix.session(projectId, sessionId);
+  const session = zed.session(projectId, sessionId);
 
   const turn = await sendAndWait(
     session,

@@ -1,4 +1,4 @@
-import type { ProjectConfigSummary } from '@kortix/sdk';
+import type { ProjectConfigSummary } from '@zed/sdk';
 
 export type AgentMode = 'primary' | 'subagent';
 type Agent = ProjectConfigSummary['agents'][number];

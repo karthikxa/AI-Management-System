@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { type Ports, computePorts, repoRoot, runMigrate, sh } from '../../scripts/worktree/lib';
 
 const dockerOk = sh(['docker', 'info']).ok;
-const CONTAINER = 'kortix-credit-rpc-overloads-test';
+const CONTAINER = 'zed-credit-rpc-overloads-test';
 const PORT = Number(process.env.CREDIT_RPC_OVERLOADS_TEST_PORT || 55444);
 const ROOT = repoRoot();
 const ports: Ports = { ...computePorts(0), sbDb: PORT };
@@ -26,7 +26,7 @@ function pgReady(): boolean {
 function fundedAccount(balance: string): string {
   const id = psql('select gen_random_uuid()');
   psql(
-    `insert into kortix.credit_accounts (account_id, non_expiring_credits_precise, balance_precise)
+    `insert into zed.credit_accounts (account_id, non_expiring_credits_precise, balance_precise)
      values ('${id}', ${balance}, ${balance})`,
   );
   return id;
@@ -148,19 +148,19 @@ suite('credit RPC overload resolution (throwaway Postgres)', () => {
     expect(attempt.stderr).not.toContain('is not unique');
     expect(attempt.ok).toBe(true);
     expect(
-      psql(`select balance_precise from kortix.credit_accounts where account_id = '${account}'`),
+      psql(`select balance_precise from zed.credit_accounts where account_id = '${account}'`),
     ).toBe('8.5000000000');
   });
 
   test('a three-positional-argument debit from a pre-rollout pod still works and defaults ledger_type', () => {
     const account = fundedAccount('10');
     const attempt = psqlAllowError(
-      `select public.atomic_use_credits('${account}'::uuid, 2::numeric, 'Kortix Web Search'::text)`,
+      `select public.atomic_use_credits('${account}'::uuid, 2::numeric, 'Zed Web Search'::text)`,
     );
     expect(attempt.ok).toBe(true);
     expect(
       psql(
-        `select metadata ->> 'ledger_type' from kortix.credit_ledger
+        `select metadata ->> 'ledger_type' from zed.credit_ledger
          where account_id = '${account}' and type = 'usage'`,
       ),
     ).toBe('usage');
@@ -181,7 +181,7 @@ suite('credit RPC overload resolution (throwaway Postgres)', () => {
     );
     expect(result).toBe('Insufficient credits');
     expect(
-      psql(`select balance_precise from kortix.credit_accounts where account_id = '${account}'`),
+      psql(`select balance_precise from zed.credit_accounts where account_id = '${account}'`),
     ).toBe('1.0000000000');
   });
 
@@ -193,7 +193,7 @@ suite('credit RPC overload resolution (throwaway Postgres)', () => {
     );
     expect(
       psql(
-        `select metadata ->> 'ledger_type' from kortix.credit_ledger
+        `select metadata ->> 'ledger_type' from zed.credit_ledger
          where account_id = '${account}' and type = 'usage'`,
       ),
     ).toBe('llm_debit');

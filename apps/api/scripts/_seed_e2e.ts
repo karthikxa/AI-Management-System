@@ -11,7 +11,7 @@
  */
 import { createAccountToken } from '../src/repositories/account-tokens';
 import { db } from '../src/shared/db';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { readFileSync } from 'fs';
 
@@ -44,12 +44,12 @@ async function sandboxRow(sessionId: string) {
   return row ?? null;
 }
 
-/** UI-equivalent readiness: poll the comp proxy /kortix/health until runtimeReady. */
+/** UI-equivalent readiness: poll the comp proxy /zed/health until runtimeReady. */
 async function waitRuntimeReady(baseUrl: string, timeoutMs = 120_000): Promise<number> {
   const t0 = now();
   while (now() - t0 < timeoutMs) {
     try {
-      const r = await fetch(`${baseUrl}/kortix/health`, { headers: H, signal: AbortSignal.timeout(5000) });
+      const r = await fetch(`${baseUrl}/zed/health`, { headers: H, signal: AbortSignal.timeout(5000) });
       if (r.ok) {
         const j: any = await r.json().catch(() => ({}));
         if (j.runtimeReady === true) return now() - t0;

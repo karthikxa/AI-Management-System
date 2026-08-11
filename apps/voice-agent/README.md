@@ -1,14 +1,14 @@
-# @kortix/voice-agent
+# @zed/voice-agent
 
 A [LiveKit agents-js](https://github.com/livekit/agents-js) worker: the spoken
-voice of a Kortix agent inside a live meeting. STT → LLM → TTS pipeline
+voice of a Zed agent inside a live meeting. STT → LLM → TTS pipeline
 (deepgram STT, openai LLM, openai TTS) with silero VAD driving turn detection
 — LiveKit's standard cascaded pipeline, not a realtime speech-to-speech model
 (this workload is tool-heavy; half-cascade is the reliable path for tool use).
 
 This process is a standalone worker. It is not part of `apps/api` and does
 not import anything from it — everything it needs to know about a call
-(which project, which session, how to reach the Kortix API) comes in over
+(which project, which session, how to reach the Zed API) comes in over
 LiveKit, not a shared process.
 
 ## Run it locally
@@ -18,7 +18,7 @@ Against the local LiveKit dev server (`ws://localhost:7880`, `devkey` /
 
 ```bash
 cd apps/voice-agent
-pnpm install   # from the repo root, or scoped: pnpm --filter @kortix/voice-agent install
+pnpm install   # from the repo root, or scoped: pnpm --filter @zed/voice-agent install
 
 LIVEKIT_URL=ws://localhost:7880 \
 LIVEKIT_API_KEY=devkey \
@@ -53,7 +53,7 @@ why call-specific values come from job metadata, not env vars):
 | `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` | yes | Worker auth against the LiveKit server. Read by `@livekit/agents` itself. |
 | `DEEPGRAM_API_KEY` | yes | Read by `agents-plugin-deepgram`'s `STT` constructor when no `apiKey` option is passed. |
 | `OPENAI_API_KEY` | yes | Read by `agents-plugin-openai`'s `LLM`/`TTS` constructors when no `apiKey` option is passed. |
-| `KORTIX_API_URL` | no | Fallback Kortix API base URL, used only when a room's metadata omits `kortix_api_url`. Defaults to `http://localhost:8008` (matches `apps/api`'s local dev port). Named to match the existing convention (`apps/cli`, the self-host compose file). |
+| `ZED_API_URL` | no | Fallback Zed API base URL, used only when a room's metadata omits `zed_api_url`. Defaults to `http://localhost:8008` (matches `apps/api`'s local dev port). Named to match the existing convention (`apps/cli`, the self-host compose file). |
 
 ## Why job metadata, not env vars, for call identity
 
@@ -71,8 +71,8 @@ this agent into it), sets public room metadata to:
   "project_id": "...",
   "session_id": "...",
   "call_id": "...",
-  "kortix_api_url": "https://api.kortix.com",
-  "bot_name": "Kortix"
+  "zed_api_url": "https://api.zed.com",
+  "bot_name": "Zed"
 }
 ```
 
@@ -80,7 +80,7 @@ The private dispatch metadata contains the same fields plus:
 
 ```json
 {
-  "kortix_api_token": "<short-lived, call-scoped bearer credential>"
+  "zed_api_token": "<short-lived, call-scoped bearer credential>"
 }
 ```
 
@@ -93,10 +93,10 @@ live call exists per session.
 
 Defined in `src/tools.ts`, described to the model in `src/instructions.ts`:
 
-- **`send_prompt`** — fire-and-forget hand-off to the Kortix agent session,
+- **`send_prompt`** — fire-and-forget hand-off to the Zed agent session,
   for anything needing real project knowledge, files, connectors, or
-  actions. Mirrors the old in-process `ask_kortix` → `continueSession()`
-  path, but now over the voice MCP's `ask_kortix` tool (see below) since this
+  actions. Mirrors the old in-process `ask_zed` → `continueSession()`
+  path, but now over the voice MCP's `ask_zed` tool (see below) since this
   process is no longer inside `apps/api`. Returns the instant the request is
   queued; the instructions tell the model to say one short sentence that it's
   checking and then stop talking rather than invent an answer.
@@ -106,16 +106,16 @@ Defined in `src/tools.ts`, described to the model in `src/instructions.ts`:
   block the tool call, briefly, on purpose: the point of `run_command` is
   "quick check, answer directly."
 
-## The Kortix reply channel (Kortix → call)
+## The Zed reply channel (Zed → call)
 
 The mirror problem: once a `send_prompt` hand-off's `continueSession()`
 eventually resolves, something has to speak the answer into the live call.
 `src/inbound-replies.ts` listens for a LiveKit **data message** on the
-`kortix` topic — `RoomEvent.DataReceived` on the connected room — and calls
-`session.say(text)` on `{ "type": "kortix_reply", "call_id": "...", "text":
+`zed` topic — `RoomEvent.DataReceived` on the connected room — and calls
+`session.say(text)` on `{ "type": "zed_reply", "call_id": "...", "text":
 "..." }`. `apps/api` is expected to send that via
 `RoomServiceClient.sendData(roomName, payload, DataPacket_Kind.RELIABLE, {
-topic: 'kortix' })` once it has a reply. LiveKit delivers data messages to
+topic: 'zed' })` once it has a reply. LiveKit delivers data messages to
 every participant already subscribed to the room, agent included, so no
 extra plumbing is needed on this side beyond the listener.
 
@@ -132,12 +132,12 @@ This app is scoped to the LiveKit worker only — it does not touch
 `apps/api`. It expects ONE endpoint,
 `POST /v1/projects/:projectId/sessions/:sessionId/mcp/voice` — a JSON-RPC 2.0
 voice MCP (`apps/api/src/channels/voice/mcp.ts` + `routes.ts`), authenticated
-with `Authorization: Bearer <kortix_api_token>` (the per-call token from private
+with `Authorization: Bearer <zed_api_token>` (the per-call token from private
 dispatch metadata). Every call is a `tools/call` request; the tool surface is:
 
 | Tool | Args | Behavior |
 |---|---|---|
-| `ask_kortix` | `{ request }` | Fire-and-forget; relays into the Kortix session the same way the old `ask_kortix` → `continueSession()` did. Responds instantly; the actual agent turn runs in the background. |
+| `ask_zed` | `{ request }` | Fire-and-forget; relays into the Zed session the same way the old `ask_zed` → `continueSession()` did. Responds instantly; the actual agent turn runs in the background. |
 | `run_command` | `{ command, cwd? }` | Runs `command` in the session's sandbox, capped server-side well under this app's 12s client-side timeout, and returns `{ stdout, stderr, exit_code, timed_out }`. |
 | `post_turn` | `{ role, text, speaker? }` | Persists one transcript line to `voice_call_turns`, same shape as the old `appendTurn()`. |
 
@@ -145,11 +145,11 @@ dispatch metadata). Every call is a `tools/call` request; the tool surface is:
 route resolves them from the URL path (and the HMAC proves the caller owns
 that call), the same way the three REST endpoints this MCP replaced used to.
 
-The reply channel uses `RoomServiceClient.sendData` on the `kortix` topic.
+The reply channel uses `RoomServiceClient.sendData` on the `zed` topic.
 Room metadata contains `project_id` and `session_id`. Private dispatch metadata
-contains `kortix_api_token`.
+contains `zed_api_token`.
 
-`src/kortix-client.ts` implements the client side of all three tool calls —
+`src/zed-client.ts` implements the client side of all three tool calls —
 real `fetch()` requests against the MCP endpoint, correctly shaped, with
 client-side timeouts and defensive error handling.
 

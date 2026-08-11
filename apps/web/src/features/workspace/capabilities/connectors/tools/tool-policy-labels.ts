@@ -45,14 +45,14 @@ export const POLICY_SEGMENTS: readonly PolicySegment[] = [
   {
     choice: 'require_approval',
     label: 'Ask',
-    tint: 'text-kortix-yellow',
-    hoverTint: 'hover:text-kortix-yellow',
+    tint: 'text-zed-yellow',
+    hoverTint: 'hover:text-zed-yellow',
   },
   {
     choice: 'always_run',
     label: 'Allow',
-    tint: 'text-kortix-green',
-    hoverTint: 'hover:text-kortix-green',
+    tint: 'text-zed-green',
+    hoverTint: 'hover:text-zed-green',
   },
 ];
 

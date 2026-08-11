@@ -25,7 +25,7 @@ import {
   callUpstream as realCallUpstream,
   type AuthedPrincipal,
   type UpstreamDescriptor,
-} from '@kortix/llm-gateway';
+} from '@zed/llm-gateway';
 import { resolveCandidates as realResolveCandidates } from './resolution/resolve-candidates';
 import { runtimeModelCatalog } from './models/runtime-catalog';
 

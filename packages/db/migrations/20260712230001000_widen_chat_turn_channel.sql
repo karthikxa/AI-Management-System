@@ -1,1 +1,1 @@
-ALTER TABLE "kortix"."chat_turn_streams" ALTER COLUMN "channel" SET DATA TYPE text;
+ALTER TABLE "zed"."chat_turn_streams" ALTER COLUMN "channel" SET DATA TYPE text;

@@ -6,14 +6,14 @@
  *
  * Run (from packages/sdk):  bun run playground/projects/33-models-and-search.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("models-and-search", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
-  const project = kortix.project(projectId);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
+  const project = zed.project(projectId);
 
-  const catalog = await kortix.projects.llmCatalog(projectId);
+  const catalog = await zed.projects.llmCatalog(projectId);
   console.log(
     `✓ llmCatalog(): ${Object.keys(catalog.models).length} model(s): ${Object.keys(catalog.models).join(", ")}`,
   );
@@ -23,9 +23,9 @@ run("models-and-search", async () => {
     `✓ modelDefaults.get(): ${JSON.stringify(defaults).slice(0, 250)}`,
   );
 
-  const search = await project.files.search("kortix", { limit: 5 });
+  const search = await project.files.search("zed", { limit: 5 });
   console.log(
-    `✓ files.search('kortix'): ${JSON.stringify(search).slice(0, 200)}…`,
+    `✓ files.search('zed'): ${JSON.stringify(search).slice(0, 200)}…`,
   );
 
   const history = await project.files
@@ -48,23 +48,23 @@ run("models-and-search", async () => {
     );
   }
 
-  const featured = await kortix.marketplace.featured();
+  const featured = await zed.marketplace.featured();
   console.log(
     `✓ marketplace.featured(): ${JSON.stringify(featured).slice(0, 200)}…`,
   );
 
-  const items = await kortix.marketplace.items();
+  const items = await zed.marketplace.items();
   const firstId = (
     Array.isArray(items) ? (items[0] as { id?: string }) : undefined
   )?.id;
   if (firstId) {
-    const item = await kortix.marketplace.item(firstId);
+    const item = await zed.marketplace.item(firstId);
     console.log(
       `✓ marketplace.item('${firstId}'): ${JSON.stringify(item).slice(0, 150)}…`,
     );
   }
 
-  const status = await kortix.connectStatus();
+  const status = await zed.connectStatus();
   if ((status as { enabled?: boolean }).enabled) {
     const apps = await project.connectors.pipedream.listApps("github");
     console.log(

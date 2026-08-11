@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/loading';
 import { getAuthToken } from '@/lib/auth-token';
@@ -20,7 +20,7 @@ import { getEnv } from '@/lib/env-config';
 import { cn } from '@/lib/utils';
 import { PublicFileShareView } from './public-file-share-view';
 import { SHARE_PAGE_ROOT_CLASS, SHARE_PREVIEW_IFRAME_CLASS } from './share-layout';
-import { getPublicShareByToken, startSessionWithToken } from '@kortix/sdk';
+import { getPublicShareByToken, startSessionWithToken } from '@zed/sdk';
 
 interface PublicShareMeta {
   share: {
@@ -174,7 +174,7 @@ export default function PublicSessionSharePage() {
       <header className="border-border/70 bg-background/95 flex min-h-[64px] flex-col gap-3 border-b px-4 py-3 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <div className="flex shrink-0 items-center gap-2.5">
-            <KortixLogo variant="logomark" size={18} className="text-foreground" />
+            <ZedLogo variant="logomark" size={18} className="text-foreground" />
             <span className="bg-border hidden h-4 w-px sm:block" />
             <span className="text-muted-foreground text-xs font-medium">
               {tI18nHardcoded.raw('autoAppPublicShareSessionTokenPageJsxTextPublicSharedbc2d952')}

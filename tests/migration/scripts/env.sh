@@ -10,9 +10,9 @@ export MIGRATION_DIR="${TESTS_DIR}/migration"
 export COMPOSE_FILE="${TESTS_DIR}/docker-compose.test.yml"
 export COMPOSE_SERVICE="postgres"
 
-export TEST_DB_USER="${TEST_DB_USER:-kortix_test}"
-export TEST_DB_PASSWORD="${TEST_DB_PASSWORD:-kortix_test}"
-export TEST_DB_NAME="${TEST_DB_NAME:-kortix_test}"
+export TEST_DB_USER="${TEST_DB_USER:-zed_test}"
+export TEST_DB_PASSWORD="${TEST_DB_PASSWORD:-zed_test}"
+export TEST_DB_NAME="${TEST_DB_NAME:-zed_test}"
 export TEST_DB_PORT="${TEST_DB_PORT:-55432}"
 
 # Host -> container URL for node-pg-migrate (the migrations are applied from the

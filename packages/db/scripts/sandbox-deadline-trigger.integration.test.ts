@@ -22,7 +22,7 @@ import { resolve } from 'node:path';
 const dockerAvailable =
   Bun.spawnSync(['docker', 'version'], { stdout: 'ignore', stderr: 'ignore' }).exitCode === 0;
 
-const container = `kortix-sandbox-deadline-${crypto.randomUUID().slice(0, 8)}`;
+const container = `zed-sandbox-deadline-${crypto.randomUUID().slice(0, 8)}`;
 
 function psql(sql: string, allowFailure = false, extraArgs: string[] = []) {
   const result = Bun.spawnSync(
@@ -60,8 +60,8 @@ const BOX = '00000000-0000-4000-a000-000000000001';
  *  rewrite: DELETE + INSERT, which the INSERT branch anchors at now()). */
 function reseed(status: string, deadlineOffset = "interval '4 hours'") {
   psql(`
-    DELETE FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}';
-    INSERT INTO kortix.session_sandboxes(sandbox_id, session_id, external_id, provider, status, deadline_at)
+    DELETE FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}';
+    INSERT INTO zed.session_sandboxes(sandbox_id, session_id, external_id, provider, status, deadline_at)
     VALUES ('${BOX}', 'sess-1', 'ext-1', 'daytona', '${status}', now() + ${deadlineOffset});
   `);
 }
@@ -120,16 +120,16 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     }
 
     psql(`
-      CREATE SCHEMA kortix;
-      CREATE TYPE kortix.session_sandbox_status AS ENUM
+      CREATE SCHEMA zed;
+      CREATE TYPE zed.session_sandbox_status AS ENUM
         ('provisioning', 'active', 'stopped', 'error', 'archived');
-      CREATE TABLE kortix.session_sandboxes (
+      CREATE TABLE zed.session_sandboxes (
         sandbox_id uuid PRIMARY KEY,
         session_id text NOT NULL,
         external_id text,
         provider text NOT NULL,
-        status kortix.session_sandbox_status NOT NULL DEFAULT 'provisioning',
-        -- NULLABLE, exactly as in production (schema/kortix.ts:
+        status zed.session_sandbox_status NOT NULL DEFAULT 'provisioning',
+        -- NULLABLE, exactly as in production (schema/zed.ts:
         -- jsonb('metadata').default({}) with no .notNull()). Declaring it NOT NULL
         -- here hid the whole class of non-object metadata defects below.
         metadata jsonb DEFAULT '{}'::jsonb,
@@ -139,7 +139,7 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
       );
       ${triggerAndCheck}
 
-      CREATE OR REPLACE FUNCTION kortix.session_sandboxes_anchor_guard()
+      CREATE OR REPLACE FUNCTION zed.session_sandboxes_anchor_guard()
       RETURNS trigger LANGUAGE plpgsql AS $$
       BEGIN
         RETURN NEW;
@@ -157,14 +157,14 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
   describe('INSERT', () => {
     test('anchors at now() and floors a bare row at 20 minutes', () => {
       psql(`
-        DELETE FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}';
-        INSERT INTO kortix.session_sandboxes(sandbox_id, session_id, provider, status)
+        DELETE FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}';
+        INSERT INTO zed.session_sandboxes(sandbox_id, session_id, provider, status)
         VALUES ('${BOX}', 'sess-1', 'daytona', 'provisioning');
       `);
 
       expect(
         scalar(`SELECT deadline_at - active_since = interval '20 minutes'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
@@ -173,7 +173,7 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
 
       expect(
         scalar(`SELECT deadline_at > now() + interval '3 hours'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
@@ -181,14 +181,14 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     // re-anchor on its very first status flip.
     test('a witness supplied at INSERT is stripped', () => {
       psql(`
-        DELETE FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}';
-        INSERT INTO kortix.session_sandboxes(sandbox_id, session_id, provider, status, metadata)
+        DELETE FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}';
+        INSERT INTO zed.session_sandboxes(sandbox_id, session_id, provider, status, metadata)
         VALUES ('${BOX}', 'sess-1', 'daytona', 'provisioning', '{"stretchParkedAt":"forged"}');
       `);
 
       expect(
         scalar(`SELECT metadata ? 'stretchParkedAt'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('f');
     });
   });
@@ -196,13 +196,13 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
   describe('I1 — the anchor is not movable by application code, in ANY state', () => {
     test('an active row cannot move it (this always held)', () => {
       reseed('active');
-      psql(`UPDATE kortix.session_sandboxes
+      psql(`UPDATE zed.session_sandboxes
                SET active_since = now() - interval '10 days'
              WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT active_since > now() - interval '1 minute'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
@@ -211,39 +211,39 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     // the cap's left operand freely.
     test('REGRESSION: a write that lands the row on stopped cannot move it either', () => {
       reseed('active');
-      psql(`UPDATE kortix.session_sandboxes
+      psql(`UPDATE zed.session_sandboxes
                SET status = 'stopped', active_since = now() - interval '10 days'
              WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT active_since > now() - interval '1 minute'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
     test('REGRESSION: nor on provisioning, error or archived', () => {
       for (const status of ['provisioning', 'error', 'archived']) {
         reseed('active');
-        psql(`UPDATE kortix.session_sandboxes
+        psql(`UPDATE zed.session_sandboxes
                  SET status = '${status}', active_since = now() - interval '10 days'
                WHERE sandbox_id = '${BOX}'`);
 
         expect(
           scalar(`SELECT active_since > now() - interval '1 minute'
-                    FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                    FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
         ).toBe('t');
       }
     });
 
     test('REGRESSION: nor while staying off active the whole time', () => {
       reseed('stopped');
-      psql(`UPDATE kortix.session_sandboxes
+      psql(`UPDATE zed.session_sandboxes
                SET active_since = now() - interval '10 days', updated_at = now()
              WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT active_since > now() - interval '1 minute'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
   });
@@ -252,24 +252,24 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     test('a genuine park then resume anchors a fresh stretch', () => {
       reseed('active');
       const before = scalar(
-        `SELECT active_since FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`,
+        `SELECT active_since FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`,
       );
-      psql(`UPDATE kortix.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
       expect(
         scalar(`SELECT metadata ? 'stretchParkedAt'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
 
-      psql(`UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT active_since > '${before}'::timestamptz
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
       // The witness is consumed, so it cannot buy a second reset.
       expect(
         scalar(`SELECT metadata ? 'stretchParkedAt'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('f');
     });
 
@@ -280,17 +280,17 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     test('REGRESSION: active -> provisioning -> active does NOT reset the cap', () => {
       reseed('active');
       const before = scalar(
-        `SELECT active_since FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`,
+        `SELECT active_since FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`,
       );
 
       psql(
-        `UPDATE kortix.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}'`,
+        `UPDATE zed.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}'`,
       );
-      psql(`UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT active_since = '${before}'::timestamptz
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
@@ -300,21 +300,21 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     test('the witness survives a park -> park transition', () => {
       reseed('active');
       const before = scalar(
-        `SELECT active_since FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`,
+        `SELECT active_since FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`,
       );
 
-      psql(`UPDATE kortix.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
-      psql(`UPDATE kortix.session_sandboxes SET status = 'archived' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'archived' WHERE sandbox_id = '${BOX}'`);
       expect(
         scalar(`SELECT metadata ? 'stretchParkedAt'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
 
-      psql(`UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT active_since > '${before}'::timestamptz
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
@@ -322,50 +322,50 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     // one nor delete one to manipulate the anchor.
     test('a caller cannot DESTROY a witness either', () => {
       reseed('active');
-      psql(`UPDATE kortix.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
 
       psql(
-        `UPDATE kortix.session_sandboxes SET metadata = '{}'::jsonb WHERE sandbox_id = '${BOX}'`,
+        `UPDATE zed.session_sandboxes SET metadata = '{}'::jsonb WHERE sandbox_id = '${BOX}'`,
       );
 
       expect(
         scalar(`SELECT metadata ? 'stretchParkedAt'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
     test('the witness buys exactly ONE re-anchor, then is gone', () => {
       reseed('active');
-      psql(`UPDATE kortix.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
-      psql(`UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
       const anchored = scalar(
-        `SELECT active_since FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`,
+        `SELECT active_since FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`,
       );
 
       // No park in between this time — a provisioning round trip must not reset.
       psql(
-        `UPDATE kortix.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}'`,
+        `UPDATE zed.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}'`,
       );
-      psql(`UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT active_since = '${anchored}'::timestamptz
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
     test('REGRESSION: flipping out and back a hundred times buys nothing', () => {
       reseed('active');
       const before = scalar(
-        `SELECT active_since FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`,
+        `SELECT active_since FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`,
       );
 
       psql(`
         DO $do$
         BEGIN
           FOR i IN 1..100 LOOP
-            UPDATE kortix.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}';
-            UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}';
+            UPDATE zed.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}';
+            UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}';
           END LOOP;
         END
         $do$;
@@ -373,7 +373,7 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
 
       expect(
         scalar(`SELECT active_since = '${before}'::timestamptz
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
@@ -382,45 +382,45 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     test('active -> provisioning WITH the box released is a park, and re-anchors', () => {
       reseed('active');
       const before = scalar(
-        `SELECT active_since FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`,
+        `SELECT active_since FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`,
       );
 
-      psql(`UPDATE kortix.session_sandboxes
+      psql(`UPDATE zed.session_sandboxes
                SET status = 'provisioning', external_id = NULL
              WHERE sandbox_id = '${BOX}'`);
-      psql(`UPDATE kortix.session_sandboxes
+      psql(`UPDATE zed.session_sandboxes
                SET status = 'active', external_id = 'ext-2'
              WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT active_since > '${before}'::timestamptz
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
     test('REGRESSION: a witness cannot be forged by an ordinary UPDATE', () => {
       reseed('active');
       const before = scalar(
-        `SELECT active_since FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`,
+        `SELECT active_since FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`,
       );
 
       // Try to plant it while active, then while provisioning, then resume.
-      psql(`UPDATE kortix.session_sandboxes
+      psql(`UPDATE zed.session_sandboxes
                SET metadata = metadata || '{"stretchParkedAt":"forged"}'::jsonb
              WHERE sandbox_id = '${BOX}'`);
       expect(
         scalar(`SELECT metadata ? 'stretchParkedAt'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('f');
 
-      psql(`UPDATE kortix.session_sandboxes
+      psql(`UPDATE zed.session_sandboxes
                SET status = 'provisioning', metadata = metadata || '{"stretchParkedAt":"forged"}'::jsonb
              WHERE sandbox_id = '${BOX}'`);
-      psql(`UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT active_since = '${before}'::timestamptz
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
   });
@@ -441,7 +441,7 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
         reseed('active');
         const written = psql(
           `\\set VERBOSITY verbose
-           UPDATE kortix.session_sandboxes SET metadata = ${value}
+           UPDATE zed.session_sandboxes SET metadata = ${value}
             WHERE sandbox_id = '${BOX}';`,
           true,
         );
@@ -455,17 +455,17 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     // the way through: the witness lives in the row, not in the caller's payload.
     test('a non-object metadata cannot destroy the witness', () => {
       reseed('active');
-      psql(`UPDATE kortix.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
       const before = scalar(
-        `SELECT active_since FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`,
+        `SELECT active_since FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`,
       );
-      psql(`UPDATE kortix.session_sandboxes SET metadata = '[1,2]'::jsonb
+      psql(`UPDATE zed.session_sandboxes SET metadata = '[1,2]'::jsonb
              WHERE sandbox_id = '${BOX}'`);
-      psql(`UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT active_since > '${before}'::timestamptz
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
@@ -474,16 +474,16 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     test('an array naming the witness key cannot forge one', () => {
       reseed('active');
       const before = scalar(
-        `SELECT active_since FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`,
+        `SELECT active_since FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`,
       );
-      psql(`UPDATE kortix.session_sandboxes
+      psql(`UPDATE zed.session_sandboxes
                SET status = 'provisioning', metadata = '["stretchParkedAt"]'::jsonb
              WHERE sandbox_id = '${BOX}'`);
-      psql(`UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT active_since = '${before}'::timestamptz
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
   });
@@ -495,41 +495,41 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     // with 3h50m left came back from a transient blip with 20 minutes.
     test('REGRESSION: the heal path keeps a live 4-hour grant', () => {
       reseed('active');
-      psql(`UPDATE kortix.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
 
-      psql(`UPDATE kortix.session_sandboxes
+      psql(`UPDATE zed.session_sandboxes
                SET status = 'active', updated_at = now()
              WHERE sandbox_id = '${BOX}' AND deadline_at > now()`);
 
       expect(
         scalar(`SELECT deadline_at > now() + interval '3 hours'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
     test('an EXPIRED deadline is still refloored to 20 minutes on resume', () => {
       reseed('active', "interval '-1 hour'");
-      psql(`UPDATE kortix.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
-      psql(`UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT deadline_at > now() + interval '19 minutes'
                   AND deadline_at < now() + interval '21 minutes'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
     test('a caller that STATES a live deadline on the flip is left alone', () => {
       reseed('active');
-      psql(`UPDATE kortix.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
-      psql(`UPDATE kortix.session_sandboxes
+      psql(`UPDATE zed.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes
                SET status = 'active', deadline_at = now() + interval '90 minutes'
              WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT deadline_at BETWEEN now() + interval '89 minutes'
                                       AND now() + interval '91 minutes'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
@@ -545,20 +545,20 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
       // resume through a manufactured history instead — set the deadline to the
       // cap edge and flip.
       psql(`
-        ALTER TABLE kortix.session_sandboxes DISABLE TRIGGER trg_session_sandboxes_anchor_guard;
-        UPDATE kortix.session_sandboxes
+        ALTER TABLE zed.session_sandboxes DISABLE TRIGGER trg_session_sandboxes_anchor_guard;
+        UPDATE zed.session_sandboxes
            SET active_since = now() - interval '23 hours 55 minutes',
                deadline_at  = now() + interval '4 minutes'
          WHERE sandbox_id = '${BOX}';
-        ALTER TABLE kortix.session_sandboxes ENABLE TRIGGER trg_session_sandboxes_anchor_guard;
+        ALTER TABLE zed.session_sandboxes ENABLE TRIGGER trg_session_sandboxes_anchor_guard;
       `);
       // A provisioning flip carries the anchor forward (I2), so the 20-minute
       // floor would breach the cap by 15 minutes if it were not clamped.
       psql(
-        `UPDATE kortix.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}'`,
+        `UPDATE zed.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}'`,
       );
       const flip = psql(
-        `UPDATE kortix.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}';`,
+        `UPDATE zed.session_sandboxes SET status = 'active' WHERE sandbox_id = '${BOX}';`,
         true,
       );
 
@@ -566,7 +566,7 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
       expect(flip.output).not.toContain('23514');
       expect(
         scalar(`SELECT deadline_at <= active_since + interval '24 hours'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
@@ -582,38 +582,38 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
       // Park from `provisioning` with the external box intact — a real transition
       // (session-sandbox.ts, preserveEstablishedRuntime) that mints no witness.
       psql(
-        `UPDATE kortix.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}'`,
+        `UPDATE zed.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}'`,
       );
-      psql(`UPDATE kortix.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
+      psql(`UPDATE zed.session_sandboxes SET status = 'stopped' WHERE sandbox_id = '${BOX}'`);
       // 25 hours pass while the row sits parked. Constructing "time passed" is the
       // only thing done with the trigger off; the resume below runs with it live.
       psql(`
-        ALTER TABLE kortix.session_sandboxes DISABLE TRIGGER trg_session_sandboxes_anchor_guard;
-        UPDATE kortix.session_sandboxes
+        ALTER TABLE zed.session_sandboxes DISABLE TRIGGER trg_session_sandboxes_anchor_guard;
+        UPDATE zed.session_sandboxes
            SET active_since = now() - interval '25 hours',
                deadline_at  = now() - interval '25 hours'
          WHERE sandbox_id = '${BOX}';
-        ALTER TABLE kortix.session_sandboxes ENABLE TRIGGER trg_session_sandboxes_anchor_guard;
+        ALTER TABLE zed.session_sandboxes ENABLE TRIGGER trg_session_sandboxes_anchor_guard;
       `);
       expect(
         scalar(`SELECT metadata ? 'stretchParkedAt'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('f');
 
       // Exactly what resumeStoppedSandbox writes: status, updated_at, metadata.
       // Never deadline_at.
-      psql(`UPDATE kortix.session_sandboxes
+      psql(`UPDATE zed.session_sandboxes
                SET status = 'active', updated_at = now(), metadata = metadata
              WHERE sandbox_id = '${BOX}'`);
 
       expect(
         scalar(`SELECT deadline_at > now()
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
       expect(
         scalar(`SELECT deadline_at BETWEEN now() + interval '19 minutes'
                                       AND now() + interval '21 minutes'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
@@ -622,7 +622,7 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     // 'granted' vs 'at_cap' (and therefore whether the prompt is refused).
     test('REGRESSION: a turn grant on that resumed row reports live, not at_cap', () => {
       const live = psql(
-        `UPDATE kortix.session_sandboxes s
+        `UPDATE zed.session_sandboxes s
             SET deadline_at = LEAST(
                   s.active_since + make_interval(secs => 86400),
                   GREATEST(s.deadline_at, now() + make_interval(secs => 14400)))
@@ -641,17 +641,17 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
     test('I4 does not reopen I2 — churn inside the cap still buys no re-anchor', () => {
       reseed('active');
       psql(`
-        ALTER TABLE kortix.session_sandboxes DISABLE TRIGGER trg_session_sandboxes_anchor_guard;
-        UPDATE kortix.session_sandboxes SET active_since = now() - interval '12 hours'
+        ALTER TABLE zed.session_sandboxes DISABLE TRIGGER trg_session_sandboxes_anchor_guard;
+        UPDATE zed.session_sandboxes SET active_since = now() - interval '12 hours'
          WHERE sandbox_id = '${BOX}';
-        ALTER TABLE kortix.session_sandboxes ENABLE TRIGGER trg_session_sandboxes_anchor_guard;
-        UPDATE kortix.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}';
-        UPDATE kortix.session_sandboxes SET status = 'active'       WHERE sandbox_id = '${BOX}';
+        ALTER TABLE zed.session_sandboxes ENABLE TRIGGER trg_session_sandboxes_anchor_guard;
+        UPDATE zed.session_sandboxes SET status = 'provisioning' WHERE sandbox_id = '${BOX}';
+        UPDATE zed.session_sandboxes SET status = 'active'       WHERE sandbox_id = '${BOX}';
       `);
 
       expect(
         scalar(`SELECT now() - active_since > interval '11 hours'
-                  FROM kortix.session_sandboxes WHERE sandbox_id = '${BOX}'`),
+                  FROM zed.session_sandboxes WHERE sandbox_id = '${BOX}'`),
       ).toBe('t');
     });
 
@@ -659,7 +659,7 @@ describe.skipIf(!dockerAvailable)('session_sandboxes anchor guard — real Postg
       reseed('active');
       const rejected = psql(
         `\\set VERBOSITY verbose
-         UPDATE kortix.session_sandboxes
+         UPDATE zed.session_sandboxes
             SET deadline_at = now() + interval '11 days'
           WHERE sandbox_id = '${BOX}';`,
         true,

@@ -28,15 +28,15 @@ beforeEach(() => {
     });
 });
 
-test('GETs the trigger list at {baseUrl}/kortix/triggers{path}', async () => {
+test('GETs the trigger list at {baseUrl}/zed/triggers{path}', async () => {
   await triggersRequest('http://sbx.test', '');
-  expect(last().url).toBe('http://sbx.test/kortix/triggers');
+  expect(last().url).toBe('http://sbx.test/zed/triggers');
   expect(last().method).toBe('GET');
 });
 
 test('strips a trailing slash on the base url before appending the path', async () => {
   await triggersRequest('http://sbx.test/', '/abc123');
-  expect(last().url).toBe('http://sbx.test/kortix/triggers/abc123');
+  expect(last().url).toBe('http://sbx.test/zed/triggers/abc123');
 });
 
 test('POSTs a JSON body with Content-Type set', async () => {

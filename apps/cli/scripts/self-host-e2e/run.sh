@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Full self-host control-plane e2e for the Kortix CLI.
+# Full self-host control-plane e2e for the Zed CLI.
 #
 # This uses only the public CLI, Docker Compose, curl, and psql inside the
 # self-hosted Postgres container. It verifies setup, auth, API access, schema
@@ -15,12 +15,12 @@ CLI="bun run $CLI_ROOT/src/index.ts"
 
 INSTANCE=${INSTANCE:-selfhost-e2e-$(date +%s)}
 TAG=${TAG:-latest}
-KORTIX_LOCAL_IMAGES=${KORTIX_LOCAL_IMAGES:-false}
+ZED_LOCAL_IMAGES=${ZED_LOCAL_IMAGES:-false}
 KEEP_ON_FAIL=${KEEP_ON_FAIL:-false}
 KEEP_ON_SUCCESS=${KEEP_ON_SUCCESS:-false}
-EMAIL=${EMAIL:-owner-$INSTANCE@kortix.local}
-PASSWORD=${PASSWORD:-kortix-e2e-password}
-CONFIG_DIR="$HOME/.config/kortix/self-host/$INSTANCE"
+EMAIL=${EMAIL:-owner-$INSTANCE@zed.local}
+PASSWORD=${PASSWORD:-zed-e2e-password}
+CONFIG_DIR="$HOME/.config/zed/self-host/$INSTANCE"
 WORK_DIR="$SCRIPT_DIR/work/$INSTANCE"
 CLI_CONFIG_FILE="$WORK_DIR/config.json"
 
@@ -94,7 +94,7 @@ wait_for_db_table() {
 
 compose() {
   docker compose \
-    --project-name "kortix-$INSTANCE" \
+    --project-name "zed-$INSTANCE" \
     --env-file "$CONFIG_DIR/.env" \
     -f "$CONFIG_DIR/docker-compose.yml" \
     "$@"
@@ -118,7 +118,7 @@ cleanup() {
   compose down --remove-orphans --volumes >/dev/null 2>&1
   rm -rf "$WORK_DIR"
   if [ "$rc" -ne 0 ]; then
-    note "Logs: kortix self-host logs --instance $INSTANCE"
+    note "Logs: zed self-host logs --instance $INSTANCE"
   fi
 }
 trap cleanup EXIT
@@ -129,16 +129,16 @@ PUBLIC_URL="http://localhost:$FRONTEND_PORT"
 API_PUBLIC_URL="http://localhost:$API_PORT"
 SUPABASE_PUBLIC_URL="http://localhost:$SUPABASE_PORT"
 mkdir -p "$WORK_DIR"
-export KORTIX_CONFIG_FILE="$CLI_CONFIG_FILE"
+export ZED_CONFIG_FILE="$CLI_CONFIG_FILE"
 ok "Work folder: $WORK_DIR"
 note "Instance: $INSTANCE"
 
 section "CLI Self-host Setup"
 INIT_ARGS=(self-host init --instance "$INSTANCE" --tag "$TAG")
-if [ "$KORTIX_LOCAL_IMAGES" = "true" ]; then
+if [ "$ZED_LOCAL_IMAGES" = "true" ]; then
   INIT_ARGS+=(--local-images)
 fi
-$CLI "${INIT_ARGS[@]}" >/tmp/kortix-selfhost-init-$INSTANCE.log
+$CLI "${INIT_ARGS[@]}" >/tmp/zed-selfhost-init-$INSTANCE.log
 $CLI self-host env set --instance "$INSTANCE" \
   "PUBLIC_URL=$PUBLIC_URL" \
   "API_PUBLIC_URL=$API_PUBLIC_URL" \
@@ -156,15 +156,15 @@ $CLI self-host start --instance "$INSTANCE" --tag "$TAG"
 ok "Docker Compose started"
 
 section "Schema Bootstrap"
-MIGRATE_EXIT=$(docker inspect -f '{{.State.ExitCode}}' "kortix-$INSTANCE-kortix-migrate-1" 2>/dev/null || echo "missing")
-[ "$MIGRATE_EXIT" = "0" ] || die "kortix-migrate failed (exit=$MIGRATE_EXIT)"
-ok "kortix-migrate completed (exit 0)"
+MIGRATE_EXIT=$(docker inspect -f '{{.State.ExitCode}}' "zed-$INSTANCE-zed-migrate-1" 2>/dev/null || echo "missing")
+[ "$MIGRATE_EXIT" = "0" ] || die "zed-migrate failed (exit=$MIGRATE_EXIT)"
+ok "zed-migrate completed (exit 0)"
 
 section "HTTP Health"
 wait_for_json "API" "$API_PUBLIC_URL/v1/health" 180
 wait_for_json "frontend runtime config" "$PUBLIC_URL/api/runtime-config" 180
-wait_for_db_table "Kortix schema" "kortix.project_snapshot_builds" 180
-wait_for_db_table "Kortix accounts" "kortix.account_members" 60
+wait_for_db_table "Zed schema" "zed.project_snapshot_builds" 180
+wait_for_db_table "Zed accounts" "zed.account_members" 60
 
 source "$CONFIG_DIR/.env"
 curl --connect-timeout 5 --max-time 30 -fsS \
@@ -202,10 +202,10 @@ section "Update Mechanism"
 $CLI self-host update --instance "$INSTANCE" --tag "$TAG"
 ok "self-host update completed"
 
-MIGRATE_EXIT2=$(docker inspect -f '{{.State.ExitCode}}' "kortix-$INSTANCE-kortix-migrate-1" 2>/dev/null || echo "missing")
-[ "$MIGRATE_EXIT2" = "0" ] || die "post-update kortix-migrate failed (exit=$MIGRATE_EXIT2)"
+MIGRATE_EXIT2=$(docker inspect -f '{{.State.ExitCode}}' "zed-$INSTANCE-zed-migrate-1" 2>/dev/null || echo "missing")
+[ "$MIGRATE_EXIT2" = "0" ] || die "post-update zed-migrate failed (exit=$MIGRATE_EXIT2)"
 wait_for_json "API (post-update)" "$API_PUBLIC_URL/v1/health" 180
-wait_for_db_table "Kortix schema (post-update)" "kortix.project_snapshot_builds" 60
+wait_for_db_table "Zed schema (post-update)" "zed.project_snapshot_builds" 60
 ok "stack healthy after update; migrations idempotent"
 
 REBOOTSTRAP=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$API_PUBLIC_URL/v1/setup/bootstrap-owner" \

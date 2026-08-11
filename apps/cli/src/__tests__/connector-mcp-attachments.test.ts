@@ -7,7 +7,7 @@ import type { ConnectorClient } from '../connector-gateway/gateway';
 import { uploadAttachmentFiles } from '../connector-gateway/mcp';
 
 async function fixture() {
-  const root = await mkdtemp(join(tmpdir(), 'kortix-email-attachments-'));
+  const root = await mkdtemp(join(tmpdir(), 'zed-email-attachments-'));
   await mkdir(join(root, 'output'));
   await mkdir(join(root, 'artifacts'));
   return root;

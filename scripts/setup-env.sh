@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ─── Kortix env setup ───────────────────────────────────────────────────────
+# ─── Zed env setup ───────────────────────────────────────────────────────
 # Reads the root .env and generates per-service .env files.
 #
 # Usage:
@@ -66,8 +66,8 @@ write_env "apps/api/.env.local" \
   "# Core" \
   "PORT=8008" \
   "$(kv ENV_MODE local)" \
-  "$(kv INTERNAL_KORTIX_ENV dev)" \
-  "$(kv KORTIX_BILLING_INTERNAL_ENABLED false)" \
+  "$(kv INTERNAL_ZED_ENV dev)" \
+  "$(kv ZED_BILLING_INTERNAL_ENABLED false)" \
   "" \
   "# Database + Supabase (REQUIRED)" \
   "$(kv DATABASE_URL)" \
@@ -80,7 +80,7 @@ write_env "apps/api/.env.local" \
   "" \
   "# Sandbox" \
   "$(kv ALLOWED_SANDBOX_PROVIDERS daytona)" \
-  "$(kv KORTIX_URL)" \
+  "$(kv ZED_URL)" \
   "$(kv FRONTEND_URL "$(e NEXT_PUBLIC_URL http://localhost:3000)")" \
   "" \
   "# Daytona (conditional — only if daytona provider enabled)" \
@@ -125,7 +125,7 @@ write_env "apps/web/.env" \
   "" \
   "$(kv NEXT_PUBLIC_GOOGLE_CLIENT_ID)" \
   "$(kv NEXT_PUBLIC_POSTHOG_KEY)" \
-  "$(kv KORTIX_ADMIN_API_KEY)" \
+  "$(kv ZED_ADMIN_API_KEY)" \
   "" \
 
 echo ""

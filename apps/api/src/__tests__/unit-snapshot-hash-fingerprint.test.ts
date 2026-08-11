@@ -1,6 +1,6 @@
 // Proves the mass-rebuild ROOT CAUSE that Phase 2 (agent-swap) targets: the
 // runtime fingerprint — which currentRuntimeArtifactFingerprint() derives from
-// apps/kortix-sandbox-agent-server/src — is folded into EVERY template's snapshot
+// apps/zed-sandbox-agent-server/src — is folded into EVERY template's snapshot
 // identity (computeSnapshotHash, runtime=...). So one agent-server change re-mints
 // every template's name → provider cache miss → full rebuild of all of them.
 // Pure + deterministic (no fs / network / env).
@@ -20,8 +20,8 @@ describe('Snapshot hash — runtime fingerprint coupling (mass-rebuild root caus
   };
 
   test('an agent-server change (new runtime fingerprint) RE-MINTS the snapshot name', () => {
-    const v1 = computeSnapshotHash({ ...userImage, runtimeFingerprint: 'kortix-agent-src:v1' });
-    const v2 = computeSnapshotHash({ ...userImage, runtimeFingerprint: 'kortix-agent-src:v2' });
+    const v1 = computeSnapshotHash({ ...userImage, runtimeFingerprint: 'zed-agent-src:v1' });
+    const v2 = computeSnapshotHash({ ...userImage, runtimeFingerprint: 'zed-agent-src:v2' });
     // Same user image, ONLY the agent changed → different content hash → different
     // snapshot name → cache miss → rebuild. This is the O(all templates) blast
     // radius Phase 2's CAS agent-swap removes.
@@ -30,8 +30,8 @@ describe('Snapshot hash — runtime fingerprint coupling (mass-rebuild root caus
   });
 
   test('same inputs are deterministic — no spurious rebuild', () => {
-    const a = computeSnapshotHash({ ...userImage, runtimeFingerprint: 'kortix-agent-src:v1' });
-    const b = computeSnapshotHash({ ...userImage, runtimeFingerprint: 'kortix-agent-src:v1' });
+    const a = computeSnapshotHash({ ...userImage, runtimeFingerprint: 'zed-agent-src:v1' });
+    const b = computeSnapshotHash({ ...userImage, runtimeFingerprint: 'zed-agent-src:v1' });
     expect(a.contentHash).toBe(b.contentHash);
   });
 

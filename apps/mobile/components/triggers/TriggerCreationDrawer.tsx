@@ -213,7 +213,7 @@ export function TriggerCreationDrawer({
   const [selectedTrigger, setSelectedTrigger] = useState<ComposioTriggerType | null>(null);
   const [eventConfig, setEventConfig] = useState<Record<string, any>>({});
   const [connectionId, setConnectionId] = useState('');
-  const [model, setModel] = useState('kortix/basic');
+  const [model, setModel] = useState('zed/basic');
   const [showComposioConnector, setShowComposioConnector] = useState(false);
   const [appSearchQuery, setAppSearchQuery] = useState('');
 
@@ -284,7 +284,7 @@ export function TriggerCreationDrawer({
       setTriggerName(existingTrigger.name || '');
       setDescription(existingTrigger.description || '');
       setAgentPrompt(triggerConfig.agent_prompt || '');
-      setModel(triggerConfig.model || 'kortix/basic');
+      setModel(triggerConfig.model || 'zed/basic');
 
       if (isComposioTrigger) {
         // Event trigger
@@ -393,7 +393,7 @@ export function TriggerCreationDrawer({
         setSelectedTrigger(null);
         setEventConfig({});
         setConnectionId('');
-        setModel('kortix/basic');
+        setModel('zed/basic');
         setShowComposioConnector(false);
         setAppSearchQuery('');
       }

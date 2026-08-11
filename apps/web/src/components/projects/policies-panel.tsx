@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Project-wide approval rules for tool calls. Source of truth = `kortix.yaml`;
+ * Project-wide approval rules for tool calls. Source of truth = `zed.yaml`;
  * this panel CRUDs the same file via the admin endpoint, then the gateway
  * enforces on every Connector call.
  *
@@ -45,8 +45,8 @@ import {
   type ProjectPolicy,
   listProjectPolicies,
   setProjectPolicies,
-} from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 
 interface DraftRule {
   id: string;
@@ -80,12 +80,12 @@ const ACTION_META: Record<PolicyAction, { label: string; description: string; ti
   require_approval: {
     label: 'Ask first',
     description: 'Waits for your approval',
-    tint: 'text-kortix-orange',
+    tint: 'text-zed-orange',
   },
   block: {
     label: 'Block',
     description: 'Never runs, and agents cannot see it',
-    tint: 'text-kortix-red',
+    tint: 'text-zed-red',
   },
 };
 
@@ -350,7 +350,7 @@ export function PoliciesPanel({ projectId }: { projectId: string }) {
           <InfoBanner
             tone="warning"
             title={tI18nHardcoded.raw(
-              'autoComponentsProjectsPoliciesPanelJsxAttrTitleKortixTomlHad8db85c74',
+              'autoComponentsProjectsPoliciesPanelJsxAttrTitleZedTomlHad8db85c74',
             )}
           >
             <ul className="space-y-1">
@@ -413,7 +413,7 @@ export function PoliciesPanel({ projectId }: { projectId: string }) {
           <p className="text-muted-foreground min-w-0 text-xs text-pretty">
             Unsaved changes. Saving writes to{' '}
             <code className="bg-muted text-foreground rounded-sm px-1 py-0.5 font-mono text-xs">
-              kortix.yaml
+              zed.yaml
             </code>
             .
           </p>
@@ -612,7 +612,7 @@ function matchHint(raw: string): string | null {
 /**
  * Draft rule → the wire shape. Trims, and omits `conditions` entirely when the
  * rule has none so an unconditional rule serializes exactly as it always did
- * (no `conditions: []` churn in every project's kortix.yaml).
+ * (no `conditions: []` churn in every project's zed.yaml).
  *
  * Blank condition rows are dropped: a half-typed row must never reach the API,
  * where it would be rejected as invalid and block the whole save.

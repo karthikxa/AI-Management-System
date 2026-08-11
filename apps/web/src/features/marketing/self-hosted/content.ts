@@ -15,12 +15,12 @@
  * CORRECTIONS made against the brief this page was written from:
  *  1. The first run does NOT ask for managed-git / GitHub credentials. That
  *     step was deliberately removed; GitHub is connected in the dashboard at
- *     Settings → Git after `start`, and `kortix self-host connect-github` is a
+ *     Settings → Git after `start`, and `zed self-host connect-github` is a
  *     deprecated alias that says so. The wizard asks six things — listed below.
  *  2. The first run does NOT ask for a model key either. Models are BYOK in the
  *     app after `start` (`secrets-registry.ts`: "NOT init-required").
  *  3. Pipedream IS a wizard prompt, but it is optional and defaults to skip.
- *  4. AIR-GAPPED IS NOT WHAT `kortix self-host start` GIVES YOU. By default the
+ *  4. AIR-GAPPED IS NOT WHAT `zed self-host start` GIVES YOU. By default the
  *     agent sandboxes run on a third-party provider (Daytona) and the instance
  *     must be reachable from the internet so the sandbox can call back. Saying
  *     otherwise would be false. This page states the boundary plainly and sends
@@ -33,16 +33,16 @@
 
 export const hero = {
   eyebrow: 'Self-hosted',
-  title: 'The same Kortix, on your box.',
+  title: 'The same Zed, on your box.',
   sub: 'One Docker Compose stack, built from the same images the managed cloud runs. Your database, your files, your repos and your policies sit on disk you control. It is open source, so what you are running is code you can read.',
   ctaPrimary: 'Self-host free',
   ctaPrimaryHref: '/docs/host',
-  ctaSecondary: 'Use Kortix Cloud',
+  ctaSecondary: 'Use Zed Cloud',
   ctaSecondaryHref: '/auth',
   microline: 'Same images as the cloud · One command · Any model, your keys',
   /** Four mono facts the page then proves. Every value is defensible. */
   specs: [
-    { k: 'Install', v: 'kortix self-host start' },
+    { k: 'Install', v: 'zed self-host start' },
     { k: 'Stack', v: 'One Docker Compose project' },
     { k: 'Models', v: 'Your provider, your keys' },
     { k: 'Updates', v: 'Nightly, or pin a version' },
@@ -57,7 +57,7 @@ export const hero = {
 export const yours = {
   eyebrow: 'What you keep',
   title: 'The company stays on your side of the wall.',
-  sub: 'Self-hosting is not a smaller Kortix with the interesting parts removed. It is the whole control plane — accounts, projects, repos, secrets, connectors, policies, audit — running inside your network, on storage you back up yourself.',
+  sub: 'Self-hosting is not a smaller Zed with the interesting parts removed. It is the whole control plane — accounts, projects, repos, secrets, connectors, policies, audit — running inside your network, on storage you back up yourself.',
   onbox: {
     label: 'on your box',
     items: [
@@ -82,45 +82,45 @@ export const yours = {
 /* ── 2 · the commands ──────────────────────────────────────────────────────
    `start` creates the config if it is missing, so it really is the one command.
    It also registers the `selfhost` CLI host and makes it active. `hosts use`
-   flips `active` in ~/.config/kortix/config.json; tokens are stored per host,
+   flips `active` in ~/.config/zed/config.json; tokens are stored per host,
    so switching swaps the token, the account and the default project with it. */
 export const commands = {
   eyebrow: 'Two commands',
   title: 'Start the stack. Point the CLI at it.',
-  sub: 'There is no separate provisioning step and no console to click through. One command brings the stack up. One more decides which Kortix your CLI is talking to.',
+  sub: 'There is no separate provisioning step and no console to click through. One command brings the stack up. One more decides which Zed your CLI is talking to.',
   install: {
     title: 'bring the stack up',
     lines: [
       '# install the CLI',
-      '$ curl -fsSL https://kortix.com/install | bash',
+      '$ curl -fsSL https://zed.com/install | bash',
       '',
       '# create the config if it is missing, then start everything',
-      '$ kortix self-host start',
+      '$ zed self-host start',
       '→ stack up · dashboard registered as host "selfhost"',
       '',
       '# check on it any time',
-      '$ kortix self-host status',
-      '$ kortix self-host logs kortix-api',
+      '$ zed self-host status',
+      '$ zed self-host logs zed-api',
     ],
   },
   hosts: {
-    title: 'choose which Kortix you are talking to',
+    title: 'choose which Zed you are talking to',
     lines: [
-      '# a host is one Kortix API endpoint, with its own token',
-      '$ kortix hosts ls',
+      '# a host is one Zed API endpoint, with its own token',
+      '$ zed hosts ls',
       '',
       '# work against your own stack',
-      '$ kortix hosts use selfhost',
+      '$ zed hosts use selfhost',
       '→ Active host is now selfhost',
       '',
       '# and back to the managed cloud',
-      '$ kortix hosts use cloud',
+      '$ zed hosts use cloud',
       '→ Active host is now cloud',
     ],
   },
   notes: [
     'Tokens are stored per host, so switching hosts switches the account and the default project with it.',
-    'kortix self-host start registers the selfhost host for you and makes it active.',
+    'zed self-host start registers the selfhost host for you and makes it active.',
     'Override for one command instead of switching: pass --host selfhost.',
   ],
 } as const;
@@ -179,13 +179,13 @@ export const firstRun = {
       'A fresh RSA keypair for SAML, so SSO has a key the day you turn it on',
       'The whole docker-compose.yml and .env, written at mode 0600',
     ],
-    note: 'Everything the CLI generates is rotatable later with kortix self-host env rotate, and every value is visible with kortix self-host env ls, masked unless you ask for --show.',
+    note: 'Everything the CLI generates is rotatable later with zed self-host env rotate, and every value is visible with zed self-host env ls, masked unless you ask for --show.',
   },
   after: 'GitHub and your model key are not asked here on purpose. Both are set in the dashboard after the stack is up — GitHub at Settings → Git, the model key in the model picker.',
 } as const;
 
 /* ── 4 · the stack ─────────────────────────────────────────────────────────
-   Rendered by self-host/compose-assets.ts. Kortix services + the vendored,
+   Rendered by self-host/compose-assets.ts. Zed services + the vendored,
    digest-pinned Supabase distribution. Caddy renders only with a domain;
    cloudflared only in tunnel mode. There is NO Redis and NO worker service. */
 export const stack = {
@@ -194,14 +194,14 @@ export const stack = {
   sub: 'The same artifact runs on a laptop, a VPS or a cloud VM. A domain is one environment variable, not a different deployment. Everything lives in one instance directory you can back up by copying it.',
   groups: [
     {
-      id: 'kortix',
-      label: 'kortix',
+      id: 'zed',
+      label: 'zed',
       services: [
         { k: 'frontend', v: 'The web app' },
-        { k: 'kortix-api', v: 'The API and the in-process LLM gateway' },
+        { k: 'zed-api', v: 'The API and the in-process LLM gateway' },
         { k: 'llm-gateway', v: 'Control-plane routing' },
-        { k: 'kortix-migrate', v: 'One-shot database migration on every roll' },
-        { k: 'kortix-updater', v: 'Nightly pull, migrate, then swap' },
+        { k: 'zed-migrate', v: 'One-shot database migration on every roll' },
+        { k: 'zed-updater', v: 'Nightly pull, migrate, then swap' },
       ],
     },
     {
@@ -235,7 +235,7 @@ export const stack = {
 } as const;
 
 /* ── 5 · same product ──────────────────────────────────────────────────────
-   Grounded in: the same docker.io/kortix/* images the pipeline built; no
+   Grounded in: the same docker.io/zed/* images the pipeline built; no
    self-host feature flag branching in apps/api/src. The ONE honest caveat is
    ENTERPRISE_LICENSE_AVAILABLE, which gates SSO / custom roles / directory sync
    / groups — so it is stated, not buried. */
@@ -247,7 +247,7 @@ export const parity = {
     {
       id: 'images',
       k: 'The same images',
-      v: 'The frontend, the API and the gateway are the published Kortix images. A self-hosted instance never builds its own — it consumes exactly what the release pipeline already produced.',
+      v: 'The frontend, the API and the gateway are the published Zed images. A self-hosted instance never builds its own — it consumes exactly what the release pipeline already produced.',
     },
     {
       id: 'features',
@@ -262,13 +262,13 @@ export const parity = {
     {
       id: 'billing',
       k: 'No metering in the way',
-      v: 'A self-hosted instance runs its own gateway for its own model routing. It never sees or routes to Kortix credentials, and there is no platform fee on a self-hosted account.',
+      v: 'A self-hosted instance runs its own gateway for its own model routing. It never sees or routes to Zed credentials, and there is no platform fee on a self-hosted account.',
     },
   ],
 } as const;
 
 /* ── 6 · models ────────────────────────────────────────────────────────────
-   `kortix providers set <provider> <key>` stores an encrypted project secret.
+   `zed providers set <provider> <key>` stores an encrypted project secret.
    The provider list is the literal map in apps/cli/src/commands/providers.ts. */
 export const models = {
   eyebrow: 'Models',
@@ -278,14 +278,14 @@ export const models = {
     title: 'connect a provider',
     lines: [
       '# stored as an encrypted project secret, injected at session boot',
-      '$ kortix providers set anthropic sk-ant-...',
-      '$ kortix providers set openai sk-...',
-      '$ kortix providers set openrouter sk-or-...',
+      '$ zed providers set anthropic sk-ant-...',
+      '$ zed providers set openai sk-...',
+      '$ zed providers set openrouter sk-or-...',
       '',
       '# or the subscription you already pay for',
-      '$ kortix providers login chatgpt',
+      '$ zed providers login chatgpt',
       '',
-      '$ kortix providers ls',
+      '$ zed providers ls',
       '→ anthropic · openai · openrouter',
     ],
   },
@@ -293,7 +293,7 @@ export const models = {
     {
       id: 'routing',
       title: 'The gateway is yours',
-      body: 'Sessions call the gateway inside your own stack, over your own domain or tunnel. Kortix has no credential in that path and no visibility into it.',
+      body: 'Sessions call the gateway inside your own stack, over your own domain or tunnel. Zed has no credential in that path and no visibility into it.',
     },
     {
       id: 'anything',
@@ -341,10 +341,10 @@ export const targets = {
 export const closing = {
   eyebrow: 'Two ways to run it',
   title: 'Run it yourself, or let us run it.',
-  sub: 'Self-hosting is free and always will be. Kortix Cloud is the same product with the box, the upgrades and the sandbox tier taken off your hands.',
+  sub: 'Self-hosting is free and always will be. Zed Cloud is the same product with the box, the upgrades and the sandbox tier taken off your hands.',
   ctaPrimary: 'Self-host free',
   ctaPrimaryHref: '/docs/host',
-  ctaSecondary: 'Use Kortix Cloud',
+  ctaSecondary: 'Use Zed Cloud',
   ctaSecondaryHref: '/auth',
   tertiary: 'Need it inside your own network, with SSO and a licence? Talk to us.',
   tertiaryLabel: 'Talk to us',

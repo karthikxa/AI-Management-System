@@ -62,10 +62,10 @@ export function buildTeamsLoginUrl(input: {
   pendingId?: string;
 }): string {
   const token = signTeamsLoginState(input);
-  const apiBase = (config.KORTIX_URL || '').replace(/\/+$/, '');
+  const apiBase = (config.ZED_URL || '').replace(/\/+$/, '');
   if (apiBase.startsWith('https://')) {
     return `${apiBase}/v1/channels/teams/identity/login/${token}`;
   }
-  const base = (config.FRONTEND_URL || 'https://kortix.com').replace(/\/+$/, '');
+  const base = (config.FRONTEND_URL || 'https://zed.com').replace(/\/+$/, '');
   return `${base}/teams/login/${token}`;
 }

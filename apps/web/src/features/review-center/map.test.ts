@@ -1,4 +1,4 @@
-import type { ApiReviewItem } from '@kortix/sdk';
+import type { ApiReviewItem } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 import {
   PRIMARY_ACTION,

@@ -18,7 +18,7 @@ export const triggerVariants = cva(
     // Never `transition-all`: only the properties that actually change on hover/press.
     'transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out',
     'motion-safe:active:scale-[0.98]',
-    'focus-visible:ring-kortix-base focus-visible:ring-[0.6px] focus-visible:outline-none data-[state=open]:ring-0',
+    'focus-visible:ring-zed-base focus-visible:ring-[0.6px] focus-visible:outline-none data-[state=open]:ring-0',
     'disabled:cursor-not-allowed disabled:opacity-50',
     '[&>span]:line-clamp-1 [&>span]:text-left',
   ],

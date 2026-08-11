@@ -19,7 +19,7 @@ mock.module('../config', () => ({
     {
       get: (target: Record<PropertyKey, unknown>, key) => {
         if (Object.hasOwn(target, key)) return target[key];
-        if (key === 'KORTIX_BILLING_INTERNAL_ENABLED') return true;
+        if (key === 'ZED_BILLING_INTERNAL_ENABLED') return true;
         // Read eagerly at module scope by ../llm-gateway/routing/index.ts (a
         // transitive import of ./hooks via resolveGatewayRoute) — not
         // exercised by authorizeRequest itself, but must not blow up on import.
@@ -42,7 +42,7 @@ mock.module('../billing/services/entitlements', () => ({
 }));
 
 // Real `../shared/crypto` is used as-is (pure token-shape checks, no DB) — a
-// 'good'/'nope' test token never matches the `kortix_gw_` prefix, so
+// 'good'/'nope' test token never matches the `zed_gw_` prefix, so
 // `isGatewayKey` naturally returns false without mocking.
 
 mock.module('../billing/services/yolo-tokens', () => ({

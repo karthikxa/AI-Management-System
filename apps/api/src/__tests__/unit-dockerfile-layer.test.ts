@@ -15,7 +15,7 @@ import {
   PYTHON_PACKAGE_FLOOR,
   UV_SHA256_AMD64,
   UV_VERSION,
-} from '@kortix/shared';
+} from '@zed/shared';
 import {
   DEFAULT_SANDBOX_SLUG,
   PLATFORM_DEFAULT_USER_DOCKERFILE,
@@ -29,21 +29,21 @@ import {
 const COMMON = {
   opencodeVersion: OPENCODE_VERSION,
   agentBrowserVersion: AGENT_BROWSER_VERSION,
-  agentBinaryPath: 'kortix-agent.gz',
-  cliBinaryPath: 'kortix.gz',
-  entrypointScriptPath: 'kortix-entrypoint',
+  agentBinaryPath: 'zed-agent.gz',
+  cliBinaryPath: 'zed.gz',
+  entrypointScriptPath: 'zed-entrypoint',
   machineDocPath: 'MACHINE.md',
-  slackCliPath: 'kortix-slack-cli',
-  opencodeWarmupScriptPath: 'kortix-opencode-warmup',
+  slackCliPath: 'zed-slack-cli',
+  opencodeWarmupScriptPath: 'zed-opencode-warmup',
 };
 
 describe('buildLayeredDockerfile', () => {
   test('installs the runtime floor from pinned, checksum-verified release artifacts', () => {
     const merged = buildLayeredDockerfile({ userDockerfile: 'FROM ubuntu:24.04', ...COMMON });
     expect(merged).not.toContain('ca-certificates curl git gzip nodejs npm unzip');
-    expect(merged).toContain('USER kortix');
-    expect(merged).toContain('PNPM_HOME=/home/kortix/.local/share/pnpm');
-    expect(merged).toContain('/home/kortix/.local/share/pnpm/bin');
+    expect(merged).toContain('USER zed');
+    expect(merged).toContain('PNPM_HOME=/home/zed/.local/share/pnpm');
+    expect(merged).toContain('/home/zed/.local/share/pnpm/bin');
     expect(merged).toContain(
       `https://github.com/pnpm/pnpm/releases/download/v${PNPM_VERSION}/pnpm-linux-\${pnpm_arch}.tar.gz`,
     );
@@ -90,46 +90,46 @@ describe('buildLayeredDockerfile', () => {
     expect(dockerfile).not.toContain('test "$(uv --version)" = "uv ${UV_VERSION}"');
   });
 
-  test('runs build-time and runtime tools as the standard kortix user', () => {
+  test('runs build-time and runtime tools as the standard zed user', () => {
     const merged = buildLayeredDockerfile({ userDockerfile: 'FROM ubuntu:24.04', ...COMMON });
-    expect(merged).toContain('useradd --create-home --shell /bin/bash --user-group kortix');
-    expect(merged).toContain("echo 'kortix ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/kortix");
+    expect(merged).toContain('useradd --create-home --shell /bin/bash --user-group zed');
+    expect(merged).toContain("echo 'zed ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/zed");
     expect(merged).not.toContain("NOPASSWD:ALL\\n");
     expect(merged).toContain(
-      'chown -R kortix:kortix /workspace /opt/kortix /opt/pw-browsers /ephemeral',
+      'chown -R zed:zed /workspace /opt/zed /opt/pw-browsers /ephemeral',
     );
     expect(merged).not.toContain('ENV HOME=');
     expect(merged).not.toContain('XDG_DATA_HOME=');
     expect(merged).not.toContain('XDG_CONFIG_HOME=');
     expect(merged).not.toContain('XDG_CACHE_HOME=');
-    expect(merged).toContain('USER root\nCOPY kortix-agent.gz');
-    expect(merged).toContain('ENV KORTIX_WORKSPACE=/workspace\nUSER kortix\nWORKDIR /workspace');
+    expect(merged).toContain('USER root\nCOPY zed-agent.gz');
+    expect(merged).toContain('ENV ZED_WORKSPACE=/workspace\nUSER zed\nWORKDIR /workspace');
   });
 
-  test('preserves the user Dockerfile verbatim and appends the Kortix layer', () => {
+  test('preserves the user Dockerfile verbatim and appends the Zed layer', () => {
     const user = 'FROM ubuntu:24.04\nRUN apt-get install -y foo\n';
     const merged = buildLayeredDockerfile({ userDockerfile: user, ...COMMON });
     expect(merged.startsWith('FROM ubuntu:24.04\nRUN apt-get install -y foo')).toBe(true);
-    expect(merged).toContain('Kortix runtime layer (auto-injected)');
+    expect(merged).toContain('Zed runtime layer (auto-injected)');
     expect(merged).toContain(`opencode-ai@${OPENCODE_VERSION}`);
     expect(merged).toContain(`agent-browser@${AGENT_BROWSER_VERSION}`);
     expect(merged).toContain('uv python install --default 3.12.13');
     expect(merged).not.toContain('uv venv');
     expect(merged).toContain(
-      'uv pip install --python /home/kortix/.local/bin/python3 --break-system-packages',
+      'uv pip install --python /home/zed/.local/bin/python3 --break-system-packages',
     );
     expect(merged).toContain(`"pillow==${PYTHON_PACKAGE_FLOOR.pillow}"`);
     expect(merged).toContain('python package floor OK');
-    expect(merged).toContain('COPY kortix-agent.gz /tmp/kortix-agent.gz');
-    expect(merged).toContain('gunzip -c /tmp/kortix-agent.gz > /usr/local/bin/kortix-agent');
+    expect(merged).toContain('COPY zed-agent.gz /tmp/zed-agent.gz');
+    expect(merged).toContain('gunzip -c /tmp/zed-agent.gz > /usr/local/bin/zed-agent');
     // The admin CLI is baked alongside the daemon and verified at build time.
-    expect(merged).toContain('COPY kortix.gz /tmp/kortix.gz');
+    expect(merged).toContain('COPY zed.gz /tmp/zed.gz');
     expect(merged).toContain('COPY MACHINE.md /MACHINE.md');
-    expect(merged).toContain('gunzip -c /tmp/kortix.gz > /usr/local/bin/kortix');
-    expect(merged).toContain('kortix --version');
-    expect(merged).toContain('COPY kortix-slack-cli/ /opt/kortix/apps/sandbox/slack-cli/');
-    expect(merged).not.toContain('/opt/kortix/packages/');
-    expect(merged).toContain('ENTRYPOINT ["/usr/local/bin/kortix-entrypoint"]');
+    expect(merged).toContain('gunzip -c /tmp/zed.gz > /usr/local/bin/zed');
+    expect(merged).toContain('zed --version');
+    expect(merged).toContain('COPY zed-slack-cli/ /opt/zed/apps/sandbox/slack-cli/');
+    expect(merged).not.toContain('/opt/zed/packages/');
+    expect(merged).toContain('ENTRYPOINT ["/usr/local/bin/zed-entrypoint"]');
   });
 
   test('bakes a real Chromium for agent-browser and verifies it at build time', () => {
@@ -139,8 +139,8 @@ describe('buildLayeredDockerfile', () => {
     expect(merged).toContain(`playwright@${PLAYWRIGHT_VERSION} install --with-deps chromium`);
     // Wired BOTH ways: the documented env var → a stable symlink, AND
     // agent-browser's own auto-detected cache (env-independent, #422-proof).
-    expect(merged).toContain('AGENT_BROWSER_EXECUTABLE_PATH=/home/kortix/.local/bin/chromium');
-    expect(merged).toContain('/home/kortix/.agent-browser/browsers/chrome-linux64');
+    expect(merged).toContain('AGENT_BROWSER_EXECUTABLE_PATH=/home/zed/.local/bin/chromium');
+    expect(merged).toContain('/home/zed/.agent-browser/browsers/chrome-linux64');
     // The build FAILS LOUDLY if Chromium didn't wire up — never install at runtime.
     expect(merged).toContain('chromium --version');
     // Gate matches the resolved PATH (deterministic), not the browser name —
@@ -188,10 +188,10 @@ describe('buildLayeredDockerfile', () => {
     const merged = buildLayeredDockerfile({
       userDockerfile: 'FROM ubuntu:24.04',
       ...COMMON,
-      opencodeConfigPath: 'kortix-opencode-config',
+      opencodeConfigPath: 'zed-opencode-config',
       warmRepo: {
-        stagedPath: 'kortix-warm-repo',
-        stagedGitPath: 'kortix-warm-repo-git.tar',
+        stagedPath: 'zed-warm-repo',
+        stagedGitPath: 'zed-warm-repo-git.tar',
         branch: 'main',
       },
     });
@@ -199,7 +199,7 @@ describe('buildLayeredDockerfile', () => {
       `playwright@${PLAYWRIGHT_VERSION} install --with-deps chromium`,
     );
     const cloneIdx = merged.indexOf('Per-project COLD warm: bake repo checkout into /workspace');
-    const opencodeWarmupIdx = merged.indexOf('kortix-opencode-warmup instance keep');
+    const opencodeWarmupIdx = merged.indexOf('zed-opencode-warmup instance keep');
     expect(chromiumIdx).toBeGreaterThanOrEqual(0);
     expect(cloneIdx).toBeGreaterThanOrEqual(0);
     expect(opencodeWarmupIdx).toBeGreaterThanOrEqual(0);
@@ -231,13 +231,13 @@ describe('buildLayeredDockerfile', () => {
     const withConfig = buildLayeredDockerfile({
       userDockerfile: 'FROM ubuntu:24.04',
       ...COMMON,
-      opencodeConfigPath: 'kortix-opencode-config',
-      catalogPath: 'kortix-llm-catalog.json',
+      opencodeConfigPath: 'zed-opencode-config',
+      catalogPath: 'zed-llm-catalog.json',
     });
     const verifyIdx = withConfig.indexOf('bun build tools/*.ts');
     expect(verifyIdx).toBeGreaterThanOrEqual(0);
     const ownershipIdx = withConfig.indexOf(
-      'RUN sudo chown -R kortix:kortix /opt/kortix/warm-config',
+      'RUN sudo chown -R zed:zed /opt/zed/warm-config',
     );
     expect(ownershipIdx).toBeGreaterThanOrEqual(0);
     expect(ownershipIdx).toBeLessThan(verifyIdx);
@@ -259,8 +259,8 @@ describe('buildLayeredDockerfile', () => {
 
   test('does NOT bake the project workspace into the image', () => {
     const merged = buildLayeredDockerfile({ userDockerfile: 'FROM scratch', ...COMMON });
-    expect(merged).not.toContain('kortix-workspace.tar.gz');
-    // The daemon clones at boot via KORTIX_PROJECT_AUTO_CLONE; the layer just
+    expect(merged).not.toContain('zed-workspace.tar.gz');
+    // The daemon clones at boot via ZED_PROJECT_AUTO_CLONE; the layer just
     // creates an empty /workspace.
     expect(merged).toContain('mkdir -p /workspace');
   });
@@ -268,7 +268,7 @@ describe('buildLayeredDockerfile', () => {
   test('strips only the generated starter baseline apt block', () => {
     const user = `FROM ubuntu:24.04
 
-# Bring in baseline tooling. The Kortix layer on top also installs
+# Bring in baseline tooling. The Zed layer on top also installs
 # git/curl/ca-certificates/nodejs/npm, but having them in your base
 # makes interactive sessions snappier.
 RUN apt-get update \\
@@ -306,7 +306,7 @@ WORKDIR /workspace
     });
     expect(merged.startsWith('# syntax=docker/dockerfile:1.7')).toBe(true);
     expect(merged).toContain('FROM ubuntu:24.04');
-    expect(merged).toContain('Kortix runtime layer (auto-injected)');
+    expect(merged).toContain('Zed runtime layer (auto-injected)');
   });
 });
 
@@ -343,20 +343,20 @@ describe('extractSandboxTemplates', () => {
     const out = extractSandboxTemplates({
       sandbox: {
         templates: [
-          { slug: 'ml', dockerfile: '.kortix/Dockerfile.ml', cpu: 4, memory: 16 },
+          { slug: 'ml', dockerfile: '.zed/Dockerfile.ml', cpu: 4, memory: 16 },
           { slug: 'python', image: 'python:3.12-slim' },
         ],
       },
     });
     expect(out).toHaveLength(2);
-    expect(out[0]).toMatchObject({ slug: 'ml', dockerfile: '.kortix/Dockerfile.ml' });
+    expect(out[0]).toMatchObject({ slug: 'ml', dockerfile: '.zed/Dockerfile.ml' });
     expect(out[0].spec).toEqual({ cpu: 4, memory: 16 });
     expect(out[1]).toMatchObject({ slug: 'python', image: 'python:3.12-slim' });
   });
 
   test('legacy singular [sandbox] table (no templates) is ignored', () => {
     const out = extractSandboxTemplates({
-      sandbox: { dockerfile: '.kortix/Dockerfile', cpu: 2 },
+      sandbox: { dockerfile: '.zed/Dockerfile', cpu: 2 },
     });
     expect(out).toHaveLength(0);
   });

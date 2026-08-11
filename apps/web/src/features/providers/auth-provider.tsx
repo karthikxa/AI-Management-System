@@ -33,7 +33,7 @@ const MOCK_USER: User = {
   user_metadata: { name: 'Demo User' },
   aud: 'authenticated',
   created_at: new Date().toISOString(),
-  email: 'demo@kortix.ai',
+  email: 'demo@zed.ai',
 };
 
 const MOCK_SESSION: Session = {
@@ -90,12 +90,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         // Track user ID for cross-account localStorage cleanup
         if (currentSession?.user?.id) {
-          const prevUserId = safeGetItem('kortix-last-user-id');
+          const prevUserId = safeGetItem('zed-last-user-id');
           if (prevUserId && prevUserId !== currentSession.user.id) {
             console.log('[Auth] Initial session: user changed, clearing stale client state');
             await resetClientState();
           }
-          safeSetItem('kortix-last-user-id', currentSession.user.id);
+          safeSetItem('zed-last-user-id', currentSession.user.id);
         }
       } catch (error) {
         console.warn('[AuthProvider] Failed to bootstrap initial session:', error);
@@ -124,14 +124,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
             // Clear stale sandbox/server state if a different user signs in
             // (e.g. signup in same browser without explicit logout first)
-            const prevUserId = safeGetItem('kortix-last-user-id');
+            const prevUserId = safeGetItem('zed-last-user-id');
             const newUserId = newSession?.user?.id;
             if (newUserId && prevUserId && prevUserId !== newUserId) {
               console.log('[Auth] User changed, clearing stale client state');
               await resetClientState();
             }
             if (newUserId) {
-              safeSetItem('kortix-last-user-id', newUserId);
+              safeSetItem('zed-last-user-id', newUserId);
             }
             break;
           }
@@ -139,7 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setBootstrapAuthToken(null);
             setCachedAuthToken(null);
             await resetClientState();
-            safeRemoveItem('kortix-last-user-id');
+            safeRemoveItem('zed-last-user-id');
             break;
           case 'TOKEN_REFRESHED':
             if (newSession?.access_token) {

@@ -1,6 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { eq, and } from 'drizzle-orm';
-import { tunnelConnections } from '@kortix/db';
+import { tunnelConnections } from '@zed/db';
 import { db } from '../../shared/db';
 import { TunnelErrorCode } from 'agent-tunnel';
 import { executeTunnelRpc } from '../core/rpc-core';

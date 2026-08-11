@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 function fixture(sql: string): string {
-  const root = mkdtempSync(join(tmpdir(), 'kortix-migration-runtime-'));
+  const root = mkdtempSync(join(tmpdir(), 'zed-migration-runtime-'));
   const migrations = join(root, 'migrations');
   mkdirSync(migrations, { recursive: true });
   writeFileSync(join(migrations, '20260807221200000_centralized_audit_v2.sql'), sql);

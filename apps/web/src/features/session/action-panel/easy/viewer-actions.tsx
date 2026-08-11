@@ -12,7 +12,7 @@
 import { PublicShareLinkButton } from '@/components/projects/public-share-link-button';
 import { Button } from '@/components/ui/button';
 import Hint from '@/components/ui/hint';
-import { useIsExpanded, useToggleExpanded } from '@/stores/kortix-computer-store';
+import { useIsExpanded, useToggleExpanded } from '@/stores/zed-computer-store';
 import {
   ArrowsOutSimpleIcon as Maximize2,
   ArrowsInSimpleIcon as Minimize2,

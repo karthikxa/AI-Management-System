@@ -21,8 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { kortix } from '@/lib/kortix';
-import type { KortixAccount } from '@kortix/sdk';
+import { zed } from '@/lib/zed';
+import type { ZedAccount } from '@zed/sdk';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
@@ -39,7 +39,7 @@ export function AccountSwitcher({
   onChange,
   loading,
 }: {
-  accounts: KortixAccount[];
+  accounts: ZedAccount[];
   value: string | null;
   onChange: (accountId: string) => void;
   loading: boolean;
@@ -76,7 +76,7 @@ function NewAccountDialog({ onCreated }: { onCreated: (accountId: string) => voi
   const qc = useQueryClient();
 
   const create = useMutation({
-    mutationFn: () => kortix.accounts.create({ name: name.trim() }),
+    mutationFn: () => zed.accounts.create({ name: name.trim() }),
     onSuccess: (account) => {
       qc.invalidateQueries({ queryKey: ['accounts'] });
       setOpen(false);

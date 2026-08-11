@@ -23,13 +23,13 @@ import { useToast } from '@/components/ui/toast-provider';
 import { getSheetBg } from '@/lib/theme-colors';
 import { useCreateAccount } from '@/lib/projects/hooks';
 import { haptics } from '@/lib/haptics';
-import type { KortixAccount } from '@/lib/projects/projects-client';
+import type { ZedAccount } from '@/lib/projects/projects-client';
 import { InitialsAvatar, PrimaryButton, accountColors } from './account-shared';
 
 interface NewAccountSheetProps {
   open: boolean;
   onClose: () => void;
-  onCreated: (account: KortixAccount) => void;
+  onCreated: (account: ZedAccount) => void;
 }
 
 export function NewAccountSheet({ open, onClose, onCreated }: NewAccountSheetProps) {

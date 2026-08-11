@@ -12,10 +12,10 @@
  *   public/sounds/opencode/notification.mp3
  *   public/sounds/opencode/send.mp3
  *
- *   public/sounds/kortix/completion.mp3
- *   public/sounds/kortix/error.mp3
- *   public/sounds/kortix/notification.mp3
- *   public/sounds/kortix/send.mp3
+ *   public/sounds/zed/completion.mp3
+ *   public/sounds/zed/error.mp3
+ *   public/sounds/zed/notification.mp3
+ *   public/sounds/zed/send.mp3
  *
  * Drop replacement mp3 files in these directories.  The filenames must
  * match the SoundEvent names exactly (completion, error, notification, send).

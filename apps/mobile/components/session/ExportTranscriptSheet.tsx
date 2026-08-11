@@ -26,7 +26,7 @@ import {
   DEFAULT_TRANSCRIPT_OPTIONS,
   loadHttpSessionHistory,
   type TranscriptOptions,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 interface ExportTranscriptSheetProps {
   sessionId: string | null;

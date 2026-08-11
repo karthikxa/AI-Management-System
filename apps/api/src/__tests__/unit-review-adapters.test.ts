@@ -2,7 +2,7 @@
  * Review Center adapters — Change Requests folded into the inbox read model.
  */
 import { describe, expect, test } from 'bun:test';
-import type { changeRequests, connectorCalls } from '@kortix/db';
+import type { changeRequests, connectorCalls } from '@zed/db';
 import {
   CR_ID_PREFIX,
   CALL_ID_PREFIX,

@@ -1,26 +1,26 @@
 /**
- * 10 — Deploy a public OCI image as a serverless Kortix App.
+ * 10 — Deploy a public OCI image as a serverless Zed App.
  *
  * Run:
- *   KORTIX_API_URL=https://api.kortix.com/v1 KORTIX_API_KEY=kortix_pat_... \
- *   KORTIX_PROJECT_ID=... bun run examples/10-deploy-app.ts
+ *   ZED_API_URL=https://api.zed.com/v1 ZED_API_KEY=zed_pat_... \
+ *   ZED_PROJECT_ID=... bun run examples/10-deploy-app.ts
  *
  * As an npm consumer:
- *   import { createKortix } from '@kortix/sdk';
+ *   import { createZed } from '@zed/sdk';
  */
-import { createKortix } from '../src/index';
+import { createZed } from '../src/index';
 
 async function main() {
-  const backendUrl = process.env.KORTIX_API_URL ?? 'http://localhost:8008/v1';
-  const apiKey = process.env.KORTIX_API_KEY;
-  const projectId = process.env.KORTIX_PROJECT_ID;
+  const backendUrl = process.env.ZED_API_URL ?? 'http://localhost:8008/v1';
+  const apiKey = process.env.ZED_API_KEY;
+  const projectId = process.env.ZED_PROJECT_ID;
   if (!apiKey || !projectId) {
-    console.error('Set KORTIX_API_KEY and KORTIX_PROJECT_ID and re-run.');
+    console.error('Set ZED_API_KEY and ZED_PROJECT_ID and re-run.');
     process.exit(1);
   }
 
-  const kortix = createKortix({ backendUrl, getToken: async () => apiKey });
-  const apps = kortix.project(projectId).apps;
+  const zed = createZed({ backendUrl, getToken: async () => apiKey });
+  const apps = zed.project(projectId).apps;
   const app = await apps.create({ slug: 'hello', name: 'Hello App' });
   const registered = await apps.artifacts.register({
     kind: 'oci_image',
@@ -31,7 +31,7 @@ async function main() {
     source: {
       kind: 'oci_image',
       image: 'docker.io/hashicorp/http-echo:1.0',
-      command: ['http-echo', '-listen=:5678', '-text=Hello from Kortix Apps'],
+      command: ['http-echo', '-listen=:5678', '-text=Hello from Zed Apps'],
       port: 5678,
     },
   });

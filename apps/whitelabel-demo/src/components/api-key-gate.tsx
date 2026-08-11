@@ -1,7 +1,7 @@
 'use client';
 
 import { BRAND } from '@/config/brand';
-import { setApiKey } from '@/lib/kortix';
+import { setApiKey } from '@/lib/zed';
 import { KeyRound } from 'lucide-react';
 import { useState } from 'react';
 import { BrandMark } from './brand-mark';
@@ -10,7 +10,7 @@ import { Card } from './ui/card';
 import { Input } from './ui/input';
 
 /**
- * The single auth surface: paste a Kortix API key. One token, stored locally,
+ * The single auth surface: paste a Zed API key. One token, stored locally,
  * fed to the SDK via `getToken`. This is the whole auth story — no Supabase, no
  * sessions table. `onReady` re-renders the app once a key exists.
  */
@@ -23,7 +23,7 @@ export function ApiKeyGate({ onReady }: { onReady: () => void }) {
         <BrandMark className="mb-5" />
         <h1 className="text-lg font-semibold tracking-tight">Connect to {BRAND.name}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Paste a Kortix API key. Create one in your dashboard under{' '}
+          Paste a Zed API key. Create one in your dashboard under{' '}
           <span className="text-foreground">Settings → API keys</span>.
         </p>
         <form
@@ -41,7 +41,7 @@ export function ApiKeyGate({ onReady }: { onReady: () => void }) {
               autoFocus
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder="kortix_pat_…"
+              placeholder="zed_pat_…"
               className="pl-9 font-mono"
               spellCheck={false}
             />

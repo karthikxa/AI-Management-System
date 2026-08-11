@@ -142,7 +142,7 @@ describe('persistence', () => {
   test('a v2 payload under the old key is ignored, not migrated', () => {
     install(
       fakeStorage({
-        kortix_message_queue_v2: JSON.stringify([{ id: 'x', sessionId: A, text: 'stale' }]),
+        zed_message_queue_v2: JSON.stringify([{ id: 'x', sessionId: A, text: 'stale' }]),
       }),
     );
     useMessageQueueStore.getState().hydrate();

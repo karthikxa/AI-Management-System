@@ -58,8 +58,8 @@ check_focused() {
 
 # ── package-tests.yml: co-located bun:test suites ─────────────────────────────
 run_pkg_tests()  { pnpm --filter "./packages/**" --if-present test; }
-run_app_tests()  { pnpm --filter "Kortix-Computer-Frontend" --filter "@kortix/cli" \
-                     --filter "@kortix/sandbox-agent-server" --filter "kortix" --if-present test; }
+run_app_tests()  { pnpm --filter "Zed-Computer-Frontend" --filter "@zed/cli" \
+                     --filter "@zed/sandbox-agent-server" --filter "zed" --if-present test; }
 
 # ── ci.yml: per-app typecheck ─────────────────────────────────────────────────
 run_typechecks() { pnpm -r --if-present typecheck; }
@@ -109,11 +109,11 @@ else
   skip "make ci-pr/ci-release" "bun not installed"
 fi
 
-# kortix-api suite (package-tests.yml api job) — needs dotenvx-decrypted env.
+# zed-api suite (package-tests.yml api job) — needs dotenvx-decrypted env.
 if [ -f apps/api/.env.keys ] || [ -n "${DOTENV_PRIVATE_KEY:-}" ]; then
-  pass "unit: kortix-api (package-tests.yml)" pnpm --filter kortix-api test
+  pass "unit: zed-api (package-tests.yml)" pnpm --filter zed-api test
 else
-  skip "unit: kortix-api (package-tests.yml)" "no apps/api/.env.keys / DOTENV_PRIVATE_KEY (env-gated, runs in CI)"
+  skip "unit: zed-api (package-tests.yml)" "no apps/api/.env.keys / DOTENV_PRIVATE_KEY (env-gated, runs in CI)"
 fi
 
 # ── infra changes → terraform-ci.yml + security-scan.yml ──────────────────────

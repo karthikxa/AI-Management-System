@@ -4,7 +4,7 @@
  * resume worker, and the prebuild script all go through here.
  */
 import { and, eq, ne } from 'drizzle-orm';
-import { projects, sandboxTemplates, type Database } from '@kortix/db';
+import { projects, sandboxTemplates, type Database } from '@zed/db';
 import { db as appDb } from '../../shared/db';
 import { getSandboxProvider } from '../../snapshots/providers';
 import {

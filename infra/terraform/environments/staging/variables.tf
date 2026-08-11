@@ -5,9 +5,9 @@ variable "aws_region" {
 }
 
 variable "cloudflare_zone_id" {
-  description = "Cloudflare zone ID for kortix.com. Supply via TF_VAR_cloudflare_zone_id."
+  description = "Cloudflare zone ID for zed.com. Supply via TF_VAR_cloudflare_zone_id."
   type        = string
-  # The kortix.com zone id. Not a secret — it is already exposed as the
+  # The zed.com zone id. Not a secret — it is already exposed as the
   # CLOUDFLARE_ZONE_ID repo variable and appears in every Cloudflare API URL.
   # It defaults here because an empty value resolves zone_id to null on every
   # cloudflare_record, and zone_id forces replacement: a plan run without the
@@ -36,25 +36,25 @@ variable "cloudflare_api_key" {
 }
 
 variable "api_image" {
-  description = "Container image for the API (e.g. ghcr.io/kortix-ai/kortix-api:<tag>)."
+  description = "Container image for the API (e.g. ghcr.io/zed-ai/zed-api:<tag>)."
   type        = string
-  default     = "ghcr.io/kortix-ai/kortix-api:latest"
+  default     = "ghcr.io/zed-ai/zed-api:latest"
 }
 
 variable "gateway_image" {
   description = "Container image for the gateway (LLM proxy). CI rolls new revisions; Terraform only seeds the initial task-def."
   type        = string
-  default     = "kortix/kortix-gateway:dev-latest"
+  default     = "zed/zed-gateway:dev-latest"
 }
 
 variable "gateway_environment" {
-  description = "Non-secret env vars for the gateway container (besides PORT and KORTIX_API_URL, which are set by the module/env)."
+  description = "Non-secret env vars for the gateway container (besides PORT and ZED_API_URL, which are set by the module/env)."
   type        = map(string)
   default     = {}
 }
 
 variable "wildcard_certificate_arn" {
-  description = "ACM cert for BOTH the api + gateway ALBs. The us-west-2 *.kortix.com wildcard covers every origin hostname (staging-api-ecs-fargate, gateway-staging-ecs-fargate) for Cloudflare Full(strict) — no per-host module.acm needed."
+  description = "ACM cert for BOTH the api + gateway ALBs. The us-west-2 *.zed.com wildcard covers every origin hostname (staging-api-ecs-fargate, gateway-staging-ecs-fargate) for Cloudflare Full(strict) — no per-host module.acm needed."
   type        = string
   default     = "arn:aws:acm:us-west-2:935064898258:certificate/d70f1f49-d981-4add-abb6-971bad1f3755"
 }
@@ -66,7 +66,7 @@ variable "container_port" {
 }
 
 variable "api_environment" {
-  description = "Non-secret env vars for the API container (KORTIX_URL, DATABASE host, etc.)."
+  description = "Non-secret env vars for the API container (ZED_URL, DATABASE host, etc.)."
   type        = map(string)
   default     = {}
 }

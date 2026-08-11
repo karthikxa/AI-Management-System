@@ -1,7 +1,7 @@
 import { config, type SandboxProviderName } from '../../config';
 
 // Weighted load-balancing of NEW sandboxes across ALLOWED_SANDBOX_PROVIDERS.
-// Weights live in kortix.platform_settings under 'provider_distribution' as
+// Weights live in zed.platform_settings under 'provider_distribution' as
 // { [provider]: weight } (e.g. { platinum: 70, daytona: 30 }). Unset, empty,
 // or all-zero -> fall back to getDefaultProvider() (the first allowed provider),
 // so behavior is unchanged until an admin configures a split. Single allowed
@@ -17,7 +17,7 @@ async function loadWeights(): Promise<Record<string, number>> {
   try {
     const { hasDatabase, db } = await import('../../shared/db');
     if (hasDatabase) {
-      const { platformSettings } = await import('@kortix/db');
+      const { platformSettings } = await import('@zed/db');
       const { eq } = await import('drizzle-orm');
       const [row] = await db
         .select({ value: platformSettings.value })

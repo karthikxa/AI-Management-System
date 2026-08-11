@@ -1,15 +1,15 @@
 /**
- * `kortix validate` — standalone manifest validator.
+ * `zed validate` — standalone manifest validator.
  *
- * Reads ./kortix.yaml (or --file <path>), runs the canonical
- * `@kortix/manifest-schema` validator, then statically lints every sandbox
+ * Reads ./zed.yaml (or --file <path>), runs the canonical
+ * `@zed/manifest-schema` validator, then statically lints every sandbox
  * Dockerfile the manifest points at, and prints one colored report.
  *
  *   exit 0   — no errors (warnings may be present)
  *   exit 1   — one or more errors
  *   exit 2   — file missing or unreadable
  *
- * Mirrors the same validator that `kortix ship` runs as a pre-flight check
+ * Mirrors the same validator that `zed ship` runs as a pre-flight check
  * and that the backend runs on CR-merge — there is exactly one schema, used
  * in three places. The Dockerfile lint rides the same three places for free:
  * a Dockerfile that can't build in the cloud is as much a broken project as a
@@ -18,28 +18,28 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, dirname, relative, resolve } from 'node:path';
 import {
-  GRANTABLE_KORTIX_CLI_ACTIONS,
+  GRANTABLE_ZED_CLI_ACTIONS,
   type ManifestIssue,
   formatIssues,
   manifestFormatForPath,
   validateManifest,
-} from '@kortix/manifest-schema';
-import { extractSandboxTemplates } from '@kortix/shared/sandbox';
+} from '@zed/manifest-schema';
+import { extractSandboxTemplates } from '@zed/shared/sandbox';
 import { lintDockerfile } from '../dockerfile-lint.ts';
 import { resolveLocalManifest } from '../manifest.ts';
 import { C, help, status } from '../style.ts';
 
-const HELP = help`Usage: kortix validate [options]
+const HELP = help`Usage: zed validate [options]
 
-Statically validate the project's kortix.yaml against the canonical schema,
+Statically validate the project's zed.yaml against the canonical schema,
 and lint every \`sandbox.templates\` Dockerfile for the constraints the cloud
 builder enforces (no COPY from the repo, no RUN heredocs, Debian-family base).
 
 Options:
-  --file <path>          Validate this file instead of ./kortix.yaml.
+  --file <path>          Validate this file instead of ./zed.yaml.
   --no-dockerfile-lint   Skip the sandbox Dockerfile checks (manifest only).
   --json                 Emit a machine-readable JSON report (no color).
-  --scopes               Print the full grantable kortix_cli action enum and exit.
+  --scopes               Print the full grantable zed_cli action enum and exit.
   -h, --help             Show this help.
 `;
 
@@ -66,7 +66,7 @@ function parseFlags(argv: string[]): Flags {
 
 /**
  * Lint each `sandbox.templates[].dockerfile` that exists on disk, resolved
- * relative to the MANIFEST's directory (paths in kortix.yaml are repo-relative,
+ * relative to the MANIFEST's directory (paths in zed.yaml are repo-relative,
  * and --file may point outside the cwd).
  *
  * A declared-but-missing Dockerfile is NOT reported here: that's the manifest
@@ -98,7 +98,7 @@ function lintSandboxDockerfiles(
   return issues;
 }
 
-/** One line per agent: its assigned connectors + Kortix-CLI powers. */
+/** One line per agent: its assigned connectors + Zed-CLI powers. */
 function describeAgents(parsed: Record<string, unknown> | null): string {
   const agents = parsed?.agents;
   if (!Array.isArray(agents) || agents.length === 0) return '';
@@ -109,9 +109,9 @@ function describeAgents(parsed: Record<string, unknown> | null): string {
     // `env` omitted == 'all' (the parser's default), so render it that way rather
     // than as default-deny — otherwise the summary misreports an unscoped agent.
     const env = a?.env === undefined || a?.env === null ? 'all' : a?.env;
-    return `  ${C.cyan}${name}${C.reset}  connectors=[${show(a?.connectors)}]  kortix_cli=[${show(a?.kortix_cli)}]  env=[${show(env)}]`;
+    return `  ${C.cyan}${name}${C.reset}  connectors=[${show(a?.connectors)}]  zed_cli=[${show(a?.zed_cli)}]  env=[${show(env)}]`;
   });
-  return `\n${C.dim}Per-agent scope (kortix.yaml [[agents]]):${C.reset}\n${lines.join('\n')}\n`;
+  return `\n${C.dim}Per-agent scope (zed.yaml [[agents]]):${C.reset}\n${lines.join('\n')}\n`;
 }
 
 export function runValidate(argv: string[]): number {
@@ -122,17 +122,17 @@ export function runValidate(argv: string[]): number {
   }
   if (flags.scopes) {
     process.stdout.write(
-      `${C.dim}Grantable kortix_cli actions (project-scoped — account-level admin actions can never be granted to an agent):${C.reset}\n`,
+      `${C.dim}Grantable zed_cli actions (project-scoped — account-level admin actions can never be granted to an agent):${C.reset}\n`,
     );
-    for (const a of GRANTABLE_KORTIX_CLI_ACTIONS) process.stdout.write(`  ${a}\n`);
+    for (const a of GRANTABLE_ZED_CLI_ACTIONS) process.stdout.write(`  ${a}\n`);
     return 0;
   }
 
   // Explicit --file wins; otherwise resolve the project's manifest, preferring
-  // kortix.yaml over kortix.toml (falls back to kortix.yaml for the not-found msg).
+  // zed.yaml over zed.toml (falls back to zed.yaml for the not-found msg).
   const filePath = flags.file
     ? resolve(process.cwd(), flags.file)
-    : (resolveLocalManifest(process.cwd())?.path ?? resolve(process.cwd(), 'kortix.yaml'));
+    : (resolveLocalManifest(process.cwd())?.path ?? resolve(process.cwd(), 'zed.yaml'));
   if (!existsSync(filePath)) {
     if (flags.json) {
       process.stdout.write(

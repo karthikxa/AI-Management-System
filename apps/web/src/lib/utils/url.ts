@@ -1,1 +1,1 @@
-export { buildStaticFilePreviewUrl as constructHtmlPreviewUrl } from '@kortix/sdk';
+export { buildStaticFilePreviewUrl as constructHtmlPreviewUrl } from '@zed/sdk';

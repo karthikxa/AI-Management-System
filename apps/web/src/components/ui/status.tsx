@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import type * as React from 'react';
 
 /**
- * Kortix status palette — the SINGLE source of truth for "this means
+ * Zed status palette — the SINGLE source of truth for "this means
  * success / warning / error / info" coloring.
  *
  * The design system already encapsulates this palette inside `<Badge>` and
@@ -31,19 +31,19 @@ export const STATUS_TEXT: Record<StatusTone, string> = {
 
 /** Faint tinted background per tone (for chips / fills). */
 export const STATUS_BG: Record<StatusTone, string> = {
-  success: 'bg-kortix-green/10',
-  warning: 'bg-kortix-yellow/10',
+  success: 'bg-zed-green/10',
+  warning: 'bg-zed-yellow/10',
   destructive: 'bg-destructive/10',
-  info: 'bg-kortix-blue/10',
+  info: 'bg-zed-blue/10',
   neutral: 'bg-popover',
 };
 
 /** Hairline border per tone (matches InfoBanner edges). */
 export const STATUS_BORDER: Record<StatusTone, string> = {
-  success: 'border-kortix-green',
-  warning: 'border-kortix-yellow',
+  success: 'border-zed-green',
+  warning: 'border-zed-yellow',
   destructive: 'border-destructive/30',
-  info: 'border-kortix-blue',
+  info: 'border-zed-blue',
   neutral: 'border-border',
 };
 

@@ -9,8 +9,8 @@ Credentials live in `packages/sdk/.env.local` (gitignored, auto-loaded by bun
 when you run from `packages/sdk/`):
 
 ```
-KORTIX_API_URL=http://localhost:8008/v1
-KORTIX_API_KEY=kortix_pat_...
+ZED_API_URL=http://localhost:8008/v1
+ZED_API_KEY=zed_pat_...
 ```
 
 Stack must be up (`pnpm dev` from the repo root; `curl localhost:8008/v1/health`).
@@ -22,7 +22,7 @@ Stack must be up (`pnpm dev` from the repo root; `curl localhost:8008/v1/health`
 | 01 | `projects/01-list-projects.ts` | `projects.list()` returns everything | no |
 | 02 | `sessions/02-list-sessions.ts` | `projects.sessions(id)` for one project | no |
 | 03 | `sessions/03-create-session.ts` | `createSession` + re-list proof | no |
-| 04 | `chat/04-send-and-stream.ts` | ready → stream → send → idle → transcript; `KORTIX_MODEL` = change model | **yes** |
+| 04 | `chat/04-send-and-stream.ts` | ready → stream → send → idle → transcript; `ZED_MODEL` = change model | **yes** |
 | 05 | `agents/05-list-agents.ts` | `detail().config.agents` + `getAgentConfig()` | no |
 | 06 | `agents/06-create-agent.ts` | agent file write→read→delete via `session.files` | **yes** |
 | 07 | `agents/07-use-agent.ts` | send with a `{ agent }` override (change agent) | **yes** |
@@ -51,7 +51,7 @@ Stack must be up (`pnpm dev` from the repo root; `curl localhost:8008/v1/health`
 | 31 | `session-extras/31-files-deep.ts` | files create/readBlob/copy/rename/findText round-trip in a temp dir | **yes** |
 | 32 | `env/32-personal-secrets.ts` | personal secret setPersonal → list → removePersonal | no |
 | 33 | `projects/33-models-and-search.ts` | llmCatalog, modelDefaults.get, repo search, file history, single commit, marketplace featured/item, pipedream apps | no |
-| 34 | `server/34-server-scoped.ts` | `@kortix/sdk/server`: createScopedKortix + runWithKortix (incl. concurrent runs) | no |
+| 34 | `server/34-server-scoped.ts` | `@zed/sdk/server`: createScopedZed + runWithZed (incl. concurrent runs) | no |
 | 35 | `session-extras/35-shares.ts` | session public-share create→list→revoke + sandboxShares.list (known local 502) | **yes** |
 
 ## Deliberately NOT covered (and why)
@@ -66,7 +66,7 @@ Stack must be up (`pnpm dev` from the repo root; `curl localhost:8008/v1/health`
 - **`accountInvites.accept/decline`** — needs a real invite token for another user.
 - **`transcribe()`** — needs an audio file.
 - **`session.abort()`** — racy to assert deterministically; exercise by hand.
-- **React hooks (`@kortix/sdk/react`)** — needs a React host; see
+- **React hooks (`@zed/sdk/react`)** — needs a React host; see
   `apps/whitelabel-demo`.
 - **CDN/IIFE bundles** — covered by `examples/08-cdn.html`.
 - **React Native** — streaming is unsupported by design (no `response.body`).
@@ -75,7 +75,7 @@ Run any of them from `packages/sdk`:
 
 ```bash
 bun run playground/projects/01-list-projects.ts
-KORTIX_MODEL=claude-sonnet-4.6 bun run playground/chat/04-send-and-stream.ts "Say hello"
+ZED_MODEL=claude-sonnet-4.6 bun run playground/chat/04-send-and-stream.ts "Say hello"
 ```
 
 Or **everything in one go** (creates one shared session for the sandbox
@@ -93,9 +93,9 @@ send → transcript).
 
 | Var | Effect |
 |---|---|
-| `KORTIX_PROJECT_ID` | pin the project (default: first on the account; most scripts also take it as argv) |
-| `KORTIX_SESSION_ID` | pin the session (default: chat/create scripts make a fresh one) |
-| `KORTIX_MODEL` | per-send model id from `projects.llmCatalog()` — **set this**: the local default model currently 400s (`max_tokens` vs `max_completion_tokens` gateway bug) |
+| `ZED_PROJECT_ID` | pin the project (default: first on the account; most scripts also take it as argv) |
+| `ZED_SESSION_ID` | pin the session (default: chat/create scripts make a fresh one) |
+| `ZED_MODEL` | per-send model id from `projects.llmCatalog()` — **set this**: the local default model currently 400s (`max_tokens` vs `max_completion_tokens` gateway bug) |
 | `KEEP_TEST_FILES=1` | 06/09/11 keep their created file instead of deleting (commit it to register the entity) |
 | `SLACK_BOT_TOKEN` + `SLACK_SIGNING_SECRET` | 13 actually calls `connect()` |
 

@@ -71,11 +71,11 @@ describe('loadMarketplaceCompanyData', () => {
       './marketplace-public'
     );
 
-    await loadMarketplaceCompanyData('kortix');
+    await loadMarketplaceCompanyData('zed');
 
     const itemsCall = calls.find((c) => c.includes('/marketplace/items'));
     expect(itemsCall).toContain(`limit=${MARKETPLACE_COMPANY_PAGE_LIMIT}`);
-    expect(itemsCall).toContain('source=kortix');
+    expect(itemsCall).toContain('source=zed');
   });
 
   test('falls back to an empty page when the fetch fails, instead of throwing', async () => {
@@ -84,7 +84,7 @@ describe('loadMarketplaceCompanyData', () => {
     }) as unknown as typeof fetch;
     const { loadMarketplaceCompanyData } = await import('./marketplace-public');
 
-    const { itemsPage, marketplacesPage } = await loadMarketplaceCompanyData('kortix');
+    const { itemsPage, marketplacesPage } = await loadMarketplaceCompanyData('zed');
 
     expect(itemsPage.items).toEqual([]);
     expect(marketplacesPage.marketplaces).toEqual([]);

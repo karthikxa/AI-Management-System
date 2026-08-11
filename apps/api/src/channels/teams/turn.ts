@@ -1,5 +1,5 @@
 import { and, eq, lt, sql } from 'drizzle-orm';
-import { chatTurnStreams } from '@kortix/db';
+import { chatTurnStreams } from '@zed/db';
 import { db } from '../../shared/db';
 import { config } from '../../config';
 import { classifyTurnError, type TurnErrorInfo } from '../slack/errors';

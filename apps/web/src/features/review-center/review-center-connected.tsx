@@ -23,8 +23,8 @@ import {
   useRequestChangesOnChangeRequest,
 } from '@/features/project-files/hooks/use-change-requests';
 import { useCustomizeStore } from '@/stores/customize-store';
-import { type ReviewVerdict, listProjectSessions } from '@kortix/sdk';
-import { clearStartStash, contract, qk } from '@kortix/sdk/react';
+import { type ReviewVerdict, listProjectSessions } from '@zed/sdk';
+import { clearStartStash, contract, qk } from '@zed/sdk/react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';

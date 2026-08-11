@@ -58,10 +58,10 @@ import {
   listServiceAccountsApi,
 } from '@/lib/iam-client';
 import {
-  type KortixProject,
+  type ZedProject,
   listAccountMembers,
   listProjectsForAccount,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 // Same wording the backend's requireEntitlement('rbac') 402 uses — keep it in
 // sync with apps/api/src/accounts/iam/helpers.ts ENTITLEMENT_LABEL.rbac.
@@ -410,7 +410,7 @@ function CreateAssignmentDialog({
   groups: Array<{ group_id: string; name: string }>;
   agents: AgentIdentity[];
   serviceAccounts: ServiceAccount[];
-  projects: KortixProject[];
+  projects: ZedProject[];
   projectsLoading: boolean;
   onCreated: () => void;
 }) {

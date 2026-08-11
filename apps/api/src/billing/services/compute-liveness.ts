@@ -73,7 +73,7 @@ export const BILLING_LIVENESS_GRACE_FLOOR_MINUTES = 60;
  * TIGHTER. Its arithmetic is unchanged from when it was
  * `providerAutoStopBackstopMinutes()`: same floor, same doubling of the idle
  * window, so the clamp's behaviour is byte-identical at every value of
- * KORTIX_SANDBOX_AUTOSTOP_MINUTES. Only the coupling is gone — this reads the
+ * ZED_SANDBOX_AUTOSTOP_MINUTES. Only the coupling is gone — this reads the
  * idle window directly instead of borrowing a provider-safety number that now
  * needs to be twelve times larger.
  *
@@ -81,7 +81,7 @@ export const BILLING_LIVENESS_GRACE_FLOOR_MINUTES = 60;
  * one idle window; the grace has to cover that plus the pass that ends it.
  */
 export function billingLivenessGraceMinutes(): number {
-  const idleWindow = Math.max(1, config.KORTIX_SANDBOX_AUTOSTOP_MINUTES || 15);
+  const idleWindow = Math.max(1, config.ZED_SANDBOX_AUTOSTOP_MINUTES || 15);
   return Math.max(BILLING_LIVENESS_GRACE_FLOOR_MINUTES, idleWindow * 2);
 }
 

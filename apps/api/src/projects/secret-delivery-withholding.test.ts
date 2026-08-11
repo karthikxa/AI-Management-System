@@ -148,7 +148,7 @@ describe('materializeSecretDelivery', () => {
     const brokered = row('provider', 'PROVIDER_KEY', {
       strategy: 'broker',
       egressPolicy: {
-        backend: 'kortix_fetch',
+        backend: 'zed_fetch',
         inject: { kind: 'header', name: 'authorization' },
         rules: [
           {
@@ -166,11 +166,11 @@ describe('materializeSecretDelivery', () => {
       grantEnv: ['provider'],
       mintHandleFor: async (selected) => {
         minted.push(selected.secretId);
-        return 'kortix-handle';
+        return 'zed-handle';
       },
     });
 
-    expect(env).toEqual({ PROVIDER_KEY: 'kortix-handle' });
+    expect(env).toEqual({ PROVIDER_KEY: 'zed-handle' });
     expect(JSON.stringify(env)).not.toContain('value-of-provider');
     expect(minted).toEqual(['secret-provider']);
   });
@@ -181,7 +181,7 @@ describe('materializeSecretDelivery', () => {
       const brokered = row('provider', 'PROVIDER_KEY', {
         strategy: 'broker',
         egressPolicy: {
-          backend: 'kortix_fetch',
+          backend: 'zed_fetch',
           inject: { kind: 'header', name: 'authorization' },
           rules: [{ host: 'api.example.com' }],
         },

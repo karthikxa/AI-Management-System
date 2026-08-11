@@ -9,7 +9,7 @@ import { useAuthenticatedPreviewUrl } from '@/hooks/use-authenticated-preview-ur
 import { useSandboxProxy } from '@/hooks/use-sandbox-proxy';
 import { INTERACTIVE_PREVIEW_IFRAME_SANDBOX } from '@/lib/security/iframe-sandbox';
 import { cn } from '@/lib/utils';
-import { stripKortixSystemTags } from '@/lib/utils/kortix-system-tags';
+import { stripZedSystemTags } from '@/lib/utils/zed-system-tags';
 import {
   detectLocalhostUrls,
   toInternalUrl,
@@ -562,11 +562,11 @@ export const SandboxUrlDetector: React.FC<SandboxUrlDetectorProps> = ({
   isStreaming = false,
 }) => {
   const tHardcodedUi = useTranslations('hardcodedUi');
-  // Strip kortix_system XML tags before any processing/rendering.
+  // Strip zed_system XML tags before any processing/rendering.
   // These tags contain internal/system content injected by OpenCode plugins
   // that should not appear in the UI.
   const rawContent = typeof content === 'string' ? content : content ? String(content) : '';
-  const safeContent = stripKortixSystemTags(rawContent);
+  const safeContent = stripZedSystemTags(rawContent);
 
   const { proxyUrl } = useSandboxProxy();
 

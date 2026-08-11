@@ -327,7 +327,7 @@ flow(
         .as(ctx.P.NONMEMBER)
         .post(
           '/v1/projects/:projectId/marketplace/install-session',
-          { id: 'kortix/runtime' },
+          { id: 'zed/runtime' },
           { params: projParams },
         );
       r.status([403, 404]);

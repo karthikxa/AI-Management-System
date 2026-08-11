@@ -13,17 +13,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 /**
  * A slim strip that lives at the top of the session Terminal panel and tells the
  * user how to attach their *local* OpenCode TUI to this session's sandbox with
- * the Kortix CLI. Deliberately NOT its own tab — it rides along with the live
+ * the Zed CLI. Deliberately NOT its own tab — it rides along with the live
  * terminal so "how do I get a shell into this from my machine?" is answered
  * right where a shell already lives.
  *
  * Collapsed, it teases the one command that works on any machine — the
  * one-time CLI install. Expanded, it shows the full two-step flow:
- * 1. install, 2. `kortix sessions connect <id>`.
+ * 1. install, 2. `zed sessions connect <id>`.
  */
 export function SessionTerminalConnectBar({ projectSessionId }: { projectSessionId: string }) {
   const [expanded, setExpanded] = useState(false);
-  const connectCmd = `kortix sessions connect ${projectSessionId}`;
+  const connectCmd = `zed sessions connect ${projectSessionId}`;
   const installCmd = useDeploymentCliInstallCommand(undefined);
 
   return (
@@ -46,7 +46,7 @@ export function SessionTerminalConnectBar({ projectSessionId }: { projectSession
         <div className="space-y-2.5 px-3 pt-0.5 pb-3">
           <p className="text-xs leading-relaxed text-white/45">
             Attach your local OpenCode TUI straight to this session&apos;s sandbox. The CLI opens a
-            local proxy, injects your Kortix token, then runs{' '}
+            local proxy, injects your Zed token, then runs{' '}
             <span className="font-mono text-white/60">opencode attach</span>.
           </p>
           <CommandRow label="1. Install the CLI (once)" command={installCmd} />
@@ -82,7 +82,7 @@ function CommandRow({ label, command }: { label: string; command: string }) {
           aria-label={copied ? 'Copied' : 'Copy command'}
         >
           {copied ? (
-            <Check className="text-kortix-green h-3.5 w-3.5" />
+            <Check className="text-zed-green h-3.5 w-3.5" />
           ) : (
             <Copy className="h-3.5 w-3.5" />
           )}

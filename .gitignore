@@ -10,8 +10,8 @@ dist/
 build/
 *.tsbuildinfo
 
-# pnpm worktree — per-worktree marker (state lives in ~/.kortix, outside the repo)
-.kortix-worktree.json
+# pnpm worktree — per-worktree marker (state lives in ~/.zed, outside the repo)
+.zed-worktree.json
 
 # Environment variables
 .env
@@ -97,14 +97,14 @@ dump.rdb
 .cwc/
 test/
 
-# The root .kortix/ dogfood project moved to the company operator repo; keep
-# any local per-clone leftovers out. Other vendored .kortix dirs stay ignored
+# The root .zed/ dogfood project moved to the company operator repo; keep
+# any local per-clone leftovers out. Other vendored .zed dirs stay ignored
 # further down.
-.kortix/
-apps/kortix-v0/.local/
-apps/api/.kortix-data/
+.zed/
+apps/zed-v0/.local/
+apps/api/.zed-data/
 apps/api/.sandbox-auth-token.json
-core/kortix-master/opencode/.kortix/
+core/zed-master/opencode/.zed/
 **/.buildx-cache/
 
 .nx/
@@ -113,16 +113,16 @@ core/kortix-master/opencode/.kortix/
 .vercel
 
 
-/kortix
-/kortix-darwin-arm64
-/kortix-darwin-x64
-/kortix-linux-x64
-/kortix-linux-arm64
-# Root-anchored so we don't ignore apps/mobile/ios/Kortix on case-insensitive FS.
-# The references/kortix doc dirs were previously un-ignored with ! rules; they
-# were never matched by /kortix anyway, but keep the exceptions for clarity.
-!**/references/kortix/
-!**/references/kortix/**
+/zed
+/zed-darwin-arm64
+/zed-darwin-x64
+/zed-linux-x64
+/zed-linux-arm64
+# Root-anchored so we don't ignore apps/mobile/ios/Zed on case-insensitive FS.
+# The references/zed doc dirs were previously un-ignored with ! rules; they
+# were never matched by /zed anyway, but keep the exceptions for clarity.
+!**/references/zed/
+!**/references/zed/**
 
 # Terraform — never commit local state, provider binaries, lockfile, or tfvars
 infra/terraform/**/.terraform/

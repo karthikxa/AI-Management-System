@@ -3,7 +3,7 @@
  *
  *   POST /:projectId/marketplace/install-session { id } → start a session that
  *     clones/reads the marketplace item's source and merges it into this
- *     project (skills/agents/tools/kortix.yaml), then opens a CR.
+ *     project (skills/agents/tools/zed.yaml), then opens a CR.
  *
  * The deterministic install/lock/update/remove engine (registry-lock.json,
  * dependency resolution, hash-based update detection) has been removed — see
@@ -13,7 +13,7 @@
  */
 
 import { createRoute, z } from '@hono/zod-openapi';
-import { manifestCandidatePaths } from '@kortix/manifest-schema';
+import { manifestCandidatePaths } from '@zed/manifest-schema';
 import { requireFeatureFlag } from '../../feature-flags/gate';
 import { isProjectSessionPrincipal } from '../../iam/agent-scope';
 import { getCatalogEntry } from '../../marketplace/catalog';
@@ -30,7 +30,7 @@ import { readBody, requestAuditContext } from '../lib/serializers';
 import { sendSessionCreateError } from '../lib/sessions';
 import { createSession } from '../session-lifecycle';
 
-/** The project's manifest raw text, preferring kortix.yaml over kortix.toml
+/** The project's manifest raw text, preferring zed.yaml over zed.toml
  *  (dual-format). */
 async function manifestRawOrNull(
   project: Parameters<typeof readManifestFromRepo>[0],
@@ -71,7 +71,7 @@ function buildItemInstallPrompt(
   ];
   if (needs.length) {
     lines.push(
-      `3. It needs these connected: ${needs.join(', ')}. Mint a setup link with the \`request_secret\` / \`connect\` tools (or \`kortix secrets request\` / \`kortix connectors link\`) — never ask me to paste a raw key.`,
+      `3. It needs these connected: ${needs.join(', ')}. Mint a setup link with the \`request_secret\` / \`connect\` tools (or \`zed secrets request\` / \`zed connectors link\`) — never ask me to paste a raw key.`,
       '4. Tell me in one line what it can now do and how to use it.',
     );
   } else {
@@ -99,7 +99,7 @@ async function handleMarketplaceInstallSession(c: any) {
   const project = await loadGitProject(loaded);
   let prompt: string;
   try {
-    // Whole projects get merged (judgment-heavy, guards the target's kortix.yaml);
+    // Whole projects get merged (judgment-heavy, guards the target's zed.yaml);
     // a use-case template renders inputs + wires its scheduled trigger; everything
     // else is a straight install + setup.
     if (entry.item.type === 'registry:project') {

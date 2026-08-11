@@ -10,16 +10,16 @@ import {
   type SessionChatInputProps,
   type TrackedMention,
 } from '@/features/session/session-chat-input';
-import { useRuntimeConfig } from '@kortix/sdk/react';
-import { type ModelKey, useSessionModelSelection } from '@kortix/sdk/react';
+import { useRuntimeConfig } from '@zed/sdk/react';
+import { type ModelKey, useSessionModelSelection } from '@zed/sdk/react';
 import {
   type Command,
   useRuntimeAgents,
   useRuntimeCommands,
   useRuntimeProviders,
-} from '@kortix/sdk/react';
-import { useProjectConfig } from '@kortix/sdk/react';
-import { isMetaAgentName } from '@kortix/shared';
+} from '@zed/sdk/react';
+import { useProjectConfig } from '@zed/sdk/react';
+import { isMetaAgentName } from '@zed/shared';
 
 export interface ComposerOptions {
   agent?: string;
@@ -118,7 +118,7 @@ export function ComposerChatInput({
     boundAgentName,
     defaultAgentName: projectConfig?.open_code_default_agent,
   });
-  // Session agent-lock disabled (see KORTIX_ENFORCE_SESSION_AGENT_LOCK / session-chat.tsx):
+  // Session agent-lock disabled (see ZED_ENFORCE_SESSION_AGENT_LOCK / session-chat.tsx):
   // the new-session picker is switchable; the chosen agent rides through on create.
   const SESSION_AGENT_LOCK_ENABLED: boolean = false;
   const lockedAgentName =

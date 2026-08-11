@@ -1,6 +1,6 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
 import { ApiError } from '../../http/api/errors';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import {
   callConnector,
   describeConnectorTool,
@@ -54,7 +54,7 @@ beforeEach(() => {
   calls = [];
   responseStatus = 200;
   responseBody = catalog;
-  configureKortix({
+  configureZed({
     backendUrl: 'http://test.local/v1',
     getToken: async () => 'agent-token',
   });
@@ -98,7 +98,7 @@ test('the platform fetch seam supports compatibility clients without replacing g
       },
     });
   }) as unknown as typeof fetch;
-  configureKortix({
+  configureZed({
     backendUrl: 'http://injected.local/v1',
     getToken: async () => 'compatibility-token',
     fetch: injectedFetch,
@@ -180,7 +180,7 @@ test('call preserves an asynchronous approval handoff', async () => {
     status: 'pending_approval',
     execution_id: 'execution-one',
     retryable: false,
-    approval_url: 'https://app.kortix.test/approve/token',
+    approval_url: 'https://app.zed.test/approve/token',
     approval_summary: 'to: finance@example.com',
     approval_instructions: 'Share the approval URL with a human, then stop.',
   } satisfies ConnectorCallResult;
@@ -219,9 +219,9 @@ test('attachment upload sends raw bytes through the shared token seam', async ()
   expect(calls[0]?.method).toBe('POST');
   expect(calls[0]?.headers.get('authorization')).toBe('Bearer agent-token');
   expect(calls[0]?.headers.get('content-type')).toBe('image/png');
-  expect(calls[0]?.headers.get('x-kortix-attachment-filename')).toBe('chart.png');
-  expect(calls[0]?.headers.get('x-kortix-attachment-disposition')).toBe('inline');
-  expect(calls[0]?.headers.get('x-kortix-attachment-content-id')).toBe('chart-one');
+  expect(calls[0]?.headers.get('x-zed-attachment-filename')).toBe('chart.png');
+  expect(calls[0]?.headers.get('x-zed-attachment-disposition')).toBe('inline');
+  expect(calls[0]?.headers.get('x-zed-attachment-content-id')).toBe('chart-one');
   expect(calls[0]?.body).toBe(bytes);
 });
 
@@ -235,7 +235,7 @@ test('attachment upload handles an uncontrolled slash-heavy backend URL in linea
     size: 1,
     expires_at: '2026-08-09T00:00:00.000Z',
   };
-  configureKortix({
+  configureZed({
     backendUrl: `http://test.local/${'/'.repeat(40_000)}x/v1`,
     getToken: async () => 'agent-token',
   });

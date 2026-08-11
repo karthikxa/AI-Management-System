@@ -4,14 +4,14 @@ import Loading from '@/components/ui/loading';
 
 /**
  * FilesPanel — a compact two-pane workspace file browser for the white-label
- * app, driven entirely through the `@kortix/sdk` project facade. It exercises
+ * app, driven entirely through the `@zed/sdk` project facade. It exercises
  * the full `files` surface:
  *
- *   kortix.project(id).files.list(options?)   → the workspace tree (left list)
- *   kortix.project(id).files.search(query, …) → the search input (left list)
- *   kortix.project(id).files.read(path, ref?) → the monospace viewer (right pane)
- *   kortix.project(id).files.history(path, …) → the per-file "History" popover
- *   kortix.project(id).files.archive(ref, …)  → the "Download" button
+ *   zed.project(id).files.list(options?)   → the workspace tree (left list)
+ *   zed.project(id).files.search(query, …) → the search input (left list)
+ *   zed.project(id).files.read(path, ref?) → the monospace viewer (right pane)
+ *   zed.project(id).files.history(path, …) → the per-file "History" popover
+ *   zed.project(id).files.archive(ref, …)  → the "Download" button
  */
 
 import { Badge } from '@/components/ui/badge';
@@ -22,9 +22,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { cn } from '@/lib/utils';
-import type { ProjectCommit, ProjectFileEntry, ProjectFileSearchMatch } from '@kortix/sdk';
+import type { ProjectCommit, ProjectFileEntry, ProjectFileSearchMatch } from '@zed/sdk';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Download,
@@ -66,26 +66,26 @@ export function FilesPanel({ projectId }: { projectId: string }) {
   // .files.list — the workspace tree (shown when not searching).
   const list = useQuery({
     queryKey: ['project-files', projectId, 'list'],
-    queryFn: () => kortix.project(projectId).files.list(),
+    queryFn: () => zed.project(projectId).files.list(),
   });
 
   // .files.search — filename search, live as you type.
   const search = useQuery({
     queryKey: ['project-files', projectId, 'search', deferredQuery],
-    queryFn: () => kortix.project(projectId).files.search(deferredQuery, { limit: 50 }),
+    queryFn: () => zed.project(projectId).files.search(deferredQuery, { limit: 50 }),
     enabled: searching,
   });
 
   // .files.read — content for the selected file (right pane).
   const content = useQuery({
     queryKey: ['project-files', projectId, 'content', selected],
-    queryFn: () => kortix.project(projectId).files.read(selected as string),
+    queryFn: () => zed.project(projectId).files.read(selected as string),
     enabled: !!selected,
   });
 
   // .files.archive — download a zip of the whole repo at HEAD.
   const download = useMutation({
-    mutationFn: () => kortix.project(projectId).files.archive(DEFAULT_REF),
+    mutationFn: () => zed.project(projectId).files.archive(DEFAULT_REF),
     onSuccess: (blob) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -268,7 +268,7 @@ function FileHistory({ projectId, path }: { projectId: string; path: string }) {
 
   const history = useQuery({
     queryKey: ['project-files', projectId, 'history', path],
-    queryFn: () => kortix.project(projectId).files.history(path, { limit: 20 }),
+    queryFn: () => zed.project(projectId).files.history(path, { limit: 20 }),
     enabled: open,
   });
 

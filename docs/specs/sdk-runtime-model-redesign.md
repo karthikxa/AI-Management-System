@@ -10,7 +10,7 @@
 > **North star:** a session binds to its sandbox's OpenCode runtime and gets its **own**
 > client + SSE + store. There is **no global "active server."** "Current session" is a UI
 > concern, not a runtime switch. The client side holds almost nothing — complexity lives in
-> the SDK's per-session context and in the Kortix API.
+> the SDK's per-session context and in the Zed API.
 
 ---
 
@@ -46,10 +46,10 @@ model. **The redesign is: adopt OpenCode's pattern, keyed by session.**
 
 | Concept | What it is | Where it lives | SDK's job |
 | --- | --- | --- | --- |
-| **Project** | A repo + config | Kortix DB | plain REST CRUD — `kortix.projects` / `kortix.project(id)` |
-| **Session** | One agent run; **always owns a sandbox** | Kortix DB + a provisioned sandbox | REST CRUD + **bring its runtime up** (`/start`) |
+| **Project** | A repo + config | Zed DB | plain REST CRUD — `zed.projects` / `zed.project(id)` |
+| **Session** | One agent run; **always owns a sandbox** | Zed DB + a provisioned sandbox | REST CRUD + **bring its runtime up** (`/start`) |
 | **Sandbox** | The disposable box | provider (Daytona/…) | invisible — never named in the public surface |
-| **Runtime** | The **OpenCode daemon** in the sandbox (port 8000) | inside the sandbox, reached via the Kortix API `/p/<sandbox>/8000` proxy | connect to it: one client + one SSE + one store, **per session** |
+| **Runtime** | The **OpenCode daemon** in the sandbox (port 8000) | inside the sandbox, reached via the Zed API `/p/<sandbox>/8000` proxy | connect to it: one client + one SSE + one store, **per session** |
 
 So the only runtime question is: *given `(projectId, sessionId)`, what's the OpenCode URL, and
 talk to it.* The server already answers the first half (`/start` returns `runtime_url`). The
@@ -123,7 +123,7 @@ Net: the runtime data a host sees is `sync-store` (history) + `pending-store` (p
 
 - **SDK = HTTP + SSE only**, exactly like OpenCode: TanStack Query for pull, SSE for push, the
   per-session context owns the stream + dispose. No bespoke client state machine.
-- **Push to the Kortix API** (we own it):
+- **Push to the Zed API** (we own it):
   - `runtime_url` (shipped) — server owns the proxy scheme; client treats it opaquely.
   - *Next:* a **stable per-session runtime route** `/projects/:id/sessions/:sid/runtime/*` so
     the client never sees `sandbox`/`external_id`/`/p/` at all.
@@ -149,7 +149,7 @@ Net: the runtime data a host sees is `sync-store` (history) + `pending-store` (p
    `switchToSessionSandboxAsync` + the connection-store reset. This is the ~50-file web change —
    its own tested PR, and it's what unlocks concurrent live sessions.
 4. **Server route.** Add the stable `/sessions/:sid/runtime/*` proxy; drop `/p/` from the client.
-5. **Enforce the boundary.** Move the genuinely-internal exports behind `@kortix/sdk/internal`.
+5. **Enforce the boundary.** Move the genuinely-internal exports behind `@zed/sdk/internal`.
 
 Steps 1–2 are this branch's cleanup. Steps 3–5 are the redesign proper (sequenced PRs).
 

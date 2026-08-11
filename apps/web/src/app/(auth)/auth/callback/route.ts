@@ -14,8 +14,8 @@ import {
   parseLastProjectForUser,
   projectPathFromId,
 } from '@/lib/onboarding/landing-destination';
-import { ACTIVE_INSTANCE_COOKIE } from '@kortix/sdk/instance-routes';
-import { fetchAccountStateWithToken } from '@kortix/sdk';
+import { ACTIVE_INSTANCE_COOKIE } from '@zed/sdk/instance-routes';
+import { fetchAccountStateWithToken } from '@zed/sdk';
 import { getServerPublicEnv } from '@/lib/public-env-server';
 import { createClient } from '@/lib/supabase/server';
 import type { NextRequest } from 'next/server';
@@ -44,10 +44,10 @@ export async function GET(request: NextRequest) {
   const runtimeEnv = getServerPublicEnv();
 
   // Desktop OAuth bounce: Supabase 302'd the user's BROWSER here. Don't
-  // exchange the code on the web side — bounce to `kortix://auth/callback`
+  // exchange the code on the web side — bounce to `zed://auth/callback`
   // with the same params so the OS hands the code to the desktop app, and
   // leave the browser tab on a real page so it doesn't spin forever waiting
-  // for a navigation that the kortix:// scheme never produces.
+  // for a navigation that the zed:// scheme never produces.
   if (desktop) {
     // The deep link is built from attacker-influenced query params, so the
     // HTML is rendered by a helper that escapes both the href attribute and the

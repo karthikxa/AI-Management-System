@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { PublicVoiceJoinError, getPublicVoiceJoin, getPublicVoiceTranscript } from './public-voice-join';
 
 let calls: { url: string; method: string; headers: Record<string, string> }[] = [];
@@ -17,7 +17,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 const last = () => calls[calls.length - 1];
 
 test('getPublicVoiceJoin hits /public/voice-join/:token with no Authorization header', async () => {
@@ -68,7 +68,7 @@ test('getPublicVoiceTranscript reads the join link\'s own call, with no Authoriz
       call_id: 'sess-1',
       cursor: 7,
       turns: [
-        { cursor: 6, role: 'agent', speaker: 'kortix', text: 'The deploy finished.', at: '2026-07-26T10:00:00.000Z' },
+        { cursor: 6, role: 'agent', speaker: 'zed', text: 'The deploy finished.', at: '2026-07-26T10:00:00.000Z' },
         { cursor: 7, role: 'tool', speaker: 'run_command', text: 'run_command: ls → ok', at: '2026-07-26T10:00:01.000Z' },
       ],
     },
@@ -79,7 +79,7 @@ test('getPublicVoiceTranscript reads the join link\'s own call, with no Authoriz
   expect(last().headers.Authorization).toBeUndefined();
   expect(page.cursor).toBe(7);
   expect(page.turns).toHaveLength(2);
-  expect(page.turns[0]!.speaker).toBe('kortix');
+  expect(page.turns[0]!.speaker).toBe('zed');
   expect(page.turns[1]!.role).toBe('tool');
 });
 

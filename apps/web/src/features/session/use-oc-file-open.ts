@@ -1,12 +1,12 @@
 'use client';
 
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import {
   getRuntimePathInfo,
   getRuntimeProjectInfo,
   readRuntimeTextFile,
   runtimeKeys,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -169,7 +169,7 @@ export async function resolveRuntimePath(filePath: string): Promise<string> {
  * then tries each when converting absolute paths → project-relative paths.
  */
 export function useOcFileOpen() {
-  const openFileInComputer = useKortixComputerStore((s) => s.openFileInComputer);
+  const openFileInComputer = useZedComputerStore((s) => s.openFileInComputer);
   const queryClient = useQueryClient();
   const [prefixes, setPrefixes] = useState<string[]>(cachedPrefixes || []);
 

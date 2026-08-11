@@ -114,7 +114,7 @@ export function isDestructivePhase(phase: UpdatePhase): boolean {
 }
 
 /**
- * Get the current update status from kortix-api.
+ * Get the current update status from zed-api.
  * The API tracks the Docker pull + recreate progress.
  */
 export async function getSandboxUpdateStatus(
@@ -183,7 +183,7 @@ export async function getAllVersions(): Promise<AllVersionsResponse> {
 }
 
 /**
- * Trigger a Docker image-based sandbox update via kortix-api.
+ * Trigger a Docker image-based sandbox update via zed-api.
  *
  * The API pulls the new image, stops the container, removes it (preserving
  * the /workspace volume), and recreates with the new image. The frontend
@@ -197,7 +197,7 @@ export async function triggerSandboxUpdate(
 }
 
 /**
- * Reset the update status on kortix-api (e.g. after a failed update to allow retry).
+ * Reset the update status on zed-api (e.g. after a failed update to allow retry).
  */
 export async function resetSandboxUpdateStatus(sandbox?: SandboxInfo): Promise<void> {
   return;

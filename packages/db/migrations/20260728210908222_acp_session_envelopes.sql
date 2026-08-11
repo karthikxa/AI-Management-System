@@ -1,7 +1,7 @@
 set lock_timeout = '2s';
 set statement_timeout = '30s';
 
-CREATE TABLE "kortix"."acp_session_envelopes" (
+CREATE TABLE "zed"."acp_session_envelopes" (
   "ordinal" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   "event_id" uuid DEFAULT gen_random_uuid() NOT NULL,
   "session_id" text NOT NULL,
@@ -15,20 +15,20 @@ CREATE TABLE "kortix"."acp_session_envelopes" (
     CHECK ("direction" IN ('client_to_agent', 'agent_to_client')),
   CONSTRAINT "acp_session_envelopes_session_id_project_sessions_session_id_fk"
     FOREIGN KEY ("session_id")
-    REFERENCES "kortix"."project_sessions"("session_id")
+    REFERENCES "zed"."project_sessions"("session_id")
     ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT "acp_session_envelopes_project_id_projects_project_id_fk"
     FOREIGN KEY ("project_id")
-    REFERENCES "kortix"."projects"("project_id")
+    REFERENCES "zed"."projects"("project_id")
     ON DELETE CASCADE
     ON UPDATE NO ACTION
 );
 
 CREATE UNIQUE INDEX "idx_acp_session_envelopes_event_id"
-  ON "kortix"."acp_session_envelopes" ("event_id");
+  ON "zed"."acp_session_envelopes" ("event_id");
 CREATE UNIQUE INDEX "idx_acp_session_envelopes_upstream_event"
-  ON "kortix"."acp_session_envelopes" (
+  ON "zed"."acp_session_envelopes" (
     "session_id",
     "direction",
     "runtime_instance_id",
@@ -36,4 +36,4 @@ CREATE UNIQUE INDEX "idx_acp_session_envelopes_upstream_event"
   )
   WHERE "upstream_event_id" IS NOT NULL;
 CREATE INDEX "idx_acp_session_envelopes_session_ordinal"
-  ON "kortix"."acp_session_envelopes" ("session_id", "ordinal");
+  ON "zed"."acp_session_envelopes" ("session_id", "ordinal");

@@ -9,8 +9,8 @@ const t0=Date.now();
 const ses=await (await fetch(`http://localhost:8008/v1/projects/${prov.project_id}/sessions`,{method:'POST',headers:H,body:JSON.stringify({branch_already_created:false})})).json() as any;
 const SID=ses.session_id; let ext='';
 for(let i=0;i<80;i++){
-  if(!ext){const r:any=await db.execute(sql`SELECT external_id FROM kortix.session_sandboxes WHERE sandbox_id=${SID}`);ext=(r.rows??r)[0]?.external_id||'';}
-  if(ext){try{const resp=await fetch(`http://localhost:8008/v1/p/${ext}/8000/kortix/health`,{headers:{Authorization:`Bearer ${tok}`}});
+  if(!ext){const r:any=await db.execute(sql`SELECT external_id FROM zed.session_sandboxes WHERE sandbox_id=${SID}`);ext=(r.rows??r)[0]?.external_id||'';}
+  if(ext){try{const resp=await fetch(`http://localhost:8008/v1/p/${ext}/8000/zed/health`,{headers:{Authorization:`Bearer ${tok}`}});
     if(resp.ok){const h=await resp.json() as any; console.log(`  ${Date.now()-t0}ms ready=${h.runtimeReady} repo=${h.repo_ready}`); if(h.runtimeReady){console.log(`>>> READY at ${Date.now()-t0}ms`);process.exit(0);}} else console.log(`  ${Date.now()-t0}ms http=${resp.status}`);}catch{}}
   await new Promise(r=>setTimeout(r,1500));
 }

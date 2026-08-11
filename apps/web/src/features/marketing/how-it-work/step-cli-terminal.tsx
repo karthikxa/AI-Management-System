@@ -1,12 +1,12 @@
 'use client';
 
 import {
-  KORTIX_CMD_CLASS,
-  KORTIX_CMD_STYLE,
+  ZED_CMD_CLASS,
+  ZED_CMD_STYLE,
   LineView,
   type Line,
 } from '@/components/home/interactive-demo/cli/terminal';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { cn } from '@/lib/utils';
 import { useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
 
@@ -44,8 +44,8 @@ export function StepCliTerminal({
         )}
       >
         <span className="text-muted-foreground ml-1.5 inline-flex items-center gap-1 text-[11px] font-medium">
-          <KortixLogo size={12} />
-          Kortix
+          <ZedLogo size={12} />
+          Zed
         </span>
       </div>
 
@@ -69,7 +69,7 @@ export function StepCliTerminal({
         {running && (
           <div className="flex items-center whitespace-pre">
             <span className="text-muted-foreground/45">$ </span>
-            <span className={KORTIX_CMD_CLASS} style={KORTIX_CMD_STYLE}>
+            <span className={ZED_CMD_CLASS} style={ZED_CMD_STYLE}>
               {typed}
             </span>
             <span

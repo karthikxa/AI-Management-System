@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import {
   connectEmail,
   connectSlack,
@@ -39,7 +39,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 const last = () => calls[calls.length - 1];
 
 test('getSlackInstallation hits the installation endpoint and returns null on failure', async () => {
@@ -229,7 +229,7 @@ test('uploadSlackChannelFile posts channel/filename/content_base64 to the upload
 });
 
 
-test('updateEmailPolicy defaults connector_slug to kortix_email', async () => {
+test('updateEmailPolicy defaults connector_slug to zed_email', async () => {
   nextResponse = {
     status: 200,
     body: {
@@ -253,7 +253,7 @@ test('updateEmailPolicy defaults connector_slug to kortix_email', async () => {
     allowedDomains: [],
     allowedRegex: null,
   });
-  expect(last().body).toMatchObject({ connector_slug: 'kortix_email' });
+  expect(last().body).toMatchObject({ connector_slug: 'zed_email' });
 });
 
 test('listChannelBindings hits the bindings collection', async () => {

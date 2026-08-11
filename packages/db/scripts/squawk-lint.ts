@@ -17,7 +17,7 @@
  *                                             policy for grandfathered files)
  *
  * Downloads and checksum-verifies a pinned squawk binary into
- * ~/.cache/kortix-db/squawk-<version> on first run (or reads $SQUAWK_BIN if
+ * ~/.cache/zed-db/squawk-<version> on first run (or reads $SQUAWK_BIN if
  * already set, e.g. by CI after its own pinned install step).
  */
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -73,7 +73,7 @@ async function ensureSquawkBinary(): Promise<string> {
   const entry = SQUAWK_CHECKSUMS[key];
   if (!entry) throw new Error(`squawk-lint: no pinned checksum for platform ${key}.`);
 
-  const cacheDir = join(homedir(), '.cache', 'kortix-db');
+  const cacheDir = join(homedir(), '.cache', 'zed-db');
   const cachedPath = join(cacheDir, `squawk-${SQUAWK_VERSION}-${key}`);
   if (existsSync(cachedPath)) return cachedPath;
 

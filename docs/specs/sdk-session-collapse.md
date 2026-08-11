@@ -1,12 +1,12 @@
 # SDK: Collapse the session runtime into `useSession` — Spec
 
-> Status: **proposal** · 2026-06-27 · Folds into PR #3825 (the `@kortix/sdk` + white-label
+> Status: **proposal** · 2026-06-27 · Folds into PR #3825 (the `@zed/sdk` + white-label
 > branch — one big merge).
 >
 > **North star:** a host should never touch the sandbox. Opening a session and streaming a
 > chat must be **one hook** — `useSession(projectId, sessionId)` — with start, readiness,
 > SSE, id-resolution and the per-session client all **inside** the SDK. The host imports
-> `createKortix`, `useSession`, and nothing sandbox-shaped. The server hands the client a
+> `createZed`, `useSession`, and nothing sandbox-shaped. The server hands the client a
 > ready, stable per-session URL so there is **no client-side health poller at all.**
 
 ---
@@ -64,7 +64,7 @@ leaks the switch + the id-resolution. The target erases all of it.
 ### 1b. The concepts the host is forced to know (should all be SDK-internal)
 
 `activeServerId` · `activeInstanceId` · `sandboxId` / `external_id` · the
-kortix-session-id ↔ opencode-session-id split · `server-store` (global singleton) ·
+zed-session-id ↔ opencode-session-id split · `server-store` (global singleton) ·
 `switchToSessionSandboxAsync` · `useSandboxConnection` · `OpenCodeEventStreamProvider`
 placement · `useCanonicalOpenCodeSession` · the `/p/:sandboxId/:port` proxy scheme · the
 `healthy` flag (**31 gate sites** across `apps/web`: session chat, file tree, terminal,
@@ -97,10 +97,10 @@ HOST (any white-label)
   const s = useSession(projectId, sessionId)
   → s.messages · s.send · s.abort · s.status · s.phase
     s.questions · s.permissions · s.models · s.agents · s.picks · s.preview
-  (imports: createKortix, useSession. NOTHING sandbox-shaped.)
+  (imports: createZed, useSession. NOTHING sandbox-shaped.)
         │
         ▼
-@kortix/sdk  (useSession — all plumbing INTERNAL)
+@zed/sdk  (useSession — all plumbing INTERNAL)
   start() ──▶ POST /projects/:id/sessions/:sid/start?wait_ms=30000
                  └─▶ { stage:'ready', opencode_session_id, runtime_url }   ← one response, go-live
   getClientForUrl(runtime_url)         ← per-session client, no global switch
@@ -108,7 +108,7 @@ HOST (any white-label)
   derive phase: 'starting' | 'ready' | 'error'
         │
         ▼
-KORTIX API
+ZED API
   /projects/:id/sessions/:sid/start    ← already resolves readiness + pin server-side
   /projects/:id/sessions/:sid/runtime/* ← NEW stable proxy → forwards to the right box
                                           (reuses forwardToSandbox; client never sees /p/)
@@ -160,8 +160,8 @@ interface UseSession {
 }
 ```
 
-**Host import surface after the collapse:** `createKortix`, `kortix.project(id)`,
-`kortix.session(pid,sid)` (REST), `useSession(pid,sid)`. **Removed from host code:**
+**Host import surface after the collapse:** `createZed`, `zed.project(id)`,
+`zed.session(pid,sid)` (REST), `useSession(pid,sid)`. **Removed from host code:**
 `server-store`, `switchToSessionSandboxAsync`, `useSandboxConnection`,
 `OpenCodeEventStreamProvider`, `useCanonicalOpenCodeSession`, `useSessionSync` (now internal),
 the `sandbox-connection-store`, every `healthy` read.
@@ -290,7 +290,7 @@ The same "host owns what it shouldn't" pattern recurs beyond the session runtime
 items fold into THIS merge (cheap SDK primitives + the core collapse); the rest are sequenced
 follow-ups recorded here so this doc stays the complete source of truth.
 
-### 10a. Cheap SDK primitives the white-label reimplements → move into `@kortix/sdk` (fold in)
+### 10a. Cheap SDK primitives the white-label reimplements → move into `@zed/sdk` (fold in)
 
 | Primitive | Reimplemented in | New SDK shape |
 | --- | --- | --- |
@@ -340,7 +340,7 @@ recording the full path. The SSE-lists + billing work are their own future PRs.
   collapse end-to-end.**
 - **§3 / §7 (partial) — the web's connection store unified + the SDK poller deleted.**
   `apps/web`'s `sandbox-connection-store` was a byte-identical *separate* fork; it now
-  re-exports the SDK's (`@kortix/sdk/sandbox-connection-store`) — ONE store instance shared by
+  re-exports the SDK's (`@zed/sdk/sandbox-connection-store`) — ONE store instance shared by
   the web's poller/gates AND the SDK's `useSessionSync`/event-stream/`useSession`, removing a
   latent split-brain (two stores held together only by a shared sessionStorage flag +
   connSwitchReset registration order). The SDK's own `useSandboxConnection` poller hook is
@@ -380,9 +380,9 @@ and gated behind a runtime test. The mechanism (per-URL clients, `runtime_url`) 
 
 ### §7 — final public surface defined + demonstrated (shipped)
 
-The golden reference (`apps/whitelabel-demo`) imports ONLY the clean surface — `@kortix/sdk`
-(`createKortix`, `generateSessionId`), `@kortix/sdk/react` (`useSession` + the capability/primitive
-hooks), `@kortix/sdk/opencode-client` (types). **Zero** plumbing: no `server-store`, no
+The golden reference (`apps/whitelabel-demo`) imports ONLY the clean surface — `@zed/sdk`
+(`createZed`, `generateSessionId`), `@zed/sdk/react` (`useSession` + the capability/primitive
+hooks), `@zed/sdk/opencode-client` (types). **Zero** plumbing: no `server-store`, no
 `OpenCodeEventStreamProvider`, no `useCanonicalOpenCodeSession`, no raw stores, no `getClient`. That
 IS the final surface, and the react barrel now demarcates it (a `FINAL PUBLIC SURFACE` block marks
 the lower-level exports as internal plumbing that `useSession` composes).
@@ -398,7 +398,7 @@ builds the full IDE beyond chat. They stay by design.
 `apps/web`'s `opencode-pending-store` was a local fork carrying a real fix the SDK lacked —
 `resolvedQuestionIds`, so a resolved question can't be resurrected by a stale SSE re-add (which
 would re-lock the chat input). Ported that guard into the SDK store, added a
-`@kortix/sdk/opencode-pending-store` subpath, and converged the web's copy to a re-export — ONE
+`@zed/sdk/opencode-pending-store` subpath, and converged the web's copy to a re-export — ONE
 store shared by the SSE writer and the chat reader. The web's pending-store test passes 7/7 against
 the SDK store.
 

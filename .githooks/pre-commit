@@ -1,5 +1,5 @@
 #!/bin/sh
-# Kortix secrets guard (auto-encrypt by default) — every committable .env is
+# Zed secrets guard (auto-encrypt by default) — every committable .env is
 # dotenvx-managed, no exceptions.
 #
 # 1. Auto-encrypts EVERY staged .env that's about to be committed (any path,
@@ -55,7 +55,7 @@ for f in $other_envs; do
 done
 
 # Keep the starter embedded snapshot in sync with the templates. The compiled
-# `kortix` binary ships packages/starter/src/embedded.generated.json, so a stale
+# `zed` binary ships packages/starter/src/embedded.generated.json, so a stale
 # snapshot would scaffold old files. If any template changed in this commit,
 # regenerate and re-stage so the commit always carries a fresh snapshot.
 starter_templates=$(git diff --cached --name-only --diff-filter=ACMRD \

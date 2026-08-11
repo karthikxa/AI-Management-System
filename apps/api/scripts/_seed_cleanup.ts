@@ -1,5 +1,5 @@
 import { db } from '../src/shared/db';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { readFileSync } from 'fs';
 const PTKEY = readFileSync('/tmp/ptkey', 'utf8').trim();

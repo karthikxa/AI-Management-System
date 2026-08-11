@@ -4,7 +4,7 @@
 set lock_timeout = '2s';
 set statement_timeout = '30s';
 
--- Kortix-as-a-Backend: when a session sets connector_bindings, binding any alias
+-- Zed-as-a-Backend: when a session sets connector_bindings, binding any alias
 -- normally suppresses the project-default fallback for every OTHER (unbound)
 -- alias ("all-or-nothing"). connector_bindings_inherit_unbound keeps that
 -- fallback, so a caller can override just one connector (e.g. an end-user's own
@@ -17,5 +17,5 @@ set statement_timeout = '30s';
 --       PG11+, every existing row reads false without a table rewrite/backfill.
 --   [x] No CHECK/FK/unique/index -- read only by the session PK lookup.
 
-ALTER TABLE "kortix"."project_sessions"
+ALTER TABLE "zed"."project_sessions"
   ADD COLUMN "connector_bindings_inherit_unbound" boolean DEFAULT false NOT NULL;

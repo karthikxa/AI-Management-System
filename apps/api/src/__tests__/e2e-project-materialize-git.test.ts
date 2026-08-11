@@ -19,26 +19,26 @@ function git(args: string[], cwd?: string): string {
 
 describe('project git materialization', () => {
   beforeEach(async () => {
-    root = await mkdtemp(join(tmpdir(), 'kortix-materialize-e2e-'));
-    previousCacheDir = process.env.KORTIX_GIT_CACHE_DIR;
-    process.env.KORTIX_GIT_CACHE_DIR = join(root, 'git-cache');
+    root = await mkdtemp(join(tmpdir(), 'zed-materialize-e2e-'));
+    previousCacheDir = process.env.ZED_GIT_CACHE_DIR;
+    process.env.ZED_GIT_CACHE_DIR = join(root, 'git-cache');
   });
 
   afterEach(async () => {
-    if (previousCacheDir === undefined) delete process.env.KORTIX_GIT_CACHE_DIR;
-    else process.env.KORTIX_GIT_CACHE_DIR = previousCacheDir;
+    if (previousCacheDir === undefined) delete process.env.ZED_GIT_CACHE_DIR;
+    else process.env.ZED_GIT_CACHE_DIR = previousCacheDir;
     if (root) await rm(root, { recursive: true, force: true });
   });
 
   test('extracts repeated full-tree archives from a bare mirror without truncation', async () => {
     const source = join(root, 'source');
     const origin = join(root, 'origin.git');
-    mkdirSync(join(source, '.kortix', 'opencode', 'skills', 'legal-writer', 'scripts'), { recursive: true });
+    mkdirSync(join(source, '.zed', 'opencode', 'skills', 'legal-writer', 'scripts'), { recursive: true });
     mkdirSync(join(source, 'src', 'nested'), { recursive: true });
 
     git(['init', '-b', 'main'], source);
-    git(['config', 'user.email', 'e2e@kortix.test'], source);
-    git(['config', 'user.name', 'Kortix E2E'], source);
+    git(['config', 'user.email', 'e2e@zed.test'], source);
+    git(['config', 'user.name', 'Zed E2E'], source);
 
     for (let i = 0; i < 75; i += 1) {
       writeFileSync(
@@ -48,11 +48,11 @@ describe('project git materialization', () => {
       );
     }
     writeFileSync(
-      join(source, '.kortix', 'opencode', 'skills', 'legal-writer', 'scripts', 'courtlistener.py'),
+      join(source, '.zed', 'opencode', 'skills', 'legal-writer', 'scripts', 'courtlistener.py'),
       'print("courtlistener fixture")\n',
       'utf8',
     );
-    writeFileSync(join(source, 'kortix.yaml'), 'project:\n  name: materialize-e2e\n', 'utf8');
+    writeFileSync(join(source, 'zed.yaml'), 'project:\n  name: materialize-e2e\n', 'utf8');
     git(['add', '.'], source);
     git(['commit', '-m', 'initial'], source);
 
@@ -65,16 +65,16 @@ describe('project git materialization', () => {
       projectId: '00000000-0000-4000-a000-000000000997',
       repoUrl: origin,
       defaultBranch: 'main',
-      manifestPath: 'kortix.yaml',
+      manifestPath: 'zed.yaml',
     };
 
     for (let i = 0; i < 5; i += 1) {
       const dir = await materializeRepoContext(project, commit);
       try {
-        expect(existsSync(join(dir, 'kortix.yaml'))).toBe(true);
+        expect(existsSync(join(dir, 'zed.yaml'))).toBe(true);
         expect(readFileSync(join(dir, 'src', 'nested', 'file-74.txt'), 'utf8')).toContain('fixture-74');
         expect(readFileSync(
-          join(dir, '.kortix', 'opencode', 'skills', 'legal-writer', 'scripts', 'courtlistener.py'),
+          join(dir, '.zed', 'opencode', 'skills', 'legal-writer', 'scripts', 'courtlistener.py'),
           'utf8',
         )).toContain('courtlistener fixture');
       } finally {

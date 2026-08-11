@@ -7,14 +7,14 @@
  * Run (from packages/sdk):  bun run playground/sessions/30-session-crud.ts [projectId]
  */
 import { ApiError, generateSessionId } from "../../src/index";
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("session-crud", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
 
   const clientId = generateSessionId();
-  const created = await kortix.projects.createSession(projectId, {
+  const created = await zed.projects.createSession(projectId, {
     name: "sdk crud test",
     session_id: clientId,
   });
@@ -28,7 +28,7 @@ run("session-crud", async () => {
     `✓ created with client-generated id ${clientId} — server honored it`,
   );
 
-  const session = kortix.session(projectId, clientId);
+  const session = zed.session(projectId, clientId);
 
   const row = await session.get();
   console.log(`✓ get(): status=${(row as { status?: string } | null)?.status}`);
@@ -62,7 +62,7 @@ run("session-crud", async () => {
   }
 
   await session.delete();
-  const sessions = await kortix.projects.sessions(projectId);
+  const sessions = await zed.projects.sessions(projectId);
   if (sessions.some((s) => s.session_id === clientId)) {
     console.error("✗ session still listed after delete()");
     process.exit(1);

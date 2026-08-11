@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { projects, projectSessions, sessionSandboxes } from '@kortix/db';
+import { projects, projectSessions, sessionSandboxes } from '@zed/db';
 import { db } from '../../shared/db';
 import { resolveSandboxIngress } from '../../sandbox-proxy/backend';
 import { config } from '../../config';
@@ -29,7 +29,7 @@ import {
 
 /** Resolve the LLM gateway URL used by every supported remote provider. */
 export function llmGatewayBaseUrlForProvider(_providerName: ProviderName): string {
-  return resolveLlmGatewayBaseUrl(config.KORTIX_URL);
+  return resolveLlmGatewayBaseUrl(config.ZED_URL);
 }
 
 const SANDBOX_SERVICE_PORT = 8000;
@@ -119,7 +119,7 @@ async function resolveOwnerRawEnv(
     manifestPath: project?.manifestPath,
     sessionAgent: row.agentName ?? DEFAULT_AGENT_SENTINEL,
     requestedAgent,
-    enforceGrantLock: config.KORTIX_ENFORCE_AGENT_SECRET_GRANT_LOCK,
+    enforceGrantLock: config.ZED_ENFORCE_AGENT_SECRET_GRANT_LOCK,
   });
 
   // THE CLOBBER FIX: apply the SAME per-session secrets narrowing as boot
@@ -228,7 +228,7 @@ async function postEnvToDaemon(args: {
     ...args.providerHeaders,
   };
 
-  const res = await fetch(`${args.previewUrl.replace(/\/$/, '')}/kortix/env`, {
+  const res = await fetch(`${args.previewUrl.replace(/\/$/, '')}/zed/env`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -621,7 +621,7 @@ async function runBounded<T>(
 /**
  * Re-point ONE live session at a different model.
  *
- * opencode reads `KORTIX_OPENCODE_MODEL` when it builds its config at spawn, so
+ * opencode reads `ZED_OPENCODE_MODEL` when it builds its config at spawn, so
  * the value must reach the daemon AND opencode must restart for it to take
  * effect. `refreshModels: true` is what triggers that restart.
  *
@@ -635,7 +635,7 @@ async function runBounded<T>(
  *
  * The compiled agent config — agents, their prompts, permissions, model — is the
  * one part of a session's configuration with no runtime source. It is compiled
- * once at provision and handed down as `KORTIX_COMPILED_AGENT_CONFIG`, so a
+ * once at provision and handed down as `ZED_COMPILED_AGENT_CONFIG`, so a
  * session merged past days ago keeps running the agents it booted with. Pulling
  * the branch inside the sandbox does not help (the compiled bytes never came
  * from the working tree) and neither did restarting opencode (the daemon's env
@@ -674,7 +674,7 @@ export async function pushSessionAgentConfigToSandbox(input: {
       projectId: input.projectId,
       repoUrl: input.repoUrl,
       defaultBranch: input.defaultBranch,
-      manifestPath: input.manifestPath ?? 'kortix.yaml',
+      manifestPath: input.manifestPath ?? 'zed.yaml',
       gitAuthToken: null,
     };
     const compiled =
@@ -718,10 +718,10 @@ export async function pushSessionAgentConfigToSandbox(input: {
       serviceKey,
       snapshot,
       opencodeEnv: {
-        KORTIX_COMPILED_AGENT_CONFIG: compiled,
+        ZED_COMPILED_AGENT_CONFIG: compiled,
         // Pushed with the config so the box's reported etag never lags what it
         // is actually running.
-        KORTIX_COMPILED_AGENT_CONFIG_ETAG: agentConfigEtag(compiled) ?? '',
+        ZED_COMPILED_AGENT_CONFIG_ETAG: agentConfigEtag(compiled) ?? '',
       },
       // Restarts opencode so it rebuilds its config against the new agents.
       refreshModels: true,
@@ -778,7 +778,7 @@ export async function pushSessionModelToSandbox(input: {
       providerHeaders: headers,
       serviceKey,
       snapshot,
-      opencodeEnv: { KORTIX_OPENCODE_MODEL: input.model },
+      opencodeEnv: { ZED_OPENCODE_MODEL: input.model },
       // Restarts opencode so it rebuilds its config against the new model.
       refreshModels: true,
     });

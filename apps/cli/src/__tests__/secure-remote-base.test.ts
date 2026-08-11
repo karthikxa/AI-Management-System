@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { secureRemoteBase } from '../api/client.ts';
 
-// Regression: a remote http:// API base (e.g. the built-in kortix-internal-dev
+// Regression: a remote http:// API base (e.g. the built-in zed-internal-dev
 // host) 308-redirects to https, and fetch drops the Authorization header on the
 // scheme change — so token validation silently 401s as "Token rejected by the
 // API" even though the browser login succeeded. Remote http must be upgraded to
@@ -10,9 +10,9 @@ import { secureRemoteBase } from '../api/client.ts';
 describe('secureRemoteBase', () => {
   test('upgrades public http hosts to https', () => {
     for (const [base, expected] of [
-      ['http://dev-api.kortix.com', 'https://dev-api.kortix.com'],
-      ['http://api.kortix.com', 'https://api.kortix.com'],
-      ['http://api.essentia.kortix.cloud', 'https://api.essentia.kortix.cloud'],
+      ['http://dev-api.zed.com', 'https://dev-api.zed.com'],
+      ['http://api.zed.com', 'https://api.zed.com'],
+      ['http://api.essentia.zed.cloud', 'https://api.essentia.zed.cloud'],
       ['http://example.com:8443/v1', 'https://example.com:8443/v1'],
       ['http://11.0.0.1:8000', 'https://11.0.0.1:8000'],
       ['http://172.32.0.1:8000', 'https://172.32.0.1:8000'],
@@ -25,7 +25,7 @@ describe('secureRemoteBase', () => {
   });
 
   test('leaves https and non-URLs unchanged', () => {
-    expect(secureRemoteBase('https://dev-api.kortix.com')).toBe('https://dev-api.kortix.com');
+    expect(secureRemoteBase('https://dev-api.zed.com')).toBe('https://dev-api.zed.com');
     expect(secureRemoteBase('not a url')).toBe('not a url');
   });
 
@@ -45,7 +45,7 @@ describe('secureRemoteBase', () => {
 
   test('leaves self-host network names and private IPv4 hosts on http', () => {
     for (const base of [
-      'http://kortix-api:8000',
+      'http://zed-api:8000',
       'http://api:8000',
       'http://10.2.0.7:8000',
       'http://172.16.4.9:8000',
@@ -54,8 +54,8 @@ describe('secureRemoteBase', () => {
       'http://169.254.10.1:8000',
       'http://100.64.0.1:8000',
       'http://100.127.255.255:8000',
-      'http://kortix.internal:8000',
-      'http://kortix.internal.:8000',
+      'http://zed.internal:8000',
+      'http://zed.internal.:8000',
       'http://box.local:8000',
       'http://nas.lan:8000',
       'http://host.home.arpa:8000',

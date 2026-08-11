@@ -17,12 +17,12 @@ import { CANONICAL_SKILL, wireCodingAgents } from '../agents';
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), 'kortix-agents-'));
+  dir = mkdtempSync(join(tmpdir(), 'zed-agents-'));
   // Derived from CANONICAL_SKILL, never spelled out — the fixture must follow
   // the constant wherever it points.
   mkdirSync(join(dir, CANONICAL_SKILL, '..'), { recursive: true });
-  mkdirSync(join(dir, '.kortix', 'opencode', 'agents'), { recursive: true });
-  mkdirSync(join(dir, '.kortix', 'opencode', 'commands'), { recursive: true });
+  mkdirSync(join(dir, '.zed', 'opencode', 'agents'), { recursive: true });
+  mkdirSync(join(dir, '.zed', 'opencode', 'commands'), { recursive: true });
   writeFileSync(join(dir, CANONICAL_SKILL), 'canonical skill', 'utf8');
 });
 
@@ -46,12 +46,12 @@ describe('wireCodingAgents', () => {
     expect(result.skipped).toEqual([]);
     expect(result.written.sort()).toEqual(
       [
-        '.agents → .kortix/opencode',
-        '.claude/agents → ../.kortix/opencode/agents',
-        '.claude/commands → ../.kortix/opencode/commands',
-        '.claude/skills → ../.kortix/opencode/skills',
-        '.opencode → .kortix/opencode',
-        '.pi/skills → ../.kortix/opencode/skills',
+        '.agents → .zed/opencode',
+        '.claude/agents → ../.zed/opencode/agents',
+        '.claude/commands → ../.zed/opencode/commands',
+        '.claude/skills → ../.zed/opencode/skills',
+        '.opencode → .zed/opencode',
+        '.pi/skills → ../.zed/opencode/skills',
         'AGENTS.md',
       ].sort(),
     );
@@ -59,22 +59,22 @@ describe('wireCodingAgents', () => {
     // OpenCode and Codex can consume the complete canonical directory.
     for (const link of ['.opencode', '.agents']) {
       expect(lstatSync(join(dir, link)).isSymbolicLink()).toBe(true);
-      expect(readlinkSync(join(dir, link))).toBe('.kortix/opencode');
-      const skill = join(dir, link, CANONICAL_SKILL.replace('.kortix/opencode/', ''));
+      expect(readlinkSync(join(dir, link))).toBe('.zed/opencode');
+      const skill = join(dir, link, CANONICAL_SKILL.replace('.zed/opencode/', ''));
       expect(readFileSync(skill, 'utf8')).toBe('canonical skill');
     }
 
     // Claude Code and Pi keep their runtime files and receive native links.
     expect(readFileSync(join(dir, '.claude', 'CLAUDE.md'), 'utf8')).toBe('claude runtime');
     expect(readFileSync(join(dir, '.pi', 'README.md'), 'utf8')).toBe('pi runtime');
-    expect(readlinkSync(join(dir, '.claude', 'skills'))).toBe('../.kortix/opencode/skills');
-    expect(readlinkSync(join(dir, '.claude', 'agents'))).toBe('../.kortix/opencode/agents');
-    expect(readlinkSync(join(dir, '.claude', 'commands'))).toBe('../.kortix/opencode/commands');
-    expect(readlinkSync(join(dir, '.pi', 'skills'))).toBe('../.kortix/opencode/skills');
-    expect(readFileSync(join(dir, '.claude', 'skills', 'kortix-cli', 'SKILL.md'), 'utf8')).toBe(
+    expect(readlinkSync(join(dir, '.claude', 'skills'))).toBe('../.zed/opencode/skills');
+    expect(readlinkSync(join(dir, '.claude', 'agents'))).toBe('../.zed/opencode/agents');
+    expect(readlinkSync(join(dir, '.claude', 'commands'))).toBe('../.zed/opencode/commands');
+    expect(readlinkSync(join(dir, '.pi', 'skills'))).toBe('../.zed/opencode/skills');
+    expect(readFileSync(join(dir, '.claude', 'skills', 'zed-cli', 'SKILL.md'), 'utf8')).toBe(
       'canonical skill',
     );
-    expect(readFileSync(join(dir, '.pi', 'skills', 'kortix-cli', 'SKILL.md'), 'utf8')).toBe(
+    expect(readFileSync(join(dir, '.pi', 'skills', 'zed-cli', 'SKILL.md'), 'utf8')).toBe(
       'canonical skill',
     );
 
@@ -91,10 +91,10 @@ describe('wireCodingAgents', () => {
 
     expect(result.written.sort()).toEqual(
       [
-        '.claude/agents → ../.kortix/opencode/agents',
-        '.claude/commands → ../.kortix/opencode/commands',
-        '.claude/skills → ../.kortix/opencode/skills',
-        '.opencode → .kortix/opencode',
+        '.claude/agents → ../.zed/opencode/agents',
+        '.claude/commands → ../.zed/opencode/commands',
+        '.claude/skills → ../.zed/opencode/skills',
+        '.opencode → .zed/opencode',
       ].sort(),
     );
     // No codex/cursor selected → no .agents link, no AGENTS.md.

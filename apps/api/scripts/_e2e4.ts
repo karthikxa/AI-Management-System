@@ -1,6 +1,6 @@
 import { createAccountToken } from '../src/repositories/account-tokens';
 import { db } from '../src/shared/db';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { readFileSync } from 'fs';
 
@@ -15,7 +15,7 @@ const RUNS = Number(process.env.RUNS ?? 4);
 async function ptExec(extId: string){
   const r = await fetch(`https://api.platinum.dev/v1/sandboxes/${extId}/exec`, {
     method:'POST', headers:{ Authorization:`Bearer ${PTKEY}`, 'Content-Type':'application/json' },
-    body: JSON.stringify({ cmd:['sh','-lc','curl -s -m3 -o /dev/null -w oc4096=%{http_code} http://127.0.0.1:4096/; echo; curl -s -m3 http://127.0.0.1:8000/kortix/health|head -c 160'] }),
+    body: JSON.stringify({ cmd:['sh','-lc','curl -s -m3 -o /dev/null -w oc4096=%{http_code} http://127.0.0.1:4096/; echo; curl -s -m3 http://127.0.0.1:8000/zed/health|head -c 160'] }),
     signal: AbortSignal.timeout(20000),
   });
   const j:any = await r.json().catch(()=>({}));
@@ -44,10 +44,10 @@ for (let n=1; n<=RUNS; n++){
   let proxy = 'n/a';
   if (m.baseUrl){
     const s = now();
-    try { const r = await fetch(`${m.baseUrl}/kortix/health`, { headers:H, signal: AbortSignal.timeout(15000) });
+    try { const r = await fetch(`${m.baseUrl}/zed/health`, { headers:H, signal: AbortSignal.timeout(15000) });
       proxy = `${r.status} (${((now()-s)/1000).toFixed(2)}s)`; }
     catch(e:any){ proxy = `ERR ${e?.name||e}`; }
   }
-  console.log(`[#${n}] ${provSesS}s tmpl=${v7} extId=${row?.externalId} :: ${probe} :: proxy/kortix/health=${proxy}`);
+  console.log(`[#${n}] ${provSesS}s tmpl=${v7} extId=${row?.externalId} :: ${probe} :: proxy/zed/health=${proxy}`);
 }
 process.exit(0);

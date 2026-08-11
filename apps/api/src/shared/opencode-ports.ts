@@ -3,7 +3,7 @@
  *
  * It is a PAIR, not a single port. The daemon's verified reload boots the new
  * opencode on the idle half, proves it serves, and only then swaps to it and
- * retires the old one (see `apps/kortix-sandbox-agent-server/src/opencode.ts`).
+ * retires the old one (see `apps/zed-sandbox-agent-server/src/opencode.ts`).
  * Either half can therefore be the live one at any moment, and which is live
  * flips every time a session reloads its config.
  *
@@ -20,7 +20,7 @@
  *     Counting the other half would let a session keep itself alive, which is
  *     the self-renewal the bounded-lifetime design exists to prevent.
  *
- * Kept in sync with `KORTIX_OPENCODE_INTERNAL_PORT` / `KORTIX_OPENCODE_STANDBY_PORT`
+ * Kept in sync with `ZED_OPENCODE_INTERNAL_PORT` / `ZED_OPENCODE_STANDBY_PORT`
  * in the daemon's config.ts. These are the deployed defaults; the daemon allows
  * overrides, but nothing in this repo sets them.
  */

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { createScopedKortix } from '@kortix/sdk/server';
+import { createScopedZed } from '@zed/sdk/server';
 
 import { sessionTabTitle, sessionTabTitleFromSession } from './session-tab-title';
 import { getServerPublicEnv } from '@/lib/public-env-server';
@@ -68,12 +68,12 @@ export async function resolveSessionTabTitle(
     // Scoped, never the process-global client: two users' metadata requests can
     // be in flight at once, and a global token would let one adopt the other's
     // identity. See packages/sdk/src/node/server.ts.
-    const kortix = createScopedKortix({ backendUrl, getToken: async () => accessToken });
+    const zed = createScopedZed({ backendUrl, getToken: async () => accessToken });
 
     const session = await withBudget(
       // `showErrors: false` — a 404 here is a normal outcome (deleted session,
       // wrong project), not something to surface as a toast on the server.
-      kortix.session(projectId, sessionId).get({ showErrors: false }),
+      zed.session(projectId, sessionId).get({ showErrors: false }),
       TITLE_BUDGET_MS,
     );
     if (!session) return unavailable;

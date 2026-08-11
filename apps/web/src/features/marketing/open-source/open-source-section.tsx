@@ -47,9 +47,9 @@ import { StarCount } from './star-count';
  * (`WallpaperBackground wallpaperId="brandmark"`) was tried at five sizes in the
  * old panel: the mark is a 1px stroke cut for a full viewport, so every setting
  * faint enough to sit under type renders as a smudge and every setting strong
- * enough to read draws a line through the copy. `KortixGrid` is ruled out twice
+ * enough to read draws a line through the copy. `ZedGrid` is ruled out twice
  * over — it is the signature of the closing CTA, and it paints a
- * `kortix-green`/`kortix-purple` gradient into a section that carries no colour.
+ * `zed-green`/`zed-purple` gradient into a section that carries no colour.
  */
 export function OpenSourceSection(): ReactNode {
   return (

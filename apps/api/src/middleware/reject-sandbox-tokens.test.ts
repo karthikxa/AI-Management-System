@@ -50,7 +50,7 @@ describe('rejectSandboxTokens', () => {
     expect(nextCalled()).toBe(true);
   });
 
-  test('allows a non-sandbox kortix_ API key (apiKey without sandboxId)', async () => {
+  test('allows a non-sandbox zed_ API key (apiKey without sandboxId)', async () => {
     // Operator account API key — no sandboxId, so not an agent token.
     const { c, next, nextCalled } = ctx({ authType: 'apiKey', accountId: 'acc_1' });
     await rejectSandboxTokens(c, next);

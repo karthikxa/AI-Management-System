@@ -85,7 +85,7 @@ export const successToast = (message: string, options?: ToastOptions) => {
       <div className="border-primary/10 bg-background text-foreground w-full rounded-[0.64rem] border px-4 py-3 shadow-lg sm:w-[var(--width)]">
         <div className={cn('flex gap-2', toastRowAlign(options))}>
           <div className={cn('flex grow gap-3', toastRowAlign(options))}>
-            <GoCheckCircleFill weight="fill" className="text-kortix-green size-5 shrink-0" />
+            <GoCheckCircleFill weight="fill" className="text-zed-green size-5 shrink-0" />
 
             <ToastMessage
               message={message}
@@ -214,7 +214,7 @@ export const errorToast = (message: string, options?: ToastOptions) => {
       >
         <div className={cn('flex gap-2', toastRowAlign(options))}>
           <div className={cn('flex grow gap-3', toastRowAlign(options))}>
-            <HiOutlineXCircle className="text-kortix-red size-6 shrink-0" />
+            <HiOutlineXCircle className="text-zed-red size-6 shrink-0" />
 
             <ToastMessage
               message={message}
@@ -246,7 +246,7 @@ export const infoToast = (message: string, options?: ToastOptions) => {
       <div className="border-primary/10 bg-background text-foreground w-full rounded-[0.64rem] border px-4 py-3 shadow-lg sm:w-[var(--width)]">
         <div className={cn('flex gap-2', toastRowAlign(options))}>
           <div className={cn('flex grow gap-3', toastRowAlign(options))}>
-            <HiOutlineExclamationCircle className="text-kortix-blue size-6 shrink-0" />
+            <HiOutlineExclamationCircle className="text-zed-blue size-6 shrink-0" />
 
             <ToastMessage
               message={message}
@@ -278,7 +278,7 @@ export const warningToast = (message: string, options?: ToastOptions) => {
       <div className="border-primary/10 bg-background text-foreground w-full rounded-[0.64rem] border px-4 py-3 shadow-lg sm:w-[var(--width)]">
         <div className={cn('flex gap-2', toastRowAlign(options))}>
           <div className={cn('flex grow gap-3', toastRowAlign(options))}>
-            <HiOutlineExclamationCircle className="text-kortix-yellow size-6 shrink-0" />
+            <HiOutlineExclamationCircle className="text-zed-yellow size-6 shrink-0" />
 
             <ToastMessage
               message={message}

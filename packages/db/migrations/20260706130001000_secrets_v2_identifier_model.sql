@@ -4,7 +4,7 @@
 --
 -- (1) AUTHZ CENTRALIZATION. Two secret-side gates are retired; the ONLY thing
 --     deciding whether an agent gets a secret is now the agent's `secrets`
---     grant (kortix.yaml), resolved by identifier (agentMayUseEnv):
+--     grant (zed.yaml), resolved by identifier (agentMayUseEnv):
 --       - `project_secrets.agent_scope` (the resource-side "which agents may
 --         use this secret" allow-list) is dropped.
 --       - `project_secrets.share_scope` + `project_secret_grants` (the
@@ -24,31 +24,31 @@
 --     Existing rows get identifier = name, so every existing grant (which
 --     referenced a name == key) keeps resolving to the same secret.
 
-ALTER TABLE "kortix"."project_secrets"
+ALTER TABLE "zed"."project_secrets"
   ADD COLUMN IF NOT EXISTS "identifier" varchar(128);
 
-UPDATE "kortix"."project_secrets" SET "identifier" = "name" WHERE "identifier" IS NULL;
+UPDATE "zed"."project_secrets" SET "identifier" = "name" WHERE "identifier" IS NULL;
 
-ALTER TABLE "kortix"."project_secrets"
+ALTER TABLE "zed"."project_secrets"
   ALTER COLUMN "identifier" SET NOT NULL;
 
 -- Replace the old (project, name) shared-row uniqueness with (project, identifier).
-DROP INDEX IF EXISTS "kortix"."idx_project_secrets_project_name_shared";
+DROP INDEX IF EXISTS "zed"."idx_project_secrets_project_name_shared";
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_project_secrets_project_identifier_shared"
-  ON "kortix"."project_secrets" ("project_id", "identifier")
+  ON "zed"."project_secrets" ("project_id", "identifier")
   WHERE "owner_user_id" IS NULL;
 
 -- Non-unique lookup index for by-KEY reads (getProjectSecretValue and friends;
 -- `name` is no longer unique so these are legitimately multi-row lookups now).
 CREATE INDEX IF NOT EXISTS "idx_project_secrets_project_name"
-  ON "kortix"."project_secrets" ("project_id", "name");
+  ON "zed"."project_secrets" ("project_id", "name");
 
 -- Drop the resource-side agent gate (superseded entirely by the agent grant).
-ALTER TABLE "kortix"."project_secrets" DROP COLUMN IF EXISTS "agent_scope";
+ALTER TABLE "zed"."project_secrets" DROP COLUMN IF EXISTS "agent_scope";
 
 -- Drop member/group secret sharing.
-DROP TABLE IF EXISTS "kortix"."project_secret_grants";
-ALTER TABLE "kortix"."project_secrets" DROP COLUMN IF EXISTS "share_scope";
+DROP TABLE IF EXISTS "zed"."project_secret_grants";
+ALTER TABLE "zed"."project_secrets" DROP COLUMN IF EXISTS "share_scope";
 
 -- Down Migration
 --

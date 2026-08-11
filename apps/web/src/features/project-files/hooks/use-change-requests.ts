@@ -26,7 +26,7 @@ import { useProjectContext } from '../context';
 import { gitStatusKeys } from '@/features/files/hooks/use-git-status';
 import { branchKeys } from './use-branches';
 import { commitKeys } from './use-commits';
-import { qk } from '@kortix/sdk/react';
+import { qk } from '@zed/sdk/react';
 
 export const changeRequestKeys = {
   all: ['project-files', 'change-requests'] as const,

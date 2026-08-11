@@ -55,7 +55,7 @@ function isExpectedAuthCallbackUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
     return (
-      parsed.protocol === 'kortix:' && parsed.hostname === 'auth' && parsed.pathname === '/callback'
+      parsed.protocol === 'zed:' && parsed.hostname === 'auth' && parsed.pathname === '/callback'
     );
   } catch {
     return false;
@@ -755,7 +755,7 @@ export function useAuth() {
   /**
    * Sign in with magic link (passwordless)
    * Auto-creates account if it doesn't exist
-   * Uses kortix:// deep link - works when app is installed
+   * Uses zed:// deep link - works when app is installed
    */
   const signInWithMagicLink = useCallback(
     async ({ email, acceptedTerms }: { email: string; acceptedTerms?: boolean }) => {
@@ -782,7 +782,7 @@ export function useAuth() {
             message: magicLinkError.message,
             status: magicLinkError.status,
             attemptedUrl: emailRedirectTo,
-            hint: 'Make sure kortix://auth/callback is in Supabase Dashboard → Auth → Redirect URLs',
+            hint: 'Make sure zed://auth/callback is in Supabase Dashboard → Auth → Redirect URLs',
           });
         }
 
@@ -817,7 +817,7 @@ export function useAuth() {
       setError(null);
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'kortix://auth/reset-password',
+        redirectTo: 'zed://auth/reset-password',
       });
 
       if (resetError) {

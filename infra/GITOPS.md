@@ -6,10 +6,10 @@ canaries. This replaces the imperative `helm upgrade` / `aws ecs` deploys.
 
 ```
 infra/k8s/
-  charts/kortix-api/        # the app chart (Deployment now; Rollout in Phase 2)
+  charts/zed-api/        # the app chart (Deployment now; Rollout in Phase 2)
   envs/<env>/values.yaml     # per-env values — image.tag here IS the release
   argocd/
-    project.yaml             # AppProject "kortix" (scoping)
+    project.yaml             # AppProject "zed" (scoping)
     app-of-apps.yaml         # parent app → syncs applications/
     applications/<env>.yaml  # one Argo Application per env
 ```
@@ -30,15 +30,15 @@ Argo CD + Rollouts are installed by the platform Terraform
    read-only **deploy key** is added to the repo and its private key registered
    as an Argo CD repo credential.
 2. **Apply** `project.yaml` + `app-of-apps.yaml`. The app-of-apps syncs
-   `applications/`, which creates the `kortix-prod` Application.
-3. `kortix-prod` **adopts** the already-running kortix-api resources and
+   `applications/`, which creates the `zed-prod` Application.
+3. `zed-prod` **adopts** the already-running zed-api resources and
    reconciles them to `envs/prod/values.yaml` (pins the release tag, API-only
    profile pre-cutover).
 
 **Bootstrap source override:** until these manifests are merged to
-`kortix-ai/suna`, the apps are created against the branch where they live (e.g.
+`zed-ai/suna`, the apps are created against the branch where they live (e.g.
 `--repo https://github.com/lillyboga/suna.git --revision eks-migration`). Once
-merged, drop the override so the committed `kortix-ai/suna` / `prod` source
+merged, drop the override so the committed `zed-ai/suna` / `prod` source
 takes over.
 
 ## Access Argo CD
@@ -48,31 +48,31 @@ Quick (no setup):
 ```bash
 kubectl -n argocd port-forward svc/argo-cd-argocd-server 8080:443   # https://localhost:8080
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d  # admin pw
-argocd app get kortix-prod        # Synced / Healthy
-argocd app history kortix-prod    # releases; `argocd app rollback` or git revert
+argocd app get zed-prod        # Synced / Healthy
+argocd app history zed-prod    # releases; `argocd app rollback` or git revert
 ```
 
-### Company domain — `ops.kortix.com` (gated)
+### Company domain — `ops.zed.com` (gated)
 
 Argo CD is an admin control plane, so the public URL is **Cloudflare-Access
 gated** and the ALB is **locked to Cloudflare IPs** (so the gate can't be
 bypassed via the raw ALB DNS). Bring it up in this order so it's never reachable
 unauthenticated:
 
-1. **Apply the cert** — `environments/prod-eks/cluster` (adds the `ops.kortix.com`
+1. **Apply the cert** — `environments/prod-eks/cluster` (adds the `ops.zed.com`
    ACM cert; validates via Cloudflare DNS).
 2. **Apply the ingress** — set `argocd_ui_enabled = true` in the `platform`
-   tfvars and apply. The ALB comes up; `ops.kortix.com` does NOT resolve yet.
+   tfvars and apply. The ALB comes up; `ops.zed.com` does NOT resolve yet.
 3. **Cloudflare Access** (Zero Trust dashboard → Access → Applications → Add):
-   - Type **Self-hosted**, Application domain `ops.kortix.com`.
-   - Policy: **Allow**, Include → *Emails ending in* `@kortix.com` (or a group).
+   - Type **Self-hosted**, Application domain `ops.zed.com`.
+   - Policy: **Allow**, Include → *Emails ending in* `@zed.com` (or a group).
    - (Optional) shorter session duration for an admin app.
-4. **Add the DNS record** — proxied CNAME `ops.kortix.com` → the Argo CD ALB
+4. **Add the DNS record** — proxied CNAME `ops.zed.com` → the Argo CD ALB
    hostname (`kubectl -n argocd get ingress`). Now it resolves AND is gated.
 5. (Recommended) wire **Argo CD GitHub-org SSO** so logins map to people, then
    disable the shared `admin` account.
 
-CLI through the gateway uses gRPC-Web: `argocd login ops.kortix.com --grpc-web`.
+CLI through the gateway uses gRPC-Web: `argocd login ops.zed.com --grpc-web`.
 
 ## Release flow & the GitHub Actions
 
@@ -81,17 +81,17 @@ prod boundary:
 
 | Workflow | Role |
 | --- | --- |
-| `deploy-dev.yml` | On `main`, build/push `dev-<sha8>`, apply dev node-pg-migrate migrations, bump `infra/k8s/envs/dev/values.yaml`, and watch Argo CD roll `kortix-dev`. |
+| `deploy-dev.yml` | On `main`, build/push `dev-<sha8>`, apply dev node-pg-migrate migrations, bump `infra/k8s/envs/dev/values.yaml`, and watch Argo CD roll `zed-dev`. |
 | `build-staging.yml` / `deploy-staging.yml` / `qa-staging.yml` | On `staging`, build exact `staging-<sha8>` images, deploy the staging runtime, and run the staging e2e lane against staging URLs. |
 | `promote.yml` | Manual dispatch that promotes `staging` by default and opens a reviewed `release/vX.Y.Z` PR into `prod`; it does not tag, release, retag, or deploy. |
-| `deploy-prod.yml` | On the `prod` merge, retag the tested staging image, apply prod node-pg-migrate migrations, cut the GitHub Release, and watch Argo CD roll `kortix-prod`. |
+| `deploy-prod.yml` | On the `prod` merge, retag the tested staging image, apply prod node-pg-migrate migrations, cut the GitHub Release, and watch Argo CD roll `zed-prod`. |
 
 A release = merge the promote PR → `deploy-prod` retags + migrates + publishes →
 Argo CD rolls EKS from the values committed on `prod`. **Rollback = `git revert`**
 the values/release commit (or `argocd app rollback`).
 
 **Approval gate:** today the enforced human gate is the reviewed promote PR into
-the protected `prod` branch. If Kortix wants a second runtime approval in Actions,
+the protected `prod` branch. If Zed wants a second runtime approval in Actions,
 create the `production` GitHub Environment and add `environment: production` to
 the `deploy-api` job in `deploy-prod.yml`; otherwise the environment gate does not
 pause the workflow.
@@ -109,12 +109,12 @@ The analysis needs the ALB's CloudWatch dimensions — set them once from the li
 ALB (stable for the life of the ingress) in `envs/prod/values.yaml`:
 
 ```bash
-ALB=$(kubectl -n kortix-prod get ingress kortix-api -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+ALB=$(kubectl -n zed-prod get ingress zed-api -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 # rollout.analysis.lbArnSuffix = app/<alb-name>/<id>   (from the ALB ARN)
 # rollout.analysis.tgArnSuffix = targetgroup/<tg-name>/<id>   (from the target group ARN)
 ```
 
-Watch a canary: `kubectl argo rollouts get rollout kortix-api -n kortix-prod --watch`.
+Watch a canary: `kubectl argo rollouts get rollout zed-api -n zed-prod --watch`.
 
 ## Branch = environment (why constant merges to main are safe)
 
@@ -140,10 +140,10 @@ bump.
 
 ## GitHub-org SSO + retiring admin
 
-1. **Create a GitHub OAuth App** (org `kortix-ai` → Settings → Developer settings
+1. **Create a GitHub OAuth App** (org `zed-ai` → Settings → Developer settings
    → OAuth Apps → New):
-   - Homepage `https://ops.kortix.com`
-   - Authorization callback `https://ops.kortix.com/api/dex/callback`
+   - Homepage `https://ops.zed.com`
+   - Authorization callback `https://ops.zed.com/api/dex/callback`
    - copy the **Client ID**, generate a **Client Secret**.
 2. In the `platform` tfvars / env:
    ```
@@ -160,9 +160,9 @@ bump.
 
 ## Environment profiles
 
-`envs/<env>/values.yaml` sets `env.internalKortixEnv` and `workers.enabled`.
+`envs/<env>/values.yaml` sets `env.internalZedEnv` and `workers.enabled`.
 `workers.enabled: false` forces the leader-elected singleton jobs off (scheduler,
 project maintenance, legacy + suna migration) so a pre-prod/canary that shares
 prod data never runs background work even if it wins the Postgres leader lease.
-At the api.kortix.com cutover, flip prod `workers.enabled: true` here AND disable
+At the api.zed.com cutover, flip prod `workers.enabled: true` here AND disable
 the ECS service in the same change.

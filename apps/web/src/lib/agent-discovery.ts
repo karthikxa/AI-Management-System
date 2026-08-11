@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 
-export const KORTIX_WEB_ORIGIN = 'https://kortix.com';
-export const KORTIX_API_ORIGIN = 'https://api.kortix.com/v1';
-export const KORTIX_OAUTH_ISSUER = 'https://jbriwassebxdwoieikga.supabase.co/auth/v1';
+export const ZED_WEB_ORIGIN = 'https://zed.com';
+export const ZED_API_ORIGIN = 'https://api.zed.com/v1';
+export const ZED_OAUTH_ISSUER = 'https://jbriwassebxdwoieikga.supabase.co/auth/v1';
 export const DISCOVERY_CACHE_CONTROL = 'public, max-age=3600, s-maxage=3600';
 export const MCP_PROTOCOL_VERSION = '2025-03-26';
 export const MCP_SERVER_VERSION = '1.0.0';
@@ -10,26 +10,26 @@ export const MCP_SERVER_VERSION = '1.0.0';
 export const API_CATALOG = {
   linkset: [
     {
-      anchor: KORTIX_API_ORIGIN,
+      anchor: ZED_API_ORIGIN,
       'service-desc': [
         {
-          href: `${KORTIX_API_ORIGIN}/openapi.json`,
+          href: `${ZED_API_ORIGIN}/openapi.json`,
           type: 'application/json',
-          title: 'Kortix OpenAPI document',
+          title: 'Zed OpenAPI document',
         },
       ],
       'service-doc': [
         {
-          href: `${KORTIX_WEB_ORIGIN}/docs`,
+          href: `${ZED_WEB_ORIGIN}/docs`,
           type: 'text/html',
-          title: 'Kortix API documentation',
+          title: 'Zed API documentation',
         },
       ],
       status: [
         {
-          href: `${KORTIX_API_ORIGIN}/health`,
+          href: `${ZED_API_ORIGIN}/health`,
           type: 'application/json',
-          title: 'Kortix API health',
+          title: 'Zed API health',
         },
       ],
     },
@@ -37,16 +37,16 @@ export const API_CATALOG = {
 } as const;
 
 /**
- * Kortix accepts Supabase access JWTs on protected API routes. This document
+ * Zed accepts Supabase access JWTs on protected API routes. This document
  * mirrors the production issuer's public OIDC discovery metadata. The issuer
  * remains the canonical Supabase issuer so clients validate the correct `iss`.
  */
 export const OAUTH_AUTHORIZATION_SERVER_METADATA = {
-  issuer: KORTIX_OAUTH_ISSUER,
-  authorization_endpoint: `${KORTIX_OAUTH_ISSUER}/oauth/authorize`,
-  token_endpoint: `${KORTIX_OAUTH_ISSUER}/oauth/token`,
-  jwks_uri: `${KORTIX_OAUTH_ISSUER}/.well-known/jwks.json`,
-  userinfo_endpoint: `${KORTIX_OAUTH_ISSUER}/oauth/userinfo`,
+  issuer: ZED_OAUTH_ISSUER,
+  authorization_endpoint: `${ZED_OAUTH_ISSUER}/oauth/authorize`,
+  token_endpoint: `${ZED_OAUTH_ISSUER}/oauth/token`,
+  jwks_uri: `${ZED_OAUTH_ISSUER}/.well-known/jwks.json`,
+  userinfo_endpoint: `${ZED_OAUTH_ISSUER}/oauth/userinfo`,
   scopes_supported: ['openid', 'profile', 'email', 'phone'],
   response_types_supported: ['code'],
   response_modes_supported: ['query'],
@@ -56,38 +56,38 @@ export const OAUTH_AUTHORIZATION_SERVER_METADATA = {
   token_endpoint_auth_methods_supported: ['client_secret_basic', 'client_secret_post', 'none'],
   code_challenge_methods_supported: ['S256'],
   agent_auth: {
-    skill: `${KORTIX_WEB_ORIGIN}/auth.md`,
-    register_uri: `${KORTIX_WEB_ORIGIN}/cli/authorize`,
+    skill: `${ZED_WEB_ORIGIN}/auth.md`,
+    register_uri: `${ZED_WEB_ORIGIN}/cli/authorize`,
     identity_types_supported: ['user_authorization'],
     user_authorization: {
-      credential_types_supported: ['kortix_personal_access_token'],
-      authorization_uri: `${KORTIX_WEB_ORIGIN}/cli/authorize`,
-      provisioning_endpoint: `${KORTIX_API_ORIGIN}/accounts/tokens`,
-      revocation_uri: `${KORTIX_API_ORIGIN}/accounts/tokens/{token_id}`,
+      credential_types_supported: ['zed_personal_access_token'],
+      authorization_uri: `${ZED_WEB_ORIGIN}/cli/authorize`,
+      provisioning_endpoint: `${ZED_API_ORIGIN}/accounts/tokens`,
+      revocation_uri: `${ZED_API_ORIGIN}/accounts/tokens/{token_id}`,
     },
   },
 } as const;
 
-export function oauthProtectedResourceMetadata(resource = KORTIX_WEB_ORIGIN) {
+export function oauthProtectedResourceMetadata(resource = ZED_WEB_ORIGIN) {
   return {
     resource,
-    authorization_servers: [KORTIX_OAUTH_ISSUER],
+    authorization_servers: [ZED_OAUTH_ISSUER],
     scopes_supported: ['openid', 'profile', 'email'],
     bearer_methods_supported: ['header'],
     resource_documentation: `${resource}/docs`,
   } as const;
 }
 
-export const AUTH_MD = `# Kortix auth.md
+export const AUTH_MD = `# Zed auth.md
 
-Kortix agents can authenticate to the protected API with a user-authorized OAuth access token or a Kortix personal access token.
+Zed agents can authenticate to the protected API with a user-authorized OAuth access token or a Zed personal access token.
 
 ## Discover the protected resource
 
 - Protected resource metadata: /.well-known/oauth-protected-resource
 - OAuth authorization server metadata: /.well-known/oauth-authorization-server
 - API catalog: /.well-known/api-catalog
-- OpenAPI document: ${KORTIX_API_ORIGIN}/openapi.json
+- OpenAPI document: ${ZED_API_ORIGIN}/openapi.json
 
 ## OAuth authorization code flow
 
@@ -96,22 +96,22 @@ Kortix agents can authenticate to the protected API with a user-authorized OAuth
 3. Request only the scopes required for the task.
 4. Send the access token as \`Authorization: Bearer <token>\`.
 
-Kortix does not publish dynamic OAuth client registration. Contact Kortix support to provision an OAuth client.
+Zed does not publish dynamic OAuth client registration. Contact Zed support to provision an OAuth client.
 
 ## Agent registration with a personal access token
 
-Audience: an AI agent acting for an existing Kortix user.
+Audience: an AI agent acting for an existing Zed user.
 
 - Registration method: user-authorized browser flow
 - Registration URI: /cli/authorize
-- Credential type: \`kortix_personal_access_token\`
-- Provisioning endpoint: \`POST ${KORTIX_API_ORIGIN}/accounts/tokens\`
-- Revocation endpoint: \`DELETE ${KORTIX_API_ORIGIN}/accounts/tokens/{token_id}\`
+- Credential type: \`zed_personal_access_token\`
+- Provisioning endpoint: \`POST ${ZED_API_ORIGIN}/accounts/tokens\`
+- Revocation endpoint: \`DELETE ${ZED_API_ORIGIN}/accounts/tokens/{token_id}\`
 
-1. Install the Kortix CLI from ${KORTIX_WEB_ORIGIN}/install.
-2. Run \`kortix login\`.
+1. Install the Zed CLI from ${ZED_WEB_ORIGIN}/install.
+2. Run \`zed login\`.
 3. Open the registration URI generated by the CLI.
-4. Sign in as the Kortix user who owns the agent action.
+4. Sign in as the Zed user who owns the agent action.
 5. Approve the browser authorization request.
 6. Send the resulting token as \`Authorization: Bearer <token>\`.
 
@@ -121,21 +121,21 @@ Never put a token in a URL, repository, log, or chat message.
 
 ## Unsupported registration methods
 
-Kortix does not accept anonymous agent registration, ID-JAG assertions, or automated verified-email claims.
+Zed does not accept anonymous agent registration, ID-JAG assertions, or automated verified-email claims.
 `;
 
-export const KORTIX_PUBLIC_CONTENT_SKILL = `---
-name: kortix-public-content
-description: Discover and read Kortix public documentation through standards-based HTTP and MCP endpoints.
+export const ZED_PUBLIC_CONTENT_SKILL = `---
+name: zed-public-content
+description: Discover and read Zed public documentation through standards-based HTTP and MCP endpoints.
 ---
 
-# Kortix Public Content
+# Zed Public Content
 
-Use this skill to discover Kortix APIs and public product documentation.
+Use this skill to discover Zed APIs and public product documentation.
 
 ## Discover APIs
 
-1. Fetch ${KORTIX_WEB_ORIGIN}/.well-known/api-catalog.
+1. Fetch ${ZED_WEB_ORIGIN}/.well-known/api-catalog.
 2. Follow the service-desc relation for the OpenAPI document.
 3. Follow the service-doc relation for human-readable documentation.
 
@@ -146,25 +146,25 @@ The response uses \`Content-Type: text/markdown; charset=utf-8\`.
 
 ## Use MCP
 
-Connect to ${KORTIX_WEB_ORIGIN}/mcp with the Streamable HTTP transport.
+Connect to ${ZED_WEB_ORIGIN}/mcp with the Streamable HTTP transport.
 Call \`list_public_content\` before \`get_public_markdown\`.
 
 ## Authenticate
 
-Read ${KORTIX_WEB_ORIGIN}/auth.md before calling protected API routes.
-Never send credentials to a host outside the discovered Kortix endpoints.
+Read ${ZED_WEB_ORIGIN}/auth.md before calling protected API routes.
+Never send credentials to a host outside the discovered Zed endpoints.
 `;
 
 export function agentSkillsIndex() {
-  const digest = createHash('sha256').update(KORTIX_PUBLIC_CONTENT_SKILL).digest('hex');
+  const digest = createHash('sha256').update(ZED_PUBLIC_CONTENT_SKILL).digest('hex');
   return {
     $schema: 'https://schemas.agentskills.io/discovery/0.2.0/schema.json',
     skills: [
       {
-        name: 'kortix-public-content',
+        name: 'zed-public-content',
         type: 'skill-md',
-        description: 'Discover and read Kortix public API and documentation resources.',
-        url: `${KORTIX_WEB_ORIGIN}/.well-known/agent-skills/kortix-public-content/SKILL.md`,
+        description: 'Discover and read Zed public API and documentation resources.',
+        url: `${ZED_WEB_ORIGIN}/.well-known/agent-skills/zed-public-content/SKILL.md`,
         digest: `sha256:${digest}`,
       },
     ],
@@ -174,14 +174,14 @@ export function agentSkillsIndex() {
 /** Compatibility card for the discovery scanner's pre-SEP-2127 field names. */
 export const MCP_WELL_KNOWN_SERVER_CARD = {
   serverInfo: {
-    name: 'kortix-public-content',
+    name: 'zed-public-content',
     version: MCP_SERVER_VERSION,
   },
   transport: {
     type: 'streamable-http',
-    endpoint: `${KORTIX_WEB_ORIGIN}/mcp`,
+    endpoint: `${ZED_WEB_ORIGIN}/mcp`,
   },
-  endpoint: `${KORTIX_WEB_ORIGIN}/mcp`,
+  endpoint: `${ZED_WEB_ORIGIN}/mcp`,
   capabilities: {
     tools: true,
     resources: true,
@@ -192,19 +192,19 @@ export const MCP_WELL_KNOWN_SERVER_CARD = {
 /** Current SEP-2127 server-card shape. */
 export const MCP_SERVER_CARD = {
   $schema: 'https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json',
-  name: 'com.kortix/public-content',
+  name: 'com.zed/public-content',
   version: MCP_SERVER_VERSION,
-  title: 'Kortix Public Content',
-  description: 'Search and read Kortix public documentation and API metadata.',
-  websiteUrl: KORTIX_WEB_ORIGIN,
+  title: 'Zed Public Content',
+  description: 'Search and read Zed public documentation and API metadata.',
+  websiteUrl: ZED_WEB_ORIGIN,
   repository: {
-    url: 'https://github.com/kortix-ai/suna',
+    url: 'https://github.com/zed-ai/suna',
     source: 'github',
   },
   remotes: [
     {
       type: 'streamable-http',
-      url: `${KORTIX_WEB_ORIGIN}/mcp`,
+      url: `${ZED_WEB_ORIGIN}/mcp`,
       supportedProtocolVersions: [MCP_PROTOCOL_VERSION],
     },
   ],
@@ -214,9 +214,9 @@ export const AI_CATALOG = {
   specVersion: '1.0',
   entries: [
     {
-      identifier: 'urn:air:kortix.com:mcp:public-content',
+      identifier: 'urn:air:zed.com:mcp:public-content',
       type: 'application/mcp-server-card+json',
-      url: `${KORTIX_WEB_ORIGIN}/mcp/server-card`,
+      url: `${ZED_WEB_ORIGIN}/mcp/server-card`,
     },
   ],
 } as const;

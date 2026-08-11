@@ -18,7 +18,7 @@ export interface HostNotice {
 function hostAuthState(host: Host, mode: 'env' | 'stored'): string {
   if (!host.token) return 'not logged in';
   if (mode === 'env') {
-    return process.env.KORTIX_SESSION_ID
+    return process.env.ZED_SESSION_ID
       ? 'authenticated (session token)'
       : 'authenticated (project token)';
   }
@@ -74,7 +74,7 @@ export function renderHostNotice(commandArgv: readonly string[]): string | null 
     const proj = activeProjectLabel();
     if (proj) line += `${C.dim} · project ${C.reset}${proj.label}${C.dim} (${proj.source})${C.reset}`;
     // Session is the leaf: shown only when we're actually inside one (a
-    // sandbox run injects KORTIX_SESSION_ID), never as a persisted pointer.
+    // sandbox run injects ZED_SESSION_ID), never as a persisted pointer.
     const session = activeSessionLabel();
     if (session) line += `${C.dim} · session ${C.reset}${session}`;
   }
@@ -82,10 +82,10 @@ export function renderHostNotice(commandArgv: readonly string[]): string | null 
 }
 
 /** The ephemeral leaf of the hierarchy. There's no persisted "active
- *  session" — one only exists when the platform injects KORTIX_SESSION_ID
+ *  session" — one only exists when the platform injects ZED_SESSION_ID
  *  (inside a running sandbox). */
 function activeSessionLabel(): string | null {
-  const sid = process.env.KORTIX_SESSION_ID;
+  const sid = process.env.ZED_SESSION_ID;
   return sid ? shortId(sid) : null;
 }
 
@@ -112,19 +112,19 @@ function shortId(id: string): string {
 }
 
 /**
- * The bare-`kortix` landing breadcrumb: a top-down render of WHERE YOU ARE
+ * The bare-`zed` landing breadcrumb: a top-down render of WHERE YOU ARE
  * in the Host → Account → Project → Session hierarchy, marking auth state
- * and making each gap actionable (a "→ kortix … " next step). All local
+ * and making each gap actionable (a "→ zed … " next step). All local
  * reads (config + cwd link + env) — no network, no latency.
  *
  * This is the single shared builder for the hierarchy render; commands
  * never hand-roll their own header (the per-command one-liner
  * `renderHostNotice` reads the same resolvers). Layout:
  *
- *   ● host      cloud  (https://api.kortix.com, signed in as …)   ▸ kortix hosts use
- *     account   Acme Capital  (acme)                              ▸ kortix accounts use
+ *   ● host      cloud  (https://api.zed.com, signed in as …)   ▸ zed hosts use
+ *     account   Acme Capital  (acme)                              ▸ zed accounts use
  *     project   veyris  (linked)
- *     session   —                              open one: kortix chat · kortix sessions new
+ *     session   —                              open one: zed chat · zed sessions new
  *
  * Signed OUT of the active host, the lower levels are hidden (you can't
  * have an account without a host) and the host row points at `hosts login`.
@@ -148,7 +148,7 @@ export function renderContext(): string {
     glyph: signedIn ? `${C.green}●${C.reset}` : `${C.faded}○${C.reset}`,
     label: 'host',
     value: `${C.bold}${name}${C.reset}  ${C.faded}(${host.url}, ${authState})${C.reset}`,
-    hint: signedIn ? navHint('kortix hosts use') : gapHint('kortix hosts login'),
+    hint: signedIn ? navHint('zed hosts use') : gapHint('zed hosts login'),
   });
 
   // You can't have an account/project/session without a signed-in host.
@@ -166,20 +166,20 @@ export function renderContext(): string {
           value: acct.name
             ? `${C.bold}${acct.name}${C.reset}  ${C.faded}(${acct.slug})${C.reset}`
             : `${C.bold}${acct.slug}${C.reset}`,
-          hint: navHint('kortix accounts use'),
+          hint: navHint('zed accounts use'),
         }
       : linkedHost && directoryLink?.account_id
         ? {
             glyph: ' ',
             label: 'account',
             value: `${C.bold}${shortId(directoryLink.account_id)}${C.reset}  ${C.faded}(linked)${C.reset}`,
-            hint: navHint('kortix accounts use'),
+            hint: navHint('zed accounts use'),
           }
         : {
             glyph: `${C.yellow}⚠${C.reset}`,
             label: 'account',
             value: `${C.faded}— none${C.reset}`,
-            hint: gapHint('kortix accounts use'),
+            hint: gapHint('zed accounts use'),
           },
   );
 
@@ -195,14 +195,14 @@ export function renderContext(): string {
           // only point at the switch verb for a global default.
           hint:
             proj.source === 'default'
-              ? `${C.faded}switch with \`kortix projects use\`${C.reset}`
+              ? `${C.faded}switch with \`zed projects use\`${C.reset}`
               : undefined,
         }
       : {
           glyph: `${C.yellow}⚠${C.reset}`,
           label: 'project',
           value: `${C.faded}— none${C.reset}`,
-          hint: gapHint('kortix projects use'),
+          hint: gapHint('zed projects use'),
         },
   );
 
@@ -214,7 +214,7 @@ export function renderContext(): string {
     value: session ? `${C.bold}${session}${C.reset}` : `${C.faded}—${C.reset}`,
     hint: session
       ? undefined
-      : `${C.dim}open one: ${C.reset}${C.cyan}kortix chat${C.reset}${C.dim} · ${C.reset}${C.cyan}kortix sessions new${C.reset}`,
+      : `${C.dim}open one: ${C.reset}${C.cyan}zed chat${C.reset}${C.dim} · ${C.reset}${C.cyan}zed sessions new${C.reset}`,
   });
 
   return renderRows(rows, labelW);

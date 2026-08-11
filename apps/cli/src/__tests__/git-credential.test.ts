@@ -19,7 +19,7 @@ function project(overrides: Partial<ProjectSummary> = {}): ProjectSummary {
     name: 'Demo',
     repo_url: 'https://github.com/acme/demo.git',
     default_branch: 'main',
-    manifest_path: 'kortix.yaml',
+    manifest_path: 'zed.yaml',
     status: 'active',
     metadata: {},
     last_opened_at: null,
@@ -32,30 +32,30 @@ function project(overrides: Partial<ProjectSummary> = {}): ProjectSummary {
 describe('Git credential protocol', () => {
   test('parses Git input and reconstructs an HTTP URL with its repository path', () => {
     const request = parseGitCredentialRequest(
-      'protocol=https\nhost=dev-api.kortix.com\npath=v1/git/proj_1.git\nignored\n\n',
+      'protocol=https\nhost=dev-api.zed.com\npath=v1/git/proj_1.git\nignored\n\n',
     );
 
     expect(request).toEqual({
       protocol: 'https',
-      host: 'dev-api.kortix.com',
+      host: 'dev-api.zed.com',
       path: 'v1/git/proj_1.git',
     });
     expect(gitCredentialRequestUrl(request)).toBe(
-      'https://dev-api.kortix.com/v1/git/proj_1.git',
+      'https://dev-api.zed.com/v1/git/proj_1.git',
     );
     expect(gitCredentialRequestUrl({ url: 'https://github.com/acme/demo.git' })).toBe(
       'https://github.com/acme/demo.git',
     );
   });
 
-  test('returns the Kortix login token for the linked proxy URL', async () => {
+  test('returns the Zed login token for the linked proxy URL', async () => {
     let mintCalls = 0;
     const credential = await resolveGitCredentialForProject({
-      requestUrl: 'https://dev-api.kortix.com/v1/git/proj_1.git',
+      requestUrl: 'https://dev-api.zed.com/v1/git/proj_1.git',
       project: project({
-        git_origin_url: 'https://dev-api.kortix.com/v1/git/proj_1.git',
+        git_origin_url: 'https://dev-api.zed.com/v1/git/proj_1.git',
       }),
-      kortixToken: 'kortix_pat_test',
+      zedToken: 'zed_pat_test',
       mintManagedToken: async () => {
         mintCalls += 1;
         return { push_token: 'unused' };
@@ -64,7 +64,7 @@ describe('Git credential protocol', () => {
 
     expect(credential).toEqual({
       username: 'x-access-token',
-      password: 'kortix_pat_test',
+      password: 'zed_pat_test',
     });
     expect(mintCalls).toBe(0);
   });
@@ -74,7 +74,7 @@ describe('Git credential protocol', () => {
     const credential = await resolveGitCredentialForProject({
       requestUrl: 'https://github.com/acme/demo.git/',
       project: project({ metadata: { git: { managed: true } } }),
-      kortixToken: 'kortix_pat_test',
+      zedToken: 'zed_pat_test',
       mintManagedToken: async () => {
         mintCalls += 1;
         return { push_token: 'github_installation_token', git_username: 'x-github-app' };
@@ -93,7 +93,7 @@ describe('Git credential protocol', () => {
     const credential = await resolveGitCredentialForProject({
       requestUrl: 'https://github.com/acme/other.git',
       project: project({ metadata: { git: { managed: true } } }),
-      kortixToken: 'kortix_pat_test',
+      zedToken: 'zed_pat_test',
       mintManagedToken: async () => {
         mintCalls += 1;
         return { push_token: 'must_not_be_used' };
@@ -105,7 +105,7 @@ describe('Git credential protocol', () => {
   });
 
   test('machine command emits no host or update notice', async () => {
-    const cwd = mkdtempSync(join(tmpdir(), 'kortix-git-credential-machine-'));
+    const cwd = mkdtempSync(join(tmpdir(), 'zed-git-credential-machine-'));
     const config = join(cwd, 'config.json');
     writeFileSync(
       config,
@@ -113,8 +113,8 @@ describe('Git credential protocol', () => {
         active: 'dev',
         hosts: {
           dev: {
-            url: 'https://dev-api.kortix.com',
-            token: 'kortix_pat_test',
+            url: 'https://dev-api.zed.com',
+            token: 'zed_pat_test',
             user_id: 'user_1',
             user_email: 'user@example.test',
             account_id: 'acct_1',
@@ -128,13 +128,13 @@ describe('Git credential protocol', () => {
       cwd,
       env: {
         ...process.env,
-        KORTIX_CONFIG_FILE: config,
-        KORTIX_NO_UPDATE_CHECK: '1',
-        KORTIX_DISABLE_SANDBOX_ENV_FILE: '1',
+        ZED_CONFIG_FILE: config,
+        ZED_NO_UPDATE_CHECK: '1',
+        ZED_DISABLE_SANDBOX_ENV_FILE: '1',
         NO_COLOR: '1',
         FORCE_COLOR: '0',
       },
-      stdin: new Blob(['protocol=https\nhost=dev-api.kortix.com\npath=v1/git/proj_1.git\n\n']),
+      stdin: new Blob(['protocol=https\nhost=dev-api.zed.com\npath=v1/git/proj_1.git\n\n']),
       stdout: 'pipe',
       stderr: 'pipe',
     });

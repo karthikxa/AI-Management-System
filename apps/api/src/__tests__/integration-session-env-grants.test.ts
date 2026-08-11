@@ -22,7 +22,7 @@ import {
   projectSecrets,
   projectSessionSecretHandles,
   projectSessions,
-} from '@kortix/db';
+} from '@zed/db';
 import { db } from '../shared/db';
 import { resolveSandboxEnvSnapshot } from '../projects/lib/sandbox-env-sync';
 import { buildSessionSandboxEnvVars } from '../projects/lib/sessions';
@@ -59,7 +59,7 @@ const BROKER_VALUE = `broker-plaintext-${crypto.randomUUID()}`;
 
 beforeAll(async () => {
   const rows = (await db.execute(
-    sql`select account_id from kortix.accounts limit 1`,
+    sql`select account_id from zed.accounts limit 1`,
   )) as unknown as Array<{ account_id: string }>;
   if (!rows[0]) return;
   ctx = { projectId: crypto.randomUUID(), accountId: rows[0].account_id };
@@ -158,7 +158,7 @@ beforeAll(async () => {
       strategy: 'broker',
       consumer: 'http_broker',
       egressPolicy: {
-        backend: 'kortix_fetch',
+        backend: 'zed_fetch',
         rules: [{ host: 'api.example.com', methods: ['POST'], path: '/v1/*' }],
         inject: {
           kind: 'header',
@@ -191,7 +191,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!ctx) return;
   await db.transaction(async (tx) => {
-    await tx.execute(sql`set local kortix.audit_maintenance = 'on'`);
+    await tx.execute(sql`set local zed.audit_maintenance = 'on'`);
     await tx.delete(auditEvents).where(eq(auditEvents.projectId, ctx!.projectId));
     await tx
       .delete(auditSessionSequences)
@@ -387,7 +387,7 @@ describe('listProjectSecretsSnapshotForUser — session env injection by identif
     });
     expect(env.VEYRIS_API_URL).toBe('https://fresh.veyris.example.test');
     expect(env.VEYRIS_AGENT_TOKEN).toBe('fresh-capability');
-    expect(env.KORTIX_PROJECT_SECRET_NAMES?.split(',').sort()).toEqual([
+    expect(env.ZED_PROJECT_SECRET_NAMES?.split(',').sort()).toEqual([
       'VEYRIS_AGENT_TOKEN',
       'VEYRIS_API_URL',
     ]);
@@ -409,7 +409,7 @@ describe('listProjectSecretsSnapshotForUser — session env injection by identif
       {
         identifier: BROKER_IDENT,
         delivery: 'https_broker',
-        command: `kortix secrets call ${BROKER_IDENT} <https-url> [options]`,
+        command: `zed secrets call ${BROKER_IDENT} <https-url> [options]`,
       },
     ]);
     expect(first.capabilitiesJson).not.toContain(BROKER_VALUE);
@@ -460,7 +460,7 @@ describe('listProjectSecretsSnapshotForUser — session env injection by identif
       .update(projectSecrets)
       .set({
         egressPolicy: {
-          backend: 'kortix_fetch',
+          backend: 'zed_fetch',
           rules: [{ host: 'api.example.com', methods: ['POST'], path: '/v2/*' }],
           inject: {
             kind: 'header',

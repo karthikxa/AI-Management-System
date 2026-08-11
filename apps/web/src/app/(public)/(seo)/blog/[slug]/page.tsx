@@ -85,7 +85,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       title: entry.title,
       description: entry.description,
       url,
-      siteName: 'Kortix',
+      siteName: 'Zed',
       publishedTime: entry.date,
       modifiedTime: entry.date,
       authors: [author.name],
@@ -131,7 +131,7 @@ export default async function BlogPostPage(props: PageProps) {
         author: { '@type': 'Person', name: author.name },
         publisher: {
           '@type': 'Organization',
-          name: 'Kortix',
+          name: 'Zed',
           logo: { '@type': 'ImageObject', url: `${siteMetadata.url}/favicon.png` },
         },
         image: entry.cover ? `${siteMetadata.url}${entry.cover}` : `${siteMetadata.url}/banner.png`,
@@ -191,7 +191,7 @@ export default async function BlogPostPage(props: PageProps) {
         ) : (
           <BlogCover
             logos={entry.coverLogos ?? []}
-            withKortix={entry.coverKortix ?? true}
+            withZed={entry.coverZed ?? true}
             className="border-border/60 mt-10 aspect-[16/9] w-full rounded-2xl border"
           />
         )}

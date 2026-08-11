@@ -96,10 +96,10 @@ assign('sessions', [
 assign('memory', ['memory', 'memory_search', 'mem_search', 'ltm_search', 'get_mem']);
 assign('apps', [
   'connector_get', 'connector_list', 'connector_setup',
-  'kortix_connector_call', 'kortix_connectors',
-  'kortix_connectors_connectors', 'kortix_connectors_discover',
-  'kortix_connectors_describe', 'kortix_connectors_call',
-  'kortix_connector_describe', 'kortix_connector_discover',
+  'zed_connector_call', 'zed_connectors',
+  'zed_connectors_connectors', 'zed_connectors_discover',
+  'zed_connectors_describe', 'zed_connectors_call',
+  'zed_connector_describe', 'zed_connector_discover',
 ]);
 assign('automations', [
   'triggers', 'trigger_create', 'trigger_delete', 'trigger_get', 'trigger_list',
@@ -284,10 +284,10 @@ const APP_ACTION: Record<string, AppAction> = {
   connector_setup: 'connect',
   connector_get: 'read',
   connector_list: 'read',
-  kortix_connector_discover: 'read',
-  kortix_connector_describe: 'read',
-  kortix_connectors: 'read',
-  kortix_connector_call: 'call',
+  zed_connector_discover: 'read',
+  zed_connector_describe: 'read',
+  zed_connectors: 'read',
+  zed_connector_call: 'call',
 };
 
 function appAction(part: ToolPart): AppAction {

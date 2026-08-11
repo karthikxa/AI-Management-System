@@ -20,7 +20,7 @@
  */
 import type { GitBackedProject } from '../git';
 import type { SandboxProviderAdapter } from '../../snapshots/providers';
-import type { Database } from '@kortix/db';
+import type { Database } from '@zed/db';
 import {
   DEFAULT_MAX_BUILDING_MS,
   MAX_TRANSITION_ATTEMPTS,
@@ -80,7 +80,7 @@ export const PREBUILD_RECHECK_MS = 10 * 60 * 1000;
  *  Long: a Platinum build runs minutes to ~45 min; re-driving too eagerly just
  *  hammers the provider's template GET. This is a WAIT, never a failed attempt. */
 export const BUILDING_POLL_MS = (() => {
-  const raw = Number.parseInt(process.env.KORTIX_TRANSITION_BUILDING_POLL_MS || '', 10);
+  const raw = Number.parseInt(process.env.ZED_TRANSITION_BUILDING_POLL_MS || '', 10);
   return Number.isFinite(raw) && raw > 0 ? raw : 30_000;
 })();
 /** Overall wall-clock deadline for a `building` transition. A healthy build
@@ -89,7 +89,7 @@ export const BUILDING_POLL_MS = (() => {
  *  starving the resumable batch: once elapsed since `startedAt` crosses this, the
  *  transition fails terminally with errorClass 'build_timeout'. */
 export const MAX_BUILDING_MS = (() => {
-  const raw = Number.parseInt(process.env.KORTIX_TRANSITION_MAX_BUILDING_MS || '', 10);
+  const raw = Number.parseInt(process.env.ZED_TRANSITION_MAX_BUILDING_MS || '', 10);
   return Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_MAX_BUILDING_MS;
 })();
 

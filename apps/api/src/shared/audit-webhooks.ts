@@ -4,7 +4,7 @@
 // SKIP LOCKED, so slow or failed receivers never block the audit write path.
 
 import { createHash, createHmac, randomBytes } from 'node:crypto';
-import { auditEvents, auditWebhookDeliveries, auditWebhooks } from '@kortix/db';
+import { auditEvents, auditWebhookDeliveries, auditWebhooks } from '@zed/db';
 import { and, eq, sql } from 'drizzle-orm';
 import { accountHasEntitlement } from '../billing/services/entitlements';
 import { assertAllowedSourceAddress } from '../marketplace/catalog';
@@ -86,7 +86,7 @@ async function claimDeliveries(): Promise<string[]> {
   const rows = await db.execute<ClaimedDelivery>(sql`
     WITH picked AS (
       SELECT delivery_id
-      FROM kortix.audit_webhook_deliveries
+      FROM zed.audit_webhook_deliveries
       WHERE (
           (status IN ('pending', 'retry') AND next_attempt_at <= now())
           OR (status = 'delivering' AND locked_until < now())
@@ -96,7 +96,7 @@ async function claimDeliveries(): Promise<string[]> {
       LIMIT ${DELIVERY_BATCH_SIZE}
       FOR UPDATE SKIP LOCKED
     )
-    UPDATE kortix.audit_webhook_deliveries d
+    UPDATE zed.audit_webhook_deliveries d
        SET status = 'delivering', locked_by = ${WORKER_ID},
            locked_until = now() + interval '30 seconds', updated_at = now()
       FROM picked
@@ -306,12 +306,12 @@ async function deliverOne(
         'Content-Type': 'application/json',
         // Stripe-style signature header. Customers verify by recomputing
         // HMAC-SHA256(secret, raw_body) and comparing.
-        'X-Kortix-Signature': `sha256=${signature}`,
-        'X-Kortix-Webhook-Id': hook.webhookId,
+        'X-Zed-Signature': `sha256=${signature}`,
+        'X-Zed-Webhook-Id': hook.webhookId,
         // Stable per-event key so receivers can dedupe on any re-delivery.
-        'X-Kortix-Idempotency-Key': idempotencyKey,
-        'X-Kortix-Event': 'audit',
-        'User-Agent': 'Kortix-Audit-Webhook/1',
+        'X-Zed-Idempotency-Key': idempotencyKey,
+        'X-Zed-Event': 'audit',
+        'User-Agent': 'Zed-Audit-Webhook/1',
       },
       body,
       signal: controller.signal,
@@ -371,7 +371,7 @@ export async function deliverTestEvent(
       before: null,
       after: {
         message:
-          'Test delivery from Kortix. If your endpoint received this, audit events will stream here.',
+          'Test delivery from Zed. If your endpoint received this, audit events will stream here.',
       },
       ip: null,
       user_agent: null,

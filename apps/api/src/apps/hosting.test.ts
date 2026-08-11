@@ -71,7 +71,7 @@ describe('AppHostingProvider', () => {
     const { hosting, builds } = dependencies();
     await hosting.buildImage({
       provider: 'daytona',
-      snapshotName: 'kortix-app-deployment-1',
+      snapshotName: 'zed-app-deployment-1',
       slug: 'hello',
       sourceDir: '/tmp/source',
       dockerfile: 'FROM nginx:alpine',
@@ -80,7 +80,7 @@ describe('AppHostingProvider', () => {
     });
 
     expect(builds[0]![0]).toMatchObject({
-      snapshotName: 'kortix-app-deployment-1',
+      snapshotName: 'zed-app-deployment-1',
       userDockerfile: 'FROM nginx:alpine',
       runtimeProfile: 'app',
       appContext: {
@@ -99,7 +99,7 @@ describe('AppHostingProvider', () => {
       accountId: 'account-1',
       userId: 'user-1',
       name: 'app-hello-v1',
-      snapshotName: 'kortix-app-deployment-1',
+      snapshotName: 'zed-app-deployment-1',
       machine: { cpuCores: 1, memoryGb: 2, diskGb: 10 },
       // An obsolete caller must not be able to shrink the provider safety
       // backstop below the control-plane idle deadline.
@@ -108,12 +108,12 @@ describe('AppHostingProvider', () => {
 
     expect(creates[0]).toMatchObject({
       workloadType: 'app',
-      snapshot: 'kortix-app-deployment-1',
+      snapshot: 'zed-app-deployment-1',
       publishedPorts: [APP_CONTROL_PORT, APP_INGRESS_PORT],
-      envVars: { KORTIX_APPD_TOKEN: appControlToken('runtime-1', secret) },
+      envVars: { ZED_APPD_TOKEN: appControlToken('runtime-1', secret) },
     });
     expect(creates[0].autoStopInterval).toBeUndefined();
-    expect(creates[0].envVars.KORTIX_SANDBOX_TOKEN).toBeUndefined();
+    expect(creates[0].envVars.ZED_SANDBOX_TOKEN).toBeUndefined();
     expect(result.controlTokenHash).toBe(
       appControlTokenHash(appControlToken('runtime-1', secret)),
     );

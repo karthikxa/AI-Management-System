@@ -1,14 +1,14 @@
-# @kortix/llm-catalog
+# @zed/llm-catalog
 
-The Kortix build-time compatibility catalog — managed-model constants and a
+The Zed build-time compatibility catalog — managed-model constants and a
 bundled [models.dev](https://models.dev) snapshot used by SDK/web releases and as
 the API's last-known fallback. Runtime gateway routing and the live served model
 catalog are owned by `apps/api/src/llm-gateway`; the standalone gateway does not
 depend on this package. This package is consumed by the API, web, and
-[`@kortix/sdk`](https://www.npmjs.com/package/@kortix/sdk).
+[`@zed/sdk`](https://www.npmjs.com/package/@zed/sdk).
 
 It ships to npm in lockstep with the platform release version, so a given
-`@kortix/sdk@x.y.z` always resolves `@kortix/llm-catalog@x.y.z`.
+`@zed/sdk@x.y.z` always resolves `@zed/llm-catalog@x.y.z`.
 
 ## Usage
 
@@ -21,7 +21,7 @@ import {
   PLATFORM_DEFAULT_MODEL_ID,
   getManagedModel,
   isManagedModelId,
-} from '@kortix/llm-catalog';
+} from '@zed/llm-catalog';
 ```
 
 - `CATALOG` — bundled provider/model snapshot used until the API refreshes from its configured catalog URL.

@@ -2,15 +2,15 @@
 
 exports[`rendered layer (golden) shared platform default 1`] = `
 "# syntax=docker/dockerfile:1.7
-# Kortix platform default sandbox base.
+# Zed platform default sandbox base.
 # Sessions clone the project workspace at boot — nothing project-specific
-# is baked in here. Customize via \`sandbox.templates\` in kortix.yaml.
+# is baked in here. Customize via \`sandbox.templates\` in zed.yaml.
 FROM ubuntu:24.04
 
 WORKDIR /workspace
 
-# ─── Kortix runtime layer (auto-injected) ──────────────────────────
-# Everything below is added by the Kortix snapshot builder. Do not
+# ─── Zed runtime layer (auto-injected) ──────────────────────────
+# Everything below is added by the Zed snapshot builder. Do not
 # edit by hand — your project Dockerfile above is preserved verbatim.
 
 USER root
@@ -24,15 +24,15 @@ RUN apt-get update \\
         texlive-latex-extra texlive-latex-recommended \\
     && rm -rf /var/lib/apt/lists/*
 
-RUN useradd --create-home --shell /bin/bash --user-group kortix \\
-    && echo 'kortix ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/kortix \\
-    && chmod 0440 /etc/sudoers.d/kortix \\
-    && mkdir -p /workspace /opt/kortix /opt/pw-browsers /ephemeral/kortix-master/opencode \\
-        /home/kortix/.local/bin /home/kortix/.local/share/pnpm/bin /home/kortix/.bun/bin \\
-    && chown -R kortix:kortix /workspace /opt/kortix /opt/pw-browsers /ephemeral /home/kortix
-ENV PNPM_HOME=/home/kortix/.local/share/pnpm \\
-    PATH=/home/kortix/.local/bin:/home/kortix/.local/share/pnpm/bin:/home/kortix/.bun/bin:$PATH
-USER kortix
+RUN useradd --create-home --shell /bin/bash --user-group zed \\
+    && echo 'zed ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/zed \\
+    && chmod 0440 /etc/sudoers.d/zed \\
+    && mkdir -p /workspace /opt/zed /opt/pw-browsers /ephemeral/zed-master/opencode \\
+        /home/zed/.local/bin /home/zed/.local/share/pnpm/bin /home/zed/.bun/bin \\
+    && chown -R zed:zed /workspace /opt/zed /opt/pw-browsers /ephemeral /home/zed
+ENV PNPM_HOME=/home/zed/.local/share/pnpm \\
+    PATH=/home/zed/.local/bin:/home/zed/.local/share/pnpm/bin:/home/zed/.bun/bin:$PATH
+USER zed
 
 RUN case "$(uname -m)" in \\
       x86_64) uv_arch=x86_64; uv_sha=04bc7d180d6138bf6dc08387acf507a823f397a98fea55da36b0ccc7fbce3b68 ;; \\
@@ -42,14 +42,14 @@ RUN case "$(uname -m)" in \\
     && curl -fsSL --retry 3 --retry-delay 2 -o /tmp/uv.tar.gz \\
          "https://github.com/astral-sh/uv/releases/download/0.11.30/uv-\${uv_arch}-unknown-linux-gnu.tar.gz" \\
     && echo "\${uv_sha}  /tmp/uv.tar.gz" | sha256sum -c - \\
-    && tar -xzf /tmp/uv.tar.gz --strip-components=1 -C /home/kortix/.local/bin \\
+    && tar -xzf /tmp/uv.tar.gz --strip-components=1 -C /home/zed/.local/bin \\
     && rm /tmp/uv.tar.gz \\
     && uv --version | grep -Eq '^uv 0.11.30( |$)' \\
     && UV_PYTHON_DOWNLOADS=automatic uv python install --default 3.12.13 \\
     && python -c 'import sys; assert sys.version_info[:3] == (3, 12, 13); print("managed python:", sys.version)' \\
     && python3 -c 'import sys; assert sys.version_info[:3] == (3, 12, 13)'
 
-RUN uv pip install --python /home/kortix/.local/bin/python3 --break-system-packages \\
+RUN uv pip install --python /home/zed/.local/bin/python3 --break-system-packages \\
         "lxml==6.1.1" \\
         "markitdown[pptx]==0.1.7" \\
         "openpyxl==3.1.5" \\
@@ -77,7 +77,7 @@ RUN case "$(uname -m)" in \\
     && curl -fsSL --retry 3 --retry-delay 2 -o /tmp/pnpm.tar.gz \\
          "https://github.com/pnpm/pnpm/releases/download/v11.15.1/pnpm-linux-\${pnpm_arch}.tar.gz" \\
     && echo "\${pnpm_sha}  /tmp/pnpm.tar.gz" | sha256sum -c - \\
-    && tar -xzf /tmp/pnpm.tar.gz -C /home/kortix/.local/bin \\
+    && tar -xzf /tmp/pnpm.tar.gz -C /home/zed/.local/bin \\
     && rm /tmp/pnpm.tar.gz \\
     && test "$(pnpm --version)" = "11.15.1" \\
     && pnpm runtime set node 22.23.1 -g \\
@@ -86,7 +86,7 @@ RUN case "$(uname -m)" in \\
     && test "$(npm --version)" = "12.0.1"
 
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \\
-    AGENT_BROWSER_EXECUTABLE_PATH=/home/kortix/.local/bin/chromium \\
+    AGENT_BROWSER_EXECUTABLE_PATH=/home/zed/.local/bin/chromium \\
     AGENT_BROWSER_ARGS=--no-sandbox,--disable-dev-shm-usage \\
     PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT=1800000
 RUN pnpm add -g --allow-build=agent-browser "agent-browser@0.27.0" \\
@@ -99,9 +99,9 @@ RUN pnpm add -g --allow-build=agent-browser "agent-browser@0.27.0" \\
     && sudo rm -rf /var/lib/apt/lists/* \\
     && pw_chrome="$(find /opt/pw-browsers -type f -path '*chrome-linux*/chrome' | head -n1)" \\
     && test -n "$pw_chrome" \\
-    && ln -sf "$pw_chrome" /home/kortix/.local/bin/chromium \\
-    && mkdir -p /home/kortix/.agent-browser/browsers \\
-    && ln -sf "$(dirname "$pw_chrome")" /home/kortix/.agent-browser/browsers/chrome-linux64 \\
+    && ln -sf "$pw_chrome" /home/zed/.local/bin/chromium \\
+    && mkdir -p /home/zed/.agent-browser/browsers \\
+    && ln -sf "$(dirname "$pw_chrome")" /home/zed/.agent-browser/browsers/chrome-linux64 \\
     && chromium --version \\
     && env -u AGENT_BROWSER_EXECUTABLE_PATH agent-browser doctor 2>&1 | grep -qE 'pass.+chrome-linux64/chrome'
 
@@ -109,8 +109,8 @@ RUN pnpm add -g --allow-build=opencode-ai "opencode-ai@1.17.11" \\
     && command -v opencode \\
     && opencode --version
 
-COPY --chown=kortix:kortix kortix-opencode-warmup /tmp/kortix-opencode-warmup
-RUN bash /tmp/kortix-opencode-warmup migration; rm -f /tmp/kortix-opencode-warmup
+COPY --chown=zed:zed zed-opencode-warmup /tmp/zed-opencode-warmup
+RUN bash /tmp/zed-opencode-warmup migration; rm -f /tmp/zed-opencode-warmup
 
 RUN case "$(uname -m)" in \\
       x86_64) bun_arch=x64; bun_sha=951ee2aee855f08595aeec6225226a298d3fea83a3dcd6465c09cbccdf7e848f ;; \\
@@ -121,8 +121,8 @@ RUN case "$(uname -m)" in \\
          "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-\${bun_arch}.zip" \\
     && echo "\${bun_sha}  /tmp/bun.zip" | sha256sum -c - \\
     && unzip -q /tmp/bun.zip -d /tmp/bun \\
-    && install -m 0755 "/tmp/bun/bun-linux-\${bun_arch}/bun" /home/kortix/.bun/bin/bun \\
-    && ln -sf bun /home/kortix/.bun/bin/bunx \\
+    && install -m 0755 "/tmp/bun/bun-linux-\${bun_arch}/bun" /home/zed/.bun/bin/bun \\
+    && ln -sf bun /home/zed/.bun/bin/bunx \\
     && rm -rf /tmp/bun /tmp/bun.zip \\
     && test "$(bun --version)" = "1.3.14"
 
@@ -130,51 +130,51 @@ RUN pnpm add -g "@firecrawl/anydoc@0.1.6" \\
     && command -v anydoc \\
     && test "$(anydoc --version)" = "0.1.6"
 
-RUN mkdir -p /opt/kortix/opencode-config-deps \\
-    && cd /opt/kortix/opencode-config-deps \\
-    && printf '{"name":"kortix-opencode-config","private":true,"dependencies":{"@mendable/firecrawl-js":"^4.25.1","@opencode-ai/plugin":"1.17.11","@tavily/core":"^0.7.3","replicate":"^1.4.0"},"overrides":{"axios":"1.16.0","form-data":"4.0.6"}}' > package.json \\
+RUN mkdir -p /opt/zed/opencode-config-deps \\
+    && cd /opt/zed/opencode-config-deps \\
+    && printf '{"name":"zed-opencode-config","private":true,"dependencies":{"@mendable/firecrawl-js":"^4.25.1","@opencode-ai/plugin":"1.17.11","@tavily/core":"^0.7.3","replicate":"^1.4.0"},"overrides":{"axios":"1.16.0","form-data":"4.0.6"}}' > package.json \\
     && bun install
 
-RUN cd /opt/kortix/opencode-config-deps \\
+RUN cd /opt/zed/opencode-config-deps \\
     && bun build node_modules/axios/lib/utils.js node_modules/form-data/lib/form_data.js --target=bun --outdir=/tmp/opencode-deps-bundle-check \\
     && rm -rf /tmp/opencode-deps-bundle-check \\
     && echo "opencode-config-deps: baked tree bundles cleanly"
 
-COPY --chown=kortix:kortix kortix-opencode-config/ /opt/kortix/warm-config/.kortix/opencode/
-RUN sudo chown -R kortix:kortix /opt/kortix/warm-config
-RUN cd /opt/kortix/warm-config/.kortix/opencode \\
+COPY --chown=zed:zed zed-opencode-config/ /opt/zed/warm-config/.zed/opencode/
+RUN sudo chown -R zed:zed /opt/zed/warm-config
+RUN cd /opt/zed/warm-config/.zed/opencode \\
     && rm -rf node_modules \\
-    && ln -s /opt/kortix/opencode-config-deps/node_modules node_modules \\
+    && ln -s /opt/zed/opencode-config-deps/node_modules node_modules \\
     && bun build tools/*.ts --target=bun --outdir=/tmp/opencode-tools-bundle-check \\
     && rm -rf /tmp/opencode-tools-bundle-check \\
     && echo "opencode-config-deps: starter tool files bundle cleanly"
 
-COPY --chown=kortix:kortix kortix-opencode-warmup /tmp/kortix-opencode-warmup
-RUN bash /tmp/kortix-opencode-warmup instance wipe; rm -f /tmp/kortix-opencode-warmup
+COPY --chown=zed:zed zed-opencode-warmup /tmp/zed-opencode-warmup
+RUN bash /tmp/zed-opencode-warmup instance wipe; rm -f /tmp/zed-opencode-warmup
 
 USER root
-COPY kortix-agent.gz /tmp/kortix-agent.gz
-COPY kortix.gz /tmp/kortix.gz
-COPY kortix-entrypoint /usr/local/bin/kortix-entrypoint
+COPY zed-agent.gz /tmp/zed-agent.gz
+COPY zed.gz /tmp/zed.gz
+COPY zed-entrypoint /usr/local/bin/zed-entrypoint
 COPY MACHINE.md /MACHINE.md
-COPY kortix-slack-cli/ /opt/kortix/apps/sandbox/slack-cli/
-COPY kortix-llm-catalog.json /opt/kortix/llm-catalog.json
-COPY scaffold.git /opt/kortix/scaffold.git
-RUN gunzip -c /tmp/kortix-agent.gz > /usr/local/bin/kortix-agent \\
-    && gunzip -c /tmp/kortix.gz > /usr/local/bin/kortix \\
-    && rm /tmp/kortix-agent.gz /tmp/kortix.gz \\
-    && bash -n /usr/local/bin/kortix-entrypoint \\
-    && chmod +x /usr/local/bin/kortix-agent /usr/local/bin/kortix /usr/local/bin/kortix-entrypoint \\
-        /opt/kortix/apps/sandbox/slack-cli/install-shims.sh \\
-    && bash /opt/kortix/apps/sandbox/slack-cli/install-shims.sh /opt/kortix/apps/sandbox/slack-cli \\
-    && kortix --version \\
-    && chown -R kortix:kortix /opt/kortix /workspace /ephemeral
+COPY zed-slack-cli/ /opt/zed/apps/sandbox/slack-cli/
+COPY zed-llm-catalog.json /opt/zed/llm-catalog.json
+COPY scaffold.git /opt/zed/scaffold.git
+RUN gunzip -c /tmp/zed-agent.gz > /usr/local/bin/zed-agent \\
+    && gunzip -c /tmp/zed.gz > /usr/local/bin/zed \\
+    && rm /tmp/zed-agent.gz /tmp/zed.gz \\
+    && bash -n /usr/local/bin/zed-entrypoint \\
+    && chmod +x /usr/local/bin/zed-agent /usr/local/bin/zed /usr/local/bin/zed-entrypoint \\
+        /opt/zed/apps/sandbox/slack-cli/install-shims.sh \\
+    && bash /opt/zed/apps/sandbox/slack-cli/install-shims.sh /opt/zed/apps/sandbox/slack-cli \\
+    && zed --version \\
+    && chown -R zed:zed /opt/zed /workspace /ephemeral
 
-ENV KORTIX_WORKSPACE=/workspace
-USER kortix
+ENV ZED_WORKSPACE=/workspace
+USER zed
 WORKDIR /workspace
 EXPOSE 8000
-ENTRYPOINT ["/usr/local/bin/kortix-entrypoint"]
+ENTRYPOINT ["/usr/local/bin/zed-entrypoint"]
 "
 `;
 
@@ -186,8 +186,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends gdal-bin
 WORKDIR /workspace
 RUN mkdir -p /workspace/data && echo seed > /workspace/data/basemap.tif
 
-# ─── Kortix runtime layer (auto-injected) ──────────────────────────
-# Everything below is added by the Kortix snapshot builder. Do not
+# ─── Zed runtime layer (auto-injected) ──────────────────────────
+# Everything below is added by the Zed snapshot builder. Do not
 # edit by hand — your project Dockerfile above is preserved verbatim.
 
 USER root
@@ -201,15 +201,15 @@ RUN apt-get update \\
         texlive-latex-extra texlive-latex-recommended \\
     && rm -rf /var/lib/apt/lists/*
 
-RUN useradd --create-home --shell /bin/bash --user-group kortix \\
-    && echo 'kortix ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/kortix \\
-    && chmod 0440 /etc/sudoers.d/kortix \\
-    && mkdir -p /workspace /opt/kortix /opt/pw-browsers /ephemeral/kortix-master/opencode \\
-        /home/kortix/.local/bin /home/kortix/.local/share/pnpm/bin /home/kortix/.bun/bin \\
-    && chown -R kortix:kortix /workspace /opt/kortix /opt/pw-browsers /ephemeral /home/kortix
-ENV PNPM_HOME=/home/kortix/.local/share/pnpm \\
-    PATH=/home/kortix/.local/bin:/home/kortix/.local/share/pnpm/bin:/home/kortix/.bun/bin:$PATH
-USER kortix
+RUN useradd --create-home --shell /bin/bash --user-group zed \\
+    && echo 'zed ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/zed \\
+    && chmod 0440 /etc/sudoers.d/zed \\
+    && mkdir -p /workspace /opt/zed /opt/pw-browsers /ephemeral/zed-master/opencode \\
+        /home/zed/.local/bin /home/zed/.local/share/pnpm/bin /home/zed/.bun/bin \\
+    && chown -R zed:zed /workspace /opt/zed /opt/pw-browsers /ephemeral /home/zed
+ENV PNPM_HOME=/home/zed/.local/share/pnpm \\
+    PATH=/home/zed/.local/bin:/home/zed/.local/share/pnpm/bin:/home/zed/.bun/bin:$PATH
+USER zed
 
 RUN case "$(uname -m)" in \\
       x86_64) uv_arch=x86_64; uv_sha=04bc7d180d6138bf6dc08387acf507a823f397a98fea55da36b0ccc7fbce3b68 ;; \\
@@ -219,14 +219,14 @@ RUN case "$(uname -m)" in \\
     && curl -fsSL --retry 3 --retry-delay 2 -o /tmp/uv.tar.gz \\
          "https://github.com/astral-sh/uv/releases/download/0.11.30/uv-\${uv_arch}-unknown-linux-gnu.tar.gz" \\
     && echo "\${uv_sha}  /tmp/uv.tar.gz" | sha256sum -c - \\
-    && tar -xzf /tmp/uv.tar.gz --strip-components=1 -C /home/kortix/.local/bin \\
+    && tar -xzf /tmp/uv.tar.gz --strip-components=1 -C /home/zed/.local/bin \\
     && rm /tmp/uv.tar.gz \\
     && uv --version | grep -Eq '^uv 0.11.30( |$)' \\
     && UV_PYTHON_DOWNLOADS=automatic uv python install --default 3.12.13 \\
     && python -c 'import sys; assert sys.version_info[:3] == (3, 12, 13); print("managed python:", sys.version)' \\
     && python3 -c 'import sys; assert sys.version_info[:3] == (3, 12, 13)'
 
-RUN uv pip install --python /home/kortix/.local/bin/python3 --break-system-packages \\
+RUN uv pip install --python /home/zed/.local/bin/python3 --break-system-packages \\
         "lxml==6.1.1" \\
         "markitdown[pptx]==0.1.7" \\
         "openpyxl==3.1.5" \\
@@ -254,7 +254,7 @@ RUN case "$(uname -m)" in \\
     && curl -fsSL --retry 3 --retry-delay 2 -o /tmp/pnpm.tar.gz \\
          "https://github.com/pnpm/pnpm/releases/download/v11.15.1/pnpm-linux-\${pnpm_arch}.tar.gz" \\
     && echo "\${pnpm_sha}  /tmp/pnpm.tar.gz" | sha256sum -c - \\
-    && tar -xzf /tmp/pnpm.tar.gz -C /home/kortix/.local/bin \\
+    && tar -xzf /tmp/pnpm.tar.gz -C /home/zed/.local/bin \\
     && rm /tmp/pnpm.tar.gz \\
     && test "$(pnpm --version)" = "11.15.1" \\
     && pnpm runtime set node 22.23.1 -g \\
@@ -263,7 +263,7 @@ RUN case "$(uname -m)" in \\
     && test "$(npm --version)" = "12.0.1"
 
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \\
-    AGENT_BROWSER_EXECUTABLE_PATH=/home/kortix/.local/bin/chromium \\
+    AGENT_BROWSER_EXECUTABLE_PATH=/home/zed/.local/bin/chromium \\
     AGENT_BROWSER_ARGS=--no-sandbox,--disable-dev-shm-usage \\
     PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT=1800000
 RUN pnpm add -g --allow-build=agent-browser "agent-browser@0.27.0" \\
@@ -276,9 +276,9 @@ RUN pnpm add -g --allow-build=agent-browser "agent-browser@0.27.0" \\
     && sudo rm -rf /var/lib/apt/lists/* \\
     && pw_chrome="$(find /opt/pw-browsers -type f -path '*chrome-linux*/chrome' | head -n1)" \\
     && test -n "$pw_chrome" \\
-    && ln -sf "$pw_chrome" /home/kortix/.local/bin/chromium \\
-    && mkdir -p /home/kortix/.agent-browser/browsers \\
-    && ln -sf "$(dirname "$pw_chrome")" /home/kortix/.agent-browser/browsers/chrome-linux64 \\
+    && ln -sf "$pw_chrome" /home/zed/.local/bin/chromium \\
+    && mkdir -p /home/zed/.agent-browser/browsers \\
+    && ln -sf "$(dirname "$pw_chrome")" /home/zed/.agent-browser/browsers/chrome-linux64 \\
     && chromium --version \\
     && env -u AGENT_BROWSER_EXECUTABLE_PATH agent-browser doctor 2>&1 | grep -qE 'pass.+chrome-linux64/chrome'
 
@@ -286,8 +286,8 @@ RUN pnpm add -g --allow-build=opencode-ai "opencode-ai@1.17.11" \\
     && command -v opencode \\
     && opencode --version
 
-COPY --chown=kortix:kortix kortix-opencode-warmup /tmp/kortix-opencode-warmup
-RUN bash /tmp/kortix-opencode-warmup migration; rm -f /tmp/kortix-opencode-warmup
+COPY --chown=zed:zed zed-opencode-warmup /tmp/zed-opencode-warmup
+RUN bash /tmp/zed-opencode-warmup migration; rm -f /tmp/zed-opencode-warmup
 
 RUN case "$(uname -m)" in \\
       x86_64) bun_arch=x64; bun_sha=951ee2aee855f08595aeec6225226a298d3fea83a3dcd6465c09cbccdf7e848f ;; \\
@@ -298,8 +298,8 @@ RUN case "$(uname -m)" in \\
          "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-\${bun_arch}.zip" \\
     && echo "\${bun_sha}  /tmp/bun.zip" | sha256sum -c - \\
     && unzip -q /tmp/bun.zip -d /tmp/bun \\
-    && install -m 0755 "/tmp/bun/bun-linux-\${bun_arch}/bun" /home/kortix/.bun/bin/bun \\
-    && ln -sf bun /home/kortix/.bun/bin/bunx \\
+    && install -m 0755 "/tmp/bun/bun-linux-\${bun_arch}/bun" /home/zed/.bun/bin/bun \\
+    && ln -sf bun /home/zed/.bun/bin/bunx \\
     && rm -rf /tmp/bun /tmp/bun.zip \\
     && test "$(bun --version)" = "1.3.14"
 
@@ -307,65 +307,65 @@ RUN pnpm add -g "@firecrawl/anydoc@0.1.6" \\
     && command -v anydoc \\
     && test "$(anydoc --version)" = "0.1.6"
 
-RUN mkdir -p /opt/kortix/opencode-config-deps \\
-    && cd /opt/kortix/opencode-config-deps \\
-    && printf '{"name":"kortix-opencode-config","private":true,"dependencies":{"@mendable/firecrawl-js":"^4.25.1","@opencode-ai/plugin":"1.17.11","@tavily/core":"^0.7.3","replicate":"^1.4.0"},"overrides":{"axios":"1.16.0","form-data":"4.0.6"}}' > package.json \\
+RUN mkdir -p /opt/zed/opencode-config-deps \\
+    && cd /opt/zed/opencode-config-deps \\
+    && printf '{"name":"zed-opencode-config","private":true,"dependencies":{"@mendable/firecrawl-js":"^4.25.1","@opencode-ai/plugin":"1.17.11","@tavily/core":"^0.7.3","replicate":"^1.4.0"},"overrides":{"axios":"1.16.0","form-data":"4.0.6"}}' > package.json \\
     && bun install
 
-RUN cd /opt/kortix/opencode-config-deps \\
+RUN cd /opt/zed/opencode-config-deps \\
     && bun build node_modules/axios/lib/utils.js node_modules/form-data/lib/form_data.js --target=bun --outdir=/tmp/opencode-deps-bundle-check \\
     && rm -rf /tmp/opencode-deps-bundle-check \\
     && echo "opencode-config-deps: baked tree bundles cleanly"
 
-COPY --chown=kortix:kortix kortix-opencode-config/ /opt/kortix/warm-config/.kortix/opencode/
-RUN sudo chown -R kortix:kortix /opt/kortix/warm-config
-RUN cd /opt/kortix/warm-config/.kortix/opencode \\
+COPY --chown=zed:zed zed-opencode-config/ /opt/zed/warm-config/.zed/opencode/
+RUN sudo chown -R zed:zed /opt/zed/warm-config
+RUN cd /opt/zed/warm-config/.zed/opencode \\
     && rm -rf node_modules \\
-    && ln -s /opt/kortix/opencode-config-deps/node_modules node_modules \\
+    && ln -s /opt/zed/opencode-config-deps/node_modules node_modules \\
     && bun build tools/*.ts --target=bun --outdir=/tmp/opencode-tools-bundle-check \\
     && rm -rf /tmp/opencode-tools-bundle-check \\
     && echo "opencode-config-deps: starter tool files bundle cleanly"
 
-COPY --chown=kortix:kortix kortix-opencode-warmup /tmp/kortix-opencode-warmup
-RUN bash /tmp/kortix-opencode-warmup instance targeted; rm -f /tmp/kortix-opencode-warmup
+COPY --chown=zed:zed zed-opencode-warmup /tmp/zed-opencode-warmup
+RUN bash /tmp/zed-opencode-warmup instance targeted; rm -f /tmp/zed-opencode-warmup
 
 USER root
-COPY kortix-agent.gz /tmp/kortix-agent.gz
-COPY kortix.gz /tmp/kortix.gz
-COPY kortix-entrypoint /usr/local/bin/kortix-entrypoint
+COPY zed-agent.gz /tmp/zed-agent.gz
+COPY zed.gz /tmp/zed.gz
+COPY zed-entrypoint /usr/local/bin/zed-entrypoint
 COPY MACHINE.md /MACHINE.md
-COPY kortix-slack-cli/ /opt/kortix/apps/sandbox/slack-cli/
-COPY kortix-llm-catalog.json /opt/kortix/llm-catalog.json
-COPY scaffold.git /opt/kortix/scaffold.git
-RUN gunzip -c /tmp/kortix-agent.gz > /usr/local/bin/kortix-agent \\
-    && gunzip -c /tmp/kortix.gz > /usr/local/bin/kortix \\
-    && rm /tmp/kortix-agent.gz /tmp/kortix.gz \\
-    && bash -n /usr/local/bin/kortix-entrypoint \\
-    && chmod +x /usr/local/bin/kortix-agent /usr/local/bin/kortix /usr/local/bin/kortix-entrypoint \\
-        /opt/kortix/apps/sandbox/slack-cli/install-shims.sh \\
-    && bash /opt/kortix/apps/sandbox/slack-cli/install-shims.sh /opt/kortix/apps/sandbox/slack-cli \\
-    && kortix --version \\
-    && chown -R kortix:kortix /opt/kortix /workspace /ephemeral
+COPY zed-slack-cli/ /opt/zed/apps/sandbox/slack-cli/
+COPY zed-llm-catalog.json /opt/zed/llm-catalog.json
+COPY scaffold.git /opt/zed/scaffold.git
+RUN gunzip -c /tmp/zed-agent.gz > /usr/local/bin/zed-agent \\
+    && gunzip -c /tmp/zed.gz > /usr/local/bin/zed \\
+    && rm /tmp/zed-agent.gz /tmp/zed.gz \\
+    && bash -n /usr/local/bin/zed-entrypoint \\
+    && chmod +x /usr/local/bin/zed-agent /usr/local/bin/zed /usr/local/bin/zed-entrypoint \\
+        /opt/zed/apps/sandbox/slack-cli/install-shims.sh \\
+    && bash /opt/zed/apps/sandbox/slack-cli/install-shims.sh /opt/zed/apps/sandbox/slack-cli \\
+    && zed --version \\
+    && chown -R zed:zed /opt/zed /workspace /ephemeral
 
-ENV KORTIX_WORKSPACE=/workspace
-USER kortix
+ENV ZED_WORKSPACE=/workspace
+USER zed
 WORKDIR /workspace
 EXPOSE 8000
-ENTRYPOINT ["/usr/local/bin/kortix-entrypoint"]
+ENTRYPOINT ["/usr/local/bin/zed-entrypoint"]
 "
 `;
 
 exports[`rendered layer (golden) per-project cold warm (warmRepo) 1`] = `
 "# syntax=docker/dockerfile:1.7
-# Kortix platform default sandbox base.
+# Zed platform default sandbox base.
 # Sessions clone the project workspace at boot — nothing project-specific
-# is baked in here. Customize via \`sandbox.templates\` in kortix.yaml.
+# is baked in here. Customize via \`sandbox.templates\` in zed.yaml.
 FROM ubuntu:24.04
 
 WORKDIR /workspace
 
-# ─── Kortix runtime layer (auto-injected) ──────────────────────────
-# Everything below is added by the Kortix snapshot builder. Do not
+# ─── Zed runtime layer (auto-injected) ──────────────────────────
+# Everything below is added by the Zed snapshot builder. Do not
 # edit by hand — your project Dockerfile above is preserved verbatim.
 
 USER root
@@ -379,15 +379,15 @@ RUN apt-get update \\
         texlive-latex-extra texlive-latex-recommended \\
     && rm -rf /var/lib/apt/lists/*
 
-RUN useradd --create-home --shell /bin/bash --user-group kortix \\
-    && echo 'kortix ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/kortix \\
-    && chmod 0440 /etc/sudoers.d/kortix \\
-    && mkdir -p /workspace /opt/kortix /opt/pw-browsers /ephemeral/kortix-master/opencode \\
-        /home/kortix/.local/bin /home/kortix/.local/share/pnpm/bin /home/kortix/.bun/bin \\
-    && chown -R kortix:kortix /workspace /opt/kortix /opt/pw-browsers /ephemeral /home/kortix
-ENV PNPM_HOME=/home/kortix/.local/share/pnpm \\
-    PATH=/home/kortix/.local/bin:/home/kortix/.local/share/pnpm/bin:/home/kortix/.bun/bin:$PATH
-USER kortix
+RUN useradd --create-home --shell /bin/bash --user-group zed \\
+    && echo 'zed ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/zed \\
+    && chmod 0440 /etc/sudoers.d/zed \\
+    && mkdir -p /workspace /opt/zed /opt/pw-browsers /ephemeral/zed-master/opencode \\
+        /home/zed/.local/bin /home/zed/.local/share/pnpm/bin /home/zed/.bun/bin \\
+    && chown -R zed:zed /workspace /opt/zed /opt/pw-browsers /ephemeral /home/zed
+ENV PNPM_HOME=/home/zed/.local/share/pnpm \\
+    PATH=/home/zed/.local/bin:/home/zed/.local/share/pnpm/bin:/home/zed/.bun/bin:$PATH
+USER zed
 
 RUN case "$(uname -m)" in \\
       x86_64) uv_arch=x86_64; uv_sha=04bc7d180d6138bf6dc08387acf507a823f397a98fea55da36b0ccc7fbce3b68 ;; \\
@@ -397,14 +397,14 @@ RUN case "$(uname -m)" in \\
     && curl -fsSL --retry 3 --retry-delay 2 -o /tmp/uv.tar.gz \\
          "https://github.com/astral-sh/uv/releases/download/0.11.30/uv-\${uv_arch}-unknown-linux-gnu.tar.gz" \\
     && echo "\${uv_sha}  /tmp/uv.tar.gz" | sha256sum -c - \\
-    && tar -xzf /tmp/uv.tar.gz --strip-components=1 -C /home/kortix/.local/bin \\
+    && tar -xzf /tmp/uv.tar.gz --strip-components=1 -C /home/zed/.local/bin \\
     && rm /tmp/uv.tar.gz \\
     && uv --version | grep -Eq '^uv 0.11.30( |$)' \\
     && UV_PYTHON_DOWNLOADS=automatic uv python install --default 3.12.13 \\
     && python -c 'import sys; assert sys.version_info[:3] == (3, 12, 13); print("managed python:", sys.version)' \\
     && python3 -c 'import sys; assert sys.version_info[:3] == (3, 12, 13)'
 
-RUN uv pip install --python /home/kortix/.local/bin/python3 --break-system-packages \\
+RUN uv pip install --python /home/zed/.local/bin/python3 --break-system-packages \\
         "lxml==6.1.1" \\
         "markitdown[pptx]==0.1.7" \\
         "openpyxl==3.1.5" \\
@@ -432,7 +432,7 @@ RUN case "$(uname -m)" in \\
     && curl -fsSL --retry 3 --retry-delay 2 -o /tmp/pnpm.tar.gz \\
          "https://github.com/pnpm/pnpm/releases/download/v11.15.1/pnpm-linux-\${pnpm_arch}.tar.gz" \\
     && echo "\${pnpm_sha}  /tmp/pnpm.tar.gz" | sha256sum -c - \\
-    && tar -xzf /tmp/pnpm.tar.gz -C /home/kortix/.local/bin \\
+    && tar -xzf /tmp/pnpm.tar.gz -C /home/zed/.local/bin \\
     && rm /tmp/pnpm.tar.gz \\
     && test "$(pnpm --version)" = "11.15.1" \\
     && pnpm runtime set node 22.23.1 -g \\
@@ -441,7 +441,7 @@ RUN case "$(uname -m)" in \\
     && test "$(npm --version)" = "12.0.1"
 
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \\
-    AGENT_BROWSER_EXECUTABLE_PATH=/home/kortix/.local/bin/chromium \\
+    AGENT_BROWSER_EXECUTABLE_PATH=/home/zed/.local/bin/chromium \\
     AGENT_BROWSER_ARGS=--no-sandbox,--disable-dev-shm-usage \\
     PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT=1800000
 RUN pnpm add -g --allow-build=agent-browser "agent-browser@0.27.0" \\
@@ -454,9 +454,9 @@ RUN pnpm add -g --allow-build=agent-browser "agent-browser@0.27.0" \\
     && sudo rm -rf /var/lib/apt/lists/* \\
     && pw_chrome="$(find /opt/pw-browsers -type f -path '*chrome-linux*/chrome' | head -n1)" \\
     && test -n "$pw_chrome" \\
-    && ln -sf "$pw_chrome" /home/kortix/.local/bin/chromium \\
-    && mkdir -p /home/kortix/.agent-browser/browsers \\
-    && ln -sf "$(dirname "$pw_chrome")" /home/kortix/.agent-browser/browsers/chrome-linux64 \\
+    && ln -sf "$pw_chrome" /home/zed/.local/bin/chromium \\
+    && mkdir -p /home/zed/.agent-browser/browsers \\
+    && ln -sf "$(dirname "$pw_chrome")" /home/zed/.agent-browser/browsers/chrome-linux64 \\
     && chromium --version \\
     && env -u AGENT_BROWSER_EXECUTABLE_PATH agent-browser doctor 2>&1 | grep -qE 'pass.+chrome-linux64/chrome'
 
@@ -464,8 +464,8 @@ RUN pnpm add -g --allow-build=opencode-ai "opencode-ai@1.17.11" \\
     && command -v opencode \\
     && opencode --version
 
-COPY --chown=kortix:kortix kortix-opencode-warmup /tmp/kortix-opencode-warmup
-RUN bash /tmp/kortix-opencode-warmup migration; rm -f /tmp/kortix-opencode-warmup
+COPY --chown=zed:zed zed-opencode-warmup /tmp/zed-opencode-warmup
+RUN bash /tmp/zed-opencode-warmup migration; rm -f /tmp/zed-opencode-warmup
 
 RUN case "$(uname -m)" in \\
       x86_64) bun_arch=x64; bun_sha=951ee2aee855f08595aeec6225226a298d3fea83a3dcd6465c09cbccdf7e848f ;; \\
@@ -476,8 +476,8 @@ RUN case "$(uname -m)" in \\
          "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-\${bun_arch}.zip" \\
     && echo "\${bun_sha}  /tmp/bun.zip" | sha256sum -c - \\
     && unzip -q /tmp/bun.zip -d /tmp/bun \\
-    && install -m 0755 "/tmp/bun/bun-linux-\${bun_arch}/bun" /home/kortix/.bun/bin/bun \\
-    && ln -sf bun /home/kortix/.bun/bin/bunx \\
+    && install -m 0755 "/tmp/bun/bun-linux-\${bun_arch}/bun" /home/zed/.bun/bin/bun \\
+    && ln -sf bun /home/zed/.bun/bin/bunx \\
     && rm -rf /tmp/bun /tmp/bun.zip \\
     && test "$(bun --version)" = "1.3.14"
 
@@ -485,12 +485,12 @@ RUN pnpm add -g "@firecrawl/anydoc@0.1.6" \\
     && command -v anydoc \\
     && test "$(anydoc --version)" = "0.1.6"
 
-RUN mkdir -p /opt/kortix/opencode-config-deps \\
-    && cd /opt/kortix/opencode-config-deps \\
-    && printf '{"name":"kortix-opencode-config","private":true,"dependencies":{"@mendable/firecrawl-js":"^4.25.1","@opencode-ai/plugin":"1.17.11","@tavily/core":"^0.7.3","replicate":"^1.4.0"},"overrides":{"axios":"1.16.0","form-data":"4.0.6"}}' > package.json \\
+RUN mkdir -p /opt/zed/opencode-config-deps \\
+    && cd /opt/zed/opencode-config-deps \\
+    && printf '{"name":"zed-opencode-config","private":true,"dependencies":{"@mendable/firecrawl-js":"^4.25.1","@opencode-ai/plugin":"1.17.11","@tavily/core":"^0.7.3","replicate":"^1.4.0"},"overrides":{"axios":"1.16.0","form-data":"4.0.6"}}' > package.json \\
     && bun install
 
-RUN cd /opt/kortix/opencode-config-deps \\
+RUN cd /opt/zed/opencode-config-deps \\
     && bun build node_modules/axios/lib/utils.js node_modules/form-data/lib/form_data.js --target=bun --outdir=/tmp/opencode-deps-bundle-check \\
     && rm -rf /tmp/opencode-deps-bundle-check \\
     && echo "opencode-config-deps: baked tree bundles cleanly"
@@ -498,56 +498,56 @@ RUN cd /opt/kortix/opencode-config-deps \\
 
 # ─── Per-project COLD warm: bake repo checkout into /workspace ──────
 # The repo was cloned with the git-host credential, origin-reset to the
-# Kortix proxy, and scrubbed of ALL auth material API-side in Suna before
+# Zed proxy, and scrubbed of ALL auth material API-side in Suna before
 # this Dockerfile was rendered. This image only COPYs the sanitized plain
 # bytes — no git credential ever enters the Dockerfile, build args, image
 # history, or build logs. See PHASE 1 provider-migration hardening.
 RUN cd / && mkdir -p /workspace && find /workspace -mindepth 1 -maxdepth 1 -exec rm -rf {} +
-COPY --chown=kortix:kortix kortix-warm-repo/ /workspace/
-COPY kortix-warm-repo-git.tar /tmp/kortix-warm-repo-git.tar
-RUN rm -rf /workspace/.git && mkdir -p /workspace/.git && tar -xf /tmp/kortix-warm-repo-git.tar -C /workspace/.git --strip-components=1 && chown -R kortix:kortix /workspace/.git
+COPY --chown=zed:zed zed-warm-repo/ /workspace/
+COPY zed-warm-repo-git.tar /tmp/zed-warm-repo-git.tar
+RUN rm -rf /workspace/.git && mkdir -p /workspace/.git && tar -xf /tmp/zed-warm-repo-git.tar -C /workspace/.git --strip-components=1 && chown -R zed:zed /workspace/.git
 RUN git -C /workspace rev-parse HEAD >/dev/null 2>&1 && printf 'warm-repo: baked %s on %s\\n' "$(git -C /workspace rev-parse HEAD)" 'main'
 
-COPY --chown=kortix:kortix kortix-opencode-config/ /opt/kortix/warm-config/.kortix/opencode/
-RUN sudo chown -R kortix:kortix /opt/kortix/warm-config
-RUN cd /opt/kortix/warm-config/.kortix/opencode \\
+COPY --chown=zed:zed zed-opencode-config/ /opt/zed/warm-config/.zed/opencode/
+RUN sudo chown -R zed:zed /opt/zed/warm-config
+RUN cd /opt/zed/warm-config/.zed/opencode \\
     && rm -rf node_modules \\
-    && ln -s /opt/kortix/opencode-config-deps/node_modules node_modules \\
+    && ln -s /opt/zed/opencode-config-deps/node_modules node_modules \\
     && bun build tools/*.ts --target=bun --outdir=/tmp/opencode-tools-bundle-check \\
     && rm -rf /tmp/opencode-tools-bundle-check \\
     && echo "opencode-config-deps: starter tool files bundle cleanly"
 
-COPY --chown=kortix:kortix kortix-opencode-warmup /tmp/kortix-opencode-warmup
-RUN bash /tmp/kortix-opencode-warmup instance keep; rm -f /tmp/kortix-opencode-warmup
+COPY --chown=zed:zed zed-opencode-warmup /tmp/zed-opencode-warmup
+RUN bash /tmp/zed-opencode-warmup instance keep; rm -f /tmp/zed-opencode-warmup
 
 USER root
-COPY kortix-agent.gz /tmp/kortix-agent.gz
-COPY kortix.gz /tmp/kortix.gz
-COPY kortix-entrypoint /usr/local/bin/kortix-entrypoint
+COPY zed-agent.gz /tmp/zed-agent.gz
+COPY zed.gz /tmp/zed.gz
+COPY zed-entrypoint /usr/local/bin/zed-entrypoint
 COPY MACHINE.md /MACHINE.md
-COPY kortix-slack-cli/ /opt/kortix/apps/sandbox/slack-cli/
-COPY kortix-llm-catalog.json /opt/kortix/llm-catalog.json
-COPY scaffold.git /opt/kortix/scaffold.git
-RUN gunzip -c /tmp/kortix-agent.gz > /usr/local/bin/kortix-agent \\
-    && gunzip -c /tmp/kortix.gz > /usr/local/bin/kortix \\
-    && rm /tmp/kortix-agent.gz /tmp/kortix.gz \\
-    && bash -n /usr/local/bin/kortix-entrypoint \\
-    && chmod +x /usr/local/bin/kortix-agent /usr/local/bin/kortix /usr/local/bin/kortix-entrypoint \\
-        /opt/kortix/apps/sandbox/slack-cli/install-shims.sh \\
-    && bash /opt/kortix/apps/sandbox/slack-cli/install-shims.sh /opt/kortix/apps/sandbox/slack-cli \\
-    && kortix --version \\
-    && chown -R kortix:kortix /opt/kortix /workspace /ephemeral
+COPY zed-slack-cli/ /opt/zed/apps/sandbox/slack-cli/
+COPY zed-llm-catalog.json /opt/zed/llm-catalog.json
+COPY scaffold.git /opt/zed/scaffold.git
+RUN gunzip -c /tmp/zed-agent.gz > /usr/local/bin/zed-agent \\
+    && gunzip -c /tmp/zed.gz > /usr/local/bin/zed \\
+    && rm /tmp/zed-agent.gz /tmp/zed.gz \\
+    && bash -n /usr/local/bin/zed-entrypoint \\
+    && chmod +x /usr/local/bin/zed-agent /usr/local/bin/zed /usr/local/bin/zed-entrypoint \\
+        /opt/zed/apps/sandbox/slack-cli/install-shims.sh \\
+    && bash /opt/zed/apps/sandbox/slack-cli/install-shims.sh /opt/zed/apps/sandbox/slack-cli \\
+    && zed --version \\
+    && chown -R zed:zed /opt/zed /workspace /ephemeral
 
-ENV KORTIX_WORKSPACE=/workspace
-USER kortix
+ENV ZED_WORKSPACE=/workspace
+USER zed
 WORKDIR /workspace
 EXPOSE 8000
-ENTRYPOINT ["/usr/local/bin/kortix-entrypoint"]
+ENTRYPOINT ["/usr/local/bin/zed-entrypoint"]
 "
 `;
 
 exports[`buildPerProjectWarmFromBaseDockerfile (FROM-base fast path) golden 1`] = `
-"FROM registry.daytona.internal/kortix-default-abc123:latest
+"FROM registry.daytona.internal/zed-default-abc123:latest
 
 # ─── Per-project COLD warm (FROM-base fast path, auto-injected) ─────
 # Everything above this line is INHERITED from the already-built default
@@ -555,33 +555,33 @@ exports[`buildPerProjectWarmFromBaseDockerfile (FROM-base fast path) golden 1`] 
 # baked in) — nothing below re-installs any of it. This is what makes the
 # Chromium install a guaranteed inherit instead of an opportunistic
 # build-cache hit. Do not add toolchain RUNs here — they belong in
-# kortixToolchainLayer, which this stage deliberately skips.
+# zedToolchainLayer, which this stage deliberately skips.
 
-USER kortix
+USER zed
 
 # ─── Per-project COLD warm: bake repo checkout into /workspace ──────
 # The repo was cloned with the git-host credential, origin-reset to the
-# Kortix proxy, and scrubbed of ALL auth material API-side in Suna before
+# Zed proxy, and scrubbed of ALL auth material API-side in Suna before
 # this Dockerfile was rendered. This image only COPYs the sanitized plain
 # bytes — no git credential ever enters the Dockerfile, build args, image
 # history, or build logs. See PHASE 1 provider-migration hardening.
 RUN cd / && mkdir -p /workspace && find /workspace -mindepth 1 -maxdepth 1 -exec rm -rf {} +
-COPY --chown=kortix:kortix kortix-warm-repo/ /workspace/
-COPY kortix-warm-repo-git.tar /tmp/kortix-warm-repo-git.tar
-RUN rm -rf /workspace/.git && mkdir -p /workspace/.git && tar -xf /tmp/kortix-warm-repo-git.tar -C /workspace/.git --strip-components=1 && chown -R kortix:kortix /workspace/.git
+COPY --chown=zed:zed zed-warm-repo/ /workspace/
+COPY zed-warm-repo-git.tar /tmp/zed-warm-repo-git.tar
+RUN rm -rf /workspace/.git && mkdir -p /workspace/.git && tar -xf /tmp/zed-warm-repo-git.tar -C /workspace/.git --strip-components=1 && chown -R zed:zed /workspace/.git
 RUN git -C /workspace rev-parse HEAD >/dev/null 2>&1 && printf 'warm-repo: baked %s on %s\\n' "$(git -C /workspace rev-parse HEAD)" 'main'
 
-COPY --chown=kortix:kortix kortix-opencode-config/ /opt/kortix/warm-config/.kortix/opencode/
-RUN sudo chown -R kortix:kortix /opt/kortix/warm-config
-RUN cd /opt/kortix/warm-config/.kortix/opencode \\
+COPY --chown=zed:zed zed-opencode-config/ /opt/zed/warm-config/.zed/opencode/
+RUN sudo chown -R zed:zed /opt/zed/warm-config
+RUN cd /opt/zed/warm-config/.zed/opencode \\
     && rm -rf node_modules \\
-    && ln -s /opt/kortix/opencode-config-deps/node_modules node_modules \\
+    && ln -s /opt/zed/opencode-config-deps/node_modules node_modules \\
     && bun build tools/*.ts --target=bun --outdir=/tmp/opencode-tools-bundle-check \\
     && rm -rf /tmp/opencode-tools-bundle-check \\
     && echo "opencode-config-deps: starter tool files bundle cleanly"
 
-COPY --chown=kortix:kortix kortix-opencode-warmup /tmp/kortix-opencode-warmup
-RUN bash /tmp/kortix-opencode-warmup instance keep; rm -f /tmp/kortix-opencode-warmup
+COPY --chown=zed:zed zed-opencode-warmup /tmp/zed-opencode-warmup
+RUN bash /tmp/zed-opencode-warmup instance keep; rm -f /tmp/zed-opencode-warmup
 
 "
 `;

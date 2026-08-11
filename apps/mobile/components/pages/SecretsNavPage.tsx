@@ -245,7 +245,7 @@ function SharedSecretForm({
   const border = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)';
   const inputBg = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)';
 
-  const nameValid = SECRET_NAME_RE.test(name) && !name.startsWith('KORTIX_');
+  const nameValid = SECRET_NAME_RE.test(name) && !name.startsWith('ZED_');
   const requiresValue = !configured;
   const canSave =
     nameValid && (!requiresValue || value.trim().length > 0) && !upsert.isPending;
@@ -287,7 +287,7 @@ function SharedSecretForm({
         />
         {nameEditable && name.length > 0 && !nameValid && (
           <Text style={{ fontSize: 12, color: '#ef4444', marginBottom: 8 }}>
-            Use A–Z, 0–9 and _, starting with a letter. KORTIX_ is reserved.
+            Use A–Z, 0–9 and _, starting with a letter. ZED_ is reserved.
           </Text>
         )}
 
@@ -352,7 +352,7 @@ function PersonalSecretForm({
   const border = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)';
   const inputBg = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)';
 
-  const nameValid = SECRET_NAME_RE.test(name) && !name.startsWith('KORTIX_');
+  const nameValid = SECRET_NAME_RE.test(name) && !name.startsWith('ZED_');
   const canSave = nameValid && value.trim().length > 0 && !setPersonal.isPending;
 
   const handleSave = () => {
@@ -628,7 +628,7 @@ function ManifestBanner({ status, path, error, isDark }: { status?: string; path
   const bg = warn ? 'rgba(217,119,6,0.08)' : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)');
   const text =
     status === 'missing'
-      ? 'No kortix.yaml manifest — declare required env keys to track them here.'
+      ? 'No zed.yaml manifest — declare required env keys to track them here.'
       : error || 'Manifest could not be read.';
   return (
     <View style={{ marginHorizontal: 16, marginTop: 12, padding: 12, borderRadius: 12, backgroundColor: bg, flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>

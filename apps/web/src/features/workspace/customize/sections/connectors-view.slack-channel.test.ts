@@ -11,7 +11,7 @@ const source = [
 describe('Slack channel connector catalogue', () => {
   test('uses the built-in Slack install flow instead of creating the reserved slug', () => {
     expect(source).toContain('<AddSlackConnectionCard projectId={projectId} onAdded={onAdded} />');
-    expect(source).not.toMatch(/<ChannelConnectionCard[\s\S]*slug="kortix_slack"/);
+    expect(source).not.toMatch(/<ChannelConnectionCard[\s\S]*slug="zed_slack"/);
   });
 
   test('keeps Slack out of the Pipedream OAuth Discover catalogue', () => {

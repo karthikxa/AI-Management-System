@@ -1,5 +1,5 @@
 /**
- * `kortix audit` — the two pure pieces worth pinning.
+ * `zed audit` — the two pure pieces worth pinning.
  *
  * The rest of the command is request plumbing and terminal formatting; these
  * two decide whether the numbers a person reads are the numbers they asked for.
@@ -143,7 +143,7 @@ describe('audit CLI process', () => {
   });
 
   test('executes filtered account, project, session, and resumable export reads', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'kortix-audit-cli-'));
+    const root = mkdtempSync(join(tmpdir(), 'zed-audit-cli-'));
     const cliRoot = resolve(import.meta.dir, '..', '..');
     const cliEntry = join(cliRoot, 'src', 'index.ts');
     const requests: URL[] = [];
@@ -211,7 +211,7 @@ describe('audit CLI process', () => {
         hosts: {
           test: {
             url: `http://127.0.0.1:${server.port}`,
-            token: 'kortix_pat_audit_test',
+            token: 'zed_pat_audit_test',
             user_id: 'user-1',
             user_email: 'audit@example.test',
             account_id: 'account-1',
@@ -223,18 +223,18 @@ describe('audit CLI process', () => {
     async function run(args: string[]) {
       const env: Record<string, string | undefined> = {
         ...process.env,
-        KORTIX_CONFIG_FILE: configFile,
-        KORTIX_NO_UPDATE_CHECK: '1',
-        KORTIX_DISABLE_SANDBOX_ENV_FILE: '1',
+        ZED_CONFIG_FILE: configFile,
+        ZED_NO_UPDATE_CHECK: '1',
+        ZED_DISABLE_SANDBOX_ENV_FILE: '1',
         NO_COLOR: '1',
         FORCE_COLOR: '0',
       };
       for (const key of [
-        'KORTIX_API_URL',
-        'KORTIX_CLI_TOKEN',
-        'KORTIX_FRONTEND_URL',
-        'KORTIX_PROJECT_ID',
-        'KORTIX_TOKEN',
+        'ZED_API_URL',
+        'ZED_CLI_TOKEN',
+        'ZED_FRONTEND_URL',
+        'ZED_PROJECT_ID',
+        'ZED_TOKEN',
         'BASH_ENV',
       ])
         delete env[key];

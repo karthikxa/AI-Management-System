@@ -2,7 +2,7 @@
 
 import { backendApi } from '../../http/api-client';
 import { unwrap, type ProjectGitConnection } from './shared';
-import type { KortixProject, ProjectGlyph } from './projects';
+import type { ZedProject, ProjectGlyph } from './projects';
 
 export interface GitHubRepository {
   id: string;
@@ -54,7 +54,7 @@ export interface LinkRepositoryInput {
 }
 
 export interface LinkRepositoryResponse {
-  project: KortixProject;
+  project: ZedProject;
   git_connection: ProjectGitConnection | null;
 }
 

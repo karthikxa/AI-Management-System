@@ -6,7 +6,7 @@ import {
   type ListCostByProjectOptions,
   type ProjectCostPage,
   type ProjectCostSort,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { useQuery } from '@tanstack/react-query';
 
 import { useBillingAccountId } from '@/stores/billing-account-context';

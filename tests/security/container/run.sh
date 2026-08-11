@@ -22,7 +22,7 @@ for app in ${APPS}; do
     continue
   fi
 
-  tag="kortix-${app}:sec-scan"
+  tag="zed-${app}:sec-scan"
 
   if [ "${BUILD}" = "1" ]; then
     echo "[container] build ${tag} from apps/${app}/Dockerfile"

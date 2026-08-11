@@ -13,15 +13,15 @@ let managedProviderEnabled = true;
 
 mock.module('../config', () => ({
   SANDBOX_VERSION: 'test',
-  KORTIX_MARKUP: 1.2,
+  ZED_MARKUP: 1.2,
   PLATFORM_FEE_MARKUP: 0.1,
   config: new Proxy(
     {},
     {
       get: (target: Record<PropertyKey, unknown>, key) => {
         if (Object.hasOwn(target, key)) return target[key];
-        if (key === 'KORTIX_BILLING_INTERNAL_ENABLED') return billingEnabled;
-        if (key === 'KORTIX_MANAGED_PROVIDER_ENABLED') return managedProviderEnabled;
+        if (key === 'ZED_BILLING_INTERNAL_ENABLED') return billingEnabled;
+        if (key === 'ZED_MANAGED_PROVIDER_ENABLED') return managedProviderEnabled;
         if (key === 'LLM_GATEWAY_ENABLED') return true;
         if (key === 'LLM_GATEWAY_DEFAULT_ENABLED') return false;
         if (key === 'TUNNEL_ENABLED') return false;
@@ -197,10 +197,10 @@ describe('resolveCandidates free-tier premium gate', () => {
     expect(accountTierCalls).toBe(0);
   });
 
-  test('rejects stale kortix/auto for free accounts', async () => {
+  test('rejects stale zed/auto for free accounts', async () => {
     accountTier = 'free';
     await expect(
-      resolveCandidates({ ...principal('free-auto'), freeModelsOnly: true }, 'kortix/auto'),
+      resolveCandidates({ ...principal('free-auto'), freeModelsOnly: true }, 'zed/auto'),
     ).rejects.toMatchObject({
       name: 'GatewayResolutionError',
       code: 'model_not_found',
@@ -245,7 +245,7 @@ describe('resolveCandidates free-tier premium gate', () => {
     expect(accountTierCalls).toBe(0);
   });
 
-  test('CLOUD-ONLY gate: blocks an explicitly-named managed model when KORTIX_MANAGED_PROVIDER_ENABLED is off, even for a paid tier', async () => {
+  test('CLOUD-ONLY gate: blocks an explicitly-named managed model when ZED_MANAGED_PROVIDER_ENABLED is off, even for a paid tier', async () => {
     managedProviderEnabled = false;
     accountTier = 'per_seat';
     await expect(

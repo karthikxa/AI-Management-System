@@ -54,13 +54,13 @@ describe('sanitizeGeneratedTitle', () => {
 });
 
 describe('extractPromptInfo', () => {
-  it('reads REST { parts } text blocks and the kortix-namespace model', () => {
+  it('reads REST { parts } text blocks and the zed-namespace model', () => {
     const body = bodyOf({
       parts: [
         { type: 'text', text: 'hello' },
         { type: 'text', text: 'world' },
       ],
-      model: { providerID: 'kortix', modelID: 'codex/gpt-5.6-sol' },
+      model: { providerID: 'zed', modelID: 'codex/gpt-5.6-sol' },
     });
     expect(extractPromptInfo(body, headers())).toEqual({
       text: 'hello\nworld',
@@ -74,7 +74,7 @@ describe('extractPromptInfo', () => {
       model: { providerID: 'anthropic', modelID: 'claude-sonnet-4.6' },
     });
     expect(extractPromptInfo(byok, headers()).model).toBe('anthropic/claude-sonnet-4.6');
-    expect(extractPromptInfo(bodyOf({ model: 'kortix/glm-5.2' }), headers()).model).toBe('glm-5.2');
+    expect(extractPromptInfo(bodyOf({ model: 'zed/glm-5.2' }), headers()).model).toBe('glm-5.2');
   });
 
   it('ignores non-text blocks and non-json / empty bodies', () => {
@@ -211,7 +211,7 @@ describe('generateSessionTitleFromFirstPrompt', () => {
   });
 
   it('falls back to opencode_model when the prompt carries no model', async () => {
-    const h = harness({ row: row({ opencode_model: 'kortix/glm-5.2' }) });
+    const h = harness({ row: row({ opencode_model: 'zed/glm-5.2' }) });
     await generateSessionTitleFromFirstPrompt(input, h.options);
     expect(h.models).toEqual(['glm-5.2']);
   });
@@ -338,7 +338,7 @@ describe('generateSessionTitleFromFirstPrompt', () => {
   });
 
   it('precedence: modelHint beats opencode_model beats the resolved fallback', async () => {
-    const hint = harness({ row: row({ opencode_model: 'kortix/glm-5.2' }) });
+    const hint = harness({ row: row({ opencode_model: 'zed/glm-5.2' }) });
     await generateSessionTitleFromFirstPrompt(
       { ...input, modelHint: 'codex/gpt-5.6-sol' },
       hint.options,
@@ -346,7 +346,7 @@ describe('generateSessionTitleFromFirstPrompt', () => {
     expect(hint.models).toEqual(['codex/gpt-5.6-sol']);
 
     const stored = harness({
-      row: row({ opencode_model: 'kortix/glm-5.2' }),
+      row: row({ opencode_model: 'zed/glm-5.2' }),
       fallbackModel: async () => 'never/used',
     });
     await generateSessionTitleFromFirstPrompt(input, stored.options);
@@ -364,7 +364,7 @@ describe('generateSessionTitleFromFirstPrompt', () => {
     // and raw workspace/channel ids — on a project-visible session.
     const prompts: string[] = [];
     const h = harness({
-      row: row({ opencode_model: 'kortix/glm-5.2', title_source: 'bump the node version in CI' }),
+      row: row({ opencode_model: 'zed/glm-5.2', title_source: 'bump the node version in CI' }),
       generate: async (_model, _auth, promptText) => {
         prompts.push(promptText);
         return 'Bump Node In CI';
@@ -382,14 +382,14 @@ describe('generateSessionTitleFromFirstPrompt', () => {
     // `metadata->>'name'` stringifies any jsonb scalar, so a row the TS gate
     // waved through would fail the UPDATE silently and re-bill on every prompt.
     const numericName = harness({
-      row: row({ name: 123, opencode_model: 'kortix/glm-5.2' }),
+      row: row({ name: 123, opencode_model: 'zed/glm-5.2' }),
     });
     await generateSessionTitleFromFirstPrompt(input, numericName.options);
     expect(numericName.persisted).toEqual([]);
     expect(numericName.generateCalls()).toBe(0);
 
     const numericCustom = harness({
-      row: row({ custom_name: 123, opencode_model: 'kortix/glm-5.2' }),
+      row: row({ custom_name: 123, opencode_model: 'zed/glm-5.2' }),
     });
     await generateSessionTitleFromFirstPrompt(input, numericCustom.options);
     expect(numericCustom.persisted).toEqual([]);

@@ -70,7 +70,7 @@ export interface CodeStorageJwtOptions {
   subject?: string;
 }
 
-const DEFAULT_SUBJECT = 'kortix-api';
+const DEFAULT_SUBJECT = 'zed-api';
 // Short-lived — minted fresh per management-API call (create/delete/commit),
 // never persisted or reused.
 const MGMT_TOKEN_TTL_SECONDS = 5 * 60;
@@ -265,7 +265,7 @@ async function commitPack(
   token: string,
   opts: { branch: string; message: string; files: SeedFile[] },
 ): Promise<void> {
-  const author = { name: 'Kortix', email: 'noreply@kortix.ai' };
+  const author = { name: 'Zed', email: 'noreply@zed.ai' };
   const commitFiles: CommitPackFile[] = opts.files.map((f) => ({
     path: f.path,
     content: f.content,
@@ -434,7 +434,7 @@ export const codeStorageBackend: GitHostBackend = {
     if (opts.baseFiles?.length) {
       await commitPack(repoPath, token, {
         branch: opts.branch,
-        message: 'chore: scaffold Kortix project',
+        message: 'chore: scaffold Zed project',
         files: opts.baseFiles,
       });
     }

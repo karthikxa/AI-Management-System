@@ -9,5 +9,5 @@ set statement_timeout = '30s';
 -- reads/writes) and every existing row already satisfies it trivially (all
 -- have project_id NULL), so this completes near-instantly.
 
-ALTER TABLE "kortix"."account_model_preferences"
+ALTER TABLE "zed"."account_model_preferences"
   VALIDATE CONSTRAINT "account_model_preferences_project_id_projects_project_id_fk";

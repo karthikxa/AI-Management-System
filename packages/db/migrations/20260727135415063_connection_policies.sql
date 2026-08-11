@@ -21,15 +21,15 @@ set statement_timeout = '30s';
 -- PURPOSE -- the table is created in this same migration, so it is empty and
 -- holds no lock anything else is waiting on.
 
-CREATE TABLE "kortix"."executor_connection_policies" (
+CREATE TABLE "zed"."executor_connection_policies" (
 	"policy_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"profile_id" uuid NOT NULL,
 	"match" varchar(512) NOT NULL,
-	"action" "kortix"."executor_policy_action" NOT NULL,
+	"action" "zed"."executor_policy_action" NOT NULL,
 	"position" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "kortix"."executor_connection_policies" ADD CONSTRAINT "executor_connection_policies_profile_id_fk" FOREIGN KEY ("profile_id") REFERENCES "kortix"."executor_connection_profiles"("profile_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "idx_executor_connection_policies_profile" ON "kortix"."executor_connection_policies" USING btree ("profile_id");
+ALTER TABLE "zed"."executor_connection_policies" ADD CONSTRAINT "executor_connection_policies_profile_id_fk" FOREIGN KEY ("profile_id") REFERENCES "zed"."executor_connection_profiles"("profile_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "idx_executor_connection_policies_profile" ON "zed"."executor_connection_policies" USING btree ("profile_id");

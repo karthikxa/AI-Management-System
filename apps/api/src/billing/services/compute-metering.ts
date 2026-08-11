@@ -1,7 +1,7 @@
 // Billing v2 — sandbox compute metering.
 //
 // Sandboxes declare their reserved spec (cpu / memory / disk / gpu) in
-// kortix.yaml's `sandbox:` block. We bill against that reserved spec × wall-clock time
+// zed.yaml's `sandbox:` block. We bill against that reserved spec × wall-clock time
 // while the sandbox is `active`. Stopped / hibernated sandboxes do not accrue
 // charges in v1 (archive rate placeholder lives in tiers.ts for future use).
 //
@@ -26,7 +26,7 @@ import {
   creditAccounts,
   sandboxComputeSessions,
   sessionSandboxes,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { config } from '../../config';
 import { type ProviderName, getProvider } from '../../platform/providers';
@@ -97,7 +97,7 @@ export function calculateComputeCost(
 export async function startComputeSession(opts: StartComputeOpts): Promise<string | null> {
   // Hard gate: self-hosted / billing-disabled deploys never meter compute, even
   // if a credit_accounts row has a metered billing_model (stale data).
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return null;
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return null;
   const account = await getCreditAccount(opts.accountId);
   // `accountMetersCompute`, NOT `isPerSeatAccount`. Per-seat used to be the only
   // metered model, so the gate was written as an identity check; read literally
@@ -253,7 +253,7 @@ async function settleComputeWindow(
  * scripts/reimburse-compute-leak.ts). Omitted → `now`, the original behaviour.
  */
 export async function pauseComputeSession(sandboxId: string, windowEnd?: Date): Promise<void> {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return;
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return;
   const row = await getOpenComputeSession(sandboxId);
   if (!row) return;
 
@@ -309,7 +309,7 @@ async function closeComputeWindow(
  * the correct direction to fail.
  */
 export async function markComputeSessionAlive(sandboxId: string, at = new Date()): Promise<void> {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return;
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return;
   await db
     .update(sandboxComputeSessions)
     .set({
@@ -347,7 +347,7 @@ export async function reopenComputeForSandbox(
   actorUserId?: string | null,
   provider?: ProviderName,
 ): Promise<string | null> {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return null;
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return null;
   const last = await getLatestComputeSession(sandboxId);
   const spec: SandboxSpec = last
     ? { cpuCores: last.cpuCores, memoryGb: last.memoryGb, diskGb: last.diskGb, gpuCount: last.gpuCount }
@@ -366,7 +366,7 @@ export async function reopenComputeForSandbox(
  * Sandbox is being permanently removed (restart / delete). Finalize the row.
  */
 export async function endComputeSession(sandboxId: string): Promise<void> {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return;
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return;
   const row = await getOpenComputeSession(sandboxId);
   if (!row) return;
 
@@ -501,7 +501,7 @@ export function selectMissingAppComputeCandidates(limit = RECONCILE_MISSING_BATC
 export async function reconcileMissingAppComputeSessions(
   limit = RECONCILE_MISSING_BATCH_SIZE,
 ): Promise<ReconcileMissingComputeResult> {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return { checked: 0, reconciled: 0, errors: 0 };
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return { checked: 0, reconciled: 0, errors: 0 };
 
   const rows = await selectMissingAppComputeCandidates(limit);
   let reconciled = 0;
@@ -539,7 +539,7 @@ export async function reconcileMissingAppComputeSessions(
 export async function reconcileMissingComputeSessions(
   limit = RECONCILE_MISSING_BATCH_SIZE,
 ): Promise<ReconcileMissingComputeResult> {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return { checked: 0, reconciled: 0, errors: 0 };
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return { checked: 0, reconciled: 0, errors: 0 };
 
   const rows = await selectMissingComputeCandidates(limit);
 
@@ -595,7 +595,7 @@ export async function reconcileMissingComputeSessions(
  * in the same pass — the natural periodic hook for both safety nets.
  */
 export async function tickRunningComputeCharges(): Promise<{ settled: number; reconciled: number }> {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return { settled: 0, reconciled: 0 };
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return { settled: 0, reconciled: 0 };
   const cutoff = new Date(Date.now() - PARTIAL_BILL_INTERVAL_MS);
   const stale = await findStaleActiveSessions(cutoff);
   let settled = 0;

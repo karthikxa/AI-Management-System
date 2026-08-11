@@ -1,4 +1,4 @@
-import { appDeployments, appRuntimes, sandboxComputeSessions } from '@kortix/db';
+import { appDeployments, appRuntimes, sandboxComputeSessions } from '@zed/db';
 import { and, eq, gte } from 'drizzle-orm';
 import { calculateComputeCost } from '../billing/services/compute-metering';
 import { type ProviderName } from '../platform/providers';

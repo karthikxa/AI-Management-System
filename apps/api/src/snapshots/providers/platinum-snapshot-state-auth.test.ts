@@ -14,9 +14,9 @@ setTestEnv('TUNNEL_SIGNING_SECRET', 'test-tunnel-signing-secret');
 setTestEnv('ALLOWED_SANDBOX_PROVIDERS', 'platinum');
 setTestEnv('PLATINUM_API_URL', 'https://platinum.example.test');
 setTestEnv('PLATINUM_API_KEY', 'pt_live_test-key');
-setTestEnv('KORTIX_URL', 'https://api.example.test');
+setTestEnv('ZED_URL', 'https://api.example.test');
 setTestEnv('FRONTEND_URL', 'http://localhost:3000');
-setTestEnv('INTERNAL_KORTIX_ENV', 'dev');
+setTestEnv('INTERNAL_ZED_ENV', 'dev');
 
 const { platinumProvider } = await import('./platinum');
 const { isPermanentTransitionError } = await import(
@@ -46,7 +46,7 @@ describe('PlatinumAdapter.getSnapshotState — auth failures are never swallowed
     globalThis.fetch = (async () =>
       new Response('{"error":"invalid API key"}', { status: 401 })) as unknown as typeof fetch;
 
-    await expect(platinumProvider.getSnapshotState('kortix-ppwarm-test')).rejects.toThrow();
+    await expect(platinumProvider.getSnapshotState('zed-ppwarm-test')).rejects.toThrow();
   });
 
   test('a 403 from GET /v1/templates propagates AND is classified permanent end to end', async () => {
@@ -55,7 +55,7 @@ describe('PlatinumAdapter.getSnapshotState — auth failures are never swallowed
 
     let caught: unknown;
     try {
-      await platinumProvider.getSnapshotState('kortix-ppwarm-test');
+      await platinumProvider.getSnapshotState('zed-ppwarm-test');
     } catch (err) {
       caught = err;
     }
@@ -70,9 +70,9 @@ describe('PlatinumAdapter.getSnapshotState — auth failures are never swallowed
       throw new Error('fetch failed: ECONNRESET');
     }) as unknown as typeof fetch;
 
-    await expect(platinumProvider.getSnapshotState('kortix-ppwarm-test')).resolves.toBe('unknown');
+    await expect(platinumProvider.getSnapshotState('zed-ppwarm-test')).resolves.toBe('unknown');
 
     globalThis.fetch = (async () => new Response('bad gateway', { status: 502 })) as unknown as typeof fetch;
-    await expect(platinumProvider.getSnapshotState('kortix-ppwarm-test')).resolves.toBe('unknown');
+    await expect(platinumProvider.getSnapshotState('zed-ppwarm-test')).resolves.toBe('unknown');
   });
 });

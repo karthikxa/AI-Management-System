@@ -3,9 +3,9 @@
  * §16 (BILL-2 server-type checkout).
  *
  * The target this suite runs against is the CLOUD / managed config
- * (`KORTIX_BILLING_INTERNAL_ENABLED=true`), so two things hold by design:
+ * (`ZED_BILLING_INTERNAL_ENABLED=true`), so two things hold by design:
  *   - `/v1/setup/*` is mounted ONLY when billing is DISABLED (self-hosted) — see
- *     apps/api/src/index.ts:463 `if (!config.KORTIX_BILLING_INTERNAL_ENABLED)`.
+ *     apps/api/src/index.ts:463 `if (!config.ZED_BILLING_INTERNAL_ENABLED)`.
  *     On this target those routes are unmounted → 404. ACC-4 proves that gating.
  *   - Billing routes ARE mounted; BILL-2 covers the checkout membership boundary
  *     (`resolveScopedAccountId` → 403 for a non-member, 401 for ANON).
@@ -15,7 +15,7 @@ import { flow } from "../core/flow";
 /**
  * ACC-4 — self-hosted setup surface is HIDDEN on cloud/billing-enabled deploys.
  *
- * Every `/v1/setup/*` route is mounted behind `!KORTIX_BILLING_INTERNAL_ENABLED`.
+ * Every `/v1/setup/*` route is mounted behind `!ZED_BILLING_INTERNAL_ENABLED`.
  * Against this billing-enabled target the whole sub-app is never `app.route`'d, so
  * even the otherwise-public probes (install-status, sandbox-providers) 404. We drive
  * the public ones with ANON (they must not require auth where they DO exist) and the
@@ -79,7 +79,7 @@ flow(
       r.status(404);
     });
     await ctx.step("POST bootstrap-owner (first-owner) → 404", async () => {
-      const r = await anon.post("/v1/setup/bootstrap-owner", { email: ctx.fixtures.name("setup") + "@ke2e.kortix.test" });
+      const r = await anon.post("/v1/setup/bootstrap-owner", { email: ctx.fixtures.name("setup") + "@ke2e.zed.test" });
       r.status(404);
     });
   },

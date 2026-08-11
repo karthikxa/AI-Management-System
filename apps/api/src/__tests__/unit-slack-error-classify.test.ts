@@ -118,10 +118,10 @@ describe('classifyTurnError', () => {
     expect(r.text.toLowerCase()).toContain('model');
   });
 
-  test('agent-not-found → "Agent unavailable" routing to /kortix agents', () => {
+  test('agent-not-found → "Agent unavailable" routing to /zed agents', () => {
     const r = classifyTurnError({ name: 'UnknownError', message: 'agent "shipper" not found' });
     expect(r.title).toBe('Agent unavailable');
-    expect(r.text).toContain('/kortix agents');
+    expect(r.text).toContain('/zed agents');
     expect(r.aborted).toBe(false);
   });
 

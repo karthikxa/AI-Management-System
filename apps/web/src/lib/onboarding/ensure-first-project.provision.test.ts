@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 
-import type { KortixProject, ProvisionProjectInput } from '@kortix/sdk';
+import type { ZedProject, ProvisionProjectInput } from '@zed/sdk';
 
 import type { EnsureFirstProjectClient } from './ensure-first-project';
 
@@ -8,7 +8,7 @@ const provisionCalls: Array<Record<string, unknown>> = [];
 let projects: Array<{ project_id: string; account_id: string; name: string }> = [];
 let provisionError: Error | null = null;
 
-mock.module('@kortix/sdk', () => ({
+mock.module('@zed/sdk', () => ({
   listProjectsForAccount: async () => projects,
   provisionProject: async (input: Record<string, unknown>) => {
     provisionCalls.push(input);
@@ -24,7 +24,7 @@ mock.module('@kortix/sdk', () => ({
 }));
 
 mock.module('@/lib/marketplace-client', () => ({
-  listDefaultProjectMarketplaceItems: async () => [{ id: 'kortix-starter:agent-browser' }],
+  listDefaultProjectMarketplaceItems: async () => [{ id: 'zed-starter:agent-browser' }],
 }));
 
 const EXISTING = {
@@ -100,7 +100,7 @@ describe('ensureFirstProject provisioning', () => {
     // user on the landing door.
     provisionError = new Error('project_limit_reached');
     let call = 0;
-    mock.module('@kortix/sdk', () => ({
+    mock.module('@zed/sdk', () => ({
       listProjectsForAccount: async () => (call++ === 0 ? [] : [EXISTING]),
       provisionProject: async () => {
         throw new Error('project_limit_reached');
@@ -171,7 +171,7 @@ describe('isProvisionInFlightError', () => {
 /**
  * Task 6: the client no longer re-POSTs /provision on retry. These tests
  * inject the network client as a parameter (see EnsureFirstProjectClient in
- * ensure-first-project.ts) instead of `mock.module('@kortix/sdk', ...)` — the
+ * ensure-first-project.ts) instead of `mock.module('@zed/sdk', ...)` — the
  * `mock.module` hazard is process-wide in this monorepo and leaks into
  * sibling test suites, so real behaviour here is exercised with plain fakes,
  * not module mocking.
@@ -184,7 +184,7 @@ describe('isProvisionInFlightError', () => {
  */
 describe('ensureFirstProject retry safety with an injected client (Task 6)', () => {
   const ACCOUNT = 'acct_retry';
-  const STORAGE_KEY = `kortix:onboarding-provision-key:${ACCOUNT}`;
+  const STORAGE_KEY = `zed:onboarding-provision-key:${ACCOUNT}`;
 
   function fakeStorage(seed: Record<string, string> = {}) {
     const map = new Map(Object.entries(seed));
@@ -212,12 +212,12 @@ describe('ensureFirstProject retry safety with an injected client (Task 6)', () 
     delete (globalThis as { localStorage?: Storage }).localStorage;
   });
 
-  function fakeProject(id: string): KortixProject {
+  function fakeProject(id: string): ZedProject {
     return {
       project_id: id,
       account_id: ACCOUNT,
       name: 'My First Project',
-    } as unknown as KortixProject;
+    } as unknown as ZedProject;
   }
 
   function inFlightError() {
@@ -291,7 +291,7 @@ describe('ensureFirstProject retry safety with an injected client (Task 6)', () 
     installStorage(fakeStorage());
     const { ensureFirstProject } = await import('./ensure-first-project');
 
-    let created: KortixProject | null = null;
+    let created: ZedProject | null = null;
     const provisionCalls: ProvisionProjectInput[] = [];
     const client: EnsureFirstProjectClient = {
       listProjectsForAccount: async () => (created ? [created] : []),

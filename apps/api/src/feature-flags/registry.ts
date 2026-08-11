@@ -14,11 +14,11 @@
  *                  choice (projects.metadata.experimental[key]) over the
  *                  operator default. `enabled` always implies `available`.
  *
- * Per-project state is DB-only (projects.metadata) — never in kortix.yaml.
+ * Per-project state is DB-only (projects.metadata) — never in zed.yaml.
  * The `experimental` metadata key is a stable storage detail; do not rename it.
  *
  * To add a flag:
- *   1. Add the key to FeatureFlagMapSchema in @kortix/api-contract (typecheck
+ *   1. Add the key to FeatureFlagMapSchema in @zed/api-contract (typecheck
  *      forces this) and to the SDK's runtime key list.
  *   2. Append an entry below, DECLARING its enforcement mode.
  *   3. Gate its routes with `requireFeatureFlag` (enforcement: 'routes'), or
@@ -29,9 +29,9 @@
  * enforcement.
  */
 import { config } from '../config';
-import type { FeatureFlagKey, FeatureFlagStability } from '@kortix/api-contract';
+import type { FeatureFlagKey, FeatureFlagStability } from '@zed/api-contract';
 
-export type { FeatureFlagKey, FeatureFlagStability } from '@kortix/api-contract';
+export type { FeatureFlagKey, FeatureFlagStability } from '@zed/api-contract';
 
 /**
  * How the flag is actually enforced server-side. This is a declaration the
@@ -119,7 +119,7 @@ const FLAGS: readonly FeatureFlagDef[] = [
     key: 'agentmail_email',
     name: 'AgentMail Email',
     description:
-      'Assign AgentMail inbox connections to the agent so inbound email threads can start and continue Kortix sessions. Native email channels are still experimental.',
+      'Assign AgentMail inbox connections to the agent so inbound email threads can start and continue Zed sessions. Native email channels are still experimental.',
     stability: 'experimental',
     available: () => true,
     // Explicit opt-in: hidden unless a project enables it in Settings.
@@ -130,7 +130,7 @@ const FLAGS: readonly FeatureFlagDef[] = [
     key: 'teams',
     name: 'Microsoft Teams',
     description:
-      'Connect a Microsoft Teams bot so chats and channels can start and continue Kortix sessions. The install flow, org-catalog publishing, and bring-your-own-bot setup are still experimental.',
+      'Connect a Microsoft Teams bot so chats and channels can start and continue Zed sessions. The install flow, org-catalog publishing, and bring-your-own-bot setup are still experimental.',
     stability: 'experimental',
     // Always listable. Server-side bot credentials (MICROSOFT_APP_ID /
     // MICROSOFT_APP_PASSWORD) only decide whether the MANAGED install path is
@@ -159,14 +159,14 @@ const FLAGS: readonly FeatureFlagDef[] = [
     enforcement: 'behavioral',
     enforcementNote:
       'Voice has no HTTP routes of its own; the flag IS the registration — it ' +
-      'decides whether the kortix_voice channel connector materializes ' +
+      'decides whether the zed_voice channel connector materializes ' +
       '(connectors/channel-materialize.ts).',
   },
   {
     key: 'llm_gateway',
     name: 'LLM Gateway',
     description:
-      'Route this project through the managed Kortix LLM gateway. Toggling it refreshes active sandboxes so provider mode follows the project setting.',
+      'Route this project through the managed Zed LLM gateway. Toggling it refreshes active sandboxes so provider mode follows the project setting.',
     stability: 'experimental',
     // Master kill switch: when off, the feature disappears and every project
     // falls back to native OpenCode provider behavior.
@@ -177,7 +177,7 @@ const FLAGS: readonly FeatureFlagDef[] = [
     platformDefault: () => config.LLM_GATEWAY_DEFAULT_ENABLED,
     enforcement: 'behavioral',
     enforcementNote:
-      'Enablement decides KORTIX_LLM_* env injection at sandbox provision plus ' +
+      'Enablement decides ZED_LLM_* env injection at sandbox provision plus ' +
       'the gated llm-catalog/model-picker routes; toggling propagates to active ' +
       'sandboxes via propagateLlmGatewayModeToActiveSandboxes.',
   },

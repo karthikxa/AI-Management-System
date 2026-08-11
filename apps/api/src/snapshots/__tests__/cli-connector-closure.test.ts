@@ -2,16 +2,16 @@ import { describe, expect, test } from 'bun:test';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CLI_CONNECTOR_RUNTIME_FILES } from '@kortix/shared/sandbox-runtime-artifact';
+import { CLI_CONNECTOR_RUNTIME_FILES } from '@zed/shared/sandbox-runtime-artifact';
 
-// Scope guard for the in-sandbox `kortix connectors` fingerprint (templates.ts
+// Scope guard for the in-sandbox `zed connectors` fingerprint (templates.ts
 // CLI_CONNECTOR_CLOSURE).
 //
 // The snapshot runtime fingerprint used to hash ALL of apps/cli/src, so every
 // developer-only CLI edit (`ship`, `cr`, `tunnel`, `self-host`, the scaffold
 // surface, …) re-minted every project's runtime identity and moved the non-agent
 // `swapKey`, disabling the cheap agent-swap and forcing a full rebuild. A sandbox
-// session only ever runs `kortix connectors` / `kortix connectors mcp`, so the
+// session only ever runs `zed connectors` / `zed connectors mcp`, so the
 // fingerprint now hashes just that command's import closure.
 //
 // This test re-derives the closure from the real import graph and asserts it is a
@@ -26,7 +26,7 @@ const CLI_SRC = resolve(REPO_ROOT, 'apps/cli/src');
 
 const HASHED_CLOSURE = CLI_CONNECTOR_RUNTIME_FILES.map((entry) => entry.replace(/^src\//, ''));
 
-// Entrypoints the sandbox actually invokes (`kortix connectors …`). The `index.ts`
+// Entrypoints the sandbox actually invokes (`zed connectors …`). The `index.ts`
 // dispatcher is deliberately NOT an entrypoint here: it imports EVERY subcommand
 // for arg routing, so seeding from it would pull the whole (monolithic) CLI in.
 // Its connector branch is just `argv[0] === 'connectors' → runConnectors()`, whose
@@ -75,7 +75,7 @@ function isHashed(abs: string): boolean {
   });
 }
 
-describe('kortix connectors fingerprint closure', () => {
+describe('zed connectors fingerprint closure', () => {
   test('every file the in-sandbox connector imports is in the hashed CLI closure', () => {
     const closure = [...importClosure(ENTRYPOINTS)];
     // All entrypoints must resolve — a typo here would make the guard vacuous.

@@ -4,7 +4,7 @@ import {
   ConnectionSchema,
   ReconcileConnectionInputSchema,
   UpdateConnectionCredentialInputSchema,
-} from '@kortix/api-contract';
+} from '@zed/api-contract';
 import {
   connectorConnections,
   connectors,
@@ -13,7 +13,7 @@ import {
   projectTriggerRuntime,
   projects,
   sessionSandboxes,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { accountMayUseManagedModels } from '../../billing/services/entitlements';
 import {
@@ -116,7 +116,7 @@ import {
   loadVisibleSession,
 } from '../lib/access';
 import { AnyObject, TriggerSchema, projectsApp } from '../lib/app';
-import { callerKortixSessionId } from '../lib/caller-session';
+import { callerZedSessionId } from '../lib/caller-session';
 import {
   type ConnectionOwnerType,
   type ConnectorAuthorizationStrategy,
@@ -379,7 +379,7 @@ projectsApp.openapi(
     // A sandbox connector token is bound to ONE session. Load what that session was
     // actually GIVEN so the enumeration below can be narrowed to it. null for
     // every non-session caller, which leaves the operator's view unchanged.
-    const callerSessionId = callerKortixSessionId(c);
+    const callerSessionId = callerZedSessionId(c);
     let sessionBoundConnectionIds: ReadonlySet<string> | null = null;
     if (callerSessionId) {
       const bound = await db
@@ -1033,7 +1033,7 @@ projectsApp.openapi(
     const loaded = await loadProjectForUser(c, projectId, 'read');
     if (!loaded) return c.json({ error: 'Not found' }, 404);
     // Leaf-gate the read (a custom role can omit project.trigger.read) — and, via
-    // the central agent-grant fold, an agent token must hold it in its kortixCli.
+    // the central agent-grant fold, an agent token must hold it in its zedCli.
     await assertProjectCapability(
       c,
       loaded.userId,
@@ -1536,7 +1536,7 @@ projectsApp.openapi(
 );
 
 function teamsPublicBaseUrl(): string | undefined {
-  return config.KORTIX_URL?.startsWith('https://') ? config.KORTIX_URL : undefined;
+  return config.ZED_URL?.startsWith('https://') ? config.ZED_URL : undefined;
 }
 
 // ─── Microsoft Teams install — shared multi-tenant app, bind a tenant ────
@@ -1832,7 +1832,7 @@ projectsApp.openapi(
     const loaded = await loadProjectForUser(c, projectId, 'read');
     if (!loaded) return c.json({ error: 'Not found' }, 404);
     if (!emailChannelEnabled(loaded.row.metadata)) return c.json(null);
-    const connectorSlug = c.req.query('connector_slug') || 'kortix_email';
+    const connectorSlug = c.req.query('connector_slug') || 'zed_email';
     const install = await loadAgentMailInstall(projectId, connectorSlug);
     if (!install) return c.json(null);
     return c.json({
@@ -1929,7 +1929,7 @@ projectsApp.openapi(
       return c.json({ error: 'AgentMail API key is not configured' }, 503);
     }
 
-    const connectorSlug = (body.connector_slug ?? 'kortix_email').trim() || 'kortix_email';
+    const connectorSlug = (body.connector_slug ?? 'zed_email').trim() || 'zed_email';
     const requestedAgent = body.agent_name ?? body.agentName;
     const agentName =
       typeof requestedAgent === 'string' && requestedAgent.trim() ? requestedAgent.trim() : null;
@@ -1955,7 +1955,7 @@ projectsApp.openapi(
       body.display_name ??
       body.displayName ??
       loaded.row.name ??
-      'Kortix Agent'
+      'Zed Agent'
     ).trim();
     const username = normalizeAgentMailUsername(body.username ?? loaded.row.name);
     const existingInboxId =
@@ -2002,7 +2002,7 @@ projectsApp.openapi(
           displayName,
           clientId: clientIds.inbox,
           metadata: {
-            provider: 'kortix',
+            provider: 'zed',
             project_id: projectId,
             account_id: loaded.row.accountId,
           },
@@ -2093,7 +2093,7 @@ projectsApp.openapi(
     } catch {
       return c.json({ error: 'Invalid JSON body' }, 400);
     }
-    const connectorSlug = (body.connector_slug ?? 'kortix_email').trim() || 'kortix_email';
+    const connectorSlug = (body.connector_slug ?? 'zed_email').trim() || 'zed_email';
     let senderPolicy: AgentMailSenderPolicy;
     try {
       senderPolicy = parseSenderPolicyBody(body.sender_policy);
@@ -2133,7 +2133,7 @@ projectsApp.openapi(
       projectId,
       PROJECT_ACTIONS.PROJECT_CONNECTOR_WRITE,
     );
-    const connectorSlug = c.req.query('connector_slug') || 'kortix_email';
+    const connectorSlug = c.req.query('connector_slug') || 'zed_email';
     await deleteAgentMailInstall(projectId, connectorSlug);
     await reconcileChannelConnectors(projectId, {
       platform: 'email',
@@ -2144,7 +2144,7 @@ projectsApp.openapi(
 );
 
 function agentMailWebhookBaseUrl(requestUrl: string): string {
-  return (config.KORTIX_URL || new URL(requestUrl).origin).replace(/\/+$/, '');
+  return (config.ZED_URL || new URL(requestUrl).origin).replace(/\/+$/, '');
 }
 
 function normalizeAgentMailUsername(input: string | null | undefined): string | null {
@@ -2387,7 +2387,7 @@ projectsApp.openapi(
       );
       // Second-chance auto-title: create-time generation is a single in-memory
       // best-effort call, and a session whose only prompt was baked in-guest
-      // (`KORTIX_INITIAL_PROMPT`) never crosses a titling hook again. Turn end
+      // (`ZED_INITIAL_PROMPT`) never crosses a titling hook again. Turn end
       // is the natural retry point — the generator is idempotent (needsTitle +
       // CAS) so an already-titled session is a cheap no-op. The stored
       // `title_source` outranks the supplied text inside the generator.
@@ -2413,7 +2413,7 @@ projectsApp.openapi(
 
     // `opencode_session` carries the canonical opencode ROOT id the sandbox just
     // bootstrapped (or reused after a restart). Persist it as the durable pin so
-    // the Kortix session resolves to the LIVE root with NO dependency on a browser
+    // the Zed session resolves to the LIVE root with NO dependency on a browser
     // ever opening it — closing the null-pin gap that left Slack/trigger/cron
     // sessions resolving lazily onto the wrong (orphaned) root. The sandbox token
     // is already scoped to this project (checked above); the daemon only ever
@@ -2460,7 +2460,7 @@ projectsApp.openapi(
 // GET /v1/projects/:projectId/channels/slack/file?url=...
 // Server-side download proxy: fetch a Slack-hosted file with the bot token
 // (SSRF-guarded to *.slack.com) so the sandbox never holds the token. Backs
-// `slack download` once the token is out of the box (KORTIX-206 Phase C2).
+// `slack download` once the token is out of the box (ZED-206 Phase C2).
 projectsApp.openapi(
   createRoute({
     method: 'get',
@@ -2935,11 +2935,11 @@ projectsApp.openapi(
 // env vars, docs URL) — /llm-catalog above only ever serialized MODEL-level
 // entries (Record<"provider/model", GatewayModel>), so the web connect modal
 // (apps/web/src/lib/llm-providers.ts) fell back to piggybacking on
-// @kortix/llm-catalog's BAKED catalog.generated.json snapshot as its only
+// @zed/llm-catalog's BAKED catalog.generated.json snapshot as its only
 // source, which nothing in CI refreshes (models.dev moves; this doesn't).
 // This route serves the SAME live, 24h-refreshed, atomic-last-known-good
 // runtimeModelCatalog every other gateway/model endpoint already reads —
-// literally the `Catalog` shape @kortix/llm-catalog exports, so the web
+// literally the `Catalog` shape @zed/llm-catalog exports, so the web
 // client can feed it through the exact same toEntry()/order() it already
 // has, no reshaping.
 //

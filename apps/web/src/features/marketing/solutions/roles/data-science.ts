@@ -5,9 +5,9 @@ export const dataScience: RoleContent = {
   slug: 'data-science',
   name: 'Data Science',
   navDescription: 'A real machine, a real query, an analysis you can re-run',
-  seoTitle: 'Kortix for data science teams',
+  seoTitle: 'Zed for data science teams',
   seoDescription:
-    'Every Kortix session is a real Linux machine, so an analysis agent can install a package, run the query, and commit the notebook. The analysis lands in the repo as a change request, so it can be re-run.',
+    'Every Zed session is a real Linux machine, so an analysis agent can install a package, run the query, and commit the notebook. The analysis lands in the repo as a change request, so it can be re-run.',
 
   hero: {
     title: 'An analysis you can re-run, not a number in a chat window.',
@@ -89,7 +89,7 @@ export const dataScience: RoleContent = {
       ],
     },
     caption:
-      'Illustration. The excluded domain is a placeholder — Kortix never names a real customer or tenant.',
+      'Illustration. The excluded domain is a placeholder — Zed never names a real customer or tenant.',
     notes: [
       {
         id: 'shell',
@@ -119,7 +119,7 @@ export const dataScience: RoleContent = {
       },
       {
         k: 'Your warehouse and BI stack',
-        v: 'Reached as a connector you define: an OpenAPI or Postman description, a GraphQL endpoint, a raw HTTP base URL, or a remote MCP server. Kortix reads the source, works out the authentication, and turns each operation into a tool with its own Allow, Ask or Block.',
+        v: 'Reached as a connector you define: an OpenAPI or Postman description, a GraphQL endpoint, a raw HTTP base URL, or a remote MCP server. Zed reads the source, works out the authentication, and turns each operation into a tool with its own Allow, Ask or Block.',
       },
       {
         k: 'The repo',
@@ -175,12 +175,12 @@ export const dataScience: RoleContent = {
       {
         id: 'scope',
         k: 'Reach is granted per agent, not inherited',
-        v: 'An agent gets the connectors you list for it and nothing else, and it cannot discover that the others exist. The analysis agent reaching the warehouse and the support agent reaching the helpdesk are separate grants in kortix.yaml.',
+        v: 'An agent gets the connectors you list for it and nothing else, and it cannot discover that the others exist. The analysis agent reaching the warehouse and the support agent reaching the helpdesk are separate grants in zed.yaml.',
       },
       {
         id: 'merge',
         k: 'Merge is default-deny',
-        v: 'The notebook, the query and the fix land through a change request against main. An agent cannot merge unless an admin has granted project.cr.merge in kortix.yaml, and widening that grant is itself a reviewed change.',
+        v: 'The notebook, the query and the fix land through a change request against main. An agent cannot merge unless an admin has granted project.cr.merge in zed.yaml, and widening that grant is itself a reviewed change.',
       },
       {
         id: 'secrets',
@@ -197,6 +197,6 @@ export const dataScience: RoleContent = {
 
   closing: {
     title: 'Clear the queue that is not modelling.',
-    sub: 'Open source and self-hostable. Any model, your keys. Kortix Cloud, your own VPC, or your own on-prem network.',
+    sub: 'Open source and self-hostable. Any model, your keys. Zed Cloud, your own VPC, or your own on-prem network.',
   },
 };

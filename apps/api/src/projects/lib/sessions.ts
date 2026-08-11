@@ -3,10 +3,10 @@ import {
   projectSessionConnectorBindings,
   projectSessionRuntimeContexts,
   projectSessions,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { Context } from 'hono';
-import { isMetaAgentName, META_AGENT_NAME, META_SANDBOX_SLUG } from '@kortix/shared';
+import { isMetaAgentName, META_AGENT_NAME, META_SANDBOX_SLUG } from '@zed/shared';
 import { checkBillingActive } from '../../billing/services/billing-gate';
 import { accountMayUseManagedModels } from '../../billing/services/entitlements';
 import { type SandboxProviderName, config } from '../../config';
@@ -56,7 +56,7 @@ import {
   resolveCompiledAgentConfigForSession,
   resolveSelectedAgentConfigForSession,
 } from './compile-agent-config';
-import type { WorkspaceModeV2 } from '@kortix/manifest-schema';
+import type { WorkspaceModeV2 } from '@zed/manifest-schema';
 import { withProjectGitAuth } from './git';
 import { resolveSessionProvider } from './provider-precedence';
 import { RESERVED_SANDBOX_ENV_NAMES, isReservedSandboxEnvName } from './sandbox-env-names';
@@ -67,7 +67,7 @@ import {
   type ProjectSessionRow,
   type RequestAuditContext,
   UUID_V4_REGEX,
-  deriveKortixApiRoot,
+  deriveZedApiRoot,
   normalizeJsonObject,
   normalizeString,
 } from './serializers';
@@ -192,7 +192,7 @@ export async function enforceConcurrentSessionCap(
     console.error('[projects] Failed to record session cap audit event:', error);
   });
 
-  const message = `You've reached your plan's concurrent-session limit (${limit}). Upgrade your plan for a higher limit, or contact the Kortix team to raise it for your account.`;
+  const message = `You've reached your plan's concurrent-session limit (${limit}). Upgrade your plan for a higher limit, or contact the Zed team to raise it for your account.`;
   return {
     status: 429,
     headers: {
@@ -267,7 +267,7 @@ export async function buildSessionSandboxEnvVars(input: {
   /** Resolved per-project `llm_gateway` feature flag. Gateway ON →
    *  opencode is locked to the gateway and native provider keys are withheld;
    *  OFF (default) → native BYOK providers must reach opencode, so the deny
-   *  list is empty. Mirrors the conditional KORTIX_LLM_* injection at provision. */
+   *  list is empty. Mirrors the conditional ZED_LLM_* injection at provision. */
   llmGatewayEnabled: boolean;
   /** New session (brand-new branch == base, no remote commits). Lets the
    *  daemon create the session branch LOCALLY instead of a redundant network
@@ -294,7 +294,7 @@ export async function buildSessionSandboxEnvVars(input: {
   platformMetaAgent?: boolean;
   workspaceMode?: WorkspaceModeV2 | null;
 }): Promise<Record<string, string>> {
-  // Only user runtime secrets belong here. The sandbox-scoped KORTIX_TOKEN is
+  // Only user runtime secrets belong here. The sandbox-scoped ZED_TOKEN is
   // minted by provisionSessionSandbox() and injected at the provider boundary,
   // then reused by the daemon for both API calls and proxy HMAC validation.
   // Resolved AS the session's OWNER (createdBy, read below). This keeps personal
@@ -306,8 +306,8 @@ export async function buildSessionSandboxEnvVars(input: {
 
   // v2-only: compile the manifest's `agents:` map into an OpenCode-native
   // config the sandbox receives sealed (see compile-agent-config.ts). `null`
-  // for a v1 project (no `kortix_version: 2`) or any read/parse failure — no
-  // KORTIX_COMPILED_AGENT_CONFIG key is emitted below in that case, so a v1
+  // for a v1 project (no `zed_version: 2`) or any read/parse failure — no
+  // ZED_COMPILED_AGENT_CONFIG key is emitted below in that case, so a v1
   // project's sandbox env is byte-for-byte unaffected by this. Gated on the
   // same `defaultBranch` presence as the `agents:` grant resolution below
   // (both need git context; optional call sites that omit it get neither).
@@ -319,7 +319,7 @@ export async function buildSessionSandboxEnvVars(input: {
       projectId: input.projectId,
       repoUrl: input.repoUrl,
       defaultBranch: input.defaultBranch,
-      manifestPath: input.manifestPath ?? 'kortix.yaml',
+      manifestPath: input.manifestPath ?? 'zed.yaml',
       gitAuthToken: null,
     };    compiledAgentConfig = await Promise.race([
       !workspaceModeAllowsFullRepository(input.workspaceMode)
@@ -435,11 +435,11 @@ export async function buildSessionSandboxEnvVars(input: {
   // shim now runs every Web API call through the Connector (server-side token)
   // and its file ops through the server-side file proxy. Keeping it out means a
   // compromised/prompt-injected agent can't exfiltrate the raw bot token — only
-  // make scoped, audited, policy-gated channel calls. (KORTIX-206 Phase C2.)
+  // make scoped, audited, policy-gated channel calls. (ZED-206 Phase C2.)
   delete runtimeSecrets.env.SLACK_BOT_TOKEN;
   // Guardrail: drop any project secret whose name would clobber the sandbox's
-  // own runtime env (PORT/PATH/KORTIX_*/…). Without this, one stray secret
-  // silently breaks every session — and `kortix env push` of a server .env
+  // own runtime env (PORT/PATH/ZED_*/…). Without this, one stray secret
+  // silently breaks every session — and `zed env push` of a server .env
   // makes that a one-command footgun.
   const droppedReserved = Object.keys(runtimeSecrets.env).filter(isReservedSandboxEnvName);
   for (const name of droppedReserved) delete runtimeSecrets.env[name];
@@ -461,38 +461,38 @@ export async function buildSessionSandboxEnvVars(input: {
     ...runtimeSecrets.env,
     ...channelEnv,
     ...sessionContextEnv,
-    KORTIX_PROJECT_SECRET_NAMES: runtimeSecrets.names.join(','),
-    KORTIX_PROJECT_SECRETS_REVISION: runtimeSecrets.revision,
+    ZED_PROJECT_SECRET_NAMES: runtimeSecrets.names.join(','),
+    ZED_PROJECT_SECRETS_REVISION: runtimeSecrets.revision,
     [SECRET_CAPABILITIES_ENV_NAME]: runtimeSecrets.capabilitiesJson,
     // Runtime-delivered provider keys may reach the sandbox for user code.
     // OpenCode must not receive them because it would bypass the gateway.
-    KORTIX_OPENCODE_DENY_ENV: input.llmGatewayEnabled ? nativeProviderEnvNames().join(',') : '',
+    ZED_OPENCODE_DENY_ENV: input.llmGatewayEnabled ? nativeProviderEnvNames().join(',') : '',
     // No partial-clone filter. Blobless (`blob:none`) defers file blobs to
-    // on-demand fetches, which stall through the Kortix git proxy when its
+    // on-demand fetches, which stall through the Zed git proxy when its
     // partial-clone capability isn't advertised consistently — the clone then
     // never finishes and the session never reaches runtimeReady. It is also
-    // simply slower: measured on kortix-ai/company, blobless 6161ms vs a full
+    // simply slower: measured on zed-ai/company, blobless 6161ms vs a full
     // clone's 4288ms.
     //
-    // Shallowness is the safe lever instead (KORTIX_CLONE_DEPTH=1, the daemon
+    // Shallowness is the safe lever instead (ZED_CLONE_DEPTH=1, the daemon
     // default): one pack, one commit, no on-demand fetches, with history
     // restored in the background right after boot (scheduleHistoryBackfill).
     // It is worth ~1.5x on the clone, no more — the dominant cost is the
     // working tree plus the transatlantic git-proxy hop (sandbox US → API
     // eu-west-2 → GitHub US). See
     // docs/specs/2026-07-25-session-boot-latency-attribution.md, Finding 1.
-    KORTIX_CLONE_FILTER: '',
+    ZED_CLONE_FILTER: '',
     ...buildSessionRuntimeEnv({
       projectId: input.projectId,
       sessionId: input.sessionId,
-      // Universal proxy origin: when enabled, the sandbox clones via the Kortix
-      // git proxy with its own KORTIX_TOKEN — a real host credential never lands
-      // in the sandbox. The daemon's credential helper returns KORTIX_TOKEN for
+      // Universal proxy origin: when enabled, the sandbox clones via the Zed
+      // git proxy with its own ZED_TOKEN — a real host credential never lands
+      // in the sandbox. The daemon's credential helper returns ZED_TOKEN for
       // the proxy host. OFF → direct clone of the real repo (legacy token flow).
-      repoUrl: config.KORTIX_GIT_PROXY ? proxyGitUrl(input.projectId) : input.repoUrl,
+      repoUrl: config.ZED_GIT_PROXY ? proxyGitUrl(input.projectId) : input.repoUrl,
       baseRef: input.baseRef,
       agentName: input.agentName,
-      apiUrl: deriveKortixApiBase(),
+      apiUrl: deriveZedApiBase(),
       frontendUrl: sandboxFrontendBaseUrl(),
       initialPrompt: input.initialPrompt,
       // Concrete session model after explicit → agent → project → account →
@@ -506,30 +506,30 @@ export async function buildSessionSandboxEnvVars(input: {
     // project checkout. Keep this override after buildSessionRuntimeEnv so the
     // agent workspace mode cannot re-enable the daemon's automatic clone.
     ...(input.platformMetaAgent
-      ? { KORTIX_PROJECT_AUTO_CLONE: '0', KORTIX_META_AGENT: '1' }
+      ? { ZED_PROJECT_AUTO_CLONE: '0', ZED_META_AGENT: '1' }
       : {}),
   };
 }
 
-/** Derive the API v1 base URL sandboxes call as `$KORTIX_API_URL`. */
+/** Derive the API v1 base URL sandboxes call as `$ZED_API_URL`. */
 
-export function deriveKortixApiBase(): string {
-  return `${deriveKortixApiRoot(config.KORTIX_URL)}/v1`;
+export function deriveZedApiBase(): string {
+  return `${deriveZedApiRoot(config.ZED_URL)}/v1`;
 }
 
 /**
- * The Kortix git-proxy origin for a project — the UNIVERSAL client-facing git
- * URL. Clients clone/push this with a Kortix token; the API resolves the real
+ * The Zed git-proxy origin for a project — the UNIVERSAL client-facing git
+ * URL. Clients clone/push this with a Zed token; the API resolves the real
  * upstream + mints the host credential server-side.
  */
 
 export function proxyGitUrl(projectId: string): string {
-  return `${deriveKortixApiRoot(config.KORTIX_URL)}/v1/git/${projectId}.git`;
+  return `${deriveZedApiRoot(config.ZED_URL)}/v1/git/${projectId}.git`;
 }
 
 /**
  * Cloud sandboxes reach the control plane over the public internet via
- * `$KORTIX_API_URL`. A loopback/unspecified host is never reachable from
+ * `$ZED_API_URL`. A loopback/unspecified host is never reachable from
  * inside a remote sandbox, so a session booted against one is
  * dead-on-arrival: repo materialization can't fetch its git clone credential and
  * the daemon ends up reporting "OpenCode runtime is not ready" with a cryptic
@@ -542,9 +542,9 @@ export function proxyGitUrl(projectId: string): string {
 export function sandboxCallbackUnreachableReason(): string | null {
   let host: string;
   try {
-    host = new URL(deriveKortixApiBase()).hostname.toLowerCase();
+    host = new URL(deriveZedApiBase()).hostname.toLowerCase();
   } catch {
-    return `KORTIX_URL is not a valid URL: ${config.KORTIX_URL || '(unset)'}`;
+    return `ZED_URL is not a valid URL: ${config.ZED_URL || '(unset)'}`;
   }
   const isLoopback =
     host === 'localhost' ||
@@ -556,11 +556,11 @@ export function sandboxCallbackUnreachableReason(): string | null {
     host === '[::1]';
   if (!isLoopback) return null;
   return (
-    `KORTIX_URL points at a loopback address (${config.KORTIX_URL}). ` +
+    `ZED_URL points at a loopback address (${config.ZED_URL}). ` +
     `Cloud sandboxes run remotely and cannot call back to your machine's localhost, ` +
     `so the agent runtime will never boot. Start the dev tunnel with \`pnpm dev\` ` +
-    `(it provisions a public Cloudflare URL automatically and exports it as KORTIX_URL), ` +
-    `or set a public KORTIX_URL in apps/api/.env.`
+    `(it provisions a public Cloudflare URL automatically and exports it as ZED_URL), ` +
+    `or set a public ZED_URL in apps/api/.env.`
   );
 }
 
@@ -645,8 +645,8 @@ export async function createProjectSession(input: {
   // signal). Defaulting absent→true matches the re-scope path (r7.ts), which
   // deliberately never flips this flag on a scope save. Before this, a caller
   // sending `connector_bindings: {...}` without `inherit_unbound` left it
-  // `false`, hiding EVERY unbound connector from `kortix connectors ls`
-  // / `kortix connectors call` — the whole catalog went empty.
+  // `false`, hiding EVERY unbound connector from `zed connectors ls`
+  // / `zed connectors call` — the whole catalog went empty.
   let inheritUnbound = body.inherit_unbound !== false;
   const connectorBindingsConfigured = body.connector_bindings !== undefined;
   const requireConnectors: string[] = Array.isArray(body.require_connectors)
@@ -688,7 +688,7 @@ export async function createProjectSession(input: {
   if (secretsAllowlist && secretsAllowlist.length > 0) {
     const resolvedProjectSecrets = await listResolvedProjectSecrets(projectId, userId);
     // Every allowlisted identifier must name an existing runtime secret in the
-    // project (KORTIX_*/connector rows are already excluded by the resolver), so
+    // project (ZED_*/connector rows are already excluded by the resolver), so
     // a typo fails fast at create rather than silently injecting nothing.
     const known = new Set(resolvedProjectSecrets.map((r) => r.identifier.toUpperCase()));
     const missing = secretsAllowlist.filter((id) => !known.has(id.toUpperCase()));
@@ -799,7 +799,7 @@ export async function createProjectSession(input: {
   // Model: normalize + fail-fast at create. An unservable / retired / typo'd
   // model pin was previously stored verbatim and only failed at prompt time (a
   // dead turn); a bare managed id (`claude-opus-4-8`) silently dropped to the
-  // daemon's default because opencode addresses managed models as `kortix/<id>`.
+  // daemon's default because opencode addresses managed models as `zed/<id>`.
   // Validate against the same servability resolver the gateway uses, and store
   // the OPENCODE ref form. Runs BEFORE the billing hold so a bad model never
   // costs a credit reservation. Mirrors the channel-model gate
@@ -985,7 +985,7 @@ export async function createProjectSession(input: {
   // same path as before this flag existed (zero added I/O, zero behavior change).
   if (
     !platformMetaAgent &&
-    projectRequiresDeclaredAgents(project.metadata, config.KORTIX_REQUIRE_DECLARED_AGENTS)
+    projectRequiresDeclaredAgents(project.metadata, config.ZED_REQUIRE_DECLARED_AGENTS)
   ) {
     const governed = resolveGovernedAgentGrant(agentName, loadedAgents, {
       subject: true,
@@ -1054,7 +1054,7 @@ export async function createProjectSession(input: {
     const callbackUnreachable = sandboxCallbackUnreachableReason();
     if (callbackUnreachable) {
       return {
-        error: { status: 503, body: { error: callbackUnreachable, code: 'KORTIX_URL_UNREACHABLE' } },
+        error: { status: 503, body: { error: callbackUnreachable, code: 'ZED_URL_UNREACHABLE' } },
       };
     }
   }
@@ -1291,7 +1291,7 @@ export async function createProjectSession(input: {
 
   setContextField('sessionId', sessionId);
 
-  // A prompt supplied at create is baked into KORTIX_INITIAL_PROMPT and runs
+  // A prompt supplied at create is baked into ZED_INITIAL_PROMPT and runs
   // inside the box — it never crosses the API again, so this is the only moment
   // it can be titled. No modelHint: the row already carries `opencode_model`.
   const titleSource = titleSourceForCreate(body);

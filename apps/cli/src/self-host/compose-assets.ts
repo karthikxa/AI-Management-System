@@ -2,9 +2,9 @@ import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { parse, stringify } from 'yaml';
 
-import kortixCompose from './assets/kortix-compose.yml' with { type: 'text' };
-import kortixCaddyfile from './assets/Caddyfile.txt' with { type: 'text' };
-import kortixUpdaterScript from './assets/updater.sh' with { type: 'text' };
+import zedCompose from './assets/zed-compose.yml' with { type: 'text' };
+import zedCaddyfile from './assets/Caddyfile.txt' with { type: 'text' };
+import zedUpdaterScript from './assets/updater.sh' with { type: 'text' };
 import upstreamSupabaseCompose from './assets/supabase/docker-compose.yml' with { type: 'text' };
 import upstreamSupabaseLogsCompose from './assets/supabase/docker-compose.logs.yml' with { type: 'text' };
 import supabaseImageLockText from './assets/supabase/image-lock.json' with { type: 'text' };
@@ -67,7 +67,7 @@ export const supabaseVendorAssets: Readonly<Record<string, string>> = {
 
 /**
  * The pinned official Supabase Docker distribution used on the private EC2
- * data host. Kortix application containers are intentionally absent: the API,
+ * data host. Zed application containers are intentionally absent: the API,
  * frontend, gateway, and workers run on EKS in the AWS VPC topology.
  */
 export const officialSupabaseDockerAssets: Readonly<Record<string, string>> = {
@@ -81,18 +81,18 @@ export const officialSupabaseDockerAssets: Readonly<Record<string, string>> = {
  * These are plain runtime assets (no secrets) written next to the compose
  * file and .env, same as the Supabase vendor assets.
  */
-export const kortixRuntimeAssets: Readonly<Record<string, string>> = {
-  Caddyfile: kortixCaddyfile,
-  'updater.sh': kortixUpdaterScript,
+export const zedRuntimeAssets: Readonly<Record<string, string>> = {
+  Caddyfile: zedCaddyfile,
+  'updater.sh': zedUpdaterScript,
 };
 
-export function writeKortixRuntimeAssets(root: string): void {
-  writeAssets(root, kortixRuntimeAssets);
+export function writeZedRuntimeAssets(root: string): void {
+  writeAssets(root, zedRuntimeAssets);
 }
 
 export interface RenderComposeOptions {
   /**
-   * Whether KORTIX_DOMAIN (and KORTIX_API_DOMAIN) are configured. When true,
+   * Whether ZED_DOMAIN (and ZED_API_DOMAIN) are configured. When true,
    * the `caddy` reverse-proxy/TLS service is included. When false (the
    * laptop/loopback-port default), it is omitted entirely — not merely
    * disabled — so a domain-less instance never binds 80/443.
@@ -113,7 +113,7 @@ export interface RenderComposeOptions {
    * tunnelConfigured is also true. Selects the cloudflared service's
    * command/environment at COMPOSE-RENDER time (`tunnel run` + TUNNEL_TOKEN
    * env var vs. the zero-config `tunnel --url` default already baked into
-   * kortix-compose.yml) — this can't be a runtime shell branch inside the
+   * zed-compose.yml) — this can't be a runtime shell branch inside the
    * container because the official cloudflared image ships no shell at all.
    */
   namedTunnelConfigured?: boolean;
@@ -124,12 +124,12 @@ export interface RenderComposeOptions {
  * one place so the replica/port topology below and updater.sh agree on the
  * exact same service set.
  */
-export const ROLLING_APP_SERVICES = ['kortix-api', 'llm-gateway', 'frontend'] as const;
+export const ROLLING_APP_SERVICES = ['zed-api', 'llm-gateway', 'frontend'] as const;
 
 /**
  * Replica count for each rolling service per topology. Exported so the CLI's
  * env writer (commands/self-host.ts) can set the exact same number into
- * KORTIX_APP_REPLICAS — the single source of truth the auto-updater reads to
+ * ZED_APP_REPLICAS — the single source of truth the auto-updater reads to
  * know its start-first rollout target, instead of re-deriving prod-vs-laptop
  * topology itself.
  */
@@ -137,10 +137,10 @@ export const PROD_APP_REPLICAS = 2;
 export const LAPTOP_APP_REPLICAS = 1;
 
 /**
- * Compose the pinned official Supabase Docker distribution with the Kortix
+ * Compose the pinned official Supabase Docker distribution with the Zed
  * application services. The upstream service definitions and image pins stay
  * intact; we only remove globally-conflicting container names, add legacy
- * Kortix service names, and restrict every published port to loopback.
+ * Zed service names, and restrict every published port to loopback.
  */
 export function renderFullDockerCompose(composeProject: string, options: RenderComposeOptions = {}): string {
   const base = parse(
@@ -149,8 +149,8 @@ export function renderFullDockerCompose(composeProject: string, options: RenderC
   const logs = parse(
     officialSupabaseDockerAssets['docker-compose.logs.yml']!.replaceAll('${POSTGRES_PORT}', '${SUPABASE_POSTGRES_INTERNAL_PORT}'),
   ) as YamlRecord;
-  const kortix = parse(
-    kortixCompose.replaceAll('__KORTIX_COMPOSE_PROJECT__', composeProject),
+  const zed = parse(
+    zedCompose.replaceAll('__ZED_COMPOSE_PROJECT__', composeProject),
   ) as YamlRecord;
 
   const upstreamServices = deepMerge(
@@ -185,11 +185,11 @@ export function renderFullDockerCompose(composeProject: string, options: RenderC
     // docker-compose.logs.yml is merged in (always, in self-host — see
     // upstreamServices above), Studio's OWN dependency on Logflare/Analytics
     // — on the critical path of every service that itself depends on Kong
-    // (kortix-api's SUPABASE_URL points at Kong, so kortix-api transitively
+    // (zed-api's SUPABASE_URL points at Kong, so zed-api transitively
     // waited on the admin dashboard and the analytics pipeline before it
     // could even start). None of Studio/Logflare/Analytics are on the
     // customer-facing request path; un-gating Kong from Studio removes them
-    // from kortix-api's cold-boot chain without touching either service.
+    // from zed-api's cold-boot chain without touching either service.
     if (isRecord(kong.depends_on)) {
       const dependencies = { ...kong.depends_on };
       delete dependencies['supabase-studio'];
@@ -290,7 +290,7 @@ export function renderFullDockerCompose(composeProject: string, options: RenderC
     };
   }
 
-  for (const [name, rawService] of Object.entries(asRecord(kortix.services))) {
+  for (const [name, rawService] of Object.entries(asRecord(zed.services))) {
     services[name] = rawService as YamlRecord;
   }
 
@@ -327,7 +327,7 @@ export function renderFullDockerCompose(composeProject: string, options: RenderC
   // there is no edge/LB and no need for zero-downtime rollouts, so each
   // service stays a single replica on its existing loopback host port. The
   // in-compose auto-updater (updater.sh) reads this same signal back out of
-  // .env via KORTIX_APP_REPLICAS so its start-first rollout targets the right
+  // .env via ZED_APP_REPLICAS so its start-first rollout targets the right
   // replica count without re-deriving it from the compose file at runtime.
   applyReplicaTopology(services, Boolean(options.domainConfigured));
 
@@ -345,7 +345,7 @@ export function renderFullDockerCompose(composeProject: string, options: RenderC
 
   const document: YamlRecord = {
     services,
-    volumes: deepMerge(asRecord(base.volumes), asRecord(kortix.volumes)),
+    volumes: deepMerge(asRecord(base.volumes), asRecord(zed.volumes)),
   };
   return stringify(document, { lineWidth: 0 });
 }
@@ -406,7 +406,7 @@ function applyReplicaTopology(services: Record<string, YamlRecord>, domainConfig
  * bound). One shared literal applied uniformly at render time is this
  * generator's equivalent of a compose-level `x-logging` anchor: every
  * service gets exactly this, and a future service added to either the
- * upstream Supabase file or kortix-compose.yml picks it up automatically
+ * upstream Supabase file or zed-compose.yml picks it up automatically
  * with no per-file edit required.
  */
 const DEFAULT_LOGGING: YamlRecord = {
@@ -446,11 +446,11 @@ interface MemSpec {
 
 const MEM_LIMITS: Readonly<Record<string, MemSpec>> = {
   'supabase-db': { limit: '1280m', reservation: '512m', oomScoreAdj: -900 },
-  'kortix-api': { limit: '${KORTIX_API_MEMORY_LIMIT:-640m}', reservation: '256m' },
+  'zed-api': { limit: '${ZED_API_MEMORY_LIMIT:-640m}', reservation: '256m' },
   'llm-gateway': { limit: '512m', reservation: '128m' },
   frontend: { limit: '512m', reservation: '128m' },
-  'kortix-migrate': { limit: '512m', reservation: '128m' },
-  'kortix-updater': { limit: '256m', reservation: '64m' },
+  'zed-migrate': { limit: '512m', reservation: '128m' },
+  'zed-updater': { limit: '256m', reservation: '64m' },
   'supabase-kong': { limit: '384m', reservation: '128m' },
   'supabase-auth': { limit: '256m', reservation: '64m' },
   'supabase-rest': { limit: '256m', reservation: '64m' },

@@ -7,7 +7,7 @@
  * machine-readable representations. Runtime app URLs are deliberately not
  * used here: a preview/dev hostname must never become the canonical origin.
  */
-export const CANONICAL_ORIGIN = 'https://kortix.com';
+export const CANONICAL_ORIGIN = 'https://zed.com';
 
 export const siteMetadata = {
   name: 'Zed',

@@ -54,7 +54,7 @@ describe('buildMinimalAccountState revenuecat', () => {
       nextCreditGrant: null,
       lastDailyRefresh: null,
       paymentStatus: 'active',
-      revenuecatProductId: 'kortix_plus_monthly',
+      revenuecatProductId: 'zed_plus_monthly',
       revenuecatCustomerId: 'rc_customer_123',
       revenuecatSubscriptionId: 'rc_sub_123',
       revenuecatPendingChangeProduct: null,
@@ -69,7 +69,7 @@ describe('buildMinimalAccountState revenuecat', () => {
     isAdmin = false;
   });
 
-  test('reports active revenuecat subscription from kortix row', async () => {
+  test('reports active revenuecat subscription from zed row', async () => {
     const state = await buildMinimalAccountState('acc_test_123');
 
     expect(state.subscription.provider).toBe('revenuecat');

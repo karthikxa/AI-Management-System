@@ -28,8 +28,8 @@ describe('defaultEnabledModelIds', () => {
     ).toEqual(['anthropic/claude-sonnet-5']);
   });
 
-  test('groups by real upstream provider, not the synthetic kortix id', () => {
-    // Both are served under `kortix`; a shared family name must not let one
+  test('groups by real upstream provider, not the synthetic zed id', () => {
+    // Both are served under `zed`; a shared family name must not let one
     // provider's model suppress the other's.
     expect(
       ids([

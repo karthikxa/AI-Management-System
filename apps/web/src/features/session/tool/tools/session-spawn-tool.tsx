@@ -5,7 +5,7 @@ import { BasicTool, partInput, partStatus } from '@/features/session/tool/shared
 import { ToolRegistry } from '@/features/session/tool/shared/registry';
 import { SubAgentActivity, SubAgentStatusBanner } from '@/features/session/tool/shared/sub-agent';
 import type { ToolProps } from '@/features/session/tool/shared/types';
-import { useRuntimeMessages } from '@kortix/sdk/react';
+import { useRuntimeMessages } from '@zed/sdk/react';
 import { cn } from '@/lib/utils';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -24,7 +24,7 @@ export function SessionSpawnTool({ part, forceOpen }: ToolProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const agentName = (input.agent as string) || 'kortix';
+  const agentName = (input.agent as string) || 'zed';
   const description = (input.description as string) || '';
   const projectName = (input.project as string) || '';
   const fullPrompt = (input.prompt as string) || '';

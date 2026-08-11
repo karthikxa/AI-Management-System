@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { KortixSendErrorConnector } from '@kortix/sdk/react';
+import type { ZedSendErrorConnector } from '@zed/sdk/react';
 
 import { connectorNoticeCopy } from './connector-required-notice';
 
 const connector = (
   name: string,
   authorization_strategy: 'project' | 'user',
-): KortixSendErrorConnector => ({
+): ZedSendErrorConnector => ({
   id: `id-${name}`,
   slug: name.toLowerCase(),
   name,

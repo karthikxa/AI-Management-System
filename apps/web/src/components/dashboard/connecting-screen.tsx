@@ -12,11 +12,11 @@ import {
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/loading';
 import { STAGE_LABELS, type ProvisioningStageInfo } from '@/lib/provisioning-stages';
-import { type SandboxRecoveryPhase, useRuntimeConnectionStore } from '@kortix/sdk/react';
+import { type SandboxRecoveryPhase, useRuntimeConnectionStore } from '@zed/sdk/react';
 import { useAppHome } from '@/lib/onboarding/use-app-home';
 
 /**
@@ -324,7 +324,7 @@ function ProvisioningView({
 
   return (
     <>
-      <KortixLogo size={40} />
+      <ZedLogo size={40} />
 
       <p className="text-foreground/55 max-w-[320px] truncate text-sm font-normal">{label}</p>
 

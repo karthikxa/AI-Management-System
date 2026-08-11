@@ -4,18 +4,18 @@
  * the project_sessions and service_accounts rows selected by the handler.
  */
 import { afterAll, beforeEach, describe, expect, mock, test } from 'bun:test';
-import { auditEvents, serviceAccounts, sessionSandboxes } from '@kortix/db';
+import { auditEvents, serviceAccounts, sessionSandboxes } from '@zed/db';
 
 const ORIGINAL_ENV = {
   ALLOWED_SANDBOX_PROVIDERS: process.env.ALLOWED_SANDBOX_PROVIDERS,
   FRONTEND_URL: process.env.FRONTEND_URL,
-  INTERNAL_KORTIX_ENV: process.env.INTERNAL_KORTIX_ENV,
+  INTERNAL_ZED_ENV: process.env.INTERNAL_ZED_ENV,
   SUPABASE_URL: process.env.SUPABASE_URL,
 };
 process.env.ALLOWED_SANDBOX_PROVIDERS = 'daytona';
-process.env.FRONTEND_URL = 'https://app.test.kortix.local';
-process.env.INTERNAL_KORTIX_ENV = 'dev';
-process.env.SUPABASE_URL = 'https://supabase.test.kortix.local';
+process.env.FRONTEND_URL = 'https://app.test.zed.local';
+process.env.INTERNAL_ZED_ENV = 'dev';
+process.env.SUPABASE_URL = 'https://supabase.test.zed.local';
 
 const ACCOUNT_ID = 'd7100000-0000-4000-a000-000000000001';
 const PROJECT_ID = 'd7200000-0000-4000-a000-000000000001';

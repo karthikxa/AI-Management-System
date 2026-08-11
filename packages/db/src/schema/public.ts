@@ -8,8 +8,8 @@ import {
 } from 'drizzle-orm/pg-core';
 
 // NOTE: Credit/billing tables (creditAccounts, creditLedger, creditUsage,
-// creditPurchases, accountDeletionRequests) have been moved to kortix.ts
-// under the 'kortix' schema. Do NOT re-add them here.
+// creditPurchases, accountDeletionRequests) have been moved to zed.ts
+// under the 'zed' schema. Do NOT re-add them here.
 
 // ─── Public schema tables ───────────────────────────────────────────────────
 // These are pushed by drizzle-kit (schemaFilter includes 'public').

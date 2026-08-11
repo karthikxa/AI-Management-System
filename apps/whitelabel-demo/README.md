@@ -1,14 +1,14 @@
 # Lumen white-label reference
 
-Lumen is the complete reference app for `@kortix/sdk`.
+Lumen is the complete reference app for `@zed/sdk`.
 
 The app has five architecture rules:
 
-1. The browser creates one Kortix client in `src/lib/kortix.ts`.
+1. The browser creates one Zed client in `src/lib/zed.ts`.
 2. One `useSession(projectId, sessionId)` hook owns each session workbench.
 3. The client does not select or implement a runtime transport.
 4. Server routes own privileged credentials and preview URL resolution.
-5. Only the SDK transport layer sends Kortix backend HTTP requests.
+5. Only the SDK transport layer sends Zed backend HTTP requests.
 
 The client renders the server-provided `experimental_features` catalog. It
 does not hard-code feature keys.
@@ -17,8 +17,8 @@ does not hard-code feature keys.
 
 Client code imports only:
 
-- `@kortix/sdk`
-- `@kortix/sdk/react`
+- `@zed/sdk`
+- `@zed/sdk/react`
 - Local UI and application modules
 
 Client code does not:
@@ -29,7 +29,7 @@ Client code does not:
 - Use a legacy runtime store.
 - Call `session.previewUrl()` or `session.proxyUrl()`.
 - Select a runtime transport.
-- Send raw requests to the Kortix backend.
+- Send raw requests to the Zed backend.
 
 `scripts/sdk-boundary.mjs` enforces these rules across client source, server
 source, and application tests. The `build`, `test`, `test:e2e`, and `typecheck`
@@ -37,12 +37,12 @@ scripts run this check first.
 
 ## One SDK client
 
-`src/lib/kortix.ts` creates the client once:
+`src/lib/zed.ts` creates the client once:
 
 ```ts
-import { createKortix } from '@kortix/sdk';
+import { createZed } from '@zed/sdk';
 
-export const kortix = createKortix({
+export const zed = createZed({
   backendUrl: BRAND.apiUrl,
   getToken: async () => getApiKey(),
 });
@@ -92,7 +92,7 @@ It renders each available feature by its server-provided label and description.
 It updates a feature through:
 
 ```ts
-kortix.project(projectId).updateExperimentalFeature(feature.key, enabled);
+zed.project(projectId).updateExperimentalFeature(feature.key, enabled);
 ```
 
 The host does not contain hard-coded experiment keys.
@@ -124,26 +124,26 @@ process startup.
 
 Direct mode is the default.
 
-- The user pastes a Kortix API key.
+- The user pastes a Zed API key.
 - The browser stores it in `localStorage`.
-- The shared SDK client targets `NEXT_PUBLIC_KORTIX_API_URL`.
+- The shared SDK client targets `NEXT_PUBLIC_ZED_API_URL`.
 - `/api/preview-url` uses the caller token for server-side preview resolution.
 
 ### Wrapper mode
 
-Set `KORTIX_API_KEY` to enable wrapper mode.
+Set `ZED_API_KEY` to enable wrapper mode.
 
 - Users authenticate through `/api/auth/*`.
 - The browser receives a Lumen session token.
-- The shared SDK client targets `/api/kortix`.
-- The BFF delegates forwarding to `@kortix/sdk/server`.
-- The SDK substitutes `KORTIX_API_KEY` on upstream requests.
+- The shared SDK client targets `/api/zed`.
+- The BFF delegates forwarding to `@zed/sdk/server`.
+- The SDK substitutes `ZED_API_KEY` on upstream requests.
 - `src/server/users.ts` enforces per-user project ownership.
 - `src/server/policy.ts` applies a deny-by-default route policy.
 - `src/server/rate-limit.ts` applies per-user limits.
 - `/api/session-costs` applies the configured `COST_MARKUP` to session costs.
 
-The Kortix API key remains server-side.
+The Zed API key remains server-side.
 
 ## Product surfaces
 
@@ -158,10 +158,10 @@ The Kortix API key remains server-side.
 
 The app uses the following public SDK groups:
 
-- `kortix.accounts`
-- `kortix.projects`
-- `kortix.project(projectId)`
-- `kortix.session(projectId, sessionId)`
+- `zed.accounts`
+- `zed.projects`
+- `zed.project(projectId)`
+- `zed.session(projectId, sessionId)`
 - `useSession(projectId, sessionId)`
 - Project model, agent, and configuration hooks
 - Headless turn classification and part rendering
@@ -170,8 +170,8 @@ The app uses the following public SDK groups:
 
 The SDK has one auth seam: `getToken`.
 
-Direct mode returns the pasted Kortix API key. Wrapper mode returns the Lumen
-session token. The BFF exchanges the Lumen session for the server-held Kortix
+Direct mode returns the pasted Zed API key. Wrapper mode returns the Lumen
+session token. The BFF exchanges the Lumen session for the server-held Zed
 credential.
 
 ## Run
@@ -185,19 +185,19 @@ pnpm install
 Run direct mode:
 
 ```bash
-NEXT_PUBLIC_KORTIX_API_URL=https://api.kortix.com/v1 \
+NEXT_PUBLIC_ZED_API_URL=https://api.zed.com/v1 \
   WHITELABEL_PORT=3010 \
-  pnpm --filter @kortix/whitelabel-demo dev
+  pnpm --filter @zed/whitelabel-demo dev
 ```
 
 Run wrapper mode with the variables in `.env.example`:
 
 ```bash
-KORTIX_API_KEY=kortix_pat_example \
-KORTIX_UPSTREAM=https://api.kortix.com/v1 \
+ZED_API_KEY=zed_pat_example \
+ZED_UPSTREAM=https://api.zed.com/v1 \
 SESSION_SECRET=replace-with-a-long-random-value \
 WHITELABEL_PORT=3010 \
-pnpm --filter @kortix/whitelabel-demo dev
+pnpm --filter @zed/whitelabel-demo dev
 ```
 
 ## Verify
@@ -205,13 +205,13 @@ pnpm --filter @kortix/whitelabel-demo dev
 Run all reference-app checks:
 
 ```bash
-pnpm --filter @kortix/whitelabel-demo typecheck
-pnpm --filter @kortix/whitelabel-demo build
-pnpm --filter @kortix/whitelabel-demo test
+pnpm --filter @zed/whitelabel-demo typecheck
+pnpm --filter @zed/whitelabel-demo build
+pnpm --filter @zed/whitelabel-demo test
 ```
 
 The test suite boots the production Next.js server. Product flows create a
-request-scoped SDK client. Tests do not construct Kortix backend requests. The
+request-scoped SDK client. Tests do not construct Zed backend requests. The
 suite verifies auth, mode selection, ownership, route policy, proxy behavior,
 preview resolution, rate limits, session cost markup, and the SDK boundary.
 
@@ -223,5 +223,5 @@ preview resolution, rate limits, session cost markup, and the SDK boundary.
 - Wrapper authentication: `src/server/auth.ts`
 - Wrapper authorization: `src/server/users.ts` and `src/server/policy.ts`
 
-Keep `src/lib/kortix.ts` as the single client seam. Add missing backend behavior
-to `@kortix/sdk` before using it in this app.
+Keep `src/lib/zed.ts` as the single client seam. Add missing backend behavior
+to `@zed/sdk` before using it in this app.

@@ -11,7 +11,7 @@
 // engages when credit_accounts.billing_model = 'per_seat'.
 
 import { eq, sql } from 'drizzle-orm';
-import { accountMembers } from '@kortix/db';
+import { accountMembers } from '@zed/db';
 import { db } from '../../shared/db';
 import { getStripe } from '../../shared/stripe';
 import { getCreditAccount, updateCreditAccount } from '../repositories/credit-accounts';
@@ -27,14 +27,14 @@ import {
 export async function countActiveMembers(accountId: string): Promise<number> {
   // Count account members, EXCLUDING phantom self-memberships — a row where
   // user_id == account_id whose user_id is not a real auth user. These are
-  // minted when a Kortix token (the auth middleware maps it to userId ==
+  // minted when a Zed token (the auth middleware maps it to userId ==
   // accountId) hits resolveAccountId; the account ends up "a member of itself"
   // and must NOT be billed as a seat. A personal account's owner also has
   // user_id == account_id but IS a real auth user, so the NOT EXISTS keeps it.
   try {
     const res = await db.execute<{ n: number }>(sql`
       SELECT COUNT(*)::int AS n
-      FROM kortix.account_members am
+      FROM zed.account_members am
       WHERE am.account_id = ${accountId}::uuid
         AND NOT (
           am.user_id = am.account_id

@@ -45,7 +45,7 @@ describe('no-managed-models message', () => {
 /**
  * The BYOK failover must respect the managed-model entitlement.
  *
- * `resolveCandidates` queues a Kortix-managed model BEHIND the user's own key so
+ * `resolveCandidates` queues a Zed-managed model BEHIND the user's own key so
  * a rate-limited turn doesn't die. That gate read `tier === 'free'` — a literal
  * string, not the entitlement. It was harmless while every paid tier carried
  * `models: ['all']`, and became a hole the moment paid plans stopped including
@@ -99,7 +99,7 @@ describe('BYOK managed failover entitlement', () => {
       new URL('../../billing/services/entitlements.ts', import.meta.url).pathname,
     ).text();
     expect(entitlementsSrc).toMatch(
-      /accountMayUseManagedModels[\s\S]{0,400}if \(!config\.KORTIX_BILLING_INTERNAL_ENABLED\) return true;/,
+      /accountMayUseManagedModels[\s\S]{0,400}if \(!config\.ZED_BILLING_INTERNAL_ENABLED\) return true;/,
     );
   });
 });

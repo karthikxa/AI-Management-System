@@ -79,11 +79,11 @@ function macBandMetrics() {
 // account actions could all become window-drag targets instead.
 const DESKTOP_CHROME_JS = `
 (function () {
-  if (window.__kortixChrome) return;
-  window.__kortixChrome = true;
+  if (window.__zedChrome) return;
+  window.__zedChrome = true;
 
   var style = document.createElement('style');
-  style.id = 'kortix-chrome-style';
+  style.id = 'zed-chrome-style';
   style.textContent =
     '[role="tablist"],[data-sidebar="header"],[data-sidebar="sidebar"],' +
     '.kx-desktop-drag,.kx-desktop-chrome{-webkit-app-region:drag;}' +

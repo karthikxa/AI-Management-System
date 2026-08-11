@@ -35,7 +35,7 @@ Rationale specific to this platform:
 - **`generate` closes gaps no validator can.** One Kyverno `generate` rule
   auto-creates a default-deny `NetworkPolicy` and a `PodDisruptionBudget` in
   every namespace as it appears — directly hardening the dynamically created
-  `kortix-pr-*` preview namespaces from `applicationsets/preview.yaml` without a
+  `zed-pr-*` preview namespaces from `applicationsets/preview.yaml` without a
   human in the loop.
 - **`mutate` injects the hardened defaults.** A `mutate` rule stamps
   `runAsNonRoot`, `allowPrivilegeEscalation: false`,
@@ -53,7 +53,7 @@ small team.
 **Rollout is audit-first.** All policies ship with
 `validationFailureAction: Audit` so violations are reported for a soak period
 (target: one clean week) with zero blocked deploys. We then flip to `Enforce`
-per-namespace, starting on dev/preview and graduating to `kortix-prod` last —
+per-namespace, starting on dev/preview and graduating to `zed-prod` last —
 matching the audit-before-enforce, dev-first discipline used everywhere in this
 migration.
 

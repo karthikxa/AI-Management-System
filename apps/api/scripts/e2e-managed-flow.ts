@@ -11,16 +11,16 @@
  *
  * It mints a CLI PAT for a local owner account, then walks the whole flow:
  *   provision (web "Create project", seeded) → verify starter in repo →
- *   clone + push exactly the way `kortix ship` does → create session (the path
+ *   clone + push exactly the way `zed ship` does → create session (the path
  *   that 403'd) → delete session → rm --purge → confirm the repo is gone.
  * Exits non-zero if any step fails. Cleans up everything it created.
  *
  * The git steps deliberately resolve their remote + credential the SAME way the
- * CLI does (see apps/cli/src/project-git.ts): the Kortix git proxy origin with
+ * CLI does (see apps/cli/src/project-git.ts): the Zed git proxy origin with
  * our own PAT when the host advertises one, a minted provider token against the
  * raw upstream only when it doesn't. An earlier version always minted a token
  * and pushed the raw upstream — a path no client actually takes — so it stayed
- * green while `kortix ship` was 100% broken against a host whose managed git
+ * green while `zed ship` was 100% broken against a host whose managed git
  * runs on an org-wide PAT (POST /git-token fails closed there, by design).
  */
 import { execFile } from 'node:child_process';
@@ -29,7 +29,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { eq } from 'drizzle-orm';
-import { accountMembers, accountTokens } from '@kortix/db';
+import { accountMembers, accountTokens } from '@zed/db';
 import { db } from '../src/shared/db';
 import { createAccountToken } from '../src/repositories/account-tokens';
 
@@ -131,12 +131,12 @@ async function main() {
     const dir = await mkdtemp(join(tmpdir(), 'e2e-flow-'));
     await execFileAsync('git', [...gitEnvArgs(git.gitToken), 'clone', '-q', git.repoUrl, dir]);
     const tracked = (await execFileAsync('git', ['-C', dir, 'ls-files'])).stdout;
-    assert(tracked.includes('kortix.yaml'), 'seeded repo contains kortix.yaml');
-    assert(tracked.includes('.kortix/opencode/opencode.jsonc'), 'seeded repo contains .kortix/opencode/opencode.jsonc');
+    assert(tracked.includes('zed.yaml'), 'seeded repo contains zed.yaml');
+    assert(tracked.includes('.zed/opencode/opencode.jsonc'), 'seeded repo contains .zed/opencode/opencode.jsonc');
 
     // ── 4. CLI "ship": commit + push current branch to the project origin ─
     await writeFile(join(dir, 'E2E.md'), `e2e ${new Date().toISOString()}\n`);
-    await execFileAsync('git', ['-C', dir, 'config', 'user.email', 'e2e@kortix.ai']);
+    await execFileAsync('git', ['-C', dir, 'config', 'user.email', 'e2e@zed.ai']);
     await execFileAsync('git', ['-C', dir, 'config', 'user.name', 'e2e']);
     await execFileAsync('git', ['-C', dir, 'add', '-A']);
     await execFileAsync('git', ['-C', dir, 'commit', '-q', '-m', 'e2e edit']);

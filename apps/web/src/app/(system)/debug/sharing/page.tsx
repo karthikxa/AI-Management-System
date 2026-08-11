@@ -10,8 +10,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { SharingPicker, type SharingSelection } from '@/features/workspace/shared/sharing-picker';
-import type { ProjectAccessResponse } from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+import type { ProjectAccessResponse } from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 
 const DEMO_PROJECT = 'demo';
 const DEMO_ACCESS: ProjectAccessResponse = {
@@ -22,7 +22,7 @@ const DEMO_ACCESS: ProjectAccessResponse = {
   members: [
     {
       user_id: 'u1',
-      email: 'marko@kortix.ai',
+      email: 'marko@zed.ai',
       account_role: 'owner',
       project_role: 'editor',
       effective_project_role: 'editor',
@@ -46,7 +46,7 @@ const DEMO_ACCESS: ProjectAccessResponse = {
     },
     {
       user_id: 'u3',
-      email: 'ana@kortix.ai',
+      email: 'ana@zed.ai',
       account_role: 'member',
       project_role: 'member',
       effective_project_role: 'member',
@@ -70,7 +70,7 @@ const DEMO_ACCESS: ProjectAccessResponse = {
     },
     {
       user_id: 'u5',
-      email: 'chen@kortix.ai',
+      email: 'chen@zed.ai',
       account_role: 'member',
       project_role: 'member',
       effective_project_role: 'member',

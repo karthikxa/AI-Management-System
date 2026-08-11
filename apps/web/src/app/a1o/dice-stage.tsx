@@ -4,7 +4,7 @@ import { AnimatePresence, m } from 'motion/react';
 import dynamic from 'next/dynamic';
 import { useCallback, useRef, useState } from 'react';
 
-import { KortixLogo } from '@/components/ui/kortix-logo';
+import { ZedLogo } from '@/components/ui/zed-logo';
 
 import { COPY, LAYERS } from './content';
 import { useRollSound } from './use-roll-sound';
@@ -70,7 +70,7 @@ export function DiceStage() {
         <header className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {/* Renders in currentColor, so it picks up the white here. */}
-            <KortixLogo variant="icon" size={26} className="text-white" />
+            <ZedLogo variant="icon" size={26} className="text-white" />
             <div>
               <p className="text-sm font-medium tracking-tight text-white">
                 {COPY.wordmark}

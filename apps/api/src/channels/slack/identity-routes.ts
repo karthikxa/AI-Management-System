@@ -2,17 +2,17 @@
  * Slack `/login` — the AUTHENTICATED bind half.
  *
  * The Slack slash command mints a short-lived signed token (channels/slack/login.ts)
- * and DMs the user a link to the web page. That page requires a normal Kortix
+ * and DMs the user a link to the web page. That page requires a normal Zed
  * login and POSTs the token here with the user's bearer. We verify the token,
- * confirm the now-known Kortix user is a member of the Slack workspace's project
- * account, and persist the (workspace, slack_user) → kortix_user mapping.
+ * confirm the now-known Zed user is a member of the Slack workspace's project
+ * account, and persist the (workspace, slack_user) → zed_user mapping.
  *
  * Same trust model as accepting a team invite: the token proves which Slack user
- * asked to link; the bearer proves which Kortix user is accepting.
+ * asked to link; the bearer proves which Zed user is accepting.
  */
 import { createRoute, z } from '@hono/zod-openapi';
 import { inArray } from 'drizzle-orm';
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import { db } from '../../shared/db';
 import { config } from '../../config';
 import { auth, errors, json, makeOpenApiApp } from '../../openapi';
@@ -38,7 +38,7 @@ slackIdentityApp.openapi(
   }),
   async (c: any) => {
     const token = c.req.param('token');
-    const base = (config.FRONTEND_URL || 'https://kortix.com').replace(/\/+$/, '');
+    const base = (config.FRONTEND_URL || 'https://zed.com').replace(/\/+$/, '');
     const target = `${base}/slack/login/${encodeURIComponent(token)}`;
     return c.html(`<!doctype html>
 <html>
@@ -46,12 +46,12 @@ slackIdentityApp.openapi(
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="refresh" content="0; url=${target}" />
-    <title>Opening Kortix</title>
+    <title>Opening Zed</title>
   </head>
   <body>
-    <p>Opening Kortix...</p>
+    <p>Opening Zed...</p>
     <script>window.location.replace(${JSON.stringify(target)});</script>
-    <p><a href="${target}">Continue to Kortix</a></p>
+    <p><a href="${target}">Continue to Zed</a></p>
   </body>
 </html>`);
   },
@@ -74,7 +74,7 @@ slackIdentityApp.openapi(
     method: 'post',
     path: '/bind',
     tags: ['channels'],
-    summary: 'Bind the calling Kortix user to a Slack user from a /login token',
+    summary: 'Bind the calling Zed user to a Slack user from a /login token',
     ...auth,
     middleware: [combinedAuth] as const,
     request: { body: { content: { 'application/json': { schema: BindBody } } } },
@@ -91,14 +91,14 @@ slackIdentityApp.openapi(
     if (!token) return c.json({ error: 'Missing token' }, 400);
 
     const payload = verifyLoginState(token);
-    if (!payload) return c.json({ error: 'This link is invalid or has expired. Run `/kortix login` again.' }, 410);
+    if (!payload) return c.json({ error: 'This link is invalid or has expired. Run `/zed login` again.' }, 410);
 
-    // The workspace must be connected to at least one Kortix project, and the
+    // The workspace must be connected to at least one Zed project, and the
     // accepting user must be a member of that project's account — otherwise a
     // stranger could bind into a workspace they have no access to.
     const projectIds = await listProjectsForWorkspace('slack', payload.teamId);
     if (projectIds.length === 0) {
-      return c.json({ error: 'This Slack workspace is not connected to any Kortix project.' }, 403);
+      return c.json({ error: 'This Slack workspace is not connected to any Zed project.' }, 403);
     }
     const accountRows = await db
       .select({ accountId: projects.accountId })
@@ -108,7 +108,7 @@ slackIdentityApp.openapi(
     const memberships = await Promise.all(accountIds.map((a) => isAccountMember(userId, a)));
     const hasAccess = memberships.some(Boolean);
 
-    // Link regardless of membership. Connecting your Kortix account is decoupled
+    // Link regardless of membership. Connecting your Zed account is decoupled
     // from having access: we establish WHO this Slack user is so a non-member can
     // request access right in the thread. This is safe — the link grants nothing
     // on its own; the runtime gate (resolveSlackActor) still requires membership

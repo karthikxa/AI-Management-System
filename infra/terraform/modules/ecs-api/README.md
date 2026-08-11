@@ -1,6 +1,6 @@
-# ecs-api — autoscaling Kortix API on ECS Fargate + ALB
+# ecs-api — autoscaling Zed API on ECS Fargate + ALB
 
-The `kortix-api` container running as an **ECS Fargate** service behind an
+The `zed-api` container running as an **ECS Fargate** service behind an
 **Application Load Balancer**, horizontally **autoscaled** (target-tracking on
 CPU **and** memory). One module, used by both `environments/dev` and
 `environments/prod` — only the variables differ, so promoting to prod is "the
@@ -23,7 +23,7 @@ same thing with bigger numbers and `min_capacity >= 2`".
 
 ## Inputs of note
 
-- `name` — resource prefix (e.g. `kortix-dev`).
+- `name` — resource prefix (e.g. `zed-dev`).
 - `vpc_id` / `public_subnet_ids` / `private_subnet_ids` — from `modules/network`.
 - `image`, `container_port` (also injected as `PORT`), `environment`, `secrets`.
 - `task_cpu` / `task_memory`, `desired_count`, `min_capacity` / `max_capacity`,

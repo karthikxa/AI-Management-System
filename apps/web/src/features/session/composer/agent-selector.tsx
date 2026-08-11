@@ -14,8 +14,8 @@ import {
 } from '@/components/ui/command';
 import Hint from '@/components/ui/hint';
 import { cn } from '@/lib/utils';
-import type { Agent } from '@kortix/sdk/react';
-import { isMetaAgentName } from '@kortix/shared';
+import type { Agent } from '@zed/sdk/react';
+import { isMetaAgentName } from '@zed/shared';
 import { CaretDownIcon, Check, FolderSimpleIcon as MetaFolder } from '@phosphor-icons/react';
 
 // ============================================================================

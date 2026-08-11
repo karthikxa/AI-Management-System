@@ -555,7 +555,7 @@ flow(
   },
 );
 
-// ADM-16 — tri-state managed-models override: true grants Kortix-credential
+// ADM-16 — tri-state managed-models override: true grants Zed-credential
 // models regardless of tier, false forces BYOK-only, null restores "the
 // effective tier decides".
 flow(
@@ -803,13 +803,13 @@ flow("ADM-20", { domain: "admin", routes: ["GET /v1/admin/api/projects"] }, asyn
 });
 
 // ADM-19 — the trial-expiry sweep cron. Same `requireInternalCronAuth` gate as
-// BILL-13/BILL-16 (Bearer or X-Kortix-Internal-Key must timing-safe-equal
+// BILL-13/BILL-16 (Bearer or X-Zed-Internal-Key must timing-safe-equal
 // INTERNAL_SERVICE_KEY). Unlike the credit rotations the sweep grants nothing —
 // it only flips trials whose window ALREADY passed to 'expired' — so the real
 // call is safe to make when the internal key is available. `serial+global`
 // because it writes across every account on the deployment. The {expired:n}
 // assertion assumes the target runs billing internals (same assumption BILL-13
-// already makes); a KORTIX_BILLING_INTERNAL_ENABLED=false deployment answers
+// already makes); a ZED_BILLING_INTERNAL_ENABLED=false deployment answers
 // 200 {skipped:true} instead.
 flow(
   "ADM-19",

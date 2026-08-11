@@ -82,7 +82,7 @@ const secs = (ms: number) => Math.round(ms / 1000);
  */
 function extendStatement(target: DeadlineTarget, grantMs: number) {
   return sql`
-    UPDATE kortix.session_sandboxes s
+    UPDATE zed.session_sandboxes s
        SET deadline_at = LEAST(
              s.active_since + make_interval(secs => ${secs(ABSOLUTE_RUN_CAP_MS)}),
              GREATEST(s.deadline_at, now() + make_interval(secs => ${secs(grantMs)}))),
@@ -101,11 +101,11 @@ function extendStatement(target: DeadlineTarget, grantMs: number) {
  * holds a credential that produces a perfectly valid principal for requests it
  * writes itself, and letting those through would rebuild the exact self-renewal
  * this design deletes. One line at each call site, and the session id MUST come
- * from `callerKortixSessionId` — the raw `c.get('sessionId')` is the SUPABASE
+ * from `callerZedSessionId` — the raw `c.get('sessionId')` is the SUPABASE
  * AUTH SESSION id under `supabaseAuth`, which reads every browser user as the
  * sandbox and silently disables the whole observation (see
  * sandbox-deadline-call-sites.test.ts):
- *   if (!isSandboxAuthored(c.get('apiKeyType'), callerKortixSessionId(c))) …
+ *   if (!isSandboxAuthored(c.get('apiKeyType'), callerZedSessionId(c))) …
  */
 export async function extendSandboxDeadline(
   target: DeadlineTarget,
@@ -180,7 +180,7 @@ export async function shortenSandboxDeadline(
   graceMs: number = idleGraceMs(),
 ): Promise<void> {
   await db.execute(sql`
-    UPDATE kortix.session_sandboxes s
+    UPDATE zed.session_sandboxes s
        SET deadline_at = LEAST(s.deadline_at, now() + make_interval(secs => ${secs(graceMs)})),
            updated_at = now()
      WHERE s.session_id = ${sessionId} AND s.status = 'active'`);

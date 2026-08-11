@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
 import type {
-  KortixProject,
+  ZedProject,
   PreparationView,
   SandboxProviderTransitionState,
   SandboxProviderTransitionView,
@@ -10,9 +10,9 @@ import type {
 import { getProjectSandboxProviderTransition, updateProjectSandboxProvider } from './index';
 
 // FIX-L: updateProjectSandboxProvider resolves to the exported tagged union
-// (KortixProject-with-kind | PreparationView), keyed on `kind` — not a bare
-// KortixProject. These are compile-time assertions; a regression (e.g. the return
-// narrowed back to KortixProject) fails `tsc`, not just at runtime.
+// (ZedProject-with-kind | PreparationView), keyed on `kind` — not a bare
+// ZedProject. These are compile-time assertions; a regression (e.g. the return
+// narrowed back to ZedProject) fails `tsc`, not just at runtime.
 type UpdateReturn = Awaited<ReturnType<typeof updateProjectSandboxProvider>>;
 type PollReturn = Awaited<ReturnType<typeof getProjectSandboxProviderTransition>>;
 
@@ -49,7 +49,7 @@ test('PATCH result is the exported kind-tagged union with PreparationView export
   // Narrowing on `kind` discriminates project vs preparation with no shape-sniff.
   const narrow = (r: UpdateProjectSandboxProviderResult): string => {
     if (r.kind === 'project') {
-      const proj: KortixProject = r; // project branch carries the full KortixProject
+      const proj: ZedProject = r; // project branch carries the full ZedProject
       return proj.project_id;
     }
     const view: PreparationView = r; // preparation branch is a PreparationView

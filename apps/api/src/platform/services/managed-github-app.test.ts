@@ -1,4 +1,4 @@
-// Unit tests for the DB-backed managed GitHub App config (kortix.platform_settings
+// Unit tests for the DB-backed managed GitHub App config (zed.platform_settings
 // under key 'managed_github_app') — the store the in-app self-host GitHub App
 // setup flow (routes/github-app.ts) writes into instead of `.env`.
 //
@@ -83,7 +83,7 @@ describe('refreshManagedGithubAppConfig / managedGithubAppConfig', () => {
     row = {
       value: {
         appId: '12345',
-        slug: 'kortix-self-host-abc',
+        slug: 'zed-self-host-abc',
         privateKey: '-----BEGIN RSA PRIVATE KEY-----\nabc\n-----END RSA PRIVATE KEY-----',
         owner: 'acme-corp',
         installationId: '987',
@@ -95,7 +95,7 @@ describe('refreshManagedGithubAppConfig / managedGithubAppConfig', () => {
     await refreshManagedGithubAppConfig();
     expect(managedGithubAppConfig()).toEqual({
       appId: '12345',
-      slug: 'kortix-self-host-abc',
+      slug: 'zed-self-host-abc',
       privateKey: '-----BEGIN RSA PRIVATE KEY-----\nabc\n-----END RSA PRIVATE KEY-----',
       owner: 'acme-corp',
       installationId: '987',
@@ -116,7 +116,7 @@ describe('updateManagedGithubAppConfig', () => {
 
     const next = await updateManagedGithubAppConfig({
       appId: '12345',
-      slug: 'kortix-self-host-abc',
+      slug: 'zed-self-host-abc',
       privateKey: 'PEM',
     });
 
@@ -124,7 +124,7 @@ describe('updateManagedGithubAppConfig', () => {
       owner: 'acme-corp',
       installationId: '987',
       appId: '12345',
-      slug: 'kortix-self-host-abc',
+      slug: 'zed-self-host-abc',
       privateKey: 'PEM',
     });
     // Persisted...
@@ -134,12 +134,12 @@ describe('updateManagedGithubAppConfig', () => {
   });
 
   test('a later write for the other half of the flow does not drop the first half', async () => {
-    await updateManagedGithubAppConfig({ appId: '12345', slug: 'kortix-self-host-abc', privateKey: 'PEM' });
+    await updateManagedGithubAppConfig({ appId: '12345', slug: 'zed-self-host-abc', privateKey: 'PEM' });
     const next = await updateManagedGithubAppConfig({ owner: 'acme-corp', installationId: '987' });
 
     expect(next).toEqual({
       appId: '12345',
-      slug: 'kortix-self-host-abc',
+      slug: 'zed-self-host-abc',
       privateKey: 'PEM',
       owner: 'acme-corp',
       installationId: '987',
@@ -161,7 +161,7 @@ describe('updateManagedGithubAppConfig', () => {
   test('setting a PAT clears a previously-stored App config (explicit undefined patch wins over the merge)', async () => {
     await updateManagedGithubAppConfig({
       appId: '12345',
-      slug: 'kortix-self-host-abc',
+      slug: 'zed-self-host-abc',
       privateKey: 'PEM',
       owner: 'acme-corp',
       installationId: '987',
@@ -185,13 +185,13 @@ describe('updateManagedGithubAppConfig', () => {
 
     const next = await updateManagedGithubAppConfig({
       appId: '12345',
-      slug: 'kortix-self-host-abc',
+      slug: 'zed-self-host-abc',
       privateKey: 'PEM',
       pat: undefined,
       patOwner: undefined,
     });
 
-    expect(next).toEqual({ appId: '12345', slug: 'kortix-self-host-abc', privateKey: 'PEM' });
+    expect(next).toEqual({ appId: '12345', slug: 'zed-self-host-abc', privateKey: 'PEM' });
   });
 });
 
@@ -199,7 +199,7 @@ describe('resetManagedGithubAppConfig', () => {
   test('wipes the whole row (App fields AND PAT), not a merge', async () => {
     await updateManagedGithubAppConfig({
       appId: '12345',
-      slug: 'kortix-self-host-abc',
+      slug: 'zed-self-host-abc',
       privateKey: 'PEM',
       owner: 'acme-corp',
       installationId: '987',

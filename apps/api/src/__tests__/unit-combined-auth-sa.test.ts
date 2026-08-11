@@ -9,14 +9,14 @@ import * as realSsoSync from '../iam/sso-sync';
 let secretKeyValidations: string[] = [];
 
 mock.module('../shared/crypto', () => ({
-  isAccountToken: (t: string) => t.startsWith('kortix_pat_'),
-  isServiceAccountToken: (t: string) => t.startsWith('kortix_sa_'),
-  isKortixToken: (t: string) => t.startsWith('kortix_'),
+  isAccountToken: (t: string) => t.startsWith('zed_pat_'),
+  isServiceAccountToken: (t: string) => t.startsWith('zed_sa_'),
+  isZedToken: (t: string) => t.startsWith('zed_'),
 }));
 
 mock.module('../repositories/service-accounts', () => ({
   validateServiceAccountToken: async (t: string) => {
-    if (t === 'kortix_sa_live') {
+    if (t === 'zed_sa_live') {
       return { isValid: true, serviceAccountId: 'sa-1', accountId: 'acct-1' };
     }
     return { isValid: false, error: 'Invalid service account' };
@@ -26,7 +26,7 @@ mock.module('../repositories/service-accounts', () => ({
 mock.module('../repositories/api-keys', () => ({
   validateSecretKey: async (t: string) => {
     secretKeyValidations.push(t);
-    return { isValid: false, error: 'Invalid Kortix token' };
+    return { isValid: false, error: 'Invalid Zed token' };
   },
 }));
 
@@ -93,9 +93,9 @@ describe('combinedAuth accepts service-account bearers', () => {
     secretKeyValidations = [];
   });
 
-  test('a valid kortix_sa_ token resolves to a service-account principal', async () => {
+  test('a valid zed_sa_ token resolves to a service-account principal', async () => {
     const res = await appWith(combinedAuth).request('/probe', {
-      headers: { Authorization: 'Bearer kortix_sa_live' },
+      headers: { Authorization: 'Bearer zed_sa_live' },
     });
 
     expect(res.status).toBe(200);
@@ -106,20 +106,20 @@ describe('combinedAuth accepts service-account bearers', () => {
     expect(body.iamTokenId).toBe('sa-1');
   });
 
-  test('kortix_sa_ never falls through to the generic Kortix-key validator', async () => {
+  test('zed_sa_ never falls through to the generic Zed-key validator', async () => {
     await appWith(combinedAuth).request('/probe', {
-      headers: { Authorization: 'Bearer kortix_sa_live' },
+      headers: { Authorization: 'Bearer zed_sa_live' },
     });
     await appWith(combinedAuth).request('/probe', {
-      headers: { Authorization: 'Bearer kortix_sa_bogus' },
+      headers: { Authorization: 'Bearer zed_sa_bogus' },
     });
 
     expect(secretKeyValidations).toEqual([]);
   });
 
-  test('an invalid kortix_sa_ token 401s with the service-account error, not the generic key error', async () => {
+  test('an invalid zed_sa_ token 401s with the service-account error, not the generic key error', async () => {
     const res = await appWith(combinedAuth).request('/probe', {
-      headers: { Authorization: 'Bearer kortix_sa_bogus' },
+      headers: { Authorization: 'Bearer zed_sa_bogus' },
     });
 
     expect(res.status).toBe(401);
@@ -129,10 +129,10 @@ describe('combinedAuth accepts service-account bearers', () => {
   test('supabaseAuth and combinedAuth resolve the same SA token to the same principal', async () => {
     const [a, b] = await Promise.all([
       appWith(supabaseAuth).request('/probe', {
-        headers: { Authorization: 'Bearer kortix_sa_live' },
+        headers: { Authorization: 'Bearer zed_sa_live' },
       }),
       appWith(combinedAuth).request('/probe', {
-        headers: { Authorization: 'Bearer kortix_sa_live' },
+        headers: { Authorization: 'Bearer zed_sa_live' },
       }),
     ]);
 

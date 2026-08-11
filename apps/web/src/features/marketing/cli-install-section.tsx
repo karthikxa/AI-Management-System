@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/marketing/button';
 import { useAuth } from '@/features/providers/auth-provider';
 import { trackCtaSignup } from '@/lib/analytics/gtm';
-import { KORTIX_CLI_INSTALL_COMMAND } from '@/lib/kortix-cli';
+import { ZED_CLI_INSTALL_COMMAND } from '@/lib/zed-cli';
 import { cn } from '@/lib/utils';
 import {
   ArrowUpRightIcon as ArrowUpRight,
@@ -19,13 +19,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { latestProjectPath } from '@/lib/onboarding/last-project-cookie';
 
 const terminalLines = [
-  { id: 'install', type: 'command', text: KORTIX_CLI_INSTALL_COMMAND },
-  { id: 'install-done', type: 'muted', text: '✓ Installed the Kortix CLI' },
+  { id: 'install', type: 'command', text: ZED_CLI_INSTALL_COMMAND },
+  { id: 'install-done', type: 'muted', text: '✓ Installed the Zed CLI' },
   { id: 'space-project', type: 'space', text: '' },
-  { id: 'init', type: 'command', text: 'kortix init acme-ops' },
-  { id: 'init-done', type: 'muted', text: '✓ Created kortix.yaml and .kortix/' },
+  { id: 'init', type: 'command', text: 'zed init acme-ops' },
+  { id: 'init-done', type: 'muted', text: '✓ Created zed.yaml and .zed/' },
   { id: 'space-attach', type: 'space', text: '' },
-  { id: 'attach', type: 'command', text: 'kortix sessions connect <session-id>' },
+  { id: 'attach', type: 'command', text: 'zed sessions connect <session-id>' },
   { id: 'attach-done', type: 'muted', text: '✓ Local proxy ready · opencode attach connected' },
 ] as const;
 
@@ -40,7 +40,7 @@ export function CliInstallSection() {
   }, [user]);
 
   const copyInstallCommand = useCallback(() => {
-    void navigator.clipboard.writeText(KORTIX_CLI_INSTALL_COMMAND);
+    void navigator.clipboard.writeText(ZED_CLI_INSTALL_COMMAND);
     setCopied(true);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setCopied(false), 1500);
@@ -53,16 +53,16 @@ export function CliInstallSection() {
       <Reveal>
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
           <div className="flex flex-col items-start justify-center space-y-5">
-            <Badge variant="kortix" className="rounded">
+            <Badge variant="zed" className="rounded">
               CLI
             </Badge>
             <div className="max-w-xl space-y-4">
               <h2 className="text-foreground text-3xl font-medium tracking-tight text-balance sm:text-4xl">
-                Install Kortix from your terminal.
+                Install Zed from your terminal.
               </h2>
               <p className="text-muted-foreground text-base leading-relaxed text-pretty">
                 One curl installs the CLI. From there you can create a project, launch sessions, and
-                attach your local OpenCode TUI to any Kortix sandbox.
+                attach your local OpenCode TUI to any Zed sandbox.
               </p>
             </div>
 
@@ -98,7 +98,7 @@ export function CliInstallSection() {
                 aria-label={copied ? 'Copied install command' : 'Copy install command'}
               >
                 {copied ? (
-                  <Check className="text-kortix-green size-3.5" />
+                  <Check className="text-zed-green size-3.5" />
                 ) : (
                   <Copy className="size-3.5" />
                 )}
@@ -120,7 +120,7 @@ export function CliInstallSection() {
                   >
                     {line.type === 'command' ? (
                       <>
-                        <span className="text-kortix-green">$</span> {line.text}
+                        <span className="text-zed-green">$</span> {line.text}
                       </>
                     ) : (
                       line.text

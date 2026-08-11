@@ -3,8 +3,8 @@
  * Uses shared icon keys but resolves to actual React Native components
  */
 
-import { getToolIconKey } from '@kortix/shared';
-import type { ToolIconKey } from '@kortix/shared';
+import { getToolIconKey } from '@zed/shared';
+import type { ToolIconKey } from '@zed/shared';
 import {
   Globe,
   FileEdit,

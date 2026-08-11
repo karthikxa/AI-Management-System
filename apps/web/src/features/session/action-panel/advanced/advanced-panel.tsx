@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
-import { useClearFocusedToolCall, useFocusedToolCallId } from '@/stores/kortix-computer-store';
+import { useClearFocusedToolCall, useFocusedToolCallId } from '@/stores/zed-computer-store';
 import type { MessageWithParts } from '@/ui';
 import { ActionNavigator } from '../shared/action-navigator';
 import {

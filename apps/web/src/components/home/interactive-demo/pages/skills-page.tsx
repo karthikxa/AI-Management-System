@@ -22,7 +22,7 @@ function SkillItem({ name, desc, focused }: { name: string; desc: string; focuse
       id={demoSkillId(name)}
       className={cn(
         'border-border/60 bg-card hover:bg-muted/30 flex items-start gap-2.5 rounded-md border p-2.5 transition-colors',
-        focused && 'border-kortix-green/60 bg-kortix-green/5 ring-kortix-green/40 ring-2',
+        focused && 'border-zed-green/60 bg-zed-green/5 ring-zed-green/40 ring-2',
       )}
     >
       <span className="border-border bg-muted/40 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border">

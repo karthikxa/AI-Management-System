@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
  * It was bound to the action-panel column alone, which left every detail panel
  * with no keyboard close and made the key a no-visible-op while one was up.
  * The behavior itself lives in the store (`toggleRightPanel`, covered by
- * `stores/kortix-computer-store.test.ts`); what this file pins is that the
+ * `stores/zed-computer-store.test.ts`); what this file pins is that the
  * binding calls THAT and not the column's own toggle.
  *
  * Source assertions rather than a mounted layout: `session-layout.tsx` needs the
@@ -69,7 +69,7 @@ describe('⌘I toggles the whole right side', () => {
  * (leave the page and the right side starts over).
  *
  * The store half — wiping `_detailContentBySession` in `setActiveSession` —
- * is covered by `stores/kortix-computer-store.test.ts`. Both exist on purpose:
+ * is covered by `stores/zed-computer-store.test.ts`. Both exist on purpose:
  * the store guarantees the rule even if no provider is mounted.
  */
 describe('the provider drops its detail on a session change, not on a close', () => {

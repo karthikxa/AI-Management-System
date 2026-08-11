@@ -6,12 +6,12 @@ source "${SCRIPT_DIR}/../scripts/junit.sh"
 
 # Idempotency contract: re-running the migrate step against an already-migrated
 # database must not error and must not re-apply anything. node-pg-migrate marks
-# every migration in kortix_migrations.pgmigrations and reports "No migrations
+# every migration in zed_migrations.pgmigrations and reports "No migrations
 # to run" on a second pass.
 
 junit_init "migration.idempotency"
 
-before="$(psql_query "SELECT count(*) FROM kortix_migrations.pgmigrations")"
+before="$(psql_query "SELECT count(*) FROM zed_migrations.pgmigrations")"
 
 if out="$("${SCRIPT_DIR}/../scripts/migrate-up.sh" 2>&1)"; then
   junit_case "second migrate run exits 0" pass
@@ -19,7 +19,7 @@ else
   junit_case "second migrate run exits 0" fail "re-apply errored: $(printf '%s' "${out}" | tail -3 | tr '\n' ' ')"
 fi
 
-after="$(psql_query "SELECT count(*) FROM kortix_migrations.pgmigrations")"
+after="$(psql_query "SELECT count(*) FROM zed_migrations.pgmigrations")"
 if [ "${before}" = "${after}" ]; then
   junit_case "no migrations re-applied (count stable at ${after})" pass
 else

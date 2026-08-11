@@ -1,12 +1,12 @@
-# Kortix SDK — Complete API Map
+# Zed SDK — Complete API Map
 
-The surface the `@kortix/sdk` must wrap to be the whole data layer for web + mobile + reference apps.
+The surface the `@zed/sdk` must wrap to be the whole data layer for web + mobile + reference apps.
 
 Two layers, one client:
 
 | Layer | Reached via | Owns |
 |---|---|---|
-| **Kortix REST API** (`apps/api`, `/v1/*`) | `backendApi` (Supabase bearer) | control plane — projects, session lifecycle, sandbox provisioning, git/versions, secrets, billing |
+| **Zed REST API** (`apps/api`, `/v1/*`) | `backendApi` (Supabase bearer) | control plane — projects, session lifecycle, sandbox provisioning, git/versions, secrets, billing |
 | **Session runtime** (in-sandbox daemon) | OpenCode REST through `/v1/p/{sandboxId}/8000/...` | agent runtime — messages, events, files, pty, permissions |
 
 Legend: **✅ in SDK** · **🟡 partial** (client fn in SDK, hook not) · **❌ gap** (web-local / not wrapped)
@@ -28,10 +28,10 @@ a given import path is:
 `.` is the canonical entry — everything framework-free lives there. `./react`
 and `./server` exist because React is a peer dependency and `./server` statically
 imports `node:async_hooks`, respectively. The 20 legacy subpaths
-(`@kortix/sdk/projects-client`, `/turns`, `/files`, `/session`, `/event-stream`,
+(`@zed/sdk/projects-client`, `/turns`, `/files`, `/session`, `/event-stream`,
 the zustand stores, …) are `@deprecated` aliases that still resolve — import from
 the root instead. `./internal/*` backs `apps/web`'s zustand stores and is not
-reachable from `window.Kortix`; treat it as visible implementation detail, not
+reachable from `window.Zed`; treat it as visible implementation detail, not
 designed API.
 
 ---
@@ -39,16 +39,16 @@ designed API.
 ## IN SCOPE — the agent product (what the SDK needs)
 
 ### 1. Auth / session token  ✅
-Injection seam, not an endpoint. `configureKortix({ getToken })` → Supabase token on every request; 401 retry; cache invalidation.
+Injection seam, not an endpoint. `configureZed({ getToken })` → Supabase token on every request; 401 retry; cache invalidation.
 
 ### 1b. Token validation helper (pasted-API-key UX)  ✅
-`kortix.validateToken()` → `GET /v1/accounts/me`. Never throws — resolves
+`zed.validateToken()` → `GET /v1/accounts/me`. Never throws — resolves
 `{valid: boolean, identity?: AccountIdentity, error?: ApiError}`. Built for a
 setup screen that needs to render "invalid token" inline instead of
 try/catching every call.
 
 ### 2. Projects  ✅
-| op | Kortix REST | SDK |
+| op | Zed REST | SDK |
 |---|---|---|
 | list / get / create / update | `GET/POST /v1/projects`, `GET/PUT /v1/projects/:id` | ✅ |
 | detail (config+agents+skills+files) | `GET /v1/projects/:id/detail` | ✅ |
@@ -63,7 +63,7 @@ try/catching every call.
 ### 4. Project access / IAM (project-scoped)  ✅
 `/v1/projects/:id/access` (+ invite, remove, pending-invites, access-requests approve/reject, group-grants). → `projects-client/access.ts`.
 
-### 5. Session lifecycle (Kortix side)  ✅
+### 5. Session lifecycle (Zed side)  ✅
 | op | REST |
 |---|---|
 | list / create | `GET/POST /v1/projects/:id/sessions` |
@@ -77,11 +77,11 @@ try/catching every call.
 | preview candidates (live ports) | `GET .../sessions/:sid/previews` |
 | public shares | `GET/POST/DELETE .../sessions/:sid/public-shares[/:id]` |
 
-### 5b. Token minting (CLI PATs) — Kortix-as-a-Backend-critical  ✅
+### 5b. Token minting (CLI PATs) — Zed-as-a-Backend-critical  ✅
 | op | REST | SDK |
 |---|---|---|
-| list / create / revoke (account-scoped) | `GET/POST /v1/accounts/tokens`, `DELETE /v1/accounts/tokens/:tokenId` | `projects-client/tokens.ts` ✅, facade `kortix.accounts.tokens.{list,create,revoke}` ✅ |
-| list / create / revoke (project-scoped, `KORTIX_TOKEN`) | `GET/POST /v1/projects/:id/cli-token`, `DELETE .../cli-token/:tokenId` | ✅, facade `project(id).tokens.{list,create,revoke}` ✅ |
+| list / create / revoke (account-scoped) | `GET/POST /v1/accounts/tokens`, `DELETE /v1/accounts/tokens/:tokenId` | `projects-client/tokens.ts` ✅, facade `zed.accounts.tokens.{list,create,revoke}` ✅ |
+| list / create / revoke (project-scoped, `ZED_TOKEN`) | `GET/POST /v1/projects/:id/cli-token`, `DELETE .../cli-token/:tokenId` | ✅, facade `project(id).tokens.{list,create,revoke}` ✅ |
 
 ### 6. Session runtime — OpenCode REST  ✅
 
@@ -90,7 +90,7 @@ try/catching every call.
 | op | v2 client / daemon |
 |---|---|
 | create / list / get / delete / update | `client.session.{create,list,get,delete,update}` |
-| init / summarize / abort | `client.session.summarize`, `/kortix/abort` |
+| init / summarize / abort | `client.session.summarize`, `/zed/abort` |
 | messages | `client.session.messages` → `GET /session/:id/message` |
 | **send prompt (sync / async)** | `client.session.prompt` → `POST /session/:id/prompt[_async]` |
 | parts edit / delete | `client.part.{update,delete}` |
@@ -101,7 +101,7 @@ try/catching every call.
 | status | `client.session.status` |
 
 ### 7. Models / gateway  ✅
-- runtime providers+models: `client.provider.list` → `/provider/list` (filtered to `kortix` + `opencode`)
+- runtime providers+models: `client.provider.list` → `/provider/list` (filtered to `zed` + `opencode`)
 - catalog/budget: `GET /v1/llm/models`, `GET /v1/projects/:id/llm-catalog`
 - selection + persistence: `useOpenCodeLocal`, `useModelStore` ✅
 - **gateway observability** (`/v1/projects/:id/gateway/{overview,logs,keys,budgets,series,errors}`) → client fully in SDK (`projects-client/gateway.ts`) ✅; hooks still web-local 🟡
@@ -118,14 +118,14 @@ try/catching every call.
 | MCP status/add/connect/disconnect/oauth | `client.mcp.*` | ✅ |
 
 ### 9. Terminal (PTY)  ✅
-Kortix-native (`opencode/pty.ts`), independent of the agent runtime — daemon
-`/kortix/pty` (`list/create/update/remove`) + `WS /kortix/pty/:id/connect?token=`
-→ `getKortixPtyWebSocketUrl`. Same hook names/shapes as before (`useOpenCodePtyList`,
+Zed-native (`opencode/pty.ts`), independent of the agent runtime — daemon
+`/zed/pty` (`list/create/update/remove`) + `WS /zed/pty/:id/connect?token=`
+→ `getZedPtyWebSocketUrl`. Same hook names/shapes as before (`useOpenCodePtyList`,
 `useCreatePty`, `useRemovePty`, `useUpdatePty`, `getPtyWebSocketUrl`) — only the
 transport moved off `client.pty.*`/OpenCode's own `/pty`.
 
 ### 10. Workspace files  ✅ (client) · 🟡 (hooks)
-Daemon-direct (bypasses v2 client), full 12-op client now in the SDK (`@kortix/sdk/files` → `files/client.ts`):
+Daemon-direct (bypasses v2 client), full 12-op client now in the SDK (`@zed/sdk/files` → `files/client.ts`):
 | op | daemon HTTP | SDK |
 |---|---|---|
 | list dir | `GET /file?path=` | ✅ `files.listFiles` |
@@ -138,7 +138,7 @@ Daemon-direct (bypasses v2 client), full 12-op client now in the SDK (`@kortix/s
 React hooks are still web-local (`features/files/`, + duplicated in `features/project-files/` — collapsing that twin remains open). **`useWorkspaceSearch` is alive and consumed (`features/workspace/command-palette.tsx`) — not dead.** `useLssSearch` / `useTextSearch` are already gone.
 
 ### 11. Git / versions / change-requests  🟡
-Client fns in SDK (`git-history.ts`, `change-requests.ts`), **hooks partial** (`useChangeRequests` in `@kortix/sdk/react` ✅; the rest of `features/project-files` is still web-local):
+Client fns in SDK (`git-history.ts`, `change-requests.ts`), **hooks partial** (`useChangeRequests` in `@zed/sdk/react` ✅; the rest of `features/project-files` is still web-local):
 | op | REST |
 |---|---|
 | commits / commit / diff | `GET /v1/projects/:id/commits[/:sha][/diff]` |
@@ -153,13 +153,13 @@ Client fns in SDK (`git-history.ts`, `change-requests.ts`), **hooks partial** (`
 - project Connector configuration, Connections, sharing, and policies →
   `projects-client/{connectors,policies}.ts` ✅
 - Connector data plane → `project(id).connectors.{catalog,tools,search,describe,call,uploadAttachment}` ✅
-- agent-token fallback → `kortix.connectors.{catalog,tools,search,describe,call,uploadAttachment}` ✅
+- agent-token fallback → `zed.connectors.{catalog,tools,search,describe,call,uploadAttachment}` ✅
 
 ### 13. Triggers / scheduled tasks  🟡
-`projects-client/triggers.ts` ✅ (client) ; `useProjectTriggers` now in `@kortix/sdk/react` ✅ (list + create/update/remove/fire, invalidation-wired); the web app's own `hooks/scheduled-tasks` hook hasn't migrated onto it yet.
+`projects-client/triggers.ts` ✅ (client) ; `useProjectTriggers` now in `@zed/sdk/react` ✅ (list + create/update/remove/fire, invalidation-wired); the web app's own `hooks/scheduled-tasks` hook hasn't migrated onto it yet.
 
 ### 13b. Marketplace / registry install (project-scoped)  ✅
-Installing/updating/removing a catalog item onto a project's default branch (a commit, not a runtime call) — distinct from browsing the catalog itself (client fns in `projects-client/marketplace-catalog.ts`, now also wrapped on the facade as top-level `kortix.marketplace.*` — see §13c). `projects-client/marketplace.ts` ✅; facade `project(id).marketplace.{list,install,updates,update,updateAll,remove}` and the identical `project(id).registry.{...}` alias ✅:
+Installing/updating/removing a catalog item onto a project's default branch (a commit, not a runtime call) — distinct from browsing the catalog itself (client fns in `projects-client/marketplace-catalog.ts`, now also wrapped on the facade as top-level `zed.marketplace.*` — see §13c). `projects-client/marketplace.ts` ✅; facade `project(id).marketplace.{list,install,updates,update,updateAll,remove}` and the identical `project(id).registry.{...}` alias ✅:
 | op | REST |
 |---|---|
 | install | `POST /v1/projects/:id/marketplace/install` (+ `/registry/install` alias) |
@@ -171,7 +171,7 @@ Installing/updating/removing a catalog item onto a project's default branch (a c
 ### 13c. Marketplace catalog browse (public) + sources  ✅
 Previously OUT OF SCOPE ("Marketplace catalog browsing"). Now wrapped
 end-to-end: client fns in `projects-client/marketplace-catalog.ts` are on the
-facade as `kortix.marketplace.{items, item, itemFile, marketplaces, featured,
+facade as `zed.marketplace.{items, item, itemFile, marketplaces, featured,
 sources: {list, add, remove}}` (top-level — distinct from the install-scoped
 `project(id).marketplace.*` in §13b):
 | op | REST |
@@ -196,9 +196,9 @@ value/credential. `projects-client/setup-links.ts` ✅; facade
 ### 13e. Manifest validate + git token  ✅
 Two small project-scoped mutations, added to `projects-client/projects.ts`:
 - `project(id).validateManifest(raw)` → `POST /v1/projects/:id/manifest/validate`
-  (validates a `kortix.yaml` — or legacy `kortix.toml` — manifest's raw text
+  (validates a `zed.yaml` — or legacy `zed.toml` — manifest's raw text
   server-side, format auto-resolved from the project's manifest path; same
-  schema `kortix ship`/`kortix validate`/the CR-merge gate use; always
+  schema `zed ship`/`zed validate`/the CR-merge gate use; always
   resolves with `{valid, issues}`, never throws on an invalid manifest).
 - `project(id).gitToken()` → `POST /v1/projects/:id/git-token` (mints a
   fresh scoped git push token for a *managed* project; throws/409s for BYO
@@ -206,11 +206,11 @@ Two small project-scoped mutations, added to `projects-client/projects.ts`:
 
 ### 14. Sandbox lifecycle  ✅ / 🟡
 - session-sandbox status/metrics/instances → `projects-client/{sandbox,session-sandbox}.ts` ✅
-- `GET /v1/projects/:id/{sandbox-health,sandboxes}`, snapshots, warm-pool, `GET /v1/platform/sandbox/version*` → 🟡 client in `@kortix/sdk/platform-client` ✅; hooks web-local (`hooks/platform`)
+- `GET /v1/projects/:id/{sandbox-health,sandboxes}`, snapshots, warm-pool, `GET /v1/platform/sandbox/version*` → 🟡 client in `@zed/sdk/platform-client` ✅; hooks web-local (`hooks/platform`)
 - sandbox proxy `ALL /v1/p/:sandboxId/:port/*` + preview auth/share → used by opencode-client baseURL ✅
 
 ### 15. Billing  ✅ (read + a curated mutation surface)
-Read surface — `kortix.billing.{accountState, accountStateMinimal,
+Read surface — `zed.billing.{accountState, accountStateMinimal,
 transactions, transactionsSummary, creditBreakdown, usageHistory, usageRollup,
 sessionCosts, tierConfigurations}` ✅. Hooks still web-local
 (`hooks/billing`) 🟡.
@@ -224,14 +224,14 @@ sessionCosts, tierConfigurations}` ✅. Hooks still web-local
 | tier configurations (public pricing) | `GET /v1/billing/tier-configurations` |
 
 The unified session-cost client lives in `projects-client/session-costs.ts`.
-Use `kortix.billing.sessionCosts.list(options)` for account or project
-pagination. Use `kortix.billing.sessionCosts.get(sessionId, options)` for model
+Use `zed.billing.sessionCosts.list(options)` for account or project
+pagination. Use `zed.billing.sessionCosts.get(sessionId, options)` for model
 usage and mixed LLM/compute ledger entries.
 
 Mutations — a deliberately curated subset of `apps/api/src/billing/routes`
 (Stripe-webhook-only routes and legacy/per-seat-claim internals stay
 unwired) now live in `projects-client/billing.ts` and are grouped on the
-facade as `kortix.billing.{checkout, subscription, credits}`:
+facade as `zed.billing.{checkout, subscription, credits}`:
 | group | op | REST |
 |---|---|---|
 | `checkout` | createSession | `POST /v1/billing/create-checkout-session` |
@@ -258,7 +258,7 @@ Also now wrapped: Slack file download/upload proxies
 → `POST /v1/projects/:id/channels/meet/speak`).
 
 ### 18. Account audit log (Enterprise)  ✅ (client + facade) / 🟡 (hooks)
-Event list + CSV/JSONL export + outbound SIEM webhook CRUD, gated server-side on `audit.read`/`account.write` + the account's `auditAccess` entitlement. `projects-client/audit.ts` ✅; facade `kortix.accounts.audit.{log, export, webhooks: {list,create,update,remove}}` ✅ (accountId-first, like the rest of `kortix.accounts.*`); no hooks yet (this is an admin-console surface, low priority for the agent-product hooks):
+Event list + CSV/JSONL export + outbound SIEM webhook CRUD, gated server-side on `audit.read`/`account.write` + the account's `auditAccess` entitlement. `projects-client/audit.ts` ✅; facade `zed.accounts.audit.{log, export, webhooks: {list,create,update,remove}}` ✅ (accountId-first, like the rest of `zed.accounts.*`); no hooks yet (this is an admin-console surface, low priority for the agent-product hooks):
 | op | REST |
 |---|---|
 | list events (cursor-paginated) | `GET /v1/accounts/:id/audit` |
@@ -269,7 +269,7 @@ Event list + CSV/JSONL export + outbound SIEM webhook CRUD, gated server-side on
 
 ## OUT OF SCOPE — control plane / platform admin (NOT the SDK)
 Map exists, but these belong to the platform app, not the agent SDK:
-- **Accounts IAM v2** — groups, service-accounts, SCIM tokens, SSO/SAML, session/MFA/PAT policy (`/v1/accounts/:id/iam/*`, `/scim/v2/*`). (Account **audit** — event log, export, SIEM webhooks — is now IN SCOPE, see §18; it's the one IAM-v2-adjacent surface the SDK wraps because a "Kortix as a Backend" host needs to read its own compliance trail.)
+- **Accounts IAM v2** — groups, service-accounts, SCIM tokens, SSO/SAML, session/MFA/PAT policy (`/v1/accounts/:id/iam/*`, `/scim/v2/*`). (Account **audit** — event log, export, SIEM webhooks — is now IN SCOPE, see §18; it's the one IAM-v2-adjacent surface the SDK wraps because a "Zed as a Backend" host needs to read its own compliance trail.)
 - **Admin console** — tiers, credits debit, provider analytics/distribution/fallback, warm-pool/snapshot config (`/v1/admin/*`)
 - **Ops** — `/v1/ops/overview`
 - **Tunnel** — device-auth, tunnel lifecycle, agent WS (`/v1/tunnel/*`)
@@ -286,25 +286,25 @@ Map exists, but these belong to the platform app, not the agent SDK:
 | Auth, Projects, Secrets, Access, Session lifecycle | ✅ complete |
 | Session runtime (messages/events/permissions/diff/todo) | ✅ complete |
 | Models, Agents, Commands, Tools, MCP, PTY | ✅ complete |
-| **Workspace files (read/write/status/search)** | ✅ full client in SDK (`@kortix/sdk/files`); hooks web-local |
-| Token minting (account + project-scoped CLI PATs) | ✅ complete — `projects-client/tokens.ts`, facade `kortix.accounts.tokens.*` / `project(id).tokens.*` |
+| **Workspace files (read/write/status/search)** | ✅ full client in SDK (`@zed/sdk/files`); hooks web-local |
+| Token minting (account + project-scoped CLI PATs) | ✅ complete — `projects-client/tokens.ts`, facade `zed.accounts.tokens.*` / `project(id).tokens.*` |
 | Marketplace/registry install (project-scoped) | ✅ complete — `projects-client/marketplace.ts`, facade `project(id).marketplace.*` / `.registry.*` |
-| Public marketplace catalog browse + sources | ✅ complete — `projects-client/marketplace-catalog.ts`, facade `kortix.marketplace.*` |
-| Billing mutations (checkout/subscription/credits) | ✅ complete — `projects-client/billing.ts`, facade `kortix.billing.{checkout, subscription, credits}` |
-| Unified session costs | ✅ complete — `projects-client/session-costs.ts`, facade `kortix.billing.sessionCosts.{list,get}` / `session(pid,sid).cost()` |
+| Public marketplace catalog browse + sources | ✅ complete — `projects-client/marketplace-catalog.ts`, facade `zed.marketplace.*` |
+| Billing mutations (checkout/subscription/credits) | ✅ complete — `projects-client/billing.ts`, facade `zed.billing.{checkout, subscription, credits}` |
+| Unified session costs | ✅ complete — `projects-client/session-costs.ts`, facade `zed.billing.sessionCosts.{list,get}` / `session(pid,sid).cost()` |
 | Setup links, manifest validate, git token | ✅ complete — facade `project(id).{setupLinks, validateManifest, gitToken}` |
-| Account audit (Enterprise) | ✅ client + facade (`kortix.accounts.audit.*`); 🟡 no hooks yet |
+| Account audit (Enterprise) | ✅ client + facade (`zed.accounts.audit.*`); 🟡 no hooks yet |
 | Skills create/update/delete | ❌ web-local (daemon file I/O) |
 | Git / versions / change-requests, gateway observability, sandbox-admin, billing/account-state, transcription | 🟡 client fns ✅ in SDK, hooks still web-local |
 | Channels (Slack/email/Meet installs) | 🟡 client fns ✅ in SDK, hooks still web-local — now also includes the Slack file get/upload proxy and Meet `speak` (client + facade wired; see §17) |
-| Triggers, project secrets, change-requests | 🟡→partial ✅ — `useProjectTriggers`/`useProjectSecrets`/`useChangeRequests` now in `@kortix/sdk/react`; the pre-existing web hooks for these haven't migrated onto them yet |
+| Triggers, project secrets, change-requests | 🟡→partial ✅ — `useProjectTriggers`/`useProjectSecrets`/`useChangeRequests` now in `@zed/sdk/react`; the pre-existing web hooks for these haven't migrated onto them yet |
 | Connector runtime | 🟡 web-local |
-| kortix-master daemon family (tasks/tickets/projects/milestones/credentials/services) | ✅ client in SDK (`opencode/kortix-master.ts`, re-exported via `@kortix/sdk/opencode-client`) + hooks in `@kortix/sdk/react` (`use-kortix-master.ts`); web's `hooks/kortix/*` files are now thin re-export wrappers over them. Not on the ROOT barrel (deliberate — it's an opencode-runtime surface, reached via the opencode-client subpath) |
+| zed-master daemon family (tasks/tickets/projects/milestones/credentials/services) | ✅ client in SDK (`opencode/zed-master.ts`, re-exported via `@zed/sdk/opencode-client`) + hooks in `@zed/sdk/react` (`use-zed-master.ts`); web's `hooks/zed/*` files are now thin re-export wrappers over them. Not on the ROOT barrel (deliberate — it's an opencode-runtime surface, reached via the opencode-client subpath) |
 
 ### To make the SDK the whole data layer
-1. ~~Add a `files` client to the SDK~~ — **done**: `@kortix/sdk/files` wraps the daemon `/file` + `/find` endpoints (12 ops). Remaining: move `features/files` hooks in; **collapse the `features/project-files` twin** into it (backend-parameterized).
+1. ~~Add a `files` client to the SDK~~ — **done**: `@zed/sdk/files` wraps the daemon `/file` + `/find` endpoints (12 ops). Remaining: move `features/files` hooks in; **collapse the `features/project-files` twin** into it (backend-parameterized).
 2. **Wrap the existing client fns as hooks** in the SDK: git/versions/change-requests (`useChangeRequests` ✅ done; commits/branches/diff still web-local), triggers (`useProjectTriggers` ✅ done), gateway-observability, sandbox-admin, billing/account-state.
-3. ~~Framework-free event stream~~ — **done**: `openEventStream` (`@kortix/sdk` root barrel / `@kortix/sdk/event-stream`) is a framework-free connect/reconnect/heartbeat/coalescing primitive with zero React deps, and `session.stream()` is a thin facade over it (`ensureReady()` + the session's own runtime client). `@kortix/sdk/react`'s `useOpenCodeEventStream` is now just a React wrapper around the same primitive — a non-React host (server wrapper, worker, CLI) subscribes directly via `session.stream()` or `openEventStream()`.
-4. ~~Land + export the kortix-master daemon client~~ — **done**: the client (`opencode/kortix-master.ts`) is re-exported from `@kortix/sdk/opencode-client`, and its React Query layer lives in `@kortix/sdk/react` (`use-kortix-master.ts`, with the injectable `KortixMasterIdentity` seam); apps/web's six former hook files (`hooks/kortix/*` + `hooks/use-sandbox-services.ts`) are thin wrappers over it.
+3. ~~Framework-free event stream~~ — **done**: `openEventStream` (`@zed/sdk` root barrel / `@zed/sdk/event-stream`) is a framework-free connect/reconnect/heartbeat/coalescing primitive with zero React deps, and `session.stream()` is a thin facade over it (`ensureReady()` + the session's own runtime client). `@zed/sdk/react`'s `useOpenCodeEventStream` is now just a React wrapper around the same primitive — a non-React host (server wrapper, worker, CLI) subscribes directly via `session.stream()` or `openEventStream()`.
+4. ~~Land + export the zed-master daemon client~~ — **done**: the client (`opencode/zed-master.ts`) is re-exported from `@zed/sdk/opencode-client`, and its React Query layer lives in `@zed/sdk/react` (`use-zed-master.ts`, with the injectable `ZedMasterIdentity` seam); apps/web's six former hook files (`hooks/zed/*` + `hooks/use-sandbox-services.ts`) are thin wrappers over it.
 5. **Mobile adoption** — the SDK is the shared implementation in principle, but the mobile app hasn't migrated its data layer onto it yet.
 6. Everything else (the agent loop) is already SDK — that's the verified path.

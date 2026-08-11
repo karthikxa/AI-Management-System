@@ -1,23 +1,23 @@
-# Kortix End-to-End Flows
+# Zed End-to-End Flows
 
-Single source of truth for the e2e suite. Every flow the platform supports, start→finish, enumerated. Each step is `METHOD /path → expected`. CLI steps are `kortix …`. Negatives (`→ 4xx`) are part of the flow, not optional. Each flow has a stable ID (`PROJ-3`, `IAM-7`) so a test maps 1:1 to a line here.
+Single source of truth for the e2e suite. Every flow the platform supports, start→finish, enumerated. Each step is `METHOD /path → expected`. CLI steps are `zed …`. Negatives (`→ 4xx`) are part of the flow, not optional. Each flow has a stable ID (`PROJ-3`, `IAM-7`) so a test maps 1:1 to a line here.
 
-Stack: TypeScript/Hono on Bun (`apps/api`), Drizzle→Postgres (`kortix` schema), Next.js (`apps/web`), `kortix` CLI (`apps/cli`). **No RLS** — all authz is app-layer via the IAM engine, so every assertion must go through the HTTP API. Sessions use OpenCode REST inside an ephemeral per-session sandbox.
+Stack: TypeScript/Hono on Bun (`apps/api`), Drizzle→Postgres (`zed` schema), Next.js (`apps/web`), `zed` CLI (`apps/cli`). **No RLS** — all authz is app-layer via the IAM engine, so every assertion must go through the HTTP API. Sessions use OpenCode REST inside an ephemeral per-session sandbox.
 
-> **Audited** against source on branch `newer-kortix` (every route/gate/status below confirmed at `file:line`). Coverage/dead-code tooling for running this suite is §22.
+> **Audited** against source on branch `newer-zed` (every route/gate/status below confirmed at `file:line`). Coverage/dead-code tooling for running this suite is §22.
 
 ---
 
 ## 0. Conventions
 
-- `$API` = `<host>/v1` (local `http://localhost:13738/v1`, cloud `https://api.kortix.com/v1`). **Every route is `/v1`-prefixed.** Two unprefixed health routes exist (`/health`, `/v1/health`).
+- `$API` = `<host>/v1` (local `http://localhost:13738/v1`, cloud `https://api.zed.com/v1`). **Every route is `/v1`-prefixed.** Two unprefixed health routes exist (`/health`, `/v1/health`).
 - `$WEB` = dashboard origin (`api.` stripped from host; localhost→`:3000`/`:13737`).
 - Auth header: `Authorization: Bearer <token>`. Token types:
   - **JWT** — Supabase user JWT (humans). Verified locally via JWKS.
-  - **PAT** — `kortix_pat_…` CLI personal access token (`account_tokens`). Carries real `userId`. May be **project-scoped** (`projectId` set).
-  - **APIKEY** — `kortix_` / `kortix_sb_` (`api_keys`). Account/sandbox identity; `accountId→userId` mapped. Used by sandbox→router (search/LLM/proxy).
+  - **PAT** — `zed_pat_…` CLI personal access token (`account_tokens`). Carries real `userId`. May be **project-scoped** (`projectId` set).
+  - **APIKEY** — `zed_` / `zed_sb_` (`api_keys`). Account/sandbox identity; `accountId→userId` mapped. Used by sandbox→router (search/LLM/proxy).
   - **COOKIE** — `__preview_session`, scoped `/v1/p/`, 1h.
-- Auth middlewares: `supabaseAuth` (JWT or PAT) on `/v1/accounts/*`, `/v1/projects/*`, `/v1/platform/api-keys`. `combinedAuth` (JWT|token|PAT|cookie|`X-Kortix-Token`|`?token=`) on `/v1/p/*`, `/v1/servers/*`, `/v1/tunnel/*`. `apiKeyAuth` (kortix_ only) on `/v1/router/*`. `requireAdmin` (platform role) on `/v1/ops/*`. Webhooks = HMAC, no auth middleware.
+- Auth middlewares: `supabaseAuth` (JWT or PAT) on `/v1/accounts/*`, `/v1/projects/*`, `/v1/platform/api-keys`. `combinedAuth` (JWT|token|PAT|cookie|`X-Zed-Token`|`?token=`) on `/v1/p/*`, `/v1/servers/*`, `/v1/tunnel/*`. `apiKeyAuth` (zed_ only) on `/v1/router/*`. `requireAdmin` (platform role) on `/v1/ops/*`. Webhooks = HMAC, no auth middleware.
 - Project authz gate `loadProjectForUser(c, id, level)`: `read`→`PROJECT_READ` (any project role), `write`→`PROJECT_WRITE` (editor/manager), `manage`→`PROJECT_DELETE` (manager only). Account owner/admin get implicit `manager` on every project.
 
 ### Principals (fixtures every run must provision)
@@ -35,23 +35,23 @@ Stack: TypeScript/Hono on Bun (`apps/api`), Drizzle→Postgres (`kortix` schema)
 | `NONMEMBER`                       | user in a different account                          | 403 `not_a_member` / 404                                                                                                                                                                                                                                                                       |
 | `PAT_ACCT`                        | account-scoped PAT minted by OWNER                   | inherits minter unless narrowed                                                                                                                                                                                                                                                                |
 | `PAT_PROJ`                        | project-scoped PAT (minted per session)              | hard-fenced to one project                                                                                                                                                                                                                                                                     |
-| `APIKEY`                          | `kortix_` api key                                    | router/proxy + sandbox identity                                                                                                                                                                                                                                                                |
+| `APIKEY`                          | `zed_` api key                                    | router/proxy + sandbox identity                                                                                                                                                                                                                                                                |
 | `ANON`                            | no Authorization header                              | 401 on protected routes                                                                                                                                                                                                                                                                        |
 
 ### System / health (public unless noted)
 
-`SYS-1` `GET /health` · `GET /v1/health` → 200 `{status:"ok",service:"kortix-api"}`.
+`SYS-1` `GET /health` · `GET /v1/health` → 200 `{status:"ok",service:"zed-api"}`.
 `SYS-2` `GET /v1/system/status` → maintenance/banner stub. `POST /v1/prewarm` → `{success:true}`.
 `SYS-3` `GET /v1/user-roles` (`supabaseAuth`) → `{isAdmin, role}` (platform role).
 `SYS-4` `GET /v1/router/health` → router health (no auth).
 `SYS-5` 404 shape — `GET /v1/nonexistent` → `{error:true,message:"Not found",status:404}`. Every state-changing `/v1/*` passes `auditStateChangingRequest`.
 `SYS-6` `GET /v1/system/maintenance` → public read of the maintenance config (banner + maintenance page); default `{level:"none",…}`. Write is admin-only (`ADM-6`).
-`SYS-7` `POST /v1/system/demo-request` → public lead capture for the marketing "book a demo" form; invalid email → 400; valid → 200 `{ok:true, emailed}` (emails `DEMO_LEAD_NOTIFY_EMAIL` via the transactional-email provider chain (SES → Resend → Mailtrap); `emailed:false` when no provider is configured — graceful skip). IP rate-limited (`KORTIX_DEMO_REQUEST_REQS_PER_MIN`, 429 on flood).
+`SYS-7` `POST /v1/system/demo-request` → public lead capture for the marketing "book a demo" form; invalid email → 400; valid → 200 `{ok:true, emailed}` (emails `DEMO_LEAD_NOTIFY_EMAIL` via the transactional-email provider chain (SES → Resend → Mailtrap); `emailed:false` when no provider is configured — graceful skip). IP rate-limited (`ZED_DEMO_REQUEST_REQS_PER_MIN`, 429 on flood).
 `DOCS-1` `GET /v1/openapi.json` → public OpenAPI 3.1 spec (typed via `@hono/zod-openapi`). `GET /v1/docs` → public Scalar API reference (HTML).
 
-### Kortix system skills (`/v1/skills`, `combinedAuth`)
+### Zed system skills (`/v1/skills`, `combinedAuth`)
 
-The kortix-managed `kortix-*` skills — the markdown that tells an agent how Kortix itself works — served straight out of `@kortix/starter`, so the text always matches the running deploy. This is what lets an agent in any harness drive Kortix with nothing but the `kortix` binary and a token. Authed (any Kortix token or Supabase JWT), never anonymous; content is identical for every caller (no account scoping).
+The zed-managed `zed-*` skills — the markdown that tells an agent how Zed itself works — served straight out of `@zed/starter`, so the text always matches the running deploy. This is what lets an agent in any harness drive Zed with nothing but the `zed` binary and a token. Authed (any Zed token or Supabase JWT), never anonymous; content is identical for every caller (no account scoping).
 
 `SKILL-1` `GET /v1/skills` → auth → 200 `{skills:[{name,description,referenceCount,bytes}],count}`. Bodies are NOT included — the frontmatter `description` is parsed server-side so an agent can choose without downloading ~330 KB of markdown. `ANON` → 401.
 `SKILL-2` `GET /v1/skills/:name [?full=1]` → auth → 200 `{name,description,body,references:[{path,bytes,content?}]}`; `body` is the complete SKILL.md. `?full=1` inlines every reference file. Unknown/non-managed name → 404. `ANON` → 401.
@@ -65,12 +65,12 @@ The single flow that, if green, proves the platform end-to-end. Each substep lin
 
 `GOLD-1`
 
-1. `kortix init <name> -y` → creates a fresh standalone `<name>/` directory, writes `kortix.yaml` + `.kortix/`, wires agent skill, and runs `git init -b main`. No API call. (§2)
-2. `kortix login --token $PAT` → `GET /accounts/me` → 200, host saved active. (§2)
-3. `kortix ship -y` (no `origin` present) → managed path: `POST /projects/provision` → 201 `{push_token, repo_id, repo_url}`; `git remote add origin <managed GitHub URL>`; commit; token-header push; writes `.kortix/link.json`. (§14)
+1. `zed init <name> -y` → creates a fresh standalone `<name>/` directory, writes `zed.yaml` + `.zed/`, wires agent skill, and runs `git init -b main`. No API call. (§2)
+2. `zed login --token $PAT` → `GET /accounts/me` → 200, host saved active. (§2)
+3. `zed ship -y` (no `origin` present) → managed path: `POST /projects/provision` → 201 `{push_token, repo_id, repo_url}`; `git remote add origin <managed GitHub URL>`; commit; token-header push; writes `.zed/link.json`. (§14)
 4. Poll `GET /projects/:id/snapshots` → wait for a `ready` snapshot. (§4)
-5. `kortix secrets set STRIPE_API_KEY=sk_live_…` → `POST /projects/:id/secrets` → 200. (§6)
-6. `kortix sessions new -p "add a README"` → `POST /projects/:id/sessions` → 201 status `provisioning`; branch `<sessionId>` created. (§7)
+5. `zed secrets set STRIPE_API_KEY=sk_live_…` → `POST /projects/:id/secrets` → 200. (§6)
+6. `zed sessions new -p "add a README"` → `POST /projects/:id/sessions` → 201 status `provisioning`; branch `<sessionId>` created. (§7)
 7. Poll `GET /projects/:id/sessions/:sid/sandbox` → status `provisioning`→`active`. (§8)
 8. `POST /p/<sandboxId>/8000/session` then `POST /p/<sandboxId>/8000/session/<ocId>/prompt_async` → 204; subscribe `GET /p/<sandboxId>/8000/event` (SSE) → see message deltas; agent commits to branch. (§9)
 9. `POST /projects/:id/change-requests {head_ref:<sessionId>, title}` → 201; `GET …/:crId/merge-preview` → mergeable; `POST …/:crId/merge` → 200 status `merged`. (§11)
@@ -80,18 +80,18 @@ The single flow that, if green, proves the platform end-to-end. Each substep lin
 
 ## 2. CLI — local + auth (no/low API)
 
-`INIT-1` `kortix init <name> -y` → fresh standalone `<name>/` with `kortix.yaml` + `.kortix/` (Dockerfile, `.kortix/opencode/…`, canonical skill), agent wiring, and `git init -b main`. **Zero API calls.** Exit 0.
-`INIT-2` `kortix init <name>` when `<name>/` already exists and is non-empty → exit 1 (refuses).
-`INIT-3` `kortix init <name> --primary opencode --agents claude,cursor -y` → chosen agents wired via symlinks (native dir → OpenCode config) + `AGENTS.md` for Codex/Cursor; no `.cursor` rule file; unselected agents skipped.
-`INIT-4` `kortix init <name> --no-git` → scaffold created with no repository.
-`CREATE-1` bare `kortix <name>` is an unknown command → exit 2, explains `kortix init <name>`, and never creates a directory. Scaffolding is explicit-only so mistyped commands cannot mutate the filesystem.
-`LOGIN-1` `kortix login --token kortix_pat_…` → validate `kortix_pat_` prefix → `GET /accounts/me` → 200 → host saved + active in `~/.config/kortix/config.json` (mode 0600).
-`LOGIN-2` `kortix login` (browser) → spins one-shot `127.0.0.1:<port>` callback with 32-byte `state`, opens `$WEB/cli/authorize?callback=…&state=…`; dashboard POSTs `{state,token}`; state-mismatch or non-`kortix_pat_` → rejected; valid → `GET /accounts/me` → saved.
-`LOGIN-3` `kortix login --token <bad>` → `GET /accounts/me` 401 → "token rejected", exit 1.
+`INIT-1` `zed init <name> -y` → fresh standalone `<name>/` with `zed.yaml` + `.zed/` (Dockerfile, `.zed/opencode/…`, canonical skill), agent wiring, and `git init -b main`. **Zero API calls.** Exit 0.
+`INIT-2` `zed init <name>` when `<name>/` already exists and is non-empty → exit 1 (refuses).
+`INIT-3` `zed init <name> --primary opencode --agents claude,cursor -y` → chosen agents wired via symlinks (native dir → OpenCode config) + `AGENTS.md` for Codex/Cursor; no `.cursor` rule file; unselected agents skipped.
+`INIT-4` `zed init <name> --no-git` → scaffold created with no repository.
+`CREATE-1` bare `zed <name>` is an unknown command → exit 2, explains `zed init <name>`, and never creates a directory. Scaffolding is explicit-only so mistyped commands cannot mutate the filesystem.
+`LOGIN-1` `zed login --token zed_pat_…` → validate `zed_pat_` prefix → `GET /accounts/me` → 200 → host saved + active in `~/.config/zed/config.json` (mode 0600).
+`LOGIN-2` `zed login` (browser) → spins one-shot `127.0.0.1:<port>` callback with 32-byte `state`, opens `$WEB/cli/authorize?callback=…&state=…`; dashboard POSTs `{state,token}`; state-mismatch or non-`zed_pat_` → rejected; valid → `GET /accounts/me` → saved.
+`LOGIN-3` `zed login --token <bad>` → `GET /accounts/me` 401 → "token rejected", exit 1.
 `LOGIN-4` already-logged-in host, no flags → no-op.
-`WHOAMI-1` `kortix whoami` → `GET /accounts/me` → prints email/user_id/active account/role. 401 → re-login prompt.
-`LOGOUT-1` `kortix logout` → removes host creds; if active, switches to next host or deletes config. No API.
-`HOSTS-1..6` `kortix hosts ls|use|add|rm|info|current` → config-only; `add --login` delegates to LOGIN; `rm` guards removing last active host.
+`WHOAMI-1` `zed whoami` → `GET /accounts/me` → prints email/user_id/active account/role. 401 → re-login prompt.
+`LOGOUT-1` `zed logout` → removes host creds; if active, switches to next host or deletes config. No API.
+`HOSTS-1..6` `zed hosts ls|use|add|rm|info|current` → config-only; `add --login` delegates to LOGIN; `rm` guards removing last active host.
 
 ---
 
@@ -178,7 +178,7 @@ The human-in-the-loop surface an agent's write/destructive tool calls gate on, p
 `IAM-28` `POST /projects/:id/access-requests/:rid/approve {role?}` / `.../reject` (`project.members.manage` — stricter than plain `manage`/`project.write`, so an editor without members-manage → 403) → 200 grants the project role (`ensureOrgMembership` + `grantProjectRole`) and marks the request `approved`/`rejected`; invalid `role` → 400; already-reviewed → 409; unknown request id → 404.
 `IAM-29` `GET /projects/:id/approvals` (manager-only inbox of unresolved `pending_approval` connector actions) → 200 `{count,approvals}`; out-of-range `limit` → 400; non-manager with no grant → 403. `GET /projects/:id/approvals/needs-input` (`read` — any project member) → 200 `{total,sessions}`; a manager sees every session's pending count, a non-manager only their own launched sessions; non-member → 403.
 `IAM-30` `POST /projects/:id/approvals/:executionId {decision:"approve"|"deny",scope?}` (manager OR the session launcher) → resolves a pending connector action atomically (TOCTOU-safe); malformed execution id → 400; invalid `decision` → 400 (validated before the row lookup); unknown execution id → 404; non-project-member → 403; already-resolved → 409 (happy-path resolve of a REAL pending row needs a live governed connector call from an agent session — not black-box reproducible here, same constraint as `SESS-11`).
-`IAM-31` `PUT /projects/:id/agents/:agentName/scope {env?,connectors?}` (`manage`) — writes the `[[agents]].env`/`.connectors` allowlists into `kortix.yaml` (or legacy `kortix.toml`); empty body (`nothing_to_update`) → 400; malformed grant set → 400; unknown agent name → 404 (`agent_not_found`); caller with no project grant → 403.
+`IAM-31` `PUT /projects/:id/agents/:agentName/scope {env?,connectors?}` (`manage`) — writes the `[[agents]].env`/`.connectors` allowlists into `zed.yaml` (or legacy `zed.toml`); empty body (`nothing_to_update`) → 400; malformed grant set → 400; unknown agent name → 404 (`agent_not_found`); caller with no project grant → 403.
 `IAM-32` `GET/PUT /accounts/:id/iam/enterprise-demo {enabled}` — the Enterprise-preview flag, fail-closed/default-off and deliberately NOT behind `requireEntitlement`. **The two verbs have different auth.** `GET` stays `account.read`, so the account page can render the state: OWNER → 200 `{enabled}`, plain `MEMBER` → 200 `{enabled}`, `NONMEMBER` → 403. `PUT` is **platform-admin-only** (`isPlatformAdmin`, no account-membership check — an operator is normally not a member of the account they enable): the account **OWNER**, despite holding `account.write`, → **403 `{code:"admin_required"}`** and the flag is unchanged; a **platform admin** → 200 `{enabled}`; non-boolean `enabled` → 400 (validated after the admin check, so a non-admin still gets 403 for a bad body). Enabling the preview used to be self-serve, which made an Enterprise entitlement something any account member could grant themselves; it is an operator decision now, normally taken from the admin console (`ADM-17`), which writes the same `credit_accounts.demo_enterprise` column this GET reads.
 `IAM-33` `POST /accounts/:id/iam/sso/provider/from-metadata {metadata_xml|metadata_url,name,primary_domain,domains?}` (`account.write` + `sso` entitlement) — self-serve SAML IdP registration via the Supabase auth admin API; non-Enterprise account → 402 `{code:"entitlement_required",entitlement:"sso"}` (the platform admin enabling `enterprise-demo` above unlocks it for the same account); missing name/invalid domain → 400; neither `metadata_xml` nor `metadata_url` → 400 (or 501 if the deployment has no `SUPABASE_SERVICE_ROLE_KEY`); existing provider → 409; NONMEMBER → 403.
 `IAM-34` `GET /approval-links/:token` requires a signed-in user before resolving the token. ANON → 401. An authenticated caller with an invalid token → 404 without exposing project or execution data.
@@ -194,14 +194,14 @@ DB `projects` (`status active|archived`, unique `(account_id, repo_url)`). Soft 
 `PROJ-3` `POST /projects/provision {name,provider?:github}` (managed) → `PROJECT_CREATE` → 201 `{push_token,repo_id,repo_url}`. Unconfigured managed GitHub backend → 503.
 `PROJ-4` `POST /projects/create-repo {name,private?}` (new GitHub repo) → `PROJECT_CREATE` → 201; no account GitHub App install → 409 + `install_url`; auto-dedupes name collision.
 `PROJ-5` `GET /projects/:id` → `read` → 200 (bumps `last_opened_at`); archived → 404; `NONMEMBER` → 403.
-`PROJ-6` `GET /projects/:id/detail` → `read` → 200 project + parsed `kortix.yaml` (agents/skills/env) + file list.
+`PROJ-6` `GET /projects/:id/detail` → `read` → 200 project + parsed `zed.yaml` (agents/skills/env) + file list.
 `PROJ-7` `PATCH /projects/:id {name,default_branch,manifest_path}` → `manage` (M_MANAGER/OWNER/ADMIN) → 200; M_EDITOR/M_VIEWER → 403.
 `PROJ-8` `DELETE /projects/:id` → `manage` → 200 status `archived`; M_EDITOR → 403.
 
 ### Project access (membership)
 
 `PACC-1` `GET /projects/:id/access` → `read` → members + effective project roles.
-`PACC-2` `POST /projects/:id/access/invite {email,role}` → `manage`. **Existing Kortix user → 200** — `ensureOrgMembership` auto-adds them to the org as `member` then grants the project role (account-manager target → implicit access, `project_role:null`). **Email with no Kortix account yet → 201 `{status:"invited", invite_id, invite_url, project_role}`** — an account invitation with a `bootstrap_grant` is created/merged idempotently so they land on the project at signup. Missing email / bad role → 400; non-account-member caller → 403 (`loadProjectForUser` — 404 only when the project row is missing/archived).
+`PACC-2` `POST /projects/:id/access/invite {email,role}` → `manage`. **Existing Zed user → 200** — `ensureOrgMembership` auto-adds them to the org as `member` then grants the project role (account-manager target → implicit access, `project_role:null`). **Email with no Zed account yet → 201 `{status:"invited", invite_id, invite_url, project_role}`** — an account invitation with a `bootstrap_grant` is created/merged idempotently so they land on the project at signup. Missing email / bad role → 400; non-account-member caller → 403 (`loadProjectForUser` — 404 only when the project row is missing/archived).
 `PACC-3` `PUT /projects/:id/access/:userId {role}` → `manage`.
 `PACC-4` `DELETE /projects/:id/access/:userId` → `manage`.
 `PACC-7` `GET/POST/DELETE /projects/:id/resource-grants[/:grantId]` → manager-only per-resource scoping. **AGENT-ONLY (resource-model simplification): `agent` is the only member/department-scopable resource** — assigning an agent lets the assignee USE it and inherit its declared skills/connectors/secrets (to USE, not edit; editing needs the editor role). A POST with `resource_type=skill` or `secret` → **400** (agent-only; the guard runs before any config/DB load, so no existing resource is needed). Reading/listing/revoking pre-existing skill/secret grant rows still works (back-compat), but none can be CREATED. GET lists grantable resources (`$.resources.agents`) + existing grants. POST `resource_type=agent` with a real agent id + member/group principal → 201; unknown/invalid `resource_type` (e.g. `database`) → 400; invalid/foreign principal → 400/404; deleting unknown grant → 404.
@@ -212,9 +212,9 @@ DB `projects` (`status active|archived`, unique `(account_id, repo_url)`). Soft 
 
 DB `project_sessions` (`status queued|branching|provisioning|running|stopped|failed|completed`, unique `(project_id, branch_name)`). Branch name = `session_id`.
 
-`SESS-1` `POST /projects/:id/sessions {agent_name?,initial_prompt?,base_ref?,provider?,name?,session_id?,branch_already_created?,runtime_context?}` → `session` (any project member, **M_VIEWER included** — viewer is the base usable role) → 201 status `provisioning` (fire-and-forget sandbox). `runtime_context` is an optional non-secret scalar map (max 64 entries / 16 KiB UTF-8 JSON; lower-case semantic keys only; no credential-like keys); it is stored outside user-editable session metadata and restored into every replacement runtime as the single server-owned `KORTIX_SESSION_CONTEXT` JSON variable. Nested/oversize/reserved/credential-shaped input → 400 before session persistence or provisioning; raw env/MCP fields are unknown and rejected. MEMBER with no project grant / NONMEMBER → 403. (An invalid `provider` for an allowed caller → 400, proving the role gate passed before provider validation.)
+`SESS-1` `POST /projects/:id/sessions {agent_name?,initial_prompt?,base_ref?,provider?,name?,session_id?,branch_already_created?,runtime_context?}` → `session` (any project member, **M_VIEWER included** — viewer is the base usable role) → 201 status `provisioning` (fire-and-forget sandbox). `runtime_context` is an optional non-secret scalar map (max 64 entries / 16 KiB UTF-8 JSON; lower-case semantic keys only; no credential-like keys); it is stored outside user-editable session metadata and restored into every replacement runtime as the single server-owned `ZED_SESSION_CONTEXT` JSON variable. Nested/oversize/reserved/credential-shaped input → 400 before session persistence or provisioning; raw env/MCP fields are unknown and rejected. MEMBER with no project grant / NONMEMBER → 403. (An invalid `provider` for an allowed caller → 400, proving the role gate passed before provider validation.)
 `SESS-2` concurrency cap — Nth session over tier cap → **429** + `X-RateLimit-Limit/-Remaining` headers.
-`SESS-3` CLI client-branch optimization — `kortix sessions new`: if server can't self-create a branch through its configured Git credentials AND local `origin` == `project.repo_url`, CLI mints uuid, `git push origin HEAD:refs/heads/<uuid>`, then posts `session_id`+`branch_already_created:true`+`base_ref`.
+`SESS-3` CLI client-branch optimization — `zed sessions new`: if server can't self-create a branch through its configured Git credentials AND local `origin` == `project.repo_url`, CLI mints uuid, `git push origin HEAD:refs/heads/<uuid>`, then posts `session_id`+`branch_already_created:true`+`base_ref`.
 `SESS-4` `GET /projects/:id/sessions` → `read` → list (updatedAt desc).
 `SESS-5` `GET /projects/:id/sessions/:sid` → `read` → 200; non-uuid `sid` → 400.
 `SESS-6` `PATCH /projects/:id/sessions/:sid {name?,metadata?}` → `session` (any project member, M_VIEWER included); attempting `status`/`sandbox_url`/`error`/`opencode_session_id` → 400 (server-managed); any other field → 400 (not user-editable). `name` sets a sticky USER override stored in `metadata.custom_name` (NOT clobbered by the server-side OpenCode title mirror, which only writes the auto title `metadata.name` during session reads); `name:""`/null clears it. Response `name` = resolved display (`custom_name ?? metadata.name`); `custom_name` exposed separately (authoritative override or null).
@@ -234,7 +234,7 @@ DB `project_sessions` (`status queued|branching|provisioning|running|stopped|fai
 
 ## 8. Sandbox lifecycle + snapshots
 
-`SNAP-1` `GET /projects/:id/snapshots` → `read` → list `kortix-snap-…` images per baseRef. **Session boot requires a `ready` snapshot of baseRef** (no shared fallback → session `failed` if none).
+`SNAP-1` `GET /projects/:id/snapshots` → `read` → list `zed-snap-…` images per baseRef. **Session boot requires a `ready` snapshot of baseRef** (no shared fallback → session `failed` if none).
 `SNAP-2` `POST /projects/:id/snapshots/rebuild` → **`manage` AND account `ACCOUNT_WRITE` (owner/admin)** → rebuild image. A project `manager` who is not owner/admin → 403; M_EDITOR → 403.
 `SBX-1` sandbox create/start = implicit on session create (`provisionSessionSandbox`); no standalone endpoint.
 `SBX-2` sandbox manual stop = `SESS-12` (pauses in place, resumable); destructive teardown = session `DELETE` (`SESS-7`); restart = `SESS-9`; status read = `SESS-8`.
@@ -243,7 +243,7 @@ DB `project_sessions` (`status queued|branching|provisioning|running|stopped|fai
 
 ## 9. Agent run (OpenCode via preview proxy)
 
-All under `/p/:sandboxId/:port/*` (`combinedAuth` + rate-limit). `:sandboxId` = `external_id` (Daytona) / container name (local). `:port` = `8000` for OpenCode. Auth via header / `X-Kortix-Token` / `?token=` / `__preview_session` cookie.
+All under `/p/:sandboxId/:port/*` (`combinedAuth` + rate-limit). `:sandboxId` = `external_id` (Daytona) / container name (local). `:port` = `8000` for OpenCode. Auth via header / `X-Zed-Token` / `?token=` / `__preview_session` cookie.
 
 `PRX-1` `POST /p/auth` (JWT or token) → 200 sets `__preview_session` cookie (1h). Invalid token → 401.
 `PRX-2` `POST /p/share` → `combinedAuth` → 201 share link; `GET /p/share` → list; `DELETE /p/share/:token` → revoke. Shared link grants scoped preview access.
@@ -287,7 +287,7 @@ DB `change_requests` (per-project `number`, `status open|merged|closed`).
 `CR-7` `POST …/:crId/merge {message?}` → **`write` required** → 200 status `merged` + sha; not-open → 409.
 `CR-8` `POST …/:crId/close` · `POST …/:crId/reopen` → `write`.
 `CR-8b` `POST …/:crId/request-changes {feedback}` → **`write` required** → 200 `{change_request, delivering}` — persists the note under CR metadata `requested_changes` + delivers it to the origin session's agent (Review Center "request changes"). Missing `feedback` → 400; not-open → 409.
-`CR-9` CLI mirror: `kortix cr ls|show|diff|open|merge|close|reopen` (reads `KORTIX_PROJECT_ID` inside sandbox).
+`CR-9` CLI mirror: `zed cr ls|show|diff|open|merge|close|reopen` (reads `ZED_PROJECT_ID` inside sandbox).
 `CR-10` response envelopes (assert shape): list → `{change_requests:[…]}`, get → `{change_request:{…}}`, merge → `{change_request, merge}`. (Project DELETE returns `{ok:true}`, not an echoed status.)
 
 ---
@@ -305,7 +305,7 @@ DB `review_items` (per-project; `kind change|approval|output|decision|batch`, `s
 
 ---
 
-## 12. Triggers (cron + webhook; source of truth = `kortix.yaml`)
+## 12. Triggers (cron + webhook; source of truth = `zed.yaml`)
 
 Specs in `[[triggers]]`; CRUD commits the manifest; runtime `last_fired_at` in `project_trigger_runtime`. Types: `cron`, `webhook` only.
 
@@ -314,8 +314,8 @@ Specs in `[[triggers]]`; CRUD commits the manifest; runtime `last_fired_at` in `
 `TRG-3` `PATCH /projects/:id/triggers/:slug` (e.g. `{enabled:false}`) → `manage`.
 `TRG-4` `DELETE /projects/:id/triggers/:slug` → `manage` (also drops runtime row).
 `TRG-5` `POST /projects/:id/triggers/:slug/fire` → `manage` → manual fire → 202 `{status:fired,session_id}`; under backpressure → 202 `{status:queued,reason}`.
-`TRG-6` cron scheduler — global `setInterval` (default 60s), sweeps ≤200 active projects; due = `nextCronRun(cron,lastFired,tz) ≤ now`; **marks fired BEFORE firing** (no double-spawn per slot). Disabled via `KORTIX_TRIGGER_SCHEDULER_ENABLED=false`.
-`TRG-7` webhook fire — `POST /webhooks/projects/:id/:slug` (**public, HMAC**). Sig header `X-Kortix-Signature` or `X-Hub-Signature-256` (`sha256=` stripped), HMAC-SHA256 over raw body vs `project_secrets[secret_env]`, constant-time. Valid → 202 fired/queued; malformed UUID/slug → 400; unknown project → 404; bad sig → 401; missing secret → 409; unknown/disabled/non-webhook trigger → 404; fire failure → 500.
+`TRG-6` cron scheduler — global `setInterval` (default 60s), sweeps ≤200 active projects; due = `nextCronRun(cron,lastFired,tz) ≤ now`; **marks fired BEFORE firing** (no double-spawn per slot). Disabled via `ZED_TRIGGER_SCHEDULER_ENABLED=false`.
+`TRG-7` webhook fire — `POST /webhooks/projects/:id/:slug` (**public, HMAC**). Sig header `X-Zed-Signature` or `X-Hub-Signature-256` (`sha256=` stripped), HMAC-SHA256 over raw body vs `project_secrets[secret_env]`, constant-time. Valid → 202 fired/queued; malformed UUID/slug → 400; unknown project → 404; bad sig → 401; missing secret → 409; unknown/disabled/non-webhook trigger → 404; fire failure → 500.
 `TRG-8` fire→run — `fireGitTrigger` → actor = account's first `owner` (no owner → silent fail), `createProjectSession(enforceAccountCap:false, visibility:'project', metadata.trigger_*)` — trigger sessions are project-visible (any project member sees them in `GET /sessions`), not private to the stand-in actor. Backpressure: provisioning sessions ≥3 OR account at tier cap → queued.
 `TRG-9` **No inbound GitHub event webhook exists.** Simulate "GitHub Actions"-style automation as a generic `webhook` trigger; a GitHub repo webhook can drive it if its secret == `secret_env` (via `X-Hub-Signature-256`).
 `TRG-10` `GET /projects/:id/triggers` leaf gate — a member bound to a custom (Enterprise) project role granting `project.read` but NOT `project.trigger.read` loads the project yet is rejected 403 at `GET /triggers` (the `assertProjectCapability(project.trigger.read)` fires after the read passes); a floor `user` member (built-in role carries `project.trigger.read`) still gets 200. Scoped-agent-token variant proven at the API layer in `integration-project-read-leaf-gates-http.test.ts`.
@@ -329,23 +329,23 @@ Specs in `[[triggers]]`; CRUD commits the manifest; runtime `last_fired_at` in `
 
 Tokens stored as encrypted project secrets; webhooks public + signature-gated.
 
-`CHN-1` `kortix channels connect --bot-token xoxb-… --signing-secret …` (manual/BYO mode) → validates `xoxb-` via `auth.test` → `POST /projects/:id/channels/slack/connect` (`manage`) → 200, prints webhook `$API/webhooks/slack/:id`.
-`CHN-1b` `kortix channels connect` (no creds) → `GET /projects/:id/channels/slack/mode` (`read`) → `{oauth_available, install_url}`; when available the CLI prints the pre-signed one-click "Add to Slack" URL (signed `state`, 10-min TTL — same flow as CHN-7) instead of manual mode.
+`CHN-1` `zed channels connect --bot-token xoxb-… --signing-secret …` (manual/BYO mode) → validates `xoxb-` via `auth.test` → `POST /projects/:id/channels/slack/connect` (`manage`) → 200, prints webhook `$API/webhooks/slack/:id`.
+`CHN-1b` `zed channels connect` (no creds) → `GET /projects/:id/channels/slack/mode` (`read`) → `{oauth_available, install_url}`; when available the CLI prints the pre-signed one-click "Add to Slack" URL (signed `state`, 10-min TTL — same flow as CHN-7) instead of manual mode.
 `CHN-2` `GET /projects/:id/channels/slack/installation` → `read` → workspace/team/bot/url or "not connected".
 `CHN-3` `DELETE /projects/:id/channels/slack/installation` → `manage`.
 `CHN-4` Slack inbound (OAuth mode) — `POST /webhooks/slack` (shared `SLACK_SIGNING_SECRET`): `v0=HMAC(v0:{ts}:{body})`, ±5min replay window; `url_verification` → echo `challenge`; `event_callback` routed by `team_id`→binding→project.
 `CHN-5` Slack inbound (BYO mode) — `POST /webhooks/slack/:id` (unsigned `url_verification` bootstrap → 200 challenge before installation; real callbacks require the per-project signing secret).
-`CHN-6` Slack dispatch — `app_mention`/IM/threaded `message` → existing thread session → deliver to sandbox `/kortix/prompt` (`delivered|transient|stale`); else `createProjectSession` (actor=owner, agent `default`, `visibility:'project'` — channel sessions are team-visible) + record `chat_threads`.
+`CHN-6` Slack dispatch — `app_mention`/IM/threaded `message` → existing thread session → deliver to sandbox `/zed/prompt` (`delivered|transient|stale`); else `createProjectSession` (actor=owner, agent `default`, `visibility:'project'` — channel sessions are team-visible) + record `chat_threads`.
 `CHN-7` Slack OAuth — `GET /webhooks/slack/oauth/callback` (signed `state`, 10-min TTL) → exchange code → `saveSlackInstall`.
 `CHN-8` Telegram inbound — `POST /webhooks/telegram/:id`: verify `x-telegram-bot-api-secret-token` (missing→404, mismatch→401) → `message`/`edited_message` → spawn session (actor=owner, `visibility:'project'`).
 `CHN-9` bad sig on any channel webhook → 401. Not configured → **503 (Slack OAuth mode + OAuth callback)** but **404 (Slack BYO + Telegram)**.
-`CHN-13` `POST /projects/:id/channels/email/connect {connector_slug?}` → `manage` + project experimental `agentmail_email` enabled → creates or attaches an AgentMail inbox + `message.received`/`message.received.unauthenticated` webhook, stores inbox/webhook metadata as encrypted per-connection project secrets, and marks that Email connector connected. Disabled projects return 403 before AgentMail key validation. Omit `connector_slug` for legacy `kortix_email`; provide an Email connector slug for multiple inboxes.
+`CHN-13` `POST /projects/:id/channels/email/connect {connector_slug?}` → `manage` + project experimental `agentmail_email` enabled → creates or attaches an AgentMail inbox + `message.received`/`message.received.unauthenticated` webhook, stores inbox/webhook metadata as encrypted per-connection project secrets, and marks that Email connector connected. Disabled projects return 403 before AgentMail key validation. Omit `connector_slug` for legacy `zed_email`; provide an Email connector slug for multiple inboxes.
 `CHN-14` `GET /projects/:id/channels/email/installation?connector_slug=...` → `read` → AgentMail inbox id/email/webhook id for that connection or null; disabled projects return null.
 `CHN-15` `DELETE /projects/:id/channels/email/installation?connector_slug=...` → `manage` → removes that connection's inbox binding.
-`CHN-16` AgentMail inbound — `POST /webhooks/email/agentmail`: Svix `svix-*` signature verified against the per-project webhook secret when configured; AgentMail's real unwrapped `message.received` or `message.received.unauthenticated` payload routes by `message.inbox_id` → project, maps `thread_id` 1:1 to a Kortix session, and follow-up emails continue that session.
+`CHN-16` AgentMail inbound — `POST /webhooks/email/agentmail`: Svix `svix-*` signature verified against the per-project webhook secret when configured; AgentMail's real unwrapped `message.received` or `message.received.unauthenticated` payload routes by `message.inbox_id` → project, maps `thread_id` 1:1 to a Zed session, and follow-up emails continue that session.
 `CHN-17` `GET /projects/:id/channels/email/mode` → `read` → `{provider:"agentmail",enabled:boolean,managed_available:boolean}` so the UI can hide Email until `agentmail_email` is enabled and require a project AgentMail key when no managed server key exists.
-`CHN-18` `GET /projects/:id/channels/bindings` → `read` → `{projectDefaultAgent, bindings:[{bindingId,platform,workspaceId,channelId,channelName,channelType,agentName,opencodeModel,conversationPolicy,installedAt,effectiveAgent:{agent,source}}]}` — the web management surface for `chat_channel_bindings` (today populated only via Slack `/kortix agent|model|policy`); `effectiveAgent` resolves `agentName ?? project default ?? 'default'` the same way the Slack panel does.
-`CHN-19` `PATCH /projects/:id/channels/bindings/:bindingId {agentName?,opencodeModel?,conversationPolicy?}` → `project.connector.write` (no dedicated channel-binding leaf exists; reuses the same capability that gates connecting/disconnecting the channel itself) → updates via the same `setChannelAgent`/`setChannelModel`/`setChannelConversationPolicy` helpers the Slack commands call; `agentName` validated against the project's declared `[[agents]]` when adopted (any name accepted for a legacy/undeclared project), `null` resets to the project default, `"default"` is an alias for `null`; `opencodeModel` validated via `isModelServableForAccount` (409 `model_not_servable` when not servable) and normalized to the opencode `kortix/…` ref before storing; unknown `bindingId` → 404 before body validation; empty body on an existing binding → 400 `empty_patch`.
+`CHN-18` `GET /projects/:id/channels/bindings` → `read` → `{projectDefaultAgent, bindings:[{bindingId,platform,workspaceId,channelId,channelName,channelType,agentName,opencodeModel,conversationPolicy,installedAt,effectiveAgent:{agent,source}}]}` — the web management surface for `chat_channel_bindings` (today populated only via Slack `/zed agent|model|policy`); `effectiveAgent` resolves `agentName ?? project default ?? 'default'` the same way the Slack panel does.
+`CHN-19` `PATCH /projects/:id/channels/bindings/:bindingId {agentName?,opencodeModel?,conversationPolicy?}` → `project.connector.write` (no dedicated channel-binding leaf exists; reuses the same capability that gates connecting/disconnecting the channel itself) → updates via the same `setChannelAgent`/`setChannelModel`/`setChannelConversationPolicy` helpers the Slack commands call; `agentName` validated against the project's declared `[[agents]]` when adopted (any name accepted for a legacy/undeclared project), `null` resets to the project default, `"default"` is an alias for `null`; `opencodeModel` validated via `isModelServableForAccount` (409 `model_not_servable` when not servable) and normalized to the opencode `zed/…` ref before storing; unknown `bindingId` → 404 before body validation; empty body on an existing binding → 400 `empty_patch`.
 `CHN-20` send-primitive IAM gate — `POST /projects/:id/channels/slack/file/upload` posts to a channel with the project's bot credentials and asserts leaf `project.connector.write` (IAM enforcement audit; previously gated by project-read only, so any read-capable caller could drive them). A floor `user` member (project.read, no connector.write) → 403 before any Slack call; an `editor` (holds connector.write) passes the gate (200/400/404/502/503, never 403); non-member 403/404; ANON 401. The `channel.*` catalog leaves were removed (never wired to a route). Scoped-agent-token variant proven at the API layer in `integration-project-read-leaf-gates-http.test.ts`. (The former `meet/speak` half of this gate went away with the notetaker — see §VOICE.)
 `TRG-11` Triggers CRUD authz boundaries — `ANON → 401` on POST/PATCH/DELETE/fire/activation; a project `member` (floor role) holds `trigger.read` + `trigger.fire` but NOT `project.write` (the `manage` floor) nor `trigger.create/update/delete` → `GET 200`, `POST/PATCH/DELETE/activation 403`, `fire` unknown-slug `404` (NOT 403 — the fire leaf passes; the 404 is the slug lookup).
 `TRG-12` `POST /projects/:id/triggers` input validation — missing `name`/`type`/`prompt_template` → `400`; bad `type` (not cron/webhook) → `400`; invalid `session_mode` → `400`; `pinned` without `session_id` → `400`; `pinned` with a `session_id` from another project → `400`; webhook without `secret_env` → `400`; webhook with bad `secret_env` (lowercase / leading digit, not `^[A-Z_][A-Z0-9_]*$`) → `400`; cron without `cron` AND without `run_at` → `400`; cron with non-ISO `run_at` → `400`; explicit invalid slug (uppercase / leading dash, not `^[a-z0-9][a-z0-9_-]{0,127}$`) → `400`.
@@ -357,23 +357,23 @@ Tokens stored as encrypted project secrets; webhooks public + signature-gated.
 
 Tokens stored as encrypted project secrets; webhooks public + signature-gated.
 
-`CHN-1` `kortix channels connect --bot-token xoxb-… --signing-secret …` (manual/BYO mode) → validates `xoxb-` via `auth.test` → `POST /projects/:id/channels/slack/connect` (`manage`) → 200, prints webhook `$API/webhooks/slack/:id`.
-`CHN-1b` `kortix channels connect` (no creds) → `GET /projects/:id/channels/slack/mode` (`read`) → `{oauth_available, install_url}`; when available the CLI prints the pre-signed one-click "Add to Slack" URL (signed `state`, 10-min TTL — same flow as CHN-7) instead of manual mode.
+`CHN-1` `zed channels connect --bot-token xoxb-… --signing-secret …` (manual/BYO mode) → validates `xoxb-` via `auth.test` → `POST /projects/:id/channels/slack/connect` (`manage`) → 200, prints webhook `$API/webhooks/slack/:id`.
+`CHN-1b` `zed channels connect` (no creds) → `GET /projects/:id/channels/slack/mode` (`read`) → `{oauth_available, install_url}`; when available the CLI prints the pre-signed one-click "Add to Slack" URL (signed `state`, 10-min TTL — same flow as CHN-7) instead of manual mode.
 `CHN-2` `GET /projects/:id/channels/slack/installation` → `read` → workspace/team/bot/url or "not connected".
 `CHN-3` `DELETE /projects/:id/channels/slack/installation` → `manage`.
 `CHN-4` Slack inbound (OAuth mode) — `POST /webhooks/slack` (shared `SLACK_SIGNING_SECRET`): `v0=HMAC(v0:{ts}:{body})`, ±5min replay window; `url_verification` → echo `challenge`; `event_callback` routed by `team_id`→binding→project.
 `CHN-5` Slack inbound (BYO mode) — `POST /webhooks/slack/:id` (unsigned `url_verification` bootstrap → 200 challenge before installation; real callbacks require the per-project signing secret).
-`CHN-6` Slack dispatch — `app_mention`/IM/threaded `message` → existing thread session → deliver to sandbox `/kortix/prompt` (`delivered|transient|stale`); else `createProjectSession` (actor=owner, agent `default`, `visibility:'project'` — channel sessions are team-visible) + record `chat_threads`.
+`CHN-6` Slack dispatch — `app_mention`/IM/threaded `message` → existing thread session → deliver to sandbox `/zed/prompt` (`delivered|transient|stale`); else `createProjectSession` (actor=owner, agent `default`, `visibility:'project'` — channel sessions are team-visible) + record `chat_threads`.
 `CHN-7` Slack OAuth — `GET /webhooks/slack/oauth/callback` (signed `state`, 10-min TTL) → exchange code → `saveSlackInstall`.
 `CHN-8` Telegram inbound — `POST /webhooks/telegram/:id`: verify `x-telegram-bot-api-secret-token` (missing→404, mismatch→401) → `message`/`edited_message` → spawn session (actor=owner, `visibility:'project'`).
 `CHN-9` bad sig on any channel webhook → 401. Not configured → **503 (Slack OAuth mode + OAuth callback)** but **404 (Slack BYO + Telegram)**.
-`CHN-13` `POST /projects/:id/channels/email/connect {connector_slug?}` → `manage` + project experimental `agentmail_email` enabled → creates or attaches an AgentMail inbox + `message.received`/`message.received.unauthenticated` webhook, stores inbox/webhook metadata as encrypted per-connection project secrets, and marks that Email connector connected. Disabled projects return 403 before AgentMail key validation. Omit `connector_slug` for legacy `kortix_email`; provide an Email connector slug for multiple inboxes.
+`CHN-13` `POST /projects/:id/channels/email/connect {connector_slug?}` → `manage` + project experimental `agentmail_email` enabled → creates or attaches an AgentMail inbox + `message.received`/`message.received.unauthenticated` webhook, stores inbox/webhook metadata as encrypted per-connection project secrets, and marks that Email connector connected. Disabled projects return 403 before AgentMail key validation. Omit `connector_slug` for legacy `zed_email`; provide an Email connector slug for multiple inboxes.
 `CHN-14` `GET /projects/:id/channels/email/installation?connector_slug=...` → `read` → AgentMail inbox id/email/webhook id for that connection or null; disabled projects return null.
 `CHN-15` `DELETE /projects/:id/channels/email/installation?connector_slug=...` → `manage` → removes that connection's inbox binding.
-`CHN-16` AgentMail inbound — `POST /webhooks/email/agentmail`: Svix `svix-*` signature verified against the per-project webhook secret when configured; AgentMail's real unwrapped `message.received` or `message.received.unauthenticated` payload routes by `message.inbox_id` → project, maps `thread_id` 1:1 to a Kortix session, and follow-up emails continue that session.
+`CHN-16` AgentMail inbound — `POST /webhooks/email/agentmail`: Svix `svix-*` signature verified against the per-project webhook secret when configured; AgentMail's real unwrapped `message.received` or `message.received.unauthenticated` payload routes by `message.inbox_id` → project, maps `thread_id` 1:1 to a Zed session, and follow-up emails continue that session.
 `CHN-17` `GET /projects/:id/channels/email/mode` → `read` → `{provider:"agentmail",enabled:boolean,managed_available:boolean}` so the UI can hide Email until `agentmail_email` is enabled and require a project AgentMail key when no managed server key exists.
-`CHN-18` `GET /projects/:id/channels/bindings` → `read` → `{projectDefaultAgent, bindings:[{bindingId,platform,workspaceId,channelId,channelName,channelType,agentName,opencodeModel,conversationPolicy,installedAt,effectiveAgent:{agent,source}}]}` — the web management surface for `chat_channel_bindings` (today populated only via Slack `/kortix agent|model|policy`); `effectiveAgent` resolves `agentName ?? project default ?? 'default'` the same way the Slack panel does.
-`CHN-19` `PATCH /projects/:id/channels/bindings/:bindingId {agentName?,opencodeModel?,conversationPolicy?}` → `project.connector.write` (no dedicated channel-binding leaf exists; reuses the same capability that gates connecting/disconnecting the channel itself) → updates via the same `setChannelAgent`/`setChannelModel`/`setChannelConversationPolicy` helpers the Slack commands call; `agentName` validated against the project's declared `[[agents]]` when adopted (any name accepted for a legacy/undeclared project), `null` resets to the project default, `"default"` is an alias for `null`; `opencodeModel` validated via `isModelServableForAccount` (409 `model_not_servable` when not servable) and normalized to the opencode `kortix/…` ref before storing; unknown `bindingId` → 404 before body validation; empty body on an existing binding → 400 `empty_patch`.
+`CHN-18` `GET /projects/:id/channels/bindings` → `read` → `{projectDefaultAgent, bindings:[{bindingId,platform,workspaceId,channelId,channelName,channelType,agentName,opencodeModel,conversationPolicy,installedAt,effectiveAgent:{agent,source}}]}` — the web management surface for `chat_channel_bindings` (today populated only via Slack `/zed agent|model|policy`); `effectiveAgent` resolves `agentName ?? project default ?? 'default'` the same way the Slack panel does.
+`CHN-19` `PATCH /projects/:id/channels/bindings/:bindingId {agentName?,opencodeModel?,conversationPolicy?}` → `project.connector.write` (no dedicated channel-binding leaf exists; reuses the same capability that gates connecting/disconnecting the channel itself) → updates via the same `setChannelAgent`/`setChannelModel`/`setChannelConversationPolicy` helpers the Slack commands call; `agentName` validated against the project's declared `[[agents]]` when adopted (any name accepted for a legacy/undeclared project), `null` resets to the project default, `"default"` is an alias for `null`; `opencodeModel` validated via `isModelServableForAccount` (409 `model_not_servable` when not servable) and normalized to the opencode `zed/…` ref before storing; unknown `bindingId` → 404 before body validation; empty body on an existing binding → 400 `empty_patch`.
 `CHN-20` send-primitive IAM gate — `POST /projects/:id/channels/slack/file/upload` posts to a channel with the project's bot credentials and asserts leaf `project.connector.write` (IAM enforcement audit; previously gated by project-read only, so any read-capable caller could drive them). A floor `user` member (project.read, no connector.write) → 403 before any Slack call; an `editor` (holds connector.write) passes the gate (200/400/404/502/503, never 403); non-member 403/404; ANON 401. The `channel.*` catalog leaves were removed (never wired to a route). Scoped-agent-token variant proven at the API layer in `integration-project-read-leaf-gates-http.test.ts`.
 
 ### Voice (live calls) — §VOICE
@@ -382,19 +382,19 @@ The agent starts a live voice call bound to its session and hands out a join lin
 
 **Two surfaces exist and they point in opposite directions.** Keeping them straight is the whole of this section:
 
-- **The Kortix agent's side is the `kortix_voice` CONNECTOR** — `spawn_room`, `read_transcript`, `send_prompt`, `end_call`, plus `join_gmeet`/`join_zoom` which are declared for a stable surface but deliberately not implemented (calling either returns a clear `not_implemented` error, never a silent no-op). These are `{kind:'voice'}` bindings executed by the API's own server-side code (`connector/db-deps.ts`'s `executeVoiceCall`), routed through the connector gateway like every other connector, so policies, approvals and the audit trail apply. The connector is materialized per-project only when the `voice` experimental flag is on (`connector/channel-materialize.ts`). It has **no HTTP route of its own** — it is covered by the connector catalog flows, not by a voice flow. It used to be an MCP at `POST /projects/:id/mcp/voice`; **that route no longer exists.**
-- **The LiveKit worker's side is the voice MCP**, `POST /projects/:id/sessions/:sid/mcp/voice`, serving `ask_kortix` / `run_command` / `post_turn`. `ask_kortix` returns the instant the request is queued and refuses a second while one is unanswered; `run_command` is bounded by a short server-side timeout and reports `timed_out`; `post_turn` persists one transcript line. No follow/tail/stream tool exists, by design. Unknown JSON-RPC method → `-32601`; a tool that throws surfaces as a tool-error RESULT, not a protocol error, so the caller can read and react to it. That tool half is only reachable holding a per-call HMAC minted server-side, so it is proven in apps/api's own tests — the flow here asserts the boundary.
+- **The Zed agent's side is the `zed_voice` CONNECTOR** — `spawn_room`, `read_transcript`, `send_prompt`, `end_call`, plus `join_gmeet`/`join_zoom` which are declared for a stable surface but deliberately not implemented (calling either returns a clear `not_implemented` error, never a silent no-op). These are `{kind:'voice'}` bindings executed by the API's own server-side code (`connector/db-deps.ts`'s `executeVoiceCall`), routed through the connector gateway like every other connector, so policies, approvals and the audit trail apply. The connector is materialized per-project only when the `voice` experimental flag is on (`connector/channel-materialize.ts`). It has **no HTTP route of its own** — it is covered by the connector catalog flows, not by a voice flow. It used to be an MCP at `POST /projects/:id/mcp/voice`; **that route no longer exists.**
+- **The LiveKit worker's side is the voice MCP**, `POST /projects/:id/sessions/:sid/mcp/voice`, serving `ask_zed` / `run_command` / `post_turn`. `ask_zed` returns the instant the request is queued and refuses a second while one is unanswered; `run_command` is bounded by a short server-side timeout and reports `timed_out`; `post_turn` persists one transcript line. No follow/tail/stream tool exists, by design. Unknown JSON-RPC method → `-32601`; a tool that throws surfaces as a tool-error RESULT, not a protocol error, so the caller can read and react to it. That tool half is only reachable holding a per-call HMAC minted server-side, so it is proven in apps/api's own tests — the flow here asserts the boundary.
 
-`VOICE-1` `PUT /projects/:id/channels/meet/name {name}` → `manage` → sets the bot's display name in the call (default "Kortix"); NONMEMBER → 403/404; ANON → 401.
-`VOICE-2` `POST /projects/:id/sessions/:sid/mcp/voice` — the worker MCP's auth boundary. Authed ONLY by the per-call `kortix_api_token`: an HMAC over the call id (the call id IS the session id), minted server-side in `startCall` and delivered to the worker in the LiveKit room metadata (`channels/voice/worker-token.ts`). It is NOT session/PAT auth, and the route is mounted BEFORE `projectsApp` precisely so `supabaseAuth` never claims it. ANON → 401; an OWNER session → 401; an account PAT → 401; a forged 64-hex bearer → 401 (the HMAC compare is length-guarded and timing-safe). Auth is checked BEFORE the body, so a malformed JSON-RPC payload from an unauthenticated caller is still 401 — never 400, never 500.
-`VOICE-3` `GET /projects/:id/sessions/:sid/voice-transcript[?cursor&limit]` — a Kortix-authenticated read of the same durable record (`voice_call_turns`), for the web app. Project `read` + the session must be visible to the caller; explicitly NOT the worker's per-call HMAC. Non-uuid session id → 400; unparseable `cursor` → 400; unknown session → 404; NONMEMBER → 403/404; ANON → 401.
-`VOICE-4` Same route, happy path: a session that has never had a call → 200 `{session_id, call_id, live:false, cursor, count:0, turns:[]}` — an empty transcript, never a 404. `call_id === session_id`. `role` alone does not identify a turn: `user`+null is a human, `agent`+`kortix` is what the Kortix agent put into the call, `agent`+bot-name is what the voice said, `tool`+tool-name is an `ask_kortix`/`run_command`. Ordering is the monotonic `voice_call_turns.cursor`, never `created_at` (two turns can share a millisecond and a wall-clock tie would silently drop one).
+`VOICE-1` `PUT /projects/:id/channels/meet/name {name}` → `manage` → sets the bot's display name in the call (default "Zed"); NONMEMBER → 403/404; ANON → 401.
+`VOICE-2` `POST /projects/:id/sessions/:sid/mcp/voice` — the worker MCP's auth boundary. Authed ONLY by the per-call `zed_api_token`: an HMAC over the call id (the call id IS the session id), minted server-side in `startCall` and delivered to the worker in the LiveKit room metadata (`channels/voice/worker-token.ts`). It is NOT session/PAT auth, and the route is mounted BEFORE `projectsApp` precisely so `supabaseAuth` never claims it. ANON → 401; an OWNER session → 401; an account PAT → 401; a forged 64-hex bearer → 401 (the HMAC compare is length-guarded and timing-safe). Auth is checked BEFORE the body, so a malformed JSON-RPC payload from an unauthenticated caller is still 401 — never 400, never 500.
+`VOICE-3` `GET /projects/:id/sessions/:sid/voice-transcript[?cursor&limit]` — a Zed-authenticated read of the same durable record (`voice_call_turns`), for the web app. Project `read` + the session must be visible to the caller; explicitly NOT the worker's per-call HMAC. Non-uuid session id → 400; unparseable `cursor` → 400; unknown session → 404; NONMEMBER → 403/404; ANON → 401.
+`VOICE-4` Same route, happy path: a session that has never had a call → 200 `{session_id, call_id, live:false, cursor, count:0, turns:[]}` — an empty transcript, never a 404. `call_id === session_id`. `role` alone does not identify a turn: `user`+null is a human, `agent`+`zed` is what the Zed agent put into the call, `agent`+bot-name is what the voice said, `tool`+tool-name is an `ask_zed`/`run_command`. Ordering is the monotonic `voice_call_turns.cursor`, never `created_at` (two turns can share a millisecond and a wall-clock tie would silently drop one).
 `VOICE-5` `GET /public/voice-join/:token` — PUBLIC and unauthenticated by design: a join link IS the capability (256 bits of `randomBytes`, `vjl_`-prefixed, hashed at rest), and requiring login would defeat handing it to someone outside the account. Resolves to `{call_id, url, token}` with a FRESHLY minted LiveKit access token each time. Unknown/garbage/never-issued token → 404 (indistinguishable from each other); a project id or a bare uuid is not a join token → 404, never 401. Revoked (the call ended) or expired → 410 — that half needs a real call to end and is proven against the real route + DB in apps/api's `integration-voice-join-links.test.ts`.
 `VOICE-6` `GET /public/voice-join/:token/transcript[?cursor&limit]` — the same join-link capability, strictly less power: transcript text for the ONE call the link was minted for, never a LiveKit token. Deliberately takes NO project or session id — `resolveJoinLink` yields the call id and nothing the caller wrote reaches `readTurns`, so there is no id for an anonymous caller to swap for someone else's call; the project id is not echoed back either. Unknown token → 404 even with `call_id`/`session_id`/`project_id` query parameters attached. A mangled `cursor`/`limit` is CLAMPED, not rejected (a link truncated in a chat client must still show the call), so it never turns into a 400. Both public routes are IP-keyed rate limited (resolve 30/min, transcript poll 120/min — the poller cannot share the resolve budget).
 
 ---
 
-## 14. GitHub integration + `kortix ship`/`deploy`
+## 14. GitHub integration + `zed ship`/`deploy`
 
 GitHub is **outbound only** (repo create, Contents API commits, installation-token git transport). No inbound event receiver.
 
@@ -409,7 +409,7 @@ GitHub is **outbound only** (repo create, Contents API commits, installation-tok
 `GH-7` `POST /projects/:id/git-token` → mint a fresh managed-GitHub installation token; **409 for BYO**; 503 if managed Git is unavailable.
 `GH-8` `GET/POST/DELETE /projects/:id/cli-token[/:tokenId]` → project-scoped CLI tokens.
 
-### `kortix ship` (alias `deploy`)
+### `zed ship` (alias `deploy`)
 
 `SHIP-1` first ship, no `origin` → managed: `POST /projects/provision` → set `origin` to the managed GitHub URL, commit, header-injected token push, write `link.json`. Requires `PROJECT_CREATE`.
 `SHIP-2` first ship, existing `origin` → **BYO** (single-writable-origin rule): `POST /projects {repo_url,name}`, **origin never modified**, push with user's own creds. **NB: the API's BYO `POST /projects` only accepts a GitHub repo_url** (`normalizeRepoUrl`→`resolveGitHubImport`); a non-GitHub origin is rejected 400 before `saveLink`, so ship exits non-zero, writes no link.json, and (proven) never clobbers the origin. The real happy path needs a live GitHub repo + App install.
@@ -417,16 +417,16 @@ GitHub is **outbound only** (repo create, Contents API commits, installation-tok
 `SHIP-4` first ship `--origin managed` → force managed even if origin exists.
 `SHIP-5` multiple accounts + no `--account`/`-y` → interactive pick; `--account <id|slug>` mismatch → error listing slugs.
 `SHIP-6` subsequent ship (linked) → `GET /projects/:id` (403→access guidance, 404→gone guidance); managed → `POST /projects/:id/git-token` (fresh token per ship) → commit + push; BYO → `ensureOrigin` only if missing.
-`SHIP-7` `kortix ship -n/--dry-run` → prints would-be calls, **no side effects**.
-`SHIP-8` `kortix ship` outside a git repo or non-Kortix dir → error; not logged in → "run kortix login"; 503 → "managed git not configured; pass --origin <git-url>".
+`SHIP-7` `zed ship -n/--dry-run` → prints would-be calls, **no side effects**.
+`SHIP-8` `zed ship` outside a git repo or non-Zed dir → error; not logged in → "run zed login"; 503 → "managed git not configured; pass --origin <git-url>".
 `SHIP-9` `--no-commit` with dirty tree → error; clean tree + HEAD → skip commit, push only.
 
 ### CLI resource commands (project-scoped)
 
-`CLI-PROJ` `kortix projects ls|info|link|unlink|open|rm` → `GET /projects`, `GET /projects/:id`, `DELETE /projects/:id[?purge=true]` (`--purge` deletes the managed repo; BYO untouched).
-`CLI-SESS` `kortix sessions ls|new|info|restart|rm|open` → maps to §7.
-`CLI-SEC` `kortix secrets ls|set|unset` + `kortix env pull|push` → maps to §6 (values write-only).
-`CLI-TRG` `kortix triggers ls|fire|enable|disable|info` → maps to §12.
+`CLI-PROJ` `zed projects ls|info|link|unlink|open|rm` → `GET /projects`, `GET /projects/:id`, `DELETE /projects/:id[?purge=true]` (`--purge` deletes the managed repo; BYO untouched).
+`CLI-SESS` `zed sessions ls|new|info|restart|rm|open` → maps to §7.
+`CLI-SEC` `zed secrets ls|set|unset` + `zed env pull|push` → maps to §6 (values write-only).
+`CLI-TRG` `zed triggers ls|fire|enable|disable|info` → maps to §12.
 
 ---
 
@@ -435,17 +435,17 @@ GitHub is **outbound only** (repo create, Contents API commits, installation-tok
 DB `project_secrets` (AES-256-GCM, key bound to `projectId`, unique `(project_id,name)`). **Write-only API — values never returned.**
 
 `SEC-1` `GET /projects/:id/secrets` → `manage` → names only + manifest required/optional keys + virtual git-auth row.
-`SEC-2` `POST /projects/:id/secrets {name,value}` → `manage` → upsert (encrypt); name upper-cased; invalid name format → 400; `KORTIX_*` reserved → 400. M_EDITOR/M_VIEWER → 403.
+`SEC-2` `POST /projects/:id/secrets {name,value}` → `manage` → upsert (encrypt); name upper-cased; invalid name format → 400; `ZED_*` reserved → 400. M_EDITOR/M_VIEWER → 403.
 `SEC-3` `DELETE /projects/:id/secrets/:name` → `manage`; invalid name → 400; system secret (git-auth) → 403.
-`SEC-4` injection — `buildSessionSandboxEnvVars` decrypts **all** project secrets into the session env (project-global, no per-member scoping) + minted `KORTIX_TOKEN`/`KORTIX_CLI_TOKEN`, `KORTIX_LLM_*`, `KORTIX_GIT_AUTH_TOKEN`, etc.
+`SEC-4` injection — `buildSessionSandboxEnvVars` decrypts **all** project secrets into the session env (project-global, no per-member scoping) + minted `ZED_TOKEN`/`ZED_CLI_TOKEN`, `ZED_LLM_*`, `ZED_GIT_AUTH_TOKEN`, etc.
 `SEC-6` `POST /projects/:id/secrets {identifier,name,value}` → two identifiers may share one env-var `name` (e.g. `GMAPS-primary`/`GMAPS-backup` both `GOOGLE_MAPS_API_KEY`); re-submitting an existing `identifier` with a different `name` → 409.
-`SEC-8` `PUT /projects/:id/secrets/:identifier/strategy {strategy,consumer?,egress_policy?,handle_prefix?}` → manager-only control plane; `runtime|denied` → 200; `broker` accepts `llm_gateway|connector|http_broker`; only `http_broker` accepts and requires a validated `backend=kortix_fetch` policy. Generic `git_proxy` broker and transparent `egress` → 409 until their adapters are available. Each change revokes active HTTP broker handles and writes `secret.strategy.changed`; agent principals → 403. `POST /projects/:id/secrets/sync` requires secret write and re-applies current policy to active sessions. Its response reports `active_sandboxes`, `targeted`, `synced`, `failed`, `exported`, and one result per sandbox with the applied `scope`, `revision`, export counts, and `agent_env_written` proof. A partial delivery returns `ok:false`. `POST /projects/:id/secrets/:identifier/broker` accepts only a session-scoped agent token, intersects the immutable agent grant with the current session allowlist, requires an active revisioned handle, applies the stored HTTPS host/method/path/injection policy, and writes pending plus terminal audit events without request bodies, headers, query values, handles, or secret values.
+`SEC-8` `PUT /projects/:id/secrets/:identifier/strategy {strategy,consumer?,egress_policy?,handle_prefix?}` → manager-only control plane; `runtime|denied` → 200; `broker` accepts `llm_gateway|connector|http_broker`; only `http_broker` accepts and requires a validated `backend=zed_fetch` policy. Generic `git_proxy` broker and transparent `egress` → 409 until their adapters are available. Each change revokes active HTTP broker handles and writes `secret.strategy.changed`; agent principals → 403. `POST /projects/:id/secrets/sync` requires secret write and re-applies current policy to active sessions. Its response reports `active_sandboxes`, `targeted`, `synced`, `failed`, `exported`, and one result per sandbox with the applied `scope`, `revision`, export counts, and `agent_env_written` proof. A partial delivery returns `ok:false`. `POST /projects/:id/secrets/:identifier/broker` accepts only a session-scoped agent token, intersects the immutable agent grant with the current session allowlist, requires an active revisioned handle, applies the stored HTTPS host/method/path/injection policy, and writes pending plus terminal audit events without request bodies, headers, query values, handles, or secret values.
 `SEC-9` server consumers resolve only matching `broker` rows. LLM resolution returns every authorized identifier for one provider key in deterministic order: canonical identifier, newest update, then identifier. The gateway tries the next same-provider credential after a thrown 401, a terminal-auth 400, or a terminal-auth streaming error; one invalid credential preserves the upstream terminal error. Connector, subscription, channel, webhook, and Git paths use their server-side credential resolvers and write metadata-only `secret.consumer.*` audit events.
 `CONN-ATT-AUTH` `POST /connectors/[projects/:projectId/]attachments` → both attachment-upload forms require authentication before accepting multipart data; anonymous requests → 401.
 
 ---
 
-## 16. Billing (gated by `KORTIX_BILLING_INTERNAL_ENABLED`; off → 404 `billing_disabled`)
+## 16. Billing (gated by `ZED_BILLING_INTERNAL_ENABLED`; off → 404 `billing_disabled`)
 
 `BILL-1` `GET /billing/account-state` (always available; off → unlimited mock) · `GET …/account-state/minimal`.
 `BILL-2` `POST /billing/create-checkout-session {server_type,location,...}` → Stripe checkout for a server-type plan (the `/billing/setup/initialize` route in older drafts never shipped; `server_type`/`location` are body fields on create-checkout-session — `billing/routes/subscriptions.ts`). ANON → 401; non-member → 403.
@@ -458,7 +458,7 @@ DB `project_secrets` (AES-256-GCM, key bound to `projectId`, unique `(project_id
 `BILL-9` billing write ops (`create-checkout-session`/`create-per-seat-checkout`/`create-inline-checkout`/`confirm-inline-checkout`/`create-portal-session`/`claim-per-seat`/`cancel-subscription`/`reactivate-subscription`/`schedule-downgrade`/`cancel-scheduled-change`/`purchase-credits`/`auto-topup/configure`) — auth boundary: ANON → 401; non-account-member → 403; account `MEMBER` (`billing.read` only) → 403. They require `billing.write` (OWNER + the `billing_manager` BILLING policy only; ADMIN/AUDITOR/MEMBER denied), enforced by `billing/require-billing-write.ts` (`resolveScopedAccountId` membership check + `assertAuthorized(billing.write)`) — so a non-billing teammate can't subscribe / cancel / top-up on the account's behalf. Reconcile/read ops (`sync-subscription`, `sync-seat-quantity`, `proration-preview`, `checkout-session/:id`, `confirm-checkout-session`) stay member-accessible (membership only). **(finding 2026-06-04 RESOLVED 2026-06-11: the `billing.write` gate now exists in code; the earlier "any member passes" gap is closed.)**
 `COST-1` `GET /usage/session-costs?account_id=&project_id=&limit=&offset=` → authenticated account member; project-derived account scope requires `project.gateway.spend.read`, otherwise → 403. Returns every matching session, including zero-cost sessions, as a paginated `{sessions,total,limit,offset,next_offset,reconciliation}` response. Each row combines finalized LLM cost, billed compute cost, owner, project, request, token, model, and compute-duration fields. `limit` defaults to 25 and accepts 1–100; invalid pagination → 400; ANON → 401. `GET /usage/session-costs/:sessionId?account_id=&project_id=` applies the same spend gate and returns the summary plus `model_usage` and discriminated `ledger_entries`; unknown, foreign, or project-mismatched session → 404. Sandbox tokens are rejected.
 
-`COST-2` `GET /usage/cost-by-project?account_id=&from=&to=&sort=&limit=&offset=` → the project spend rollup behind the explorer's first level: same account/spend gate as `COST-1`, paginated `{projects,total,limit,offset,next_offset}`, sorts `total_desc|total_asc|recent|name_asc`. `GET /usage/cost-summary?account_id=&project_id=&session_id=&from=&to=` returns `{totals,previous,series,models}` for whichever scope is supplied, so one route serves all three levels; `series` is gap-filled with one point per UTC day so an empty day reads as zero rather than being skipped, and `previous` covers the equally long window immediately before. Windows are half-open `[from,to)` and always UTC; an inverted or over-long window → 400; ANON → 401. Both routes accept `format=csv`, which runs the same filtered query rather than the visible page, caps at 10,000 rows (reported in `x-kortix-row-cap`) and neutralises a leading `=`/`+`/`-`/`@` so a spreadsheet cannot evaluate a project name as a formula.
+`COST-2` `GET /usage/cost-by-project?account_id=&from=&to=&sort=&limit=&offset=` → the project spend rollup behind the explorer's first level: same account/spend gate as `COST-1`, paginated `{projects,total,limit,offset,next_offset}`, sorts `total_desc|total_asc|recent|name_asc`. `GET /usage/cost-summary?account_id=&project_id=&session_id=&from=&to=` returns `{totals,previous,series,models}` for whichever scope is supplied, so one route serves all three levels; `series` is gap-filled with one point per UTC day so an empty day reads as zero rather than being skipped, and `previous` covers the equally long window immediately before. Windows are half-open `[from,to)` and always UTC; an inverted or over-long window → 400; ANON → 401. Both routes accept `format=csv`, which runs the same filtered query rather than the visible page, caps at 10,000 rows (reported in `x-zed-row-cap`) and neutralises a leading `=`/`+`/`-`/`@` so a spreadsheet cannot evaluate a project name as a formula.
 
 ---
 
@@ -466,8 +466,8 @@ DB `project_secrets` (AES-256-GCM, key bound to `projectId`, unique `(project_id
 
 `RTR-1` `POST /router/web-search {query}` · `POST /router/image-search` → `APIKEY` → 200; `ANON`/JWT → 401.
 `RTR-2` `POST /router/chat/completions {model,messages,stream}` (OpenAI-compat) · `GET /router/models` · `GET /router/models/:model`.
-`RTR-4` billed proxy passthrough `ALL /router/:service[/*]` for `tavily|serper|firecrawl|replicate|context7|anthropic|openai|xai|gemini|groq` — Kortix token → managed keys; user key + `X-Kortix-Token` → passthrough; disallowed service/route → 4xx.
-`GW-1` standalone gateway `GET /health` → 200 `{status:"healthy",service:"kortix-llm-gateway"}`.
+`RTR-4` billed proxy passthrough `ALL /router/:service[/*]` for `tavily|serper|firecrawl|replicate|context7|anthropic|openai|xai|gemini|groq` — Zed token → managed keys; user key + `X-Zed-Token` → passthrough; disallowed service/route → 4xx.
+`GW-1` standalone gateway `GET /health` → 200 `{status:"healthy",service:"zed-llm-gateway"}`.
 `GW-2` standalone gateway `GET /v1/llm/models` plus `/v1/models` and `/v1/openai/models` aliases — account PAT → 200 with a non-empty `{models:{...}}` catalog; ANON → 401/403 (`GW-2b`).
 `GW-3` standalone OpenAI-compatible chat aliases reject ANON → 401/403.
 `GW-4` project LLM gateway routing policy — `GET /projects/:id/gateway/routing-policy` returns the persisted project document plus effective account/platform inheritance; `PUT` atomically saves project/vision defaults, a bounded ordered default chain, and exact-model overrides; `GET /projects/:id/model-picker` returns the compact connection-aware selector catalog while the full runtime catalog remains sandbox-only; `POST …/preview {requestedModel,imageInput}` resolves the finite route and model availability without consuming tokens; `DELETE` resets every project override. Duplicate/self-loop/`auto` fallback routes → 400 `invalid_routing_policy`; project nonmember → 403/404; ANON → 401.
@@ -483,7 +483,7 @@ DB `project_secrets` (AES-256-GCM, key bound to `projectId`, unique `(project_id
 
 `PLT-1` `GET /platform/` → `{ok:true,message:"platform"}` (public). `GET /platform/sandbox/version[/latest|/all|/changelog]` (public).
 
-### OAuth2 provider (Kortix as IdP for CLI/MCP/tunnel)
+### OAuth2 provider (Zed as IdP for CLI/MCP/tunnel)
 
 `OAU-1` `GET /oauth/authorize` (public) → redirect to consent.
 `OAU-2` `GET /oauth/authorize/consent/:requestId` (auth) → consent data; `POST /oauth/authorize/consent` → submit.
@@ -519,10 +519,10 @@ An admin-issued **trial** makes an account BEHAVE as a paid tier — entitlement
 
 `ADM-14` `POST /v1/admin/api/accounts/:id/trial {tier_key,seats,duration_days,note?,credit_grant?}` → grant or **replace** a trial (re-granting overwrites the window — extend/adjust = re-grant) → 200 `{ok:true,trial:{status:"active",tier,seats,startedAt,endsAt,note},credit_granted}`. `credit_grant` (USD credits, default 0) funds sandbox compute in the same call. Rejected with 400: `tier_key` that is not an existing **paid** tier (`free`/`none`/unknown), `seats` outside `[1,100]`, `duration_days` outside `[1,365]`, `credit_grant` outside `[0,10000]`. Non-admin → 403; ANON → 401. After a grant the `ADM-1` list row for the account reports `trial.status:"active"` with the granted tier/seats.
 `ADM-15` `DELETE /v1/admin/api/accounts/:id/trial` → revoke immediately → 200 `{ok:true,trial:{status:"revoked",…}}`. Status-only: tier/seats/window stay on the row as the audit trail. No active trial (never granted, or already revoked/expired) → **400**. Non-admin → 403; ANON → 401.
-`ADM-16` `POST /v1/admin/api/accounts/:id/managed-models {override}` → tri-state managed-models entitlement override → 200 `{ok:true,override}`. `true` grants Kortix-credential models regardless of tier, `false` forces BYOK-only, `null` restores "the effective tier decides". Neither boolean nor null → 400; non-admin → 403; ANON → 401.
+`ADM-16` `POST /v1/admin/api/accounts/:id/managed-models {override}` → tri-state managed-models entitlement override → 200 `{ok:true,override}`. `true` grants Zed-credential models regardless of tier, `false` forces BYOK-only, `null` restores "the effective tier decides". Neither boolean nor null → 400; non-admin → 403; ANON → 401.
 `ADM-17` `POST /v1/admin/api/accounts/:id/enterprise-demo {enabled}` → the operator counterpart of `IAM-32`'s retired self-serve toggle → 200 `{ok:true,enabled}`; same `credit_accounts.demo_enterprise` storage and the same entitlement effect, so `IAM-32`'s GET reflects it immediately. Non-boolean → 400; non-admin → 403; ANON → 401.
 `ADM-18` `GET /v1/admin/api/accounts` rows carry the entitlement columns the console renders: `billingModel`, `seatCount`, `trial:{status,tier,seats,startedAt,endsAt,note}`, `managedModelsOverride`, `demoEnterprise`, `enterpriseEntitled`. A never-granted account reads `trial.status:"none"` with null tier/seats/window, `managedModelsOverride:null`, `demoEnterprise:false`, `enterpriseEntitled:false`. Non-admin → 403; ANON → 401.
-`ADM-19` `POST /v1/billing/cron/trial-expiry` — **internal-cron auth**, not `requireAdmin` (same `requireInternalCronAuth` gate as `BILL-13`/`BILL-16`: Bearer or `X-Kortix-Internal-Key` must timing-safe-equal `INTERNAL_SERVICE_KEY`) → flips `active` trials past `trial_ends_at` to `expired` → 200 `{expired:n}`; no/wrong credentials → 401; billing internals disabled → 200 `{skipped:true}`. Status hygiene only — the lazy overlay already stopped granting at the timestamp.
+`ADM-19` `POST /v1/billing/cron/trial-expiry` — **internal-cron auth**, not `requireAdmin` (same `requireInternalCronAuth` gate as `BILL-13`/`BILL-16`: Bearer or `X-Zed-Internal-Key` must timing-safe-equal `INTERNAL_SERVICE_KEY`) → flips `active` trials past `trial_ends_at` to `expired` → 200 `{expired:n}`; no/wrong credentials → 401; billing internals disabled → 200 `{skipped:true}`. Status hygiene only — the lazy overlay already stopped granting at the timestamp.
 
 #### Activity analytics
 
@@ -584,7 +584,7 @@ Run these against representative endpoints from each domain.
 - No account-level vault — secrets are project-scoped, all-or-nothing per project (the `vault_items`/per-member-scope design was reversed).
 - Granular IAM actions `project.trigger.*`, `channel.*`, `trigger.*` exist in the catalog but those project routes only enforce coarse `read|write|manage` — test the coarse gate, not the fine actions. **Exception:** session lifecycle routes (create/PATCH/DELETE/restart) now enforce `project.session.start` via the `session` access tier, which every project role (viewer included) holds — so a viewer CAN run sessions but still can't `write`/`manage`.
 - No inbound GitHub event webhook (no push/PR receiver) — see `TRG-9`.
-- CLI `providers`, `doctor`, `proxy`, `sessions-chat` source files exist but are **not wired** into the dispatcher and not in the reserved list — so `kortix providers …` is **treated as a new-project name** (`runCreate`), not an "unknown command" error. Don't test for an error here.
+- CLI `providers`, `doctor`, `proxy`, `sessions-chat` source files exist but are **not wired** into the dispatcher and not in the reserved list — so `zed providers …` is **treated as a new-project name** (`runCreate`), not an "unknown command" error. Don't test for an error here.
 - Cron scheduler scans only first 200 active projects/tick.
 
 ---
@@ -645,10 +645,10 @@ Scale: ~500 exported symbols / ~520 route handlers in `apps/api/src` — a tract
 
 ## 24. Connector catalog and connections
 
-`CONN-1` `GET /connectors/catalog` → connector-principal (sandbox KORTIX_TOKEN) route; user JWT + `ANON` → 401 (200 path exercised in-sandbox). The deprecated `GET /connectors/connectors` alias preserves the same auth contract for older clients.
+`CONN-1` `GET /connectors/catalog` → connector-principal (sandbox ZED_TOKEN) route; user JWT + `ANON` → 401 (200 path exercised in-sandbox). The deprecated `GET /connectors/connectors` alias preserves the same auth contract for older clients.
 `CONN-2` `GET /connectors/projects/:id/connectors` → project admin → 200; `NONMEMBER` → 403.
 `CONN-3` `POST /connectors/call {connector,action,args}` → connector-principal route; user JWT + `ANON` → 401.
-`CONN-4` `POST /connectors/projects/:id/connectors/sync` → admin → 200 (re-materialize from kortix.yaml).
+`CONN-4` `POST /connectors/projects/:id/connectors/sync` → admin → 200 (re-materialize from zed.yaml).
 `CONN-5` `GET /connectors/projects/:id/policies` → admin → 200; `PUT …/policies {policies[]}` → admin → 200.
 `CONN-7` `PUT /connectors/projects/:id/connectors/:slug/credential` → accepts a static value or native OAuth2 client-credentials configuration; missing value or a non-HTTPS OAuth2 token URL → 400.
 `CONN-8` `POST /connectors/projects/:id/connectors` → admin; invalid JSON or non-boolean `create_only` → 400. A first `create_only:true` request creates the connector; a second request for the same slug → 409 and does not replace the existing manifest entry. `DELETE …/:slug` → admin → ok/404.
@@ -708,7 +708,7 @@ supplied scope field without restarting the session.
 `CHN-19` `PATCH /projects/:id/channels/bindings/:bindingId` → `project.connector.write`; unknown bindingId → 404 before body validation; empty body on an existing binding → 400; non-member 403/404; ANON 401.
 `Q-5` `GET /queue/sessions/:sid` (unknown) → 200 empty; ANON → 401.
 `Q-6` enqueue → move-up/down + DELETE /messages/:mid → DELETE /sessions/:sid → 200.
-`AUD-1` `GET /accounts/:id/audit` → 200 `{events,next_cursor}`. Each event exposes the centralized envelope: project/session/OpenCode/turn/message/tool/execution identifiers, monotonic `session_sequence`, actor/agent/initiator/delegation identity, authoritative and client-reported sources, action/phase/outcome, request/trace/correlation/causation identifiers, source-ledger identity, redacted summaries and SHA-256 digests, and integrity-chain fields. The route filters by project, session, actor, actor type, source, phase, outcome, request, correlation, resource, action, time, or free-text search. Authentication determines `authoritative_source`; validated `X-Kortix-Client` values populate only `client_reported_source`. A correlated project request can be reconstructed through one exact filtered query. NONMEMBER → 403.
+`AUD-1` `GET /accounts/:id/audit` → 200 `{events,next_cursor}`. Each event exposes the centralized envelope: project/session/OpenCode/turn/message/tool/execution identifiers, monotonic `session_sequence`, actor/agent/initiator/delegation identity, authoritative and client-reported sources, action/phase/outcome, request/trace/correlation/causation identifiers, source-ledger identity, redacted summaries and SHA-256 digests, and integrity-chain fields. The route filters by project, session, actor, actor type, source, phase, outcome, request, correlation, resource, action, time, or free-text search. Authentication determines `authoritative_source`; validated `X-Zed-Client` values populate only `client_reported_source`. A correlated project request can be reconstructed through one exact filtered query. NONMEMBER → 403.
 `AUD-2` `GET /accounts/:id/audit/export` → 200 (CSV/JSONL); bad format → 400; NONMEMBER → 403.
 `AUD-3` `GET /accounts/:id/audit/webhooks` → 200; NONMEMBER → 403.
 `AUD-4` `POST`/`PATCH`/`DELETE /accounts/:id/audit/webhooks[/:id]` → 201 secret-once; bad url → 400; unknown → 404; delete 200.
@@ -725,7 +725,7 @@ supplied scope field without restarting the session.
 
 `CR-11` `GET/POST /projects/:id/change-requests` → NONMEMBER → 403/404.
 `CR-12` `GET /projects/:id/change-requests` → ANON → 401.
-`PROJ-9` `POST /projects/:id/manifest/validate {raw,format?}` → 200 {valid,issues}; missing raw → 400. `raw` is parsed as TOML or YAML — the format is derived from the project's configured `manifestPath` first, falls back to an explicit `format:"toml"|"yaml"` in the body, and defaults to `toml` for back-compat. A `kortix.yaml`-configured project's `raw` YAML validates correctly instead of silently mis-parsing as TOML.
+`PROJ-9` `POST /projects/:id/manifest/validate {raw,format?}` → 200 {valid,issues}; missing raw → 400. `raw` is parsed as TOML or YAML — the format is derived from the project's configured `manifestPath` first, falls back to an explicit `format:"toml"|"yaml"` in the body, and defaults to `toml` for back-compat. A `zed.yaml`-configured project's `raw` YAML validates correctly instead of silently mis-parsing as TOML.
 `PROJ-10` `POST /projects/:id/cli-token` → 201 project PAT; `GET` → 200; `DELETE /:tokenId` → 200; unknown → 404.
 `PROJ-11` `PATCH /projects/:id/onboarding {completed}` → 200; NONMEMBER → 403/404.
 `PROJ-12` `GET /projects/:id/version-diff?from&into` → 200; missing → 400; same ref → is_same_ref.
@@ -733,8 +733,8 @@ supplied scope field without restarting the session.
 `PROJ-16` `POST /projects/:id/turn-question {session_id,questions[]}` → missing session id → 400; unknown session id → 404 before questions validation.
 `PROJ-17` `POST /projects/:id/turn-stream {session_id,text}` → missing session id → 400; unknown session id → 404 before event-payload validation; `kind:end|turn_end` needs only a valid `session_id` (`status: idle|error`) → 200 `ok:false` when no live stream.
 `PROJ-18` Project cap by plan: a FREE account may own exactly 1 project — `POST /projects/provision` for the 2nd → 403 `{code:project_limit_reached,limit:1}` (checked before any repo is provisioned); paid/team plans get `MAX_PROJECTS_PER_ACCOUNT`. Archived projects do not consume the slot, so deleting the one project frees it. Requires `managedGit`+`stripe` (billing enforced).
-`PROJ-19` Full v2 agent-config editor (agent-first spec §2.2): `GET /projects/:id/agents/:agentName/config` (`read`) → 200 `{agent,schema_version,editable,default_agent,block}` — `editable:false` + `block:null` for a v1/empty manifest (the UI's degrade signal), the agent's full `AgentBlockV2` for a declared v2 agent; `PUT /projects/:id/agents/:agentName/config {…AgentBlockV2}` (`manage`, gated `project.customize.write`) validates the block through the manifest-schema validator (bad permission tree/enum/ungrantable `kortix_cli` → 400 `invalid_config`) then writes it into the `agents:` map in `kortix.yaml`; a v1 project is refused with a 400 upgrade pointer (v2-only); malformed body → 400 `invalid_body`; caller with no project grant → 403.
-`MKTP-1` `GET /marketplace/items {query?,type?}` → auth → 200 `{items:[{id,registry,name,type,title,description,categories,capabilities,dependencies,fileCount,managedBy?,updatePolicy?}]}` (catalog includes the minimal Kortix runtime skills, optional General Knowledge Worker skills such as `pdf`, and curated bundles; the default starter does not ship the GKW pack; `?query=`/`?type=` filter).
+`PROJ-19` Full v2 agent-config editor (agent-first spec §2.2): `GET /projects/:id/agents/:agentName/config` (`read`) → 200 `{agent,schema_version,editable,default_agent,block}` — `editable:false` + `block:null` for a v1/empty manifest (the UI's degrade signal), the agent's full `AgentBlockV2` for a declared v2 agent; `PUT /projects/:id/agents/:agentName/config {…AgentBlockV2}` (`manage`, gated `project.customize.write`) validates the block through the manifest-schema validator (bad permission tree/enum/ungrantable `zed_cli` → 400 `invalid_config`) then writes it into the `agents:` map in `zed.yaml`; a v1 project is refused with a 400 upgrade pointer (v2-only); malformed body → 400 `invalid_body`; caller with no project grant → 403.
+`MKTP-1` `GET /marketplace/items {query?,type?}` → auth → 200 `{items:[{id,registry,name,type,title,description,categories,capabilities,dependencies,fileCount,managedBy?,updatePolicy?}]}` (catalog includes the minimal Zed runtime skills, optional General Knowledge Worker skills such as `pdf`, and curated bundles; the default starter does not ship the GKW pack; `?query=`/`?type=` filter).
 `MKTP-2` `GET /marketplace/items/:id` → auth → 200 item detail (`files`, `readme`, `capabilities`, managed metadata when applicable); unknown id → 404.
 `MKTP-3` `POST /projects/:projectId/marketplace/install {id}` → `write` → 201 `{commit_sha,branch,file_count,installed[],capabilities}` (resolves the catalog item + transitive bundle deps, commits its files + `registry-lock.json` to the default branch). Missing/unknown id → 400; missing project / `NONMEMBER` → 404/403. Legacy alias: `/registry/install`.
 `MKTP-4` `GET /projects/:projectId/marketplace` → `read` → 200 `{installed:[{name,type,source,installed_at,file_count}]}` (from `registry-lock.json`; migrates legacy `skills-lock.json`); missing project → 404. Legacy alias: `/registry`.
@@ -760,28 +760,28 @@ supplied scope field without restarting the session.
 
 ---
 
-## 27. Kortix as a Backend (KaaB) — session-create override contract
+## 27. Zed as a Backend (KaaB) — session-create override contract
 
 Origin is derived from the caller's token kind, never the request body. An
 account PAT, service account, or user API key resolves to `origin: backend`. A
 human web JWT resolves to `origin: user`. In-sandbox and agent-scoped tokens are
 never backend. Only a backend caller may set the `secrets` override. Customer
 metadata stays in the wrapper's data store. See
-`docs/KORTIX_AS_A_BACKEND_GUIDE.md`.
+`docs/ZED_AS_A_BACKEND_GUIDE.md`.
 
 `KAAB-1` backend PAT `POST /projects/:id/sessions {runtime_context}` → 201; response contains derived `origin:"backend"` and `session_id`.
 `KAAB-2` non-backend user JWT setting `secrets` → **403 `origin_override_forbidden`** before secret validation.
 `KAAB-3` backend `secrets=[unknown]` → **404 `SECRET_IDENTIFIER_NOT_FOUND`**; `secrets=[]` → 201 with `secrets_allowlist:[]` (inject zero project secrets). Narrowing only — never widens beyond the agent's grant.
-`KAAB-4` backend `opencode_model` that isn't servable (retired / not entitled / typo) → **400 `INVALID_SESSION_MODEL`** at create, not a dead turn at prompt time; a bare managed id is normalized to the `kortix/<id>` opencode ref.
+`KAAB-4` backend `opencode_model` that isn't servable (retired / not entitled / typo) → **400 `INVALID_SESSION_MODEL`** at create, not a dead turn at prompt time; a bare managed id is normalized to the `zed/<id>` opencode ref.
 `KAAB-5` backend `runtime_context` with a credential-like key → 400; over the 64-entry / 16 KiB caps → 400 (`INVALID_SESSION_RUNTIME_CONTEXT`).
 `KAAB-6` backend `Idempotency-Key` retry: same key + same body → the SAME `session_id` (no double-create / double-charge); same key + a different `secrets`/`connector_bindings` body → **409** (`IDEMPOTENCY_SECRETS_CONFLICT` / `IDEMPOTENCY_BINDING_CONFLICT`).
 `KAAB-7` backend idempotency context guard: same key + different `runtime_context` → **409 `IDEMPOTENCY_CONTEXT_CONFLICT`**; a replay whose stored session was soft-deleted → 409 `IDEMPOTENCY_KEY_SESSION_DELETED`; an oversized `Idempotency-Key` header (>255 chars) → **400 `INVALID_IDEMPOTENCY_KEY`**.
 
 ---
 
-## 28. Kortix Apps
+## 28. Zed Apps
 
-Kortix Apps are project-owned serverless deployments. The API owns the stable
+Zed Apps are project-owned serverless deployments. The API owns the stable
 hostname, immutable artifact and deployment records, provider-neutral machine
 specification, runtime lifecycle, billing attribution, and atomic active
 deployment pointer. The provider remains an implementation detail.

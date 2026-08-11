@@ -6,13 +6,13 @@
  * Run (from packages/sdk):  bun run playground/skills/08-list-skills.ts [projectId]
  */
 import { readProjectFile } from "../../src/index";
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("list-skills", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
 
-  const detail = await kortix.projects.detail(projectId);
+  const detail = await zed.projects.detail(projectId);
   const skills = detail.config.skills;
 
   console.log(`✓ ${skills.length} skill(s):\n`);

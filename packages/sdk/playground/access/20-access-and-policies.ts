@@ -4,12 +4,12 @@
  *
  * Run (from packages/sdk):  bun run playground/access/20-access-and-policies.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("access-and-policies", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
-  const project = kortix.project(projectId);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
+  const project = zed.project(projectId);
 
   const access = await project.access.list();
   console.log(`✓ access.list(): ${JSON.stringify(access).slice(0, 300)}…`);

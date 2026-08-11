@@ -12,14 +12,14 @@ current `package.json` scripts.
 ## Current model
 
 - **Engine:** node-pg-migrate, invoked by `packages/db/scripts/migrate.ts`.
-- **Schema source:** `packages/db/src/schema/kortix.ts` for the Drizzle-modeled
-  `kortix` schema.
+- **Schema source:** `packages/db/src/schema/zed.ts` for the Drizzle-modeled
+  `zed` schema.
 - **Migration files:** immutable SQL files in `packages/db/migrations/`, named
   with a 17-digit UTC timestamp (`YYYYMMDDHHMMSSmmm_slug.sql`).
-- **Applied-state table:** `kortix_migrations.pgmigrations` (node-pg-migrate
+- **Applied-state table:** `zed_migrations.pgmigrations` (node-pg-migrate
   tracks migration names; it does not checksum file contents).
 - **Deploy:** `deploy-dev.yml` and `deploy-prod.yml` run `pnpm --filter
-  @kortix/db migrate` before the EKS GitOps rollout. The disabled Helm PreSync
+  @zed/db migrate` before the EKS GitOps rollout. The disabled Helm PreSync
   hook is not the live migration path.
 
 ## Rules
@@ -50,21 +50,21 @@ current `package.json` scripts.
 | `pnpm migrate:status` | Dry-run/list pending migrations; exits non-zero if any are pending. |
 | `pnpm migrate:create <slug>` | Scaffold a hand-written SQL migration with the house-rules template. |
 | `pnpm migrate:create <slug> --concurrent` | Scaffold the `.concurrent.ts` CONCURRENTLY escape hatch. |
-| `pnpm migrate:generate <slug>` | Generate SQL from a `kortix.ts` schema change and update the Drizzle snapshot. |
+| `pnpm migrate:generate <slug>` | Generate SQL from a `zed.ts` schema change and update the Drizzle snapshot. |
 | `pnpm migrate:fake` | Mark pending migrations as applied without running them (for baselining existing envs). |
-| `pnpm --filter @kortix/db lint` | Full local check: filename/order rules + mixed-version/enum-value guard + squawk (deterministic Postgres zero-downtime linter). Run before every push touching `packages/db/migrations`. |
+| `pnpm --filter @zed/db lint` | Full local check: filename/order rules + mixed-version/enum-value guard + squawk (deterministic Postgres zero-downtime linter). Run before every push touching `packages/db/migrations`. |
 | `pnpm migrate:lint` | Just the filename/order/mixed-version/enum-value checks (no squawk, no network). |
 
 ## Safe schema-change loop
 
-1. Edit `packages/db/src/schema/kortix.ts` for schema-shape changes, or create a
+1. Edit `packages/db/src/schema/zed.ts` for schema-shape changes, or create a
    hand-written migration for data/RLS/functions/grants/custom SQL, or a
    `--concurrent` migration for index create/drop.
 2. Run `pnpm migrate:generate <slug>` or `pnpm migrate:create <slug> [--concurrent]`.
 3. Read the SQL top-to-bottom. Stop on accidental `DROP`, unsafe type changes,
    immediate `NOT NULL` on populated tables, non-idempotent backfills, or a
    missing mixed-version/enum-value annotation.
-4. Run `pnpm --filter @kortix/db lint` and the relevant package tests/checks.
+4. Run `pnpm --filter @zed/db lint` and the relevant package tests/checks.
 5. Apply to a local/throwaway DB before dev/prod when the change is non-trivial.
 6. Commit both the migration SQL and any generated Drizzle snapshot changes.
 

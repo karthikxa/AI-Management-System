@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { ProjectSession } from '@kortix/sdk';
+import type { ProjectSession } from '@zed/sdk';
 
 import {
   resolveRenderedSectionIds,

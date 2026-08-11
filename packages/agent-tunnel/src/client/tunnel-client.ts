@@ -128,7 +128,7 @@ export class TunnelClient {
       -1,
       'No tunnel connection found. The user needs to set up Agent Tunnel first:\n' +
       '1. Create a tunnel connection\n' +
-      '2. Connect the local machine from the Kortix desktop app or run the tunnel connect command',
+      '2. Connect the local machine from the Zed desktop app or run the tunnel connect command',
     );
   }
 }

@@ -1,5 +1,5 @@
-CREATE TABLE "kortix"."project_llm_routing_policies" (
-  "project_id" uuid PRIMARY KEY NOT NULL REFERENCES "kortix"."projects"("project_id") ON DELETE CASCADE,
+CREATE TABLE "zed"."project_llm_routing_policies" (
+  "project_id" uuid PRIMARY KEY NOT NULL REFERENCES "zed"."projects"("project_id") ON DELETE CASCADE,
   "vision_model" varchar(128),
   "default_fallback_models" jsonb,
   "default_fallback_on" text,

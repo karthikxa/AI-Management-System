@@ -29,7 +29,7 @@ import {
   sessionApprovalsView,
   type ApprovalFailure,
 } from '@/components/workbench/approvals-model';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { cn, relativeTime } from '@/lib/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, ShieldCheck, ShieldQuestion, X } from 'lucide-react';
@@ -59,7 +59,7 @@ export function SessionApprovals({
 
   const audit = useQuery({
     queryKey: auditKey(projectId, sessionId),
-    queryFn: () => kortix.session(projectId, sessionId).audit(50, { showErrors: false }),
+    queryFn: () => zed.session(projectId, sessionId).audit(50, { showErrors: false }),
     // A gate can appear at any point in a turn and the agent is blocked until
     // it clears, so this polls rather than waiting for a navigation.
     refetchInterval: 8_000,
@@ -68,7 +68,7 @@ export function SessionApprovals({
 
   const resolve = useMutation({
     mutationFn: (input: { executionId: string; decision: 'approve' | 'deny' }) =>
-      kortix.project(projectId).approvals.resolve(input.executionId, input.decision),
+      zed.project(projectId).approvals.resolve(input.executionId, input.decision),
     onMutate: (input) => {
       setFailure(null);
       setDeciding(input.executionId);

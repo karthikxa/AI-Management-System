@@ -1,11 +1,11 @@
-# @kortix/desktop-electron
+# @zed/desktop-electron
 
-An **Electron** build of the Kortix desktop shell, built as a 1:1 behavioral
+An **Electron** build of the Zed desktop shell, built as a 1:1 behavioral
 port of the Tauri shell (`apps/desktop`). It exists so we can compare the two
 side by side and pick whichever is less quirky to maintain.
 
 Both shells are thin native wrappers around the **remote** web app
-(`http://localhost:3000` in dev, `https://kortix.com` in prod). They share the
+(`http://localhost:3000` in dev, `https://zed.com` in prod). They share the
 same web codebase unchanged — see "Parity" below.
 
 ## Why an Electron port?
@@ -38,24 +38,24 @@ pnpm dev:desktop-electron     # repo root: launch the Electron shell → :3000
 Point it at a different backend without a rebuild:
 
 ```bash
-pnpm --filter @kortix/desktop-electron dev:dev-env    # https://dev.kortix.com
-pnpm --filter @kortix/desktop-electron dev:prod-env   # https://kortix.com
+pnpm --filter @zed/desktop-electron dev:dev-env    # https://dev.zed.com
+pnpm --filter @zed/desktop-electron dev:prod-env   # https://zed.com
 # or:
-KORTIX_DESKTOP_URL=https://kortix.com/projects pnpm --filter @kortix/desktop-electron dev
+ZED_DESKTOP_URL=https://zed.com/projects pnpm --filter @zed/desktop-electron dev
 ```
 
-At runtime you can also switch via the native **Kortix → Frontend URL** menu
+At runtime you can also switch via the native **Zed → Frontend URL** menu
 (Production / Dev / Local / Custom… / Reset). The choice is remembered across
 launches (stored in `userData/frontend_url`).
 
-### Testing login (the `kortix://` deep link)
+### Testing login (the `zed://` deep link)
 
 App login (Google etc.) opens in your **real browser** and returns to the app via
-the `kortix://auth/callback` deep link. The OS only routes `kortix://` to a
+the `zed://auth/callback` deep link. The OS only routes `zed://` to a
 **bundled** app, so for a clean end-to-end login test run the packaged build:
 
 ```bash
-pnpm --filter @kortix/desktop-electron dev:macos   # builds an unpacked .app + opens it
+pnpm --filter @zed/desktop-electron dev:macos   # builds an unpacked .app + opens it
 ```
 
 Plain `pnpm dev` (unpackaged `electron .`) is great for fast iteration, and your
@@ -77,7 +77,7 @@ notarization are env-driven (`CSC_LINK`, `CSC_KEY_PASSWORD`, `APPLE_API_KEY*`,
 
 The installed app self-updates via **electron-updater**, reading the `vX.Y.Z`
 **GitHub Releases** as its feed (the `publish: github` block in
-`electron-builder.yml` bakes an `app-update.yml` pointing at `kortix-ai/suna`).
+`electron-builder.yml` bakes an `app-update.yml` pointing at `zed-ai/suna`).
 
 Flow (`src/updater.js`, wired from `src/main.js`):
 
@@ -87,7 +87,7 @@ Flow (`src/updater.js`, wired from `src/main.js`):
    never block on the download.
 3. Once staged, a native **"Restart to update"** dialog appears. Declining keeps
    the update; it installs on the next quit (`autoInstallOnAppQuit`). A 6-hour
-   re-check covers long sessions, and **Kortix → Check for Updates…** runs it on
+   re-check covers long sessions, and **Zed → Check for Updates…** runs it on
    demand with explicit feedback.
 
 For this to work the release must carry the electron-updater **metadata** —
@@ -112,20 +112,20 @@ notarized** — CI signs when the cert secrets are present.
 
 The web app talks to the native shell through exactly one module —
 `apps/web/src/lib/desktop.ts` — which uses `window.__TAURI__` and the
-`KortixDesktop` user-agent token. This port reproduces **both**, so the web app
+`ZedDesktop` user-agent token. This port reproduces **both**, so the web app
 runs **unchanged** on either shell:
 
 | Concern | Tauri (`apps/desktop`) | Electron (this app) |
 | --- | --- | --- |
-| Detection | `KortixDesktop` UA token | same token appended to UA |
+| Detection | `ZedDesktop` UA token | same token appended to UA |
 | Native bridge | `window.__TAURI__` (global Tauri) | `window.__TAURI__` shim in `preload.js` |
 | External `_blank` links | JS shim → `open_external` IPC | `setWindowOpenHandler` → `shell.openExternal` |
 | OAuth/connect popups (Pipedream) | ✗ blocked (`window.open`→null) | ✓ real child window (works) |
-| App login | system browser + `kortix://` | system browser + `kortix://` |
+| App login | system browser + `zed://` | system browser + `zed://` |
 | Zoom (`set_zoom`) | Rust command | `webContents.setZoomFactor` |
 | Window controls | `getCurrentWindow().*` | IPC → `BrowserWindow.*` |
 | Frontend URL override | app-config-dir file + menu | `userData/frontend_url` + same menu |
-| Deep links (`kortix://`) | deep-link plugin | `setAsDefaultProtocolClient` + `open-url`/`second-instance` |
+| Deep links (`zed://`) | deep-link plugin | `setAsDefaultProtocolClient` + `open-url`/`second-instance` |
 | Nav gate (in-app vs browser) | `on_navigation` (also fires for iframes) | `will-navigate` (top frame only) |
 | Window dragging | JS `startDragging` shim | native `-webkit-app-region` CSS |
 | Maximized persistence | window-state plugin (maximized only) | `userData/window_state.json` (maximized only) |
@@ -136,7 +136,7 @@ runs **unchanged** on either shell:
 ### OAuth: two flows, handled differently (on purpose)
 
 - **App login** (Supabase `/auth/v1/*`, Google, …) → opens in your **real
-  browser**, returns via `kortix://auth/callback`. Same model as Tauri; Google
+  browser**, returns via `zed://auth/callback`. Same model as Tauri; Google
   rejects embedded webviews and a real browser is the trustworthy place to sign
   in. The nav gate routes any `/auth/v1/*` navigation out to the browser.
 - **Pipedream Connect / connector popups** → open **in-app** as a child window.

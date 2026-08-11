@@ -4,12 +4,12 @@
  *
  * Run (from packages/sdk):  bun run playground/channels/28-email-and-voice.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("email-and-voice", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
-  const channels = kortix.project(projectId).channels;
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
+  const channels = zed.project(projectId).channels;
 
   const email = await channels.email.installation();
   console.log(`✓ email.installation(): ${JSON.stringify(email).slice(0, 250)}`);
@@ -17,6 +17,6 @@ run("email-and-voice", async () => {
   const emailMode = await channels.email.mode();
   console.log(`✓ email.mode(): ${JSON.stringify(emailMode).slice(0, 200)}`);
 
-  await channels.voice.setBotName("Kortix");
-  console.log(`✓ voice.setBotName("Kortix")`);
+  await channels.voice.setBotName("Zed");
+  console.log(`✓ voice.setBotName("Zed")`);
 });

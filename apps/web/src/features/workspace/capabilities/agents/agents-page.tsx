@@ -34,8 +34,8 @@ import {
   getProjectDetail,
   type ProjectConfigSummary,
   updateProjectDefaultAgent,
-} from '@kortix/sdk';
-import { contract, qk, useProjectAccountId } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk, useProjectAccountId } from '@zed/sdk/react';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -315,7 +315,7 @@ function AgentCardBadges({ agent, isDefault }: { agent: Agent; isDefault: boolea
         <StarSolid
           weight="fill"
           aria-label="Default agent"
-          className="text-kortix-orange size-3.5 shrink-0"
+          className="text-zed-orange size-3.5 shrink-0"
         />
       ) : null}
       {agent.enabled === false ? (
@@ -334,7 +334,7 @@ function AgentCardBadges({ agent, isDefault }: { agent: Agent; isDefault: boolea
  *    agent distinguishes nothing.
  *  - default, disabled — both are exceptions by definition.
  *
- * The declaring file is deliberately absent. It was a `kortix.yaml` chip, but
+ * The declaring file is deliberately absent. It was a `zed.yaml` chip, but
  * a file is a value, not a status, and the modal now prints the real source
  * path under the title — which says the same thing and is clickable-accurate.
  */
@@ -349,7 +349,7 @@ function AgentDetailMeta({ agent, config }: { agent: Agent; config: ProjectConfi
       ) : null}
       {config.open_code_default_agent === agent.name ? (
         <Badge variant="outline" size="sm" className="text-muted-foreground gap-1 font-medium">
-          <StarSolid weight="fill" className="text-kortix-orange size-3.5 shrink-0" />
+          <StarSolid weight="fill" className="text-zed-orange size-3.5 shrink-0" />
           Default
         </Badge>
       ) : null}
@@ -367,7 +367,7 @@ function AgentDetailMeta({ agent, config }: { agent: Agent; config: ProjectConfi
  * rather than a banner of its own — it is one setting, and giving it a titled
  * block above the grid would outweigh the list it belongs to.
  *
- * v2-only: the default agent is a `kortix.yaml` concept, so a v1 project gets
+ * v2-only: the default agent is a `zed.yaml` concept, so a v1 project gets
  * no control instead of one that cannot persist.
  */
 function DefaultAgentSelector({

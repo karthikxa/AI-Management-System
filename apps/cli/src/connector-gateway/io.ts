@@ -1,8 +1,8 @@
 /**
- * JSON-only IO helpers for the `kortix connectors` surface.
+ * JSON-only IO helpers for the `zed connectors` surface.
  *
- * Unlike the rest of the kortix CLI (human-formatted tables + ANSI colour),
- * `kortix connectors` is a MACHINE surface: the in-sandbox agent parses stdout.
+ * Unlike the rest of the zed CLI (human-formatted tables + ANSI colour),
+ * `zed connectors` is a MACHINE surface: the in-sandbox agent parses stdout.
  * So it emits ONLY JSON and never prints banners / host notices (index.ts skips
  * those for machine-oriented connector subcommands). This preserves clean JSON
  * output for agents while the implementation lives in the one CLI.
@@ -31,7 +31,7 @@ export interface ExecArgs {
 }
 
 /**
- * Parse the args that follow `kortix connectors` into command/positional/flags.
+ * Parse the args that follow `zed connectors` into command/positional/flags.
  * `argv` is everything AFTER the `connectors` token, e.g.
  * `['call', 'stripe.charges.create', '{"amount":999}']`.
  */

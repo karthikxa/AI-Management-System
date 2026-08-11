@@ -15,7 +15,7 @@ export class GitHubApiError extends Error {
   }
 }
 
-// 'managed' = a Kortix-managed git token minted server-side by the managed backend.
+// 'managed' = a Zed-managed git token minted server-side by the managed backend.
 // 'project_credential' = provider-neutral git credential stored outside
 // user-readable runtime secrets.
 // Both ride this auth context because callers only consume `.token` for git
@@ -111,13 +111,13 @@ export interface CreateRepoInput {
 
 // DB-first, env-fallback: the in-app self-host setup flow
 // (platform/routes/github-app.ts) writes the App's creds into
-// kortix.platform_settings (managed-github-app.ts); a self-host operator who
+// zed.platform_settings (managed-github-app.ts); a self-host operator who
 // still configures everything via `.env` keeps working unchanged since the DB
 // config resolves to `{}` until someone runs the setup flow.
 export function githubAppId() {
   return (
     managedGithubAppConfig().appId?.trim() ||
-    process.env.KORTIX_GITHUB_APP_ID ||
+    process.env.ZED_GITHUB_APP_ID ||
     process.env.GITHUB_APP_ID ||
     null
   );
@@ -126,7 +126,7 @@ export function githubAppId() {
 function githubAppPrivateKey() {
   return (
     managedGithubAppConfig().privateKey?.trim() ||
-    process.env.KORTIX_GITHUB_APP_PRIVATE_KEY ||
+    process.env.ZED_GITHUB_APP_PRIVATE_KEY ||
     process.env.GITHUB_APP_PRIVATE_KEY ||
     null
   );
@@ -135,7 +135,7 @@ function githubAppPrivateKey() {
 export function githubAppSlug() {
   return (
     managedGithubAppConfig().slug?.trim() ||
-    process.env.KORTIX_GITHUB_APP_SLUG ||
+    process.env.ZED_GITHUB_APP_SLUG ||
     process.env.GITHUB_APP_SLUG ||
     null
   );
@@ -148,7 +148,7 @@ export function isGithubAppConfigured() {
 function githubAppStateSecret() {
   return (
     managedGithubAppConfig().stateSecret?.trim() ||
-    process.env.KORTIX_GITHUB_APP_STATE_SECRET ||
+    process.env.ZED_GITHUB_APP_STATE_SECRET ||
     process.env.SUPABASE_JWT_SECRET ||
     githubAppPrivateKey() ||
     null
@@ -324,7 +324,7 @@ export function createGitHubAppJwt(nowMs = Date.now()) {
   const appId = githubAppId()?.trim();
   const privateKey = githubAppPrivateKey();
   if (!appId || !privateKey) {
-    throw new Error('GitHub App is not configured (set KORTIX_GITHUB_APP_ID and KORTIX_GITHUB_APP_PRIVATE_KEY)');
+    throw new Error('GitHub App is not configured (set ZED_GITHUB_APP_ID and ZED_GITHUB_APP_PRIVATE_KEY)');
   }
   return signGitHubAppJwt(appId, privateKey, nowMs);
 }
@@ -339,7 +339,7 @@ function headers(auth?: Pick<GitHubAuthContext, 'token'>): Record<string, string
     'Accept': 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
     'Authorization': `Bearer ${requestToken(auth)}`,
-    'User-Agent': 'kortix-api',
+    'User-Agent': 'zed-api',
     'Content-Type': 'application/json',
     ...getTraceHeaders(),
   };
@@ -837,11 +837,11 @@ export async function commitFile(opts: {
   // Pin the commit identity explicitly. Without an `author`/`committer` the
   // Contents API attributes the commit to whoever owns the token — which, on a
   // server-side PAT, surfaces a personal GitHub user (e.g. "markokraemer
-  // committed") instead of Kortix. Defaulting here mirrors the identity used by
+  // committed") instead of Zed. Defaulting here mirrors the identity used by
   // every git-CLI commit path (branches.ts / merge.ts / seed.ts).
   const ident = {
-    name: opts.authorName || 'Kortix',
-    email: opts.authorEmail || 'noreply@kortix.ai',
+    name: opts.authorName || 'Zed',
+    email: opts.authorEmail || 'noreply@zed.ai',
   };
   const body: Record<string, unknown> = {
     message: opts.message,

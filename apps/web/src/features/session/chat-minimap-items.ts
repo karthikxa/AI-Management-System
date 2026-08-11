@@ -1,4 +1,4 @@
-import { stripKortixSystemTags } from '@/lib/utils/kortix-system-tags';
+import { stripZedSystemTags } from '@/lib/utils/zed-system-tags';
 import { stripHtmlTags } from '@/lib/utils/strip-html-tags';
 import { isFilePart, isTextPart, type FilePart, type TextPart, type Turn } from '@/ui';
 
@@ -222,7 +222,7 @@ export function extractMinimapItem(turn: Turn): MinimapItem | null {
   const { cleanText, sessions } = parseSessionReferences(afterAgentMentions);
 
   const body = truncate(
-    stripHtmlTags(stripKortixSystemTags(cleanText)).replace(/\s+/g, ' ').trim(),
+    stripHtmlTags(stripZedSystemTags(cleanText)).replace(/\s+/g, ' ').trim(),
     MAX_BODY_TEXT,
   );
 

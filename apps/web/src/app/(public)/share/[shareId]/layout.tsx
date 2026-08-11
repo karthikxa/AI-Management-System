@@ -8,9 +8,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { shareId } = await params;
 
-  const title = 'Shared Conversation | Kortix';
-  const description = 'Replay this Worker conversation on Kortix';
-  const url = getServerPublicEnv().APP_URL || 'https://kortix.com';
+  const title = 'Shared Conversation | Zed';
+  const description = 'Replay this Worker conversation on Zed';
+  const url = getServerPublicEnv().APP_URL || 'https://zed.com';
 
   return {
     title,

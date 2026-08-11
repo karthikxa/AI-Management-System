@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { MessageWithParts } from '@kortix/sdk/react';
+import type { MessageWithParts } from '@zed/sdk/react';
 import type { FlatModel } from '../model-flatten';
 import { getContextLimit, getLastAssistantTokenTotal } from './token-progress';
 

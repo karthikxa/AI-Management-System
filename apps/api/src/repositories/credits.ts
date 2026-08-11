@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { creditAccounts } from '@kortix/db';
+import { creditAccounts } from '@zed/db';
 import { db } from '../shared/db';
 import { config } from '../config';
 import { assertRpcDebitLedgerType } from '../billing/ledger-type-honesty';
@@ -68,7 +68,7 @@ export async function checkCredits(
   minimumRequired: number = 0.01
 ): Promise<CreditCheckResult> {
   // Billing disabled: no credit gating
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) {
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) {
     return { hasCredits: true, balance: 0, message: 'OK' };
   }
 
@@ -131,7 +131,7 @@ export async function deductCredits(
   assertRpcDebitLedgerType(ledgerType);
 
   // Billing disabled: no deduction
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) {
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) {
     return { success: true, amountDeducted: 0, newBalance: 0 };
   }
 

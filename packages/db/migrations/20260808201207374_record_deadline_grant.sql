@@ -35,7 +35,7 @@ set statement_timeout = '30s';
 -- anything. Old application code ignores unknown metadata keys, and the column
 -- is already a free-form jsonb bag.
 
-CREATE OR REPLACE FUNCTION "kortix"."session_sandboxes_anchor_guard"()
+CREATE OR REPLACE FUNCTION "zed"."session_sandboxes_anchor_guard"()
 RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
   derived boolean := false;
@@ -106,5 +106,5 @@ BEGIN
 END;
 $$;
 
-COMMENT ON COLUMN "kortix"."session_sandboxes"."deadline_at" IS
+COMMENT ON COLUMN "zed"."session_sandboxes"."deadline_at" IS
   'When the reaper may stop this box. THE single stop authority for a running box. Pushed out only by a control-plane-observed event and pulled in only by a sandbox-reported terminal turn end, both bounded by active_since + 24h. metadata.deadlineGrant names which grant set the value currently in force; ''boot_floor'' means the box received nothing but the resume floor.';

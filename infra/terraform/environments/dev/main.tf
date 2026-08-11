@@ -1,10 +1,10 @@
-# ── dev environment — dev-api-ecs-fargate.kortix.com (ECS Fargate, autoscaled) ─
+# ── dev environment — dev-api-ecs-fargate.zed.com (ECS Fargate, autoscaled) ─
 #
-#   dev-api-ecs-fargate.kortix.com → Cloudflare (proxied, Full strict) → ALB →
+#   dev-api-ecs-fargate.zed.com → Cloudflare (proxied, Full strict) → ALB →
 #   ECS Fargate service (autoscaled) in private subnets, egress via NAT.
-#   dev.kortix.com (frontend) stays on Vercel — not managed here.
+#   dev.zed.com (frontend) stays on Vercel — not managed here.
 #
-# This ECS service is the always-warm FALLBACK behind dev-api.kortix.com: that
+# This ECS service is the always-warm FALLBACK behind dev-api.zed.com: that
 # hostname is a Cloudflare Worker (infra/cloudflare/workers/api-router, env=dev)
 # that routes to Fargate via its
 # ACTIVE_BACKEND var. So this stack owns the dev-api-ecs-fargate name ONLY —
@@ -46,8 +46,8 @@ provider "cloudflare" {
 }
 
 locals {
-  name   = "kortix-dev"
-  domain = "dev-api-ecs-fargate.kortix.com" # the ECS fallback name; dev-api itself is the Worker's custom domain
+  name   = "zed-dev"
+  domain = "dev-api-ecs-fargate.zed.com" # the ECS fallback name; dev-api itself is the Worker's custom domain
   # Cloudflare's published IPv4 edge ranges — lock the ALB so the origin is only
   # reachable THROUGH Cloudflare. Mirrors the EKS chart inboundCidrs / prod.
   cloudflare_ip_ranges = [
@@ -58,7 +58,7 @@ locals {
   ]
   tags = {
     Environment = "dev"
-    Service     = "kortix-api"
+    Service     = "zed-api"
     ManagedBy   = "terraform"
   }
 }
@@ -91,7 +91,7 @@ module "acm" {
 # ecs-deploy.sh wires every key in it into each task-def revision. Looked up by
 # name so the random ARN suffix is never hard-coded.
 data "aws_secretsmanager_secret" "env" {
-  name = "kortix-dev-env"
+  name = "zed-dev-env"
 }
 
 module "api" {
@@ -150,12 +150,12 @@ module "gateway" {
   health_check_path = "/health/live"
   # The gateway origin hostname (gateway-<env>-ecs-fargate) must pass Cloudflare
   # Full(strict) origin verification, so it needs a cert covering THAT host — the
-  # api cert (module.acm, dev-api-ecs-fargate only) does not. Use the *.kortix.com
+  # api cert (module.acm, dev-api-ecs-fargate only) does not. Use the *.zed.com
   # wildcard, which covers every origin alias.
   certificate_arn = var.gateway_certificate_arn
   # PORT is auto-injected by the module; the gateway also needs to call back to
   # the API, which on Fargate is the public (Cloudflare-fronted) dev-api host.
-  environment      = merge(var.gateway_environment, { KORTIX_API_URL = "https://dev-api.kortix.com" })
+  environment      = merge(var.gateway_environment, { ZED_API_URL = "https://dev-api.zed.com" })
   secrets          = var.api_secrets
   secrets_blob_arn = data.aws_secretsmanager_secret.env.arn
 
@@ -171,7 +171,7 @@ module "gateway" {
   tags             = local.tags
 }
 
-# ── DNS: dev-api-ecs-fargate.kortix.com → the ALB (Cloudflare-proxied) ─────────
+# ── DNS: dev-api-ecs-fargate.zed.com → the ALB (Cloudflare-proxied) ─────────
 # This is the ECS fallback backend the dev-api Worker routes to. dev-api itself
 # is the Worker's custom domain (AAAA 100:: placeholder) and is intentionally NOT
 # managed here, so a terraform apply never clobbers the Worker.

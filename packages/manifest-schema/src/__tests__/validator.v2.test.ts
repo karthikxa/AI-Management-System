@@ -8,12 +8,12 @@ import {
 
 // v2's `agents:` map is GOVERNANCE ONLY (decision 2026-07-05, "one home per
 // concern") — behavior (mode/model/temperature/permission/…) lives entirely
-// in the agent's own `.kortix/opencode/agents/<name>.md` frontmatter, which
+// in the agent's own `.zed/opencode/agents/<name>.md` frontmatter, which
 // this validator never reads. See the `validateAgentMdFrontmatter` describe
 // block below for the behavioral-field rules, now exercised against that
 // function directly instead of through `validateManifest`.
 const V2_FIXTURE = `
-kortix_version: 2
+zed_version: 2
 default_agent: support
 runtime: opencode
 
@@ -25,11 +25,11 @@ agents:
   support:
     connectors: [github, slack]
     secrets: [STRIPE_KEY, GH_TOKEN]
-    kortix_cli: [project.session.start, project.cr.open]
+    zed_cli: [project.session.start, project.cr.open]
     workspace: runtime
   pr-bot:
     connectors: [github]
-    kortix_cli: [project.cr.open, project.cr.merge, project.review.submit]
+    zed_cli: [project.cr.open, project.cr.merge, project.review.submit]
 
 triggers:
   - slug: nightly-digest
@@ -61,7 +61,7 @@ function frontmatterIssues(frontmatter: Record<string, unknown>): ManifestIssue[
 }
 
 const V1_REGRESSION_FIXTURE = `
-kortix_version = 1
+zed_version = 1
 
 [project]
 name = "acme-support"
@@ -72,7 +72,7 @@ required = ["ANTHROPIC_API_KEY"]
 optional = ["STRIPE_KEY"]
 
 [opencode]
-config_dir = ".kortix/opencode"
+config_dir = ".zed/opencode"
 
 [[sandbox.templates]]
 slug = "py"
@@ -97,20 +97,20 @@ provider = "pipedream"
 app = "github"
 
 [[connectors]]
-slug = "kortix_slack"
+slug = "zed_slack"
 provider = "channel"
 platform = "slack"
 
 [[agents]]
 name = "support"
 connectors = ["github"]
-kortix_cli = ["project.read", "project.session.start"]
+zed_cli = ["project.read", "project.session.start"]
 env = ["STRIPE_KEY"]
 
 [[agents]]
 name = "pr-bot"
 connectors = "all"
-kortix_cli = ["*"]
+zed_cli = ["*"]
 
 [[channels]]
 platform = "slack"
@@ -122,7 +122,7 @@ events = ["message"]
 // Golden-fixture regression guard: this v1 manifest exercises project, env,
 // opencode, sandbox.templates + default, triggers, connectors (incl. the
 // platform-written channel connector), [[agents]] (incl. the env grant-set),
-// and [[channels]]. Adding kortix_version 2 support must not change a
+// and [[channels]]. Adding zed_version 2 support must not change a
 // single byte of how this validates — v1 stays byte-for-byte unchanged.
 describe('validateManifest — v1 regression (byte-for-byte unchanged after adding v2)', () => {
   test('a comprehensive v1 manifest still validates clean with zero issues', () => {
@@ -133,7 +133,7 @@ describe('validateManifest — v1 regression (byte-for-byte unchanged after addi
 
   test('the same manifest, translated to YAML, validates identically', () => {
     const yaml = `
-kortix_version: 1
+zed_version: 1
 project:
   name: acme-support
   description: Customer support automation
@@ -141,7 +141,7 @@ env:
   required: [ANTHROPIC_API_KEY]
   optional: [STRIPE_KEY]
 opencode:
-  config_dir: .kortix/opencode
+  config_dir: .zed/opencode
 sandbox:
   default: py
   templates:
@@ -160,17 +160,17 @@ connectors:
   - slug: github
     provider: pipedream
     app: github
-  - slug: kortix_slack
+  - slug: zed_slack
     provider: channel
     platform: slack
 agents:
   - name: support
     connectors: [github]
-    kortix_cli: [project.read, project.session.start]
+    zed_cli: [project.read, project.session.start]
     env: [STRIPE_KEY]
   - name: pr-bot
     connectors: all
-    kortix_cli: ["*"]
+    zed_cli: ["*"]
 channels:
   - platform: slack
     enabled: true
@@ -182,7 +182,7 @@ channels:
   });
 });
 
-describe('validateManifest — kortix_version 2 happy path', () => {
+describe('validateManifest — zed_version 2 happy path', () => {
   test('the full example manifest is valid with zero errors', () => {
     const { valid, errorPaths, issues } = summarize(V2_FIXTURE);
     expect(errorPaths).toEqual([]);
@@ -194,7 +194,7 @@ describe('validateManifest — kortix_version 2 happy path', () => {
 describe('validateManifest — per-agent sandbox templates', () => {
   test('accepts a declared template and the reserved platform default', () => {
     const { valid, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: researcher
 sandbox:
   default: node
@@ -217,7 +217,7 @@ agents:
 
   test('accepts a valid dashboard-managed template slug', () => {
     const { valid, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: researcher
 sandbox:
   templates:
@@ -234,7 +234,7 @@ agents:
 
   test('rejects an invalid agent sandbox slug', () => {
     const { valid, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: researcher
 agents:
   researcher:
@@ -250,32 +250,32 @@ agents:
   });
 });
 
-describe('validateManifest — kortix_version 2 format gate', () => {
-  test('kortix_version 2 in a TOML file is a validation error pointing at kortix.yaml', () => {
+describe('validateManifest — zed_version 2 format gate', () => {
+  test('zed_version 2 in a TOML file is a validation error pointing at zed.yaml', () => {
     const { valid, errorPaths, issues } = summarize(
-      `kortix_version = 2\ndefault_agent = "w"\n[agents.w]\n`,
+      `zed_version = 2\ndefault_agent = "w"\n[agents.w]\n`,
       'toml',
     );
     expect(valid).toBe(false);
-    expect(errorPaths).toContain('kortix_version');
+    expect(errorPaths).toContain('zed_version');
     expect(
-      issues.some((i) => i.path === 'kortix_version' && i.message.includes('kortix.yaml')),
+      issues.some((i) => i.path === 'zed_version' && i.message.includes('zed.yaml')),
     ).toBe(true);
   });
 
-  test('kortix_version 1 continues to work in TOML', () => {
-    expect(validateManifest('kortix_version = 1', 'toml').valid).toBe(true);
+  test('zed_version 1 continues to work in TOML', () => {
+    expect(validateManifest('zed_version = 1', 'toml').valid).toBe(true);
   });
 
-  test('kortix_version 1 continues to work in YAML', () => {
-    expect(validateManifest('kortix_version: 1', 'yaml').valid).toBe(true);
+  test('zed_version 1 continues to work in YAML', () => {
+    expect(validateManifest('zed_version: 1', 'yaml').valid).toBe(true);
   });
 });
 
-describe('validateManifest — kortix_version 2 behavior fields moved to the agent .md', () => {
+describe('validateManifest — zed_version 2 behavior fields moved to the agent .md', () => {
   test('a flat behavioral field on the agent block is rejected with a pointer to the .md frontmatter', () => {
     const { errorPaths, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -287,7 +287,7 @@ agents:
 
   test('`model` on the agent block is rejected — model now lives in the .md frontmatter', () => {
     const { errorPaths, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -299,7 +299,7 @@ agents:
 
   test('`description` on the agent block is rejected — description now lives in the .md frontmatter', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -310,7 +310,7 @@ agents:
 
   test('a nested `opencode:` sub-object is rejected outright — the override concept is removed, not renamed', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -322,7 +322,7 @@ agents:
 
   test('a flat `disable` is rejected with a pointer to `enabled` AND the .md', () => {
     const { errorPaths, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -344,7 +344,7 @@ agents:
       'prompt',
     ]) {
       const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -355,10 +355,10 @@ agents:
   });
 });
 
-describe('validateManifest — kortix_version 2 secrets rename', () => {
+describe('validateManifest — zed_version 2 secrets rename', () => {
   test('an `env` key on an agent block is rejected with a pointer to `secrets`', () => {
     const { errorPaths, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -370,7 +370,7 @@ agents:
 
   test('a top-level [env] section is unaffected and still validates as in v1', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 env:
   required: [ANTHROPIC_API_KEY]
@@ -382,7 +382,7 @@ agents:
 
   test('`secrets` on an agent block is the accepted governance field', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -399,7 +399,7 @@ agents:
 describe('validateManifest — connector `credential: per_user` removal', () => {
   test('v1 tolerates "per_user" as a legacy value (warning, not an error)', () => {
     const { valid, errorPaths, warningPaths } = summarize(
-      'kortix_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"\ncredential = "per_user"',
+      'zed_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"\ncredential = "per_user"',
       'toml',
     );
     expect(valid).toBe(true);
@@ -409,7 +409,7 @@ describe('validateManifest — connector `credential: per_user` removal', () => 
 
   test('v2 rejects "per_user" outright', () => {
     const { valid, errorPaths, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -421,12 +421,12 @@ connectors:
 `);
     expect(valid).toBe(false);
     expect(errorPaths).toContain('connectors[0].credential');
-    expect(issues.find((i) => i.path === 'connectors[0].credential')?.message).toContain('kortix_version 2');
+    expect(issues.find((i) => i.path === 'connectors[0].credential')?.message).toContain('zed_version 2');
   });
 
   test('v2 accepts "shared" (the only mode) cleanly', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -445,7 +445,7 @@ connectors:
   // as this function's other v1-only soft checks).
   test('v1 tolerates a garbage credential value as a warning, still valid', () => {
     const { valid, errorPaths, warningPaths } = summarize(
-      'kortix_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"\ncredential = "team"',
+      'zed_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"\ncredential = "team"',
       'toml',
     );
     expect(valid).toBe(true);
@@ -455,7 +455,7 @@ connectors:
 
   test('v2 hard-rejects a garbage credential value (not just "per_user")', () => {
     const { valid, errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -473,7 +473,7 @@ connectors:
 describe('validateManifest — connector authorization strategy', () => {
   test('accepts project and user connectors for the same provider app', () => {
     const { valid, errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: worker
 agents:
   worker: {}
@@ -495,7 +495,7 @@ connectors:
 
   test('rejects a both authorization strategy', () => {
     const { valid, errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: worker
 agents:
   worker: {}
@@ -511,7 +511,7 @@ connectors:
 
   test('defaults an omitted authorization strategy without a warning', () => {
     const { valid, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: worker
 agents:
   worker: {}
@@ -535,7 +535,7 @@ connectors:
 describe('validateManifest — connector `agent_scope` removal', () => {
   test('v1 tolerates a legacy agent_scope as a warning, still valid', () => {
     const { valid, errorPaths, warningPaths } = summarize(
-      'kortix_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"\nagent_scope = ["support"]',
+      'zed_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"\nagent_scope = ["support"]',
       'toml',
     );
     expect(valid).toBe(true);
@@ -545,7 +545,7 @@ describe('validateManifest — connector `agent_scope` removal', () => {
 
   test('v2 rejects agent_scope outright', () => {
     const { valid, errorPaths, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -558,13 +558,13 @@ connectors:
     expect(valid).toBe(false);
     expect(errorPaths).toContain('connectors[0].agent_scope');
     expect(issues.find((i) => i.path === 'connectors[0].agent_scope')?.message).toContain(
-      'kortix_version 2',
+      'zed_version 2',
     );
   });
 
   test('v1 connector without agent_scope has no warning', () => {
     const { warningPaths } = summarize(
-      'kortix_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"',
+      'zed_version = 1\n[[connectors]]\nslug = "gmail"\nprovider = "pipedream"\napp = "gmail"',
       'toml',
     );
     expect(warningPaths).not.toContain('connectors[0].agent_scope');
@@ -575,46 +575,46 @@ connectors:
 // still parseable in an existing v1 manifest (warning only — the audit
 // found nothing asserts them on any route, so tolerating them is a no-op).
 // v2 is a NEW schema version, so it gets the clean break: no tolerance.
-describe('validateManifest — kortix_cli LEGACY_TOLERATED_KORTIX_CLI_ACTIONS clean break', () => {
+describe('validateManifest — zed_cli LEGACY_TOLERATED_ZED_CLI_ACTIONS clean break', () => {
   test('v1 tolerates a legacy-removed action as a warning, still valid', () => {
     const { valid, errorPaths, warningPaths } = summarize(
-      'kortix_version = 1\n[[agents]]\nname = "w"\nkortix_cli = ["project.schedule.read"]\n',
+      'zed_version = 1\n[[agents]]\nname = "w"\nzed_cli = ["project.schedule.read"]\n',
       'toml',
     );
     expect(valid).toBe(true);
-    expect(errorPaths).not.toContain('agents[0].kortix_cli[0]');
-    expect(warningPaths).toContain('agents[0].kortix_cli[0]');
+    expect(errorPaths).not.toContain('agents[0].zed_cli[0]');
+    expect(warningPaths).toContain('agents[0].zed_cli[0]');
   });
 
   test('v2 hard-rejects the same legacy-removed action', () => {
     const { valid, errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
-    kortix_cli: [project.schedule.read]
+    zed_cli: [project.schedule.read]
 `);
     expect(valid).toBe(false);
-    expect(errorPaths).toContain('agents.w.kortix_cli[0]');
+    expect(errorPaths).toContain('agents.w.zed_cli[0]');
   });
 
   test('v2 still hard-rejects a truly unknown (never-was-valid) action, same as before', () => {
     const { valid, errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
-    kortix_cli: [project.frobnicate]
+    zed_cli: [project.frobnicate]
 `);
     expect(valid).toBe(false);
-    expect(errorPaths).toContain('agents.w.kortix_cli[0]');
+    expect(errorPaths).toContain('agents.w.zed_cli[0]');
   });
 });
 
-describe('validateManifest — kortix_version 2 channels removal', () => {
+describe('validateManifest — zed_version 2 channels removal', () => {
   test('`channels` is invalid in v2', () => {
     const { errorPaths, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -626,10 +626,10 @@ channels:
   });
 });
 
-describe('validateManifest — kortix_version 2 default_agent', () => {
+describe('validateManifest — zed_version 2 default_agent', () => {
   test('default_agent referencing an undeclared agent is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: ghost
 agents:
   w: {}
@@ -639,7 +639,7 @@ agents:
 
   test('missing default_agent is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 agents:
   w: {}
 `);
@@ -648,7 +648,7 @@ agents:
 
   test('default_agent naming a declared agent passes', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -658,7 +658,7 @@ agents:
 
   test('default_agent naming a disabled agent is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -668,10 +668,10 @@ agents:
   });
 });
 
-describe('validateManifest — kortix_version 2 requires at least one agent', () => {
+describe('validateManifest — zed_version 2 requires at least one agent', () => {
   test('a missing agents map is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 `);
     expect(errorPaths).toContain('agents');
@@ -679,7 +679,7 @@ default_agent: w
 
   test('an empty agents map is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents: {}
 `);
@@ -688,7 +688,7 @@ agents: {}
 
   test('an [[agents]] array (the v1 shape) is rejected in v2', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   - name: w
@@ -697,10 +697,10 @@ agents:
   });
 });
 
-describe('validateManifest — kortix_version 2 trigger agent references', () => {
+describe('validateManifest — zed_version 2 trigger agent references', () => {
   test('a trigger agent naming an undeclared agent is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -716,7 +716,7 @@ triggers:
 
   test('a trigger with no agent falls back to default_agent (valid)', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -731,7 +731,7 @@ triggers:
 
   test('a trigger agent naming a declared agent passes', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -747,10 +747,10 @@ triggers:
   });
 });
 
-describe('validateManifest — kortix_version 2 runtime enum', () => {
+describe('validateManifest — zed_version 2 runtime enum', () => {
   test('runtime: opencode is accepted', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 runtime: opencode
 agents:
@@ -761,7 +761,7 @@ agents:
 
   test('omitted runtime defaults implicitly (no error)', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -771,7 +771,7 @@ agents:
 
   test('an unknown runtime is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 runtime: codex
 agents:
@@ -781,10 +781,10 @@ agents:
   });
 });
 
-describe('validateManifest — kortix_version 2 agent block is governance-only', () => {
+describe('validateManifest — zed_version 2 agent block is governance-only', () => {
   test('a non-boolean enabled is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -795,7 +795,7 @@ agents:
 
   test('a bare governance-only block (every field omitted) is valid', () => {
     const { valid, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -806,7 +806,7 @@ agents:
 
   test('an invalid agent name key is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   "Not Valid":
@@ -817,10 +817,10 @@ agents:
   });
 });
 
-describe('validateManifest — kortix_version 2 grant sets are shape-optional', () => {
-  test('omitting connectors, secrets, and kortix_cli on an agent is still valid shape', () => {
+describe('validateManifest — zed_version 2 grant sets are shape-optional', () => {
+  test('omitting connectors, secrets, and zed_cli on an agent is still valid shape', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -828,21 +828,21 @@ agents:
     expect(valid).toBe(true);
   });
 
-  test('kortix_cli rejects a non-grantable action, same enum as v1', () => {
+  test('zed_cli rejects a non-grantable action, same enum as v1', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
-    kortix_cli: [billing.read]
+    zed_cli: [billing.read]
 `);
-    expect(errorPaths).toContain('agents.w.kortix_cli[0]');
+    expect(errorPaths).toContain('agents.w.zed_cli[0]');
   });
 
   test('workspace accepts the declared enum', () => {
     for (const w of ['runtime', 'read', 'branch']) {
       const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: a
 agents:
   a:
@@ -854,7 +854,7 @@ agents:
 
   test('an unknown workspace value is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -864,10 +864,10 @@ agents:
   });
 });
 
-describe('validateManifest — kortix_version 2 required connectors', () => {
+describe('validateManifest — zed_version 2 required connectors', () => {
   test('accepts the canonical field when every required connector is granted', () => {
     const { valid, issues } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -880,7 +880,7 @@ agents:
 
   test('accepts the deprecated input alias with a warning', () => {
     const { valid, warningPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -893,7 +893,7 @@ agents:
 
   test('accepts both aliases when their normalized values match', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -906,7 +906,7 @@ agents:
 
   test('rejects conflicting canonical and deprecated values', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -919,7 +919,7 @@ agents:
 
   test('rejects a required connector outside the resolved connector grant', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -931,7 +931,7 @@ agents:
 
   test('rejects required connectors when the connector grant resolves to none', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -941,10 +941,10 @@ agents:
   });
 });
 
-describe('validateManifest — kortix_version 2 `skills` governance grant', () => {
+describe('validateManifest — zed_version 2 `skills` governance grant', () => {
   test('an explicit skill-name list is accepted', () => {
     const { valid, errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -957,7 +957,7 @@ agents:
   test('"all" and "none" string sentinels are accepted', () => {
     for (const v of ['all', 'none']) {
       const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -969,7 +969,7 @@ agents:
 
   test('omitting `skills` is still valid shape (v2 deny-by-default applies at resolution time)', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -979,7 +979,7 @@ agents:
 
   test('a non-string entry is rejected, same shape rule as connectors', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -990,7 +990,7 @@ agents:
 
   test('an invalid sentinel string is rejected', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w:
@@ -1001,14 +1001,14 @@ agents:
 });
 
 describe('validateManifest — version above known max still rejected', () => {
-  test('kortix_version 3 is rejected as unsupported', () => {
+  test('zed_version 3 is rejected as unsupported', () => {
     const { errorPaths, issues } = summarize(`
-kortix_version: 3
+zed_version: 3
 default_agent: w
 agents:
   w: {}
 `);
-    expect(errorPaths).toContain('kortix_version');
+    expect(errorPaths).toContain('zed_version');
     expect(issues.some((i) => i.message.includes('Unsupported schema version'))).toBe(true);
   });
 });
@@ -1041,10 +1041,10 @@ describe('resolveGrantSet — v1 default-all vs v2 default-none', () => {
   });
 });
 
-describe('validateManifest — kortix_version 2 v1 sections carry over unchanged', () => {
+describe('validateManifest — zed_version 2 v1 sections carry over unchanged', () => {
   test('sandbox.templates validates identically to v1', () => {
     const { valid } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}
@@ -1058,7 +1058,7 @@ sandbox:
 
   test('connectors validates identically to v1 (unknown provider still rejected)', () => {
     const { errorPaths } = summarize(`
-kortix_version: 2
+zed_version: 2
 default_agent: w
 agents:
   w: {}

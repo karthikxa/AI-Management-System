@@ -1,7 +1,7 @@
 # The final, enterprise-ready authorization model — plan
 
 > This plan preserves the authorization design record. Session runtime uses
-> OpenCode REST and `kortix_version: 2`.
+> OpenCode REST and `zed_version: 2`.
 
 Source: founder notes ("CLEAR ACCESS / AUTHORISATION MODEL IS NEEDED. THAT IS 100% FINAL &
 ENTERPRISE READY."). This doc maps every ask to the **current code state** and lays out a
@@ -25,7 +25,7 @@ Verified against the code on `feat/iam-rbac-v1` (merged with `main`). Do **not**
 |---|---|---|
 | Allow-only, deny-by-default engine (`authorizeV2`) | ✅ | `apps/api/src/iam/engine-v2.ts` |
 | Agent-scoped **session token** (agentGrant + serviceAccountId), not user-only | ✅ | `platform/services/session-sandbox.ts` mintConnectorToken; validated `middleware/auth.ts` |
-| **kortix.yaml `agents:`** = source of truth for agent scope (env/connectors/kortix_cli) | ✅ | `projects/agents.ts` |
+| **zed.yaml `agents:`** = source of truth for agent scope (env/connectors/zed_cli) | ✅ | `projects/agents.ts` |
 | Git auth **never injected** into the sandbox (build-time only) | ✅ | `session-sandbox.ts` resolveGitAuthToken |
 | Custom roles + policies, group→role, per-resource grants, revoke immediacy | ✅ | `iam/engine-v2.ts`, `iam/resource-grants.ts`, `iam/cache-invalidation.ts` |
 | Standing-identity **service accounts** (agents authorize as their SA once activated) | ✅ (opt-in) | `iam/engine-v2.ts` resolveActorV2; `repositories/service-accounts.ts` |
@@ -146,7 +146,7 @@ shape (reuse resource-grants vs new column) and greenlight the per-user removal 
 ## 4. Fully AGENT-based authorization (never user-based within a session)  *(epic)*
 
 **Ask:** "Make everything Agent-based authorization, never user-based within session." +
-"kortix.yaml as source of truth, everything defined explicitly."
+"zed.yaml as source of truth, everything defined explicitly."
 
 **Current state.** Standing identity is **opt-in**: an agent session authorizes as its service
 account only once an admin assigns that SA a role; otherwise it **falls back to the launching
@@ -172,19 +172,19 @@ resolve as the **launcher's** share-subject, not the agent's. And `[[agents]].en
 ## 5. Token consolidation ("too many tokens")  *(cleanup + epic)*
 
 **Ask:** "Big tokens mess, too many tokens & api keys. Figure out a diff way. Agent-tokens that
-give access to the appropriate allowed Kortix scopes."
+give access to the appropriate allowed Zed scopes."
 
 **Current state.** The session token is already agent-scoped (§0). Remaining sprawl is mostly
-**legacy aliases** injected for back-compat: `KORTIX_TOKEN` (alias of `KORTIX_SANDBOX_TOKEN`),
-`KORTIX_CLI_TOKEN`, `KORTIX_YOLO_*` (was redundant with
-`KORTIX_LLM_*` — **done**, see 5a). The deeper "one token, resolve all downstream creds
+**legacy aliases** injected for back-compat: `ZED_TOKEN` (alias of `ZED_SANDBOX_TOKEN`),
+`ZED_CLI_TOKEN`, `ZED_YOLO_*` (was redundant with
+`ZED_LLM_*` — **done**, see 5a). The deeper "one token, resolve all downstream creds
 (connectors/secrets/git) server-side at call time, inject nothing" is architectural.
 
 **Plan:**
-- **5a — Drop legacy aliases (S, coordinated).** ~~Remove `KORTIX_TOKEN`/
-  `KORTIX_YOLO_*` after the sandbox image cycles (daemons currently read them)~~ — **done for
-  `KORTIX_YOLO_*`**: injection, the env allowlist, and the config default all removed in this pass.
-  `KORTIX_TOKEN` remains, still gated on the sandbox-image-cycle coordination
+- **5a — Drop legacy aliases (S, coordinated).** ~~Remove `ZED_TOKEN`/
+  `ZED_YOLO_*` after the sandbox image cycles (daemons currently read them)~~ — **done for
+  `ZED_YOLO_*`**: injection, the env allowlist, and the config default all removed in this pass.
+  `ZED_TOKEN` remains, still gated on the sandbox-image-cycle coordination
   documented as "Phase 2" in `docs/specs/2026-06-28-token-session-agent-identity.md`.
 - **5b — Server-side credential resolution (L).** Stop injecting project runtime secrets at boot;
   have the connector resolve connectors/secrets/git per-call against the session token's scope, so
@@ -216,7 +216,7 @@ priority.
 
 ## 7. Agnostic backend / "CMS" + SDK completeness  *(partly now, mostly epic)*
 
-**Ask:** "Design Kortix so it can 100% be used as a wrapper backend API. Make everything agnostic,
+**Ask:** "Design Zed so it can 100% be used as a wrapper backend API. Make everything agnostic,
 think of it as a CMS. The git/company-specific stuff kinda fucks it up." + "Web & Mobile both use
 the SDK; clean elegant API top to bottom."
 
@@ -231,7 +231,7 @@ the SDK lacks full workspace file-I/O CRUD + some hooks; and **git is a hard dep
   hooks so web/mobile never bypass the SDK. Safe, incremental.
 - **7b — Git-optional / CMS mode (L).** Make `repo_url`/`branch`/`manifest_path` optional (backend
   detects "no-git" mode); move GitHub-specific SDK functions out of the core; treat the project
-  config as content that can come from git **or** the API. This is what unlocks "wrap Kortix as a
+  config as content that can come from git **or** the API. This is what unlocks "wrap Zed as a
   generic backend."
 
 **Risk:** 7b is architectural. **Decision needed:** commit to git-optional as a first-class mode.

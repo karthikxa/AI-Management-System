@@ -172,7 +172,7 @@ export function useGlobalSandboxUpdate() {
         const token = await getAuthToken();
         const headers: Record<string, string> = {};
         if (token) headers.Authorization = `Bearer ${token}`;
-        const res = await fetch(`${sandboxUrl}/kortix/health`, { headers });
+        const res = await fetch(`${sandboxUrl}/zed/health`, { headers });
         if (!res.ok) return;
         const data = await res.json();
         // Only accept a concrete version; ignore "unknown" or empty so

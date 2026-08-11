@@ -1,7 +1,7 @@
 services:
   toxiproxy:
     image: ghcr.io/shopify/toxiproxy:2.11.0
-    container_name: kortix-toxiproxy
+    container_name: zed-toxiproxy
     ports:
       - "8474:8474"
       - "15432:15432"

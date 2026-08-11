@@ -7,14 +7,14 @@ import { sandboxEnvValue } from './sandbox-env.ts';
 // ─────────────────────────────────────────────────────────────────────────────
 // Multi-host config storage.
 //
-// File layout: ~/.config/kortix/config.json (mode 0600)
+// File layout: ~/.config/zed/config.json (mode 0600)
 //
 //   {
 //     "active": "cloud",
 //     "hosts": {
 //       "cloud": {
-//         "url": "https://api.kortix.com",
-//         "token": "kortix_pat_...",
+//         "url": "https://api.zed.com",
+//         "token": "zed_pat_...",
 //         "user_id": "...",
 //         "user_email": "...",
 //         "account_id": "...",
@@ -29,23 +29,23 @@ import { sandboxEnvValue } from './sandbox-env.ts';
 // unless overridden by `--host <name>` for a single invocation.
 //
 // Single-host auth files are read on first load and moved into a `cloud`
-// host so users can switch cleanly between Kortix Cloud and self-hosted APIs.
+// host so users can switch cleanly between Zed Cloud and self-hosted APIs.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const DEFAULT_API_BASE = process.env.KORTIX_DEFAULT_API_BASE ?? 'https://api.kortix.com';
+export const DEFAULT_API_BASE = process.env.ZED_DEFAULT_API_BASE ?? 'https://api.zed.com';
 // Local `pnpm dev` API server.
 export const DEFAULT_LOCAL_DEV_API_BASE = 'http://localhost:8008';
-// Kortix-internal hosted dev API.
-export const DEFAULT_INTERNAL_DEV_API_BASE = 'https://dev-api.kortix.com';
+// Zed-internal hosted dev API.
+export const DEFAULT_INTERNAL_DEV_API_BASE = 'https://dev-api.zed.com';
 // The self-host Docker stack publishes its API on this port by default
-// (see `kortix self-host` DEFAULT_API_URL). The built-in `selfhost` host is
-// pre-pointed here so `kortix hosts use selfhost` works before login;
-// `kortix self-host start` rewrites it to the actual published port.
+// (see `zed self-host` DEFAULT_API_URL). The built-in `selfhost` host is
+// pre-pointed here so `zed hosts use selfhost` works before login;
+// `zed self-host start` rewrites it to the actual published port.
 export const DEFAULT_SELFHOST_API_BASE = 'http://localhost:13738';
 
 export const CLOUD_HOST_NAME = 'cloud';
 export const LOCAL_DEV_HOST_NAME = 'local-dev';
-export const INTERNAL_DEV_HOST_NAME = 'kortix-internal-dev';
+export const INTERNAL_DEV_HOST_NAME = 'zed-internal-dev';
 export const SELFHOST_HOST_NAME = 'selfhost';
 export const DEFAULT_HOST_NAME = CLOUD_HOST_NAME;
 
@@ -56,7 +56,7 @@ const LEGACY_LOCAL_API_BASE = 'http://localhost:13738';
 
 /** The global default project for a host — used by every project-scoped
  *  command (connectors, sessions, …) when the cwd is not bound
- *  to a project via `.kortix/link.json`. Carries its account_id so the
+ *  to a project via `.zed/link.json`. Carries its account_id so the
  *  default always resolves under the right account. */
 export interface DefaultProjectRef {
   project_id: string;
@@ -78,8 +78,8 @@ export interface Host {
   default_project?: DefaultProjectRef;
   /**
    * The frontend/dashboard base URL for this host, when known authoritatively
-   * (e.g. `kortix self-host` registers it from its own `PUBLIC_URL`). Lets
-   * `kortix login`'s browser flow open the right origin instead of guessing
+   * (e.g. `zed self-host` registers it from its own `PUBLIC_URL`). Lets
+   * `zed login`'s browser flow open the right origin instead of guessing
    * one from the API host's shape — that guess (see web-url.ts) assumes cloud
    * URL conventions (`api.<domain>` → `<domain>`, `:8008` → `:3000`) which
    * silently breaks for a self-host stack on non-default ports.
@@ -102,17 +102,17 @@ export interface Config {
 // ─── File path resolution ──────────────────────────────────────────────────
 
 function defaultConfigPath(): string {
-  return resolve(homedir(), '.config', 'kortix', 'config.json');
+  return resolve(homedir(), '.config', 'zed', 'config.json');
 }
 
 export function configFilePath(): string {
-  // Honor both config path env vars. KORTIX_AUTH_FILE is still used by the
+  // Honor both config path env vars. ZED_AUTH_FILE is still used by the
   // existing e2e test harness.
-  return process.env.KORTIX_CONFIG_FILE ?? process.env.KORTIX_AUTH_FILE ?? defaultConfigPath();
+  return process.env.ZED_CONFIG_FILE ?? process.env.ZED_AUTH_FILE ?? defaultConfigPath();
 }
 
 function singleHostAuthFilePath(): string {
-  return resolve(homedir(), '.config', 'kortix', 'auth.json');
+  return resolve(homedir(), '.config', 'zed', 'auth.json');
 }
 
 /** Only pull from the single-host auth file when the caller is using the
@@ -145,7 +145,7 @@ export function loadConfig(): Config {
     }
   }
 
-  // Import from ~/.config/kortix/auth.json only when the caller is using the
+  // Import from ~/.config/zed/auth.json only when the caller is using the
   // default config path. Test/scratch envs pointed elsewhere should stay empty.
   if (shouldImportSingleHostAuth(path)) {
     const singleHostAuth = singleHostAuthFilePath();
@@ -189,25 +189,25 @@ export function deleteConfig(): void {
 
 /**
  * Resolve the active Host for the current invocation. Priority:
- *   1. KORTIX_CLI_TOKEN env var (synthetic ephemeral host, never persisted).
+ *   1. ZED_CLI_TOKEN env var (synthetic ephemeral host, never persisted).
  *      It carries the session-scoped PAT the platform injects into a sandbox.
  *      (The SANDBOX credential
- *      — KORTIX_SANDBOX_TOKEN / its legacy KORTIX_TOKEN alias — is deliberately
+ *      — ZED_SANDBOX_TOKEN / its legacy ZED_TOKEN alias — is deliberately
  *      NOT used here: it's the daemon's identity, not the user's, and does not
  *      authenticate against the project-scoped API routes the CLI calls.)
- *   2. KORTIX_API_URL env var (URL override for the stored active host)
+ *   2. ZED_API_URL env var (URL override for the stored active host)
  *   3. `--host` flag (handled at the call site via `getHost(name)`)
  *   4. The `active` host in config.json
  */
 /**
- * True when the platform-injected `KORTIX_CLI_TOKEN` is present.
+ * True when the platform-injected `ZED_CLI_TOKEN` is present.
  * `activeHost()` then resolves to a
- * synthetic env host, which must outrank a `.kortix/link.json` host —
+ * synthetic env host, which must outrank a `.zed/link.json` host —
  * inside a sandbox the named host has no stored credentials, so honoring
  * the link would strand a fully-authenticated CLI on "not logged in".
  */
 function sandboxCliToken(): string | undefined {
-  return sandboxEnvValue('KORTIX_CLI_TOKEN');
+  return sandboxEnvValue('ZED_CLI_TOKEN');
 }
 
 export function hasEnvTokenHost(): boolean {
@@ -218,7 +218,7 @@ export function activeHost(): Host | null {
   const envToken = sandboxCliToken();
   if (envToken) {
     return {
-      url: sandboxEnvValue('KORTIX_API_URL') ?? DEFAULT_API_BASE,
+      url: sandboxEnvValue('ZED_API_URL') ?? DEFAULT_API_BASE,
       token: envToken,
       user_id: '',
       user_email: '',
@@ -229,7 +229,7 @@ export function activeHost(): Host | null {
   const config = loadConfig();
   const host = config.hosts[config.active];
   if (!host) return null;
-  const envApiUrl = sandboxEnvValue('KORTIX_API_URL');
+  const envApiUrl = sandboxEnvValue('ZED_API_URL');
   if (envApiUrl) return { ...host, url: envApiUrl };
   return host;
 }
@@ -249,7 +249,7 @@ export function listHosts(): { name: string; host: Host; active: boolean }[] {
 export function activeHostEntry(): { name: string; host: Host } {
   const envHost = activeHost();
   if (sandboxCliToken() && envHost) return { name: 'sandbox', host: envHost };
-  if (sandboxEnvValue('KORTIX_API_URL') && envHost) return { name: 'env', host: envHost };
+  if (sandboxEnvValue('ZED_API_URL') && envHost) return { name: 'env', host: envHost };
   const config = loadConfig();
   const name = config.hosts[config.active] ? config.active : DEFAULT_HOST_NAME;
   return { name, host: config.hosts[name] ?? defaultHost(DEFAULT_API_BASE) };
@@ -439,7 +439,7 @@ function isPrivateIPv6(host: string): boolean {
  * `http` is the legitimate, intended scheme?
  *
  * Loopback is the obvious case, but a self-host reaches its own API over any of:
- *   - a container/service name on a private network — `http://kortix-api:8000`
+ *   - a container/service name on a private network — `http://zed-api:8000`
  *     (single-label: a public FQDN always has a dot)
  *   - a LAN or VPC address — `http://192.168.1.50:8000`, `http://10.2.0.7:8000`
  *   - a private DNS suffix — `.local`, `.internal`, `.lan`, `.home.arpa`
@@ -468,7 +468,7 @@ function isPrivateHostname(rawHost: string): boolean {
 }
 
 /**
- * Kortix cloud APIs are HTTPS-only. A remote `http://` base 308-redirects to
+ * Zed cloud APIs are HTTPS-only. A remote `http://` base 308-redirects to
  * https, and `fetch` drops the `Authorization` header on the scheme change — so
  * the bearer token silently never arrives and the call 401s as "Token rejected
  * by the API" even after a successful browser login (and the same drop breaks
@@ -476,7 +476,7 @@ function isPrivateHostname(rawHost: string): boolean {
  * http base to https; localhost / self-host (legitimately plain http) stay put.
  *
  * "Self-host" is why the predicate is `isPrivateHostname` and not just
- * loopback: a compose deployment talks to its API as `http://kortix-api:8000`
+ * loopback: a compose deployment talks to its API as `http://zed-api:8000`
  * or `http://192.168.x.y:8000`, and forcing https there turns a working
  * cleartext request into a TLS handshake against a non-TLS port — which
  * surfaces only as an unexplained "Unable to connect", with no hint that the
@@ -522,7 +522,7 @@ function normalizeConfig(parsed: Partial<Config>): Config {
   const renamed: Record<string, string> = {};
 
   // Legacy `default`: the original single-host name. If it still points at
-  // Kortix Cloud, fold it into `cloud`. If it is a never-logged-in placeholder
+  // Zed Cloud, fold it into `cloud`. If it is a never-logged-in placeholder
   // (no token), it is a stale artifact — drop it and fall back to cloud. A
   // `default` host that actually carries credentials is left untouched.
   const legacyDefault = cleaned.default;

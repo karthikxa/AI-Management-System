@@ -1,4 +1,4 @@
-import type { ConnectorAction } from '@kortix/sdk';
+import type { ConnectorAction } from '@zed/sdk';
 
 export interface ToolGroup {
   key: 'read' | 'write';

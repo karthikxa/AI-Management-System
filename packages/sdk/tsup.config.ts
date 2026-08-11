@@ -10,28 +10,28 @@ import { defineConfig } from 'tsup';
  */
 export default defineConfig([
   {
-    entry: { 'kortix.esm.min': 'src/index.ts' },
+    entry: { 'zed.esm.min': 'src/index.ts' },
     format: ['esm'],
     minify: true,
     platform: 'browser',
     outDir: 'dist',
     dts: false,
     clean: false,
-    noExternal: [/^@kortix\//, /^@opencode-ai\//],
+    noExternal: [/^@zed\//, /^@opencode-ai\//],
   },
   {
-    entry: { 'kortix.global': 'src/index.ts' },
+    entry: { 'zed.global': 'src/index.ts' },
     format: ['iife'],
-    globalName: 'Kortix',
+    globalName: 'Zed',
     minify: true,
     platform: 'browser',
     outDir: 'dist',
     dts: false,
     clean: false,
-    noExternal: [/^@kortix\//, /^@opencode-ai\//],
+    noExternal: [/^@zed\//, /^@opencode-ai\//],
     // tsup's default iife naming always appends ".global.js" to the entry
     // name (even when the name already says "global"), which would emit
-    // dist/kortix.global.global.js instead of the dist/kortix.global.js this
+    // dist/zed.global.global.js instead of the dist/zed.global.js this
     // package publishes via unpkg/jsdelivr. Pin the extension explicitly.
     outExtension: () => ({ js: '.js' }),
   },

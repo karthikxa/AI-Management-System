@@ -1,5 +1,5 @@
 import { createRoute, z } from '@hono/zod-openapi';
-import { usageEvents } from '@kortix/db';
+import { usageEvents } from '@zed/db';
 import { type SQL, and, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import type { Context } from 'hono';
 import { HTTPException } from 'hono/http-exception';
@@ -40,7 +40,7 @@ export const SESSION_COST_SORTS: readonly CostSort[] = ['total_desc', 'total_asc
 const usageApp = makeOpenApiApp<AppEnv>();
 
 usageApp.use('*', combinedAuth);
-// Sandbox agent tokens (kortix_ keys with a sandboxId) have no legitimate
+// Sandbox agent tokens (zed_ keys with a sandboxId) have no legitimate
 // reason to read account-wide usage/cost rollups — without this they'd see
 // every project's spend on multi-user accounts. See reject-sandbox-tokens.ts.
 usageApp.use('*', rejectSandboxTokens);
@@ -530,8 +530,8 @@ usageApp.openapi(
       );
       return c.body(body, 200, {
         'content-type': 'text/csv; charset=utf-8',
-        'content-disposition': 'attachment; filename="kortix-session-costs.csv"',
-        'x-kortix-row-cap': String(CSV_ROW_CAP),
+        'content-disposition': 'attachment; filename="zed-session-costs.csv"',
+        'x-zed-row-cap': String(CSV_ROW_CAP),
       });
     }
 
@@ -673,8 +673,8 @@ usageApp.openapi(
       );
       return c.body(body, 200, {
         'content-type': 'text/csv; charset=utf-8',
-        'content-disposition': 'attachment; filename="kortix-cost-by-project.csv"',
-        'x-kortix-row-cap': String(CSV_ROW_CAP),
+        'content-disposition': 'attachment; filename="zed-cost-by-project.csv"',
+        'x-zed-row-cap': String(CSV_ROW_CAP),
       });
     }
 

@@ -5,16 +5,16 @@
  *
  * Run (from packages/sdk):  bun run playground/env/12-env-and-secrets.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 const TEST_SECRET = "SDK_PLAYGROUND_TEST_SECRET";
 
 run("env-and-secrets", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
-  const project = kortix.project(projectId);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
+  const project = zed.project(projectId);
 
-  const detail = await kortix.projects.detail(projectId);
+  const detail = await zed.projects.detail(projectId);
   console.log("✓ manifest-declared env:");
   console.log(`    required: ${detail.config.env.required.join(", ") || "—"}`);
   console.log(

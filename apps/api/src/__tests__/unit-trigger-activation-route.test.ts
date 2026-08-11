@@ -6,7 +6,7 @@
 // matches routes in registration order, so if the `:slug` route is registered
 // first it captures `activation` as a slug — the activation handler is shadowed
 // and the request 404s ("no trigger named 'activation'"). That silently breaks
-// the entire pause feature: the CLI `kortix triggers pause/resume`, the web
+// the entire pause feature: the CLI `zed triggers pause/resume`, the web
 // toggle, and the only way to stop a repo deployed to two control planes from
 // double-firing its crons.
 //

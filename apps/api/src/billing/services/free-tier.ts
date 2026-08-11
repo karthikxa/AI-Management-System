@@ -27,7 +27,7 @@ export async function initializeFreeTierAccount(accountId: string): Promise<void
  * or still on the legacy `none` tier with no balance.
  */
 export async function ensureFreeTierAccountReady(accountId: string): Promise<void> {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return;
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return;
 
   const account = await getCreditAccount(accountId);
   if (!account) {

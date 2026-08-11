@@ -10,10 +10,10 @@ resource "aws_s3_bucket" "terraform_state_use2" {
   # checkov:skip=CKV_AWS_144:The production migration requires all state to remain in us-east-2. Versioning and the regional archive provide recovery.
   provider = aws.use2
 
-  bucket = "kortix-terraform-state-us-east-2-935064898258"
+  bucket = "zed-terraform-state-us-east-2-935064898258"
 
   tags = merge(local.tags, {
-    Name   = "kortix-terraform-state-us-east-2"
+    Name   = "zed-terraform-state-us-east-2"
     Region = "us-east-2"
   })
 
@@ -75,7 +75,7 @@ resource "aws_kms_key" "terraform_state_use2" {
   })
 
   tags = merge(local.tags, {
-    Name   = "kortix-terraform-state-us-east-2"
+    Name   = "zed-terraform-state-us-east-2"
     Region = "us-east-2"
   })
 
@@ -87,7 +87,7 @@ resource "aws_kms_key" "terraform_state_use2" {
 resource "aws_kms_alias" "terraform_state_use2" {
   provider = aws.use2
 
-  name          = "alias/kortix-terraform-state-us-east-2"
+  name          = "alias/zed-terraform-state-us-east-2"
   target_key_id = aws_kms_key.terraform_state_use2.key_id
 }
 
@@ -177,7 +177,7 @@ resource "aws_s3_bucket_policy" "terraform_state_use2" {
 resource "aws_dynamodb_table" "terraform_locks_use2" {
   provider = aws.use2
 
-  name                        = "kortix-terraform-locks-us-east-2"
+  name                        = "zed-terraform-locks-us-east-2"
   billing_mode                = "PAY_PER_REQUEST"
   hash_key                    = "LockID"
   deletion_protection_enabled = true
@@ -197,7 +197,7 @@ resource "aws_dynamodb_table" "terraform_locks_use2" {
   }
 
   tags = merge(local.tags, {
-    Name   = "kortix-terraform-locks-us-east-2"
+    Name   = "zed-terraform-locks-us-east-2"
     Region = "us-east-2"
   })
 

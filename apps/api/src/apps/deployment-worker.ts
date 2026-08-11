@@ -8,7 +8,7 @@ import {
   appDeployments,
   appRuntimes,
   apps,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, asc, desc, eq, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm';
 import { pauseComputeSession, startComputeSession } from '../billing/services/compute-metering';
 import { config, SANDBOX_VERSION, type SandboxProviderName } from '../config';
@@ -24,7 +24,7 @@ import { appRuntimeArtifactDigest } from './runtime-artifacts';
 import { appDeploymentFailureDisposition } from './deployment-failures';
 
 export const APP_RUNTIME_VERSION =
-  process.env.KORTIX_APP_RUNTIME_VERSION
+  process.env.ZED_APP_RUNTIME_VERSION
   || `${SANDBOX_VERSION}:appd-${appRuntimeArtifactDigest().slice(0, 16)}`;
 const LEASE_MS = 2 * 60_000;
 const HEARTBEAT_MS = 30_000;
@@ -324,7 +324,7 @@ export async function driveAppDeployment(
       if (!context.artifact.objectPath) {
         throw new PermanentAppDeploymentError('Archive artifact has no object path', 'artifact_missing');
       }
-      temporaryRoot = await mkdtemp(join(tmpdir(), 'kortix-app-deployment-'));
+      temporaryRoot = await mkdtemp(join(tmpdir(), 'zed-app-deployment-'));
       const archivePath = join(temporaryRoot, 'source.tar.gz');
       const downloaded = await downloadAppArtifact(context.artifact.objectPath, archivePath);
       if (context.artifact.sha256 && downloaded.sha256 !== context.artifact.sha256) {
@@ -384,7 +384,7 @@ export async function driveAppDeployment(
 
     await assertAppBudgetAvailable(context.app.appId, Number(context.app.monthlyBudgetUsd));
 
-    const snapshotName = `kortix-app-${claimed.deploymentId.replaceAll('-', '')}`;
+    const snapshotName = `zed-app-${claimed.deploymentId.replaceAll('-', '')}`;
     await setDeploymentStatus(claimed.deploymentId, owner, 'building', {
       sourceKind: normalized.sourceKind,
       runtimeSpec: normalized.runtimeSpec,
@@ -554,7 +554,7 @@ export async function driveAppDeployment(
 }
 
 const workerState = globalThis as unknown as {
-  __kortixAppsWorkerTimer?: ReturnType<typeof setInterval> | null;
+  __zedAppsWorkerTimer?: ReturnType<typeof setInterval> | null;
 };
 let workerRunning = false;
 let workerKickScheduled = false;
@@ -578,7 +578,7 @@ function scheduleTriggeredTick(): void {
 
 /** Queue a deployment tick without waiting for the periodic worker interval. */
 export function triggerAppDeploymentWorker(): void {
-  if (process.env.KORTIX_APPS_WORKER_ENABLED === 'false') return;
+  if (process.env.ZED_APPS_WORKER_ENABLED === 'false') return;
   workerRerunRequested = true;
   scheduleTriggeredTick();
 }
@@ -586,10 +586,10 @@ export function triggerAppDeploymentWorker(): void {
 export async function runAppDeploymentTick(): Promise<{ processed: number }> {
   if (workerRunning) return { processed: 0 };
   workerRunning = true;
-  const owner = `${config.INTERNAL_KORTIX_ENV}:${process.pid}:${randomUUID()}`;
+  const owner = `${config.INTERNAL_ZED_ENV}:${process.pid}:${randomUUID()}`;
   let processed = 0;
   try {
-    const batch = Math.max(1, Math.min(10, Number(process.env.KORTIX_APPS_WORKER_BATCH) || 2));
+    const batch = Math.max(1, Math.min(10, Number(process.env.ZED_APPS_WORKER_BATCH) || 2));
     for (let index = 0; index < batch; index++) {
       const claimed = await claimAppDeployment(owner);
       if (!claimed) break;
@@ -604,18 +604,18 @@ export async function runAppDeploymentTick(): Promise<{ processed: number }> {
 }
 
 export function startAppDeploymentWorker(): void {
-  if (process.env.KORTIX_APPS_WORKER_ENABLED === 'false') return;
+  if (process.env.ZED_APPS_WORKER_ENABLED === 'false') return;
   stopAppDeploymentWorker();
-  const interval = Math.max(1_000, Number(process.env.KORTIX_APPS_WORKER_INTERVAL_MS) || 5_000);
+  const interval = Math.max(1_000, Number(process.env.ZED_APPS_WORKER_INTERVAL_MS) || 5_000);
   triggerAppDeploymentWorker();
-  workerState.__kortixAppsWorkerTimer = setInterval(() => {
+  workerState.__zedAppsWorkerTimer = setInterval(() => {
     triggerAppDeploymentWorker();
   }, interval);
 }
 
 export function stopAppDeploymentWorker(): void {
-  if (workerState.__kortixAppsWorkerTimer) {
-    clearInterval(workerState.__kortixAppsWorkerTimer);
-    workerState.__kortixAppsWorkerTimer = null;
+  if (workerState.__zedAppsWorkerTimer) {
+    clearInterval(workerState.__zedAppsWorkerTimer);
+    workerState.__zedAppsWorkerTimer = null;
   }
 }

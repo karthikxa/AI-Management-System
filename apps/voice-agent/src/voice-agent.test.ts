@@ -9,8 +9,8 @@ import { buildInstructions } from './instructions';
  *
  * A stray transcription artifact ("dog.") led the voice model to assert that the
  * project "is about developing a system involving dogs". That invented claim sat
- * in its OWN conversation history as fact, so every correct answer Kortix sent
- * back contradicted it — and it kept handing the contradiction back to Kortix to
+ * in its OWN conversation history as fact, so every correct answer Zed sent
+ * back contradicted it — and it kept handing the contradiction back to Zed to
  * resolve, one paid turn at a time, until a human hung up.
  *
  * The invention got in through the ACK. `send_prompt` used to return a string
@@ -66,24 +66,24 @@ describe('call-scoped API credentials stay in private worker metadata', () => {
     project_id: 'project-1',
     session_id: 'session-1',
     call_id: 'call-1',
-    kortix_api_url: 'https://api.kortix.com',
-    bot_name: 'Kortix',
-    kortix_api_token: 'public-room-token',
+    zed_api_url: 'https://api.zed.com',
+    bot_name: 'Zed',
+    zed_api_token: 'public-room-token',
   });
 
   test('reads the bearer from worker metadata', () => {
     const context = resolveCallContext(
       'voice-call-1',
       roomMetadata,
-      JSON.stringify({ kortix_api_token: 'private-worker-token' }),
+      JSON.stringify({ zed_api_token: 'private-worker-token' }),
     );
 
-    expect(context.kortixApiToken).toBe('private-worker-token');
+    expect(context.zedApiToken).toBe('private-worker-token');
   });
 
   test('does not accept a bearer from public room metadata', () => {
     expect(() => resolveCallContext('voice-call-1', roomMetadata, undefined)).toThrow(
-      'voice-agent: worker metadata is missing kortix_api_token',
+      'voice-agent: worker metadata is missing zed_api_token',
     );
   });
 });
@@ -125,7 +125,7 @@ describe('send_prompt speaks the ack itself and gives the model nothing to embel
 
   test('a refusal is relayed as itself, not reported as an unreachable API', () => {
     // apps/api refuses a second in-flight hand-off with a sentence written to be
-    // relayed. Announcing that as "Could not reach Kortix" is false, reads as a
+    // relayed. Announcing that as "Could not reach Zed" is false, reads as a
     // fault, and invites the immediate retry the refusal exists to prevent.
     expect(TOOLS_SOURCE).toContain("result.kind === 'refused'");
     expect(TOOLS_SOURCE).toContain('return result.error;');
@@ -133,7 +133,7 @@ describe('send_prompt speaks the ack itself and gives the model nothing to embel
 });
 
 describe('the system prompt stops the two behaviours that fed the loop', () => {
-  const prompt = buildInstructions('Kortix');
+  const prompt = buildInstructions('Zed');
 
   test('the old "BIAS HARD TOWARD JUST CALLING send_prompt" is gone', () => {
     // It was right that the model should not interrogate the speaker, and wrong
@@ -148,7 +148,7 @@ describe('the system prompt stops the two behaviours that fed the loop', () => {
 
   test('it forbids stating a project fact it was not told — the dog rule', () => {
     expect(prompt).toContain('NEVER state a fact about this project');
-    expect(prompt).toContain('unless Kortix told you that fact IN THIS CALL');
+    expect(prompt).toContain('unless Zed told you that fact IN THIS CALL');
     expect(prompt).toContain('Never fill a');
     expect(prompt).toContain('never repeat back a stray word from the transcript');
   });
@@ -164,7 +164,7 @@ describe('the system prompt stops the two behaviours that fed the loop', () => {
     // answer, so it asks again to reconcile the two — forever.
     expect(prompt).toContain('WHEN AN ANSWER ARRIVES, IT WINS');
     expect(prompt).toContain('you were wrong');
-    expect(prompt).toContain('Never ask Kortix to settle a disagreement');
+    expect(prompt).toContain('Never ask Zed to settle a disagreement');
   });
 
   test('it tells the model the ack is already spoken, so it does not say it twice', () => {

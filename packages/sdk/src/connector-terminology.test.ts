@@ -7,7 +7,7 @@ const SOURCE_FILES = [
   'core/rest/projects-client/sessions.ts',
   'core/rest/projects-client/channels.ts',
   'core/rest/projects-client/secrets.ts',
-  'core/client/kortix.ts',
+  'core/client/zed.ts',
 ] as const;
 
 test('the public SDK uses only connector and connection product terminology', () => {

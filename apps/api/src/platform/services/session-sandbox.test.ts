@@ -34,7 +34,7 @@
 // can leak mocks/cached module instances across files. See the same caveat
 // documented in ../../projects/sandbox-reaper.test.ts.
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { projectSessions, sessionSandboxes } from '@kortix/db';
+import { projectSessions, sessionSandboxes } from '@zed/db';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import { PROVISIONING_SESSION_STATUSES } from '../../projects/lib/session-status';
 import * as realProviders from '../providers';
@@ -102,7 +102,7 @@ function updateResult(rows: unknown[]) {
 mock.module('../../config', () => ({
   config: {
     ALLOWED_SANDBOX_PROVIDERS: ['daytona', 'e2b'],
-    KORTIX_URL: 'http://localhost:8008',
+    ZED_URL: 'http://localhost:8008',
     LLM_GATEWAY_PROXY_PORT: undefined,
     LLM_GATEWAY_PROXY_TARGET: undefined,
     LLM_GATEWAY_BASE_URL: undefined,
@@ -370,7 +370,7 @@ describe('provisionSessionSandbox — mid-provision delete race', () => {
       sessionId: SANDBOX_ID,
       agentGrant: {
         agent: 'meta',
-        kortixCli: 'all',
+        zedCli: 'all',
         connectors: [],
         env: [],
       },

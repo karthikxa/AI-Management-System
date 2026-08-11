@@ -24,7 +24,7 @@ const OTHER_USER = crypto.randomUUID();
 const GROUP = crypto.randomUUID();
 
 beforeAll(async () => {
-  await db.execute(sql`create table if not exists kortix.iam_resource_grants (
+  await db.execute(sql`create table if not exists zed.iam_resource_grants (
     grant_id uuid primary key default gen_random_uuid(),
     account_id uuid not null,
     project_id uuid not null,
@@ -39,17 +39,17 @@ beforeAll(async () => {
     updated_at timestamptz not null default now()
   )`);
   await db.execute(
-    sql`create unique index if not exists uq_iam_resource_grants on kortix.iam_resource_grants (project_id, resource_type, resource_id, principal_type, principal_id)`,
+    sql`create unique index if not exists uq_iam_resource_grants on zed.iam_resource_grants (project_id, resource_type, resource_id, principal_type, principal_id)`,
   );
   const rows = (await db.execute(
-    sql`select project_id, account_id from kortix.projects limit 1`,
+    sql`select project_id, account_id from zed.projects limit 1`,
   )) as unknown as Array<{ project_id: string; account_id: string }>;
   if (rows[0]) ctx = { projectId: rows[0].project_id, accountId: rows[0].account_id };
 });
 
 afterAll(async () => {
   for (const id of cleanup) {
-    await db.execute(sql`delete from kortix.iam_resource_grants where grant_id = ${id}`);
+    await db.execute(sql`delete from zed.iam_resource_grants where grant_id = ${id}`);
   }
 });
 

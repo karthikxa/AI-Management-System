@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// e2e smoke for Kortix's own PTY (routes/pty.ts in kortix-sandbox-agent-
+// e2e smoke for Zed's own PTY (routes/pty.ts in zed-sandbox-agent-
 // server) — independent of whatever agent runtime is running, reached
 // through the same preview proxy the old OpenCode-backed /pty bridge used
 // (that bridge and its daemon-side code have been removed; nothing
@@ -7,13 +7,13 @@
 //
 // Connects to the SAME URL the web terminal panel / CLI's `sessions shell`
 // use:
-//   ws://localhost:8008/v1/p/{sandbox}/8000/kortix/pty/{ptyId}/connect?token=...
+//   ws://localhost:8008/v1/p/{sandbox}/8000/zed/pty/{ptyId}/connect?token=...
 // drives a command, and asserts the shell's output comes back through the
 // API → daemon (Bun.spawn({terminal})) pipe.
 //
 // Usage:
 //   bun tests/e2e/scripts/pty-ws-smoke.ts <sandboxId> <jwt> [ptyId]
-// If ptyId is omitted, the first running PTY from GET /kortix/pty is used.
+// If ptyId is omitted, the first running PTY from GET /zed/pty is used.
 
 const API = process.env.API_BASE || 'http://localhost:8008/v1';
 const sandboxId = process.argv[2];
@@ -30,24 +30,24 @@ const auth = { Authorization: `Bearer ${token}` };
 
 async function ensurePty(): Promise<string> {
   if (ptyId) return ptyId;
-  const res = await fetch(`${http}/kortix/pty`, { headers: auth });
-  if (!res.ok) throw new Error(`GET /kortix/pty -> ${res.status}: ${await res.text()}`);
+  const res = await fetch(`${http}/zed/pty`, { headers: auth });
+  if (!res.ok) throw new Error(`GET /zed/pty -> ${res.status}: ${await res.text()}`);
   const list = (await res.json()) as Array<{ id: string; status: string }>;
   const running = list.find((p) => p.status === 'running') || list[0];
   if (running) return running.id;
   // none — create one
-  const create = await fetch(`${http}/kortix/pty`, {
+  const create = await fetch(`${http}/zed/pty`, {
     method: 'POST',
     headers: { ...auth, 'Content-Type': 'application/json' },
     body: JSON.stringify({ env: { TERM: 'xterm-256color', COLORTERM: 'truecolor' } }),
   });
-  if (!create.ok) throw new Error(`POST /kortix/pty -> ${create.status}: ${await create.text()}`);
+  if (!create.ok) throw new Error(`POST /zed/pty -> ${create.status}: ${await create.text()}`);
   return ((await create.json()) as { id: string }).id;
 }
 
 async function main() {
   ptyId = await ensurePty();
-  const wsUrl = `${API.replace(/^http/, 'ws')}/p/${sandboxId}/8000/kortix/pty/${ptyId}/connect?token=${encodeURIComponent(token)}`;
+  const wsUrl = `${API.replace(/^http/, 'ws')}/p/${sandboxId}/8000/zed/pty/${ptyId}/connect?token=${encodeURIComponent(token)}`;
   console.log(`[smoke] pty=${ptyId}`);
   console.log(`[smoke] connecting ${wsUrl.replace(token, token.slice(0, 12) + '…')}`);
 

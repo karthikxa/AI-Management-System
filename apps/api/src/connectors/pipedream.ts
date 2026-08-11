@@ -3,7 +3,7 @@
  * for SaaS apps). Adapted from the pre-refactor provider (commit 9078f28e).
  *
  * Model fit: a connector with provider="pipedream" declares `app` + `account` in
- * kortix.yaml. The OAuth lives on Pipedream's side; we store only the connected
+ * zed.yaml. The OAuth lives on Pipedream's side; we store only the connected
  * **account id** as a `scope='connector'` project secret (the binding) — so it's
  * shareable like any connector credential and never injected into the sandbox.
  * The catalog (app actions) is fetched from Pipedream and normalized. Execution
@@ -25,7 +25,7 @@ const PD_BASE = 'https://api.pipedream.com';
  * pipedream_utils, formatting, helper_functions, data stores, …) alongside real
  * third-party apps. Discover uses Pipedream only where it adds unique value:
  * managed OAuth. API-key apps connect directly through their real API instead
- * of adding an intermediary. Utilities and native Kortix apps are excluded too.
+ * of adding an intermediary. Utilities and native Zed apps are excluded too.
  */
 
 export function pipedreamConfigured(): boolean {
@@ -90,9 +90,9 @@ class PipedreamProvider {
       error_redirect_uri: redirects?.error || `${origin}/connections?error=true`,
     };
     if (app) body.app_slug = app;
-    if (config.KORTIX_URL && config.PIPEDREAM_WEBHOOK_SECRET) {
+    if (config.ZED_URL && config.PIPEDREAM_WEBHOOK_SECRET) {
       const sig = createHmac('sha256', config.PIPEDREAM_WEBHOOK_SECRET).update(extUserId).digest('hex');
-      body.webhook_uri = `${config.KORTIX_URL.replace(/\/+$/, '')}/v1/connectors/webhook/pipedream?sig=${sig}`;
+      body.webhook_uri = `${config.ZED_URL.replace(/\/+$/, '')}/v1/connectors/webhook/pipedream?sig=${sig}`;
     }
     const data = await this.api<{ token: string; expires_at: string; connect_link_url?: string }>(
       'POST', `/v1/connect/${this.projectId}/tokens`, body,

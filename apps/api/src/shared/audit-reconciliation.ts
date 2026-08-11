@@ -47,7 +47,7 @@ export async function reconcileAuditEvents(
              CASE WHEN c.result_summary IS NULL THEN NULL ELSE
                encode(extensions.digest(convert_to(c.result_summary::text, 'UTF8'), 'sha256'), 'hex') END AS output_sha256,
              NULL::integer AS duration_ms, COALESCE(c.resolved_at, c.created_at) AS occurred_at
-        FROM kortix.connector_calls c WHERE c.account_id = ${accountId}::uuid
+        FROM zed.connector_calls c WHERE c.account_id = ${accountId}::uuid
       UNION ALL
       SELECT s.account_id, s.project_id, s.session_id, s.opencode_session_id, s.created_by,
              COALESCE(
@@ -83,7 +83,7 @@ export async function reconcileAuditEvents(
              CASE WHEN s.error IS NULL THEN NULL ELSE
                encode(extensions.digest(convert_to(s.error, 'UTF8'), 'sha256'), 'hex') END,
              NULL::integer, s.created_at
-        FROM kortix.project_sessions s WHERE s.account_id = ${accountId}::uuid
+        FROM zed.project_sessions s WHERE s.account_id = ${accountId}::uuid
       UNION ALL
       SELECT l.account_id, l.project_id, l.session_id, NULL::text, l.actor_user_id,
              CASE WHEN l.source IN ('trigger','schedule','system') THEN 'system' ELSE 'human' END,
@@ -102,7 +102,7 @@ export async function reconcileAuditEvents(
              CASE WHEN l.result IS NULL AND l.last_error IS NULL THEN NULL ELSE
                encode(extensions.digest(convert_to(COALESCE(l.result::text, l.last_error), 'UTF8'), 'sha256'), 'hex') END,
              NULL::integer, COALESCE(l.updated_at, l.created_at)
-        FROM kortix.session_lifecycle_commands l WHERE l.account_id = ${accountId}::uuid
+        FROM zed.session_lifecycle_commands l WHERE l.account_id = ${accountId}::uuid
       UNION ALL
       SELECT p.account_id, ps.project_id, p.session_id, NULL::text, NULL::uuid, 'system',
              NULL::text, NULL::text, NULL::text, 0::integer, 'provider', NULL::text,
@@ -115,8 +115,8 @@ export async function reconcileAuditEvents(
              CASE WHEN p.error IS NULL THEN NULL ELSE
                encode(extensions.digest(convert_to(p.error, 'UTF8'), 'sha256'), 'hex') END,
              p.total_ms, p.created_at
-        FROM kortix.provider_events p
-        LEFT JOIN kortix.project_sessions ps ON ps.session_id = p.session_id
+        FROM zed.provider_events p
+        LEFT JOIN zed.project_sessions ps ON ps.session_id = p.session_id
        WHERE p.account_id = ${accountId}::uuid
       UNION ALL
       SELECT u.account_id, u.project_id, u.session_id, NULL::text, u.actor_user_id,
@@ -131,7 +131,7 @@ export async function reconcileAuditEvents(
              jsonb_build_object('input_tokens', u.input_tokens, 'output_tokens', u.output_tokens,
                'cached_tokens', u.cached_tokens, 'cache_write_tokens', u.cache_write_tokens,
                'cost_usd', u.cost_usd), NULL::text, NULL::integer, u.created_at
-        FROM kortix.usage_events u WHERE u.account_id = ${accountId}::uuid
+        FROM zed.usage_events u WHERE u.account_id = ${accountId}::uuid
       UNION ALL
       SELECT g.account_id, g.project_id, g.session_id, NULL::text, g.actor_user_id,
              CASE WHEN g.session_id IS NULL THEN 'human' ELSE 'agent' END,
@@ -147,7 +147,7 @@ export async function reconcileAuditEvents(
              CASE WHEN g.error_message IS NULL THEN NULL ELSE
                encode(extensions.digest(convert_to(g.error_message, 'UTF8'), 'sha256'), 'hex') END,
              g.latency_ms, g.created_at
-        FROM kortix.gateway_request_logs g WHERE g.account_id = ${accountId}::uuid
+        FROM zed.gateway_request_logs g WHERE g.account_id = ${accountId}::uuid
       UNION ALL
       SELECT pr.account_id, t.project_id, t.session_id, NULL::text, NULL::uuid,
              CASE WHEN t.role = 'user' THEN 'human' ELSE 'agent' END,
@@ -158,8 +158,8 @@ export async function reconcileAuditEvents(
                'character_count', length(t.text)),
              encode(extensions.digest(convert_to(t.text, 'UTF8'), 'sha256'), 'hex'),
              NULL::jsonb, NULL::text, NULL::integer, t.created_at
-        FROM kortix.voice_call_turns t
-        JOIN kortix.projects pr ON pr.project_id = t.project_id
+        FROM zed.voice_call_turns t
+        JOIN zed.projects pr ON pr.project_id = t.project_id
        WHERE pr.account_id = ${accountId}::uuid
       UNION ALL
       SELECT t.account_id, t.project_id, t.session_id, NULL::text, t.actor_user_id,
@@ -186,7 +186,7 @@ export async function reconcileAuditEvents(
              t.duration_ms,
              CASE WHEN t.phase = 'started' OR t.duration_ms IS NULL THEN t.created_at
                   ELSE t.created_at + (t.duration_ms * interval '1 millisecond') END
-        FROM kortix.tunnel_audit_logs t WHERE t.account_id = ${accountId}::uuid
+        FROM zed.tunnel_audit_logs t WHERE t.account_id = ${accountId}::uuid
       UNION ALL
       SELECT pr.account_id, x.project_id, x.session_id, NULL::text, NULL::uuid, 'system',
              NULL::text, NULL::text, NULL::text, 0::integer, 'automation', NULL::text,
@@ -200,13 +200,13 @@ export async function reconcileAuditEvents(
              CASE WHEN x.last_error IS NULL THEN NULL ELSE
                encode(extensions.digest(convert_to(x.last_error, 'UTF8'), 'sha256'), 'hex') END,
              NULL::integer, COALESCE(x.updated_at, x.created_at)
-        FROM kortix.project_trigger_executions x
-        JOIN kortix.projects pr ON pr.project_id = x.project_id
+        FROM zed.project_trigger_executions x
+        JOIN zed.projects pr ON pr.project_id = x.project_id
        WHERE pr.account_id = ${accountId}::uuid
     ), missing AS (
       SELECT c.*
         FROM candidates c
-        LEFT JOIN kortix.audit_events a
+        LEFT JOIN zed.audit_events a
           ON a.source_ledger = c.source_ledger
          AND a.source_record_id = c.source_record_id
          AND a.phase = c.phase
@@ -219,7 +219,7 @@ export async function reconcileAuditEvents(
        ORDER BY occurred_at, source_ledger, source_record_id
        LIMIT ${limit}
     ), inserted AS (
-    INSERT INTO kortix.audit_events(
+    INSERT INTO zed.audit_events(
       account_id, project_id, session_id, opencode_session_id, actor_user_id, actor_type,
       agent_name, initiator_actor_type, initiator_actor_id, delegation_depth,
       authoritative_source, client_reported_source, outcome, action, phase,

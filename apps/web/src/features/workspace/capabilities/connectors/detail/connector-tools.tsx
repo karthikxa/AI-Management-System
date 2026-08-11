@@ -7,7 +7,7 @@ import {
   getConnectorPolicies,
   setConnectorPolicies,
   setConnectorSensitive,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import {
   CaretDownIcon,
   LockIcon,

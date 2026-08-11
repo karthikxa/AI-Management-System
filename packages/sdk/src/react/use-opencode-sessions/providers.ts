@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getClient } from '../../core/runtime/client';
-import { useKortixRouteProjectId } from '../route-project';
+import { useZedRouteProjectId } from '../route-project';
 import { contract } from '../query-contracts';
 import { qk } from '../query-keys';
 import { opencodeKeys, useOpenCodeRuntimeReady } from './keys';
@@ -33,7 +33,7 @@ export { GATEWAY_PROVIDER_IDS };
 
 export function useOpenCodeProviders() {
   const runtimeReady = useOpenCodeRuntimeReady();
-  const projectId = useKortixRouteProjectId();
+  const projectId = useZedRouteProjectId();
   const projectDetailQuery = useQuery({
     // Same fetcher and same response shape every other `getProjectDetail`
     // reader caches under `qk.project.detail(id)` — sharing the key (instead

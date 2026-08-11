@@ -37,7 +37,7 @@ function writeData(data: UsersData): void {
   writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// Kortix project ids are UUIDs. Enforced on WRITE (only record what upstream
+// Zed project ids are UUIDs. Enforced on WRITE (only record what upstream
 // actually minted) and on READ (ids from this file end up inside upstream
 // request URLs — see /api/session-costs — so a hand-edited or corrupted store must
 // never be able to steer a request anywhere unexpected).

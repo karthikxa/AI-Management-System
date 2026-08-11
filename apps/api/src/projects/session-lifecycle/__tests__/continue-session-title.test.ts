@@ -4,7 +4,7 @@
 // heavier dependencies are stubbed so its top-level imports resolve, and
 // `mock.module` is process-global, so this file must be run on its own.
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { projectSessions, projects } from '@kortix/db';
+import { projectSessions, projects } from '@zed/db';
 
 const SESSION_ID = 'sess-title-hook-1';
 const ACCOUNT_ID = 'acct-1';

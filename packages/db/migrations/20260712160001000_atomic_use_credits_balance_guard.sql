@@ -38,7 +38,7 @@ BEGIN
     COALESCE(non_expiring_credits, 0),
     COALESCE(balance, 0)
   INTO v_daily, v_exp, v_nonexp, v_total
-  FROM kortix.credit_accounts
+  FROM zed.credit_accounts
   WHERE account_id = p_account_id
   FOR UPDATE;
 
@@ -68,7 +68,7 @@ BEGIN
   v_nn := v_nonexp - v_fn;
   v_nt := v_nd + v_ne + v_nn;
 
-  UPDATE kortix.credit_accounts
+  UPDATE zed.credit_accounts
   SET daily_credits_balance = v_nd,
       expiring_credits = v_ne,
       non_expiring_credits = v_nn,
@@ -76,7 +76,7 @@ BEGIN
       updated_at = NOW()
   WHERE account_id = p_account_id;
 
-  INSERT INTO kortix.credit_ledger(account_id, amount, balance_after, type, description, metadata)
+  INSERT INTO zed.credit_ledger(account_id, amount, balance_after, type, description, metadata)
   VALUES (
     p_account_id,
     -p_amount,

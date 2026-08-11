@@ -1,4 +1,4 @@
-import type { BillingState } from '@kortix/sdk';
+import type { BillingState } from '@zed/sdk';
 import { create } from 'zustand';
 
 export type UpgradeReason = 'subscription_required' | 'insufficient_credits' | 'no_account';

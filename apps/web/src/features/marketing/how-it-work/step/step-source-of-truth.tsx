@@ -9,7 +9,7 @@ import { WebPanelWrapper } from '../web-panel-wrapper';
 /**
  * The real manifest, at panel scale.
  *
- * ACCURACY GATE — this is a COMPLETE `kortix_version: 2` manifest, not a
+ * ACCURACY GATE — this is a COMPLETE `zed_version: 2` manifest, not a
  * fragment: it parses and validates clean against `packages/manifest-schema`
  * (`validateManifest(text, 'yaml')` → `valid: true`, zero issues, zero
  * warnings). Keep it that way. The rules the validator enforces, and that this
@@ -18,7 +18,7 @@ import { WebPanelWrapper } from '../web-panel-wrapper';
  *   - `channels:` is rejected outright in version 2 — channel routing is live
  *     project state, not manifest config. Never add one.
  *   - Agent behaviour (model, mode, prompt, permission) is a hard error here —
- *     it lives in `.kortix/opencode/agents/<name>.md`. The manifest grants only.
+ *     it lives in `.zed/opencode/agents/<name>.md`. The manifest grants only.
  *   - A `triggers:` entry needs a `prompt`, so one trigger costs six lines.
  *     That is why this panel leaves triggers to `/company-as-code`.
  *   - An omitted grant resolves to `none`, which is what the header claims.
@@ -28,10 +28,10 @@ import { WebPanelWrapper } from '../web-panel-wrapper';
  * Northwind is a placeholder, not a customer.
  */
 const MANIFEST: { line: string; tone?: 'muted' | 'accent' }[] = [
-  { line: 'kortix_version: 2' },
-  { line: 'default_agent: kortix' },
+  { line: 'zed_version: 2' },
+  { line: 'default_agent: zed' },
   { line: 'agents:' },
-  { line: '  kortix:' },
+  { line: '  zed:' },
   { line: '    connectors: all' },
   { line: '    secrets: all' },
   { line: '    skills: all' },
@@ -42,7 +42,7 @@ const MANIFEST: { line: string; tone?: 'muted' | 'accent' }[] = [
 
 /**
  * Real directories from the shipped starter template
- * (`packages/starter/templates/base/.kortix`). Do not invent one.
+ * (`packages/starter/templates/base/.zed`). Do not invent one.
  */
 const REPO = [
   {
@@ -63,7 +63,7 @@ const REPO = [
 ];
 
 /**
- * Layer 01 — the repo is the company, and `kortix.yaml` is the part that
+ * Layer 01 — the repo is the company, and `zed.yaml` is the part that
  * governs it.
  *
  * Two columns, because this panel's frame is wide and short (measured 1076 x
@@ -78,14 +78,14 @@ export function StepSourceOfTruth(): ReactNode {
         title="Source of truth"
         sub="One git repo holds the whole company."
         action={
-          <Badge variant="kortix" size="sm" className="shrink-0 rounded">
+          <Badge variant="zed" size="sm" className="shrink-0 rounded">
             main
           </Badge>
         }
       />
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Panel title="kortix.yaml" count="omit a grant and it is none">
+        <Panel title="zed.yaml" count="omit a grant and it is none">
           <div className="bg-background px-4 py-3">
             <pre className="overflow-x-auto font-mono text-[11.5px] leading-[1.75]">
               <code>
@@ -110,7 +110,7 @@ export function StepSourceOfTruth(): ReactNode {
           </div>
         </Panel>
 
-        <Panel title=".kortix/" count="and the rest is files">
+        <Panel title=".zed/" count="and the rest is files">
           {REPO.map((entry) => (
             <Row
               key={entry.path}

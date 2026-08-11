@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import {
   type Ports,
   computePorts,
-  hasKortixSchema,
+  hasZedSchema,
   repoRoot,
   runMigrate,
   sh,
@@ -10,16 +10,16 @@ import {
 
 // Heavy integration test for the worktree's OWN migrate wrapper. The lightweight
 // scripts/worktree/__tests__ prove runMigrate references real things (the
-// @kortix/db script, psql, test-prereqs.sql); this proves the wrapper actually
-// builds the schema end-to-end by running the REAL runMigrate() + hasKortixSchema()
+// @zed/db script, psql, test-prereqs.sql); this proves the wrapper actually
+// builds the schema end-to-end by running the REAL runMigrate() + hasZedSchema()
 // against a throwaway Postgres — with the postgres:postgres@/postgres creds the
-// worktree always uses (a fresh Supabase-local), which the kortix_test container
+// worktree always uses (a fresh Supabase-local), which the zed_test container
 // in docker-compose.test.yml does not match, so this manages its own container.
 //
 //   bun test tests/migration/worktree-migrate.test.ts   (needs docker)
 
 const dockerOk = sh(['docker', 'info']).ok;
-const CONTAINER = 'kortix-wt-migrate-test';
+const CONTAINER = 'zed-wt-migrate-test';
 const PORT = Number(process.env.WT_MIGRATE_TEST_PORT || 55440);
 const ROOT = repoRoot();
 const ports: Ports = { ...computePorts(0), sbDb: PORT };
@@ -56,17 +56,17 @@ suite('worktree runMigrate (end-to-end against throwaway Postgres)', () => {
   });
 
   test(
-    'builds the kortix schema from scratch (prereqs + node-pg-migrate)',
+    'builds the zed schema from scratch (prereqs + node-pg-migrate)',
     async () => {
       const code = await runMigrate(ROOT, ports);
       expect(code).toBe(0);
 
-      expect(hasKortixSchema(ports)).toBe(true);
+      expect(hasZedSchema(ports)).toBe(true);
 
       const url = `postgresql://postgres:postgres@127.0.0.1:${PORT}/postgres`;
       const count = Number(
         sh(['psql', url, '-tAc',
-          "select count(*) from information_schema.tables where table_schema='kortix' and table_type='BASE TABLE'",
+          "select count(*) from information_schema.tables where table_schema='zed' and table_type='BASE TABLE'",
         ]).stdout.trim(),
       );
       expect(count).toBeGreaterThanOrEqual(80);
@@ -77,7 +77,7 @@ suite('worktree runMigrate (end-to-end against throwaway Postgres)', () => {
   test('is idempotent — a second run applies nothing and still exits 0', async () => {
     const code = await runMigrate(ROOT, ports);
     expect(code).toBe(0);
-    expect(hasKortixSchema(ports)).toBe(true);
+    expect(hasZedSchema(ports)).toBe(true);
   }, 120_000);
 });
 

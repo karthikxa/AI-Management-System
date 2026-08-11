@@ -12,7 +12,7 @@ let edgeConfig: Config | null;
 let databaseReadFails = false;
 let events: string[] = [];
 
-mock.module('@kortix/sdk', () => ({
+mock.module('@zed/sdk', () => ({
   getMaintenanceConfig: async () => {
     events.push('database-read');
     if (databaseReadFails) throw new Error('API unavailable');

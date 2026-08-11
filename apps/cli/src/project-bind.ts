@@ -29,7 +29,7 @@ function bindableAccountId(auth: Auth): string | undefined {
  * default project, creating the binding interactively when possible.
  *
  *   - already bound        → return it, do nothing
- *   - zero projects        → hint at `kortix init`, return null
+ *   - zero projects        → hint at `zed init`, return null
  *   - exactly one project  → bind it automatically (no prompt)
  *   - several + TTY        → picker (Esc skips)
  *   - several + non-TTY    → hint, return null
@@ -79,7 +79,7 @@ export async function ensureDefaultProjectBinding(
     // one would be wrong, and this message used to say exactly that.
     if (!opts.quiet) {
       process.stderr.write(
-        `${C.dim}No projects in this account — create one with ${C.reset}${C.cyan}kortix init <name>${C.reset}${C.dim}, or switch accounts with ${C.reset}${C.cyan}kortix accounts use${C.reset}${C.dim}.${C.reset}\n`,
+        `${C.dim}No projects in this account — create one with ${C.reset}${C.cyan}zed init <name>${C.reset}${C.dim}, or switch accounts with ${C.reset}${C.cyan}zed accounts use${C.reset}${C.dim}.${C.reset}\n`,
       );
     }
     return { project: null, bound: false };
@@ -96,7 +96,7 @@ export async function ensureDefaultProjectBinding(
     if (!picked) {
       if (!opts.quiet) {
         process.stderr.write(
-          `${C.dim}Skipped. Bind one any time with ${C.reset}${C.cyan}kortix projects use${C.reset}${C.dim}.${C.reset}\n`,
+          `${C.dim}Skipped. Bind one any time with ${C.reset}${C.cyan}zed projects use${C.reset}${C.dim}.${C.reset}\n`,
         );
       }
       return { project: null, bound: false };
@@ -104,7 +104,7 @@ export async function ensureDefaultProjectBinding(
   } else {
     if (!opts.quiet) {
       process.stderr.write(
-        `${C.dim}No default project bound. Run ${C.reset}${C.cyan}kortix projects use${C.reset}${C.dim} to pick one.${C.reset}\n`,
+        `${C.dim}No default project bound. Run ${C.reset}${C.cyan}zed projects use${C.reset}${C.dim} to pick one.${C.reset}\n`,
       );
     }
     return { project: null, bound: false };
@@ -117,7 +117,7 @@ export async function ensureDefaultProjectBinding(
   };
   setDefaultProject(ref);
   process.stderr.write(
-    `${status.ok(`Default project: ${C.bold}${picked.name}${C.reset}`)} ${C.dim}(change with \`kortix projects use\`)${C.reset}\n`,
+    `${status.ok(`Default project: ${C.bold}${picked.name}${C.reset}`)} ${C.dim}(change with \`zed projects use\`)${C.reset}\n`,
   );
   return { project: ref, bound: true };
 }

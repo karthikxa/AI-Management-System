@@ -1,5 +1,5 @@
-import { projectSessions, sandboxes } from '@kortix/db';
-import { AUTO_TOPUP_DEFAULT_AMOUNT, AUTO_TOPUP_DEFAULT_THRESHOLD } from '@kortix/shared';
+import { projectSessions, sandboxes } from '@zed/db';
+import { AUTO_TOPUP_DEFAULT_AMOUNT, AUTO_TOPUP_DEFAULT_THRESHOLD } from '@zed/shared';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { config } from '../../config';
 import { effectiveTierForLimits, maxConcurrentSessionsForTier } from '../../shared/account-limits';

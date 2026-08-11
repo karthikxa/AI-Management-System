@@ -29,12 +29,12 @@ const run = (dir, version) =>
     join(dir, 'package.json'),
     JSON.stringify(
       {
-        name: '@kortix/x',
+        name: '@zed/x',
         version: '1.0.0',
         main: './src/index.ts',
         types: './src/index.ts',
         exports: { '.': './src/index.ts' },
-        dependencies: { '@kortix/shared': 'workspace:*', zustand: '^5.0.3' },
+        dependencies: { '@zed/shared': 'workspace:*', zustand: '^5.0.3' },
         files: ['dist', 'src', 'README.md'],
         publishConfig: {
           access: 'public',
@@ -57,7 +57,7 @@ const run = (dir, version) =>
   assert(out.types === './dist/index.d.ts', 'types promoted to dist');
   assert(out.exports['.'].import === './dist/index.js', 'exports promoted to dist');
   assert(JSON.stringify(out.files) === JSON.stringify(['dist', 'README.md']), 'files promoted from publishConfig');
-  assert(out.dependencies['@kortix/shared'] === '2.3.4', 'workspace dep pinned to the release version');
+  assert(out.dependencies['@zed/shared'] === '2.3.4', 'workspace dep pinned to the release version');
   assert(out.dependencies.zustand === '^5.0.3', 'registry dep range left untouched');
   assert(out.publishConfig.main === undefined, 'promoted publishConfig overrides stripped');
   assert(out.publishConfig.exports === undefined, 'promoted publishConfig.exports stripped');
@@ -73,20 +73,20 @@ const run = (dir, version) =>
 
 // 2) A package whose publishConfig carries browser/unpkg/jsdelivr (the CDN
 //    fields npm/unpkg/jsDelivr read from the top-level manifest, e.g.
-//    @kortix/sdk) must have all three promoted to the top level, and the
+//    @zed/sdk) must have all three promoted to the top level, and the
 //    publishConfig overrides stripped like every other promoted field.
 {
   const dir = mkdtempSync(join(tmpdir(), 'stage-cdn-ok-'));
   mkdirSync(join(dir, 'dist'));
   writeFileSync(join(dir, 'dist', 'index.js'), '');
   writeFileSync(join(dir, 'dist', 'index.d.ts'), '');
-  writeFileSync(join(dir, 'dist', 'kortix.esm.min.js'), '');
-  writeFileSync(join(dir, 'dist', 'kortix.global.js'), '');
+  writeFileSync(join(dir, 'dist', 'zed.esm.min.js'), '');
+  writeFileSync(join(dir, 'dist', 'zed.global.js'), '');
   writeFileSync(
     join(dir, 'package.json'),
     JSON.stringify(
       {
-        name: '@kortix/cdn-ok',
+        name: '@zed/cdn-ok',
         version: '1.0.0',
         main: './src/index.ts',
         types: './src/index.ts',
@@ -96,9 +96,9 @@ const run = (dir, version) =>
           main: './dist/index.js',
           types: './dist/index.d.ts',
           exports: { '.': { types: './dist/index.d.ts', import: './dist/index.js' } },
-          browser: './dist/kortix.esm.min.js',
-          unpkg: './dist/kortix.global.js',
-          jsdelivr: './dist/kortix.global.js',
+          browser: './dist/zed.esm.min.js',
+          unpkg: './dist/zed.global.js',
+          jsdelivr: './dist/zed.global.js',
           files: ['dist', 'README.md'],
         },
       },
@@ -108,9 +108,9 @@ const run = (dir, version) =>
   );
   run(dir, '3.0.0');
   const out = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
-  assert(out.browser === './dist/kortix.esm.min.js', 'browser promoted from publishConfig');
-  assert(out.unpkg === './dist/kortix.global.js', 'unpkg promoted from publishConfig');
-  assert(out.jsdelivr === './dist/kortix.global.js', 'jsdelivr promoted from publishConfig');
+  assert(out.browser === './dist/zed.esm.min.js', 'browser promoted from publishConfig');
+  assert(out.unpkg === './dist/zed.global.js', 'unpkg promoted from publishConfig');
+  assert(out.jsdelivr === './dist/zed.global.js', 'jsdelivr promoted from publishConfig');
   assert(out.publishConfig.browser === undefined, 'promoted publishConfig.browser stripped');
   assert(out.publishConfig.unpkg === undefined, 'promoted publishConfig.unpkg stripped');
   assert(out.publishConfig.jsdelivr === undefined, 'promoted publishConfig.jsdelivr stripped');
@@ -125,18 +125,18 @@ const run = (dir, version) =>
   const dir = mkdtempSync(join(tmpdir(), 'stage-cdn-miss-'));
   mkdirSync(join(dir, 'dist'));
   writeFileSync(join(dir, 'dist', 'index.js'), '');
-  // note: no dist/kortix.global.js emitted
+  // note: no dist/zed.global.js emitted
   writeFileSync(
     join(dir, 'package.json'),
     JSON.stringify(
       {
-        name: '@kortix/cdn-miss',
+        name: '@zed/cdn-miss',
         version: '1.0.0',
         publishConfig: {
           access: 'public',
           main: './dist/index.js',
           exports: { '.': { import: './dist/index.js' } },
-          unpkg: './dist/kortix.global.js',
+          unpkg: './dist/zed.global.js',
         },
       },
       null,
@@ -161,7 +161,7 @@ const run = (dir, version) =>
     join(dir, 'package.json'),
     JSON.stringify(
       {
-        name: '@kortix/y',
+        name: '@zed/y',
         version: '1.0.0',
         publishConfig: { access: 'public', main: './dist/index.js', exports: { '.': { import: './dist/index.js' } } },
       },
@@ -182,7 +182,7 @@ const run = (dir, version) =>
 // 5) Missing VERSION must fail.
 {
   const dir = mkdtempSync(join(tmpdir(), 'stage-nov-'));
-  writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: '@kortix/z', version: '1.0.0' }, null, 2));
+  writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: '@zed/z', version: '1.0.0' }, null, 2));
   let threw = false;
   try {
     execFileSync('node', [script], { cwd: dir, env: { ...process.env, VERSION: '' }, encoding: 'utf8' });

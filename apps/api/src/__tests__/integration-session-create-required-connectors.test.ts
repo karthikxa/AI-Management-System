@@ -12,7 +12,7 @@ import {
   projectMembers,
   projectSessions,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import { app } from '../index';
 import { loadProjectAgents } from '../projects/agents';
@@ -43,20 +43,20 @@ function git(args: string[], cwd: string): void {
 }
 
 beforeAll(async () => {
-  fixtureRoot = await mkdtemp(join(tmpdir(), 'kortix-session-connector-gate-'));
-  previousGitCacheDir = process.env.KORTIX_GIT_CACHE_DIR;
-  process.env.KORTIX_GIT_CACHE_DIR = join(fixtureRoot, 'git-cache');
+  fixtureRoot = await mkdtemp(join(tmpdir(), 'zed-session-connector-gate-'));
+  previousGitCacheDir = process.env.ZED_GIT_CACHE_DIR;
+  process.env.ZED_GIT_CACHE_DIR = join(fixtureRoot, 'git-cache');
 
   const repository = join(fixtureRoot, 'repository');
   mkdirSync(repository, { recursive: true });
   git(['init', '-b', 'main'], repository);
-  git(['config', 'user.email', 'session-gate@kortix.test'], repository);
+  git(['config', 'user.email', 'session-gate@zed.test'], repository);
   git(['config', 'user.name', 'Session Gate Test'], repository);
   writeFileSync(join(repository, 'README.md'), '# Session connector gate\n', 'utf8');
   writeFileSync(
-    join(repository, 'kortix.yaml'),
+    join(repository, 'zed.yaml'),
     [
-      'kortix_version: 2',
+      'zed_version: 2',
       'default_agent: support',
       'agents:',
       '  support:',
@@ -68,7 +68,7 @@ beforeAll(async () => {
     ].join('\n'),
     'utf8',
   );
-  git(['add', 'README.md', 'kortix.yaml'], repository);
+  git(['add', 'README.md', 'zed.yaml'], repository);
   git(['commit', '-m', 'initial'], repository);
 
   await db.insert(accounts).values({
@@ -137,9 +137,9 @@ beforeAll(async () => {
 
   await loadProjectAgents(project);
   writeFileSync(
-    join(repository, 'kortix.yaml'),
+    join(repository, 'zed.yaml'),
     [
-      'kortix_version: 2',
+      'zed_version: 2',
       'default_agent: support',
       'agents:',
       '  support:',
@@ -160,14 +160,14 @@ beforeAll(async () => {
     ].join('\n'),
     'utf8',
   );
-  git(['add', 'kortix.yaml'], repository);
+  git(['add', 'zed.yaml'], repository);
   git(['commit', '-m', 'require connectors'], repository);
 });
 
 afterAll(async () => {
   await db.delete(accounts).where(eq(accounts.accountId, ACCOUNT_ID));
-  if (previousGitCacheDir === undefined) delete process.env.KORTIX_GIT_CACHE_DIR;
-  else process.env.KORTIX_GIT_CACHE_DIR = previousGitCacheDir;
+  if (previousGitCacheDir === undefined) delete process.env.ZED_GIT_CACHE_DIR;
+  else process.env.ZED_GIT_CACHE_DIR = previousGitCacheDir;
   if (fixtureRoot) await rm(fixtureRoot, { recursive: true, force: true });
 });
 

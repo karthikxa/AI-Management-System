@@ -2,8 +2,8 @@ import { describe, expect, test } from 'bun:test';
 import type { AppHostingProvider } from './hosting';
 import { prepareAppWsUpgrade, type AppWsUpgradeDependencies } from './ws-proxy';
 
-process.env.INTERNAL_KORTIX_ENV = 'dev';
-process.env.KORTIX_APPS_ALLOW_LOCAL_EDGE = 'true';
+process.env.INTERNAL_ZED_ENV = 'dev';
+process.env.ZED_APPS_ALLOW_LOCAL_EDGE = 'true';
 
 const REQUEST_URL = 'https://aaaaaaaaaaaaaaaa.apps.localhost/socket?channel=events';
 

@@ -1,5 +1,5 @@
 variable "name" {
-  description = "Name prefix for VPC resources (e.g. kortix-dev)."
+  description = "Name prefix for VPC resources (e.g. zed-dev)."
   type        = string
 }
 

@@ -12,11 +12,11 @@
 -- recorded here (the resolve endpoint refuses to approve a blocked call), so
 -- this can only ever WIDEN from "ask" to "run", never override a hard block.
 
-CREATE TABLE "kortix"."session_tool_approvals" (
+CREATE TABLE "zed"."session_tool_approvals" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   "session_id" uuid NOT NULL,
-  "project_id" uuid NOT NULL REFERENCES "kortix"."projects"("project_id") ON DELETE CASCADE,
-  "connector_id" uuid NOT NULL REFERENCES "kortix"."executor_connectors"("connector_id") ON DELETE CASCADE,
+  "project_id" uuid NOT NULL REFERENCES "zed"."projects"("project_id") ON DELETE CASCADE,
+  "connector_id" uuid NOT NULL REFERENCES "zed"."executor_connectors"("connector_id") ON DELETE CASCADE,
   "action_path" varchar(512) NOT NULL,
   "granted_by" uuid,
   "created_at" timestamptz NOT NULL DEFAULT now(),
@@ -24,7 +24,7 @@ CREATE TABLE "kortix"."session_tool_approvals" (
 );
 
 CREATE INDEX "session_tool_approvals_session_idx"
-  ON "kortix"."session_tool_approvals" ("session_id");
+  ON "zed"."session_tool_approvals" ("session_id");
 
 -- Down Migration
-DROP TABLE IF EXISTS "kortix"."session_tool_approvals";
+DROP TABLE IF EXISTS "zed"."session_tool_approvals";

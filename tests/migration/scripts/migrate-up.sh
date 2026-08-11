@@ -10,7 +10,7 @@ source "${SCRIPT_DIR}/env.sh"
 #      the container (packages/db/scripts/test-prereqs.sql).
 #   2. Run the migrations from the host with the SAME `pnpm migrate` the deploy
 #      pipeline uses. node-pg-migrate records applied migrations in
-#      kortix_migrations.pgmigrations, so a second run is a no-op.
+#      zed_migrations.pgmigrations, so a second run is a no-op.
 
 log "Applying external prerequisites (roles + auth/basejump stubs)"
 compose exec -T -e PGPASSWORD="${TEST_DB_PASSWORD}" "${COMPOSE_SERVICE}" \
@@ -18,6 +18,6 @@ compose exec -T -e PGPASSWORD="${TEST_DB_PASSWORD}" "${COMPOSE_SERVICE}" \
   <"${REPO_ROOT}/packages/db/scripts/test-prereqs.sql"
 
 log "Applying migrations with node-pg-migrate (pnpm migrate)"
-(cd "${REPO_ROOT}" && DATABASE_URL="${TEST_DATABASE_URL}" pnpm --filter @kortix/db migrate)
+(cd "${REPO_ROOT}" && DATABASE_URL="${TEST_DATABASE_URL}" pnpm --filter @zed/db migrate)
 
 log "Done."

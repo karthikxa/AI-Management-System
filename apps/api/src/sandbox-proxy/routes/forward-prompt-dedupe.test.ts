@@ -14,7 +14,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, test } from 'bun:tes
 import { mock } from 'bun:test';
 import * as realRequestContext from '../../lib/request-context';
 import * as realPreviewOwnership from '../../shared/preview-ownership';
-import * as realKortixUserContext from '../../shared/kortix-user-context';
+import * as realZedUserContext from '../../shared/zed-user-context';
 
 const ACTIVE_RECORD = {
   status: 'active',
@@ -27,7 +27,7 @@ const ACTIVE_RECORD = {
   provider: 'daytona',
 };
 
-mock.module('../../config', () => ({ config: { KORTIX_ENFORCE_SESSION_AGENT_LOCK: false } }));
+mock.module('../../config', () => ({ config: { ZED_ENFORCE_SESSION_AGENT_LOCK: false } }));
 mock.module('../../lib/request-context', () => ({
   ...realRequestContext,
   getTraceHeaders: () => ({}),
@@ -37,9 +37,9 @@ mock.module('../../lib/request-context', () => ({
 // in whatever unrelated file imports the missing name next, as
 // `SyntaxError: Export named '…' not found`, attributed to no test at all.
 // Overriding only what this file needs keeps new exports working by default.
-mock.module('../../shared/kortix-user-context', () => ({
-  ...realKortixUserContext,
-  KORTIX_USER_CONTEXT_HEADER: 'x-kortix-user-context',
+mock.module('../../shared/zed-user-context', () => ({
+  ...realZedUserContext,
+  ZED_USER_CONTEXT_HEADER: 'x-zed-user-context',
 }));
 mock.module('../../shared/preview-ownership', () => ({
   ...realPreviewOwnership,

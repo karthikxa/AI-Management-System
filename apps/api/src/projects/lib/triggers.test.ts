@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test';
-import { parseManifestText, validateManifest } from '@kortix/manifest-schema';
+import { parseManifestText, validateManifest } from '@zed/manifest-schema';
 
 // `loadManifestForEdit`'s only I/O is git: `readManifest` (imported from
 // `../triggers`) calls `readManifestFromRepo` — resolved from `../git`
@@ -40,13 +40,13 @@ const fakeProject = (overrides: Record<string, unknown> = {}) =>
   ({
     projectId: 'proj_blank',
     name: 'blank-project',
-    manifestPath: 'kortix.toml',
+    manifestPath: 'zed.toml',
     defaultBranch: 'main',
     metadata: { require_declared_agents: true },
     ...overrides,
   }) as unknown as Parameters<typeof loadManifestForEdit>[0];
 
-describe('loadManifestForEdit — blank managed project (no kortix.yaml on disk yet)', () => {
+describe('loadManifestForEdit — blank managed project (no zed.yaml on disk yet)', () => {
   test('synthesizes a valid v2 manifest with a declared, resolvable default agent', async () => {
     manifestFile = null; // "brand-new repo" — nothing committed yet
 
@@ -68,17 +68,17 @@ describe('loadManifestForEdit — blank managed project (no kortix.yaml on disk 
     expect(agents).toBeTruthy();
     expect(agents?.[defaultAgent as string]).toBeTruthy();
 
-    // `kortix_version` must be embedded INSIDE `raw`, not just carried on the
+    // `zed_version` must be embedded INSIDE `raw`, not just carried on the
     // `schemaVersion` wrapper — `applyDefaultAgentV2`/`applyAgentBlockV2`
     // (./agent-config-v2.ts) call `validateManifest(manifest.raw, format)`
     // directly on THIS object (never through `serializeManifest`, which
-    // re-injects `kortix_version` from `schemaVersion` on the way OUT). A
+    // re-injects `zed_version` from `schemaVersion` on the way OUT). A
     // synthesized manifest missing this key validates as unversioned and
-    // 400s "kortix_version is required" the moment a caller tries to set the
+    // 400s "zed_version is required" the moment a caller tries to set the
     // default agent or edit an agent block — the exact bug this regression
     // guard exists for (see unit-agent-config-v2.test.ts's "raw path"
     // describe block for the write-side proof).
-    expect(manifest.raw.kortix_version).toBe(2);
+    expect(manifest.raw.zed_version).toBe(2);
 
     // Also prove it end-to-end through the serialize → re-parse → validate
     // pipeline `commitManifest` runs once the manifest is actually committed
@@ -117,7 +117,7 @@ describe('loadManifestForEdit — blank managed project (no kortix.yaml on disk 
       projectId: 'proj_blank',
       repoUrl: 'https://github.com/acme/blank.git',
       defaultBranch: 'main',
-      manifestPath: 'kortix.toml',
+      manifestPath: 'zed.toml',
       gitAuthToken: null,
     });
     const governed = resolveGovernedAgentGrant(DEFAULT_AGENT_SENTINEL, loaded, {
@@ -127,9 +127,9 @@ describe('loadManifestForEdit — blank managed project (no kortix.yaml on disk 
     expect(governed.ok).toBe(true);
     if (!governed.ok) return;
     expect(governed.grant).toEqual({
-      agent: 'kortix',
+      agent: 'zed',
       connectors: 'all',
-      kortixCli: 'all',
+      zedCli: 'all',
       env: 'all',
     });
   });
@@ -139,31 +139,31 @@ describe('loadManifestForEdit — blank managed project (no kortix.yaml on disk 
   // through `serializeManifest`/re-parse. Runs the actual write functions
   // PUT /default-agent and PUT /agents/:name/config call, against the actual
   // object `loadManifestForEdit` hands them for a blank project — the exact
-  // path that 400'd `kortix_version is required` even after #4974 merged.
+  // path that 400'd `zed_version is required` even after #4974 merged.
   test('gap 2: applyDefaultAgentV2 and applyAgentBlockV2 both validate the raw manifest loadManifestForEdit hands them', async () => {
     manifestFile = null;
 
     const manifest = await loadManifestForEdit(fakeProject());
 
-    const defaultAgentWrite = applyDefaultAgentV2(manifest, 'kortix');
+    const defaultAgentWrite = applyDefaultAgentV2(manifest, 'zed');
     expect(defaultAgentWrite.ok).toBe(true);
 
     const blockWrite = applyAgentBlockV2(manifest, 'release-bot', {
       connectors: ['github'],
-      kortix_cli: ['project.cr.open'],
+      zed_cli: ['project.cr.open'],
     });
     expect(blockWrite.ok).toBe(true);
     if (!blockWrite.ok) return;
     expect(Object.keys(blockWrite.raw.agents as Record<string, unknown>).sort()).toEqual([
-      'kortix',
+      'zed',
       'release-bot',
     ]);
   });
 
   test('an already-committed manifest is read as-is, untouched (v1 stays v1)', async () => {
     manifestFile = {
-      path: 'kortix.toml',
-      content: 'kortix_version = 1\n\n[project]\nname = "legacy"\n',
+      path: 'zed.toml',
+      content: 'zed_version = 1\n\n[project]\nname = "legacy"\n',
     };
 
     const manifest = await loadManifestForEdit(fakeProject({ metadata: {} }));

@@ -10,7 +10,7 @@
  * clause (first-writer-wins) and the merge expression (no key loss).
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { accounts, projectSessions, projects } from '@kortix/db';
+import { accounts, projectSessions, projects } from '@zed/db';
 import { eq, sql } from 'drizzle-orm';
 
 import type { ProjectSessionRow } from '../projects/lib/serializers';

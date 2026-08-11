@@ -85,7 +85,7 @@ export default function InstancesScreen() {
   }, [rawInstances, activeData?.sandbox]);
   const themeColors = useThemeColors();
 
-  // Live version from /kortix/health for the active instance. The DB's
+  // Live version from /zed/health for the active instance. The DB's
   // metadata.version is a cache written at create time and only refreshed
   // when an update completes — it can be null for older sandboxes and drifts
   // after an update landed inside the image without a DB write. The running
@@ -198,7 +198,7 @@ export default function InstancesScreen() {
                   const isActive = instance.external_id === sandboxId;
                   const isLast = idx === (instances?.length ?? 0) - 1;
                   const isProvisioning = !['running', 'ready', 'active', 'stopped', 'archived', 'error', 'failed'].includes(instance.status);
-                  // Prefer live /kortix/health version for the active instance;
+                  // Prefer live /zed/health version for the active instance;
                   // fall back to the DB cache (instance.version) for others.
                   const effectiveVersion = (isActive ? liveActiveVersion : null) || instance.version || null;
                   return (
@@ -513,7 +513,7 @@ const AddInstanceSheet = React.forwardRef<
                   <Icon as={Globe} size={18} className="text-foreground/80" strokeWidth={2.2} />
                   <View className="ml-4 flex-1">
                     <Text className="font-roobert-medium text-[15px] text-foreground">Custom URL</Text>
-                    <Text className="mt-0.5 font-roobert text-xs text-muted-foreground">Connect to any Kortix instance by address</Text>
+                    <Text className="mt-0.5 font-roobert text-xs text-muted-foreground">Connect to any Zed instance by address</Text>
                   </View>
                 </View>
               </Pressable>
@@ -525,7 +525,7 @@ const AddInstanceSheet = React.forwardRef<
               Custom URL
             </Text>
             <Text className="mb-4 font-roobert text-xs text-muted-foreground">
-              Enter the address of your Kortix instance.
+              Enter the address of your Zed instance.
             </Text>
 
             <BottomSheetTextInput

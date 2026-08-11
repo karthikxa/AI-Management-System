@@ -16,7 +16,7 @@
 import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import { sql, eq, inArray } from 'drizzle-orm';
 import { db } from '../shared/db';
-import { connectors, connectionCredentials } from '@kortix/db';
+import { connectors, connectionCredentials } from '@zed/db';
 
 const CONN_SHARED_ALREADY = crypto.randomUUID();
 const CONN_PER_USER_WITH_SHARED = crypto.randomUUID();
@@ -34,14 +34,14 @@ let seeded = false;
 /** Replays the migration's exact up-statements (idempotent — safe to re-run). */
 async function runMigrationLogic(): Promise<void> {
   await db.execute(sql`
-    delete from kortix.connection_credentials as ec
-    using kortix.connectors as conn
+    delete from zed.connection_credentials as ec
+    using zed.connectors as conn
     where ec.connector_id = conn.connector_id
       and conn.credential_mode = 'per_user'
       and ec.user_id is not null
   `);
   await db.execute(sql`
-    update kortix.connectors
+    update zed.connectors
     set credential_mode = 'shared'
     where credential_mode = 'per_user'
   `);
@@ -53,7 +53,7 @@ async function runMigrationLogic(): Promise<void> {
 async function restoreCheckConstraint(): Promise<void> {
   await db.execute(sql.raw(`
     DO $$ BEGIN
-      ALTER TABLE kortix.connectors
+      ALTER TABLE zed.connectors
         ADD CONSTRAINT ${CONSTRAINT_NAME} CHECK (credential_mode = 'shared');
     EXCEPTION WHEN duplicate_object THEN NULL;
     END $$;
@@ -63,7 +63,7 @@ async function restoreCheckConstraint(): Promise<void> {
 async function restoreLegacyCredentialIndex(): Promise<void> {
   await db.execute(sql.raw(`
     CREATE UNIQUE INDEX IF NOT EXISTS ${LEGACY_CREDENTIAL_INDEX}
-      ON kortix.connection_credentials (connector_id)
+      ON zed.connection_credentials (connector_id)
       WHERE connection_id IS NULL;
   `));
 }
@@ -83,7 +83,7 @@ async function restoreSchemaGuards(): Promise<void> {
 
 beforeAll(async () => {
   const rows = (await db.execute(
-    sql`select project_id, account_id from kortix.projects limit 1`,
+    sql`select project_id, account_id from zed.projects limit 1`,
   )) as unknown as Array<{ project_id: string; account_id: string }>;
   const proj = rows[0];
   if (!proj) {
@@ -102,8 +102,8 @@ beforeAll(async () => {
     // Transiently drop both production guards so the fixture can recreate the
     // historical state. The legacy index rejects its shared/member row pair
     // because both rows have connection_id=NULL.
-    await db.execute(sql.raw(`ALTER TABLE kortix.connectors DROP CONSTRAINT IF EXISTS ${CONSTRAINT_NAME}`));
-    await db.execute(sql.raw(`DROP INDEX IF EXISTS kortix.${LEGACY_CREDENTIAL_INDEX}`));
+    await db.execute(sql.raw(`ALTER TABLE zed.connectors DROP CONSTRAINT IF EXISTS ${CONSTRAINT_NAME}`));
+    await db.execute(sql.raw(`DROP INDEX IF EXISTS zed.${LEGACY_CREDENTIAL_INDEX}`));
 
     await db.insert(connectors).values([
       {
@@ -203,7 +203,7 @@ describe('per_user → shared credential-mode migration', () => {
     await restoreCheckConstraint();
     const attemptBadWrite = async () => {
       await db.execute(
-        sql`update kortix.connectors set credential_mode = 'per_user' where connector_id = ${CONN_SHARED_ALREADY}::uuid`,
+        sql`update zed.connectors set credential_mode = 'per_user' where connector_id = ${CONN_SHARED_ALREADY}::uuid`,
       );
     };
     await expect(attemptBadWrite()).rejects.toThrow();

@@ -1,4 +1,4 @@
-import { type Catalog, type CatalogModel } from '@kortix/llm-catalog';
+import { type Catalog, type CatalogModel } from '@zed/llm-catalog';
 import { toWireModel } from '../resolution/effective';
 import { resolveCatalogUpstream } from './provider-registry';
 import { runtimeModelCatalog } from './runtime-catalog';
@@ -10,11 +10,11 @@ import { SERVED_MANAGED_MODELS } from './served-managed-models';
 // resolved project default) lives in picker.ts and builds on these.
 
 export interface PickerModel {
-  /** Opencode model ref — `kortix/<id>` for managed, `provider/model` for BYOK. */
+  /** Opencode model ref — `zed/<id>` for managed, `provider/model` for BYOK. */
   id: string;
   /** Human label, e.g. "Claude Opus 4.8". */
   label: string;
-  /** 'kortix' for managed, else the catalog provider id. */
+  /** 'zed' for managed, else the catalog provider id. */
   provider: string;
   /** True for platform-managed (credits-billed) models. */
   managed: boolean;
@@ -108,7 +108,7 @@ export function projectPickerCatalog<T>(
   const compact: Record<string, T> = {};
 
   for (const [model, entry] of Object.entries(fullCatalog)) {
-    if (model === 'auto' || model === 'kortix/auto') continue;
+    if (model === 'auto' || model === 'zed/auto') continue;
     const slash = model.indexOf('/');
     const managed = slash === -1;
     const provider = managed ? null : model.slice(0, slash);
@@ -158,15 +158,15 @@ export function labelForModelRef(ref: string): string {
 }
 
 /**
- * Managed models as opencode refs (`kortix/<id>`), with tier hints. Reads the
+ * Managed models as opencode refs (`zed/<id>`), with tier hints. Reads the
  * SERVED lineup, so a configured model whose transport credential is missing is
  * never offered on a surface where picking it would fail.
  */
 export function managedPickerModels(): PickerModel[] {
   return SERVED_MANAGED_MODELS.map((m) => ({
-    id: `kortix/${m.id}`,
+    id: `zed/${m.id}`,
     label: m.name,
-    provider: 'kortix',
+    provider: 'zed',
     managed: true,
     hint:
       m.tier === 'flagship' ? 'Most capable' : m.tier === 'fast' ? 'Fastest' : 'Balanced, fast',

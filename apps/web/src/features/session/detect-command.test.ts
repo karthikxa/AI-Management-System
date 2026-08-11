@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { Command } from '@kortix/sdk/react';
+import type { Command } from '@zed/sdk/react';
 
 import { detectCommandFromText } from './detect-command';
 

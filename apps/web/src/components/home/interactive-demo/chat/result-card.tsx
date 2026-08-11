@@ -55,7 +55,7 @@ export function ListResult({ title, items }: { title: string; items: string[] })
 export function SentResult({ title, meta }: { title: string; meta: string }) {
   return (
     <div className="border-border/60 bg-card mt-3 flex items-center gap-3 rounded-md border p-3">
-      <PiCheckCircleFill weight="fill" className="text-kortix-green size-5 shrink-0" />
+      <PiCheckCircleFill weight="fill" className="text-zed-green size-5 shrink-0" />
       <div className="min-w-0">
         <div className="text-foreground text-sm font-medium">{title}</div>
         <div className="text-muted-foreground text-xs">{meta}</div>

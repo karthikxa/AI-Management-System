@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from 'bun:test';
-import { GatewayResolutionError } from '@kortix/llm-gateway';
+import { GatewayResolutionError } from '@zed/llm-gateway';
 import * as resolveCandidatesModule from './resolve-candidates';
 import * as modelPreferencesModule from '../../repositories/model-preferences';
 import * as secretsModule from '../../projects/secrets';
@@ -200,11 +200,11 @@ describe('resolveDefaultModelForPrincipal — prefs cache is scoped per (account
   test('two projects on the SAME account never share a cached agent default', async () => {
     const byProject: Record<string, string> = { 'proj-a': 'anthropic/claude-opus-4.8', 'proj-b': 'openai/gpt-5.5' };
     spyOn(modelPreferencesModule, 'getAccountModelDefaults').mockImplementation(async (_accountId, projectId) => {
-      const agents: Record<string, string> = projectId && byProject[projectId] ? { kortix: byProject[projectId] } : {};
+      const agents: Record<string, string> = projectId && byProject[projectId] ? { zed: byProject[projectId] } : {};
       return { account: null, agents, projects: {} };
     });
     spyOn(modelPreferencesModule, 'getSessionAgentContext').mockImplementation(async () => ({
-      agentName: 'kortix',
+      agentName: 'zed',
       opencodeModel: null,
       projectDefaultAgent: null,
     }));
@@ -287,27 +287,27 @@ describe('resolveDefaultModelForPrincipal — the real "auto" resolution used at
 // Regression coverage for the "agent-scope model pins silently never apply"
 // bug: session creation stores the non-binding 'default' sentinel in
 // project_sessions.agent_name whenever project.metadata.default_agent wasn't
-// populated at the time (common — e.g. a brand-new project whose kortix.yaml
-// declares `default_agent: kortix` but whose DB metadata mirror never learned
+// populated at the time (common — e.g. a brand-new project whose zed.yaml
+// declares `default_agent: zed` but whose DB metadata mirror never learned
 // it). Before this fix, resolveDefaultModelForPrincipal looked up
 // `agentDefaults['default']` — which never matches a pin set on the real
-// agent name ('kortix') — and silently fell through to the project/account/
+// agent name ('zed') — and silently fell through to the project/account/
 // platform default instead of the pinned (possibly pricier / provider-
 // mismatched) model, with no error anywhere. cachedSessionAgent now resolves
 // the sentinel to the project's declared default agent (getSessionAgentContext's
-// projectDefaultAgent, mirroring kortix.yaml/PUT-default-agent) before doing
+// projectDefaultAgent, mirroring zed.yaml/PUT-default-agent) before doing
 // the agentDefaults lookup.
 describe('resolveDefaultModelForPrincipal — agent-scope pin applies to a session stuck on the "default" sentinel', () => {
-  test('THE BUG: session.agent_name is the sentinel, but the project declares "kortix" as its default agent and "kortix" has a pin → the pin applies', async () => {
+  test('THE BUG: session.agent_name is the sentinel, but the project declares "zed" as its default agent and "zed" has a pin → the pin applies', async () => {
     accountDefaults = {
       account: null,
-      agents: { kortix: 'anthropic/claude-opus-4.8' },
+      agents: { zed: 'anthropic/claude-opus-4.8' },
       projects: {},
     };
     spyOn(modelPreferencesModule, 'getSessionAgentContext').mockImplementation(async () => ({
       agentName: 'default',
       opencodeModel: null,
-      projectDefaultAgent: 'kortix',
+      projectDefaultAgent: 'zed',
     }));
     resolveCandidatesImpl = async () => [{ provider: 'anthropic' }];
 
@@ -323,13 +323,13 @@ describe('resolveDefaultModelForPrincipal — agent-scope pin applies to a sessi
   test('an explicit (non-sentinel) session agent still wins over the project default, even when both have pins', async () => {
     accountDefaults = {
       account: null,
-      agents: { kortix: 'anthropic/claude-opus-4.8', 'release-bot': 'openai/gpt-5.5' },
+      agents: { zed: 'anthropic/claude-opus-4.8', 'release-bot': 'openai/gpt-5.5' },
       projects: {},
     };
     spyOn(modelPreferencesModule, 'getSessionAgentContext').mockImplementation(async () => ({
       agentName: 'release-bot',
       opencodeModel: null,
-      projectDefaultAgent: 'kortix',
+      projectDefaultAgent: 'zed',
     }));
     resolveCandidatesImpl = async () => [{ provider: 'openai' }];
 
@@ -345,7 +345,7 @@ describe('resolveDefaultModelForPrincipal — agent-scope pin applies to a sessi
   test('sentinel with no project default configured falls through to project/account/platform (unchanged pre-existing behavior)', async () => {
     accountDefaults = {
       account: 'openai/gpt-5.5',
-      agents: { kortix: 'anthropic/claude-opus-4.8' },
+      agents: { zed: 'anthropic/claude-opus-4.8' },
       projects: {},
     };
     spyOn(modelPreferencesModule, 'getSessionAgentContext').mockImplementation(async () => ({
@@ -375,7 +375,7 @@ describe('resolveDefaultModelForPrincipal — agent-scope pin applies to a sessi
     spyOn(modelPreferencesModule, 'getSessionAgentContext').mockImplementation(async () => ({
       agentName: 'default',
       opencodeModel: null,
-      projectDefaultAgent: 'kortix',
+      projectDefaultAgent: 'zed',
     }));
     resolveCandidatesImpl = async () => [{ provider: 'openai' }];
 

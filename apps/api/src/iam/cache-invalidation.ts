@@ -19,7 +19,7 @@
  */
 
 import { eq } from 'drizzle-orm';
-import { accountGroupMembers, accountMembers, iamPolicies } from '@kortix/db';
+import { accountGroupMembers, accountMembers, iamPolicies } from '@zed/db';
 import { db } from '../shared/db';
 
 interface PrincipalScopedMemo {

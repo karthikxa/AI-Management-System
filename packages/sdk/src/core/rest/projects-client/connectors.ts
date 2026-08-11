@@ -1,6 +1,6 @@
 // Connectors — connector CRUD, credentials, Pipedream. Connectors are
 // project-wide visible; the only access gate is the agent's `connectors`
-// grant (kortix.yaml [[agents]].connectors), not anything configured here.
+// grant (zed.yaml [[agents]].connectors), not anything configured here.
 
 import { backendApi } from '../../http/api-client';
 import { ApiError } from '../../http/api/errors';
@@ -175,11 +175,11 @@ export async function uploadConnectorAttachment(
 
   const headers: Record<string, string> = {
     'Content-Type': contentType,
-    'X-Kortix-Attachment-Filename': encodeURIComponent(filename),
-    'X-Kortix-Attachment-Disposition': input.contentDisposition ?? 'attachment',
+    'X-Zed-Attachment-Filename': encodeURIComponent(filename),
+    'X-Zed-Attachment-Disposition': input.contentDisposition ?? 'attachment',
   };
   if (input.contentId?.trim()) {
-    headers['X-Kortix-Attachment-Content-Id'] = encodeURIComponent(input.contentId.trim());
+    headers['X-Zed-Attachment-Content-Id'] = encodeURIComponent(input.contentId.trim());
   }
 
   const backendUrl = trimTrailingSlashes(platformConfig().backendUrl);
@@ -805,7 +805,7 @@ export async function setConnectionPolicies(
   );
 }
 
-/** The editable connection config for an existing connector (kortix.yaml = source of truth). */
+/** The editable connection config for an existing connector (zed.yaml = source of truth). */
 export interface ConnectorConfig {
   slug: string;
   name: string;
@@ -830,7 +830,7 @@ export interface ConnectorConfig {
   };
   /** Static request headers sent on EVERY call this connector makes — an
    *  ordered map of header name → value (`{ Accept: 'application/json' }`);
-   *  `{}` when none are declared. NOT secrets: stored in kortix.yaml in
+   *  `{}` when none are declared. NOT secrets: stored in zed.yaml in
    *  plaintext, like `baseUrl`. The credential (see `auth`) always wins if a
    *  header here has the same name. */
   headers: Record<string, string>;
@@ -893,7 +893,7 @@ export interface ConnectorDraftInput {
    *  keep whatever the connector already declares; send `{}` to clear them.
    *  Names must be RFC 7230 tokens (`^[A-Za-z0-9!#$%&'*+.^_\`|~-]+$`, max 128
    *  chars), values may not contain CR/LF (max 2048 chars), at most 32 entries.
-   *  NOT secrets — they are committed to kortix.yaml in plaintext. */
+   *  NOT secrets — they are committed to zed.yaml in plaintext. */
   headers?: Record<string, string>;
 }
 

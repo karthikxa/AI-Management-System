@@ -75,7 +75,7 @@ function ResetPasswordContent() {
         footer={<BackToSignIn />}
       >
         <div className="border-border bg-muted/60 text-foreground/80 mb-4 flex items-center gap-2 rounded-md border px-3 py-2.5">
-          <CheckCircle2 className="text-kortix-green size-4 shrink-0" />
+          <CheckCircle2 className="text-zed-green size-4 shrink-0" />
           <span className="text-sm">
             {tHardcodedUi.raw('appAuthResetPasswordPage.line65JsxTextYourPasswordHasBeenChanged')}
           </span>

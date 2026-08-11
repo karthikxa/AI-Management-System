@@ -1,18 +1,18 @@
 ---
 title: Manifest reference
-description: Every kortix.yaml v2 key, with defaults, limits, and validation rules.
+description: Every zed.yaml v2 key, with defaults, limits, and validation rules.
 ---
 
-The manifest is the file the platform treats as authoritative for a project. This page lists every `kortix.yaml` (v2) key, its type, its default, and how the platform validates it. For the plain-language version, see [Your project](/docs/project).
+The manifest is the file the platform treats as authoritative for a project. This page lists every `zed.yaml` (v2) key, its type, its default, and how the platform validates it. For the plain-language version, see [Your project](/docs/project).
 
 ## Two configuration surfaces
 
-A Kortix project has two configuration surfaces with strict, non-overlapping ownership.
+A Zed project has two configuration surfaces with strict, non-overlapping ownership.
 
-- **Kortix config** — `kortix.yaml` at the repo root, plus `.kortix/Dockerfile`. The platform reads this: the trigger sweep, the sandbox builder, session token minting, and the dashboard.
-- **OpenCode config** — everything under `.kortix/opencode/` (`opencode.jsonc`, `agents/`, `skills/`, `commands/`, `tools/`, `plugins/`). The OpenCode runtime reads this, in the sandbox and locally.
+- **Zed config** — `zed.yaml` at the repo root, plus `.zed/Dockerfile`. The platform reads this: the trigger sweep, the sandbox builder, session token minting, and the dashboard.
+- **OpenCode config** — everything under `.zed/opencode/` (`opencode.jsonc`, `agents/`, `skills/`, `commands/`, `tools/`, `plugins/`). The OpenCode runtime reads this, in the sandbox and locally.
 
-The join between the two halves is the agent name. A manifest key `agents.<name>` must match the filename `.kortix/opencode/agents/<name>.md`. Every behavioral field lives only in that `.md` file's frontmatter and body, never in `kortix.yaml`:
+The join between the two halves is the agent name. A manifest key `agents.<name>` must match the filename `.zed/opencode/agents/<name>.md`. Every behavioral field lives only in that `.md` file's frontmatter and body, never in `zed.yaml`:
 
 - system prompt
 - `model`, `mode`
@@ -23,32 +23,32 @@ The manifest's `agents:` block sets governance only: which agents may launch, an
 
 ## Location and versions
 
-Any repo with a valid manifest at its root is a Kortix project. `kortix.yaml` (v2, YAML only) is the current format for new projects, created by the web "Create project" flow and by `kortix init`. `kortix.toml` (v1) still works for existing projects, but the platform accepts no new v2 features on it. See [Legacy TOML](/docs/project/legacy-toml) for the v1 schema and the v1-to-v2 migration steps.
+Any repo with a valid manifest at its root is a Zed project. `zed.yaml` (v2, YAML only) is the current format for new projects, created by the web "Create project" flow and by `zed init`. `zed.toml` (v1) still works for existing projects, but the platform accepts no new v2 features on it. See [Legacy TOML](/docs/project/legacy-toml) for the v1 schema and the v1-to-v2 migration steps.
 
-`kortix_version: 2` requires YAML — a `.toml` file that declares `kortix_version: 2` fails validation. A manifest that declares a version higher than `2` is rejected outright, so the platform never silently misreads a future field. Unknown top-level keys are ignored, so you can park your own metadata in the file.
+`zed_version: 2` requires YAML — a `.toml` file that declares `zed_version: 2` fails validation. A manifest that declares a version higher than `2` is rejected outright, so the platform never silently misreads a future field. Unknown top-level keys are ignored, so you can park your own metadata in the file.
 
-`validateManifest()` is the single gate behind `kortix ship`, the change request merge check, and `kortix validate`. The same rules apply everywhere, so anything that merges into `main` is structurally sound. The schema is public and generated from the same package:
+`validateManifest()` is the single gate behind `zed ship`, the change request merge check, and `zed validate`. The same rules apply everywhere, so anything that merges into `main` is structurally sound. The schema is public and generated from the same package:
 
-- [`kortix.v2.schema.json`](/schema/kortix.v2.schema.json)
-- [`kortix.v1.schema.json`](/schema/kortix.v1.schema.json)
-- [`kortix.schema.json`](/schema/kortix.schema.json) (dispatches on `kortix_version`)
+- [`zed.v2.schema.json`](/schema/zed.v2.schema.json)
+- [`zed.v1.schema.json`](/schema/zed.v1.schema.json)
+- [`zed.schema.json`](/schema/zed.schema.json) (dispatches on `zed_version`)
 
-Point a `kortix.yaml` at the v2 schema for editor validation, or fetch it from the CLI:
+Point a `zed.yaml` at the v2 schema for editor validation, or fetch it from the CLI:
 
 ```yaml
-# yaml-language-server: $schema=https://kortix.com/schema/kortix.v2.schema.json
-kortix_version: 2
+# yaml-language-server: $schema=https://zed.com/schema/zed.v2.schema.json
+zed_version: 2
 ```
 
 ```bash
-kortix schema --version 2
+zed schema --version 2
 ```
 
 ## Full example
 
 ```yaml
-kortix_version: 2
-default_agent: kortix
+zed_version: 2
+default_agent: zed
 
 project:
   name: my-project
@@ -62,30 +62,30 @@ sandbox:
   templates:
     - slug: ml
       name: ML Development
-      dockerfile: .kortix/Dockerfile.ml
+      dockerfile: .zed/Dockerfile.ml
       cpu: 4
       memory: 16
 
 opencode:
-  config_dir: .kortix/opencode
+  config_dir: .zed/opencode
 
 agents:
-  kortix:
+  zed:
     connectors: all
     secrets: all
-    kortix_cli: all
+    zed_cli: all
     skills: all
 
   release-bot:
     sandbox: ml
     connectors: [github]
-    kortix_cli: [project.cr.open]
+    zed_cli: [project.cr.open]
     secrets: [GITHUB_AGENT_TOKEN]
 
 triggers:
   - slug: daily-digest
     type: cron
-    agent: kortix
+    agent: zed
     cron: '0 0 9 * * 1-5'
     timezone: America/Los_Angeles
     prompt: |
@@ -96,13 +96,13 @@ triggers:
 
 | Key                                                 | Required | Notes                                                                                      |
 | --------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------ |
-| `kortix_version`                                    | yes      | must be `2`                                                                                |
+| `zed_version`                                    | yes      | must be `2`                                                                                |
 | `default_agent`                                     | yes      | must name a declared, enabled agent                                                        |
 | `runtime`                                           | no       | only legal value is `"opencode"` (the default)                                             |
 | `project.name` / `project.description`              | no       | display metadata; the platform does not read `project.name` for the project's display name |
 | `env.required` / `env.optional`                     | no       | env var names; `required` is advisory only, never enforced at session start                |
 | `sandbox` / `sandbox.templates` / `sandbox.default` | no       | sandbox image(s) and hardware                                                              |
-| `opencode.config_dir`                               | no       | default `.kortix/opencode`                                                                 |
+| `opencode.config_dir`                               | no       | default `.zed/opencode`                                                                 |
 | `triggers`                                          | no       | list of cron and webhook triggers                                                          |
 | `connectors`                                        | no       | list of connector definitions                                                              |
 | `policy.default_mode`                               | no       | `allow_all` (default) or `risk`; project-wide connector approval mode                      |
@@ -127,7 +127,7 @@ env:
 | `required` | `string[]` | Advisory. The dashboard prompts the user for these, but session start does not block on a missing value. |
 | `optional` | `string[]` | Available to sessions if set. Absence is fine.                                                           |
 
-Env var names match `^[A-Z_][A-Z0-9_]*$`. The Secrets Manager caps a name at 64 characters — a longer name parses here but can never get a value. Names starting with `KORTIX_` can never get a value either. Keep names at 64 characters or fewer, and avoid the `KORTIX_` prefix. Full contract: [Secrets](/docs/project/secrets).
+Env var names match `^[A-Z_][A-Z0-9_]*$`. The Secrets Manager caps a name at 64 characters — a longer name parses here but can never get a value. Names starting with `ZED_` can never get a value either. Keep names at 64 characters or fewer, and avoid the `ZED_` prefix. Full contract: [Secrets](/docs/project/secrets).
 
 ## `sandbox:` and `sandbox.templates`
 
@@ -138,7 +138,7 @@ sandbox:
   templates:
     - slug: ml
       name: ML Development
-      dockerfile: .kortix/Dockerfile.ml
+      dockerfile: .zed/Dockerfile.ml
       cpu: 4
       memory: 16
       disk: 50
@@ -166,7 +166,7 @@ sandbox:
   default: dev
   templates:
     - slug: dev
-      dockerfile: .kortix/Dockerfile
+      dockerfile: .zed/Dockerfile
 ```
 
 `default` must name a template declared in this manifest, or the reserved value `"default"` for the platform image.
@@ -196,12 +196,12 @@ Where the OpenCode config directory lives. Optional, with a default.
 
 ```yaml
 opencode:
-  config_dir: .kortix/opencode
+  config_dir: .zed/opencode
 ```
 
 | Field        | Type   | Default            | Notes                    |
 | ------------ | ------ | ------------------ | ------------------------ |
-| `config_dir` | string | `.kortix/opencode` | Repo-relative directory. |
+| `config_dir` | string | `.zed/opencode` | Repo-relative directory. |
 
 That directory holds agents, skills, commands, tools, plugins, and `opencode.jsonc`. `opencode.jsonc` stays the OpenCode-native registry for plugins, MCP servers, providers, and permissions — do not duplicate those settings in the manifest. See [Agents](/docs/project/agents).
 
@@ -270,7 +270,7 @@ Provider-specific fields:
 | `channel`   | `platform`     | `slack`, `teams`, `email`, or `voice`.                                                                                               |
 | `computer`  | —              | API-managed. You cannot declare it by hand. A profile selects one or more paired machines. See [Computers](/docs/connect/computers). |
 
-`channel` connectors rarely need a hand-written entry — connecting a channel from the dashboard creates one for you. See [Slack & channels](/docs/connect/slack). The slugs `kortix_slack`, `kortix_teams`, `kortix_email`, `kortix_voice`, and `computer` are platform-owned; using one with a different provider is a validation error. Computers profiles are created through the connector API because tunnel ids are account control-plane identities and must not enter the manifest.
+`channel` connectors rarely need a hand-written entry — connecting a channel from the dashboard creates one for you. See [Slack & channels](/docs/connect/slack). The slugs `zed_slack`, `zed_teams`, `zed_email`, `zed_voice`, and `computer` are platform-owned; using one with a different provider is a validation error. Computers profiles are created through the connector API because tunnel ids are account control-plane identities and must not enter the manifest.
 
 `connectors.auth`: optional, for providers other than `pipedream`. `type` is `bearer`, `basic`, `custom`, `api_key`, `oauth1`, `hmac`, `aws_sigv4`, `mtls`, or `none` (default). `oauth1` is restricted to `openapi`, `postman`, and `http` providers. `in` is `header` (default), `query`, or `cookie`. `name` is required when `type` is `custom` or `api_key`.
 
@@ -279,7 +279,7 @@ tool names. `action` is `always_run`, `require_approval`, or `block`. Policies
 belong to the connector. Every connection under that connector uses the same
 policies.
 
-`policy.default_mode`: a top-level key, separate from `connectors:`, that sets the project-wide connector approval mode. It takes `allow_all` (default; every unmatched tool runs) or `risk` (require approval for write and destructive unmatched calls). Set it with `kortix connectors policy set --default <risk|allow_all>` — see [CLI](/docs/cli).
+`policy.default_mode`: a top-level key, separate from `connectors:`, that sets the project-wide connector approval mode. It takes `allow_all` (default; every unmatched tool runs) or `risk` (require approval for write and destructive unmatched calls). Set it with `zed connectors policy set --default <risk|allow_all>` — see [CLI](/docs/cli).
 
 ## Channels
 
@@ -290,19 +290,19 @@ v2 removes `channels:` from the schema. Channel-to-agent routing (Slack, Microso
 A name-to-block map, keyed by agent name. This map is governance only — it grants what an agent may touch, never what it says or does.
 
 ```yaml
-default_agent: kortix
+default_agent: zed
 
 agents:
-  kortix:
+  zed:
     connectors: all
     secrets: all
-    kortix_cli: all
+    zed_cli: all
     skills: all
 
   release-bot:
     connectors: [github]
     connectors_required: [github]
-    kortix_cli: [project.cr.open]
+    zed_cli: [project.cr.open]
     secrets: [GITHUB_AGENT_TOKEN]
 ```
 
@@ -313,22 +313,22 @@ agents:
 | `connectors`          | `none`  | Which connector slugs this agent may call. `all` means every connector.                                                                                                                                   |
 | `connectors_required` | `none`  | Connector slugs that must resolve an active, strategy-compatible authorization before sandbox startup. Must be a subset of `connectors`. A missing authorization returns `CONNECTOR_CONNECTION_REQUIRED`. |
 | `secrets`             | `none`  | Which project secrets this agent receives as sandbox env vars. Renamed from v1's `env`.                                                                                                                   |
-| `kortix_cli`          | `none`  | Which Kortix CLI and API actions this agent may perform. `all` means everything the launching user can do — an agent can never exceed its launcher.                                                       |
+| `zed_cli`          | `none`  | Which Zed CLI and API actions this agent may perform. `all` means everything the launching user can do — an agent can never exceed its launcher.                                                       |
 | `skills`              | `none`  | Which skills this agent may load.                                                                                                                                                                         |
 | `workspace`           | —       | Git-boundary mode: `runtime`, `read`, or `branch`. Validated against the enum; any other value is rejected.                                                                                               |
 
-v2 is deny-by-default: an omitted `connectors`, `secrets`, `kortix_cli`, or `skills` on a declared agent resolves to `none`. Grant every permission an agent needs explicitly, as the starter's `kortix` agent does above. A project migrating from v1 must re-grant everything by hand — v1 defaults `env` (secrets) to `all` when omitted, the opposite of v2.
+v2 is deny-by-default: an omitted `connectors`, `secrets`, `zed_cli`, or `skills` on a declared agent resolves to `none`. Grant every permission an agent needs explicitly, as the starter's `zed` agent does above. A project migrating from v1 must re-grant everything by hand — v1 defaults `env` (secrets) to `all` when omitted, the opposite of v2.
 
 `connectors_personal` remains a deprecated input alias for
 `connectors_required`. New manifests must use `connectors_required`. The
 connector's `authorization_strategy` decides whether the authorization
 is project-owned or member-owned.
 
-`kortix_cli` grants come from a fixed set of project-scoped actions (`project.read`, `project.cr.open`, `project.cr.merge`, `project.trigger.*`, `project.secret.*`, `project.connector.*`, and more). Account-scoped actions — `member.*`, `billing.*`, `project.create` — can never be granted to an agent. Run `kortix validate --scopes` from inside a session to print the live, grantable list.
+`zed_cli` grants come from a fixed set of project-scoped actions (`project.read`, `project.cr.open`, `project.cr.merge`, `project.trigger.*`, `project.secret.*`, `project.connector.*`, and more). Account-scoped actions — `member.*`, `billing.*`, `project.create` — can never be granted to an agent. Run `zed validate --scopes` from inside a session to print the live, grantable list.
 
 ## When config changes take effect
 
-- A manifest or `.kortix/opencode/` edit applies only after a change request merges to `main`. Sessions and the trigger sweep read the default branch, not session branches.
+- A manifest or `.zed/opencode/` edit applies only after a change request merges to `main`. Sessions and the trigger sweep read the default branch, not session branches.
 - A trigger's cron or webhook change is picked up by the scheduler within seconds of the merge.
 - A sandbox image or hardware change rebuilds the snapshot. The new spec applies on the next session, not the current one.
 - A secret value change in the dashboard resolves at sandbox-create time. It applies on the next session, not a running one.
@@ -337,6 +337,6 @@ is project-owned or member-owned.
 
 Dashboard edits are a read-modify-write on the same file. To keep diffs clean across UI and in-session edits:
 
-1. Keep `kortix_version` as the first key.
+1. Keep `zed_version` as the first key.
 2. Inside a trigger entry, order fields `slug`, `name`, `type`, `agent`, `enabled`, then type-specific fields, then `prompt` last.
 3. If you add a webhook trigger before its secret is set, list the secret name in `env.optional`. Leave the trigger `enabled: false` until the value is in.

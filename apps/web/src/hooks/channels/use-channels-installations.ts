@@ -16,8 +16,8 @@ import {
   type EmailSenderPolicy,
   type SlackInstallation,
   type SlackMode,
-} from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export type { EmailInstallation, EmailMode, EmailSenderPolicy, SlackInstallation, SlackMode };
@@ -92,7 +92,7 @@ export function useDisconnectSlack() {
 }
 
 const emailKey = (projectId: string | null, connectorSlug?: string | null) =>
-  ['channels', 'email-install', projectId ?? 'none', connectorSlug ?? 'kortix_email'] as const;
+  ['channels', 'email-install', projectId ?? 'none', connectorSlug ?? 'zed_email'] as const;
 const emailModeKey = (projectId: string | null) =>
   ['channels', 'email-mode', projectId ?? 'none'] as const;
 

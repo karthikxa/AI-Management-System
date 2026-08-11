@@ -18,8 +18,8 @@ export function RoomHeader({ phase }: { phase: ConnectionPhase }) {
     <header className="border-border flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
       <div className="flex items-center gap-2">
         {/* eslint-disable-next-line @next/next/no-img-element -- small static brand mark, not worth next/image */}
-        <img src="/kortix-symbol.svg" alt="" className="dark:invert-0 size-4 invert" aria-hidden />
-        <span className="text-foreground text-sm font-medium">Kortix voice call</span>
+        <img src="/zed-symbol.svg" alt="" className="dark:invert-0 size-4 invert" aria-hidden />
+        <span className="text-foreground text-sm font-medium">Zed voice call</span>
       </div>
       <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
         <StatusDot tone={status.tone} pulse={status.pulse} />

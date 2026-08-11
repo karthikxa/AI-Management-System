@@ -8,14 +8,14 @@
 set lock_timeout = '2s';
 set statement_timeout = '30s';
 
--- NOTE: drizzle-kit also emitted an `ALTER TABLE kortix.credit_accounts ADD
+-- NOTE: drizzle-kit also emitted an `ALTER TABLE zed.credit_accounts ADD
 -- COLUMN enterprise_entitled ...` here. That column is already added by
 -- 20260805030712000_enterprise_entitled_flag.sql; the snapshot was simply stale,
 -- so the generator re-proposed it. Removed — re-applying it would fail on a DB
 -- that already ran that migration. The regenerated snapshot committed alongside
 -- this file records the column correctly, which is what closes the drift.
 
-CREATE TABLE "kortix"."session_pending_questions" (
+CREATE TABLE "zed"."session_pending_questions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"account_id" uuid NOT NULL,
 	"project_id" uuid NOT NULL,
@@ -30,5 +30,5 @@ CREATE TABLE "kortix"."session_pending_questions" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX "session_pending_questions_session_request_uniq" ON "kortix"."session_pending_questions" USING btree ("session_id","request_id");--> statement-breakpoint
-CREATE INDEX "session_pending_questions_open_idx" ON "kortix"."session_pending_questions" USING btree ("session_id") WHERE answered_at IS NULL;
+CREATE UNIQUE INDEX "session_pending_questions_session_request_uniq" ON "zed"."session_pending_questions" USING btree ("session_id","request_id");--> statement-breakpoint
+CREATE INDEX "session_pending_questions_open_idx" ON "zed"."session_pending_questions" USING btree ("session_id") WHERE answered_at IS NULL;

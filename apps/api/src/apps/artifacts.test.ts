@@ -94,22 +94,22 @@ describe('App artifacts', () => {
   });
 
   test('inspects and extracts a real compressed archive', async () => {
-    const fixture = await mkdtemp(join(tmpdir(), 'kortix-artifact-test-'));
+    const fixture = await mkdtemp(join(tmpdir(), 'zed-artifact-test-'));
     cleanup.push(fixture);
     const source = join(fixture, 'source');
     const archive = join(fixture, 'source.tar.gz');
     const output = join(fixture, 'output');
     await mkdir(join(source, 'public'), { recursive: true });
-    await writeFile(join(source, 'public', 'index.html'), '<h1>Kortix App</h1>');
+    await writeFile(join(source, 'public', 'index.html'), '<h1>Zed App</h1>');
     await tar.c({ cwd: source, file: archive, gzip: true }, ['public']);
 
     expect(await inspectAppArchive(archive)).toEqual({
       files: 1,
-      extractedBytes: Buffer.byteLength('<h1>Kortix App</h1>'),
+      extractedBytes: Buffer.byteLength('<h1>Zed App</h1>'),
     });
     await extractAppArchive(archive, output);
     expect(await readFile(join(output, 'public', 'index.html'), 'utf8')).toBe(
-      '<h1>Kortix App</h1>',
+      '<h1>Zed App</h1>',
     );
   });
 });

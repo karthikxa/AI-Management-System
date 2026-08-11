@@ -9,21 +9,21 @@ export function requireEnv(key: string): string {
   const v = getEnv(key);
   if (!v) {
     throw new CliError(
-      `${key} not set. Connect this platform in the Kortix dashboard so the token is provisioned to the sandbox.`,
+      `${key} not set. Connect this platform in the Zed dashboard so the token is provisioned to the sandbox.`,
       'MISSING_ENV',
     );
   }
   return v;
 }
 
-export function kortixProjectId(): string | undefined {
-  return getEnv('KORTIX_PROJECT_ID');
+export function zedProjectId(): string | undefined {
+  return getEnv('ZED_PROJECT_ID');
 }
 
-export function kortixSessionId(): string | undefined {
-  return getEnv('KORTIX_SESSION_ID');
+export function zedSessionId(): string | undefined {
+  return getEnv('ZED_SESSION_ID');
 }
 
-export function kortixWorkspace(): string {
-  return getEnv('KORTIX_WORKSPACE') ?? '/workspace';
+export function zedWorkspace(): string {
+  return getEnv('ZED_WORKSPACE') ?? '/workspace';
 }

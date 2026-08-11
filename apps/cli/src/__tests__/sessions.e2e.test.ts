@@ -37,23 +37,23 @@ function git(args: string[], cwd?: string): string {
 
 describe('sessions new CLI flow', () => {
   beforeEach(async () => {
-    root = await mkdtemp(join(tmpdir(), 'kortix-cli-session-e2e-'));
+    root = await mkdtemp(join(tmpdir(), 'zed-cli-session-e2e-'));
     repo = join(root, 'repo');
     origin = join(root, 'origin.git');
     originalCwd = process.cwd();
-    previousConfigFile = process.env.KORTIX_CONFIG_FILE;
-    previousCliToken = process.env.KORTIX_CLI_TOKEN;
-    previousApiUrl = process.env.KORTIX_API_URL;
-    previousProjectId = process.env.KORTIX_PROJECT_ID;
-    previousServiceToken = process.env.KORTIX_TOKEN;
+    previousConfigFile = process.env.ZED_CONFIG_FILE;
+    previousCliToken = process.env.ZED_CLI_TOKEN;
+    previousApiUrl = process.env.ZED_API_URL;
+    previousProjectId = process.env.ZED_PROJECT_ID;
+    previousServiceToken = process.env.ZED_TOKEN;
     previousBashEnv = process.env.BASH_ENV;
-    previousDisableSandboxEnvFile = process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE;
-    delete process.env.KORTIX_CLI_TOKEN;
-    delete process.env.KORTIX_API_URL;
-    delete process.env.KORTIX_PROJECT_ID;
-    delete process.env.KORTIX_TOKEN;
+    previousDisableSandboxEnvFile = process.env.ZED_DISABLE_SANDBOX_ENV_FILE;
+    delete process.env.ZED_CLI_TOKEN;
+    delete process.env.ZED_API_URL;
+    delete process.env.ZED_PROJECT_ID;
+    delete process.env.ZED_TOKEN;
     delete process.env.BASH_ENV;
-    process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+    process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
     sessionCreateBody = null;
     sessionList = [];
     transcriptRequests = [];
@@ -61,8 +61,8 @@ describe('sessions new CLI flow', () => {
 
     mkdirSync(repo, { recursive: true });
     git(['init', '-b', 'main'], repo);
-    git(['config', 'user.email', 'e2e@kortix.test'], repo);
-    git(['config', 'user.name', 'Kortix E2E'], repo);
+    git(['config', 'user.email', 'e2e@zed.test'], repo);
+    git(['config', 'user.name', 'Zed E2E'], repo);
     writeFileSync(join(repo, 'README.md'), '# test repo\n', 'utf8');
     git(['add', 'README.md'], repo);
     git(['commit', '-m', 'initial'], repo);
@@ -70,9 +70,9 @@ describe('sessions new CLI flow', () => {
     git(['remote', 'add', 'origin', origin], repo);
     git(['push', '--quiet', 'origin', 'main'], repo);
 
-    mkdirSync(join(repo, '.kortix'), { recursive: true });
+    mkdirSync(join(repo, '.zed'), { recursive: true });
     writeFileSync(
-      join(repo, '.kortix', 'link.json'),
+      join(repo, '.zed', 'link.json'),
       JSON.stringify({
         project_id: PROJECT_ID,
         account_id: ACCOUNT_ID,
@@ -95,7 +95,7 @@ describe('sessions new CLI flow', () => {
             name: 'test',
             repo_url: origin,
             default_branch: 'main',
-            manifest_path: 'kortix.yaml',
+            manifest_path: 'zed.yaml',
             status: 'active',
             metadata: {},
             last_opened_at: null,
@@ -166,7 +166,7 @@ describe('sessions new CLI flow', () => {
     });
 
     const configPath = join(root, 'config.json');
-    process.env.KORTIX_CONFIG_FILE = configPath;
+    process.env.ZED_CONFIG_FILE = configPath;
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -190,20 +190,20 @@ describe('sessions new CLI flow', () => {
 
   afterEach(() => {
     process.chdir(originalCwd);
-    if (previousConfigFile === undefined) delete process.env.KORTIX_CONFIG_FILE;
-    else process.env.KORTIX_CONFIG_FILE = previousConfigFile;
-    if (previousCliToken === undefined) delete process.env.KORTIX_CLI_TOKEN;
-    else process.env.KORTIX_CLI_TOKEN = previousCliToken;
-    if (previousApiUrl === undefined) delete process.env.KORTIX_API_URL;
-    else process.env.KORTIX_API_URL = previousApiUrl;
-    if (previousProjectId === undefined) delete process.env.KORTIX_PROJECT_ID;
-    else process.env.KORTIX_PROJECT_ID = previousProjectId;
-    if (previousServiceToken === undefined) delete process.env.KORTIX_TOKEN;
-    else process.env.KORTIX_TOKEN = previousServiceToken;
+    if (previousConfigFile === undefined) delete process.env.ZED_CONFIG_FILE;
+    else process.env.ZED_CONFIG_FILE = previousConfigFile;
+    if (previousCliToken === undefined) delete process.env.ZED_CLI_TOKEN;
+    else process.env.ZED_CLI_TOKEN = previousCliToken;
+    if (previousApiUrl === undefined) delete process.env.ZED_API_URL;
+    else process.env.ZED_API_URL = previousApiUrl;
+    if (previousProjectId === undefined) delete process.env.ZED_PROJECT_ID;
+    else process.env.ZED_PROJECT_ID = previousProjectId;
+    if (previousServiceToken === undefined) delete process.env.ZED_TOKEN;
+    else process.env.ZED_TOKEN = previousServiceToken;
     if (previousBashEnv === undefined) delete process.env.BASH_ENV;
     else process.env.BASH_ENV = previousBashEnv;
-    if (previousDisableSandboxEnvFile === undefined) delete process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE;
-    else process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = previousDisableSandboxEnvFile;
+    if (previousDisableSandboxEnvFile === undefined) delete process.env.ZED_DISABLE_SANDBOX_ENV_FILE;
+    else process.env.ZED_DISABLE_SANDBOX_ENV_FILE = previousDisableSandboxEnvFile;
     server?.stop(true);
     server = null;
     if (root) rmSync(root, { recursive: true, force: true });

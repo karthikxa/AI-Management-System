@@ -11,19 +11,19 @@
  * the union is pinned here and cross-checked against `MANAGED_MODELS` — the
  * set the gateway actually serves — before anything talks to the API.
  *
- * Project selection: argv[3] → KORTIX_PROJECT_ID (required).
+ * Project selection: argv[3] → ZED_PROJECT_ID (required).
  *
  * Run:
- *   KORTIX_API_URL=http://localhost:8008/v1 KORTIX_API_KEY=kortix_pat_... \
+ *   ZED_API_URL=http://localhost:8008/v1 ZED_API_KEY=zed_pat_... \
  *     bun run playground/chat/14-change-default-model.ts claude-opus-4.8 [projectId]
  *
  * As an npm consumer, the import lines change to:
- *   import { createKortix } from '@kortix/sdk';
- *   import { MANAGED_MODELS } from '@kortix/llm-catalog';
+ *   import { createZed } from '@zed/sdk';
+ *   import { MANAGED_MODELS } from '@zed/llm-catalog';
  */
-import { MANAGED_MODELS } from "@kortix/llm-catalog";
+import { MANAGED_MODELS } from "@zed/llm-catalog";
 
-import { createKortix } from "../../src/index";
+import { createZed } from "../../src/index";
 
 const MODEL_IDS = [
   "claude-opus-4.8",
@@ -41,7 +41,7 @@ function isPinnedModelId(input: string): input is ManagedModelId {
 
 /** The shape `session.setModel(...)` and `session.send(text, { model })` take. */
 function toSessionModel(modelID: ManagedModelId) {
-  return { providerID: "kortix", modelID } as const;
+  return { providerID: "zed", modelID } as const;
 }
 
 function assertCatalogInSync() {
@@ -49,7 +49,7 @@ function assertCatalogInSync() {
   const pinnedIds = [...MODEL_IDS].sort();
   if (JSON.stringify(catalogIds) !== JSON.stringify(pinnedIds)) {
     console.error(
-      "✗ MODEL_IDS is out of sync with MANAGED_MODELS (@kortix/llm-catalog):",
+      "✗ MODEL_IDS is out of sync with MANAGED_MODELS (@zed/llm-catalog):",
     );
     console.error(`  catalog: ${catalogIds.join(", ")}`);
     console.error(`  pinned:  ${pinnedIds.join(", ")}`);
@@ -67,11 +67,11 @@ function printModelMenu() {
 async function main() {
   assertCatalogInSync();
 
-  const backendUrl = process.env.KORTIX_API_URL ?? "http://localhost:8008/v1";
-  const apiKey = process.env.KORTIX_API_KEY;
+  const backendUrl = process.env.ZED_API_URL ?? "http://localhost:8008/v1";
+  const apiKey = process.env.ZED_API_KEY;
   if (!apiKey) {
     console.error(
-      "Set KORTIX_API_KEY (mint one: user settings → API keys → Create API key).",
+      "Set ZED_API_KEY (mint one: user settings → API keys → Create API key).",
     );
     process.exit(1);
   }
@@ -87,15 +87,15 @@ async function main() {
   }
   const model: ManagedModelId = requested;
 
-  const projectId = process.argv[3] ?? process.env.KORTIX_PROJECT_ID;
+  const projectId = process.argv[3] ?? process.env.ZED_PROJECT_ID;
   if (!projectId) {
-    console.error("✗ no project given — pass argv[3] or set KORTIX_PROJECT_ID");
+    console.error("✗ no project given — pass argv[3] or set ZED_PROJECT_ID");
     process.exit(1);
     return;
   }
 
-  const kortix = createKortix({ backendUrl, getToken: async () => apiKey });
-  const project = kortix.project(projectId);
+  const zed = createZed({ backendUrl, getToken: async () => apiKey });
+  const project = zed.project(projectId);
 
   const before = await project.modelDefaults.get();
   if (before.freeTier) {

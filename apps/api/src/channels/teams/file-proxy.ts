@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { teamsPendingUploads } from '@kortix/db';
+import { teamsPendingUploads } from '@zed/db';
 import { eq, lt } from 'drizzle-orm';
 import { db } from '../../shared/db';
 import { loadTeamsBotCredentials, loadTeamsTenantForProject } from '../install-store';
@@ -120,7 +120,7 @@ export async function initiateTeamsUpload(
       {
         contentType: 'application/vnd.microsoft.teams.card.file.consent',
         content: {
-          description: args.description ?? `Kortix wants to send you ${args.filename}.`,
+          description: args.description ?? `Zed wants to send you ${args.filename}.`,
           sizeInBytes: size,
           acceptContext: { uploadId },
           declineContext: { uploadId },

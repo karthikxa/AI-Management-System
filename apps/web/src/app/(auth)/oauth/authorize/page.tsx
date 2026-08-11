@@ -20,7 +20,7 @@ import { createClient } from '@/lib/supabase/client';
 import {
   getOAuthConsentRequest,
   submitOAuthConsent,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 const SCOPE_DESCRIPTIONS: Record<string, string> = {
   profile: 'View your account information',
@@ -166,7 +166,7 @@ function OAuthConsent() {
           description={
             <>
               <span className="text-foreground font-medium">{clientName}</span> wants to access your
-              Kortix account.
+              Zed account.
             </>
           }
         />

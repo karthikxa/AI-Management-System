@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-SOURCE_SECRET_ID="${SOURCE_SECRET_ID:-kortix-prod-env}"
+SOURCE_SECRET_ID="${SOURCE_SECRET_ID:-zed-prod-env}"
 SOURCE_AWS_REGION="${SOURCE_AWS_REGION:-eu-west-2}"
-TARGET_SECRET_ID="${TARGET_SECRET_ID:-kortix/prod-us-east-2-migration}"
+TARGET_SECRET_ID="${TARGET_SECRET_ID:-zed/prod-us-east-2-migration}"
 TARGET_AWS_REGION="${TARGET_AWS_REGION:-us-east-2}"
-PUBLICATION="${AUTH_PUBLICATION:-kortix_use2_auth_20260725}"
-SUBSCRIPTION="${AUTH_SUBSCRIPTION:-kortix_use2_auth_20260725}"
+PUBLICATION="${AUTH_PUBLICATION:-zed_use2_auth_20260725}"
+SUBSCRIPTION="${AUTH_SUBSCRIPTION:-zed_use2_auth_20260725}"
 
 source_secret_json="$(
   aws secretsmanager get-secret-value \
@@ -30,8 +30,8 @@ replication_password="$(jq -er '.replication_password' <<<"$target_secret_json")
 
 prepare_source() {
   psql "$source_database_url" -X -v ON_ERROR_STOP=1 -v publication="$PUBLICATION" <<'SQL'
-GRANT pg_read_all_data TO kortix_use2_repl;
-ALTER ROLE kortix_use2_repl BYPASSRLS;
+GRANT pg_read_all_data TO zed_use2_repl;
+ALTER ROLE zed_use2_repl BYPASSRLS;
 
 SELECT format(
   'CREATE PUBLICATION %I WITH (publish = %L)',
@@ -45,11 +45,11 @@ WHERE NOT EXISTS (
 )
 \gexec
 
-SELECT set_config('kortix.auth_migration_publication', :'publication', false);
+SELECT set_config('zed.auth_migration_publication', :'publication', false);
 
 DO $do$
 DECLARE
-  publication_name text := current_setting('kortix.auth_migration_publication');
+  publication_name text := current_setting('zed.auth_migration_publication');
   relation record;
 BEGIN
   FOR relation IN
@@ -373,7 +373,7 @@ SQL
 }
 
 reconcile_counts() {
-  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/kortix-use2-auth-counts.XXXXXX")"
+  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/zed-use2-auth-counts.XXXXXX")"
   source_counts="$temporary_directory/source.tsv"
   target_counts="$temporary_directory/target.tsv"
   cleanup_counts() {
@@ -594,7 +594,7 @@ reconcile_hashes() {
       ;;
   esac
 
-  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/kortix-use2-auth-hashes.XXXXXX")"
+  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/zed-use2-auth-hashes.XXXXXX")"
   source_hashes="$temporary_directory/source.tsv"
   target_hashes="$temporary_directory/target.tsv"
   cleanup_hashes() {
@@ -663,7 +663,7 @@ SQL
 }
 
 reconcile_sequences() {
-  sequence_state_file="$(mktemp "${TMPDIR:-/tmp}/kortix-use2-auth-sequences.XXXXXX")"
+  sequence_state_file="$(mktemp "${TMPDIR:-/tmp}/zed-use2-auth-sequences.XXXXXX")"
   cleanup_sequence_state() {
     [[ -f "$sequence_state_file" ]] && unlink "$sequence_state_file"
   }
@@ -697,7 +697,7 @@ repair_shadow_mutations() {
 
   local temporary_directory
   local source_flow_state_ids
-  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/kortix-use2-auth-shadow-repair.XXXXXX")"
+  temporary_directory="$(mktemp -d "${TMPDIR:-/tmp}/zed-use2-auth-shadow-repair.XXXXXX")"
   source_flow_state_ids="$temporary_directory/source-flow-state-ids.csv"
 
   cleanup_auth_shadow_repair() {

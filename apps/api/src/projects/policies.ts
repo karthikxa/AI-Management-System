@@ -1,6 +1,6 @@
 /**
- * Project-level `policies:` + `policy:` parsing for kortix.yaml (a legacy v1
- * project spells these as `[[policies]]` + `[policy]` in kortix.toml — same
+ * Project-level `policies:` + `policy:` parsing for zed.yaml (a legacy v1
+ * project spells these as `[[policies]]` + `[policy]` in zed.toml — same
  * parsed shape either way).
  *
  * Project policies span EVERY connector in the project — patterns are
@@ -37,7 +37,7 @@ export interface ProjectPolicySpec {
    *
    * A `match` alone can only gate a tool NAME ("may the agent send email"); it
    * cannot gate the target ("…but only to these addresses"), which is what a
-   * real guardrail needs. Written in kortix.yaml as:
+   * real guardrail needs. Written in zed.yaml as:
    *
    *   policies:
    *     - match: gmail.send_email
@@ -78,7 +78,7 @@ const DEFAULT_SETTINGS: ProjectPolicySettings = { defaultMode: 'allow_all' };
 export function extractProjectPolicies(manifest: ParsedManifest): LoadedProjectPolicies {
   const errors: ProjectPolicyParseError[] = [];
   // Use the ACTUAL manifest file in error paths so a YAML project reports
-  // `kortix.yaml#policy`, not a hardcoded `kortix.toml#…`.
+  // `zed.yaml#policy`, not a hardcoded `zed.toml#…`.
   const filename = manifest.path || MANIFEST_FILENAME;
 
   // ── policy block (default_mode) ────────────────────────────────────────────
@@ -164,7 +164,7 @@ export function extractProjectPolicies(manifest: ParsedManifest): LoadedProjectP
 /**
  * Convert a list of project policies back to the raw entries that live in
  * `manifest.raw.policies` (format-agnostic — same shape serializes to a
- * kortix.yaml list or a legacy kortix.toml `[[policies]]` table array).
+ * zed.yaml list or a legacy zed.toml `[[policies]]` table array).
  * Inverse of `extractProjectPolicies`. Used by the admin CRUD path to
  * round-trip a dashboard edit before committing.
  */

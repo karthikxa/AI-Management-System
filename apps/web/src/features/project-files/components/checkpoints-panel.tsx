@@ -9,7 +9,7 @@ import Loading from '@/components/ui/loading';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
-import type { ProjectCommit } from '@kortix/sdk';
+import type { ProjectCommit } from '@zed/sdk';
 import {
   WarningCircleIcon as AlertCircle,
   CaretDownIcon as ChevronDown,

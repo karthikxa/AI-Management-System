@@ -22,20 +22,20 @@ interface TypeMeta {
 const NEUTRAL = 'bg-foreground/5 text-muted-foreground';
 
 const TYPE_META: Record<string, TypeMeta> = {
-  'registry:skill': { label: 'Skill', Icon: Sparkles, tile: 'bg-kortix-blue/10 text-kortix-blue' },
-  'registry:agent': { label: 'Agent', Icon: Bot, tile: 'bg-kortix-purple/10 text-kortix-purple' },
+  'registry:skill': { label: 'Skill', Icon: Sparkles, tile: 'bg-zed-blue/10 text-zed-blue' },
+  'registry:agent': { label: 'Agent', Icon: Bot, tile: 'bg-zed-purple/10 text-zed-purple' },
   'registry:command': {
     label: 'Command',
     Icon: SquareTerminal,
-    tile: 'bg-kortix-green/10 text-kortix-green',
+    tile: 'bg-zed-green/10 text-zed-green',
   },
-  'registry:tool': { label: 'Tool', Icon: Wrench, tile: 'bg-kortix-orange/10 text-kortix-orange' },
+  'registry:tool': { label: 'Tool', Icon: Wrench, tile: 'bg-zed-orange/10 text-zed-orange' },
   'registry:bundle': {
     label: 'Bundle',
     Icon: Package,
-    tile: 'bg-kortix-yellow/15 text-kortix-yellow',
+    tile: 'bg-zed-yellow/15 text-zed-yellow',
   },
-  'registry:project': { label: 'Project', Icon: Boxes, tile: 'bg-kortix-blue/10 text-kortix-blue' },
+  'registry:project': { label: 'Project', Icon: Boxes, tile: 'bg-zed-blue/10 text-zed-blue' },
   'registry:rules': { label: 'Rules', Icon: ScrollText, tile: NEUTRAL },
   'registry:file': { label: 'File', Icon: FileText, tile: NEUTRAL },
 };

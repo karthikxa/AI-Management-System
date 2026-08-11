@@ -50,7 +50,7 @@ interface AccessMember {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const HELP = help`Usage: kortix grants <subcommand> [options]
+const HELP = help`Usage: zed grants <subcommand> [options]
 
 Assign project resources to people — the inheritance PYRAMID. Secrets and
 connectors live on AGENTS; assign an agent to a member (or group) and they
@@ -70,15 +70,15 @@ Options:
   --type <t>         agent (the only assignable type; default).
   --expires <iso>    Optional auto-revoke timestamp.
   --project <id>     Operate on this project id (default: linked).
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   --json             Machine-readable output.
   -h, --help         Show this help.
 
 Examples:
-  kortix grants ls
-  kortix grants assign support-bot --to alice@corp.com
-  kortix grants assign support-bot --to 8f3c… --group
-  kortix grants revoke 2f1a…
+  zed grants ls
+  zed grants assign support-bot --to alice@corp.com
+  zed grants assign support-bot --to 8f3c… --group
+  zed grants revoke 2f1a…
 `;
 
 function missing(what: string): number {
@@ -98,7 +98,7 @@ async function resolveMemberId(
   const hit = resp.members.find((m) => (m.email ?? '').toLowerCase() === needle);
   if (!hit) {
     process.stderr.write(
-      `${status.err(`No member with email "${who}" in this project.`)} Use ${C.cyan}kortix access ls${C.reset} to see members, or pass a user-id.\n`,
+      `${status.err(`No member with email "${who}" in this project.`)} Use ${C.cyan}zed access ls${C.reset} to see members, or pass a user-id.\n`,
     );
     return null;
   }
@@ -148,7 +148,7 @@ export async function runGrants(argv: string[]): Promise<number> {
         process.stdout.write(`  ${C.dim}GRANTABLE${C.reset}\n`);
         if (agents.length === 0 && skills.length === 0 && secrets.length === 0) {
           process.stdout.write(
-            `  ${C.faded}(none — add agents/skills to kortix.yaml or secrets in the dashboard)${C.reset}\n`,
+            `  ${C.faded}(none — add agents/skills to zed.yaml or secrets in the dashboard)${C.reset}\n`,
           );
         }
         for (const a of agents) {
@@ -251,7 +251,7 @@ export async function runGrants(argv: string[]): Promise<number> {
       case 'rm':
       case 'delete': {
         const grantId = positional[0];
-        if (!grantId) return missing('a grant id (see `kortix grants ls`)');
+        if (!grantId) return missing('a grant id (see `zed grants ls`)');
         await ctx.client.delete(`${base}/resource-grants/${encodeURIComponent(grantId)}`);
         process.stdout.write(`${status.ok(`Revoked grant ${C.bold}${grantId}${C.reset}`)}\n`);
         return 0;

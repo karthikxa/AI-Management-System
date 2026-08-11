@@ -10,7 +10,7 @@
  *
  * A reload is two steps against a box that stays up:
  *
- *   1. Refresh the workspace — `POST /kortix/refresh?restart=0`. Explicitly NO
+ *   1. Refresh the workspace — `POST /zed/refresh?restart=0`. Explicitly NO
  *      restart here: step 2 restarts, and doing it twice would cost a second
  *      opencode boot and two windows where the box 503s.
  *   2. Recompile the agent config from the session's ref and push it, which
@@ -30,7 +30,7 @@
  */
 
 import { and, eq } from 'drizzle-orm';
-import { projects, projectSessions, sessionSandboxes } from '@kortix/db';
+import { projects, projectSessions, sessionSandboxes } from '@zed/db';
 import { db } from '../../shared/db';
 import { resolveSandboxIngress } from '../../sandbox-proxy/backend';
 import { invalidateProjectMirror, type GitBackedProject } from '../git';
@@ -240,7 +240,7 @@ export async function readSandboxConfigState(input: {
       transport: 'http',
     });
     const res = await fetch(
-      `${url.replace(/\/$/, '')}/kortix/health${input.includeTurnState ? '?turn=1' : ''}`,
+      `${url.replace(/\/$/, '')}/zed/health${input.includeTurnState ? '?turn=1' : ''}`,
       {
         headers: { ...headers, Authorization: `Bearer ${serviceKey}` },
         signal: AbortSignal.timeout(10_000),
@@ -318,7 +318,7 @@ export async function latestAgentConfigEtag(input: {
     projectId: input.projectId,
     repoUrl: project.repoUrl,
     defaultBranch: project.defaultBranch,
-    manifestPath: project.manifestPath ?? 'kortix.yaml',
+    manifestPath: project.manifestPath ?? 'zed.yaml',
     gitAuthToken: null,
   };
   // Without this, `stale: false` is answerable from a cache that predates the
@@ -462,7 +462,7 @@ export async function reloadSessionConfig(input: {
 }
 
 /**
- * `POST /kortix/refresh?restart=0` — fast-forward the session's own branch.
+ * `POST /zed/refresh?restart=0` — fast-forward the session's own branch.
  *
  * NEVER `base=1`. That flag routes the daemon to `syncWorkspaceToBase`, whose
  * entire body is `git checkout -B <cfg.branchName> <baseSha>` — and
@@ -518,7 +518,7 @@ async function refreshSandboxWorkspace(sessionId: string): Promise<{
     // comment above. Sent unconditionally: a daemon built before it shipped just
     // ignores the query parameter and answers without `config_dir`, which reads
     // back as `null` ("could not tell") rather than `false`.
-    const res = await fetch(`${url.replace(/\/$/, '')}/kortix/refresh?restart=0&config_dir=1`, {
+    const res = await fetch(`${url.replace(/\/$/, '')}/zed/refresh?restart=0&config_dir=1`, {
       method: 'POST',
       headers: { ...headers, Authorization: `Bearer ${serviceKey}` },
       signal: AbortSignal.timeout(120_000),

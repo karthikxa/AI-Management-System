@@ -1,6 +1,6 @@
 import { createAccountToken } from '../src/repositories/account-tokens';
 import { db } from '../src/shared/db';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 const ACC = 'fbea71d0-9655-4ab4-aca5-1b68e1ae7f71';
 const tok = (await createAccountToken({ accountId: ACC, userId: ACC, name: 'frc' })).secretKey;
@@ -19,7 +19,7 @@ console.log(`sandbox-active +${now() - t0}ms ext=${row.externalId}`);
 let falsePositives = 0, readyAt = 0, samples = 0;
 while (now() - t0 < 120_000) {
   try {
-    const j: any = await (await fetch(`${base}/kortix/health`, { headers: H, signal: AbortSignal.timeout(2500) })).json();
+    const j: any = await (await fetch(`${base}/zed/health`, { headers: H, signal: AbortSignal.timeout(2500) })).json();
     samples++;
     if (j.runtimeReady === true) {
       if (j.branch === ses.session_id) { readyAt = now() - t0; break; }

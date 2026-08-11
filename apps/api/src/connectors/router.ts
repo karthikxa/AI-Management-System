@@ -1,13 +1,13 @@
 /**
  * Connector HTTP surface — one Hono router with two faces:
  *
- *   Gateway (sandbox-facing, KORTIX_CLI_TOKEN):
+ *   Gateway (sandbox-facing, ZED_CLI_TOKEN):
  *     GET  /v1/connectors/catalog             — catalog the session can use
  *     POST /v1/connectors/call                — { connector, action, args } → run
  *
  *   Admin (dashboard-facing, user auth + project access):
  *     GET  /v1/connectors/projects/:projectId/connectors          — list + status
- *     POST /v1/connectors/projects/:projectId/connectors/sync     — re-materialize from kortix.yaml
+ *     POST /v1/connectors/projects/:projectId/connectors/sync     — re-materialize from zed.yaml
  *
  * Connectors are project-wide visible — the only access gate is the agent-side
  * `[[agents]].connectors` grant (iam/agent-scope.ts), enforced below.
@@ -20,9 +20,9 @@ import { type OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import {
   type UpdateConnectionCredentialInput,
   UpdateConnectionCredentialInputSchema,
-} from '@kortix/api-contract';
-import type { AgentGrant } from '@kortix/db';
-import { SLUG_RE } from '@kortix/manifest-schema';
+} from '@zed/api-contract';
+import type { AgentGrant } from '@zed/db';
+import { SLUG_RE } from '@zed/manifest-schema';
 import type { Context } from 'hono';
 import { featureDisabledBody } from '../feature-flags/gate';
 import type { FeatureFlagKey } from '../feature-flags/registry';
@@ -256,7 +256,7 @@ export interface ConnectorRouterDeps {
   ): Promise<{ accountId: string; userId: string } | null>;
   listConnectors(projectId: string): Promise<AdminConnectorView[]>;
   syncConnectors(projectId: string, accountId: string): Promise<SyncResult>;
-  /** Create/update a connector in kortix.yaml + materialize. */
+  /** Create/update a connector in zed.yaml + materialize. */
   createConnector?(
     projectId: string,
     accountId: string,
@@ -266,7 +266,7 @@ export interface ConnectorRouterDeps {
     projectId: string,
     draft: Record<string, unknown>,
   ): Promise<ConnectorAuthDiscovery>;
-  /** Remove a connector from kortix.yaml + drop its rows. */
+  /** Remove a connector from zed.yaml + drop its rows. */
   deleteConnector?(projectId: string, slug: string): Promise<CrudOutcome>;
   /** Set a connector's server-side static or OAuth2 credential. */
   setConnectorCredential?(
@@ -304,14 +304,14 @@ export interface ConnectorRouterDeps {
     slug: string,
     authorizationStrategy: 'project' | 'user',
   ): Promise<CrudOutcome>;
-  /** Toggle a connector's `sensitive` flag (gate reads too) in kortix.yaml + re-sync. */
+  /** Toggle a connector's `sensitive` flag (gate reads too) in zed.yaml + re-sync. */
   setSensitive?(
     projectId: string,
     accountId: string,
     slug: string,
     sensitive: boolean,
   ): Promise<CrudOutcome>;
-  /** Rename a connector (display label) in kortix.yaml + re-sync. */
+  /** Rename a connector (display label) in zed.yaml + re-sync. */
   setConnectorName?(
     projectId: string,
     accountId: string,
@@ -323,7 +323,7 @@ export interface ConnectorRouterDeps {
     projectId: string,
     slug: string,
   ): Promise<{ policies: Array<{ match: string; action: string }> } | null>;
-  /** Read a connector's definition (provider + connection fields) from kortix.yaml for editing. */
+  /** Read a connector's definition (provider + connection fields) from zed.yaml for editing. */
   getConnectorConfig?(
     projectId: string,
     slug: string,
@@ -358,7 +358,7 @@ export interface ConnectorRouterDeps {
       prefix: string | null;
     };
   } | null>;
-  /** Replace a connector's `policies:` list in kortix.yaml + re-sync. */
+  /** Replace a connector's `policies:` list in zed.yaml + re-sync. */
   setConnectorPolicies?(
     projectId: string,
     accountId: string,
@@ -406,9 +406,9 @@ export interface ConnectorRouterDeps {
   }): Promise<unknown>;
   /** Resolve every known surface for one trusted catalogue record. */
   getDiscoverConnector?(id: string): Promise<unknown>;
-  /** Read project-level `policies:` list + `policy.default_mode` from kortix.yaml. */
+  /** Read project-level `policies:` list + `policy.default_mode` from zed.yaml. */
   getProjectPolicies?(projectId: string): Promise<ProjectPoliciesViewResponse | null>;
-  /** Replace project policies + default_mode (CRUD round-trips to kortix.yaml). */
+  /** Replace project policies + default_mode (CRUD round-trips to zed.yaml). */
   setProjectPolicies?(
     projectId: string,
     accountId: string,
@@ -468,21 +468,21 @@ function decodedAttachmentHeader(c: Context, name: string): string {
 }
 
 function attachmentMetadata(c: Context): Omit<StageConnectorAttachmentInput, 'bytes'> {
-  const filename = decodedAttachmentHeader(c, 'X-Kortix-Attachment-Filename');
+  const filename = decodedAttachmentHeader(c, 'X-Zed-Attachment-Filename');
   const contentType = (c.req.header('content-type') ?? '').split(';', 1).at(0)?.trim() ?? '';
-  const disposition = c.req.header('X-Kortix-Attachment-Disposition') ?? 'attachment';
-  const contentId = decodedAttachmentHeader(c, 'X-Kortix-Attachment-Content-Id');
+  const disposition = c.req.header('X-Zed-Attachment-Disposition') ?? 'attachment';
+  const contentId = decodedAttachmentHeader(c, 'X-Zed-Attachment-Content-Id');
   if (!filename || filename.length > 512) {
-    throw new Error('X-Kortix-Attachment-Filename is required and must not exceed 512 characters');
+    throw new Error('X-Zed-Attachment-Filename is required and must not exceed 512 characters');
   }
   if (!contentType || contentType.length > 255) {
     throw new Error('Content-Type is required and must not exceed 255 characters');
   }
   if (disposition !== 'attachment' && disposition !== 'inline') {
-    throw new Error('X-Kortix-Attachment-Disposition must be attachment or inline');
+    throw new Error('X-Zed-Attachment-Disposition must be attachment or inline');
   }
   if (contentId.length > 512) {
-    throw new Error('X-Kortix-Attachment-Content-Id must not exceed 512 characters');
+    throw new Error('X-Zed-Attachment-Content-Id must not exceed 512 characters');
   }
   return {
     filename,
@@ -602,7 +602,7 @@ export function createConnectorRouter(deps: ConnectorRouterDeps): OpenAPIHono {
       );
     }
     // Per-agent connector assignment: a scoped agent may call only the connector
-    // connectors its kortix.yaml overlay lists. Default-deny otherwise.
+    // connectors its zed.yaml overlay lists. Default-deny otherwise.
     if (!agentMayUseConnector(p.agentGrant ?? null, canonicalConnectorAlias(connectorSlug))) {
       return c.json({ ok: false, status: 'denied', reason: 'connector_not_assigned' }, 403);
     }
@@ -654,7 +654,7 @@ export function createConnectorRouter(deps: ConnectorRouterDeps): OpenAPIHono {
 
   const attachmentResponse = async (c: Context, p: ConnectorPrincipal) => {
     if (!deps.attachmentStore) return featureNotSupportedResponse(c, 'connector_attachments');
-    if (!agentMayUseConnector(p.agentGrant ?? null, canonicalConnectorAlias('kortix_email'))) {
+    if (!agentMayUseConnector(p.agentGrant ?? null, canonicalConnectorAlias('zed_email'))) {
       return c.json({ ok: false, status: 'denied', reason: 'connector_not_assigned' }, 403);
     }
     let metadata: Omit<StageConnectorAttachmentInput, 'bytes'>;
@@ -923,7 +923,7 @@ export function createConnectorRouter(deps: ConnectorRouterDeps): OpenAPIHono {
   // ── Gateway (project-explicit): list usable connectors ───────────────────
   // Same as GET /connectors, but the project comes from the PATH and runs under
   // combinedAuth — so it accepts a logged-in user token (laptop) as well as an
-  // in-sandbox session token. This is what makes `kortix connectors` work locally.
+  // in-sandbox session token. This is what makes `zed connectors` work locally.
   app.openapi(
     createRoute({
       method: 'get',
@@ -1064,13 +1064,13 @@ export function createConnectorRouter(deps: ConnectorRouterDeps): OpenAPIHono {
     },
   );
 
-  // ── Admin: add/update a connector (writes kortix.yaml) ───────────────────
+  // ── Admin: add/update a connector (writes zed.yaml) ───────────────────
   app.openapi(
     createRoute({
       method: 'post',
       path: '/projects/{projectId}/connectors',
       tags: ['connector'],
-      summary: 'Create or update a connector in kortix.yaml',
+      summary: 'Create or update a connector in zed.yaml',
       ...auth,
       request: {
         params: ProjectParam,
@@ -1135,7 +1135,7 @@ export function createConnectorRouter(deps: ConnectorRouterDeps): OpenAPIHono {
       method: 'delete',
       path: '/projects/{projectId}/connectors/{slug}',
       tags: ['connector'],
-      summary: 'Delete a connector from kortix.yaml',
+      summary: 'Delete a connector from zed.yaml',
       ...auth,
       request: { params: ProjectSlugParam },
       responses: {
@@ -1359,13 +1359,13 @@ export function createConnectorRouter(deps: ConnectorRouterDeps): OpenAPIHono {
     },
   );
 
-  // ── Admin: re-materialize from kortix.yaml ───────────────────────────────
+  // ── Admin: re-materialize from zed.yaml ───────────────────────────────
   app.openapi(
     createRoute({
       method: 'post',
       path: '/projects/{projectId}/connectors/sync',
       tags: ['connector'],
-      summary: 'Re-materialize connectors from kortix.yaml',
+      summary: 'Re-materialize connectors from zed.yaml',
       ...auth,
       request: { params: ProjectParam },
       responses: {
@@ -1611,7 +1611,7 @@ export function createConnectorRouter(deps: ConnectorRouterDeps): OpenAPIHono {
     },
   );
 
-  // ── Admin: replace a connector's policies (write-through to kortix.yaml) ──
+  // ── Admin: replace a connector's policies (write-through to zed.yaml) ──
   app.openapi(
     createRoute({
       method: 'put',
@@ -1737,7 +1737,7 @@ export function createConnectorRouter(deps: ConnectorRouterDeps): OpenAPIHono {
     },
   );
 
-  // ── Admin: replace project policies (write-through to kortix.yaml) ──────
+  // ── Admin: replace project policies (write-through to zed.yaml) ──────
   app.openapi(
     createRoute({
       method: 'put',

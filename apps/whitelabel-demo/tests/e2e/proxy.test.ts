@@ -1,16 +1,16 @@
 /**
  * BFF verification through the public SDK.
  *
- * The app never constructs Kortix routes. Low-level request buffering,
+ * The app never constructs Zed routes. Low-level request buffering,
  * response-header sanitization, and stream forwarding live in
- * `forwardKortixRequest()` and have focused SDK tests.
+ * `forwardZedRequest()` and have focused SDK tests.
  */
 
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import {
   APP_SETUP_TIMEOUT_MS,
   type AppInstance,
-  createTestKortix,
+  createTestZed,
   loginUser,
   resetUsersStore,
   startApp,
@@ -26,7 +26,7 @@ describe('BFF SDK transport', () => {
   beforeAll(async () => {
     resetUsersStore();
     mock = createMockUpstream(WRAPPER_KEY);
-    app = await startApp(wrapperEnv({ KORTIX_UPSTREAM: `${mock.url}/v1` }));
+    app = await startApp(wrapperEnv({ ZED_UPSTREAM: `${mock.url}/v1` }));
   }, APP_SETUP_TIMEOUT_MS);
 
   afterAll(async () => {
@@ -41,33 +41,33 @@ describe('BFF SDK transport', () => {
       uniqueEmail(prefix),
       DEMO_PASSWORD,
     );
-    return createTestKortix(app, token);
+    return createTestZed(app, token);
   }
 
   test('an invalid wrapper token is rejected before any upstream request', async () => {
     mock.reset();
-    const kortix = createTestKortix(app, 'invalid-wrapper-session');
+    const zed = createTestZed(app, 'invalid-wrapper-session');
 
-    await expect(kortix.projects.list()).rejects.toMatchObject({ status: 401 });
+    await expect(zed.projects.list()).rejects.toMatchObject({ status: 401 });
     expect(mock.requests).toHaveLength(0);
   });
 
   test('the BFF substitutes the operator token for the wrapper user token', async () => {
     mock.reset();
-    const kortix = await authenticatedClient('proxy-auth');
+    const zed = await authenticatedClient('proxy-auth');
 
-    expect((await kortix.validateToken()).valid).toBe(true);
+    expect((await zed.validateToken()).valid).toBe(true);
     expect(mock.requests).toHaveLength(1);
     expect(mock.requests[0]!.authorization).toBe(`Bearer ${WRAPPER_KEY}`);
     expect(mock.authViolations).toHaveLength(0);
   });
 
   test('SDK request bodies arrive byte-for-byte with Content-Length', async () => {
-    const kortix = await authenticatedClient('body-integrity');
+    const zed = await authenticatedClient('body-integrity');
     mock.reset();
     const name = `Runtime ${'x'.repeat(20_000)}`;
 
-    const project = await kortix.projects.provision({ name });
+    const project = await zed.projects.provision({ name });
 
     expect(project.name).toBe(name);
     expect(mock.requests).toHaveLength(1);
@@ -81,19 +81,19 @@ describe('BFF SDK transport', () => {
   });
 
   test('SDK reads force identity response encoding through the BFF', async () => {
-    const kortix = await authenticatedClient('response-encoding');
+    const zed = await authenticatedClient('response-encoding');
     mock.reset();
 
-    await kortix.projects.list();
+    await zed.projects.list();
 
     expect(mock.requests).toHaveLength(1);
     expect(mock.requests[0]!.acceptEncoding).toBe('identity');
   });
 
   test('SDK session.stream receives unbuffered events and remains open', async () => {
-    const kortix = await authenticatedClient('sse');
-    const project = await kortix.projects.provision({ name: 'Runtime SSE' });
-    const session = kortix.session(project.project_id, 'sse-session');
+    const zed = await authenticatedClient('sse');
+    const project = await zed.projects.provision({ name: 'Runtime SSE' });
+    const session = zed.session(project.project_id, 'sse-session');
     await session.start();
     mock.reset();
 

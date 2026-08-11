@@ -72,12 +72,12 @@ export function buildRegistryProjectInstallPrompt(
     '',
     item.description ?? '',
     '',
-    "This project's current kortix.yaml:",
+    "This project's current zed.yaml:",
     '```yaml',
     targetManifestRaw ?? '(no manifest found)',
     '```',
     '',
-    'The template contributes these files. Its own kortix.yaml is a reference for what agent it expects to exist — do NOT overwrite this project\'s kortix.yaml with it verbatim.',
+    'The template contributes these files. Its own zed.yaml is a reference for what agent it expects to exist — do NOT overwrite this project\'s zed.yaml with it verbatim.',
   ];
   for (const file of ownFiles) {
     lines.push('', `--- ${file.path} ---`, '```', file.content ?? '', '```');
@@ -92,9 +92,9 @@ export function buildRegistryProjectInstallPrompt(
   lines.push(
     '',
     'Steps:',
-    "1. Read this project's current kortix.yaml and .kortix/opencode/agents/ to see what already exists.",
+    "1. Read this project's current zed.yaml and .zed/opencode/agents/ to see what already exists.",
     '2. Add the template\'s agent persona as a new agent file — rename it if the name collides with an existing agent. Do not remove or overwrite any existing agent.',
-    "3. Merge the template's kortix.yaml `agents:` entry for that agent into this project's kortix.yaml. Leave default_agent and every other existing agent untouched unless the user asks otherwise.",
+    "3. Merge the template's zed.yaml `agents:` entry for that agent into this project's zed.yaml. Leave default_agent and every other existing agent untouched unless the user asks otherwise.",
     '4. Install the marketplace skills listed above.',
     '5. If the template includes `install.md`, read it from the supplied file block before you finish. Use it as the template-specific setup guide and tell the user what company inputs, connectors, secrets, webhooks, or trigger decisions it will need after the files land.',
     '6. Open a change request with the result — do not push directly to the default branch.',
@@ -102,8 +102,8 @@ export function buildRegistryProjectInstallPrompt(
     'After the change request is open, keep driving the install instead of leaving the user with manual handoff work:',
     '',
     '- Show the CR number/status and ask whether to apply/merge it now. Do not merge without explicit approval.',
-    '- If the user approves and your Kortix grant allows it, merge it yourself with `kortix cr merge <number-or-id>`.',
-    '- After a successful merge, start the first setup session with the template\'s intended agent (infer it from the template `kortix.yaml`, usually `default_agent` or the newly added agent). Prefer a structured session-start/background-session tool when available so the UI can render an Open session control; otherwise use `kortix sessions new --agent <agent> --prompt "<setup prompt>" --json`.',
+    '- If the user approves and your Zed grant allows it, merge it yourself with `zed cr merge <number-or-id>`.',
+    '- After a successful merge, start the first setup session with the template\'s intended agent (infer it from the template `zed.yaml`, usually `default_agent` or the newly added agent). Prefer a structured session-start/background-session tool when available so the UI can render an Open session control; otherwise use `zed sessions new --agent <agent> --prompt "<setup prompt>" --json`.',
     '- Give the user a direct session link or tell them to use the Open session button for the session that just started.',
     '- If you do not have permission to merge or start sessions, say exactly which button/action is needed in the UI: Apply the CR, then open the setup session with the newly installed agent. Do not merely say "start a new session" without a link or button.',
   );
@@ -114,7 +114,7 @@ export function buildRegistryProjectInstallPrompt(
  *  `meta.template` block (agent grants, connectors, a scheduled trigger whose
  *  string fields carry `{{input}}` placeholders) and declared `inputs`. Installed
  *  conversationally through the existing marketplace: the agent reads the template
- *  and its parts with the `kortix marketplace` CLI, collects the inputs, installs
+ *  and its parts with the `zed marketplace` CLI, collects the inputs, installs
  *  the parts, wires the schedule + grants + secrets, and ships the trigger DISABLED
  *  until the user says go. This prompt supplies the template semantics (inputs,
  *  trigger wiring, the exact ids to install) that a plain item install ignores —
@@ -131,16 +131,16 @@ export function buildTemplateInstallPrompt(entry: TemplateCatalogEntry, id: stri
   const channels = tpl.channels ?? [];
 
   const steps: string[] = [
-    `Read the template first: \`kortix marketplace show ${id} --json\`. The response carries the full declaration — \`.inputs\` (what to ask me), \`.envVars\` (required secrets), and \`.template\` (the trigger to wire, agent grants, connectors, channels). Everything you need is in that one response; do not search the repo or the web for it. Then tell me in a line or two what it adds and what you'll need from me.`,
+    `Read the template first: \`zed marketplace show ${id} --json\`. The response carries the full declaration — \`.inputs\` (what to ask me), \`.envVars\` (required secrets), and \`.template\` (the trigger to wire, agent grants, connectors, channels). Everything you need is in that one response; do not search the repo or the web for it. Then tell me in a line or two what it adds and what you'll need from me.`,
     'Ask me for each input the template declares, pre-filling its default.',
   ];
   if (depIds.length) {
     steps.push(
-      `Install its parts — ${depIds.map((d) => `\`${d}\``).join(', ')} — from the marketplace: \`kortix marketplace show <part-id> --json\` lists its \`.files[].target\`, and each file's content comes from \`GET $KORTIX_API_URL/marketplace/items/<part-id>/file?path=<target>\` (the \`.content\` field). Write each file to its conventional path (\`@agents/x.md\` → \`.kortix/opencode/agents/x.md\`, \`@skills/y\` → \`.kortix/opencode/skills/y\`), rendering \`{{projectName}}\` to this project's name.`,
+      `Install its parts — ${depIds.map((d) => `\`${d}\``).join(', ')} — from the marketplace: \`zed marketplace show <part-id> --json\` lists its \`.files[].target\`, and each file's content comes from \`GET $ZED_API_URL/marketplace/items/<part-id>/file?path=<target>\` (the \`.content\` field). Write each file to its conventional path (\`@agents/x.md\` → \`.zed/opencode/agents/x.md\`, \`@skills/y\` → \`.zed/opencode/skills/y\`), rendering \`{{projectName}}\` to this project's name.`,
     );
   }
   steps.push(
-    "Wire the template's trigger (`.template.triggers` from the show output) into this project's `kortix.yaml`, rendering my input values into it (replace every `{{key}}` with what I gave you), and ship it **DISABLED** (`enabled: false`). Add the matching agent grant (`.template.agents`) under `agents:`.",
+    "Wire the template's trigger (`.template.triggers` from the show output) into this project's `zed.yaml`, rendering my input values into it (replace every `{{key}}` with what I gave you), and ship it **DISABLED** (`enabled: false`). Add the matching agent grant (`.template.agents`) under `agents:`.",
   );
   const needs = [
     secrets.length ? `secrets ${secrets.join(', ')} (Settings → Secrets)` : null,

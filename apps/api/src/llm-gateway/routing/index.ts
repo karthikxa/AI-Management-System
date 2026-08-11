@@ -1,4 +1,4 @@
-import type { ModelRouteInput, ModelRoutePlan, AuthedPrincipal } from '@kortix/llm-gateway';
+import type { ModelRouteInput, ModelRoutePlan, AuthedPrincipal } from '@zed/llm-gateway';
 import { config } from '../../config';
 import { catalogModelForWireModel, gatewayModelCatalog } from '../models/catalog-models';
 import { platformDefaultModelId } from '../models/served-managed-models';
@@ -14,7 +14,7 @@ const resolver = createGatewayRouteResolver({
   visionModel: config.LLM_GATEWAY_VISION_MODEL,
   policies: config.LLM_GATEWAY_FALLBACK_POLICIES,
   supportsImage: (model) => {
-    const wire = model.startsWith('kortix/') ? model.slice('kortix/'.length) : model;
+    const wire = model.startsWith('zed/') ? model.slice('zed/'.length) : model;
     return routingCatalog()[wire]?.attachment === true;
   },
   getProjectPolicy: getProjectRoutingPolicy,

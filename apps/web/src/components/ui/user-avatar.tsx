@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { chalkColors } from '@kortix/shared';
+import { chalkColors } from '@zed/shared';
 import * as React from 'react';
 
 function initialsFromIdentity(name: string | undefined, email: string): string {

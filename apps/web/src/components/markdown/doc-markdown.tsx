@@ -16,8 +16,8 @@ import { SetupLinkButton } from '@/components/setup-links/setup-link-button';
 import { parseSetupLinkHref } from '@/components/setup-links/util';
 import { useSandboxProxy } from '@/hooks/use-sandbox-proxy';
 import { cn } from '@/lib/utils';
-import { stripKortixSystemTags } from '@/lib/utils/kortix-system-tags';
-import { autoLinkUrls } from '@kortix/shared';
+import { stripZedSystemTags } from '@/lib/utils/zed-system-tags';
+import { autoLinkUrls } from '@zed/shared';
 import Link from 'next/link';
 import React, { useCallback, useMemo } from 'react';
 import { Streamdown } from 'streamdown';
@@ -117,9 +117,9 @@ export const DocMarkdown = React.memo<DocMarkdownProps>(
           const isHash = resolvedHref.startsWith('#');
           const isExternal = !isInternalUrl(resolvedHref);
           const linkClass = cn(
-            'font-medium text-kortix-blue',
-            'underline decoration-kortix-blue/40 decoration-[1px] underline-offset-[3px]',
-            'transition-colors hover:decoration-kortix-blue',
+            'font-medium text-zed-blue',
+            'underline decoration-zed-blue/40 decoration-[1px] underline-offset-[3px]',
+            'transition-colors hover:decoration-zed-blue',
             '[overflow-wrap:anywhere]',
           );
 
@@ -322,11 +322,11 @@ export const DocMarkdown = React.memo<DocMarkdownProps>(
       );
     }
 
-    const finalContent = autoLinkUrls(stripKortixSystemTags(prepareMarkdownForKatex(safeContent)));
+    const finalContent = autoLinkUrls(stripZedSystemTags(prepareMarkdownForKatex(safeContent)));
 
     return (
       <div
-        className={cn('kortix-markdown text-[15px]', isStreaming && 'streaming-active', className)}
+        className={cn('zed-markdown text-[15px]', isStreaming && 'streaming-active', className)}
         data-streaming={isStreaming ? 'true' : 'false'}
       >
         <Streamdown

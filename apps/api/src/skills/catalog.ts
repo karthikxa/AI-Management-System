@@ -1,40 +1,40 @@
 /**
- * The kortix-managed system skills, as data.
+ * The zed-managed system skills, as data.
  *
- * These are the `kortix-*` markdown skills that tell an agent how Kortix itself
+ * These are the `zed-*` markdown skills that tell an agent how Zed itself
  * works (sessions, sandboxes, the connector/approval loop, memory, channels, the
  * CLI). Until now they were only reachable two ways: scaffolded into a project's
- * git tree by `kortix init`, or baked into the sandbox image at
- * `/opt/kortix/managed-skills` and overlaid per session. Both require being
- * *inside* Kortix. An OpenCode agent holding only the `kortix` binary and a
+ * git tree by `zed init`, or baked into the sandbox image at
+ * `/opt/zed/managed-skills` and overlaid per session. Both require being
+ * *inside* Zed. An OpenCode agent holding only the `zed` binary and a
  * token had no way to read them.
  *
- * SOURCE OF TRUTH: `@kortix/starter`. This module runs the exact same extraction
+ * SOURCE OF TRUTH: `@zed/starter`. This module runs the exact same extraction
  * as `packages/starter/scripts/write-managed-skills.ts` (the script that bakes the
- * sandbox image) — same `getStarterFiles()` call, same `projectName: 'Kortix'`
- * interpolation, same `isKortixManagedSkillName()` filter — so what the API serves
- * is byte-identical to what a session gets overlaid. `@kortix/starter` is already
+ * sandbox image) — same `getStarterFiles()` call, same `projectName: 'Zed'`
+ * interpolation, same `isZedManagedSkillName()` filter — so what the API serves
+ * is byte-identical to what a session gets overlaid. `@zed/starter` is already
  * an apps/api dependency and its `templates/` tree is COPYed into the API image
  * (see apps/api/Dockerfile), so the served text ships with the deploy and cannot
  * drift from the running version. No git clone, no network fetch, no cache to
  * invalidate.
  *
  * `getMarketplaceFiles()` is included alongside the starter walk because one
- * managed name — `kortix-computer` — lives in the `marketplace` template layer
+ * managed name — `zed-computer` — lives in the `marketplace` template layer
  * rather than the base/general-knowledge-worker layers. Without it that skill
- * would be listed in `KORTIX_MANAGED_SKILL_NAMES` but unresolvable here.
+ * would be listed in `ZED_MANAGED_SKILL_NAMES` but unresolvable here.
  */
 
-import { parseFrontmatter } from '@kortix/registry';
+import { parseFrontmatter } from '@zed/registry';
 import {
   getManagedSkillFiles,
   getMarketplaceFiles,
   getStarterFiles,
-  isKortixManagedSkillName,
-} from '@kortix/starter';
+  isZedManagedSkillName,
+} from '@zed/starter';
 
-/** Where skills live inside a Kortix project (and inside the starter templates). */
-const SKILLS_PREFIX = '.kortix/opencode/skills/';
+/** Where skills live inside a Zed project (and inside the starter templates). */
+const SKILLS_PREFIX = '.zed/opencode/skills/';
 /** The skill body every skill has; everything else under the dir is a reference. */
 const SKILL_ENTRYPOINT = 'SKILL.md';
 
@@ -64,14 +64,14 @@ export interface ManagedSkillSummary {
 }
 
 /**
- * Walk the starter + marketplace template trees and group the managed `kortix-*`
- * skills by name. Pure (no I/O beyond @kortix/starter's own template read) and
+ * Walk the starter + marketplace template trees and group the managed `zed-*`
+ * skills by name. Pure (no I/O beyond @zed/starter's own template read) and
  * exported for unit tests; production callers use the memoized `managedSkills()`.
  */
 export function buildManagedSkills(): Map<string, ManagedSkill> {
   const files = [
     ...getManagedSkillFiles(),
-    ...getStarterFiles({ projectName: 'Kortix', template: 'general-knowledge-worker' }),
+    ...getStarterFiles({ projectName: 'Zed', template: 'general-knowledge-worker' }),
     ...getMarketplaceFiles(),
   ];
 
@@ -82,7 +82,7 @@ export function buildManagedSkills(): Map<string, ManagedSkill> {
     const slash = rest.indexOf('/');
     if (slash <= 0) continue;
     const name = rest.slice(0, slash);
-    if (!isKortixManagedSkillName(name)) continue;
+    if (!isZedManagedSkillName(name)) continue;
     const entry = { path: rest.slice(slash + 1), content: file.content };
     const bucket = grouped.get(name);
     if (bucket) bucket.push(entry);
@@ -123,7 +123,7 @@ export function _resetManagedSkillsCache(): void {
 }
 
 /**
- * The cheap list. Bodies are large (kortix-system's SKILL.md alone is ~41 KB, its
+ * The cheap list. Bodies are large (zed-system's SKILL.md alone is ~41 KB, its
  * full tree ~230 KB), so listing deliberately carries no content — only the
  * frontmatter `description`, which is written as the agent's routing signal and is
  * the one field it needs to pick correctly. The whole list is ~7 KB for 10 skills.

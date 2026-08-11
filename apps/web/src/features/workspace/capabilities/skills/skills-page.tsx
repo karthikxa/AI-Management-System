@@ -18,8 +18,8 @@ import {
 } from '@/features/workspace/customize/use-configure-thread';
 import { PROJECT_ACTIONS } from '@/lib/project-actions';
 import { useProjectCan } from '@/lib/use-project-can';
-import { getProjectDetail } from '@kortix/sdk';
-import { contract, qk, useProjectAccountId } from '@kortix/sdk/react';
+import { getProjectDetail } from '@zed/sdk';
+import { contract, qk, useProjectAccountId } from '@zed/sdk/react';
 import { MagnifyingGlassIcon, PlusIcon, SparkleIcon } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 
@@ -40,7 +40,7 @@ type ScopeFilter = SkillScope | 'all';
 const SCOPE_FILTERS: ReadonlyArray<{ value: ScopeFilter; label: string }> = [
   { value: 'all', label: 'All' },
   { value: 'project', label: 'Project' },
-  { value: 'kortix', label: 'Kortix' },
+  { value: 'zed', label: 'Zed' },
 ];
 
 /**
@@ -92,7 +92,7 @@ export function SkillsPage({ projectId }: { projectId: string }) {
   // not `filtered.find(...)`.
   // `open` follows `selectedPath` alone — see `shared/detail-selection.ts`.
   // Deriving it from this lookup meant any blip in `detailQuery` (a failed
-  // refetch, or a background agent renaming the path in kortix.yaml) closed
+  // refetch, or a background agent renaming the path in zed.yaml) closed
   // the modal while the user was reading a file inside it.
   const detail = detailSelection({
     selection: selectedPath,

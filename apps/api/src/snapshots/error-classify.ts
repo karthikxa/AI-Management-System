@@ -18,15 +18,15 @@ export type SnapshotErrorCategory =
   | 'quota'
   /** User's Dockerfile / build steps failed (RUN, COPY, apt-get, npm…). Fixable by an agent. */
   | 'dockerfile'
-  /** A step in the KORTIX-INJECTED runtime layer failed. Platform's fault, not the repo's. */
+  /** A step in the ZED-INJECTED runtime layer failed. Platform's fault, not the repo's. */
   | 'layer'
-  /** Kortix callback URL (KORTIX_URL) unreachable — usually a down dev tunnel. */
+  /** Zed callback URL (ZED_URL) unreachable — usually a down dev tunnel. */
   | 'tunnel'
   /** Daytona transport / gateway / socket blip — transient provider infra. */
   | 'provider'
   /** Build exceeded its deadline or was orphaned by an API restart. */
   | 'timeout'
-  /** A Kortix runtime artifact (agent binary, entrypoint, CLI) was missing at build time. */
+  /** A Zed runtime artifact (agent binary, entrypoint, CLI) was missing at build time. */
   | 'runtime'
   /** Commit/clone/auth resolution against the git host failed. */
   | 'git'
@@ -57,12 +57,12 @@ const RULES: Array<{ category: SnapshotErrorCategory; test: RegExp }> = [
   // Our packaging is missing an artifact the layered Dockerfile COPYs in.
   {
     category: 'runtime',
-    test: /required artifact missing|required directory missing|kortix_snapshot_.*_path|kortix-agent|kortix-entrypoint|slack-cli|run `bun run build`/i,
+    test: /required artifact missing|required directory missing|zed_snapshot_.*_path|zed-agent|zed-entrypoint|slack-cli|run `bun run build`/i,
   },
-  // The sandbox can't call back to the API (dead tunnel / loopback KORTIX_URL).
+  // The sandbox can't call back to the API (dead tunnel / loopback ZED_URL).
   {
     category: 'tunnel',
-    test: /kortix_url|callback url|kortix_url_unreachable|loopback|\btunnel\b|cloudflared|unreachable/i,
+    test: /zed_url|callback url|zed_url_unreachable|loopback|\btunnel\b|cloudflared|unreachable/i,
   },
   // Couldn't resolve the commit, clone the repo, or authenticate to the host.
   {
@@ -79,7 +79,7 @@ const RULES: Array<{ category: SnapshotErrorCategory; test: RegExp }> = [
     category: 'provider',
     test: /daytona|snapshot with name .* not found|socket connection|idle connection|socket hang up|bad gateway|\bgateway\b|\b50[234]\b|econnreset|econnrefused|etimedout|\beof\b|network error/i,
   },
-  // A step in the KORTIX-INJECTED runtime layer failed — the user's Dockerfile is
+  // A step in the ZED-INJECTED runtime layer failed — the user's Dockerfile is
   // fine and an agent "fixing" it can only make things worse. MUST outrank
   // 'dockerfile', whose generic patterns ('apt-get', 'did not complete
   // successfully', 'non-zero code') match these too — that miscategorization is
@@ -95,7 +95,7 @@ const RULES: Array<{ category: SnapshotErrorCategory; test: RegExp }> = [
   // way, which beats dispatching an agent at a Dockerfile that is not broken.
   {
     category: 'layer',
-    test: /\/opt\/kortix\/pyfloor|record file not found|installed by debian|externally-managed-environment|apt-get: (not found|command not found)|apt-get: No such file/i,
+    test: /\/opt\/zed\/pyfloor|record file not found|installed by debian|externally-managed-environment|apt-get: (not found|command not found)|apt-get: No such file/i,
   },
   // The user's Dockerfile / build steps failed.
   {
@@ -126,8 +126,8 @@ const INFO: Record<SnapshotErrorCategory, Omit<SnapshotErrorInfo, 'category'>> =
     fixableByAgent: true,
   },
   layer: {
-    title: 'Kortix runtime layer failed',
-    hint: 'A step in the Kortix runtime layer that gets appended to every image (the Python package floor or the apt floor) failed against this base image — your Dockerfile is not the cause, and editing it will not help. This is a platform issue: retry the build, and report it if it persists.',
+    title: 'Zed runtime layer failed',
+    hint: 'A step in the Zed runtime layer that gets appended to every image (the Python package floor or the apt floor) failed against this base image — your Dockerfile is not the cause, and editing it will not help. This is a platform issue: retry the build, and report it if it persists.',
     fixableByAgent: false,
   },
   git: {
@@ -137,7 +137,7 @@ const INFO: Record<SnapshotErrorCategory, Omit<SnapshotErrorInfo, 'category'>> =
   },
   tunnel: {
     title: 'Sandbox callback unreachable',
-    hint: 'The sandbox could not reach the Kortix API (KORTIX_URL). In local dev this usually means the tunnel is down — restart it and retry.',
+    hint: 'The sandbox could not reach the Zed API (ZED_URL). In local dev this usually means the tunnel is down — restart it and retry.',
     fixableByAgent: false,
   },
   provider: {
@@ -152,7 +152,7 @@ const INFO: Record<SnapshotErrorCategory, Omit<SnapshotErrorInfo, 'category'>> =
   },
   runtime: {
     title: 'Runtime artifact missing',
-    hint: 'A Kortix runtime artifact was missing when the image was built. This is a platform/deploy issue, not your repo. Retry after the API is rebuilt.',
+    hint: 'A Zed runtime artifact was missing when the image was built. This is a platform/deploy issue, not your repo. Retry after the API is rebuilt.',
     fixableByAgent: false,
   },
   unknown: {

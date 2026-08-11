@@ -10,7 +10,7 @@
  */
 import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import { eq } from 'drizzle-orm';
-import { accounts, iamPolicies, iamRoleActions, iamRoles, projects, serviceAccounts } from '@kortix/db';
+import { accounts, iamPolicies, iamRoleActions, iamRoles, projects, serviceAccounts } from '@zed/db';
 import { db } from '../shared/db';
 import { authorizeV2 } from '../iam/engine-v2';
 import { ACCOUNT_ACTIONS, PROJECT_ACTIONS } from '../iam';
@@ -25,7 +25,7 @@ async function seedSA(status: 'active' | 'disabled' = 'active'): Promise<string>
   const id = uid();
   await db.insert(serviceAccounts).values({
     serviceAccountId: id, accountId: ACCOUNT, name: `sa-${id.slice(0, 6)}`,
-    secretHash: `h_${id}`, publicPrefix: `kortix_sa_${id.slice(0, 6)}`, status,
+    secretHash: `h_${id}`, publicPrefix: `zed_sa_${id.slice(0, 6)}`, status,
   });
   return id;
 }

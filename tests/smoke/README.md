@@ -1,6 +1,6 @@
 # Smoke tests
 
-The fastest "is it alive?" check for a running Kortix API. No fixtures, no auth,
+The fastest "is it alive?" check for a running Zed API. No fixtures, no auth,
 no data creation — just a handful of unauthenticated GETs against critical
 endpoints. Designed to run in a couple of seconds and exit non-zero the moment
 anything is unreachable or misbehaving.
@@ -23,7 +23,7 @@ cd tests
 bun smoke/smoke.ts
 
 # point at another environment
-API_BASE_URL=https://dev-api.kortix.com/v1 bun smoke/smoke.ts
+API_BASE_URL=https://dev-api.zed.com/v1 bun smoke/smoke.ts
 ```
 
 `API_BASE_URL` is the `/v1`-suffixed base (default `http://localhost:8008/v1`).

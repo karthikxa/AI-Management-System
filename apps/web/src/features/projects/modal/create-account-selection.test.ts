@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { KortixAccount } from '@kortix/sdk';
+import type { ZedAccount } from '@zed/sdk';
 
 import { resolveCreateAccountSelection } from './create-account-selection';
 
-function account(overrides: Partial<KortixAccount> & { account_id: string }): KortixAccount {
+function account(overrides: Partial<ZedAccount> & { account_id: string }): ZedAccount {
   return {
     name: `Account ${overrides.account_id}`,
     account_role: 'owner',

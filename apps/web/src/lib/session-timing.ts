@@ -12,7 +12,7 @@
  * Marks are idempotent per label (React effects re-run) and survive the
  * client-side navigation from the sidebar to the session page (module-level
  * Map in the same JS context). Enabled in dev, or with
- * `localStorage.kortix_session_timing = '1'`.
+ * `localStorage.zed_session_timing = '1'`.
  */
 
 interface SessionTiming {
@@ -28,7 +28,7 @@ function enabled(): boolean {
   if (typeof window === 'undefined') return false;
   if (process.env.NODE_ENV !== 'production') return true;
   try {
-    return window.localStorage.getItem('kortix_session_timing') === '1';
+    return window.localStorage.getItem('zed_session_timing') === '1';
   } catch {
     return false;
   }

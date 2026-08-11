@@ -1,15 +1,15 @@
-import type { ProjectConfigSummary } from '@kortix/sdk';
+import type { ProjectConfigSummary } from '@zed/sdk';
 
-export type SkillScope = 'project' | 'kortix';
+export type SkillScope = 'project' | 'zed';
 type Skill = ProjectConfigSummary['skills'][number];
 
 /**
- * The `kortix-*` family is platform runtime, force-injected into every session
+ * The `zed-*` family is platform runtime, force-injected into every session
  * at boot. It reads the same in every project and is not meaningfully editable
  * here, so it filters separately from the project's own skills.
  */
 export function skillScope(name: string): SkillScope {
-  return name.startsWith('kortix-') ? 'kortix' : 'project';
+  return name.startsWith('zed-') ? 'zed' : 'project';
 }
 
 export function filterSkills(

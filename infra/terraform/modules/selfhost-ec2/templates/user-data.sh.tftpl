@@ -1,29 +1,29 @@
 #!/bin/bash
-# Kortix self-host — EC2 bootstrap (runs once, as root, via cloud-init).
+# Zed self-host — EC2 bootstrap (runs once, as root, via cloud-init).
 #
 # This installs exactly what any self-host user installs by hand (see
-# scripts/kortix-selfhost-up.sh and docs/runbooks/self-hosting.md): Docker,
-# the kortix CLI, and (if var.enable_alarms) the CloudWatch agent. Terraform's
+# scripts/zed-selfhost-up.sh and docs/runbooks/self-hosting.md): Docker,
+# the zed CLI, and (if var.enable_alarms) the CloudWatch agent. Terraform's
 # only value-add here is doing it once on a fresh box with a durable data
 # volume wired up first.
 #
 # IMPORTANT — this script is deliberately ONLY prerequisites + a systemd unit
-# install, not the `kortix self-host init`/`start` calls themselves. Those run
-# out of kortix-selfhost-bootstrap.service (below), a systemd oneshot with
+# install, not the `zed self-host init`/`start` calls themselves. Those run
+# out of zed-selfhost-bootstrap.service (below), a systemd oneshot with
 # Restart=on-failure. This split exists because of a confirmed production
 # incident: cloud-init has no retry of its own, ran init/start inline, and
 # failed identically on two live boxes on a slow-cold-start dependency race
-# (`kortix-api` didn't report healthy before compose's dependency wait gave
+# (`zed-api` didn't report healthy before compose's dependency wait gave
 # up) — cloud-init reported the box as permanently broken even though a
 # second attempt (started by hand) succeeded fine. Moving init/start into a
 # retried, reboot-surviving systemd unit means that race self-heals with zero
 # human intervention.
 set -euo pipefail
-exec > >(tee -a /var/log/kortix-bootstrap.log) 2>&1
-echo "=== kortix self-host bootstrap: $(date -u --iso-8601=seconds) ==="
+exec > >(tee -a /var/log/zed-bootstrap.log) 2>&1
+echo "=== zed self-host bootstrap: $(date -u --iso-8601=seconds) ==="
 
-# cloud-init runs this as root but with NO $HOME set — and both the kortix CLI
-# installer (kortix.com/install) and the CLI itself dereference $HOME under
+# cloud-init runs this as root but with NO $HOME set — and both the zed CLI
+# installer (zed.com/install) and the CLI itself dereference $HOME under
 # `set -u`, so an unset HOME kills the bootstrap ("HOME: unbound variable").
 export HOME="$${HOME:-/root}"
 
@@ -74,34 +74,34 @@ grep -q "$DATA_UUID" /etc/fstab || echo "UUID=$DATA_UUID $DATA_MOUNT ext4 defaul
 # boot and on a recurring timer, rather than trying to detect "did it grow"
 # ourselves. This is what makes a data-volume resize genuinely "change
 # tfvar, apply, done" — no SSM session, no manual resize2fs.
-cat > /usr/local/sbin/kortix-data-volume-growfs.sh <<'GROWFS'
+cat > /usr/local/sbin/zed-data-volume-growfs.sh <<'GROWFS'
 #!/bin/bash
 set -euo pipefail
 DATA_MOUNT="${data_mount_path}"
 DATA_DEVICE="$(findmnt -n -o SOURCE --target "$DATA_MOUNT" 2>/dev/null || true)"
 if [ -z "$DATA_DEVICE" ]; then
-  echo "kortix-data-volume-growfs: $DATA_MOUNT is not mounted, skipping"
+  echo "zed-data-volume-growfs: $DATA_MOUNT is not mounted, skipping"
   exit 0
 fi
-echo "kortix-data-volume-growfs: checking $DATA_DEVICE ($DATA_MOUNT) against the underlying block device size"
+echo "zed-data-volume-growfs: checking $DATA_DEVICE ($DATA_MOUNT) against the underlying block device size"
 resize2fs "$DATA_DEVICE"
 GROWFS
-chmod +x /usr/local/sbin/kortix-data-volume-growfs.sh
+chmod +x /usr/local/sbin/zed-data-volume-growfs.sh
 
-cat > /etc/systemd/system/kortix-data-volume-growfs.service <<'UNIT'
+cat > /etc/systemd/system/zed-data-volume-growfs.service <<'UNIT'
 [Unit]
-Description=Grow the kortix self-host data volume's filesystem to match the EBS volume (online gp3 resize)
-After=mnt-kortix\x2ddata.mount
-Requires=mnt-kortix\x2ddata.mount
+Description=Grow the zed self-host data volume's filesystem to match the EBS volume (online gp3 resize)
+After=mnt-zed\x2ddata.mount
+Requires=mnt-zed\x2ddata.mount
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/sbin/kortix-data-volume-growfs.sh
+ExecStart=/usr/local/sbin/zed-data-volume-growfs.sh
 UNIT
 
-cat > /etc/systemd/system/kortix-data-volume-growfs.timer <<'UNIT'
+cat > /etc/systemd/system/zed-data-volume-growfs.timer <<'UNIT'
 [Unit]
-Description=Periodically grow the kortix self-host data volume's filesystem if the EBS volume has grown
+Description=Periodically grow the zed self-host data volume's filesystem if the EBS volume has grown
 
 [Timer]
 # Runs shortly after every boot (covers a resize applied while the box was
@@ -110,23 +110,23 @@ Description=Periodically grow the kortix self-host data volume's filesystem if t
 # it needs no reboot, so this is what actually completes the job without one).
 OnBootSec=2min
 OnUnitActiveSec=10min
-Unit=kortix-data-volume-growfs.service
+Unit=zed-data-volume-growfs.service
 
 [Install]
 WantedBy=timers.target
 UNIT
 
 systemctl daemon-reload
-systemctl enable --now kortix-data-volume-growfs.timer
+systemctl enable --now zed-data-volume-growfs.timer
 # Also run it once right now (harmless no-op on a fresh mkfs — device and
 # filesystem are already the same size) so a box that boots after a
 # same-apply resize doesn't wait for the timer's first tick.
-/usr/local/sbin/kortix-data-volume-growfs.sh || true
+/usr/local/sbin/zed-data-volume-growfs.sh || true
 
 DOCKER_DATA_ROOT="$DATA_MOUNT/docker"
 CONTAINERD_ROOT="$DATA_MOUNT/containerd"
-KORTIX_CONFIG_DIR="$DATA_MOUNT/kortix-self-host"
-mkdir -p "$DOCKER_DATA_ROOT" "$CONTAINERD_ROOT" "$KORTIX_CONFIG_DIR"
+ZED_CONFIG_DIR="$DATA_MOUNT/zed-self-host"
+mkdir -p "$DOCKER_DATA_ROOT" "$CONTAINERD_ROOT" "$ZED_CONFIG_DIR"
 
 # ── 2. Docker + containerd: point BOTH data stores at the data volume BEFORE
 #    first start ─────────────────────────────────────────────────────────────
@@ -185,35 +185,35 @@ systemctl enable --now containerd.service
 systemctl enable --now docker.service
 docker compose version >/dev/null 2>&1 || { echo "FATAL: docker compose plugin unavailable after install" >&2; exit 1; }
 
-# ── 3. Pin KORTIX_SELF_HOST_CONFIG_DIR — every kortix invocation (this
-#    script's systemd unit, and any later `kortix self-host ...` an operator
+# ── 3. Pin ZED_SELF_HOST_CONFIG_DIR — every zed invocation (this
+#    script's systemd unit, and any later `zed self-host ...` an operator
 #    runs over SSM) must agree on where the instance lives, or the CLI creates
 #    a second instance on the (small, ephemeral) root volume instead of
 #    reusing the one on the data volume. Persist it for future root shells too.
-export KORTIX_SELF_HOST_CONFIG_DIR="$KORTIX_CONFIG_DIR"
-grep -q '^KORTIX_SELF_HOST_CONFIG_DIR=' /etc/environment 2>/dev/null \
-  || echo "KORTIX_SELF_HOST_CONFIG_DIR=$KORTIX_CONFIG_DIR" >> /etc/environment
-cat > /etc/profile.d/kortix-selfhost.sh <<PROFILE
-export KORTIX_SELF_HOST_CONFIG_DIR="$KORTIX_CONFIG_DIR"
+export ZED_SELF_HOST_CONFIG_DIR="$ZED_CONFIG_DIR"
+grep -q '^ZED_SELF_HOST_CONFIG_DIR=' /etc/environment 2>/dev/null \
+  || echo "ZED_SELF_HOST_CONFIG_DIR=$ZED_CONFIG_DIR" >> /etc/environment
+cat > /etc/profile.d/zed-selfhost.sh <<PROFILE
+export ZED_SELF_HOST_CONFIG_DIR="$ZED_CONFIG_DIR"
 PROFILE
 
-# ── 4. Install the kortix CLI (the published one-click installer) ──────────
-# kortix_cli_channel selects which build the installer fetches: "prod" (the
+# ── 4. Install the zed CLI (the published one-click installer) ──────────
+# zed_cli_channel selects which build the installer fetches: "prod" (the
 # default — latest tagged vX.Y.Z release) or "dev" (the continuously-rebuilt
 # dev-latest prerelease, tracking main) — use "dev" when the prod CLI hasn't
 # caught up yet to flags this module relies on (see the variable's doc comment).
-if ! command -v kortix >/dev/null 2>&1; then
-  echo "Installing the kortix CLI from ${kortix_cli_install_url} (channel: ${kortix_cli_channel})"
-  curl -fsSL "${kortix_cli_install_url}" | KORTIX_CHANNEL="${kortix_cli_channel}" bash
+if ! command -v zed >/dev/null 2>&1; then
+  echo "Installing the zed CLI from ${zed_cli_install_url} (channel: ${zed_cli_channel})"
+  curl -fsSL "${zed_cli_install_url}" | ZED_CHANNEL="${zed_cli_channel}" bash
 fi
-KORTIX_BIN="$(command -v kortix || true)"
-if [ -z "$KORTIX_BIN" ] && [ -x /root/.kortix/kortix ]; then
-  KORTIX_BIN=/root/.kortix/kortix
+ZED_BIN="$(command -v zed || true)"
+if [ -z "$ZED_BIN" ] && [ -x /root/.zed/zed ]; then
+  ZED_BIN=/root/.zed/zed
 fi
-[ -n "$KORTIX_BIN" ] || { echo "FATAL: kortix CLI install did not produce a runnable binary" >&2; exit 1; }
-# Systemd units don't inherit this script's $PATH/$KORTIX_BIN resolution, so
-# pin a stable, absolute path for kortix-selfhost-bootstrap.sh to call.
-ln -sf "$KORTIX_BIN" /usr/local/bin/kortix
+[ -n "$ZED_BIN" ] || { echo "FATAL: zed CLI install did not produce a runnable binary" >&2; exit 1; }
+# Systemd units don't inherit this script's $PATH/$ZED_BIN resolution, so
+# pin a stable, absolute path for zed-selfhost-bootstrap.sh to call.
+ln -sf "$ZED_BIN" /usr/local/bin/zed
 
 %{ if enable_alarms ~}
 # ── 5. CloudWatch agent (disk + memory metrics feeding this module's alarms) ─
@@ -266,61 +266,61 @@ systemctl enable amazon-cloudwatch-agent
 %{ endif ~}
 
 # ── 6. The actual app bootstrap: retried, reboot-surviving systemd unit ─────
-# `kortix self-host init`/`env set`/`start` are idempotent (safe to rerun),
+# `zed self-host init`/`env set`/`start` are idempotent (safe to rerun),
 # which is exactly what lets a systemd Restart=on-failure loop — and a fresh
 # run on every reboot — self-heal the dependency-health race that broke this
 # on both live boxes, without ever needing an operator to SSM in by hand.
-cat > /usr/local/sbin/kortix-selfhost-bootstrap.sh <<'BOOTSTRAP'
+cat > /usr/local/sbin/zed-selfhost-bootstrap.sh <<'BOOTSTRAP'
 #!/bin/bash
 set -euo pipefail
 export HOME="$${HOME:-/root}"
-export KORTIX_SELF_HOST_CONFIG_DIR="${data_mount_path}/kortix-self-host"
-KORTIX_BIN=/usr/local/bin/kortix
+export ZED_SELF_HOST_CONFIG_DIR="${data_mount_path}/zed-self-host"
+ZED_BIN=/usr/local/bin/zed
 
 INIT_ARGS=(
   --instance "${instance_name}"
   --domain "${domain}"
-  --channel "${kortix_channel}"
+  --channel "${zed_channel}"
   --auto-update "${auto_update}"
   --yes
 )
-%{ if kortix_version != "" ~}
-INIT_ARGS+=(--tag "${kortix_version}")
+%{ if zed_version != "" ~}
+INIT_ARGS+=(--tag "${zed_version}")
 %{ endif ~}
 %{ if admin_email != "" ~}
 INIT_ARGS+=(--admin-email "${admin_email}")
 %{ endif ~}
 
-echo "Running: kortix self-host init $${INIT_ARGS[*]}"
-"$KORTIX_BIN" self-host init "$${INIT_ARGS[@]}"
+echo "Running: zed self-host init $${INIT_ARGS[*]}"
+"$ZED_BIN" self-host init "$${INIT_ARGS[@]}"
 
 # api_domain / acme_email have no `init` flags (see docs/runbooks/self-hosting.md)
-# — set via `env set`, exactly like scripts/kortix-selfhost-up.sh does.
-"$KORTIX_BIN" self-host env set --instance "${instance_name}" "KORTIX_API_DOMAIN=${api_domain}"
+# — set via `env set`, exactly like scripts/zed-selfhost-up.sh does.
+"$ZED_BIN" self-host env set --instance "${instance_name}" "ZED_API_DOMAIN=${api_domain}"
 %{ if acme_email != "" ~}
-"$KORTIX_BIN" self-host env set --instance "${instance_name}" "KORTIX_ACME_EMAIL=${acme_email}"
+"$ZED_BIN" self-host env set --instance "${instance_name}" "ZED_ACME_EMAIL=${acme_email}"
 %{ endif ~}
 
 echo "Starting the stack (pulling images — this can take a few minutes on first attempt)"
-"$KORTIX_BIN" self-host start --instance "${instance_name}" --yes
+"$ZED_BIN" self-host start --instance "${instance_name}" --yes
 
-echo "kortix self-host bootstrap done: $(date -u --iso-8601=seconds)"
+echo "zed self-host bootstrap done: $(date -u --iso-8601=seconds)"
 echo "Secrets (sandbox provider key, managed git, ...) were NOT set — configure them with:"
-echo "  kortix self-host configure --instance ${instance_name}"
+echo "  zed self-host configure --instance ${instance_name}"
 BOOTSTRAP
-chmod +x /usr/local/sbin/kortix-selfhost-bootstrap.sh
+chmod +x /usr/local/sbin/zed-selfhost-bootstrap.sh
 
-cat > /etc/systemd/system/kortix-selfhost-bootstrap.service <<'UNIT'
+cat > /etc/systemd/system/zed-selfhost-bootstrap.service <<'UNIT'
 [Unit]
-Description=kortix self-host init + start (idempotent; retried on failure)
-After=network-online.target docker.service mnt-kortix\x2ddata.mount
+Description=zed self-host init + start (idempotent; retried on failure)
+After=network-online.target docker.service mnt-zed\x2ddata.mount
 Wants=network-online.target
-Requires=docker.service mnt-kortix\x2ddata.mount
+Requires=docker.service mnt-zed\x2ddata.mount
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/local/sbin/kortix-selfhost-bootstrap.sh
+ExecStart=/usr/local/sbin/zed-selfhost-bootstrap.sh
 TimeoutStartSec=1800
 Restart=on-failure
 RestartSec=30
@@ -339,7 +339,7 @@ WantedBy=multi-user.target
 UNIT
 
 systemctl daemon-reload
-systemctl enable kortix-selfhost-bootstrap.service
+systemctl enable zed-selfhost-bootstrap.service
 # --no-block: hand it off to systemd's own supervision (Restart=on-failure)
 # and return immediately. This is deliberate — cloud-init itself must never
 # be the thing waiting on (and failing because of) the app's first-boot
@@ -347,7 +347,7 @@ systemctl enable kortix-selfhost-bootstrap.service
 # self-healing hiccup into a permanent "cloud-init failed" status on both
 # live boxes. `systemctl enable` (not `--now`) is what makes a reboot rerun
 # it too, since we don't rely on `--now`'s implicit start for that.
-systemctl start --no-block kortix-selfhost-bootstrap.service
+systemctl start --no-block zed-selfhost-bootstrap.service
 
-echo "=== kortix self-host bootstrap (prerequisites) done: $(date -u --iso-8601=seconds) ==="
-echo "kortix-selfhost-bootstrap.service is now running init/start in the background (retried on failure — see: systemctl status kortix-selfhost-bootstrap.service, journalctl -u kortix-selfhost-bootstrap.service)."
+echo "=== zed self-host bootstrap (prerequisites) done: $(date -u --iso-8601=seconds) ==="
+echo "zed-selfhost-bootstrap.service is now running init/start in the background (retried on failure — see: systemctl status zed-selfhost-bootstrap.service, journalctl -u zed-selfhost-bootstrap.service)."

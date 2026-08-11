@@ -15,7 +15,7 @@ process.env.ALLOWED_SANDBOX_PROVIDERS = 'platinum';
 process.env.PLATINUM_API_KEY = 'pt_test_key';
 process.env.PLATINUM_API_URL = 'https://api.platinum.dev';
 process.env.PLATINUM_TEMPLATE = 'tpl_test';
-process.env.KORTIX_URL ??= 'https://api.example.com';
+process.env.ZED_URL ??= 'https://api.example.com';
 process.env.DATABASE_URL ??= 'postgres://x';
 
 // Stand in for the real typed error without importing the module-under-test's

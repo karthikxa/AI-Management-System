@@ -1,14 +1,14 @@
-# Example root module: a single self-hosted Kortix VPS on EC2.
+# Example root module: a single self-hosted Zed VPS on EC2.
 #
 # This is a THIN convenience wrapper — it provisions the box once via
-# modules/selfhost-ec2, which runs the exact same `kortix self-host init` /
+# modules/selfhost-ec2, which runs the exact same `zed self-host init` /
 # `start` any self-host user runs by hand. It is NOT a parallel deployment
 # system: after `terraform apply` finishes, the in-compose auto-updater keeps
 # the app current, not Terraform.
 #
 #   cd infra/terraform/examples/selfhost-ec2
 #   terraform init
-#   terraform apply -var domain=kortix.example.com
+#   terraform apply -var domain=zed.example.com
 #
 # Secrets (sandbox provider key, managed git, SMTP, ...) are NOT Terraform
 # inputs — see the post_apply_next_steps output after apply.
@@ -27,7 +27,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-module "kortix_selfhost" {
+module "zed_selfhost" {
   source = "../../modules/selfhost-ec2"
 
   domain  = var.domain
@@ -38,11 +38,11 @@ module "kortix_selfhost" {
   data_volume_size_gb    = 100
   backup_interval_hours  = 24
   backup_retention_count = 7
-  kortix_channel         = "stable"
+  zed_channel         = "stable"
   auto_update            = "on"
 
   tags = {
-    Project     = "kortix-selfhost"
+    Project     = "zed-selfhost"
     Environment = "example"
   }
 }

@@ -127,22 +127,22 @@ describe('agentSwitchRefusal', () => {
 describe('classifyModelChange — a stored-but-not-pushed model is not a success', () => {
   test('a live application is a plain success', () => {
     expect(
-      classifyModelChange({ model: 'kortix/claude-sonnet-4.6', appliedLive: true }),
-    ).toEqual({ kind: 'applied', message: 'Now running kortix/claude-sonnet-4.6' });
+      classifyModelChange({ model: 'zed/claude-sonnet-4.6', appliedLive: true }),
+    ).toEqual({ kind: 'applied', message: 'Now running zed/claude-sonnet-4.6' });
   });
 
   test('a cold session stores the model and says when it takes effect', () => {
     expect(
-      classifyModelChange({ model: 'kortix/claude-opus-4.8', appliedLive: false }),
+      classifyModelChange({ model: 'zed/claude-opus-4.8', appliedLive: false }),
     ).toEqual({
       kind: 'stored',
-      message: 'kortix/claude-opus-4.8 saved — applies when this session next starts',
+      message: 'zed/claude-opus-4.8 saved — applies when this session next starts',
     });
   });
 
   test('a FAILED live push is reported as a failure, with the upstream reason', () => {
     const outcome = classifyModelChange({
-      model: 'kortix/deepseek-v4-flash',
+      model: 'zed/deepseek-v4-flash',
       appliedLive: false,
       pushFailed: true,
       detail: 'stored, but not pushed: env sync failed: 502 upstream-closed-before-headers',

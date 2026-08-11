@@ -1,6 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { eq, and, desc } from 'drizzle-orm';
-import { tunnelPermissionRequests, tunnelPermissions, tunnelConnections } from '@kortix/db';
+import { tunnelPermissionRequests, tunnelPermissions, tunnelConnections } from '@zed/db';
 import { db } from '../../shared/db';
 import { tunnelRelay } from '../core/relay';
 import { tunnelRateLimiter } from '../core/rate-limiter';

@@ -4,13 +4,13 @@ import worker from './worker.mjs';
 
 const env = {
   ACTIVE_BACKEND: 'ecs-fargate',
-  BACKEND_ECS_FARGATE: 'https://api-fargate.kortix.com',
-  BACKEND_US_EAST_2: 'https://api-use2-shadow.kortix.com',
+  BACKEND_ECS_FARGATE: 'https://api-fargate.zed.com',
+  BACKEND_US_EAST_2: 'https://api-use2-shadow.zed.com',
   // Gateway is deliberately on a DIFFERENT active backend than the API, to prove
   // the two services flip independently.
   GATEWAY_ACTIVE_BACKEND: 'ecs-fargate',
-  GATEWAY_BACKEND_ECS_FARGATE: 'https://gateway-fargate.kortix.com',
-  GATEWAY_BACKEND_US_EAST_2: 'https://gateway-use2-shadow.kortix.com',
+  GATEWAY_BACKEND_ECS_FARGATE: 'https://gateway-fargate.zed.com',
+  GATEWAY_BACKEND_US_EAST_2: 'https://gateway-use2-shadow.zed.com',
 };
 
 const originalFetch = globalThis.fetch;
@@ -58,10 +58,10 @@ describe('api-router worker', () => {
     expect(productionVars).toContain('ACTIVE_BACKEND = "ecs-fargate"');
     expect(productionVars).toContain('GATEWAY_ACTIVE_BACKEND = "ecs-fargate"');
     expect(productionVars).toContain(
-      'BACKEND_US_EAST_2 = "https://api-use2-shadow.kortix.com"',
+      'BACKEND_US_EAST_2 = "https://api-use2-shadow.zed.com"',
     );
     expect(productionVars).toContain(
-      'GATEWAY_BACKEND_US_EAST_2 = "https://gateway-use2-shadow.kortix.com"',
+      'GATEWAY_BACKEND_US_EAST_2 = "https://gateway-use2-shadow.zed.com"',
     );
     expect(productionVars).not.toContain('us-west-2');
     expect(productionVars).not.toContain('usw2');
@@ -81,7 +81,7 @@ describe('api-router worker', () => {
     );
 
     expect(ecsDeploy).toContain(
-      'select(.name != "KORTIX_VERSION" and .name != "KORTIX_COMMIT")',
+      'select(.name != "ZED_VERSION" and .name != "ZED_COMMIT")',
     );
     expect(shadowWorkflow).toContain(
       'api_commit="$(jq -r \'.commit // empty\'',
@@ -105,7 +105,7 @@ describe('api-router worker', () => {
       'utf8',
     );
 
-    expect(ecsDeploy).toContain('name: "KORTIX_ENV_JSON"');
+    expect(ecsDeploy).toContain('name: "ZED_ENV_JSON"');
     expect(ecsDeploy).not.toContain('keys\n      | map({ name: .');
     expect(apiEntry.indexOf("import './environment-secret';")).toBeLessThan(
       apiEntry.indexOf("import './lib/sentry';"),
@@ -184,13 +184,13 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('http://api.kortix.com/v1/health/live?x=1'),
+      new Request('http://api.zed.com/v1/health/live?x=1'),
       env,
     );
 
     expect(response.status).toBe(308);
     expect(response.headers.get('Location')).toBe(
-      'https://api.kortix.com/v1/health/live?x=1',
+      'https://api.zed.com/v1/health/live?x=1',
     );
     expect(fetched).toBe(false);
   });
@@ -206,11 +206,11 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('https://api.kortix.com/v1/health/live'),
+      new Request('https://api.zed.com/v1/health/live'),
       env,
     );
 
-    expect(proxiedUrl).toBe('https://api-fargate.kortix.com/v1/health/live');
+    expect(proxiedUrl).toBe('https://api-fargate.zed.com/v1/health/live');
     expect(response.status).toBe(200);
     expect(response.headers.get('Strict-Transport-Security')).toBe(
       'max-age=31536000',
@@ -228,12 +228,12 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('https://gateway-dev.kortix.com/health/live'),
+      new Request('https://gateway-dev.zed.com/health/live'),
       env,
     );
 
     // API is on eks, but the gateway is on ecs-fargate → the gateway origin wins.
-    expect(proxiedUrl).toBe('https://gateway-fargate.kortix.com/health/live');
+    expect(proxiedUrl).toBe('https://gateway-fargate.zed.com/health/live');
     expect(response.headers.get('X-Backend')).toBe('ecs-fargate');
     expect(response.headers.get('X-Backend-Service')).toBe('gateway');
   });
@@ -251,17 +251,17 @@ describe('api-router worker', () => {
     };
 
     const apiResponse = await worker.fetch(
-      new Request('https://api.kortix.com/v1/health'),
+      new Request('https://api.zed.com/v1/health'),
       use2Env,
     );
     const gatewayResponse = await worker.fetch(
-      new Request('https://gateway.kortix.com/health/live'),
+      new Request('https://gateway.zed.com/health/live'),
       use2Env,
     );
 
     expect(proxiedUrls).toEqual([
-      'https://api-use2-shadow.kortix.com/v1/health',
-      'https://gateway-use2-shadow.kortix.com/health/live',
+      'https://api-use2-shadow.zed.com/v1/health',
+      'https://gateway-use2-shadow.zed.com/health/live',
     ]);
     expect(apiResponse.headers.get('X-Backend')).toBe('us-east-2');
     expect(gatewayResponse.headers.get('X-Backend')).toBe('us-east-2');
@@ -270,13 +270,13 @@ describe('api-router worker', () => {
   test('serves the independent maintenance state without contacting the API origin', async () => {
     const maintenanceEnv = {
       ...env,
-      MAINTENANCE_STATE_URL: 'https://kortix.com/api/maintenance',
+      MAINTENANCE_STATE_URL: 'https://zed.com/api/maintenance',
     };
     const fetchedUrls = [];
     globalThis.fetch = async (request) => {
       fetchedUrls.push(fetchUrl(request));
       if (
-        fetchUrl(request) === 'https://api-fargate.kortix.com/v1/system/maintenance'
+        fetchUrl(request) === 'https://api-fargate.zed.com/v1/system/maintenance'
       ) {
         return new Response('unavailable', { status: 503 });
       }
@@ -289,13 +289,13 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('https://api.kortix.com/v1/system/maintenance'),
+      new Request('https://api.zed.com/v1/system/maintenance'),
       maintenanceEnv,
     );
 
     expect(fetchedUrls).toEqual([
-      'https://api-fargate.kortix.com/v1/system/maintenance',
-      'https://kortix.com/api/maintenance',
+      'https://api-fargate.zed.com/v1/system/maintenance',
+      'https://zed.com/api/maintenance',
     ]);
     expect(response.status).toBe(200);
     expect(response.headers.get('X-Maintenance-Source')).toBe('edge-config');
@@ -308,7 +308,7 @@ describe('api-router worker', () => {
   test('serves the database maintenance state before Edge Config', async () => {
     const maintenanceEnv = {
       ...env,
-      MAINTENANCE_STATE_URL: 'https://kortix.com/api/maintenance/edge',
+      MAINTENANCE_STATE_URL: 'https://zed.com/api/maintenance/edge',
     };
     const fetchedUrls = [];
     globalThis.fetch = async (request) => {
@@ -322,12 +322,12 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('https://api.kortix.com/v1/system/maintenance'),
+      new Request('https://api.zed.com/v1/system/maintenance'),
       maintenanceEnv,
     );
 
     expect(fetchedUrls).toEqual([
-      'https://api-fargate.kortix.com/v1/system/maintenance',
+      'https://api-fargate.zed.com/v1/system/maintenance',
     ]);
     expect(response.headers.get('X-Maintenance-Source')).toBe('database');
     expect(await response.json()).toMatchObject({ level: 'none' });
@@ -336,11 +336,11 @@ describe('api-router worker', () => {
   test('returns none (not automatic blocking) when database is unavailable and Edge Config is none', async () => {
     const maintenanceEnv = {
       ...env,
-      MAINTENANCE_STATE_URL: 'https://kortix.com/api/maintenance/edge',
+      MAINTENANCE_STATE_URL: 'https://zed.com/api/maintenance/edge',
     };
     globalThis.fetch = async (request) => {
       if (
-        fetchUrl(request) === 'https://api-fargate.kortix.com/v1/system/maintenance'
+        fetchUrl(request) === 'https://api-fargate.zed.com/v1/system/maintenance'
       ) {
         return new Response('unavailable', { status: 503 });
       }
@@ -353,7 +353,7 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('https://api.kortix.com/v1/system/maintenance'),
+      new Request('https://api.zed.com/v1/system/maintenance'),
       maintenanceEnv,
     );
 
@@ -376,7 +376,7 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('https://api.kortix.com/v1/system/maintenance', {
+      new Request('https://api.zed.com/v1/system/maintenance', {
         method: 'PUT',
         body: JSON.stringify({ level: 'none' }),
       }),
@@ -385,14 +385,14 @@ describe('api-router worker', () => {
 
     expect(response.status).toBe(200);
     expect(fetchedUrls).toEqual([
-      'https://api-fargate.kortix.com/v1/system/maintenance',
+      'https://api-fargate.zed.com/v1/system/maintenance',
     ]);
   });
 
   test('blocks API and gateway writes while blocking maintenance is active', async () => {
     const maintenanceEnv = {
       ...env,
-      MAINTENANCE_STATE_URL: 'https://kortix.com/api/maintenance',
+      MAINTENANCE_STATE_URL: 'https://zed.com/api/maintenance',
     };
     const fetchedUrls = [];
     globalThis.fetch = async (request) => {
@@ -406,27 +406,27 @@ describe('api-router worker', () => {
     };
 
     const apiResponse = await worker.fetch(
-      new Request('https://api.kortix.com/v1/projects', {
+      new Request('https://api.zed.com/v1/projects', {
         method: 'POST',
-        headers: { Origin: 'https://kortix.com' },
+        headers: { Origin: 'https://zed.com' },
       }),
       maintenanceEnv,
     );
     const gatewayResponse = await worker.fetch(
-      new Request('https://gateway.kortix.com/v1/chat/completions', {
+      new Request('https://gateway.zed.com/v1/chat/completions', {
         method: 'POST',
       }),
       maintenanceEnv,
     );
 
     expect(fetchedUrls).toEqual([
-      'https://kortix.com/api/maintenance',
-      'https://kortix.com/api/maintenance',
+      'https://zed.com/api/maintenance',
+      'https://zed.com/api/maintenance',
     ]);
     expect(apiResponse.status).toBe(503);
     expect(apiResponse.headers.get('X-Maintenance-Mode')).toBe('blocking');
     expect(apiResponse.headers.get('Access-Control-Allow-Origin')).toBe(
-      'https://kortix.com',
+      'https://zed.com',
     );
     expect(gatewayResponse.status).toBe(503);
     expect(await gatewayResponse.json()).toMatchObject({
@@ -438,7 +438,7 @@ describe('api-router worker', () => {
   test('uses the blocking override without contacting the independent state endpoint', async () => {
     const maintenanceEnv = {
       ...env,
-      MAINTENANCE_STATE_URL: 'https://kortix.com/api/maintenance',
+      MAINTENANCE_STATE_URL: 'https://zed.com/api/maintenance',
       MAINTENANCE_LEVEL_OVERRIDE: 'blocking',
       MAINTENANCE_MESSAGE_OVERRIDE:
         'Final database synchronization is running.',
@@ -450,7 +450,7 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('https://api.kortix.com/v1/projects', { method: 'POST' }),
+      new Request('https://api.zed.com/v1/projects', { method: 'POST' }),
       maintenanceEnv,
     );
 
@@ -465,7 +465,7 @@ describe('api-router worker', () => {
   test('keeps read-only API requests available during blocking maintenance', async () => {
     const maintenanceEnv = {
       ...env,
-      MAINTENANCE_STATE_URL: 'https://kortix.com/api/maintenance',
+      MAINTENANCE_STATE_URL: 'https://zed.com/api/maintenance',
     };
     const fetchedUrls = [];
     globalThis.fetch = async (request) => {
@@ -482,21 +482,21 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('https://api.kortix.com/v1/accounts'),
+      new Request('https://api.zed.com/v1/accounts'),
       maintenanceEnv,
     );
 
     expect(response.status).toBe(200);
     expect(fetchedUrls).toEqual([
-      'https://kortix.com/api/maintenance',
-      'https://api-fargate.kortix.com/v1/accounts',
+      'https://zed.com/api/maintenance',
+      'https://api-fargate.zed.com/v1/accounts',
     ]);
   });
 
   test('fails open when the independent maintenance state is unavailable', async () => {
     const maintenanceEnv = {
       ...env,
-      MAINTENANCE_STATE_URL: 'https://kortix.com/api/maintenance',
+      MAINTENANCE_STATE_URL: 'https://zed.com/api/maintenance',
     };
     const fetchedUrls = [];
     globalThis.fetch = async (request) => {
@@ -508,7 +508,7 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('https://api.kortix.com/v1/projects', { method: 'POST' }),
+      new Request('https://api.zed.com/v1/projects', { method: 'POST' }),
       maintenanceEnv,
     );
 
@@ -516,8 +516,8 @@ describe('api-router worker', () => {
     // full maintenance lockdown. The request passes through to the origin.
     expect(response.status).toBe(201);
     expect(fetchedUrls).toEqual([
-      'https://kortix.com/api/maintenance',
-      'https://api-fargate.kortix.com/v1/projects',
+      'https://zed.com/api/maintenance',
+      'https://api-fargate.zed.com/v1/projects',
     ]);
   });
 
@@ -529,11 +529,11 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('https://api.kortix.com/v1/accounts'),
+      new Request('https://api.zed.com/v1/accounts'),
       env,
     );
 
-    expect(fetchedUrls).toEqual(['https://api-fargate.kortix.com/v1/accounts']);
+    expect(fetchedUrls).toEqual(['https://api-fargate.zed.com/v1/accounts']);
     expect(response.status).toBe(503);
     expect(response.headers.get('Content-Type')).toBe('application/json');
     expect(await response.json()).toMatchObject({
@@ -550,13 +550,13 @@ describe('api-router worker', () => {
     };
 
     const response = await worker.fetch(
-      new Request('http://gateway.kortix.com/v1/chat/completions'),
+      new Request('http://gateway.zed.com/v1/chat/completions'),
       env,
     );
 
     expect(response.status).toBe(308);
     expect(response.headers.get('Location')).toBe(
-      'https://gateway.kortix.com/v1/chat/completions',
+      'https://gateway.zed.com/v1/chat/completions',
     );
     expect(fetched).toBe(false);
   });
@@ -578,7 +578,7 @@ describe('api-router worker', () => {
 
     const response = await worker.fetch(
       new Request(
-        'https://api.kortix.com/v1/p/sbx_123/8000/kortix/pty/kpty_123/connect',
+        'https://api.zed.com/v1/p/sbx_123/8000/zed/pty/kpty_123/connect',
         {
           headers: { Upgrade: 'websocket' },
         },
@@ -587,7 +587,7 @@ describe('api-router worker', () => {
     );
 
     expect(proxiedUrl).toBe(
-      'https://api-fargate.kortix.com/v1/p/sbx_123/8000/kortix/pty/kpty_123/connect',
+      'https://api-fargate.zed.com/v1/p/sbx_123/8000/zed/pty/kpty_123/connect',
     );
     expect(proxiedUpgrade).toBe('websocket');
     expect(response).toBe(upgradeResponse);

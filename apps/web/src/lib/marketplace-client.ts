@@ -8,7 +8,7 @@ import {
   listMarketplaceSources as sdkListMarketplaceSources,
   listMarketplaces as sdkListMarketplaces,
   removeMarketplaceSource as sdkRemoveMarketplaceSource,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 // Server-safe public reads live in a separate module (no api-client import) so
 // Server Components can call them. Re-exported here for existing client imports.
@@ -77,7 +77,7 @@ export interface MarketplaceItemDetail extends MarketplaceItem {
   files: Array<{ target: string; type: string }>;
   readme: string | null;
   dependencyItems: DependencyItem[];
-  /** For a `registry:project`: its agents + triggers (parsed from kortix.yaml). */
+  /** For a `registry:project`: its agents + triggers (parsed from zed.yaml). */
   projectAgents?: ProjectAgent[];
   projectTriggers?: ProjectTrigger[];
 }
@@ -162,7 +162,7 @@ export function defaultProjectMarketplaceItems(
 }
 
 export async function listDefaultProjectMarketplaceItems(): Promise<MarketplaceItem[]> {
-  const page = await listMarketplaceItems({ source: 'kortix', type: 'skill' });
+  const page = await listMarketplaceItems({ source: 'zed', type: 'skill' });
   return defaultProjectMarketplaceItems(page.items);
 }
 
@@ -238,7 +238,7 @@ export async function getMarketplaceItemFile(
  *  `registry:project`) into a project via an agent session instead of a
  *  deterministic file commit — the session installs it and wires up whatever
  *  it needs (connectors, secrets), or for a `registry:project` merges it into
- *  an existing project's kortix.yaml, which isn't safe to do deterministically.
+ *  an existing project's zed.yaml, which isn't safe to do deterministically.
  *  Starts a session with a constructed prompt; the caller should navigate into
  *  `session_id` to watch it work. */
 export async function installMarketplaceItemAsSession(

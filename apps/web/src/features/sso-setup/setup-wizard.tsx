@@ -54,7 +54,7 @@ import { latestScimSyncAt, scimSyncFreshness } from '@/lib/scim-sync';
 import { buildScimBaseUrl } from '@/lib/scim-url';
 import { cn } from '@/lib/utils';
 import { relativeTime } from '@/lib/utils/date';
-import { listAccountMembers } from '@kortix/sdk';
+import { listAccountMembers } from '@zed/sdk';
 import {
   type GuideStep,
   PROVIDER_GUIDES,
@@ -105,7 +105,7 @@ const FLOW_CONFIG: Record<
 
 // Explicit literals (not a template) so the keys stay greppable.
 function storageKey(flow: Flow, accountId: string, provider: string) {
-  const prefix = flow === 'sso' ? 'kortix:sso-setup' : 'kortix:scim-setup';
+  const prefix = flow === 'sso' ? 'zed:sso-setup' : 'zed:scim-setup';
   return `${prefix}:${accountId}:${provider}`;
 }
 
@@ -133,7 +133,7 @@ function saveCompleted(flow: Flow, accountId: string, provider: string, ids: str
 type MetadataStash = { kind: 'url' | 'xml'; value: string };
 
 function metadataStashKey(accountId: string, provider: string) {
-  return `kortix:sso-setup:${accountId}:${provider}:metadata`;
+  return `zed:sso-setup:${accountId}:${provider}:metadata`;
 }
 
 function loadMetadataStash(accountId: string, provider: string): MetadataStash | null {
@@ -578,11 +578,11 @@ function MetadataInputStep({
           <span
             className={cn(
               'flex size-6 shrink-0 items-center justify-center rounded-full transition-colors',
-              ready ? 'bg-kortix-green/15' : 'bg-muted',
+              ready ? 'bg-zed-green/15' : 'bg-muted',
             )}
           >
             <Check
-              className={cn('size-3.5', ready ? 'text-kortix-green' : 'text-muted-foreground')}
+              className={cn('size-3.5', ready ? 'text-zed-green' : 'text-muted-foreground')}
             />
           </span>
           <span className="text-foreground truncate text-sm">{doneLabel}</span>
@@ -631,7 +631,7 @@ function ImportForm({
   const [domain, setDomain] = useState('');
   const [claim, setClaim] = useState(config.groupClaimName);
   const [autoCreate, setAutoCreate] = useState(true);
-  // Default ON: connecting an IdP should make its groups appear in Kortix
+  // Default ON: connecting an IdP should make its groups appear in Zed
   // without hand-mapping each claim — the admin just attaches project roles.
   // (Groups auto-created this way are source='sso' and never annex manual
   // groups; the toggle stays for admins who want mapping-only.)
@@ -715,7 +715,7 @@ function ImportForm({
             unaffected.
           </p>
           {adminEmailDomain && domain.trim().toLowerCase() === adminEmailDomain && (
-            <p className="text-kortix-yellow text-xs">
+            <p className="text-zed-yellow text-xs">
               This is your own email domain — saving this will route YOUR next sign-in to the IdP
               too. Make sure your account exists there before you continue.
             </p>
@@ -808,7 +808,7 @@ function ImportForm({
         <span>
           <span className="font-medium">Auto-provision groups</span>
           <span className="text-muted-foreground block text-xs">
-            Create a Kortix group for every group your IdP sends — no per-group mapping.
+            Create a Zed group for every group your IdP sends — no per-group mapping.
           </span>
         </span>
       </label>
@@ -1091,8 +1091,8 @@ function SsoTestStatusPanel({
     <div className="border-border/70 bg-popover space-y-3 rounded-md border p-4">
       <div className="flex items-center justify-between gap-2">
         <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
-          <span className="bg-kortix-green relative flex size-1.5 shrink-0 rounded-full">
-            <span className="bg-kortix-green absolute inline-flex size-full animate-ping rounded-full opacity-75" />
+          <span className="bg-zed-green relative flex size-1.5 shrink-0 rounded-full">
+            <span className="bg-zed-green absolute inline-flex size-full animate-ping rounded-full opacity-75" />
           </span>
           Watching for the test sign-in
         </p>
@@ -1109,8 +1109,8 @@ function SsoTestStatusPanel({
       {membersQuery.isLoading ? (
         <Skeleton className="h-10 w-full rounded-md" />
       ) : arrived.length > 0 ? (
-        <div className="border-kortix-green/30 bg-kortix-green/10 flex items-start gap-2.5 rounded-md border p-3">
-          <Check className="text-kortix-green mt-0.5 size-4 shrink-0" />
+        <div className="border-zed-green/30 bg-zed-green/10 flex items-start gap-2.5 rounded-md border p-3">
+          <Check className="text-zed-green mt-0.5 size-4 shrink-0" />
           <div className="min-w-0 text-sm">
             <p className="text-foreground font-medium">
               {arrived.length === 1
@@ -1167,7 +1167,7 @@ function ProvisionedStatusPanel({
   const totalMembers = membersQuery.data?.length ?? null;
   const isLoading = membersQuery.isLoading || groupsQuery.isLoading;
 
-  // Kortix is the SCIM server: the freshest signal we own is when the IdP
+  // Zed is the SCIM server: the freshest signal we own is when the IdP
   // last made an authenticated SCIM call (stamped on every request, including
   // no-change reconciliation reads). Active tokens only.
   const lastSyncAt = latestScimSyncAt(tokensQuery.data ?? []);
@@ -1177,8 +1177,8 @@ function ProvisionedStatusPanel({
     <div className="border-border/70 bg-popover space-y-3 rounded-md border p-4">
       <div className="flex items-center justify-between gap-2">
         <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
-          <span className="bg-kortix-green relative flex size-1.5 shrink-0 rounded-full">
-            <span className="bg-kortix-green absolute inline-flex size-full animate-ping rounded-full opacity-75" />
+          <span className="bg-zed-green relative flex size-1.5 shrink-0 rounded-full">
+            <span className="bg-zed-green absolute inline-flex size-full animate-ping rounded-full opacity-75" />
           </span>
           Live status
         </p>
@@ -1203,8 +1203,8 @@ function ProvisionedStatusPanel({
           <span
             className={cn(
               'size-1.5 shrink-0 rounded-full',
-              freshness === 'live' && 'bg-kortix-green',
-              freshness === 'recent' && 'bg-kortix-green/60',
+              freshness === 'live' && 'bg-zed-green',
+              freshness === 'recent' && 'bg-zed-green/60',
               freshness === 'quiet' && 'bg-muted-foreground/40',
               freshness === 'never' && 'bg-amber-500',
             )}
@@ -1250,7 +1250,7 @@ function ProvisionedStatusPanel({
       <p className="text-muted-foreground text-xs">
         Refreshes automatically every few seconds.{' '}
         {cadenceHint ??
-          'Your IdP pushes changes on its own schedule — no manual action needed on the Kortix side.'}
+          'Your IdP pushes changes on its own schedule — no manual action needed on the Zed side.'}
       </p>
     </div>
   );
@@ -1311,7 +1311,7 @@ function StepBody({
               ) : (
                 <ShieldCheck className="size-3" />
               )}
-              {step.where === 'idp' ? providerName : 'Kortix dashboard'}
+              {step.where === 'idp' ? providerName : 'Zed dashboard'}
             </Badge>
           )}
           {step.menuPath && (
@@ -1432,8 +1432,8 @@ function StepBody({
         // statement + Continue.
         <div className="border-border/70 bg-popover flex items-center justify-between gap-3 rounded-md border py-3 pr-3 pl-4">
           <span className="flex min-w-0 items-center gap-2.5">
-            <span className="bg-kortix-green/15 flex size-6 shrink-0 items-center justify-center rounded-full">
-              <Check className="text-kortix-green size-3.5" />
+            <span className="bg-zed-green/15 flex size-6 shrink-0 items-center justify-center rounded-full">
+              <Check className="text-zed-green size-3.5" />
             </span>
             <span className="text-foreground truncate text-sm">
               {step.doneLabel ?? 'I’ve completed this step'}
@@ -1488,7 +1488,7 @@ function WizardCore({ accountId, flow }: { accountId: string; flow: Flow }) {
 
   const [activeStep, setActiveStep] = useState(0);
   const [completed, setCompleted] = useState<string[]>([]);
-  // Change-provider / start-over confirmation (Kortix allows ONE SSO provider
+  // Change-provider / start-over confirmation (Zed allows ONE SSO provider
   // per account, so switching mid-setup abandons the current one). Declared
   // with the other hooks — above the early returns — so it can never be called
   // conditionally (react-hooks/rules-of-hooks).
@@ -1534,7 +1534,7 @@ function WizardCore({ accountId, flow }: { accountId: string; flow: Flow }) {
   };
 
   // In-progress state = anything that would be lost by switching away or
-  // resetting. Kortix allows ONE SSO provider per account, so changing
+  // resetting. Zed allows ONE SSO provider per account, so changing
   // provider mid-setup abandons the current one — mirror Vercel and confirm
   // + actually reset it, rather than leaking stale half-configured state.
   // (confirmAction is declared with the hooks above — never after a return.)
@@ -1627,7 +1627,7 @@ function WizardCore({ accountId, flow }: { accountId: string; flow: Flow }) {
                   className={cn(
                     'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium tabular-nums transition-colors',
                     isDone
-                      ? 'bg-kortix-green/15 text-kortix-green'
+                      ? 'bg-zed-green/15 text-zed-green'
                       : isActive
                         ? 'bg-foreground text-background'
                         : 'bg-muted text-muted-foreground',

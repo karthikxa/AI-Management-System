@@ -29,14 +29,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { errorToast, successToast } from '@/components/ui/toast';
 import { ModelSelector } from '@/features/session/model-selector';
 import CustomizeSectionWrapper from '@/features/workspace/customize/sections/component/section-wrapper';
-import { useModelDefaults } from '@kortix/sdk/react';
-import { modelKeyToWire, wireToModelKey } from '@kortix/sdk/react';
+import { useModelDefaults } from '@zed/sdk/react';
+import { modelKeyToWire, wireToModelKey } from '@zed/sdk/react';
 import type {
   GatewayFallbackChain,
   GatewayProjectRoutingPolicy,
   GatewayRoutingRule,
-} from '@kortix/sdk';
-import { qk, useGatewayRoutingPolicy, useProjectModels } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { qk, useGatewayRoutingPolicy, useProjectModels } from '@zed/sdk/react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { GenerationControlsPanel } from './generation-controls';
@@ -174,8 +174,8 @@ function RoutingModelSelector({
   });
   if (value && !options.some((model) => modelKeyToWire(model) === value)) {
     options.push({
-      providerID: 'kortix',
-      providerName: 'Kortix',
+      providerID: 'zed',
+      providerName: 'Zed',
       modelID: value,
       modelName: value,
     });
@@ -460,8 +460,8 @@ export function GatewayRouting({
     for (const wire of current) {
       if (!wire || wire === 'auto' || byWire.has(wire)) continue;
       byWire.set(wire, {
-        providerID: 'kortix',
-        providerName: 'Kortix',
+        providerID: 'zed',
+        providerName: 'Zed',
         modelID: wire,
         modelName: wire,
       });

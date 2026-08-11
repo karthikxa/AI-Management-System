@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# End-to-end test for the `kortix cr` subcommand surface.
+# End-to-end test for the `zed cr` subcommand surface.
 #
-# Boots a fresh local bare git repo, registers it as a Kortix project, mints
+# Boots a fresh local bare git repo, registers it as a Zed project, mints
 # a PAT, then drives the CLI through every CR subcommand against a live API.
 # Asserts on the CLI's text output (stripping ANSI) so we cover both the
 # transport (API call) and the rendering layer.
@@ -10,7 +10,7 @@
 #   bash apps/cli/scripts/e2e-cr.sh
 #
 # Env overrides:
-#   KORTIX_API_URL   default http://localhost:8008
+#   ZED_API_URL   default http://localhost:8008
 #   DATABASE_URL     default postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
 set -euo pipefail
@@ -18,11 +18,11 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
 CLI_DIR="$ROOT_DIR/apps/cli"
 API_DIR="$ROOT_DIR/apps/api"
-API_URL="${KORTIX_API_URL:-http://localhost:8008}"
+API_URL="${ZED_API_URL:-http://localhost:8008}"
 DB_URL="${DATABASE_URL:-postgresql://postgres:postgres@127.0.0.1:54322/postgres}"
 ENV_FILE="${ENV_FILE:-$API_DIR/.env}"
 
-REPO_ROOT="${REPO_ROOT:-/tmp/kortix-cli-cr-e2e-$$}"
+REPO_ROOT="${REPO_ROOT:-/tmp/zed-cli-cr-e2e-$$}"
 
 bold()  { printf '\033[1m%s\033[0m\n' "$*"; }
 ok()    { printf '  \033[0;32m✓\033[0m  %s\n' "$*"; }
@@ -58,10 +58,10 @@ psql_one() {
 
 cleanup() {
   if [[ -n "${PAT_HASH:-}" ]]; then
-    psql_one "delete from kortix.account_tokens where secret_key_hash = '$PAT_HASH';" >/dev/null || true
+    psql_one "delete from zed.account_tokens where secret_key_hash = '$PAT_HASH';" >/dev/null || true
   fi
   if [[ -n "${PROJECT_ID:-}" ]]; then
-    psql_one "delete from kortix.projects where project_id = '$PROJECT_ID';" >/dev/null || true
+    psql_one "delete from zed.projects where project_id = '$PROJECT_ID';" >/dev/null || true
   fi
   rm -rf "$REPO_ROOT"
 }
@@ -75,8 +75,8 @@ mkdir -p "$REPO_ROOT"
   git init --bare origin.git -b main >/dev/null
   git clone origin.git work >/dev/null 2>&1
   cd work
-  git config user.name  "Kortix CLI E2E"
-  git config user.email "cli-e2e@kortix.ai"
+  git config user.name  "Zed CLI E2E"
+  git config user.email "cli-e2e@zed.ai"
 
   cat > README.md <<EOF
 # CLI CR e2e
@@ -109,7 +109,7 @@ EOF
 dim "remote" "file://$REPO_ROOT/origin.git"
 
 bold "2. Picking a user, minting a PAT"
-USER_ROW="$(psql_one "select user_id || '|' || account_id from kortix.account_members order by joined_at limit 1;")"
+USER_ROW="$(psql_one "select user_id || '|' || account_id from zed.account_members order by joined_at limit 1;")"
 USER_ID="${USER_ROW%%|*}"
 ACCOUNT_ID="${USER_ROW##*|}"
 [[ -z "$USER_ID" || -z "$ACCOUNT_ID" ]] && fail "no account_members row found"
@@ -125,7 +125,7 @@ chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 def rand(n):
     return ''.join(chars[secrets.randbelow(len(chars))] for _ in range(n))
 public = 'pk_' + rand(32)
-secret = 'kortix_pat_' + rand(32)
+secret = 'zed_pat_' + rand(32)
 key = os.environ['API_KEY_SECRET'].encode()
 print(public)
 print(secret)
@@ -137,15 +137,15 @@ PAT_SECRET="${PAT_PARTS[1]}"
 PAT_HASH="${PAT_PARTS[2]}"
 
 psql_one "
-  insert into kortix.account_tokens (account_id, user_id, name, public_key, secret_key_hash)
+  insert into zed.account_tokens (account_id, user_id, name, public_key, secret_key_hash)
   values ('$ACCOUNT_ID', '$USER_ID', 'cli-cr-e2e', '$PAT_PUBLIC', '$PAT_HASH');
 " >/dev/null
 dim "pat" "${PAT_SECRET:0:18}…"
 
 bold "3. Registering the test project"
 PROJECT_ID="$(psql_one "
-  insert into kortix.projects (account_id, name, repo_url, default_branch, manifest_path)
-  values ('$ACCOUNT_ID', 'CLI CR e2e', 'file://$REPO_ROOT/origin.git', 'main', 'kortix.yaml')
+  insert into zed.projects (account_id, name, repo_url, default_branch, manifest_path)
+  values ('$ACCOUNT_ID', 'CLI CR e2e', 'file://$REPO_ROOT/origin.git', 'main', 'zed.yaml')
   returning project_id;
 ")"
 [[ -z "$PROJECT_ID" ]] && fail "failed to insert project"
@@ -153,9 +153,9 @@ dim "project" "$PROJECT_ID"
 
 # ───────────────────────────────────────────────────────────────────────────
 
-export KORTIX_CLI_TOKEN="$PAT_SECRET"
-export KORTIX_API_URL="$API_URL"
-export KORTIX_PROJECT_ID="$PROJECT_ID"
+export ZED_CLI_TOKEN="$PAT_SECRET"
+export ZED_API_URL="$API_URL"
+export ZED_PROJECT_ID="$PROJECT_ID"
 
 cli() {
   bun run "$CLI_DIR/src/index.ts" "$@"
@@ -231,7 +231,7 @@ strip_ansi <"$WORK_DIR/ls-merged.out" | grep -q "docs: status line" \
 ok "status filter works"
 
 bold "14. cr show on a uuid (not just a number)"
-CR2_ID="$(psql_one "select cr_id from kortix.change_requests where project_id='$PROJECT_ID' and number=2;")"
+CR2_ID="$(psql_one "select cr_id from zed.change_requests where project_id='$PROJECT_ID' and number=2;")"
 cli cr show "$CR2_ID" >"$WORK_DIR/show-uuid.out" 2>&1
 contains "$WORK_DIR/show-uuid.out" "docs: status line"
 ok "show accepts a uuid as well as a number"
@@ -243,4 +243,4 @@ for sub in ls show diff open merge close reopen; do
 done
 ok "help mentions every subcommand"
 
-bold "PASSED — kortix cr lifecycle verified end-to-end"
+bold "PASSED — zed cr lifecycle verified end-to-end"

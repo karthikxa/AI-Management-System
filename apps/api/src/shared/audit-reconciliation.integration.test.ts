@@ -16,7 +16,7 @@ let client: pg.Client | null = null;
 async function cursorImmediatelyBefore(accountId: string): Promise<string | null> {
   const result = await client!.query<{ account_id: string }>(
     `SELECT account_id
-       FROM kortix.accounts
+       FROM zed.accounts
       WHERE account_id < $1
       ORDER BY account_id DESC
       LIMIT 1`,
@@ -31,22 +31,22 @@ describe.skipIf(!databaseUrl)('audit reconciliation — migrated PostgreSQL', ()
     await client.connect();
     // These append-only source ledgers intentionally have no account FK.
     // Remove fixtures from an interrupted previous test run before reseeding.
-    await client.query('DELETE FROM kortix.provider_events WHERE account_id = $1', [ACCOUNT]);
-    await client.query('DELETE FROM kortix.voice_call_turns WHERE session_id = $1', [SESSION]);
+    await client.query('DELETE FROM zed.provider_events WHERE account_id = $1', [ACCOUNT]);
+    await client.query('DELETE FROM zed.voice_call_turns WHERE session_id = $1', [SESSION]);
     await client.query(
-      `INSERT INTO kortix.accounts(account_id, name) VALUES
+      `INSERT INTO zed.accounts(account_id, name) VALUES
          ($1, 'audit-reconcile'), ($2, 'audit-reconcile-second')`,
       [ACCOUNT, SECOND_ACCOUNT],
     );
     await client.query(
-      `INSERT INTO kortix.projects(project_id, account_id, name, repo_url)
+      `INSERT INTO zed.projects(project_id, account_id, name, repo_url)
        VALUES ($1, $2, 'audit-reconcile', 'https://example.test/audit-reconcile.git')`,
       [PROJECT, ACCOUNT],
     );
     await client.query(`SET session_replication_role = 'replica'`);
     try {
       await client.query(
-        `INSERT INTO kortix.project_sessions
+        `INSERT INTO zed.project_sessions
            (session_id, account_id, project_id, branch_name, created_by, origin,
             agent_name, metadata)
          VALUES ($1, $2, $3, 'audit-reconcile', $4, 'backend', 'audit-agent',
@@ -60,7 +60,7 @@ describe.skipIf(!databaseUrl)('audit reconciliation — migrated PostgreSQL', ()
       await client.query(`SET session_replication_role = 'origin'`);
     }
     await client.query(
-      `INSERT INTO kortix.tunnel_connections(tunnel_id, account_id, name)
+      `INSERT INTO zed.tunnel_connections(tunnel_id, account_id, name)
        VALUES ($1, $2, 'audit-reconcile')`,
       [TUNNEL, ACCOUNT],
     );
@@ -70,51 +70,51 @@ describe.skipIf(!databaseUrl)('audit reconciliation — migrated PostgreSQL', ()
     await client.query(`SET session_replication_role = 'replica'`);
     try {
       await client.query(
-        `INSERT INTO kortix.connector_calls
+        `INSERT INTO zed.connector_calls
            (account_id, project_id, action_path, acting_user_id, session_id, status, request_digest)
          VALUES ($1, $2, 'gmail.list_messages', $3, $4, 'ok', repeat('a', 64))`,
         [ACCOUNT, PROJECT, ACTOR, SESSION],
       );
       await client.query(
-        `INSERT INTO kortix.session_lifecycle_commands
+        `INSERT INTO zed.session_lifecycle_commands
            (command_type, source, status, project_id, session_id, account_id, actor_user_id)
          VALUES ('continue', 'cli', 'succeeded', $1, $2, $3, $4)`,
         [PROJECT, SESSION, ACCOUNT, ACTOR],
       );
       await client.query(
-        `INSERT INTO kortix.project_trigger_executions
+        `INSERT INTO zed.project_trigger_executions
            (project_id, slug, schedule_revision, scheduled_for, status, spec, payload, session_id)
          VALUES ($1, 'daily', 'rev-1', now(), 'completed', '{}'::jsonb, '{}'::jsonb, $2)`,
         [PROJECT, SESSION],
       );
       await client.query(
-        `INSERT INTO kortix.provider_events
+        `INSERT INTO zed.provider_events
            (provider, kind, outcome, total_ms, session_id, account_id)
          VALUES ('daytona', 'provision', 'ok', 125, $1, $2)`,
         [SESSION, ACCOUNT],
       );
       await client.query(
-        `INSERT INTO kortix.usage_events
+        `INSERT INTO zed.usage_events
            (account_id, project_id, session_id, actor_user_id, provider, model, route,
             input_tokens, output_tokens, upstream_status)
          VALUES ($1, $2, $3, $4, 'openai', 'gpt-test', '/chat/completions', 10, 5, 200)`,
         [ACCOUNT, PROJECT, SESSION, ACTOR],
       );
       await client.query(
-        `INSERT INTO kortix.gateway_request_logs
+        `INSERT INTO zed.gateway_request_logs
            (request_id, account_id, project_id, actor_user_id, session_id, requested_model,
             resolved_model, provider, status, ok, input_tokens, output_tokens)
-         VALUES ('audit-reconcile-request', $1, $2, $3, $4, 'kortix/test',
+         VALUES ('audit-reconcile-request', $1, $2, $3, $4, 'zed/test',
                  'openai/test', 'openai', 200, true, 10, 5)`,
         [ACCOUNT, PROJECT, ACTOR, SESSION],
       );
       await client.query(
-        `INSERT INTO kortix.voice_call_turns(call_id, project_id, session_id, role, speaker, text)
+        `INSERT INTO zed.voice_call_turns(call_id, project_id, session_id, role, speaker, text)
          VALUES ($1, $2, $1, 'user', NULL, 'content hashed but not copied')`,
         [SESSION, PROJECT],
       );
       await client.query(
-        `INSERT INTO kortix.tunnel_audit_logs
+        `INSERT INTO zed.tunnel_audit_logs
            (tunnel_id, account_id, capability, operation, success, request_summary)
          VALUES ($1, $2, 'filesystem', 'list', true, '{"path_count":1}'::jsonb)`,
         [TUNNEL, ACCOUNT],
@@ -126,22 +126,22 @@ describe.skipIf(!databaseUrl)('audit reconciliation — migrated PostgreSQL', ()
 
   afterAll(async () => {
     if (!client) return;
-    await client.query(`SET kortix.audit_maintenance = 'on'`);
+    await client.query(`SET zed.audit_maintenance = 'on'`);
     await client.query(
-      `DELETE FROM kortix.audit_webhook_deliveries WHERE event_id IN
-         (SELECT event_id FROM kortix.audit_events WHERE account_id = ANY($1::uuid[]))`,
+      `DELETE FROM zed.audit_webhook_deliveries WHERE event_id IN
+         (SELECT event_id FROM zed.audit_events WHERE account_id = ANY($1::uuid[]))`,
       [[ACCOUNT, SECOND_ACCOUNT]],
     );
-    await client.query('DELETE FROM kortix.audit_events WHERE account_id = ANY($1::uuid[])', [
+    await client.query('DELETE FROM zed.audit_events WHERE account_id = ANY($1::uuid[])', [
       [ACCOUNT, SECOND_ACCOUNT],
     ]);
-    await client.query('DELETE FROM kortix.audit_session_sequences WHERE session_id = $1', [
+    await client.query('DELETE FROM zed.audit_session_sequences WHERE session_id = $1', [
       SESSION,
     ]);
-    await client.query('DELETE FROM kortix.provider_events WHERE account_id = $1', [ACCOUNT]);
-    await client.query('DELETE FROM kortix.voice_call_turns WHERE session_id = $1', [SESSION]);
-    await client.query('DELETE FROM kortix.tunnel_connections WHERE tunnel_id = $1', [TUNNEL]);
-    await client.query('DELETE FROM kortix.accounts WHERE account_id = ANY($1::uuid[])', [
+    await client.query('DELETE FROM zed.provider_events WHERE account_id = $1', [ACCOUNT]);
+    await client.query('DELETE FROM zed.voice_call_turns WHERE session_id = $1', [SESSION]);
+    await client.query('DELETE FROM zed.tunnel_connections WHERE tunnel_id = $1', [TUNNEL]);
+    await client.query('DELETE FROM zed.accounts WHERE account_id = ANY($1::uuid[])', [
       [ACCOUNT, SECOND_ACCOUNT],
     ]);
     await client.end();
@@ -178,7 +178,7 @@ describe.skipIf(!databaseUrl)('audit reconciliation — migrated PostgreSQL', ()
       input_sha256: string | null;
     }>(
       `SELECT source_ledger, input_sha256
-         FROM kortix.audit_events
+         FROM zed.audit_events
         WHERE account_id = $1
           AND source_ledger IN ('connector_calls', 'voice_call_turns')
         ORDER BY source_ledger`,
@@ -200,7 +200,7 @@ describe.skipIf(!databaseUrl)('audit reconciliation — migrated PostgreSQL', ()
     }>(
       `SELECT actor_type, authoritative_source, client_reported_source,
               initiator_actor_type, initiator_actor_id, delegation_depth, agent_name
-         FROM kortix.audit_events
+         FROM zed.audit_events
         WHERE account_id = $1 AND source_ledger = 'project_sessions'`,
       [ACCOUNT],
     );
@@ -220,7 +220,7 @@ describe.skipIf(!databaseUrl)('audit reconciliation — migrated PostgreSQL', ()
     await client!.query(`SET session_replication_role = 'replica'`);
     try {
       await client!.query(
-        `INSERT INTO kortix.provider_events
+        `INSERT INTO zed.provider_events
            (provider, kind, outcome, total_ms, session_id, account_id)
          VALUES ('daytona', 'stop', 'ok', 25, $1, $2)`,
         [SESSION, ACCOUNT],
@@ -249,7 +249,7 @@ describe.skipIf(!databaseUrl)('audit reconciliation — migrated PostgreSQL', ()
     expect(automatic.result).toEqual({ inserted: 0, complete: true, by_source: {} });
     const marker = await client!.query<{ count: number }>(
       `SELECT count(*)::int AS count
-         FROM kortix.audit_events
+         FROM zed.audit_events
         WHERE source_ledger = 'audit_reconciliation'
           AND source_record_id = $1
           AND source_revision = 'v2'`,
@@ -264,7 +264,7 @@ describe.skipIf(!databaseUrl)('audit reconciliation — migrated PostgreSQL', ()
     });
     const secondMarker = await client!.query<{ count: number }>(
       `SELECT count(*)::int AS count
-         FROM kortix.audit_events
+         FROM zed.audit_events
         WHERE source_ledger = 'audit_reconciliation'
           AND source_record_id = $1
           AND source_revision = 'v2'`,
@@ -278,7 +278,7 @@ describe.skipIf(!databaseUrl)('audit reconciliation — migrated PostgreSQL', ()
     await client!.query(`SET session_replication_role = 'replica'`);
     try {
       await client!.query(
-        `INSERT INTO kortix.provider_events
+        `INSERT INTO zed.provider_events
            (provider, kind, outcome, total_ms, session_id, account_id)
          VALUES ('daytona', 'restart', 'ok', 15, $1, $2)`,
         [SESSION, ACCOUNT],

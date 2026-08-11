@@ -1,5 +1,5 @@
 import { and, eq, ne } from 'drizzle-orm';
-import { billingCustomers } from '@kortix/db';
+import { billingCustomers } from '@zed/db';
 import { db } from '../../shared/db';
 
 type BillingCustomerRow = typeof billingCustomers.$inferSelect;
@@ -18,7 +18,7 @@ function pickCanonicalCustomer(rows: BillingCustomerRow[]): BillingCustomerRow |
   return candidates[0] ?? null;
 }
 
-async function listKortixCustomersByAccountId(accountId: string): Promise<BillingCustomerRow[]> {
+async function listZedCustomersByAccountId(accountId: string): Promise<BillingCustomerRow[]> {
   return db
     .select()
     .from(billingCustomers)
@@ -26,7 +26,7 @@ async function listKortixCustomersByAccountId(accountId: string): Promise<Billin
 }
 
 /**
- * Every Stripe customer id ever associated with this account — kortix
+ * Every Stripe customer id ever associated with this account — zed
  * billing_customers, active AND inactive, deduped. The legacy→per-seat
  * migration uses this to cancel subs that live on a deactivated/older
  * customer, not just the canonical one (a user can have several Stripe
@@ -34,7 +34,7 @@ async function listKortixCustomersByAccountId(accountId: string): Promise<Billin
  */
 export async function listAccountStripeCustomerIds(accountId: string): Promise<string[]> {
   const ids = new Set<string>();
-  for (const row of await listKortixCustomersByAccountId(accountId)) {
+  for (const row of await listZedCustomersByAccountId(accountId)) {
     if ((row.provider ?? 'stripe') === 'stripe' && row.id) ids.add(row.id);
   }
   return Array.from(ids);
@@ -57,7 +57,7 @@ async function deactivateConflictingCustomers(accountId: string, canonicalId: st
 }
 
 export async function getCustomerByAccountId(accountId: string) {
-  const rows = await listKortixCustomersByAccountId(accountId);
+  const rows = await listZedCustomersByAccountId(accountId);
 
   return pickCanonicalCustomer(rows);
 }

@@ -1,4 +1,4 @@
-import { MANAGED_MODELS as BUNDLED_MANAGED_MODELS, type ManagedModel } from '@kortix/llm-catalog';
+import { MANAGED_MODELS as BUNDLED_MANAGED_MODELS, type ManagedModel } from '@zed/llm-catalog';
 import { z } from 'zod';
 import { config } from '../../config';
 
@@ -51,17 +51,17 @@ export function parseManagedModels(
 
 /**
  * API/control-plane managed model overlay used by runtime routing and catalog
- * responses. CLOUD-ONLY: empty whenever KORTIX_MANAGED_PROVIDER_ENABLED is off
+ * responses. CLOUD-ONLY: empty whenever ZED_MANAGED_PROVIDER_ENABLED is off
  * (the self-host default) — a self-host operator brings their own LLM keys and
- * must never see or route to Kortix's shared upstream credentials.
+ * must never see or route to Zed's shared upstream credentials.
  * This is the single choke point: every consumer (the served model catalog,
  * the picker, and request-time routing) reads through here or getRuntimeManagedModel()
  * below, so gating it here alone keeps the managed lineup off everywhere.
  *
  * IMPORTANT — what the "managed provider" IS and IS NOT (a recurring
- * misconception): KORTIX_MANAGED_PROVIDER_ENABLED is a CLOUD-ONLY CONVENIENCE
- * so cloud users can spend their KORTIX CREDITS for a zero-config experience —
- * it routes to Kortix's own shared upstream credentials, billed as credits.
+ * misconception): ZED_MANAGED_PROVIDER_ENABLED is a CLOUD-ONLY CONVENIENCE
+ * so cloud users can spend their ZED CREDITS for a zero-config experience —
+ * it routes to Zed's own shared upstream credentials, billed as credits.
  * It is not the mechanism by which Bedrock or OpenRouter is available.
  * Bedrock is a standalone provider that a project uses by connecting
  * its OWN credentials (BYOK). To give a self-host Bedrock you connect Bedrock
@@ -71,7 +71,7 @@ export function parseManagedModels(
  * stays purely the cloud credits convenience.
  */
 export const RUNTIME_MANAGED_MODELS: readonly ManagedModel[] =
-  config.KORTIX_MANAGED_PROVIDER_ENABLED
+  config.ZED_MANAGED_PROVIDER_ENABLED
     ? parseManagedModels(config.LLM_GATEWAY_MANAGED_MODELS)
     : [];
 
@@ -85,7 +85,7 @@ export function isRuntimeManagedModelId(id: string): boolean {
   return MANAGED_BY_ID.has(id);
 }
 
-// The BUNDLED catalog (never gated by KORTIX_MANAGED_PROVIDER_ENABLED) — used
+// The BUNDLED catalog (never gated by ZED_MANAGED_PROVIDER_ENABLED) — used
 // only to answer "is this id a REAL managed-model id at all", regardless of
 // whether the managed provider happens to be enabled on this deployment.
 // RUNTIME_MANAGED_MODELS/MANAGED_BY_ID above are empty whenever the flag is
@@ -115,9 +115,9 @@ export function servedManagedModels(
   return models.filter(hasTransportCredential);
 }
 
-/** Strip the opencode `kortix/` namespace off a managed ref. */
+/** Strip the opencode `zed/` namespace off a managed ref. */
 function bareManagedId(ref: string): string {
-  return ref.startsWith('kortix/') ? ref.slice('kortix/'.length) : ref;
+  return ref.startsWith('zed/') ? ref.slice('zed/'.length) : ref;
 }
 
 /**

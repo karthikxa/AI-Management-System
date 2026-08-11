@@ -1,5 +1,5 @@
 import { beforeEach, expect, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { setProjectOnboardingProfile } from './projects';
 
 let calls: { url: string; method: string; body: unknown }[] = [];
@@ -17,7 +17,7 @@ beforeEach(() => {
       headers: { 'content-type': 'application/json' },
     });
   }) as unknown as typeof fetch;
-  configureKortix({ backendUrl: 'https://api.test/v1', getToken: async () => 't' });
+  configureZed({ backendUrl: 'https://api.test/v1', getToken: async () => 't' });
 });
 
 test('PATCHes the onboarding route with a profile envelope', async () => {

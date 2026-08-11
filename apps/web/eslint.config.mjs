@@ -75,25 +75,25 @@ const eslintConfig = [
                 '@opencode-ai/sdk',
                 '@opencode-ai/sdk/*',
               ],
-              message: 'apps/web imports must use runtime-neutral @kortix/sdk surfaces.',
+              message: 'apps/web imports must use runtime-neutral @zed/sdk surfaces.',
             },
             {
               group: [
-                '@kortix/sdk/projects-client',
-                '@kortix/sdk/platform-client',
-                '@kortix/sdk/files',
-                '@kortix/sdk/session',
-                '@kortix/sdk/session/url',
-                '@kortix/sdk/opencode-client',
-                '@kortix/sdk/opencode-errors',
-                '@kortix/sdk/event-stream',
-                '@kortix/sdk/server-store',
-                '@kortix/sdk/sync-store',
-                '@kortix/sdk/sandbox-connection-store',
-                '@kortix/sdk/opencode-pending-store',
-                '@kortix/sdk/internal/*',
+                '@zed/sdk/projects-client',
+                '@zed/sdk/platform-client',
+                '@zed/sdk/files',
+                '@zed/sdk/session',
+                '@zed/sdk/session/url',
+                '@zed/sdk/opencode-client',
+                '@zed/sdk/opencode-errors',
+                '@zed/sdk/event-stream',
+                '@zed/sdk/server-store',
+                '@zed/sdk/sync-store',
+                '@zed/sdk/sandbox-connection-store',
+                '@zed/sdk/opencode-pending-store',
+                '@zed/sdk/internal/*',
               ],
-              message: 'Use the canonical @kortix/sdk or @kortix/sdk/react entry point.',
+              message: 'Use the canonical @zed/sdk or @zed/sdk/react entry point.',
             },
             {
               group: [
@@ -104,29 +104,29 @@ const eslintConfig = [
                 '@/stores/pending-queue-store',
                 '@/stores/pending-files-store',
               ],
-              message: 'Runtime behavior belongs in @kortix/sdk, not apps/web.',
+              message: 'Runtime behavior belongs in @zed/sdk, not apps/web.',
             },
             {
               group: ['@/lib/api', '@/lib/api/*', '@/lib/api-client', '**/api-client'],
-              message: 'Kortix API access belongs in @kortix/sdk.',
+              message: 'Zed API access belongs in @zed/sdk.',
             },
           ],
           paths: [
             {
-              name: '@kortix/sdk',
+              name: '@zed/sdk',
               importNames: [
                 'getClient',
                 'getActiveOpenCodeUrl',
-                'createKortixPty',
-                'getKortixPtyWebSocketUrl',
-                'removeKortixPty',
+                'createZedPty',
+                'getZedPtyWebSocketUrl',
+                'removeZedPty',
               ],
-              message: 'Use the session-scoped @kortix/sdk facade or @kortix/sdk/react.',
+              message: 'Use the session-scoped @zed/sdk facade or @zed/sdk/react.',
             },
             {
-              name: '@kortix/sdk/internal/server-store',
+              name: '@zed/sdk/internal/server-store',
               importNames: ['getActiveOpenCodeUrl'],
-              message: 'Runtime URL selection belongs in @kortix/sdk.',
+              message: 'Runtime URL selection belongs in @zed/sdk.',
             },
           ],
         },
@@ -135,15 +135,15 @@ const eslintConfig = [
         'error',
         {
           // Scoped to the runtime SDK sources this guardrail actually cares
-          // about (@kortix/sdk and anything opencode-named) — NOT every
+          // about (@zed/sdk and anything opencode-named) — NOT every
           // import named "OpenCode" from anywhere. An earlier unscoped
           // version (`ImportSpecifier[imported.name=/OpenCode/i]`) also
           // fired on an unrelated brand-mark icon component imported from
           // '@/features/icon/icons/open-code', forcing it to export under a
           // confusing alias for no boundary-safety reason.
           selector:
-            'ImportDeclaration[source.value=/(^@kortix\\/sdk(\\/|$))|opencode/i] > ImportSpecifier[imported.name=/OpenCode/i]',
-          message: 'Import a runtime-neutral alias from @kortix/sdk.',
+            'ImportDeclaration[source.value=/(^@zed\\/sdk(\\/|$))|opencode/i] > ImportSpecifier[imported.name=/OpenCode/i]',
+          message: 'Import a runtime-neutral alias from @zed/sdk.',
         },
         {
           // 176 hand-typed literals across 30 `project*` families produced
@@ -162,7 +162,7 @@ const eslintConfig = [
             "Property[key.name='queryKey'] > ArrayExpression > " +
             "Literal:first-child[value=/^projects?(-[a-z-]+)?$/]",
           message:
-            'Query keys come from `qk` in @kortix/sdk/react. Never hand-type an entity key.',
+            'Query keys come from `qk` in @zed/sdk/react. Never hand-type an entity key.',
         },
         {
           // Same as the rule above, but through a trailing `as const` —
@@ -178,7 +178,7 @@ const eslintConfig = [
             "Property[key.name='queryKey'] > TSAsExpression > ArrayExpression > " +
             "Literal:first-child[value=/^projects?(-[a-z-]+)?$/]",
           message:
-            'Query keys come from `qk` in @kortix/sdk/react. Never hand-type an entity key.',
+            'Query keys come from `qk` in @zed/sdk/react. Never hand-type an entity key.',
         },
         {
           // The migrated root itself is exactly as easy to hand-roll as the
@@ -191,7 +191,7 @@ const eslintConfig = [
           selector:
             "Property[key.name='queryKey'] > ArrayExpression > Literal:first-child[value='kx']",
           message:
-            'Query keys come from `qk` in @kortix/sdk/react. Never hand-type an entity key.',
+            'Query keys come from `qk` in @zed/sdk/react. Never hand-type an entity key.',
         },
         {
           // The `'kx'`-root rule's own `as const` blind spot — see the
@@ -202,7 +202,7 @@ const eslintConfig = [
             "Property[key.name='queryKey'] > TSAsExpression > ArrayExpression > " +
             "Literal:first-child[value='kx']",
           message:
-            'Query keys come from `qk` in @kortix/sdk/react. Never hand-type an entity key.',
+            'Query keys come from `qk` in @zed/sdk/react. Never hand-type an entity key.',
         },
         {
           // The four rules above only see a key written as the `queryKey:`
@@ -219,7 +219,7 @@ const eslintConfig = [
           selector:
             "CallExpression[callee.property.name=/^(set|get)Quer(y|ies)Data$|^(remove|cancel|refetch|invalidate)Queries$/] > ArrayExpression:first-child > Literal:first-child[value=/^projects?(-[a-z-]+)?$|^kx$/]",
           message:
-            'Query keys come from `qk` in @kortix/sdk/react. Never hand-type an entity key.',
+            'Query keys come from `qk` in @zed/sdk/react. Never hand-type an entity key.',
         },
         {
           // The positional-call rule's own `as const` blind spot
@@ -230,7 +230,7 @@ const eslintConfig = [
           selector:
             "CallExpression[callee.property.name=/^(set|get)Quer(y|ies)Data$|^(remove|cancel|refetch|invalidate)Queries$/] > TSAsExpression:first-child > ArrayExpression > Literal:first-child[value=/^projects?(-[a-z-]+)?$|^kx$/]",
           message:
-            'Query keys come from `qk` in @kortix/sdk/react. Never hand-type an entity key.',
+            'Query keys come from `qk` in @zed/sdk/react. Never hand-type an entity key.',
         },
       ],
     },

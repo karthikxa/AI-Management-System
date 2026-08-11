@@ -35,7 +35,7 @@ For an authorized staging assessment:
 ```bash
 STRIX_SCAN_MODE=standard \
 STRIX_SCOPE_MODE=full \
-STRIX_TARGET_URL=https://staging-api.kortix.com \
+STRIX_TARGET_URL=https://staging-api.zed.com \
 STRIX_INSTRUCTION_FILE=.strix/instructions/deep-api.md \
 STRIX_MAX_BUDGET_USD=25 \
 bash tests/security/strix/run.sh

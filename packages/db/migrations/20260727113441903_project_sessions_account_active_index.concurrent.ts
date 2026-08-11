@@ -8,7 +8,7 @@
 // RESTORES A LOST INDEX. `countActiveProjectSessions` (apps/api/src/projects/lib/
 // sessions.ts) COUNTs project_sessions by (account_id, status IN active-set) on
 // EVERY session create. Two comments -- session-status.ts:5 and the schema at
-// packages/db/src/schema/kortix.ts -- assert a partial index
+// packages/db/src/schema/zed.ts -- assert a partial index
 // `idx_project_sessions_account_active` backs that COUNT and is "intentionally
 // not declared" in the drizzle schema so `db:generate` won't fight it. It is not
 // in the migration lineage:
@@ -48,7 +48,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create index concurrently if not exists idx_project_sessions_account_active
-      on kortix.project_sessions (account_id)
+      on zed.project_sessions (account_id)
       where status in ('queued', 'branching', 'provisioning', 'running')
   `);
 };

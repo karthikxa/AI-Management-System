@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { InfoBanner } from '@/components/ui/info-banner';
-import { IconPhoneOff, IconVolume, IconWarning } from '@/components/ui/kortix-icons';
+import { IconPhoneOff, IconVolume, IconWarning } from '@/components/ui/zed-icons';
 import Loading from '@/components/ui/loading';
 
 /**
@@ -15,14 +15,14 @@ export function ConnectingScreen() {
     <div className="bg-background flex min-h-screen flex-col items-center justify-center gap-4 px-4">
       {/* eslint-disable-next-line @next/next/no-img-element -- small static brand mark, not worth next/image */}
       <img
-        src="/kortix-symbol.svg"
+        src="/zed-symbol.svg"
         alt=""
         className="dark:invert-0 size-10 invert"
         aria-hidden
       />
       <div className="text-muted-foreground flex items-center gap-2 text-sm">
         <Loading className="size-4 shrink-0" />
-        Connecting to your Kortix call…
+        Connecting to your Zed call…
       </div>
     </div>
   );
@@ -43,7 +43,7 @@ export function EndedScreen({
         aria-hidden
       >
         {failed ? (
-          <IconWarning className="text-kortix-red size-6" strokeWidth={1.5} />
+          <IconWarning className="text-zed-red size-6" strokeWidth={1.5} />
         ) : (
           <IconPhoneOff className="text-muted-foreground size-6" strokeWidth={1.5} />
         )}
@@ -53,7 +53,7 @@ export function EndedScreen({
           {failed ? 'Call unavailable' : 'You left the call'}
         </h1>
         <p className="text-muted-foreground max-w-sm text-sm text-balance">
-          {message || (failed ? 'Lost connection to Kortix.' : 'You can close this tab now.')}
+          {message || (failed ? 'Lost connection to Zed.' : 'You can close this tab now.')}
         </p>
       </div>
       <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
@@ -83,7 +83,7 @@ export function AudioGestureOverlay() {
       role="status"
     >
       <div className="border-border bg-popover flex flex-col items-center gap-3 rounded-md border px-6 py-8 text-center shadow-lg">
-        <span className="bg-kortix-yellow/10 text-kortix-yellow flex size-12 items-center justify-center rounded-md">
+        <span className="bg-zed-yellow/10 text-zed-yellow flex size-12 items-center justify-center rounded-md">
           <IconVolume className="size-6" strokeWidth={1.5} />
         </span>
         <div className="space-y-1">

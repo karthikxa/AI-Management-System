@@ -141,8 +141,8 @@ import {
   startConnectionOAuth2DeviceAuthorization,
   syncConnectors,
   updateConnectionCredential,
-} from '@kortix/sdk';
-import { contract, qk, useFeatureFlag } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk, useFeatureFlag } from '@zed/sdk/react';
 import {
   buildOAuth2ApplicationInput,
   buildOAuth2CredentialInput,
@@ -445,9 +445,9 @@ function ConnectorsMasterDetail({ projectId }: { projectId: string }) {
 function statusDot(c: AdminConnector): string {
   const status = connectorSetupStatus(c);
   if (status === 'error') return 'bg-destructive';
-  if (status === 'needs_setup') return 'bg-kortix-orange';
-  if (status === 'user_managed') return 'bg-kortix-blue';
-  return 'bg-kortix-green';
+  if (status === 'needs_setup') return 'bg-zed-orange';
+  if (status === 'user_managed') return 'bg-zed-blue';
+  return 'bg-zed-green';
 }
 
 function SaveBar({
@@ -470,7 +470,7 @@ function SaveBar({
   return (
     <div className="border-border/60 mt-5 flex items-center justify-end gap-2 border-t pt-4">
       <span className="text-muted-foreground mr-auto flex items-center gap-1.5 text-xs">
-        <span className="bg-kortix-orange size-1.5 rounded-full" />
+        <span className="bg-zed-orange size-1.5 rounded-full" />
         {tI18nHardcoded.raw(
           'autoComponentsProjectsCustomizeSectionsConnectorsViewJsxTextUnsavedChanges4682b870',
         )}
@@ -750,13 +750,13 @@ function ConnectionRow({
       <span
         className={cn(
           'flex size-9 shrink-0 items-center justify-center rounded-sm',
-          isProjectAuthorization ? 'bg-kortix-blue/15' : 'bg-kortix-purple/15',
+          isProjectAuthorization ? 'bg-zed-blue/15' : 'bg-zed-purple/15',
         )}
       >
         {isProjectAuthorization ? (
-          <Users className="text-kortix-blue size-5" />
+          <Users className="text-zed-blue size-5" />
         ) : (
-          <Lock className="text-kortix-purple size-5" />
+          <Lock className="text-zed-purple size-5" />
         )}
       </span>
       <div className="min-w-0 flex-1">
@@ -1147,7 +1147,7 @@ export function ConnectorDetail({
   );
   const usesProjectAuthorization = connector.authorizationStrategy === 'project';
   const connected = usesProjectAuthorization && connector.secretSet;
-  // The connection's connection_id — the reference a backend (Kortix as a Backend)
+  // The connection's connection_id — the reference a backend (Zed as a Backend)
   // passes in `connector_bindings` to run a session AS this connection. It isn't
   // surfaced anywhere else, so we expose + copy it here. Project-default connection
   // only (the account this connector is connected as for the whole project).
@@ -1626,7 +1626,7 @@ export function ConnectorDetail({
             )}
             <code className="font-mono">{connector.slug}</code>{' '}
             {tI18nHardcoded.raw(
-              'autoComponentsProjectsCustomizeSectionsConnectorsViewJsxTextFromKortixeb47b479',
+              'autoComponentsProjectsCustomizeSectionsConnectorsViewJsxTextFromZedeb47b479',
             )}
           </>
         }
@@ -1670,9 +1670,9 @@ function connectorPlatform(connector: AdminConnector): ChannelConnectionPlatform
   }
   // `platform` is typed to the platforms that have an install flow; voice has
   // none, so it is matched on the reserved slug instead of widening that type.
-  if (connector.slug === 'kortix_voice') return 'voice';
-  if (connector.slug === 'kortix_slack') return 'slack';
-  if (connector.slug === 'kortix_email') return 'email';
+  if (connector.slug === 'zed_voice') return 'voice';
+  if (connector.slug === 'zed_slack') return 'slack';
+  if (connector.slug === 'zed_email') return 'email';
   if (connector.slug.startsWith('email_')) return 'email';
   return null;
 }
@@ -1714,7 +1714,7 @@ export function ChannelConnectionSection({
   }
   if (platform === 'voice') {
     // Voice genuinely has nothing to connect: no OAuth, no API key, no
-    // workspace to link. Calls run on Kortix's own LiveKit project, and each
+    // workspace to link. Calls run on Zed's own LiveKit project, and each
     // one is scoped to the session that spawned it. Falling through to the
     // warning below told people their connection was broken when it was complete.
     return (
@@ -1722,7 +1722,7 @@ export function ChannelConnectionSection({
         <Label>Connection</Label>
         <div className="bg-popover rounded-md border px-4 py-3">
           <p className="text-muted-foreground text-sm">
-            Nothing to connect — voice calls run on Kortix&apos;s own infrastructure. Your agent can
+            Nothing to connect — voice calls run on Zed&apos;s own infrastructure. Your agent can
             start a call, follow what is said, and speak into it. Use the Permissions tab to choose
             what it may do without asking.
           </p>
@@ -2025,7 +2025,7 @@ export function EmailConnectForm({
 }) {
   const mode = useEmailMode(projectId);
   const connect = useConnectEmail();
-  const [displayName, setDisplayName] = useState('Kortix Agent');
+  const [displayName, setDisplayName] = useState('Zed Agent');
   const [username, setUsername] = useState(() =>
     connectorSlug
       .replace(/^email_/, '')
@@ -2099,7 +2099,7 @@ export function EmailConnectForm({
         title={managedAvailable ? 'Create managed Email inbox' : 'Managed Email is not configured'}
       >
         {managedAvailable
-          ? 'Kortix will create and manage the AgentMail inbox for this connection.'
+          ? 'Zed will create and manage the AgentMail inbox for this connection.'
           : 'This deployment needs a project-specific AgentMail key before it can create an inbox.'}
       </InfoBanner>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -2110,7 +2110,7 @@ export function EmailConnectForm({
             aria-label="Email display name"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Kortix Agent"
+            placeholder="Zed Agent"
           />
         </Field>
         {attachExisting ? (
@@ -2161,7 +2161,7 @@ export function EmailConnectForm({
               <Label htmlFor="email-channel-existing-inbox">Attach existing AgentMail inbox</Label>
               <p className="text-muted-foreground mt-1 text-xs">
                 Use this when the mailbox already exists or the AgentMail account has reached its
-                inbox limit. Kortix will still create the webhook for this connection.
+                inbox limit. Zed will still create the webhook for this connection.
               </p>
             </div>
             {attachExisting ? (
@@ -2425,7 +2425,7 @@ export function SlackConnectForm({
           <InfoBanner
             tone="info"
             icon={<SlackLogo />}
-            title="Add Kortix to your Slack workspace"
+            title="Add Zed to your Slack workspace"
             action={
               <Button size="sm" className="shrink-0 gap-1.5" asChild>
                 <a href={installUrl}>
@@ -2435,7 +2435,7 @@ export function SlackConnectForm({
               </Button>
             }
           >
-            One-click install - authorize Kortix in your workspace, no setup required.
+            One-click install - authorize Zed in your workspace, no setup required.
           </InfoBanner>
         ) : (
           <InfoBanner
@@ -2790,8 +2790,8 @@ const POLICY_CHOICES: { value: PolicyChoice; label: string }[] = [
 ];
 
 const POLICY_LABEL: Record<ConnectorPolicyAction, { label: string; tint: string }> = {
-  always_run: { label: 'Allow', tint: 'text-kortix-green' },
-  require_approval: { label: 'Ask', tint: 'text-kortix-yellow' },
+  always_run: { label: 'Allow', tint: 'text-zed-green' },
+  require_approval: { label: 'Ask', tint: 'text-zed-yellow' },
   block: { label: 'Block', tint: 'text-destructive' },
 };
 
@@ -3509,7 +3509,7 @@ export function AddAppPanel({
   canWrite?: boolean;
 }) {
   const tI18nHardcoded = useTranslations('hardcodedUi');
-  // Self-host without Pipedream configured (KORTIX_PUBLIC_CONNECTORS_ENABLED
+  // Self-host without Pipedream configured (ZED_PUBLIC_CONNECTORS_ENABLED
   // false) — hide Easy Connect while leaving Discover/direct sources available.
   const connectorsEnabled = isConnectorsEnabled();
   const connectStatus = useQuery({
@@ -3761,7 +3761,7 @@ function AddSlackConnectionCard({
   const handleConnected = () => {
     successToast('Slack connected');
     setOpen(false);
-    onAdded('kortix_slack');
+    onAdded('zed_slack');
   };
 
   return (
@@ -3775,13 +3775,13 @@ function AddSlackConnectionCard({
           </div>
         </div>
         <p className="text-muted-foreground mt-2 line-clamp-2 min-h-[2rem] text-xs leading-relaxed">
-          Add Kortix to Slack so mentions and threaded replies route into Kortix agent sessions.
+          Add Zed to Slack so mentions and threaded replies route into Zed agent sessions.
         </p>
       </button>
       <Modal open={open} onOpenChange={setOpen}>
         <ModalContent className="lg:max-w-2xl">
           <ModalHeader>
-            <ModalTitle>Add Kortix to Slack</ModalTitle>
+            <ModalTitle>Add Zed to Slack</ModalTitle>
             <ModalDescription>
               Connect the built-in Slack channel. The connection appears automatically after
               installation.
@@ -3978,7 +3978,7 @@ function AppCatalogue({
 /**
  * Slugify the source document's own name — OpenAPI `info.title`, Postman
  * `info.name` — so adding a spec proposes the slug the API calls itself
- * ("Kortix WhatsApp Gateway" → `kortix-whatsapp-gateway`). Derived from the
+ * ("Zed WhatsApp Gateway" → `zed-whatsapp-gateway`). Derived from the
  * document rather than its URL: a hostname is a guess, a title is a statement.
  */
 function slugFromTitle(title: string | null | undefined): string {
@@ -4290,7 +4290,7 @@ function ConnectorConfigFields({
               id="connector-sdl"
               value={draft.spec ?? ''}
               onChange={(e) => set({ spec: e.target.value })}
-              placeholder=".kortix/connectors/schema.graphql"
+              placeholder=".zed/connectors/schema.graphql"
               variant="popover"
               disabled={readOnly}
             />
@@ -4357,7 +4357,7 @@ function ConnectorConfigFields({
               id="connector-routes"
               value={draft.spec ?? ''}
               onChange={(e) => set({ spec: e.target.value })}
-              placeholder=".kortix/connectors/routes.toml"
+              placeholder=".zed/connectors/routes.toml"
               variant="popover"
               disabled={readOnly}
             />
@@ -4407,7 +4407,7 @@ function ConnectorConfigFields({
             </Select>
             <FieldDescription>
               {oauth2Selected ? (
-                'Kortix obtains, refreshes, and injects a bearer token for this connector.'
+                'Zed obtains, refreshes, and injects a bearer token for this connector.'
               ) : draft.auth === undefined && detectedAuth ? (
                 <>
                   Detected <span className="font-medium">{detectedAuth.type}</span>
@@ -4630,7 +4630,7 @@ export function CustomConnectorForm({
           {sharedOAuth2Selected && (
             <div className="space-y-4">
               <InfoBanner tone="info" title="OAuth 2.0 client credentials">
-                Kortix requests a token before saving. It encrypts the configuration and refreshes
+                Zed requests a token before saving. It encrypts the configuration and refreshes
                 the access token before expiry.
               </InfoBanner>
               <OAuth2CredentialFields
@@ -4654,7 +4654,7 @@ export function CustomConnectorForm({
           )}
           {draft.auth === undefined && discovery.data?.status === 'unsupported' && (
             <InfoBanner tone="warning">
-              The source advertises authentication Kortix cannot inject yet. Choose a manual
+              The source advertises authentication Zed cannot inject yet. Choose a manual
               override or None.
             </InfoBanner>
           )}
@@ -4901,7 +4901,7 @@ export function SetCredentialModal({
             {connector?.slug}
           </ModalTitle>
           <ModalDescription>
-            Kortix encrypts credentials and applies the selected authentication strategy to upstream
+            Zed encrypts credentials and applies the selected authentication strategy to upstream
             requests.
           </ModalDescription>
         </ModalHeader>
@@ -4960,7 +4960,7 @@ export function SetCredentialModal({
               </TabsContent>
               <TabsContent value="oauth2" className="space-y-4">
                 <InfoBanner tone="info">
-                  Kortix stores the application configuration, rotates refresh tokens, and revokes
+                  Zed stores the application configuration, rotates refresh tokens, and revokes
                   the connection when you disconnect it.
                 </InfoBanner>
                 <Field>
@@ -5022,7 +5022,7 @@ export function SetCredentialModal({
                       </Button>
                     }
                   >
-                    Kortix checks the connection every {device.interval_seconds} seconds until{' '}
+                    Zed checks the connection every {device.interval_seconds} seconds until{' '}
                     {new Date(device.expires_at).toLocaleTimeString()}.
                   </InfoBanner>
                 )}

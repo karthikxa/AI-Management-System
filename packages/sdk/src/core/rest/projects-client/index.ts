@@ -1,4 +1,4 @@
-// Barrel for the Kortix platform REST client. Re-exports every name the
+// Barrel for the Zed platform REST client. Re-exports every name the
 // original flat `projects-client.ts` exported, so the public surface is
 // byte-identical. The `unwrap` helper in `./shared` stays internal.
 

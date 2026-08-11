@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- **Worktree:** All work happens in `/Users/jay/root/kortix/suna-bring-regressed-feature` on branch `bring-regressed-feature`. Never edit the primary checkout.
+- **Worktree:** All work happens in `/Users/jay/root/zed/suna-bring-regressed-feature` on branch `bring-regressed-feature`. Never edit the primary checkout.
 - **Node:** Run `nvm use 22` before any `pnpm` command — the repo's default Node 26 breaks the worktree tooling.
 - **Typecheck:** `cd apps/web && npx tsc --noEmit`. There is NO `typecheck` script in this repo — do not invent one. Two pre-existing unrelated errors in `src/lib/template-url.test.ts` are expected baseline noise.
 - **Test command:** `cd apps/web && bun test <path>` — `apps/web/package.json:21` defines `"test": "bun test"`, preloading `./test-setup.ts` via `bunfig.toml`.
@@ -47,7 +47,7 @@
 | `apps/web/src/features/session/action-panel/easy/file-viewer.tsx` | Same three changes as above. |
 | `apps/web/src/features/session/action-panel/advanced/advanced-panel.tsx` | Replace its inline navigator with the shared component. |
 | `apps/web/src/features/session/open-session-quick-view.ts` | Accept `'files'`. |
-| `apps/web/src/stores/kortix-computer-store.ts` | Widen `requestQuickView` / `consumeQuickView` / `pendingQuickView` to include `'files'`. |
+| `apps/web/src/stores/zed-computer-store.ts` | Widen `requestQuickView` / `consumeQuickView` / `pendingQuickView` to include `'files'`. |
 | `apps/web/src/features/workspace/command-palette.tsx` | Add the "Open Files" command. |
 | `apps/web/src/features/session/header/session-site-header.tsx` | Add the Files header button. |
 
@@ -171,7 +171,7 @@ In `apps/web/src/stores/session-browser-store.ts`, change `openFileInSessionPane
 ```ts
 export function openFileInSessionPanel(sessionId: string, path: string, line?: number): void {
   useSessionBrowserStore.getState().requestFileOpenSilently(sessionId, path, line);
-  useKortixComputerStore.getState().setIsSidePanelOpen(true);
+  useZedComputerStore.getState().setIsSidePanelOpen(true);
 }
 ```
 
@@ -375,12 +375,12 @@ session openPreview returns early into the panel, so the host stays closed."
 Regression E. `SessionFilesExplorer` is complete and wired at `session-layout.tsx:307`, gated behind `showExplorer = !isEasy && …`. Easy has quick-nav for Terminal, Audit and Browser; Files is the only surface with no Easy route.
 
 **Files:**
-- Modify: `apps/web/src/stores/kortix-computer-store.ts:139,142,162,352-380`
+- Modify: `apps/web/src/stores/zed-computer-store.ts:139,142,162,352-380`
 - Modify: `apps/web/src/features/session/open-session-quick-view.ts:24`
 - Modify: `apps/web/src/features/session/action-panel/easy/easy-panel.tsx`
 - Modify: `apps/web/src/features/workspace/command-palette.tsx:1013-1020`
 - Modify: `apps/web/src/features/session/header/session-site-header.tsx:281-297`
-- Test: `apps/web/src/stores/kortix-computer-store.test.ts`
+- Test: `apps/web/src/stores/zed-computer-store.test.ts`
 
 **Interfaces:**
 - Consumes: `SessionFilesExplorer` from `@/features/session/session-files-explorer` — props `{ chatSessionId?: string; projectId?: string; projectSessionId?: string }`, all optional.
@@ -388,35 +388,35 @@ Regression E. `SessionFilesExplorer` is complete and wired at `session-layout.ts
 
 - [ ] **Step 1: Write the failing test for the widened union**
 
-Append to `apps/web/src/stores/kortix-computer-store.test.ts`, matching the file's existing style:
+Append to `apps/web/src/stores/zed-computer-store.test.ts`, matching the file's existing style:
 
 ```ts
   it('carries a files quick-view request through to its consumer', () => {
-    const s = useKortixComputerStore.getState();
+    const s = useZedComputerStore.getState();
     s.requestQuickView('files', 's1');
-    expect(useKortixComputerStore.getState().pendingQuickView?.view).toBe('files');
-    expect(useKortixComputerStore.getState().consumeQuickView('s1')).toBe('files');
+    expect(useZedComputerStore.getState().pendingQuickView?.view).toBe('files');
+    expect(useZedComputerStore.getState().consumeQuickView('s1')).toBe('files');
   });
 
   it('clears the files request after one consume', () => {
-    const s = useKortixComputerStore.getState();
+    const s = useZedComputerStore.getState();
     s.requestQuickView('files', 's1');
-    useKortixComputerStore.getState().consumeQuickView('s1');
-    expect(useKortixComputerStore.getState().consumeQuickView('s1')).toBeNull();
+    useZedComputerStore.getState().consumeQuickView('s1');
+    expect(useZedComputerStore.getState().consumeQuickView('s1')).toBeNull();
   });
 ```
 
 - [ ] **Step 2: Run the test to verify it fails**
 
 ```bash
-cd apps/web && bun test src/stores/kortix-computer-store.test.ts
+cd apps/web && bun test src/stores/zed-computer-store.test.ts
 ```
 
 Expected: FAIL — a TypeScript union error on `'files'`, or a runtime null from `consumeQuickView`.
 
 - [ ] **Step 3: Widen the union**
 
-In `apps/web/src/stores/kortix-computer-store.ts`, replace every occurrence of the quick-view union with the four-member version. There are four sites — the interface declarations at lines 139 and 142, the state initializer at 162, and the action implementations at 352 and 372:
+In `apps/web/src/stores/zed-computer-store.ts`, replace every occurrence of the quick-view union with the four-member version. There are four sites — the interface declarations at lines 139 and 142, the state initializer at 162, and the action implementations at 352 and 372:
 
 ```ts
   requestQuickView: (view: 'terminal' | 'audit' | 'browser' | 'files', explicitSessionId?: string) => void;
@@ -431,7 +431,7 @@ Apply the same widening to the `pendingQuickView` state type at line 162 and to 
 - [ ] **Step 4: Run the test to verify it passes**
 
 ```bash
-cd apps/web && bun test src/stores/kortix-computer-store.test.ts
+cd apps/web && bun test src/stores/zed-computer-store.test.ts
 ```
 
 Expected: PASS.
@@ -459,7 +459,7 @@ No body change. The Advanced branch's `setView(activePanelSessionId, view)` alre
         .getState()
         .setView(activePanelSessionId, view === 'files' ? 'explorer' : view);
     }
-    useKortixComputerStore.getState().openSidePanel();
+    useZedComputerStore.getState().openSidePanel();
   } else {
 ```
 
@@ -545,8 +545,8 @@ Expected: no new type errors; all panel and store tests pass.
 - [ ] **Step 10: Commit**
 
 ```bash
-git add apps/web/src/stores/kortix-computer-store.ts \
-        apps/web/src/stores/kortix-computer-store.test.ts \
+git add apps/web/src/stores/zed-computer-store.ts \
+        apps/web/src/stores/zed-computer-store.test.ts \
         apps/web/src/features/session/open-session-quick-view.ts \
         apps/web/src/features/session/action-panel/easy/easy-panel.tsx \
         apps/web/src/features/workspace/command-palette.tsx \
@@ -1125,7 +1125,7 @@ Create `apps/web/src/features/session/action-panel/easy/viewer-actions.tsx`:
 import { PublicShareLinkButton } from '@/components/projects/public-share-link-button';
 import { Button } from '@/components/ui/button';
 import Hint from '@/components/ui/hint';
-import { useIsExpanded, useToggleExpanded } from '@/stores/kortix-computer-store';
+import { useIsExpanded, useToggleExpanded } from '@/stores/zed-computer-store';
 import { ChevronsLeftRight, ChevronsRightLeft } from 'lucide-react';
 
 /** Project-session ids a share link is scoped to. */
@@ -1295,7 +1295,7 @@ This task ships no feature code unless Step 5 finds a defect.
 
 ```bash
 nvm use 22
-cd /Users/jay/root/kortix/suna-bring-regressed-feature && pnpm worktree start
+cd /Users/jay/root/zed/suna-bring-regressed-feature && pnpm worktree start
 ```
 
 If the web app 500s on boot, copy the gitignored `apps/web/.env.keys` from the primary checkout and re-run — a missing keyfile breaks middleware. If a workspace package fails to resolve, run `pnpm install` to relink.

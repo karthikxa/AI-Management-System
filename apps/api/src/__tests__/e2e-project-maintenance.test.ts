@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { projectSessions, sessionSandboxes } from '@kortix/db';
+import { projectSessions, sessionSandboxes } from '@zed/db';
 
 let sandboxCandidates: any[] = [];
 let branchCandidates: any[] = [];
@@ -10,9 +10,9 @@ let updateCalls: Array<{ table: unknown; updates: Record<string, unknown> }> = [
 let providerStopError: Error | null = null;
 
 mock.module('../config', () => ({
-  config: { KORTIX_SANDBOX_AUTOSTOP_MINUTES: 15 },
+  config: { ZED_SANDBOX_AUTOSTOP_MINUTES: 15 },
   SANDBOX_VERSION: 'test',
-  KORTIX_MARKUP: 1,
+  ZED_MARKUP: 1,
   PLATFORM_FEE_MARKUP: 0,
   getToolCost: () => 0,
 }));
@@ -147,8 +147,8 @@ beforeEach(() => {
   branchDeletes = [];
   updateCalls = [];
   providerStopError = null;
-  process.env.KORTIX_SANDBOX_IDLE_TTL = '3600000';
-  process.env.KORTIX_BRANCH_RETENTION_DAYS = '90';
+  process.env.ZED_SANDBOX_IDLE_TTL = '3600000';
+  process.env.ZED_BRANCH_RETENTION_DAYS = '90';
 });
 
 describe('project maintenance', () => {
@@ -172,9 +172,9 @@ describe('project maintenance', () => {
         baseRef: 'main',
         metadata: { existing: true },
         projectId: '00000000-0000-4000-a000-000000000201',
-        repoUrl: 'https://github.com/kortix-ai/project.git',
+        repoUrl: 'https://github.com/zed-ai/project.git',
         defaultBranch: 'main',
-        manifestPath: 'kortix.yaml',
+        manifestPath: 'zed.yaml',
       },
       {
         sessionId: 'session-pr',
@@ -182,9 +182,9 @@ describe('project maintenance', () => {
         baseRef: 'main',
         metadata: { pull_request: { state: 'open' } },
         projectId: '00000000-0000-4000-a000-000000000201',
-        repoUrl: 'https://github.com/kortix-ai/project.git',
+        repoUrl: 'https://github.com/zed-ai/project.git',
         defaultBranch: 'main',
-        manifestPath: 'kortix.yaml',
+        manifestPath: 'zed.yaml',
       },
     ];
 

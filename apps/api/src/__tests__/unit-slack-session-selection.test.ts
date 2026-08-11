@@ -2,7 +2,7 @@ import { afterAll, beforeEach, expect, mock, test } from 'bun:test';
 import type { ProjectSessionRow } from '../projects/lib/serializers';
 
 // Guarantee: a Slack-started session inherits the bound channel's agent + model
-// overrides (set via `/kortix agents` / `/kortix models`). Before this, every
+// overrides (set via `/zed agents` / `/zed models`). Before this, every
 // Slack session was hardcoded to agent 'default' with no model.
 
 let dbResults: unknown[][] = [];
@@ -169,7 +169,7 @@ const { config } = await import('../config');
 const { resetSlackSessionLifecycleForTest, setSlackSessionLifecycleForTest } = await import('../channels/slack/session');
 const originalRequireIdentity = config.SLACK_REQUIRE_USER_IDENTITY;
 
-const project = { projectId: 'proj-1', accountId: 'acc-1', defaultBranch: 'main', repoUrl: 'r', name: 'P', manifestPath: 'kortix.yaml' };
+const project = { projectId: 'proj-1', accountId: 'acc-1', defaultBranch: 'main', repoUrl: 'r', name: 'P', manifestPath: 'zed.yaml' };
 const envelope = { team_id: 'T1', event: undefined } as any;
 const event = { type: 'app_mention', channel: 'C1', ts: '100.1', user: 'U1', thread_ts: '90.0', text: 'hi' } as any;
 

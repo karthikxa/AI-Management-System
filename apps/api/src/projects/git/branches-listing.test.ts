@@ -17,15 +17,15 @@ afterEach(async () => {
 });
 
 async function createRemoteWithBranches(branchCount: number) {
-  const root = await mkdtemp(join(tmpdir(), 'kortix-branch-listing-'));
+  const root = await mkdtemp(join(tmpdir(), 'zed-branch-listing-'));
   cleanupPaths.push(root);
   const work = join(root, 'work');
   const remote = join(root, 'remote.git');
   const cache = join(root, 'cache');
 
   await exec('git', ['init', work]);
-  await exec('git', ['-C', work, 'config', 'user.name', 'Kortix Test']);
-  await exec('git', ['-C', work, 'config', 'user.email', 'test@kortix.ai']);
+  await exec('git', ['-C', work, 'config', 'user.name', 'Zed Test']);
+  await exec('git', ['-C', work, 'config', 'user.email', 'test@zed.ai']);
   await Bun.write(join(work, 'README.md'), '# test\n');
   await exec('git', ['-C', work, 'add', 'README.md']);
   await exec('git', ['-C', work, 'commit', '-m', 'initial']);
@@ -54,15 +54,15 @@ async function createRemoteWithBranches(branchCount: number) {
 describe('listBranches', () => {
   test('lists a large remote without creating a full repository mirror', async () => {
     const { cache, remote, tip } = await createRemoteWithBranches(250);
-    const previousCacheDir = process.env.KORTIX_GIT_CACHE_DIR;
-    process.env.KORTIX_GIT_CACHE_DIR = cache;
+    const previousCacheDir = process.env.ZED_GIT_CACHE_DIR;
+    process.env.ZED_GIT_CACHE_DIR = cache;
 
     try {
       const project = {
         projectId: 'branch-listing-regression',
         repoUrl: remote,
         defaultBranch: 'main',
-        manifestPath: 'kortix.yaml',
+        manifestPath: 'zed.yaml',
       };
       const branches = await listBranches(project);
 
@@ -78,8 +78,8 @@ describe('listBranches', () => {
       expect(branches.at(-1)?.name).toBe('session-0249');
       expect(await Bun.file(join(repoCachePath(project), 'HEAD')).exists()).toBe(false);
     } finally {
-      if (previousCacheDir === undefined) delete process.env.KORTIX_GIT_CACHE_DIR;
-      else process.env.KORTIX_GIT_CACHE_DIR = previousCacheDir;
+      if (previousCacheDir === undefined) delete process.env.ZED_GIT_CACHE_DIR;
+      else process.env.ZED_GIT_CACHE_DIR = previousCacheDir;
     }
   });
 });

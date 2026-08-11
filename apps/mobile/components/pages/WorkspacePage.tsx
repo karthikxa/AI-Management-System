@@ -69,7 +69,7 @@ import {
   type Project,
   type McpStatus,
 } from '@/lib/opencode/hooks/use-opencode-data';
-import { useKortixConnectors, type KortixConnector } from '@/lib/kortix';
+import { useZedConnectors, type ZedConnector } from '@/lib/zed';
 import { WorkspaceSettingsSheet, type WorkspaceSettingsSheetRef } from './WorkspaceSettingsSheet';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ interface WorkspaceItem {
   kind: ItemKind;
   scope: ItemScope;
   meta?: string;
-  raw?: Agent | Skill | Command | Project | KortixConnector | { toolId: string; server?: string } | { serverName: string; status: McpStatus };
+  raw?: Agent | Skill | Command | Project | ZedConnector | { toolId: string; server?: string } | { serverName: string; status: McpStatus };
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -207,7 +207,7 @@ export const WorkspacePage = forwardRef<WorkspacePageRef, WorkspacePageProps>(fu
   const { data: projects, isLoading: lProjects, refetch: rProjects } = useOpenCodeProjects(sandboxUrl);
   const { data: toolIds, isLoading: lTools, refetch: rTools } = useOpenCodeToolIds(sandboxUrl);
   const { data: mcpStatus, isLoading: lMcp, refetch: rMcp } = useOpenCodeMcpStatus(sandboxUrl);
-  const { data: connectors, isLoading: lConnectors, refetch: rConnectors } = useKortixConnectors(sandboxUrl);
+  const { data: connectors, isLoading: lConnectors, refetch: rConnectors } = useZedConnectors(sandboxUrl);
 
   const isLoading = lAgents || lSkills || lCommands || lProjects || lTools || lMcp || lConnectors;
 
@@ -448,7 +448,7 @@ export const WorkspacePage = forwardRef<WorkspacePageRef, WorkspacePageProps>(fu
       }
     }
     if (item.kind === 'connector' && item.raw) {
-      const c = item.raw as KortixConnector;
+      const c = item.raw as ZedConnector;
       if (c.source) rows.push({ label: 'Source', value: c.source });
       if (c.pipedream_slug) rows.push({ label: 'Pipedream', value: c.pipedream_slug, mono: true });
       if (c.env_keys?.length) rows.push({ label: 'Env', value: c.env_keys.join(', '), mono: true });

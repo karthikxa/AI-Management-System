@@ -23,7 +23,7 @@ export interface SecretEgressRule {
   inject?: SecretInjectionSlot;
 }
 export interface SecretEgressPolicy {
-  backend?: 'llm_gateway' | 'connector' | 'git_proxy' | 'kortix_fetch';
+  backend?: 'llm_gateway' | 'connector' | 'git_proxy' | 'zed_fetch';
   base_url_env?: string;
   rules: SecretEgressRule[];
   inject: SecretInjectionSlot;
@@ -99,17 +99,17 @@ export interface ProjectSecretsResponse {
   items: ProjectSecret[];
   /** Whether the requesting member can edit shared rows (vs only their own overrides). */
   can_manage?: boolean;
-  /** Env keys declared as required in the project's kortix.yaml manifest. */
+  /** Env keys declared as required in the project's zed.yaml manifest. */
   required: string[];
-  /** Env keys declared as optional in the project's kortix.yaml manifest. */
+  /** Env keys declared as optional in the project's zed.yaml manifest. */
   optional: string[];
   /**
-   * 'loaded'  → kortix.yaml read successfully (env lists are authoritative).
+   * 'loaded'  → zed.yaml read successfully (env lists are authoritative).
    * 'missing' → manifest file not present in the repo.
    * 'error'   → couldn't fetch/parse the repo (private repo, network, etc.).
    */
   manifest_status?: 'loaded' | 'missing' | 'error';
-  /** Path the API tried (defaults to "kortix.yaml" but configurable per project). */
+  /** Path the API tried (defaults to "zed.yaml" but configurable per project). */
   manifest_path?: string;
   /** Error string when manifest_status === 'error'. */
   manifest_error?: string;

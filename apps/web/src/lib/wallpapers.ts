@@ -40,8 +40,8 @@ export const WALLPAPERS: Wallpaper[] = [
     id: 'brandmark',
     name: 'Brandmark',
     type: 'svg',
-    svgUrl: '/kortix-brandmark-bg.svg',
-    thumbnailUrl: '/kortix-brandmark-bg.svg',
+    svgUrl: '/zed-brandmark-bg.svg',
+    thumbnailUrl: '/zed-brandmark-bg.svg',
   },
   {
     id: 'nebula',

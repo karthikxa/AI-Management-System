@@ -13,7 +13,7 @@
 export const PROJECT_LANDING_PATH = '/projects/start';
 
 /** Non-httpOnly so middleware can read it and the project page can set it. */
-export const LAST_PROJECT_COOKIE = 'kortix_last_project';
+export const LAST_PROJECT_COOKIE = 'zed_last_project';
 
 /**
  * Set at the moment authentication completes — by the `/auth/callback` route
@@ -30,7 +30,7 @@ export const LAST_PROJECT_COOKIE = 'kortix_last_project';
  * the users it must never demote — brand-new signups — to the projects list.
  * A cross-site attacker can strip a referrer, but cannot set this cookie.
  */
-export const POST_AUTH_INTENT_COOKIE = 'kortix_post_auth';
+export const POST_AUTH_INTENT_COOKIE = 'zed_post_auth';
 
 /** Short-lived on purpose: it only has to outlive the post-auth redirect. */
 export const POST_AUTH_INTENT_MAX_AGE = 60 * 5;

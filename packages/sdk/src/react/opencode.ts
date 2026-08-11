@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @kortix/sdk/react — OpenCode React hook surface.
+ * @zed/sdk/react — OpenCode React hook surface.
  *
  * Barrel re-exporting EVERY hook, query-key factory, provider, and type from
  * the ported `use-opencode-*` / `use-*` hook modules. The web UI imports these
@@ -34,7 +34,7 @@
 // Router-agnostic route scope: the host injects "the project the user is
 // looking at" here (Next hosts derive it from useParams once, near the root);
 // `useOpenCodeProviders`/`useOpenCodeLocal` resolve it via this context.
-export { KortixProjectProvider, useKortixRouteProjectId } from './route-project';
+export { ZedProjectProvider, useZedRouteProjectId } from './route-project';
 export * from './use-opencode-sessions';
 export * from './use-opencode-events';
 export * from './use-opencode-local';

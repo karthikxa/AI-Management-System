@@ -83,4 +83,4 @@ export {
 // TYPE EXPORTS
 // =============================================================================
 
-export type { AccountState } from '@kortix/sdk';
+export type { AccountState } from '@zed/sdk';

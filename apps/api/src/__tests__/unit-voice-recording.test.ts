@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, mock, test } from 'bun:test';
 /**
  * What a live call leaves behind.
  *
- * The bug these cover: the Kortix agent called the `kortix_voice` connector's
+ * The bug these cover: the Zed agent called the `zed_voice` connector's
  * `send_prompt`, the room heard it, and `voice_call_turns` had no row for it —
  * so the /voice page rendered a conversation with one side missing. The record
  * of the agent side depended entirely on the LiveKit worker echoing its own
@@ -57,11 +57,11 @@ mock.module('../shared/db', () => ({
 }));
 
 mock.module('../config', () => ({
-  config: { KORTIX_URL: 'https://example.com', API_KEY_SECRET: 'test-secret' },
+  config: { ZED_URL: 'https://example.com', API_KEY_SECRET: 'test-secret' },
 }));
 
 mock.module('../channels/voice/livekit', () => ({
-  KORTIX_REPLY_TOPIC: 'kortix',
+  ZED_REPLY_TOPIC: 'zed',
   roomNameForCall: (callId: string) => `voice-${callId}`,
   roomHasAgent: async () => agentInRoom,
   roomCallbackUrl: async () => 'https://example.com',
@@ -86,7 +86,7 @@ mock.module('../projects/session-lifecycle', () => ({
   continueSession: async () => 'delivered',
 }));
 
-const { askKortix, buildAskPrompt, promptVoiceAgent, settleAsk } = await import(
+const { askZed, buildAskPrompt, promptVoiceAgent, settleAsk } = await import(
   '../channels/voice/runtime'
 );
 const { ASK_SETTLED_SPEAKER, ASK_SPEAKER, IN_FLIGHT_MESSAGE } = await import(
@@ -137,13 +137,13 @@ const { readTranscriptForAgent, resolveReadPlan } = await import(
 
 const { relayTurnAnswer, relayTurnEnd, relayTurnStep } = await import('../channels/voice/turn');
 const {
-  KORTIX_SPEAKER,
-  kortixError,
-  kortixProgress,
-  kortixQuestion,
-  kortixResult,
-  kortixReview,
-  kortixSay,
+  ZED_SPEAKER,
+  zedError,
+  zedProgress,
+  zedQuestion,
+  zedResult,
+  zedReview,
+  zedSay,
 } = await import('../channels/voice/utterance');
 
 beforeEach(() => {
@@ -156,14 +156,14 @@ beforeEach(() => {
   storedPosition = 0;
 });
 
-describe('kortix utterances — instruction on the wire, payload in the record', () => {
+describe('zed utterances — instruction on the wire, payload in the record', () => {
   const cases = [
-    { name: 'say', u: kortixSay('the connector works straight from the session'), tag: '[say]' },
-    { name: 'progress', u: kortixProgress('reading the config'), tag: '[progress]' },
-    { name: 'result', u: kortixResult('four tests failed'), tag: '[result]' },
-    { name: 'question', u: kortixQuestion('should I deploy it?'), tag: '[question]' },
-    { name: 'review', u: kortixReview('the login fix'), tag: '[review]' },
-    { name: 'error', u: kortixError('sandbox not ready'), tag: '[error]' },
+    { name: 'say', u: zedSay('the connector works straight from the session'), tag: '[say]' },
+    { name: 'progress', u: zedProgress('reading the config'), tag: '[progress]' },
+    { name: 'result', u: zedResult('four tests failed'), tag: '[result]' },
+    { name: 'question', u: zedQuestion('should I deploy it?'), tag: '[question]' },
+    { name: 'review', u: zedReview('the login fix'), tag: '[review]' },
+    { name: 'error', u: zedError('sandbox not ready'), tag: '[error]' },
   ];
 
   for (const { name, u, tag } of cases) {
@@ -183,17 +183,17 @@ describe('kortix utterances — instruction on the wire, payload in the record',
   }
 
   test('the transcript carries the thing that was actually said', () => {
-    expect(kortixSay('deploy is green').transcript).toBe('deploy is green');
-    expect(kortixResult('four tests failed').transcript).toBe('four tests failed');
-    expect(kortixQuestion('should I deploy it?').transcript).toBe('should I deploy it?');
-    expect(kortixProgress('reading the config').transcript).toContain('reading the config');
-    expect(kortixReview('the login fix').transcript).toContain('the login fix');
-    expect(kortixError('sandbox not ready').transcript).toContain('sandbox not ready');
+    expect(zedSay('deploy is green').transcript).toBe('deploy is green');
+    expect(zedResult('four tests failed').transcript).toBe('four tests failed');
+    expect(zedQuestion('should I deploy it?').transcript).toBe('should I deploy it?');
+    expect(zedProgress('reading the config').transcript).toContain('reading the config');
+    expect(zedReview('the login fix').transcript).toContain('the login fix');
+    expect(zedError('sandbox not ready').transcript).toContain('sandbox not ready');
   });
 
   test('send_prompt keeps the framing that stopped the call answering statements as questions', () => {
-    const instruction = kortixSay('the connector works straight from the session').instruction;
-    expect(instruction).toContain('Your Kortix agent');
+    const instruction = zedSay('the connector works straight from the session').instruction;
+    expect(instruction).toContain('Your Zed agent');
     expect(instruction).toContain('do not treat it');
     expect(instruction).toContain('as a question or a task to act on');
     expect(instruction).toContain('the connector works straight from the session');
@@ -210,7 +210,7 @@ describe('kortix utterances — instruction on the wire, payload in the record',
  * assert "this project is about developing a system involving dogs", and because
  * that claim sat in its history as fact, every correct answer sent from here
  * CONTRADICTED it. It could not relay an answer that disagreed with itself, so
- * it asked Kortix again to resolve the contradiction — at real cost per ask —
+ * it asked Zed again to resolve the contradiction — at real cost per ask —
  * until a human hung up.
  *
  * "[result] … say it out loud now, in your own words" is what made that
@@ -221,10 +221,10 @@ describe('kortix utterances — instruction on the wire, payload in the record',
  * reconcile.
  */
 describe('a result is authoritative, and says so', () => {
-  const result = kortixResult('the migration applied cleanly');
+  const result = zedResult('the migration applied cleanly');
 
   test('it states the answer rather than inviting a reinterpretation', () => {
-    expect(result.instruction).toContain('Kortix has answered');
+    expect(result.instruction).toContain('Zed has answered');
     expect(result.instruction).toContain('State this answer to the room');
     expect(result.instruction).toContain('the migration applied cleanly');
     // The exact licence that let a false belief survive contact with the truth.
@@ -233,7 +233,7 @@ describe('a result is authoritative, and says so', () => {
 
   test('it explicitly overrides what the voice model said earlier — the clause that ends the loop', () => {
     expect(result.instruction).toContain('REPLACES anything you said or assumed earlier');
-    expect(result.instruction).toContain('Do not ask Kortix about it again');
+    expect(result.instruction).toContain('Do not ask Zed about it again');
   });
 
   test('it corrects the record when the room already heard the contradiction', () => {
@@ -257,17 +257,17 @@ describe('a result is authoritative, and says so', () => {
   test('a say and an error supersede too — half a rule leaves the contradiction standing', () => {
     // If a result overrides but an error does not, a model holding a false
     // belief still has something to chase the moment a turn fails.
-    for (const u of [kortixSay('deploy is green'), kortixError('sandbox not ready')]) {
+    for (const u of [zedSay('deploy is green'), zedError('sandbox not ready')]) {
       expect(u.instruction).toContain('REPLACES anything you said or assumed earlier');
     }
-    expect(kortixError('sandbox not ready').instruction).toContain('Do not offer a theory');
-    expect(kortixError('sandbox not ready').instruction).toContain('do not hand the same request over again');
+    expect(zedError('sandbox not ready').instruction).toContain('Do not offer a theory');
+    expect(zedError('sandbox not ready').instruction).toContain('do not hand the same request over again');
   });
 
   test('a progress step does NOT supersede — it is not a finding', () => {
     // Telling the model that "reading the config" overrides its beliefs would
     // invite it to spin a step into an answer.
-    const progress = kortixProgress('reading the config');
+    const progress = zedProgress('reading the config');
     expect(progress.instruction).not.toContain('REPLACES anything you said');
     expect(progress.instruction).toContain('there is no answer yet');
     expect(progress.instruction).toContain('do not guess what it will find');
@@ -283,26 +283,26 @@ describe('a result is authoritative, and says so', () => {
   });
 
   test('an error with no readable cause still says something', () => {
-    expect(kortixError(null).transcript).toBe('That request failed');
-    expect(kortixError('  ').instruction).not.toContain('::');
+    expect(zedError(null).transcript).toBe('That request failed');
+    expect(zedError('  ').instruction).not.toContain('::');
   });
 
-  test('Kortix speaks under its own name, not the bot voice', () => {
+  test('Zed speaks under its own name, not the bot voice', () => {
     // The worker labels what the voice ACTUALLY said with the bot's display
     // name (apps/voice-agent/src/transcripts.ts). These two are both the agent
     // side and must stay distinguishable.
-    expect(KORTIX_SPEAKER).toBe('kortix');
+    expect(ZED_SPEAKER).toBe('zed');
   });
 });
 
 describe('promptVoiceAgent records what the room was given', () => {
   test('delivers the instruction and writes the payload as an agent turn', async () => {
-    const res = await promptVoiceAgent('sess-1', kortixSay('deploy is green'), { projectId: 'proj-1' });
+    const res = await promptVoiceAgent('sess-1', zedSay('deploy is green'), { projectId: 'proj-1' });
 
     expect(res.delivered).toBe(true);
     expect(sent).toHaveLength(1);
     expect(sent[0]!.room).toBe('voice-sess-1');
-    expect(sent[0]!.payload.type).toBe('kortix_reply');
+    expect(sent[0]!.payload.type).toBe('zed_reply');
     expect(sent[0]!.payload.text).toContain('[say]');
 
     expect(inserts).toHaveLength(1);
@@ -311,7 +311,7 @@ describe('promptVoiceAgent records what the room was given', () => {
       projectId: 'proj-1',
       sessionId: 'sess-1',
       role: 'agent',
-      speaker: 'kortix',
+      speaker: 'zed',
       text: 'deploy is green',
     });
   });
@@ -322,7 +322,7 @@ describe('promptVoiceAgent records what the room was given', () => {
     // silently never recorded.
     dbResults = [[{ projectId: 'proj-9' }]];
 
-    await promptVoiceAgent('sess-2', kortixResult('four tests failed'));
+    await promptVoiceAgent('sess-2', zedResult('four tests failed'));
 
     expect(inserts).toHaveLength(1);
     expect(inserts[0]!.projectId).toBe('proj-9');
@@ -332,7 +332,7 @@ describe('promptVoiceAgent records what the room was given', () => {
   test('records nothing when the room has no worker — the utterance was never delivered', async () => {
     agentInRoom = false;
 
-    const res = await promptVoiceAgent('sess-3', kortixSay('nobody is listening'), { projectId: 'p' });
+    const res = await promptVoiceAgent('sess-3', zedSay('nobody is listening'), { projectId: 'p' });
 
     expect(res.delivered).toBe(false);
     expect(res.reason).toContain('no voice agent');
@@ -344,7 +344,7 @@ describe('promptVoiceAgent records what the room was given', () => {
     // Otherwise the agent believes the room did not hear it and says it again.
     insertThrows = true;
 
-    const res = await promptVoiceAgent('sess-4', kortixSay('deploy is green'), { projectId: 'p' });
+    const res = await promptVoiceAgent('sess-4', zedSay('deploy is green'), { projectId: 'p' });
 
     expect(res.delivered).toBe(true);
     expect(sent).toHaveLength(1);
@@ -352,7 +352,7 @@ describe('promptVoiceAgent records what the room was given', () => {
 
   test('an unresolvable project degrades to "delivered but unrecorded", never to a throw', async () => {
     dbResults = [[]];
-    const res = await promptVoiceAgent('sess-5', kortixResult('done'));
+    const res = await promptVoiceAgent('sess-5', zedResult('done'));
     expect(res.delivered).toBe(true);
     expect(inserts).toHaveLength(0);
   });
@@ -367,7 +367,7 @@ describe('promptVoiceAgent records what the room was given', () => {
  * that a refusal comes back as a sentence the model can act on rather than as a
  * silent no-op.
  */
-describe('askKortix — one hand-off in flight per call', () => {
+describe('askZed — one hand-off in flight per call', () => {
   const call = {
     callId: 'sess-ask',
     projectId: 'proj-1',
@@ -381,7 +381,7 @@ describe('askKortix — one hand-off in flight per call', () => {
   test('an empty ledger allows the ask, and the ask row is written as part of it', async () => {
     dbResults = [[]]; // readAskLedger
 
-    expect(await askKortix(call, '  what is the build status?  ')).toEqual({ ok: true });
+    expect(await askZed(call, '  what is the build status?  ')).toEqual({ ok: true });
 
     // Written HERE and awaited, not fire-and-forget from the MCP layer: this row
     // IS the in-flight flag, so the next ask's ledger read must be guaranteed to
@@ -393,14 +393,14 @@ describe('askKortix — one hand-off in flight per call', () => {
       sessionId: 'sess-ask',
       role: 'tool',
       speaker: ASK_SPEAKER,
-      text: 'ask_kortix: what is the build status?',
+      text: 'ask_zed: what is the build status?',
     });
   });
 
   test('a second ask while one is outstanding is refused, and writes nothing', async () => {
     dbResults = [[{ cursor: 7, speaker: ASK_SPEAKER, createdAt: new Date(Date.now() - 3_000) }]];
 
-    const res = await askKortix(call, 'are you sure about the dogs?');
+    const res = await askZed(call, 'are you sure about the dogs?');
 
     expect(res.ok).toBe(false);
     if (res.ok) throw new Error('unreachable');
@@ -419,19 +419,19 @@ describe('askKortix — one hand-off in flight per call', () => {
       ],
     ];
 
-    expect(await askKortix(call, 'and now?')).toEqual({ ok: true });
+    expect(await askZed(call, 'and now?')).toEqual({ ok: true });
     expect(inserts).toHaveLength(1);
     expect(inserts[0]!.speaker).toBe(ASK_SPEAKER);
   });
 
   test('an empty request is still rejected before any of this', async () => {
-    expect(await askKortix(call, '   ')).toEqual({ ok: false, error: 'empty request' });
+    expect(await askZed(call, '   ')).toEqual({ ok: false, error: 'empty request' });
     expect(inserts).toHaveLength(0);
   });
 
   test('a long request is truncated — a transcript row is permanent and this is free text', async () => {
     dbResults = [[]];
-    await askKortix(call, 'x'.repeat(900));
+    await askZed(call, 'x'.repeat(900));
     expect(String(inserts[0]!.text).length).toBeLessThanOrEqual(512);
     expect(String(inserts[0]!.text).endsWith('…')).toBe(true);
   });
@@ -448,7 +448,7 @@ describe('askKortix — one hand-off in flight per call', () => {
     const originalSelect = db.select;
     (db as { select: unknown }).select = chainThatThrows;
     try {
-      expect(await askKortix(call, 'still there?')).toEqual({ ok: true });
+      expect(await askZed(call, 'still there?')).toEqual({ ok: true });
     } finally {
       (db as { select: unknown }).select = originalSelect;
     }
@@ -469,7 +469,7 @@ describe('settleAsk — the arriving answer is what clears the flag', () => {
       speaker: ASK_SETTLED_SPEAKER,
       // `<tool>: <detail>` — so the call page's existing splitter renders it
       // without a change there (apps/web .../call-record.ts `interpretTool`).
-      text: 'ask_kortix_done: answered',
+      text: 'ask_zed_done: answered',
     });
   });
 
@@ -498,7 +498,7 @@ describe('in-call turn relay lands in the transcript', () => {
     expect(inserts).toHaveLength(1);
     expect(inserts[0]).toMatchObject({
       role: 'agent',
-      speaker: 'kortix',
+      speaker: 'zed',
       text: 'the migration applied cleanly',
       sessionId: 'sess-answer',
     });
@@ -542,15 +542,15 @@ const DB_DEPS_SOURCE = await Bun.file(
   new URL('../connectors/db-deps.ts', import.meta.url).pathname,
 ).text();
 
-describe('kortix_voice connector wiring', () => {
+describe('zed_voice connector wiring', () => {
   const source = DB_DEPS_SOURCE;
 
-  test('send_prompt goes through kortixSay, so what it says is also what gets recorded', () => {
+  test('send_prompt goes through zedSay, so what it says is also what gets recorded', () => {
     expect(source).toContain("from '../channels/voice/utterance'");
-    expect(source).toContain('kortixSay(text)');
+    expect(source).toContain('zedSay(text)');
     // The framing must live in utterance.ts next to the transcript line, not
     // be re-inlined here where nothing can record it.
-    expect(source).not.toContain('[say] Your Kortix agent');
+    expect(source).not.toContain('[say] Your Zed agent');
   });
 
   test('read_transcript delegates the whole read, and only adds liveness', () => {
@@ -604,8 +604,8 @@ describe('the inbound voice prompt teaches the agent how to work the call', () =
    */
   const prompt = buildAskPrompt('can you check the build?', 'sess-42');
 
-  test('points at the kortix-voice skill, the way Slack and Teams do', () => {
-    expect(prompt).toContain('`kortix-voice` skill');
+  test('points at the zed-voice skill, the way Slack and Teams do', () => {
+    expect(prompt).toContain('`zed-voice` skill');
     expect(prompt).toContain('`skill` tool');
   });
 
@@ -668,7 +668,7 @@ function seed(n: number): void {
   transcript = Array.from({ length: n }, (_, i) => ({
     cursor: i + 1,
     role: i % 2 === 0 ? 'user' : 'agent',
-    speaker: i % 2 === 0 ? 'Marko' : 'kortix',
+    speaker: i % 2 === 0 ? 'Marko' : 'zed',
     text: `turn ${i + 1}`,
     at: new Date(1700000000000 + i).toISOString(),
   }));

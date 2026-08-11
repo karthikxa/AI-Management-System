@@ -1,6 +1,6 @@
 'use client';
 
-import type { AdminConnector } from '@kortix/sdk';
+import type { AdminConnector } from '@zed/sdk';
 import {
   CubeIcon as Boxes,
   CheckIcon,
@@ -99,7 +99,7 @@ export function ConnectorConnectedMark({ className }: { className?: string } = {
     <CheckIcon
       aria-hidden
       weight="bold"
-      className={cn('text-kortix-green size-4 shrink-0', className)}
+      className={cn('text-zed-green size-4 shrink-0', className)}
       data-testid="catalog-connected"
     />
   );

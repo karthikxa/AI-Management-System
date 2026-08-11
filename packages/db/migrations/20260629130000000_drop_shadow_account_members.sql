@@ -18,7 +18,7 @@ BEGIN
     SELECT 1 FROM information_schema.tables
     WHERE table_schema = 'auth' AND table_name = 'users'
   ) THEN
-    DELETE FROM "kortix"."account_members" m
+    DELETE FROM "zed"."account_members" m
      WHERE m.user_id = m.account_id
        AND NOT EXISTS (SELECT 1 FROM auth.users u WHERE u.id = m.user_id);
   END IF;

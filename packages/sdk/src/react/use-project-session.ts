@@ -8,7 +8,7 @@ import { contract } from './query-contracts';
 import { qk } from './query-keys';
 
 /**
- * The ONLY way to read one Kortix session row.
+ * The ONLY way to read one Zed session row.
  *
  * `qk.project.session(projectId, sessionId)` had three independent readers,
  * and the migration that unified their KEY left their CONTRACTS apart — the

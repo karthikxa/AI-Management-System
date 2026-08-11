@@ -64,7 +64,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
 
-import { KortixLogo } from '@/components/ui/KortixLogo';
+import { ZedLogo } from '@/components/ui/ZedLogo';
 import AnthropicIcon from '@/assets/images/models/Anthropic.svg';
 import OAIIcon from '@/assets/images/models/OAI.svg';
 import GeminiIcon from '@/assets/images/models/Gemini.svg';
@@ -527,7 +527,7 @@ function ProviderStep({ onContinue, isDark, themeColors }: StepProps & { onConti
           <Text style={{ fontSize: 13, fontFamily: 'Roobert', color: isDark ? 'rgba(248,248,248,0.5)' : 'rgba(18,18,21,0.5)', textAlign: 'center', lineHeight: 18, paddingHorizontal: 8, maxWidth: 300 }}>
             {hasLLMProvider
               ? `${connectedCount} provider${connectedCount > 1 ? 's' : ''} ready. You can add more anytime from settings.`
-              : 'Configure which AI models to use with your Kortix agent. Connect OpenAI, Anthropic, Google, or any supported provider.'}
+              : 'Configure which AI models to use with your Zed agent. Connect OpenAI, Anthropic, Google, or any supported provider.'}
           </Text>
         </View>
 
@@ -1199,7 +1199,7 @@ function GetStartedStep({ onComplete, completing, isDark, themeColors }: StepPro
           You're all set
         </Text>
         <Text style={{ fontSize: 13, fontFamily: 'Roobert', color: colors.muted, textAlign: 'center', lineHeight: 18, maxWidth: 280 }}>
-          Your Kortix agent is configured and ready. We'll walk you through the basics in a quick guided conversation.
+          Your Zed agent is configured and ready. We'll walk you through the basics in a quick guided conversation.
         </Text>
       </View>
 
@@ -1328,7 +1328,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
 
         {/* ── Fixed header ── */}
         <View style={{ alignItems: 'center', marginBottom: 16 }}>
-          <KortixLogo size={28} variant="symbol" color={isDark ? 'dark' : 'light'} />
+          <ZedLogo size={28} variant="symbol" color={isDark ? 'dark' : 'light'} />
           <Text style={{ fontSize: 10, fontFamily: 'Roobert-Medium', color: isDark ? 'rgba(248,248,248,0.3)' : 'rgba(18,18,21,0.3)', letterSpacing: 2, textTransform: 'uppercase', marginTop: 12, marginBottom: 4 }}>
             Instance Setup
           </Text>

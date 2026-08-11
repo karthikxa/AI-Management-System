@@ -15,7 +15,7 @@ import {
   PNPM_SHA256_ARM64,
   UV_SHA256_AMD64,
   UV_SHA256_ARM64,
-} from '@kortix/shared';
+} from '@zed/shared';
 import { CODEX_USER_AGENT } from '../llm-gateway/credentials/codex-core';
 import {
   PLATFORM_DEFAULT_USER_DOCKERFILE,
@@ -44,11 +44,11 @@ describe('runtime version drift guards', () => {
   test('sandbox Dockerfile reads runtime pins from the shared manifest', () => {
     const dockerfile = readRepoFile('apps/sandbox/Dockerfile');
     expect(dockerfile).toContain('COPY packages/shared/src/runtime-versions.json');
-    expect(dockerfile).toContain("require('/tmp/kortix-runtime-versions.json').opencode");
-    expect(dockerfile).toContain("require('/tmp/kortix-runtime-versions.json').agentBrowser");
-    expect(dockerfile).toContain("require('/tmp/kortix-runtime-versions.json').playwright");
-    expect(dockerfile).toContain("require('/tmp/kortix-runtime-versions.json').bun");
-    expect(dockerfile).toContain("require('/tmp/kortix-runtime-versions.json').anydoc");
+    expect(dockerfile).toContain("require('/tmp/zed-runtime-versions.json').opencode");
+    expect(dockerfile).toContain("require('/tmp/zed-runtime-versions.json').agentBrowser");
+    expect(dockerfile).toContain("require('/tmp/zed-runtime-versions.json').playwright");
+    expect(dockerfile).toContain("require('/tmp/zed-runtime-versions.json').bun");
+    expect(dockerfile).toContain("require('/tmp/zed-runtime-versions.json').anydoc");
     expect(dockerfile).toContain('pnpmSha256Amd64');
     expect(dockerfile).toContain('pnpmSha256Arm64');
     expect(dockerfile).toContain('uvSha256Amd64');
@@ -74,11 +74,11 @@ describe('runtime version drift guards', () => {
       userDockerfile: PLATFORM_DEFAULT_USER_DOCKERFILE,
       opencodeVersion: OPENCODE_VERSION,
       agentBrowserVersion: AGENT_BROWSER_VERSION,
-      agentBinaryPath: 'kortix-agent.gz',
-      cliBinaryPath: 'kortix.gz',
-      entrypointScriptPath: 'kortix-entrypoint',
+      agentBinaryPath: 'zed-agent.gz',
+      cliBinaryPath: 'zed.gz',
+      entrypointScriptPath: 'zed-entrypoint',
       machineDocPath: 'MACHINE.md',
-      slackCliPath: 'kortix-slack-cli',
+      slackCliPath: 'zed-slack-cli',
     });
 
     expect(merged).toContain(`opencode-ai@${OPENCODE_VERSION}`);

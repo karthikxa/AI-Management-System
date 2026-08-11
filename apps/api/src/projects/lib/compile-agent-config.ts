@@ -1,17 +1,17 @@
 /**
  * The runtime compiler (spec docs/specs/2026-07-05-agent-first-config-unification.md
  * §2.3, redirected 2026-07-05 — "one home per concern"): turns a
- * `kortix_version: 2` manifest's `agents:` map (pure governance) plus each
- * agent's own native `.kortix/opencode/agents/<name>.md` (frontmatter +
+ * `zed_version: 2` manifest's `agents:` map (pure governance) plus each
+ * agent's own native `.zed/opencode/agents/<name>.md` (frontmatter +
  * body — the OpenCode behavior source of truth) into OpenCode-native config.
  *
  * The 2026-07-05 redirect killed the earlier "nested `opencode:` block in
- * kortix.yaml + illegal-frontmatter gate" design: OpenCode behavior
+ * zed.yaml + illegal-frontmatter gate" design: OpenCode behavior
  * (mode/model/temperature/top_p/steps/variant/color/hidden/permission/prompt)
  * now lives ENTIRELY in the agent's own `.md` frontmatter + body — a stock
  * OpenCode agent `.md` is valid input as-is, frontmatter included. The
  * manifest's `agents.<name>` block carries governance ONLY (connectors/
- * secrets/skills/kortix_cli/workspace/enabled); the agent's NAME is the join
+ * secrets/skills/zed_cli/workspace/enabled); the agent's NAME is the join
  * between the two (map key ↔ `.md` filename).
  *
  * `compileAgentConfig` is pure — no I/O, no DB. For each declared agent it
@@ -20,14 +20,14 @@
  * OpenCode behavioral field straight through, and overlays governance on top:
  * `enabled: false` forces the runtime's `disable` on (governance always wins
  * on that one field); `skills` folds onto `permission.skill`. Every other
- * governance field (connectors/secrets/kortix_cli/workspace) has no runtime
+ * governance field (connectors/secrets/zed_cli/workspace) has no runtime
  * representation and is never copied.
  *
  * `resolveCompiledAgentConfigForSession` is the I/O half: reads the project's
  * manifest + each declared agent's `.md` straight from git (bypassing apps/api's
- * v1-only `triggers.ts` manifest reader, which still caps at `kortix_version`
+ * v1-only `triggers.ts` manifest reader, which still caps at `zed_version`
  * 1 — this compiler is the first apps/api consumer of a v2 manifest's `agents:`
- * map, so it reads the raw text itself via `@kortix/manifest-schema` rather
+ * map, so it reads the raw text itself via `@zed/manifest-schema` rather
  * than waiting on that cap to move). It never throws: a v1 project (or any
  * read/parse/compile failure) resolves to `null`, which is the "v1 byte-for-
  * byte unaffected" contract the session-env wiring depends on.
@@ -48,7 +48,7 @@ import {
   type PermissionConfigV2,
   type PermissionRuleV2,
   type RuntimeV2,
-} from '@kortix/manifest-schema';
+} from '@zed/manifest-schema';
 import { parseAgentMarkdown } from './agent-markdown';
 import {
   isRepoFileNotFoundError,
@@ -103,12 +103,12 @@ export class CompileAgentConfigError extends Error {
   }
 }
 
-/** Tolerant `kortix_version` read — mirrors apps/api's own manifest readers
+/** Tolerant `zed_version` read — mirrors apps/api's own manifest readers
  *  (e.g. `parseManifestString` in projects/triggers.ts), which coerce a
- *  string version too. Real YAML/TOML decode `kortix_version: 2` to a native
+ *  string version too. Real YAML/TOML decode `zed_version: 2` to a native
  *  number; the string branch is defensive only. */
 function manifestSchemaVersion(manifest: Record<string, unknown>): number {
-  const raw = manifest.kortix_version;
+  const raw = manifest.zed_version;
   if (typeof raw === 'number') return raw;
   if (typeof raw === 'string') return Number(raw);
   return Number.NaN;
@@ -116,8 +116,8 @@ function manifestSchemaVersion(manifest: Record<string, unknown>): number {
 
 /** The project's OpenCode config directory — the SAME top-level `[opencode]
  *  config_dir` v1 already reads (unrelated to per-agent behavior; this is
- *  just "where does `.kortix/opencode/...` live for this project"). Defaults
- *  to `.kortix/opencode`. */
+ *  just "where does `.zed/opencode/...` live for this project"). Defaults
+ *  to `.zed/opencode`. */
 function resolveConfigDir(manifest: Record<string, unknown>): string {
   const oc = manifest.opencode;
   if (oc && typeof oc === 'object' && !Array.isArray(oc)) {
@@ -126,7 +126,7 @@ function resolveConfigDir(manifest: Record<string, unknown>): string {
       return dir.trim().replace(/\/+$/, '');
     }
   }
-  return '.kortix/opencode';
+  return '.zed/opencode';
 }
 
 /**
@@ -200,10 +200,10 @@ export const OpencodeAgentConfigSchema = z
  * Compile a manifest's declared agents into an OpenCode-native config.
  *
  * `manifest` is the raw parsed object (TOML/YAML decode to the same shape —
- * see `@kortix/manifest-schema`'s format layer), not necessarily typed as
+ * see `@zed/manifest-schema`'s format layer), not necessarily typed as
  * `ManifestV2` by the caller: this function itself is the version gate.
  *
- * Returns `null` for anything that isn't a `kortix_version: 2` manifest — the
+ * Returns `null` for anything that isn't a `zed_version: 2` manifest — the
  * compiler is a v1 NO-OP by design (spec §2.3: "v2-only feature"), so v1
  * projects keep depending on hand-authored `.md` frontmatter exactly as before
  * (v1 never had a manifest-side behavior representation to move out of).
@@ -259,7 +259,7 @@ export function compileSelectedAgentConfig(
   agentMdFiles: Record<string, string> = {},
 ): OpencodeConfig {
   if (manifestSchemaVersion(manifest) !== 2) {
-    throw new CompileAgentConfigError('Selected-agent compilation requires kortix_version 2.');
+    throw new CompileAgentConfigError('Selected-agent compilation requires zed_version 2.');
   }
   if (runtime !== 'opencode') {
     throw new CompileAgentConfigError(
@@ -290,12 +290,12 @@ export function compileSelectedAgentConfig(
 
 /**
  * Compile one agent: parse its `.md` (if supplied), copy every recognized
- * behavioral frontmatter field through unchanged, then overlay Kortix
+ * behavioral frontmatter field through unchanged, then overlay Zed
  * governance — `enabled: false` forces `disable: true` (the one field where
  * governance always wins over whatever the `.md` itself says; there is no
  * other precedence to document since behavior lives ONLY in the `.md`), and
  * `skills` folds onto `permission.skill`. Pure governance fields (connectors/
- * secrets/kortix_cli/workspace) are never copied: no runtime representation.
+ * secrets/zed_cli/workspace) are never copied: no runtime representation.
  */
 function compileAgentBlock(
   name: string,
@@ -327,7 +327,7 @@ function compileAgentBlock(
     if (body.trim()) out.prompt = body;
   }
 
-  // Kortix `enabled: false` always forces the runtime's `disable` on — the
+  // Zed `enabled: false` always forces the runtime's `disable` on — the
   // one platform-level "can this agent even start a session" gate. When
   // `enabled` is omitted (the default, true), whatever the `.md` itself set
   // for `disable` (if anything) passes through untouched above.
@@ -417,11 +417,11 @@ function applySkillsGovernance(
  * Read a project's manifest straight from git + compile it (I/O half). Never
  * throws: any read/parse/compile failure resolves to `null` so a broken or
  * mid-migration manifest never blocks session provisioning — a manifest or
- * `.md` authoring error should surface at `kortix validate` / CR-merge time,
+ * `.md` authoring error should surface at `zed validate` / CR-merge time,
  * not by failing a session boot months later.
  *
  * Returns the compiled config already JSON-stringified (the shape
- * `KORTIX_COMPILED_AGENT_CONFIG` carries), or `null` for a v1 project / no
+ * `ZED_COMPILED_AGENT_CONFIG` carries), or `null` for a v1 project / no
  * manifest / any failure.
  */
 /**
@@ -532,7 +532,7 @@ export async function resolveSelectedAgentConfigForSession(
   const raw = parseManifestText(found.content, format);
   if (manifestSchemaVersion(raw) !== 2) {
     throw new CompileAgentConfigError(
-      `Project ${project.projectId} must use kortix_version 2 for selected-agent compilation.`,
+      `Project ${project.projectId} must use zed_version 2 for selected-agent compilation.`,
       agentName,
     );
   }

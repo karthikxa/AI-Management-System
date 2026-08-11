@@ -18,7 +18,7 @@ import { resolveAccountId } from '../../shared/resolve-account';
 import { getSupabase } from '../../shared/supabase';
 import { ttlMemo } from '../../shared/ttl-memo';
 import { effectiveProjectRole, roleAllows, type AccountRole, type ProjectAccessAction, type ProjectRole } from '../access';
-import { accountMembers, projectMembers, projectSessions, projects, serviceAccounts } from '@kortix/db';
+import { accountMembers, projectMembers, projectSessions, projects, serviceAccounts } from '@zed/db';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { Context } from 'hono';
 import { HTTPException } from 'hono/http-exception';
@@ -412,7 +412,7 @@ export function iamActionForProjectAccess(action: ProjectAccessAction): string {
     case 'session':
       // Starting / running / stopping a session. Granted to every project
       // role (a plain `member` included) so the floor role can actually use
-      // Kortix, while project customization stays behind project.write.
+      // Zed, while project customization stays behind project.write.
       return 'project.session.start';
     case 'write':
       return 'project.write';
@@ -611,7 +611,7 @@ export async function loadProjectForUser(c: Context, projectId: string, action: 
   // standing role is ever consulted); fall through to the verdict check.
   const isServiceAccount = ((c as unknown as { get(k: string): unknown }).get('authType') as string | undefined) === 'service_account';
 
-  // Platform-admin READ-ONLY bypass: an explicit `x-kortix-admin-bypass`
+  // Platform-admin READ-ONLY bypass: an explicit `x-zed-admin-bypass`
   // header from a real `platform_user_roles` admin/super_admin lets support
   // staff VIEW a project they have no account/project grant on — e.g. to
   // confirm a customer's session actually loads. Deliberately scoped to
@@ -620,7 +620,7 @@ export async function loadProjectForUser(c: Context, projectId: string, action: 
   // the PROJECT'S OWN account so the customer's own audit trail (and any
   // configured audit webhook) sees the access, not just ours.
   let adminBypass = false;
-  const bypassHeaderPresent = c.req.header('x-kortix-admin-bypass') === '1';
+  const bypassHeaderPresent = c.req.header('x-zed-admin-bypass') === '1';
   if (isAdminBypassEligible({ action, isServiceAccount, bypassHeaderPresent })) {
     adminBypass = shouldApplyAdminBypass({
       action,
@@ -696,6 +696,6 @@ export async function loadProjectForUser(c: Context, projectId: string, action: 
 
 // Env names a project secret must NEVER inject into a sandbox — they belong to
 // the sandbox's own runtime (the OS, the daemon, opencode). A secret named e.g.
-// `PORT` (trivially pushed via `kortix env push --from a-server.env`) would
-// override the runtime and break every session. Anything `KORTIX_*`/`OPENCODE_*`
+// `PORT` (trivially pushed via `zed env push --from a-server.env`) would
+// override the runtime and break every session. Anything `ZED_*`/`OPENCODE_*`
 // is platform-owned and set explicitly below.

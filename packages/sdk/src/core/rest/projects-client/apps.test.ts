@@ -1,6 +1,6 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
 
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import {
   createApp,
   createAppAccessSession,
@@ -39,7 +39,7 @@ let responses: Array<{ status?: number; body: unknown }> = [];
 beforeEach(() => {
   calls = [];
   responses = [];
-  configureKortix({ backendUrl: 'http://backend.test/v1', getToken: async () => 'token' });
+  configureZed({ backendUrl: 'http://backend.test/v1', getToken: async () => 'token' });
   globalThis.fetch = mock(async (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = new Headers(init?.headers);
     const rawBody = init?.body;
@@ -99,7 +99,7 @@ test('Apps CRUD uses the project-scoped API contract', async () => {
     project_id: 'project-1',
     slug: 'demo',
     name: 'Demo',
-    url: 'https://demo.apps.kortix.com',
+    url: 'https://demo.apps.zed.com',
     access_mode: 'private' as const,
     access_revision: 1,
     desired_state: 'running' as const,
@@ -148,7 +148,7 @@ test('App access reads, updates, and creates a browser exchange URL through proj
     password_configured: false,
   };
   const session = {
-    url: 'https://dev-demo-aaaaaaaaaaaaaaaa.apps.kortix.com/?__kortix_access=token',
+    url: 'https://dev-demo-aaaaaaaaaaaaaaaa.apps.zed.com/?__zed_access=token',
     expires_at: '2026-08-07T20:05:00.000Z',
   };
   responses.push({ body: policy }, { body: { ...policy, revision: 5 } }, { body: session });
@@ -184,8 +184,8 @@ test('artifact registration, finalization, and deployment preserve the wire spec
     { status: 202, body: { deployment_id: 'deployment-1', status: 'queued' } },
   );
 
-  await registerAppArtifact('project-1', { kind: 'oci_image', image: 'ghcr.io/kortix/demo:1' });
-  expect(last().body).toEqual({ kind: 'oci_image', image: 'ghcr.io/kortix/demo:1' });
+  await registerAppArtifact('project-1', { kind: 'oci_image', image: 'ghcr.io/zed/demo:1' });
+  expect(last().body).toEqual({ kind: 'oci_image', image: 'ghcr.io/zed/demo:1' });
 
   await finalizeAppArtifact('project-1', 'artifact-1', {
     sha256: 'a'.repeat(64),

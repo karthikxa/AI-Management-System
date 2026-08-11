@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 const dockerAvailable =
   Bun.spawnSync(['docker', 'version'], { stdout: 'ignore', stderr: 'ignore' }).exitCode === 0;
 
-const container = `kortix-e2b-provider-migration-${crypto.randomUUID().slice(0, 8)}`;
+const container = `zed-e2b-provider-migration-${crypto.randomUUID().slice(0, 8)}`;
 
 function dockerPsql(sql: string, allowFailure = false) {
   const result = Bun.spawnSync(
@@ -31,29 +31,29 @@ function dockerPsql(sql: string, allowFailure = false) {
 }
 
 const PRE_MIGRATION_SCHEMA = `
-  CREATE SCHEMA kortix;
-  CREATE TYPE kortix.sandbox_provider AS ENUM ('daytona', 'platinum', 'managed');
+  CREATE SCHEMA zed;
+  CREATE TYPE zed.sandbox_provider AS ENUM ('daytona', 'platinum', 'managed');
 
-  CREATE TABLE kortix.sandboxes (
+  CREATE TABLE zed.sandboxes (
     sandbox_id uuid PRIMARY KEY,
-    provider kortix.sandbox_provider NOT NULL DEFAULT 'daytona'
+    provider zed.sandbox_provider NOT NULL DEFAULT 'daytona'
   );
 
-  CREATE TABLE kortix.project_sessions (
+  CREATE TABLE zed.project_sessions (
     session_id text PRIMARY KEY,
-    sandbox_provider kortix.sandbox_provider NOT NULL DEFAULT 'daytona',
+    sandbox_provider zed.sandbox_provider NOT NULL DEFAULT 'daytona',
     metadata jsonb NOT NULL DEFAULT '{}'::jsonb
   );
 
-  CREATE TABLE kortix.session_sandboxes (
+  CREATE TABLE zed.session_sandboxes (
     sandbox_id uuid PRIMARY KEY,
-    session_id text NOT NULL REFERENCES kortix.project_sessions(session_id),
-    provider kortix.sandbox_provider NOT NULL DEFAULT 'daytona',
+    session_id text NOT NULL REFERENCES zed.project_sessions(session_id),
+    provider zed.sandbox_provider NOT NULL DEFAULT 'daytona',
     external_id text,
     metadata jsonb NOT NULL DEFAULT '{}'::jsonb
   );
 
-  CREATE TABLE kortix.sandbox_compute_sessions (
+  CREATE TABLE zed.sandbox_compute_sessions (
     id uuid PRIMARY KEY,
     sandbox_id uuid NOT NULL,
     started_at timestamptz NOT NULL DEFAULT now()
@@ -100,15 +100,15 @@ describe.skipIf(!dockerAvailable)('E2B provider-set migration — real PostgreSQ
       ${PRE_MIGRATION_SCHEMA}
       ${identityGuard}
 
-      INSERT INTO kortix.project_sessions(session_id, sandbox_provider) VALUES
+      INSERT INTO zed.project_sessions(session_id, sandbox_provider) VALUES
         ('managed-session', 'managed'),
         ('platinum-session', 'platinum');
-      INSERT INTO kortix.session_sandboxes
+      INSERT INTO zed.session_sandboxes
         (sandbox_id, session_id, provider, external_id)
       VALUES
         ('00000000-0000-4000-a000-000000000001', 'managed-session', 'managed', 'managed-external'),
         ('00000000-0000-4000-a000-000000000002', 'platinum-session', 'platinum', 'platinum-external');
-      INSERT INTO kortix.sandbox_compute_sessions(id, sandbox_id) VALUES
+      INSERT INTO zed.sandbox_compute_sessions(id, sandbox_id) VALUES
         ('10000000-0000-4000-a000-000000000001', '00000000-0000-4000-a000-000000000001'),
         ('10000000-0000-4000-a000-000000000002', '00000000-0000-4000-a000-000000000002'),
         ('10000000-0000-4000-a000-000000000003', '00000000-0000-4000-a000-000000000099');
@@ -128,28 +128,28 @@ describe.skipIf(!dockerAvailable)('E2B provider-set migration — real PostgreSQ
     const enumValues = dockerPsql(`
       SELECT string_agg(enumlabel, ',' ORDER BY enumsortorder)
         FROM pg_enum
-       WHERE enumtypid = 'kortix.sandbox_provider'::regtype;
+       WHERE enumtypid = 'zed.sandbox_provider'::regtype;
     `);
     expect(enumValues.output.trim()).toBe('daytona,platinum,e2b');
 
     expect(
       dockerPsql(`
         SELECT session_id || ':' || sandbox_provider::text
-          FROM kortix.project_sessions ORDER BY session_id;
+          FROM zed.project_sessions ORDER BY session_id;
       `).output.trim(),
     ).toBe('managed-session:daytona\nplatinum-session:platinum');
 
     expect(
       dockerPsql(`
         SELECT session_id || ':' || provider::text
-          FROM kortix.session_sandboxes ORDER BY session_id;
+          FROM zed.session_sandboxes ORDER BY session_id;
       `).output.trim(),
     ).toBe('managed-session:daytona\nplatinum-session:platinum');
 
     expect(
       dockerPsql(`
         SELECT id || ':' || provider::text
-          FROM kortix.sandbox_compute_sessions ORDER BY id;
+          FROM zed.sandbox_compute_sessions ORDER BY id;
       `).output.trim(),
     ).toBe(
       '10000000-0000-4000-a000-000000000001:daytona\n' +
@@ -160,7 +160,7 @@ describe.skipIf(!dockerAvailable)('E2B provider-set migration — real PostgreSQ
     const blocked = dockerPsql(
       `
         \\set VERBOSITY verbose
-        UPDATE kortix.session_sandboxes
+        UPDATE zed.session_sandboxes
            SET provider = 'e2b'
          WHERE session_id = 'managed-session';
       `,

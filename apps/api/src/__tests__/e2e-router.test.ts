@@ -232,7 +232,7 @@ mock.module('../router/services/llm', () => ({
     {
       id: 'minimax/minimax-m2.7',
       object: 'model',
-      owned_by: 'kortix',
+      owned_by: 'zed',
       context_window: 204800,
       pricing: { input: 0.3, output: 1.2 },
       tier: 'free',
@@ -240,7 +240,7 @@ mock.module('../router/services/llm', () => ({
     {
       id: 'z-ai/glm-5-turbo',
       object: 'model',
-      owned_by: 'kortix',
+      owned_by: 'zed',
       context_window: 202752,
       pricing: { input: 1.2, output: 4.0 },
       tier: 'free',
@@ -248,7 +248,7 @@ mock.module('../router/services/llm', () => ({
     {
       id: 'moonshotai/kimi-k2.5',
       object: 'model',
-      owned_by: 'kortix',
+      owned_by: 'zed',
       context_window: 262144,
       pricing: { input: 0.45, output: 2.2 },
       tier: 'free',
@@ -256,7 +256,7 @@ mock.module('../router/services/llm', () => ({
     {
       id: 'minimax/minimax-m2.5',
       object: 'model',
-      owned_by: 'kortix',
+      owned_by: 'zed',
       context_window: 196608,
       pricing: { input: 0.2, output: 1.17 },
       tier: 'free',
@@ -375,7 +375,7 @@ describe('Router: health', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe('ok');
-    expect(body.service).toBe('kortix-router');
+    expect(body.service).toBe('zed-router');
     expect(body.timestamp).toBeDefined();
     expect(body.billing_enabled).toBeUndefined();
   });
@@ -621,7 +621,7 @@ describe('Router: chat/completions (non-streaming)', () => {
     const res = await app.request('/v1/router/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TEST_ACCOUNT_ID}` },
-      body: JSON.stringify({ model: 'kortix/basic' }),
+      body: JSON.stringify({ model: 'zed/basic' }),
     });
     expect(res.status).toBe(400);
   });

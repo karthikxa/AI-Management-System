@@ -18,7 +18,7 @@ import {
   projects,
   tunnelConnections,
   tunnelPermissions,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 
 import { synthesizeComputerConnectors } from '../connectors/computer-materialize';
@@ -42,7 +42,7 @@ const GROUP_SLUG = 'team-computers';
 const TRAVEL_SLUG = 'travel-computer';
 
 beforeAll(async () => {
-  await db.execute(sql`alter type kortix.connector_provider add value if not exists 'computer'`);
+  await db.execute(sql`alter type zed.connector_provider add value if not exists 'computer'`);
   projectId = crypto.randomUUID();
   accountId = crypto.randomUUID();
   otherAccountId = crypto.randomUUID();

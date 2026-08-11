@@ -13,7 +13,7 @@ const REPO_ROOT = resolve(import.meta.dir, '../../../../..');
 const API_SRC = join(REPO_ROOT, 'apps/api/src');
 
 const ERROR_TABLES = [
-  'docs/KORTIX_AS_A_BACKEND_GUIDE.md',
+  'docs/ZED_AS_A_BACKEND_GUIDE.md',
   'apps/web/content/docs/backend.mdx',
 ];
 

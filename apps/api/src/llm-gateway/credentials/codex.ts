@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { projectSecrets } from '@kortix/db';
+import { projectSecrets } from '@zed/db';
 import { db } from '../../shared/db';
 import {
   encryptProjectSecret,

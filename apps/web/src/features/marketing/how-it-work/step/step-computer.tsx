@@ -38,7 +38,7 @@ const INITIAL: ComputerState = { phase: 'idle', done: [], doing: null };
 /** `sessions new --prompt` is the real command; `create` is not one. */
 const SCRIPT: Stage<ComputerState>[] = [
   {
-    run: 'kortix sessions new --prompt "fix the billing webhook retry"',
+    run: 'zed sessions new --prompt "fix the billing webhook retry"',
     out: [
       {
         line: [t('  booting a machine for this session…', 'dim')],
@@ -97,7 +97,7 @@ function ComputerView({ state }: { state: ComputerState }): ReactNode {
               className={cn(
                 'size-1.5 rounded-full',
                 state.phase === 'running'
-                  ? 'bg-kortix-green animate-pulse'
+                  ? 'bg-zed-green animate-pulse'
                   : 'bg-muted-foreground/40',
               )}
             />
@@ -134,7 +134,7 @@ function ComputerView({ state }: { state: ComputerState }): ReactNode {
                 transition={{ duration: 0.24, ease: 'easeOut' }}
                 className="text-muted-foreground flex items-center gap-2"
               >
-                <CheckIcon className="text-kortix-green size-3 shrink-0" />
+                <CheckIcon className="text-zed-green size-3 shrink-0" />
                 {step}
               </m.div>
             ))}

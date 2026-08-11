@@ -93,7 +93,7 @@ function projectFixture(overrides: Record<string, unknown> = {}) {
     repo_url: 'https://github.com/acme/demo',
     git_origin_url: 'https://github.com/acme/demo',
     default_branch: 'main',
-    manifest_path: 'kortix.yaml',
+    manifest_path: 'zed.yaml',
     status: 'active',
     metadata: { onboarding_completed_at: NOW },
     icon: '🚀',
@@ -103,7 +103,7 @@ function projectFixture(overrides: Record<string, unknown> = {}) {
     updated_at: NOW,
     project_role: 'manager',
     effective_project_role: 'manager',
-    dashboard_url: 'https://kortix.com/projects/11111111-2222-4333-8444-555555555555',
+    dashboard_url: 'https://zed.com/projects/11111111-2222-4333-8444-555555555555',
     experimental: {
       agent_tunnel: false,
       marketplace: false,
@@ -128,7 +128,7 @@ function sessionFixture(overrides: Record<string, unknown> = {}) {
     session_id: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',
     account_id: '99999999-8888-4777-8666-555555555555',
     project_id: '11111111-2222-4333-8444-555555555555',
-    branch_name: 'kortix/session-1',
+    branch_name: 'zed/session-1',
     base_ref: 'main',
     sandbox_provider: 'daytona',
     sandbox_id: null,
@@ -163,7 +163,7 @@ function sandboxFixture(overrides: Record<string, unknown> = {}) {
     account_id: '99999999-8888-4777-8666-555555555555',
     provider: 'platinum',
     external_id: 'sbx-123',
-    base_url: 'https://sbx-123.proxy.kortix.com',
+    base_url: 'https://sbx-123.proxy.zed.com',
     status: 'active',
     config: {},
     metadata: {},
@@ -177,7 +177,7 @@ function sandboxFixture(overrides: Record<string, unknown> = {}) {
 function triggerFixture(overrides: Record<string, unknown> = {}) {
   return {
     slug: 'nightly-report',
-    path: 'kortix.yaml#triggers.nightly-report',
+    path: 'zed.yaml#triggers.nightly-report',
     name: 'Nightly report',
     type: 'cron',
     agent: 'default',
@@ -434,8 +434,8 @@ describe('pending session prompt contract', () => {
   test('accepts a durable prompt draft on normal create and warm claim', () => {
     const pendingPrompt = {
       text: 'Map the flood risk for this parcel.',
-      agent: 'kortix',
-      model: { providerID: 'kortix', modelID: 'auto' },
+      agent: 'zed',
+      model: { providerID: 'zed', modelID: 'auto' },
       variant: null,
       attachment_names: ['parcel.geojson'],
     };
@@ -486,7 +486,7 @@ describe('TriggerSchema', () => {
           type: 'webhook',
           cron: null,
           secret_env: 'HOOK_SECRET',
-          webhook_url: 'https://api.kortix.com/v1/webhooks/projects/p/hook',
+          webhook_url: 'https://api.zed.com/v1/webhooks/projects/p/hook',
         }),
       ),
     ).not.toThrow();
@@ -497,7 +497,7 @@ describe('TriggerSchema', () => {
       TriggerListSchema.strict().parse({
         triggers: [triggerFixture()],
         triggers_paused: false,
-        errors: [{ slug: 'bad', path: 'kortix.yaml#triggers.bad', error: 'invalid cron' }],
+        errors: [{ slug: 'bad', path: 'zed.yaml#triggers.bad', error: 'invalid cron' }],
       }),
     ).not.toThrow();
     expect(TriggerListSchema.safeParse([triggerFixture()]).success).toBe(false);
@@ -524,7 +524,7 @@ describe('SecretSchema', () => {
     expect(() =>
       SecretSchema.parse(
         secretFixture({
-          name: 'KORTIX_GIT_AUTH_TOKEN',
+          name: 'ZED_GIT_AUTH_TOKEN',
           system: true,
           readonly: true,
           purpose: 'git_auth',
@@ -551,7 +551,7 @@ describe('SecretSchema', () => {
         strategy: 'broker',
         consumer: 'http_broker',
         egress_policy: {
-          backend: 'kortix_fetch',
+          backend: 'zed_fetch',
           rules: [{ host: 'api.example.com', methods: ['POST'], path: '/v1/*' }],
           inject: { kind: 'header', name: 'authorization', template: 'Bearer {{secret}}' },
         },
@@ -561,7 +561,7 @@ describe('SecretSchema', () => {
       strategy: 'broker',
       consumer: 'http_broker',
       egress_policy: {
-        backend: 'kortix_fetch',
+        backend: 'zed_fetch',
         rules: [{ host: 'api.example.com', methods: ['POST'], path: '/v1/*' }],
         inject: { kind: 'header', name: 'authorization', template: 'Bearer {{secret}}' },
       },
@@ -687,7 +687,7 @@ describe('SessionCreateInputSchema runtime_context', () => {
   });
 
   test('makes reserved environment names impossible as context keys', () => {
-    for (const key of ['PATH', 'NODE_OPTIONS', 'KORTIX_TOKEN', 'OPENCODE_CONFIG_CONTENT']) {
+    for (const key of ['PATH', 'NODE_OPTIONS', 'ZED_TOKEN', 'OPENCODE_CONFIG_CONTENT']) {
       expect(SessionRuntimeContextSchema.safeParse({ [key]: 'shadow' }).success).toBe(false);
     }
   });
@@ -733,7 +733,7 @@ describe('SessionCreateInputSchema runtime_context', () => {
         agentName: 'veyris',
         sandboxSlug: 'default',
         initialPrompt: 'hello',
-        opencodeModel: 'kortix/glm-5.2',
+        opencodeModel: 'zed/glm-5.2',
         sessionId: '11111111-1111-4111-a111-111111111111',
         branchAlreadyCreated: true,
       }).success,
@@ -1026,9 +1026,9 @@ describe('native OAuth2 lifecycle schemas', () => {
   test('validates authorization and device start inputs', () => {
     expect(
       OAuth2AuthorizationStartInputSchema.parse({
-        success_redirect_uri: 'https://dev.kortix.com/projects/p1',
+        success_redirect_uri: 'https://dev.zed.com/projects/p1',
       }),
-    ).toEqual({ success_redirect_uri: 'https://dev.kortix.com/projects/p1' });
+    ).toEqual({ success_redirect_uri: 'https://dev.zed.com/projects/p1' });
     expect(
       OAuth2AuthorizationStartInputSchema.safeParse({
         success_redirect_uri: 'http://localhost:15300/projects/p1',

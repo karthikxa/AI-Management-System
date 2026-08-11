@@ -17,7 +17,7 @@ const AGENTMAIL_REQUEST_TIMEOUT_MS = 15_000;
 /**
  * Stable, connection-scoped AgentMail idempotency keys.
  *
- * A Kortix project may contain several email connections. Project-only client ids
+ * A Zed project may contain several email connections. Project-only client ids
  * cause AgentMail to return the first inbox and webhook for every later connection.
  * Hash the project/connection tuple so retries remain idempotent while distinct
  * connections always provision distinct provider resources.
@@ -30,8 +30,8 @@ export function agentMailProvisioningClientIds(projectId: string, connectionSlug
     .digest('hex')
     .slice(0, 40);
   return {
-    inbox: `kortix-inbox-${scope}`,
-    webhook: `kortix-webhook-${scope}`,
+    inbox: `zed-inbox-${scope}`,
+    webhook: `zed-webhook-${scope}`,
   };
 }
 

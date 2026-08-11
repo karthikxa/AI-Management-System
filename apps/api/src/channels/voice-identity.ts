@@ -8,13 +8,13 @@
  * name their owners set; only the code around it was renamed.
  */
 import { eq } from 'drizzle-orm';
-import { projects } from '@kortix/db';
+import { projects } from '@zed/db';
 import { metadataMergeSubtree } from '../projects/lib/metadata-merge';
 import { db } from '../shared/db';
 
 const METADATA_SUBTREE = 'meet';
 
-export const DEFAULT_VOICE_BOT_NAME = 'Kortix';
+export const DEFAULT_VOICE_BOT_NAME = 'Zed';
 
 export async function resolveProjectBotName(projectId: string): Promise<string> {
   const [row] = await db

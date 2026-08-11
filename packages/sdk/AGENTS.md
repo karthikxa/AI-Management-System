@@ -1,4 +1,4 @@
-# `@kortix/sdk`
+# `@zed/sdk`
 
 Read `../../AGENTS.md` first — it covers the monorepo (worktrees, the local
 stack, verification standard, release topology). This file covers only what is
@@ -31,13 +31,13 @@ Learn this once and most questions answer themselves.
 
 **This SDK talks to two completely different upstreams and hides the seam.**
 
-1. **The Kortix platform REST API** (`backendUrl`, e.g. `http://localhost:8008/v1`).
+1. **The Zed platform REST API** (`backendUrl`, e.g. `http://localhost:8008/v1`).
    Owns everything *about* your work: accounts, projects, sessions, secrets,
    billing, triggers, marketplace, audit. Lives in `platform/projects-client/` and
    `platform/platform-client/`, over `platform/api-client.ts` (`backendApi`).
 
 2. **The session runtime** — OpenCode running *inside a per-session cloud
-   sandbox*. The SDK reaches its REST API through the Kortix API proxy:
+   sandbox*. The SDK reaches its REST API through the Zed API proxy:
 
    ```
    ${backendUrl}/p/{externalId}/{port}      →  the sandbox's opencode server
@@ -49,9 +49,9 @@ exist until its sandbox is provisioned or resumed. That is what `ensureReady()`
 resolves this session's OpenCode identity.
 
 ```ts
-const kortix = createKortix({ backendUrl, getToken })   // ← one client, one auth seam
-await kortix.projects.list()                            // ← upstream 1: platform REST
-const s = kortix.session(projectId, sessionId)
+const zed = createZed({ backendUrl, getToken })   // ← one client, one auth seam
+await zed.projects.list()                            // ← upstream 1: platform REST
+const s = zed.session(projectId, sessionId)
 await s.ensureReady()                                   // ← the bridge
 await s.send('what files are here?')                    // ← upstream 2: the runtime
 ```
@@ -64,8 +64,8 @@ That is deliberate, and it is the single most important invariant in the package
 > throws. Silently borrowing another session's sandbox is the worst bug this
 > codebase can have — it sends a user's prompt into someone else's machine.
 
-**Auth is exactly one seam:** `getToken`. It returns a Kortix PAT
-(`kortix_pat_…`) for programmatic use, or a Supabase JWT for a logged-in web
+**Auth is exactly one seam:** `getToken`. It returns a Zed PAT
+(`zed_pat_…`) for programmatic use, or a Supabase JWT for a logged-in web
 user. Everything else — REST calls and the proxied runtime alike — flows through
 `authenticatedFetch`, which attaches it. There is no second auth path. Do not add
 one.
@@ -77,7 +77,7 @@ platform/auth + platform/api-client   ← transport: token, fetch, ApiError
 platform/*-client                     ← typed REST surfaces (one file per domain)
 opencode/client                       ← OpenCode REST compatibility client
 state/event-stream                    ← SSE reconnect/backoff/heartbeat/coalesce
-kortix.ts (createKortix)              ← the facade: binds ids, hides the seam
+zed.ts (createZed)              ← the facade: binds ids, hides the seam
 turns/                                ← normalizes ~50 wire part types → ClassifiedPart
 react/                                ← optional glue. Nothing below this line knows React.
 ```
@@ -95,7 +95,7 @@ Follow the grain. Almost every feature is this shape:
 1. **REST function** in `platform/projects-client/<domain>.ts`. Typed request and
    response, called through `backendApi`. Colocate `<domain>.test.ts`.
 2. **Export it** from that directory's barrel.
-3. **Wire it into the facade** in `kortix.ts` as a *direct reference*
+3. **Wire it into the facade** in `zed.ts` as a *direct reference*
    (`create: P.createThing`) — not a wrapper. Direct references keep the exact
    types with zero re-typing, which is why the facade is 941 lines and not 4000.
 4. **Reactive?** Then, and only then, add a hook in `react/` over the client fn.
@@ -111,7 +111,7 @@ Follow the grain. Almost every feature is this shape:
   transport.
 - **Hosts never import `@opencode-ai/sdk`.** Not `apps/web`, not the demo. If a
   host needs runtime access, it goes through `session.runtime`.
-- **Hosts never raw-`fetch` the Kortix API.** If the SDK doesn't expose it, add it
+- **Hosts never raw-`fetch` the Zed API.** If the SDK doesn't expose it, add it
   to the SDK.
 - **The core never imports a framework.** Enforced statically. See the tripwire.
 - **`session_id == sandbox_id`.** The runtime is reached at
@@ -119,7 +119,7 @@ Follow the grain. Almost every feature is this shape:
 
 ## This package is published. People install it.
 
-`@kortix/sdk` is **live on npm** (`npm view @kortix/sdk version`). It is not an
+`@zed/sdk` is **live on npm** (`npm view @zed/sdk version`). It is not an
 internal workspace library that happens to have a `package.json`. Code you
 change here reaches installs you cannot see and cannot fix forward.
 
@@ -138,9 +138,9 @@ whole monorepo — and detonates in someone else's project on `npm install`.
 **Every identifier reachable from a public entry point is public API**, whether
 or not it looks like one:
 
-- functions and factories — `createKortix`, `classifyTurn`
+- functions and factories — `createZed`, `classifyTurn`
 - classes — `ApiError`, `SessionNotReadyError`
-- **types and interfaces** — `KortixProject`, `SessionHandle`, `ClassifiedPart`.
+- **types and interfaces** — `ZedProject`, `SessionHandle`, `ClassifiedPart`.
   A renamed type breaks `import type { … }` exactly as hard as a renamed
   function. Types are not "internal because they erase at runtime".
 - React hooks and components exported from `./react` — `useSession`
@@ -177,7 +177,7 @@ Keep the old name working, mark it, and delete it only on a major:
 export interface Project { /* … */ }
 
 /** @deprecated Renamed to `Project`. Removed in the next major. */
-export type KortixProject = Project;
+export type ZedProject = Project;
 ```
 
 A rename without an alias is not a refactor, it is a breaking change wearing a
@@ -187,18 +187,18 @@ refactor's clothes.
 
 Renames are expensive, so front-load the thinking. Conventions for this package:
 
-- **Factories** are `createX` (`createKortix`). **Errors** are `XError` extending
+- **Factories** are `createX` (`createZed`). **Errors** are `XError` extending
   `Error` (`ApiError`). **Hooks** are `useX`. Types are `PascalCase`, never
   `IFoo`.
-- **For NEW names, don't prefix with `Kortix`** unless the bare name would collide
+- **For NEW names, don't prefix with `Zed`** unless the bare name would collide
   with a common global or DOM type (`File`, `Event`, `Response`, `Request`).
-  `KortixFile` is legitimate; a bare `Session` is not.
+  `ZedFile` is legitimate; a bare `Session` is not.
   **But never rename an already-published name just to satisfy this rule.** A
   rename costs consumers real breakage; a slightly-verbose name costs nothing.
   Additive is free, subtractive is a major — that asymmetry outranks style. This
-  is why `KortixProject` keeps its name (see below).
-- **A prefix earns its keep when it disambiguates.** `KortixProject` (the platform
-  entity) and `KortixMasterProject` (the sandbox daemon's board project) are two
+  is why `ZedProject` keeps its name (see below).
+- **A prefix earns its keep when it disambiguates.** `ZedProject` (the platform
+  entity) and `ZedMasterProject` (the sandbox daemon's board project) are two
   genuinely different concepts. Here the prefix is doing real work.
 - **No abbreviations** in public names. `configuration` over `cfg`, `session`
   over `sess`.
@@ -206,14 +206,14 @@ Renames are expensive, so front-load the thinking. Conventions for this package:
   single root barrel this is enforced by the compiler — two modules exporting the
   same name is a `TS2308` build error, not a silent shadow.
 
-> **`KortixProject` was declared twice** — the platform project
+> **`ZedProject` was declared twice** — the platform project
 > (`platform/projects-client/projects.ts`, keyed `project_id`/`account_id`/`repo_url`)
-> and the kortix-master daemon's board project (`opencode/kortix-master.ts`, keyed
+> and the zed-master daemon's board project (`opencode/zed-master.ts`, keyed
 > `id`/`path`/`opencode_id`/`structure_version`). Same word, unrelated concepts;
 > the split subpath surface hid the clash for months.
 >
-> **Resolved:** the platform type keeps `KortixProject`. The daemon type becomes
-> `KortixMasterProject`, with `export type KortixProject = KortixMasterProject`
+> **Resolved:** the platform type keeps `ZedProject`. The daemon type becomes
+> `ZedMasterProject`, with `export type ZedProject = ZedMasterProject`
 > retained as a `@deprecated` alias on the `opencode-client` shim so no importer
 > breaks. This is the alias-never-replace rule applied to itself.
 
@@ -255,7 +255,7 @@ neither, it skips cleanly rather than failing the release.
 
 ## The core law: the core is framework-free
 
-The root barrel (`@kortix/sdk`) and most subpaths must run in a browser
+The root barrel (`@zed/sdk`) and most subpaths must run in a browser
 `<script>` tag, a React Native app, a Node CLI, and a Cloudflare Worker —
 **with no framework in the import graph at all**. React and React Native are
 *optional layers on top*, never a dependency of the core.
@@ -294,7 +294,7 @@ Touching a bare `process.env` on a non-Next host throws a **`ReferenceError`**, 
 `safeEnv()` for it. Use it. Guarded reads are the rule:
 
 ```ts
-if (typeof window !== 'undefined' && window.location?.origin) { … }   // ✅ kortix.ts:102
+if (typeof window !== 'undefined' && window.location?.origin) { … }   // ✅ zed.ts:102
 const url = process.env.BACKEND_URL || …                              // ❌ shared.ts:29
 ```
 
@@ -303,9 +303,9 @@ const url = process.env.BACKEND_URL || …                              // ❌ s
 ### The `browser-only` tier is internal machinery
 
 Those five zustand stores are consumed only by `apps/web`, via thin
-`export * from '@kortix/sdk/…'` shims in `apps/web/src/stores/`. Nothing
+`export * from '@zed/sdk/…'` shims in `apps/web/src/stores/`. Nothing
 third-party should build on them, and they are **not** exposed on the
-`window.Kortix` global. Treat them as implementation detail that is
+`window.Zed` global. Treat them as implementation detail that is
 regrettably visible, not as a designed API.
 
 ## Adding or moving an export requires three synchronized edits
@@ -332,9 +332,9 @@ For (2), know exactly what is and is not covered:
   `publishConfig.exports` declare the **same key set** (and that each
   `publishConfig` entry carries both `types` and `import`). Add `./foo` to one
   map and forget the other, and this test goes red — before `npm install
-  @kortix/sdk` can ship a subpath that resolves in the workspace but not on npm.
+  @zed/sdk` can ship a subpath that resolves in the workspace but not on npm.
 - ✅ `scripts/smoke-install.mjs` — run in CI as the step **"Install smoke test"**,
-  or locally via `pnpm --filter @kortix/sdk run smoke:install` — packs the
+  or locally via `pnpm --filter @zed/sdk run smoke:install` — packs the
   tarball, installs it into a throwaway project, and imports it, so a resolution
   or runtime failure in the published artifact fails a PR instead of a stranger's
   build.
@@ -357,9 +357,9 @@ belongs.
 }
 ```
 
-`npm view @kortix/sdk main` returns `./dist/index.js`, so the swap works today.
+`npm view @zed/sdk main` returns `./dist/index.js`, so the swap works today.
 `scripts/smoke-install.mjs` (CI step **"Install smoke test"**, or `pnpm --filter
-@kortix/sdk run smoke:install`) now exercises an actual *install* — it packs,
+@zed/sdk run smoke:install`) now exercises an actual *install* — it packs,
 installs the tarball into a throwaway project, and imports it — so this swap is no
 longer unguarded. It is still the subtlest thing a refactor can quietly break, so
 when you touch entry points, run it: `npm pack` → install the tarball into a
@@ -368,8 +368,8 @@ throwaway project → `import` it is exactly what it does.
 ## Workspace dependencies get pinned at publish
 
 `stage-npm-publish.mjs` rewrites every `workspace:*` dependency to the concrete
-lockstep version. `@kortix/llm-catalog` is `workspace:*` here, so it **must** be
-published at the same version or `npm install @kortix/sdk` fails to resolve.
+lockstep version. `@zed/llm-catalog` is `workspace:*` here, so it **must** be
+published at the same version or `npm install @zed/sdk` fails to resolve.
 Adding a new `workspace:*` dependency to this package therefore also means making
 that package publishable. Prefer not to.
 
@@ -433,7 +433,7 @@ in that package lives in `dist/process.js`, reachable **only** from `v2/server.j
 
 Streaming is not "done" because a unit test passes. It is done when it has been
 observed delivering events in **each distribution target you claim** — the ESM
-`dist/`, the CDN ESM bundle, and the `window.Kortix` IIFE global.
+`dist/`, the CDN ESM bundle, and the `window.Zed` IIFE global.
 
 ## Field notes: what actually keeps an SDK maintainable
 
@@ -503,9 +503,9 @@ itself. Surface you never shipped is surface you never have to support.
 ## Commands
 
 ```bash
-pnpm --filter @kortix/sdk typecheck   # tsc --noEmit, plus examples/tsconfig.json
-pnpm --filter @kortix/sdk test        # bun test src  (includes the tripwire)
-pnpm --filter @kortix/sdk build       # tsc -p tsconfig.build.json + tsc-alias
+pnpm --filter @zed/sdk typecheck   # tsc --noEmit, plus examples/tsconfig.json
+pnpm --filter @zed/sdk test        # bun test src  (includes the tripwire)
+pnpm --filter @zed/sdk build       # tsc -p tsconfig.build.json + tsc-alias
 ```
 
 Nothing is done until `typecheck`, `test`, and the tripwire are green. The
@@ -514,8 +514,8 @@ a skipped file is not a passing file.
 
 CI (`.github/workflows/package-tests.yml`) additionally runs
 `stage-npm-publish.test.mjs` and a build + stage + **dry-pack** of
-`@kortix/llm-catalog`, `@kortix/sdk`, and the final deprecated
-`@kortix/executor-sdk` adapter on every PR.
+`@zed/llm-catalog`, `@zed/sdk`, and the final deprecated
+`@zed/executor-sdk` adapter on every PR.
 That is the release gate. It catches a broken `publishConfig`; it does not catch
 a broken *install*.
 
@@ -600,9 +600,9 @@ typecheck, a diff that "looks right", or a test you wrote but never executed. Ru
 these, and **paste the real output**:
 
 ```bash
-pnpm --filter @kortix/sdk typecheck   # tsc --noEmit + examples/tsconfig.json
-pnpm --filter @kortix/sdk test        # bun test src — includes the tripwire
-pnpm --filter @kortix/sdk run smoke:install   # pack → install → import the tarball
+pnpm --filter @zed/sdk typecheck   # tsc --noEmit + examples/tsconfig.json
+pnpm --filter @zed/sdk test        # bun test src — includes the tripwire
+pnpm --filter @zed/sdk run smoke:install   # pack → install → import the tarball
 ```
 
 Baseline (measured 2026-08-09): **1626 passing, 0 failing, across 129 test
@@ -613,7 +613,7 @@ re-deriving it.** Get today's real count by running the full suite once on a
 clean `main` before you start:
 
 ```bash
-pnpm --filter @kortix/sdk test 2>&1 | tail -3   # → "N pass, 0 fail" / "Ran N tests across M files"
+pnpm --filter @zed/sdk test 2>&1 | tail -3   # → "N pass, 0 fail" / "Ran N tests across M files"
 ```
 
 Whatever that prints is the baseline for your session. If your own run — after
@@ -688,7 +688,7 @@ against `bun 1.3.14`:
 | `bun test src -t "no-such-name"` | error | no — fails loudly |
 | **`bun test some/dir/with/no/test/files`** | **`0`** | **yes — runs nothing, reports success** |
 
-So always finish on the full `pnpm --filter @kortix/sdk test`, and **check the
+So always finish on the full `pnpm --filter @zed/sdk test`, and **check the
 count against the baseline you measured at the start of this session** (see
 "Never end a turn without running the gates" above — do not compare against a
 number hardcoded in this doc, it drifts). A green run that says `Ran 12 tests`
@@ -728,7 +728,7 @@ rather than inventing a harness. Tests live beside the code they test
 ## Examples are executable documentation
 
 `examples/*.ts` are typechecked in CI (`tsc --noEmit -p examples/tsconfig.json`).
-They import from `../src/index`, not `@kortix/sdk`, so they resolve without a
+They import from `../src/index`, not `@zed/sdk`, so they resolve without a
 published build — but every example's header comment must show the **npm import
 line** a real consumer would write, because that is what people copy.
 
@@ -742,4 +742,4 @@ Per the root `AGENTS.md`: hosts are thin. If `apps/web`, `apps/mobile`, or
 `apps/whitelabel-demo` needs behaviour that isn't here, it is added **here** and
 exposed through the public surface — not hand-rolled in the host, and not reached
 for by importing an internal `src/` path. A host importing
-`@kortix/sdk/src/anything` is a bug in both places.
+`@zed/sdk/src/anything` is a bug in both places.

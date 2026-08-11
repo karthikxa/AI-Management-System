@@ -38,7 +38,7 @@ function cleanWorkerOutput(raw: string): string {
   text = text.replace(/^\*\*Session:\*\*.*\n?/m, '');
   text = text.replace(/^\*\*Duration:\*\*.*\n?/m, '');
 
-  text = text.replace(/<kortix_goal_system[^>]*>[\s\S]*?<\/kortix_goal_system>/g, '');
+  text = text.replace(/<zed_goal_system[^>]*>[\s\S]*?<\/zed_goal_system>/g, '');
 
   text = text.replace(/^Task \*\*task-[a-z0-9]+\*\* created and started\..*$/gm, '');
   text = text.replace(/^Task \*\*task-[a-z0-9]+\*\* created:.*$/gm, '');

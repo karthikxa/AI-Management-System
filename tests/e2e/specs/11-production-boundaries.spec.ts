@@ -107,7 +107,7 @@ test.describe.serial('11 - SPEC auth boundaries, concurrency, and SLOs', () => {
       {
         account_id: account.account_id,
         name: `Boundary Project ${runId}`,
-        repo_url: `https://github.com/kortix-ai/boundary-${runId}.git`,
+        repo_url: `https://github.com/zed-ai/boundary-${runId}.git`,
         default_branch: 'main',
       },
       201,
@@ -219,7 +219,7 @@ test.describe.serial('11 - SPEC auth boundaries, concurrency, and SLOs', () => {
       {
         account_id: personalAccount!.account_id,
         name: `SLO Project ${runId}`,
-        repo_url: `https://github.com/kortix-ai/slo-${runId}.git`,
+        repo_url: `https://github.com/zed-ai/slo-${runId}.git`,
         default_branch: 'main',
       },
       201,

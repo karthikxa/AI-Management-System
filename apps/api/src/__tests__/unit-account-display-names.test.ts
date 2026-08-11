@@ -41,7 +41,7 @@ const {
   resolveAccountDisplayNames,
 } = await import('../accounts/core/app');
 
-const CALLER = { userId: 'u-caller', email: 'marko@kortix.ai' };
+const CALLER = { userId: 'u-caller', email: 'marko@zed.ai' };
 
 beforeEach(() => {
   dbResults = [];
@@ -79,7 +79,7 @@ describe('resolveAccountDisplayNames', () => {
       [{ accountId: 'a1', name: 'Personal' }],
       CALLER,
     );
-    expect(names.get('a1')).toBe("marko@kortix.ai's Account");
+    expect(names.get('a1')).toBe("marko@zed.ai's Account");
   });
 
   test("unnamed account owned by someone else → OWNER's email, not the caller's", async () => {
@@ -111,7 +111,7 @@ describe('resolveAccountDisplayNames', () => {
       [{ accountId: 'a1', name: 'User' }],
       CALLER,
     );
-    expect(names.get('a1')).toBe("marko@kortix.ai's Account");
+    expect(names.get('a1')).toBe("marko@zed.ai's Account");
   });
 
   test('owner whose email cannot be resolved → caller email fallback', async () => {
@@ -120,7 +120,7 @@ describe('resolveAccountDisplayNames', () => {
       [{ accountId: 'a1', name: 'Personal' }],
       CALLER,
     );
-    expect(names.get('a1')).toBe("marko@kortix.ai's Account");
+    expect(names.get('a1')).toBe("marko@zed.ai's Account");
   });
 
   test('mixed batch resolves each account independently', async () => {

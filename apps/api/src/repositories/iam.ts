@@ -3,7 +3,7 @@
 // in PR5d together with the V1 engine.
 // Pure CRUD; route handlers do their own assertAuthorized() calls.
 
-import { accountGroupMembers, accountGroups, accountMembers } from '@kortix/db';
+import { accountGroupMembers, accountGroups, accountMembers } from '@zed/db';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { invalidateIamCacheForUser, invalidateIamCacheForUsers } from '../iam/cache-invalidation';
 import { db } from '../shared/db';
@@ -46,14 +46,14 @@ export async function listGroups(accountId: string): Promise<
       // both sides of `WHERE x.group_id = "group_id"` to the inner alias
       // and the filter degenerates to `WHERE TRUE` — counts come back as
       // table-wide totals. Aliasing the inner table doesn't help; we need
-      // the OUTER reference to be unambiguously kortix.account_groups.
+      // the OUTER reference to be unambiguously zed.account_groups.
       memberCount: sql<number>`(
-        SELECT COUNT(*)::int FROM kortix.account_group_members agm
-        WHERE agm.group_id = kortix.account_groups.group_id
+        SELECT COUNT(*)::int FROM zed.account_group_members agm
+        WHERE agm.group_id = zed.account_groups.group_id
       )`,
       projectCount: sql<number>`(
-        SELECT COUNT(*)::int FROM kortix.project_group_grants pgg
-        WHERE pgg.group_id = kortix.account_groups.group_id
+        SELECT COUNT(*)::int FROM zed.project_group_grants pgg
+        WHERE pgg.group_id = zed.account_groups.group_id
       )`,
     })
     .from(accountGroups)

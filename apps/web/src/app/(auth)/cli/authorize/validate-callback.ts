@@ -1,5 +1,5 @@
 /**
- * The CLI's one-shot callback server must be local: `kortix login` listens on
+ * The CLI's one-shot callback server must be local: `zed login` listens on
  * `http://127.0.0.1:<port>/callback` (or `localhost`). Anything else — other
  * protocols, other hosts — is refused before the page offers to mint a token.
  */

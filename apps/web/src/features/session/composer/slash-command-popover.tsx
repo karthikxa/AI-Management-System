@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 
 import { cn } from '@/lib/utils';
-import type { Command } from '@kortix/sdk/react';
+import type { Command } from '@zed/sdk/react';
 
 // ============================================================================
 // Slash Command Popover — uses fixed positioning to escape overflow-hidden ancestors

@@ -105,7 +105,7 @@ export const surfaces = {
     },
     {
       id: 'voice',
-      icon: 'Kortix',
+      icon: 'Zed',
       name: 'Voice',
       state: 'Experimental',
       body: 'A realtime call the agent speaks in. Same per-project opt-in. It spawns a room and shares the link — it does not dial into a meeting you already started.',
@@ -132,7 +132,7 @@ export const thread = {
     {
       n: '01',
       title: 'A session starts',
-      body: 'Kortix cuts a branch and boots its own isolated cloud computer, exactly as it would for a session started from the dashboard or the CLI. You get a reaction on your own message, not a bot post saying “on it”.',
+      body: 'Zed cuts a branch and boots its own isolated cloud computer, exactly as it would for a session started from the dashboard or the CLI. You get a reaction on your own message, not a bot post saying “on it”.',
     },
     {
       n: '02',
@@ -160,17 +160,17 @@ export const thread = {
         id: 'ask',
         who: 'Dana',
         kind: 'person',
-        text: '@kortix draft the Q3 launch note from the changelog and put it in the repo',
+        text: '@zed draft the Q3 launch note from the changelog and put it in the repo',
       },
       {
         id: 'work',
-        who: 'kortix',
+        who: 'zed',
         kind: 'agent',
         text: 'Reading the changelog since v0.9. Drafting launch-note.md on this session’s branch.',
       },
       {
         id: 'file',
-        who: 'kortix',
+        who: 'zed',
         kind: 'file',
         text: 'launch-note.md',
       },
@@ -192,27 +192,27 @@ export const thread = {
 export const connect = {
   eyebrow: 'Connect it',
   title: 'Install it, invite it, mention it.',
-  sub: 'On a host with the shared Slack app configured, kortix channels connect prints an install link and you are three clicks from done. On a deployment with no shared app, the same command falls back to manual mode by itself and hands you an app manifest to paste.',
+  sub: 'On a host with the shared Slack app configured, zed channels connect prints an install link and you are three clicks from done. On a deployment with no shared app, the same command falls back to manual mode by itself and hands you an app manifest to paste.',
   shell: {
-    title: 'kortix channels',
+    title: 'zed channels',
     lines: [
       '# managed: an install link, then pick the workspace',
-      '$ kortix channels connect --wait',
+      '$ zed channels connect --wait',
       '→ connected: slack workspace acme-hq',
       '',
       '# self-hosting? the same command falls back to manual',
-      '$ kortix channels manifest > slack-app.json',
-      '$ kortix channels connect --manual \\',
+      '$ zed channels manifest > slack-app.json',
+      '$ zed channels connect --manual \\',
       '    --bot-token xoxb-... --signing-secret ...',
       '',
       '# check it, or take it away',
-      '$ kortix channels status',
-      '$ kortix channels disconnect',
+      '$ zed channels status',
+      '$ zed channels disconnect',
     ],
   },
   notes: [
     'Installing is not the last step: invite the bot to a channel and mention it. Nothing happens in a channel it has not been invited to.',
-    'Connecting writes a channel connector into kortix.yaml for you. You never hand-write that entry.',
+    'Connecting writes a channel connector into zed.yaml for you. You never hand-write that entry.',
     'The dashboard uses the same install flow as the CLI. Neither one is the real one.',
   ],
 } as const;
@@ -239,16 +239,16 @@ export const back = {
     },
   ],
   footnote:
-    'One honest limit: the card carries the decision and a link back into Kortix. Reading the actual diff of a change request happens in the web app, where a diff belongs — Slack is not a code review tool and we are not going to pretend it is.',
+    'One honest limit: the card carries the decision and a link back into Zed. Reading the actual diff of a change request happens in the web app, where a diff belongs — Slack is not a code review tool and we are not going to pretend it is.',
 } as const;
 
 export const commands = {
   eyebrow: 'From the thread',
   title: 'Run the project without leaving the conversation.',
-  sub: 'Type these as /kortix <command> in Slack, or as plain text in a direct message. Most of what you would otherwise open the dashboard for is one line in the channel.',
+  sub: 'Type these as /zed <command> in Slack, or as plain text in a direct message. Most of what you would otherwise open the dashboard for is one line in the channel.',
   columns: ['Command', 'What it does'] as const,
   rows: [
-    { cmd: 'login, logout', v: 'Link or unlink your chat identity to your Kortix account' },
+    { cmd: 'login, logout', v: 'Link or unlink your chat identity to your Zed account' },
     { cmd: 'switch, unbind', v: 'Rebind this channel to a different project, or unbind it' },
     { cmd: 'projects', v: 'List the projects you can bind this channel to' },
     { cmd: 'sessions', v: 'List the recent sessions started from this workspace' },
@@ -274,12 +274,12 @@ export const rules = {
     {
       id: 'identity',
       k: 'Every sender is a known person',
-      v: 'Kortix links a chat sender to a Kortix account before the agent runs for them. Run /kortix login and sign in. An unlinked sender gets a prompt to link, not a session — so a stranger in a shared channel cannot spend your compute.',
+      v: 'Zed links a chat sender to a Zed account before the agent runs for them. Run /zed login and sign in. An unlinked sender gets a prompt to link, not a session — so a stranger in a shared channel cannot spend your compute.',
     },
     {
       id: 'credentials',
       k: 'The bot token never enters a sandbox',
-      v: 'A connected channel’s token is a connector-scoped secret. It does not appear on the project’s Secrets page, and Kortix never injects it into a cloud computer. It is resolved server-side at the moment the agent sends a message.',
+      v: 'A connected channel’s token is a connector-scoped secret. It does not appear on the project’s Secrets page, and Zed never injects it into a cloud computer. It is resolved server-side at the moment the agent sends a message.',
     },
     {
       id: 'agent',
@@ -299,7 +299,7 @@ export const custom = {
   title: 'No channel for your platform? Here is the honest path.',
   sub: 'There is no build-your-own-channel API — the platform list is a closed enum and we will not dress a gap up as a plug-in system. What ships is a signed webhook trigger that starts a session per conversation. It solves the inbound half well, and we will tell you exactly what it does not do.',
   yaml: {
-    title: 'kortix.yaml',
+    title: 'zed.yaml',
     lines: [
       '# any conversational source, without channel-specific code',
       'triggers:',
@@ -328,7 +328,7 @@ export const custom = {
     {
       id: 'filter',
       title: 'And a loop breaker',
-      body: 'A source that reports both sides of a conversation would otherwise fire the agent on its own reply. filter drops those deliveries with a 200 and no session. Signed with HMAC-SHA256, like every Kortix webhook.',
+      body: 'A source that reports both sides of a conversation would otherwise fire the agent on its own reply. filter drops those deliveries with a 200 and no session. Signed with HMAC-SHA256, like every Zed webhook.',
     },
     {
       id: 'gap',
@@ -343,7 +343,7 @@ export const custom = {
 export const closing = {
   eyebrow: 'Connect it',
   title: 'Put it in the thread people already use.',
-  sub: 'Open source and self-hostable. Any model, your keys. Kortix Cloud, your own VPC, or fully on-prem.',
+  sub: 'Open source and self-hostable. Any model, your keys. Zed Cloud, your own VPC, or fully on-prem.',
   ctaPrimary: 'Connect Slack',
   ctaPrimaryHref: '/auth',
   ctaSecondary: 'Read the channel docs',

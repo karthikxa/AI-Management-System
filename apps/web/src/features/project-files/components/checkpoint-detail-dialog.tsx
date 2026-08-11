@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
-import type { ProjectCommitFile } from '@kortix/sdk';
+import type { ProjectCommitFile } from '@zed/sdk';
 import {
   WarningCircleIcon as AlertCircle,
   CalendarIcon as Calendar,
@@ -63,14 +63,14 @@ function formatFull(timestamp: number): string {
 function statusIconFor(status: ProjectCommitFile['status'], className = 'size-3.5') {
   switch (status) {
     case 'added':
-      return <FilePlus2 className={cn(className, 'text-kortix-green')} />;
+      return <FilePlus2 className={cn(className, 'text-zed-green')} />;
     case 'deleted':
-      return <FileX2 className={cn(className, 'text-kortix-red')} />;
+      return <FileX2 className={cn(className, 'text-zed-red')} />;
     case 'renamed':
     case 'copied':
-      return <FileSymlink className={cn(className, 'text-kortix-orange')} />;
+      return <FileSymlink className={cn(className, 'text-zed-orange')} />;
     default:
-      return <FileEdit className={cn(className, 'text-kortix-blue')} />;
+      return <FileEdit className={cn(className, 'text-zed-blue')} />;
   }
 }
 
@@ -127,8 +127,8 @@ function FileRailRow({
         {file.path}
       </span>
       <span className="flex shrink-0 items-center gap-1 text-xs tabular-nums">
-        {file.additions > 0 && <span className="text-kortix-green">+{file.additions}</span>}
-        {file.deletions > 0 && <span className="text-kortix-red">−{file.deletions}</span>}
+        {file.additions > 0 && <span className="text-zed-green">+{file.additions}</span>}
+        {file.deletions > 0 && <span className="text-zed-red">−{file.deletions}</span>}
       </span>
     </button>
   );
@@ -180,10 +180,10 @@ function MainDiffColumn({ sha, file }: { sha: string; file: ProjectCommitFile | 
           {statusBadgeFor(file.status)}
           <span className="flex items-center gap-1.5 text-xs tabular-nums">
             {file.additions > 0 && (
-              <span className="text-kortix-green font-medium">+{file.additions}</span>
+              <span className="text-zed-green font-medium">+{file.additions}</span>
             )}
             {file.deletions > 0 && (
-              <span className="text-kortix-red font-medium">−{file.deletions}</span>
+              <span className="text-zed-red font-medium">−{file.deletions}</span>
             )}
           </span>
         </div>
@@ -482,7 +482,7 @@ export function CheckpointDetailDialog({
                 )}
               >
                 {copied ? (
-                  <Check className="text-kortix-green h-3 w-3" />
+                  <Check className="text-zed-green h-3 w-3" />
                 ) : (
                   <Copy className="text-muted-foreground/70 h-3 w-3" />
                 )}
@@ -510,8 +510,8 @@ export function CheckpointDetailDialog({
                     {data.files.length} file{data.files.length === 1 ? '' : 's'}
                   </span>
                   <span className="flex items-center gap-2 tabular-nums">
-                    {totals.add > 0 && <span className="text-kortix-green">+{totals.add}</span>}
-                    {totals.del > 0 && <span className="text-kortix-red">−{totals.del}</span>}
+                    {totals.add > 0 && <span className="text-zed-green">+{totals.add}</span>}
+                    {totals.del > 0 && <span className="text-zed-red">−{totals.del}</span>}
                   </span>
                 </div>
               )}

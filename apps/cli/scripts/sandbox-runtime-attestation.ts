@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import {
   buildCliConnectorSourceDigest,
   buildFileSha256,
-} from '@kortix/shared/sandbox-runtime-artifact';
+} from '@zed/shared/sandbox-runtime-artifact';
 
 const cliRoot = resolve(import.meta.dir, '..');
 const [command, rawPath, rawBinaryPath, expectedSourceDigest, target] = process.argv.slice(2);

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { and, eq, ne } from 'drizzle-orm';
-import { createDb, accounts, projects, sandboxTemplates, type Database } from '@kortix/db';
+import { createDb, accounts, projects, sandboxTemplates, type Database } from '@zed/db';
 import { perProjectWarmImageName } from '../../snapshots/ppwarm-names';
 import {
   providerTransitionMetricsSnapshot,
@@ -175,7 +175,7 @@ afterAll(async () => {
 d('provider transition — durable flow (throwaway Postgres)', () => {
   test('request records a pending transition and does NOT flip the active provider', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const res = await reserveSwitchTransition(db, {
       accountId,
       sourceProvider: 'daytona',
@@ -191,7 +191,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('drive does not activate while the image is not yet ready', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.ensureBehavior = 'leave_building';
     const res = await reserveSwitchTransition(db, {
@@ -206,7 +206,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('an already-active image activates immediately with NO rebuild', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.state.set(id.snapshotName, 'active');
     world.externalIds.set(id.snapshotName, 'tpl_preexisting');
@@ -226,7 +226,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('a permanent build failure leaves the SOURCE active and dead-letters', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.ensureBehavior = 'throw_permanent';
     const res = await reserveSwitchTransition(db, {
@@ -244,7 +244,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('an unknown provider state is retried, NEVER treated as a missing image', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.state.set(id.snapshotName, 'unknown');
     const res = await reserveSwitchTransition(db, {
@@ -263,7 +263,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('BUILDING ≠ FAILURE: an image already building on the target is NOT rebuilt and does NOT consume an attempt', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     // The content-addressed image is already building (another drive/replica or
     // an on-push ppwarm bake kicked it). ensureWarmImage MUST NOT be called.
@@ -287,7 +287,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('BUILDING ≠ FAILURE: a build still in progress after ensureWarmImage waits without consuming an attempt', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     // Pre-build the image is absent → ensureWarmImage runs (registers the build)
     // but the provider still reports `building` afterward (async completion).
@@ -308,7 +308,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('BUILDING ≠ FAILURE: a long healthy build re-drives many times WITHOUT ever dead-lettering', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.state.set(id.snapshotName, 'building'); // stuck healthily building
     world.ensureBehavior = 'throw_permanent';
@@ -341,7 +341,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
     // fix (platinum.ts) makes the adapter PROPAGATE the 401/403 so it reaches
     // this exact code path with the real message intact.
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.stateThrows = new Error('platinum GET /v1/templates -> 403 {"error":"forbidden"}');
     const res = await reserveSwitchTransition(db, {
@@ -362,7 +362,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('duplicate switch requests dedup to ONE transition and ONE build', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const a = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id } });
     const b = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id } });
     expect(b.row.transitionId).toBe(a.row.transitionId);
@@ -374,8 +374,8 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('a new commit during prep prevents a stale activation (forks a new identity)', async () => {
     const projectId = await freshProject();
-    const orig = identity(projectId, 'commit-a', 'kortix-default-r1');
-    const drifted = identity(projectId, 'commit-b', 'kortix-default-r1');
+    const orig = identity(projectId, 'commit-a', 'zed-default-r1');
+    const drifted = identity(projectId, 'commit-b', 'zed-default-r1');
     const world = makeWorld(orig);
     world.identityByCall = [drifted];
     const res = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...orig } });
@@ -389,8 +389,8 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('a runtime/base-image change during prep prevents a stale activation', async () => {
     const projectId = await freshProject();
-    const orig = identity(projectId, 'commit-a', 'kortix-default-r1');
-    const drifted = identity(projectId, 'commit-a', 'kortix-default-r2');
+    const orig = identity(projectId, 'commit-a', 'zed-default-r1');
+    const drifted = identity(projectId, 'commit-a', 'zed-default-r2');
     const world = makeWorld(orig);
     world.identityByCall = [drifted];
     const res = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...orig } });
@@ -401,8 +401,8 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('a newer request supersedes the older; only the newest can activate', async () => {
     const projectId = await freshProject();
-    const idA = identity(projectId, 'commit-a', 'kortix-default-r1');
-    const idB = identity(projectId, 'commit-b', 'kortix-default-r1');
+    const idA = identity(projectId, 'commit-a', 'zed-default-r1');
+    const idB = identity(projectId, 'commit-b', 'zed-default-r1');
     const a = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...idA } });
     const b = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...idB } });
     expect((await getTransition(db, a.row.transitionId))?.status).toBe('superseded');
@@ -418,8 +418,8 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('concurrent activation CAS: only the generation matching the project wins (clobber race)', async () => {
     const projectId = await freshProject();
-    const idA = identity(projectId, 'commit-a', 'kortix-default-r1');
-    const idB = identity(projectId, 'commit-b', 'kortix-default-r1');
+    const idA = identity(projectId, 'commit-a', 'zed-default-r1');
+    const idB = identity(projectId, 'commit-b', 'zed-default-r1');
     const a = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...idA } });
     const b = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...idB } });
     const now = new Date();
@@ -433,8 +433,8 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('the prepared snapshot name equals the session warm-lookup name (first session does not clone)', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'deadbeef', 'kortix-default-r1');
-    expect(id.snapshotName).toBe(perProjectWarmImageName(projectId, 'deadbeef', 'kortix-default-r1'));
+    const id = identity(projectId, 'deadbeef', 'zed-default-r1');
+    expect(id.snapshotName).toBe(perProjectWarmImageName(projectId, 'deadbeef', 'zed-default-r1'));
     const world = makeWorld(id);
     const res = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id } });
     await driveProviderTransition(makeDeps(world), res.row.transitionId);
@@ -445,7 +445,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('API restart resumes a stranded building transition to activation', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     const res = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id } });
     await updateTransition(db, res.row.transitionId, {
@@ -462,7 +462,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
   test('the reconciler resumes a stranded READY row and a stranded ACTIVATING row', async () => {
     for (const strandedStatus of ['ready', 'activating'] as const) {
       const projectId = await freshProject();
-      const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+      const id = identity(projectId, 'commit-a', 'zed-default-r1');
       const world = makeWorld(id);
       world.state.set(id.snapshotName, 'active');
       world.externalIds.set(id.snapshotName, 'tpl_ready');
@@ -480,7 +480,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('a vanished image (GC\'d after ready) never activates stale — it re-verifies and refuses', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.ensureBehavior = 'leave_building';
     const res = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id } });
@@ -493,7 +493,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('crash between kick and persist is safe: the reserved pending row is resumable to activation', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     const res = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id } });
     const resumable = await findResumableTransitions(db, 10 * 60_000, 10);
@@ -504,7 +504,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('switching back (setPin + generation bump) supersedes an in-flight prepare — no late re-flip', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     const res = await reserveSwitchTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id } });
     await setPinWithGenerationBump(db, { projectId, pin: 'daytona', now: new Date() });
@@ -517,7 +517,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('a prebuild row builds the image but stays invisible to routing until adopted', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     const { row, created } = await insertPrebuildTransition(db, { accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id } });
     expect(created).toBe(true);
@@ -540,7 +540,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('scattered indeterminate blips interspersed with `building` NEVER dead-letter (attempts reset)', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.ensureBehavior = 'throw_permanent'; // would blow up if a build ever ran
     const res = await reserveSwitchTransition(db, {
@@ -566,7 +566,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('6 CONSECUTIVE indeterminate/transient drives DO dead-letter (sustained outage)', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.state.set(id.snapshotName, 'unknown'); // provider can't confirm, every drive
     world.ensureBehavior = 'throw_permanent';
@@ -589,7 +589,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('a forever-`building` build FAILS with build_timeout once past the wall-clock deadline', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.state.set(id.snapshotName, 'building'); // stuck building forever
     world.ensureBehavior = 'throw_permanent';
@@ -617,7 +617,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('verify-stage `building` re-polls WITHOUT an attempt, then activates when it turns ready', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     // The name lists as active (so the build phase is a no-op reuse), but the EXACT
     // id the transition pinned is still `building` — the by-id verifier catches it.
@@ -650,7 +650,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('an `absent` image still FAILS promptly (consumes an attempt — not treated as building)', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.state.set(id.snapshotName, 'missing'); // absent
     world.ensureBehavior = 'leave_building'; // build runs but image stays absent
@@ -669,7 +669,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('FIX-B: the runner pins the id the BUILD returned, never the name-list lookup id', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     // A fresh build runs (image absent pre-build). The build PROVES this exact id
     // (Platinum requireExternalTemplateId), threaded straight from buildSnapshot.
@@ -697,7 +697,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('activation verifies by EXACT external id and pins that id', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.state.set(id.snapshotName, 'active');
     world.externalIds.set(id.snapshotName, 'tpl_exact');
@@ -716,7 +716,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('a by-id-ABSENT result forces a rebuild rather than a stale-name activation', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     // The NAME still lists active (truncated-listing lie), but the EXACT pinned id
     // was GC'd → by-id 'missing'. Activation must refuse + rebuild, never flip.
@@ -740,7 +740,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('acquireLease bumps the fencing epoch 0→1 on a fresh (pre-migration default) row and the drive activates', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     const res = await reserveSwitchTransition(db, {
       accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id },
@@ -757,7 +757,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('a zombie drive with a STALE epoch is fenced out: it ceases silently and clobbers no state', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.ensureBehavior = 'activate'; // absent this fence, the zombie would build + activate
     const res = await reserveSwitchTransition(db, {
@@ -787,7 +787,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('activation is REJECTED for a stale lease epoch even at a MATCHING generation', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const res = await reserveSwitchTransition(db, {
       accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id },
     });
@@ -821,7 +821,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('heartbeat renews the lease while owned (fenced) and refuses a stale epoch', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const res = await reserveSwitchTransition(db, {
       accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id },
     });
@@ -876,7 +876,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
       source: 'ui',
       provider: 'platinum',
     });
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     // The DEFAULT template's warm image is ready — activation must proceed on it.
     world.state.set(id.snapshotName, 'active');
@@ -903,7 +903,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
   test('FIX-M1: a default-only project activates with NO custom_template_cold_boot event', async () => {
     resetProviderTransitionMetricsForTest();
     const projectId = await freshProject(); // no custom template rows
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     world.state.set(id.snapshotName, 'active');
     world.externalIds.set(id.snapshotName, 'tpl_default_warm');
@@ -922,7 +922,7 @@ d('provider transition — durable flow (throwaway Postgres)', () => {
 
   test('heartbeat threaded through ensureWarmImage renews the lease during a long build', async () => {
     const projectId = await freshProject();
-    const id = identity(projectId, 'commit-a', 'kortix-default-r1');
+    const id = identity(projectId, 'commit-a', 'zed-default-r1');
     const world = makeWorld(id);
     const res = await reserveSwitchTransition(db, {
       accountId, sourceProvider: 'daytona', identity: { projectId, targetProvider: 'platinum', ...id },

@@ -1,5 +1,5 @@
 {
-  "name": "kortix",
+  "name": "zed",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -11,15 +11,15 @@
     "android:build": "eas build:dev --platform android",
     "android:prebuild": "npx expo prebuild --platform android --clean",
     "android:setup": "./scripts/setup-android.sh",
-    "android:emulator": "emulator -avd Kortix_Dev",
+    "android:emulator": "emulator -avd Zed_Dev",
     "ios": "expo start -c --ios",
     "web": "expo start -c --web",
     "clean": "rm -rf .expo node_modules",
     "test": "bun test"
   },
   "dependencies": {
-    "@kortix/sdk": "workspace:*",
-    "@kortix/shared": "workspace:*",
+    "@zed/sdk": "workspace:*",
+    "@zed/shared": "workspace:*",
     "@bacons/apple-targets": "^3.0.5",
     "@expensify/react-native-live-markdown": "0.1.317",
     "@gorhom/bottom-sheet": "^5.2.6",

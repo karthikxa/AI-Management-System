@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Kortix <ErrorState> — centered error view.
+ * Zed <ErrorState> — centered error view.
  *
  * Minimal. An icon, a one-line headline, an optional body, and up to two
  * actions (primary + secondary). A calm failure moment — not an alarm bell.
@@ -58,7 +58,7 @@ export function ErrorState({
           <div
             className={cn(
               'inline-flex size-10 shrink-0 items-center justify-center rounded-sm border',
-              'bg-kortix-red/10 text-kortix-red',
+              'bg-zed-red/10 text-zed-red',
             )}
           >
             <IconComponent className="size-6 shrink-0" weight="fill" />

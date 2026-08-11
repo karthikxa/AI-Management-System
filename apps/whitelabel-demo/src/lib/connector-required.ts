@@ -168,7 +168,7 @@ export interface ConnectorRemedyCopy {
 }
 
 /**
- * @param options.wrapperMode Whether this app is talking to Kortix under ONE
+ * @param options.wrapperMode Whether this app is talking to Zed under ONE
  *   operator credential (`GET /api/mode`). It changes who "the account the
  *   session runs as" is for a `user`-strategy connector — the operator in
  *   wrapper mode, the person holding the API key in direct mode — and so who
@@ -208,7 +208,7 @@ export function connectorRemedy(
     if (options.wrapperMode === true) {
       return {
         headline: `${name} has to be connected before this session can start`,
-        explanation: `This session needs ${name} and cannot start without it. ${name} authorizes one person at a time, and sessions here run under this app's own Kortix credential rather than yours — so there is nothing it can connect on your behalf, and a link would only ever reconnect that same account.`,
+        explanation: `This session needs ${name} and cannot start without it. ${name} authorizes one person at a time, and sessions here run under this app's own Zed credential rather than yours — so there is nothing it can connect on your behalf, and a link would only ever reconnect that same account.`,
         unblockedBy: [
           `The operator of this app connects ${name} for the account it runs sessions as.`,
           `Or the project switches ${alias} to a shared (project) authorization, which anyone can then connect once with a link.`,
@@ -218,9 +218,9 @@ export function connectorRemedy(
     }
     if (options.wrapperMode === false) {
       return {
-        headline: `Connect ${name} in your Kortix account`,
-        explanation: `This session needs ${name} and cannot start without it. ${name} authorizes one person at a time, so it has to be connected by the account this app is signed in with — a connection that lives in Kortix, and that this app has no screen for making.`,
-        unblockedBy: [`Connect ${alias} from your Kortix dashboard, then retry.`],
+        headline: `Connect ${name} in your Zed account`,
+        explanation: `This session needs ${name} and cannot start without it. ${name} authorizes one person at a time, so it has to be connected by the account this app is signed in with — a connection that lives in Zed, and that this app has no screen for making.`,
+        unblockedBy: [`Connect ${alias} from your Zed dashboard, then retry.`],
         canMintConnectLink: false,
       };
     }

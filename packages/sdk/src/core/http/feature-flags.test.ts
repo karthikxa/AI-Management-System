@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 
-import { configureKortix } from './config';
+import { configureZed } from './config';
 import { featureFlags, parseFlagOverride } from './feature-flags';
 
 const ENV_KEYS = [
@@ -17,13 +17,13 @@ afterEach(() => {
     if (originalEnv[key] === undefined) delete process.env[key];
     else process.env[key] = originalEnv[key];
   }
-  configureKortix({ backendUrl: '', getToken: async () => null });
+  configureZed({ backendUrl: '', getToken: async () => null });
 });
 
 describe('featureFlags defaults', () => {
   test('fall back to the documented defaults with no env and no config', () => {
     for (const key of ENV_KEYS) delete process.env[key];
-    configureKortix({ backendUrl: '', getToken: async () => null });
+    configureZed({ backendUrl: '', getToken: async () => null });
 
     expect(featureFlags.disableMobileAdvertising).toBe(false);
     expect(featureFlags.enableDinoGame).toBe(false);
@@ -34,7 +34,7 @@ describe('featureFlags defaults', () => {
 
 describe('featureFlags NEXT_PUBLIC_* env fallback (back-compat)', () => {
   test('reads the legacy env var when no config override is set', () => {
-    configureKortix({ backendUrl: '', getToken: async () => null });
+    configureZed({ backendUrl: '', getToken: async () => null });
     process.env.NEXT_PUBLIC_ENABLE_PROJECTS = 'true';
     expect(featureFlags.enableProjects).toBe(true);
 
@@ -43,10 +43,10 @@ describe('featureFlags NEXT_PUBLIC_* env fallback (back-compat)', () => {
   });
 });
 
-describe('featureFlags configureKortix override', () => {
+describe('featureFlags configureZed override', () => {
   test('an explicit override wins over the env var', () => {
     process.env.NEXT_PUBLIC_ENABLE_PROJECTS = 'true';
-    configureKortix({
+    configureZed({
       backendUrl: '',
       getToken: async () => null,
       featureFlags: { enableProjects: false },
@@ -57,7 +57,7 @@ describe('featureFlags configureKortix override', () => {
 
   test('resolves on a host with no NEXT_PUBLIC_* env at all (portable path)', () => {
     delete process.env.NEXT_PUBLIC_DISABLE_MOBILE_ADVERTISING;
-    configureKortix({
+    configureZed({
       backendUrl: '',
       getToken: async () => null,
       featureFlags: { disableMobileAdvertising: true },
@@ -68,7 +68,7 @@ describe('featureFlags configureKortix override', () => {
 
   test('an unset override key still falls back to env / default', () => {
     process.env.NEXT_PUBLIC_ENABLE_DINO_GAME = 'true';
-    configureKortix({
+    configureZed({
       backendUrl: '',
       getToken: async () => null,
       featureFlags: { enableProjects: true },
@@ -91,7 +91,7 @@ describe('featureFlags configureKortix override', () => {
 
   test('a parseFlagOverride undefined override falls through to env/default', () => {
     process.env.NEXT_PUBLIC_ENABLE_PROJECTS = 'true';
-    configureKortix({
+    configureZed({
       backendUrl: '',
       getToken: async () => null,
       featureFlags: { enableProjects: parseFlagOverride(undefined) },
@@ -99,12 +99,12 @@ describe('featureFlags configureKortix override', () => {
     expect(featureFlags.enableProjects).toBe(true);
   });
 
-  test('reflects a configureKortix call made after this module was already imported', () => {
+  test('reflects a configureZed call made after this module was already imported', () => {
     delete process.env.NEXT_PUBLIC_ENABLE_PROJECTS;
-    configureKortix({ backendUrl: '', getToken: async () => null });
+    configureZed({ backendUrl: '', getToken: async () => null });
     expect(featureFlags.enableProjects).toBe(false);
 
-    configureKortix({
+    configureZed({
       backendUrl: '',
       getToken: async () => null,
       featureFlags: { enableProjects: true },

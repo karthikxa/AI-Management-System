@@ -3,7 +3,7 @@
 import { Reveal } from '@/components/home/reveal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/marketing/button';
-import KortixGrid from '@/components/ui/marketing/gridder';
+import ZedGrid from '@/components/ui/marketing/gridder';
 import { useRequestDemo } from '@/features/contact/request-demo-provider';
 import { cta } from '@/features/marketing/landing/content';
 import { useAuth } from '@/features/providers/auth-provider';
@@ -14,7 +14,7 @@ import { useCallback } from 'react';
 
 /**
  * The closing CTA, kept in the shape it has always had: copy on the left, the
- * Kortix letter grid on the right. Copy now lives in content.ts rather than the
+ * Zed letter grid on the right. Copy now lives in content.ts rather than the
  * i18n bundle, matching the rest of the rebuilt page.
  */
 export function CtaSection() {
@@ -33,7 +33,7 @@ export function CtaSection() {
           <div className="flex grid-cols-12 flex-col-reverse gap-2 md:grid">
             <div className="col-span-4 flex flex-col items-start justify-start space-y-4 p-6 *:text-left">
               <div className="space-y-2">
-                <Badge variant="kortix" className="rounded">
+                <Badge variant="zed" className="rounded">
                   {cta.badge}
                 </Badge>
                 <h2 className="text-foreground text-2xl leading-tight font-medium tracking-tight sm:text-3xl">
@@ -56,7 +56,7 @@ export function CtaSection() {
             </div>
             <div className="col-span-1 hidden md:block" />
             <div className="col-span-7 mask-y-from-90% mask-x-from-90%">
-              <KortixGrid count={58} seed={4228} />
+              <ZedGrid count={58} seed={4228} />
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { ApiReviewItem } from '@kortix/sdk';
+import type { ApiReviewItem } from '@zed/sdk';
 
 import { mapApiReviewItem } from './map';
 import { looksLikeMarkdown } from '@/lib/markdown-detect';
@@ -9,9 +9,9 @@ describe('looksLikeMarkdown', () => {
   test('detects the clear markdown signals', () => {
     expect(looksLikeMarkdown('## What this changes\nMigrates the manifest.')).toBe(true);
     expect(looksLikeMarkdown('This has **bold emphasis** in it.')).toBe(true);
-    expect(looksLikeMarkdown('Run `kortix validate` before landing.')).toBe(true);
+    expect(looksLikeMarkdown('Run `zed validate` before landing.')).toBe(true);
     expect(looksLikeMarkdown('```yaml\nagents: {}\n```')).toBe(true);
-    expect(looksLikeMarkdown('See [the docs](https://kortix.com/docs).')).toBe(true);
+    expect(looksLikeMarkdown('See [the docs](https://zed.com/docs).')).toBe(true);
     expect(looksLikeMarkdown('1. fetch\n2. rebase\n3. push')).toBe(true);
   });
 
@@ -45,7 +45,7 @@ describe('mapApiReviewItem — markdown change descriptions', () => {
     }) as unknown as ApiReviewItem;
 
   test('a markdown description is carried whole, not line-split into checkmark rows', () => {
-    const md = '## What this changes\nMigrates `kortix.toml` to **kortix.yaml**.';
+    const md = '## What this changes\nMigrates `zed.toml` to **zed.yaml**.';
     const item = mapApiReviewItem(changeRow(md), 'proj');
     const d = item.detail as ChangeDetail;
     expect(d.descriptionMarkdown).toBe(md);

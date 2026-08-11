@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import {
   activateConnection,
   createConnector,
@@ -74,7 +74,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({
+configureZed({
   backendUrl: 'http://test.local',
   getToken: async () => 'tok',
 });
@@ -143,7 +143,7 @@ test('native OAuth2 lifecycle methods use connection-scoped generic routes', asy
     body: { authorization_url: application.authorization_url },
   };
   await startConnectionOAuth2Authorization('P1', 'connection-1', {
-    success_redirect_uri: 'https://dev.kortix.com/projects/P1',
+    success_redirect_uri: 'https://dev.zed.com/projects/P1',
   });
   expect(last().url).toContain('/oauth2/authorize');
 
@@ -293,7 +293,7 @@ test('listConnectors is a silent background read — a 403 never hits the global
   // Fired at workspace mount (project-home tiles, sidebar setup checklist);
   // callers render their own state, never a global toast.
   const onError = mock(() => {});
-  configureKortix({
+  configureZed({
     backendUrl: 'http://test.local',
     getToken: async () => 'tok',
     onError,
@@ -303,7 +303,7 @@ test('listConnectors is a silent background read — a 403 never hits the global
     await expect(listConnectors('P1')).rejects.toBeTruthy();
     expect(onError).not.toHaveBeenCalled();
   } finally {
-    configureKortix({
+    configureZed({
       backendUrl: 'http://test.local',
       getToken: async () => 'tok',
     });
@@ -720,11 +720,11 @@ test('connection-specific Pipedream connect and finalize bind the OAuth identity
     body: { connectUrl: 'https://pipedream.test/connect' },
   };
   await pipedreamConnectConnection('P1', 'connection-member', {
-    success_redirect_uri: 'kortix://connected',
+    success_redirect_uri: 'zed://connected',
   });
   expect(last().url).toContain('/projects/P1/connections/connection-member/connect');
   expect(last().method).toBe('POST');
-  expect(last().body).toEqual({ success_redirect_uri: 'kortix://connected' });
+  expect(last().body).toEqual({ success_redirect_uri: 'zed://connected' });
 
   nextResponse = {
     status: 200,

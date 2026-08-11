@@ -3,7 +3,7 @@
 import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/utils';
-import { useFeatureFlag } from '@kortix/sdk/react';
+import { useFeatureFlag } from '@zed/sdk/react';
 import { GlobeIcon } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';

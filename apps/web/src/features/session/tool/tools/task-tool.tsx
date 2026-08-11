@@ -9,7 +9,7 @@ import {
 import { ToolRegistry } from '@/features/session/tool/shared/registry';
 import { SubAgentActivity, SubAgentStatusBanner } from '@/features/session/tool/shared/sub-agent';
 import type { ToolProps } from '@/features/session/tool/shared/types';
-import { useRuntimeMessages } from '@kortix/sdk/react';
+import { useRuntimeMessages } from '@zed/sdk/react';
 import {
   getChildSessionId,
   getChildSessionToolParts,

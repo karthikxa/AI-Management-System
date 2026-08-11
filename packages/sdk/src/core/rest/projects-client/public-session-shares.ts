@@ -7,7 +7,7 @@
 // no token synthesizes a failure WITHOUT ever making the network call (see
 // `opencode/client.ts`'s `getPublicClientForUrl` doc comment for the same
 // footgun on the sandbox side). These routes are genuinely public — no
-// Authorization header is ever sent, and no `configureKortix()` call is
+// Authorization header is ever sent, and no `configureZed()` call is
 // required for these functions to work; `getBackendUrl()` degrades to a sane
 // localhost default when unconfigured, exactly like the sibling
 // `getPublicShareUrlForToken`.

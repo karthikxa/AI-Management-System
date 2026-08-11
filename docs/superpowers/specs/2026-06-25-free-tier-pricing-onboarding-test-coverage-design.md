@@ -42,11 +42,11 @@ The live E2E layer is the release proof, but the monthly reset and LLM debit inv
 
 ### Sandbox-only wallet invariant
 
-- Free Zen/OpenCode model use is allowed and creates no Kortix LLM debit.
-- ChatGPT/Codex-subscription model use is allowed and creates no Kortix LLM debit.
+- Free Zen/OpenCode model use is allowed and creates no Zed LLM debit.
+- ChatGPT/Codex-subscription model use is allowed and creates no Zed LLM debit.
 - BYOK premium model use is allowed for free accounts with `billingMode:'none'`; the 10% BYOK platform fee is waived.
 - BYOK-to-managed fallback is disabled for free accounts.
-- Managed premium models on Kortix keys return no candidates or a clear blocked error for free accounts.
+- Managed premium models on Zed keys return no candidates or a clear blocked error for free accounts.
 - Blocked managed premium attempts leave wallet balance unchanged and create no `llm_debit`.
 - Paid/per-seat accounts keep managed premium candidates and normal LLM billing behavior.
 - Self-hosted or billing-disabled mode keeps existing managed routing behavior.
@@ -85,7 +85,7 @@ The implementation plan should run the narrowest failing test during each TDD cy
 - `bun test apps/api/src/__tests__/billing/free-tier*.test.ts`
 - `bun test apps/api/src/__tests__/unit-resolve-candidates-free-tier.test.ts`
 - `cd tests && bun bin/ke2e.ts run --domain billing,projects,llm-gateway`
-- `pnpm --filter @kortix/tests test:e2e`
+- `pnpm --filter @zed/tests test:e2e`
 - `npx eslint <touched web test files>`
 
 If live signup or sandbox tests require the local stack, start or reuse `pnpm dev` and verify `http://localhost:8008/v1/health` before running them.

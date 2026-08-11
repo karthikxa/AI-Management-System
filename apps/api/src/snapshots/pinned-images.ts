@@ -13,11 +13,11 @@
  * A project's pin is written together at activation (see
  * provider-transition-store.ts): `active_sandbox_external_template_id` (the
  * provider's external template id) and `active_sandbox_snapshot_name` (the
- * `kortix-ppwarm-…` NAME the reaper deletes by). Both are collected so a target
+ * `zed-ppwarm-…` NAME the reaper deletes by). Both are collected so a target
  * matched by EITHER name or external id is protected.
  */
 import { sql } from 'drizzle-orm';
-import type { Database } from '@kortix/db';
+import type { Database } from '@zed/db';
 import { db as appDb } from '../shared/db';
 
 /**
@@ -32,7 +32,7 @@ export async function collectPinnedImageRefs(database: Database = appDb): Promis
   const result = await database.execute(sql`
     SELECT metadata ->> 'active_sandbox_snapshot_name' AS snapshot_name,
            metadata ->> 'active_sandbox_external_template_id' AS external_id
-    FROM kortix.projects
+    FROM zed.projects
     WHERE metadata ->> 'active_sandbox_snapshot_name' IS NOT NULL
        OR metadata ->> 'active_sandbox_external_template_id' IS NOT NULL
   `);

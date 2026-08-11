@@ -37,7 +37,7 @@ import { useContext, useMemo } from 'react';
 /**
  * The command, syntax-highlighted, with its output beneath a hairline.
  *
- * Replaces a simulated `kortix@host:~$` prompt. The prompt dressed the command
+ * Replaces a simulated `zed@host:~$` prompt. The prompt dressed the command
  * up as a live shell it never was, spent the first third of every line on a
  * hostname the reader cannot act on, and — being plain text — gave a
  * multi-line pipeline no structure at all. Highlighting spends that space on

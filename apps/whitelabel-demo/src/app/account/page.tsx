@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getApiKey, kortix } from '@/lib/kortix';
+import { getApiKey, zed } from '@/lib/zed';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -41,7 +41,7 @@ function WrapperAccountNotice() {
           Not available in wrapper mode
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          This app&apos;s wrapper backend manages the underlying Kortix account
+          This app&apos;s wrapper backend manages the underlying Zed account
           on your behalf — end users don&apos;t get direct account
           administration. See{' '}
           <Link href="/session-costs" className="underline">
@@ -78,7 +78,7 @@ function AccountSettings() {
   // accounts.list — the switcher + the source for the default selection.
   const accountsQ = useQuery({
     queryKey: ['accounts'],
-    queryFn: () => kortix.accounts.list(),
+    queryFn: () => zed.accounts.list(),
   });
   const accounts = accountsQ.data ?? [];
 

@@ -6,7 +6,7 @@
 
 import { createRoute, z } from '@hono/zod-openapi';
 import { eq, and, desc, count } from 'drizzle-orm';
-import { tunnelAuditLogs, tunnelConnections } from '@kortix/db';
+import { tunnelAuditLogs, tunnelConnections } from '@zed/db';
 import { db } from '../../shared/db';
 import type { AppEnv } from '../../types';
 import { makeOpenApiApp, json, errors } from '../../openapi';

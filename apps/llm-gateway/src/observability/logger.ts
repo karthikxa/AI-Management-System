@@ -1,4 +1,4 @@
-import type { GatewayLogger } from '@kortix/llm-gateway';
+import type { GatewayLogger } from '@zed/llm-gateway';
 
 type Level = 'debug' | 'info' | 'warn' | 'error';
 

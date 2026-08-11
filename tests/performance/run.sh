@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  Kortix — Performance test runner (k6 via Docker, no local install)           ║
+# ║  Zed — Performance test runner (k6 via Docker, no local install)           ║
 # ║                                                                               ║
 # ║  Usage:                                                                       ║
 # ║    ./run.sh <profile> [BASE_URL]                                              ║

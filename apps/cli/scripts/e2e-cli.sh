@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# End-to-end exercise of the ENTIRE kortix CLI against a live Kortix host.
+# End-to-end exercise of the ENTIRE zed CLI against a live Zed host.
 #
 # It scaffolds a throwaway project, ships it (creating a real cloud project +
 # managed git repo), then drives every command group — secrets, env, providers,
 # connectors, sandboxes, files, triggers, channels, cr, sessions + chat, and
 # access — asserting each works. Finally it purges everything it created.
 #
-# Prereqs: logged in (`kortix login`) against a host whose account has credits.
+# Prereqs: logged in (`zed login`) against a host whose account has credits.
 # Usage:   bash apps/cli/scripts/e2e-cli.sh
-#          KORTIX_E2E_KEEP=1 bash …   # don't purge the project at the end
+#          ZED_E2E_KEEP=1 bash …   # don't purge the project at the end
 set -uo pipefail
 
 CLI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -48,9 +48,9 @@ run_grep_retry() {
 section() { echo; echo "── $1 ──"; }
 
 # ── Scratch project ─────────────────────────────────────────────────────────
-WORK="$(mktemp -d -t kortix-e2e-XXXXXX)"
+WORK="$(mktemp -d -t zed-e2e-XXXXXX)"
 cleanup() {
-  if [[ "${KORTIX_E2E_KEEP:-0}" != "1" ]]; then
+  if [[ "${ZED_E2E_KEEP:-0}" != "1" ]]; then
     ( cd "$WORK" && "${RUN[@]}" projects rm --purge -y >/dev/null 2>&1 )
   fi
   rm -rf "$WORK"
@@ -58,12 +58,12 @@ cleanup() {
 trap cleanup EXIT
 cd "$WORK"
 
-echo "kortix CLI e2e  ·  cwd=$WORK"
+echo "zed CLI e2e  ·  cwd=$WORK"
 
 section "identity & hosts"
 run_grep "whoami"        "@"                 -- "${RUN[@]}" whoami
 run_grep "hosts ls"      "active"            -- "${RUN[@]}" hosts ls
-run_grep "version"       "Kortix CLI"        -- "${RUN[@]}" version
+run_grep "version"       "Zed CLI"        -- "${RUN[@]}" version
 run_grep "help"          "ship"              -- "${RUN[@]}" help
 
 section "init & validate"
@@ -73,7 +73,7 @@ run_grep "validate"      "valid"             -- "${RUN[@]}" validate
 section "ship (create cloud project)"
 run_grep "ship"          "Shipped"           -- "${RUN[@]}" ship -y -m "e2e: ship"
 # The managed-git mirror is readable a few seconds after the first push.
-run_grep_retry "repo readable (mirror)" "kortix.yaml" 20 -- "${RUN[@]}" files ls
+run_grep_retry "repo readable (mirror)" "zed.yaml" 20 -- "${RUN[@]}" files ls
 
 section "projects"
 run_grep "projects ls"   "e2e-cli"           -- "${RUN[@]}" projects ls
@@ -85,13 +85,13 @@ run_grep "secrets ls"    "E2E_TOKEN"         -- "${RUN[@]}" secrets ls
 run            "env pull"                     -- "${RUN[@]}" env pull
 run            "secrets unset"                -- "${RUN[@]}" secrets unset E2E_TOKEN
 
-section "connectors (config = local kortix.yaml; auth/reads = cloud)"
-run_grep "connectors add (local)" "kortix.yaml" -- "${RUN[@]}" connectors add e2echk --provider http --base-url https://httpbin.org
-run_grep "→ block in yaml"  "slug: e2echk" -- grep -A2 'e2echk' kortix.yaml
+section "connectors (config = local zed.yaml; auth/reads = cloud)"
+run_grep "connectors add (local)" "zed.yaml" -- "${RUN[@]}" connectors add e2echk --provider http --base-url https://httpbin.org
+run_grep "→ block in yaml"  "slug: e2echk" -- grep -A2 'e2echk' zed.yaml
 run            "connectors policy set (local)" -- "${RUN[@]}" connectors policy set --default risk
-run_grep "→ policy in yaml" "default_mode" -- cat kortix.yaml
+run_grep "→ policy in yaml" "default_mode" -- cat zed.yaml
 run            "ship (push config)"          -- "${RUN[@]}" ship -y -m "e2e: connectors"
-# Reconcile is eventually-consistent: the server mirrors kortix.yaml from git on
+# Reconcile is eventually-consistent: the server mirrors zed.yaml from git on
 # a ~60s throttle, so poll sync→ls until the connector materializes.
 run_grep_retry "connector materialized (cloud)" "e2echk" 35 -- bash -c "${RUN[*]} connectors sync >/dev/null 2>&1; ${RUN[*]} connectors ls"
 run            "connectors credential (cloud)" -- bash -c "printf 'sk-x' | ${RUN[*]} connectors credential e2echk -"
@@ -100,25 +100,25 @@ run            "connectors policy ls (cloud)" -- "${RUN[@]}" connectors policy l
 run_grep "connectors apps (cloud)"  "slack"  -- "${RUN[@]}" connectors apps slack
 run            "connectors rm (local)"        -- "${RUN[@]}" connectors rm e2echk
 
-section "sandboxes (templates = local kortix.yaml; builds = cloud)"
+section "sandboxes (templates = local zed.yaml; builds = cloud)"
 run_grep "sandboxes ls (cloud)" "default"    -- "${RUN[@]}" sandboxes ls
 run            "sandboxes health (cloud)"     -- "${RUN[@]}" sandboxes health
 run            "sandboxes builds (cloud)"     -- "${RUN[@]}" sandboxes builds
 run_grep "sandboxes add (local)" "yaml"      -- "${RUN[@]}" sandboxes add e2eimg --image alpine:3 --cpu 1 --memory 1
-run_grep "→ block in yaml"  "slug: e2eimg" -- grep -A2 'e2eimg' kortix.yaml
+run_grep "→ block in yaml"  "slug: e2eimg" -- grep -A2 'e2eimg' zed.yaml
 run            "sandboxes update (local)"     -- "${RUN[@]}" sandboxes update e2eimg --memory 2
 run            "sandboxes rm (local)"         -- "${RUN[@]}" sandboxes rm e2eimg
 
 section "files (repo browsing)"
-run_grep_retry "files ls"  "kortix.yaml" 10  -- "${RUN[@]}" files ls
-run_grep_retry "files cat" "kortix_version" 10 -- "${RUN[@]}" files cat kortix.yaml
-run            "files search"                 -- "${RUN[@]}" files search kortix
+run_grep_retry "files ls"  "zed.yaml" 10  -- "${RUN[@]}" files ls
+run_grep_retry "files cat" "zed_version" 10 -- "${RUN[@]}" files cat zed.yaml
+run            "files search"                 -- "${RUN[@]}" files search zed
 run_grep_retry "files branches" "main" 5     -- "${RUN[@]}" files branches
 run_grep_retry "files commits" "e2e: ship" 10 -- "${RUN[@]}" files commits
 
-section "triggers (config = local kortix.yaml)"
-run_grep "triggers add (local)" "kortix.yaml" -- "${RUN[@]}" triggers add e2ecron --type cron --cron "0 0 3 * * *" --prompt "daily" --agent kortix
-run_grep "→ block in yaml"  "slug: e2ecron" -- grep -A2 'e2ecron' kortix.yaml
+section "triggers (config = local zed.yaml)"
+run_grep "triggers add (local)" "zed.yaml" -- "${RUN[@]}" triggers add e2ecron --type cron --cron "0 0 3 * * *" --prompt "daily" --agent zed
+run_grep "→ block in yaml"  "slug: e2ecron" -- grep -A2 'e2ecron' zed.yaml
 run            "triggers disable (local)"     -- "${RUN[@]}" triggers disable e2ecron
 run            "triggers enable (local)"      -- "${RUN[@]}" triggers enable e2ecron
 run            "triggers rm (local)"          -- "${RUN[@]}" triggers rm e2ecron

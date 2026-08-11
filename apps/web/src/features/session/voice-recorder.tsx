@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranscription } from '@/hooks/transcription/use-transcription';
 import { cn } from '@/lib/utils';
@@ -146,7 +146,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = memo(function VoiceRe
       case 'recording':
         return <Square className="h-4 w-4" />;
       case 'processing':
-        return <KortixLoader size="small" />;
+        return <ZedLoader size="small" />;
       default:
         return <Mic className="h-4 w-4" />;
     }

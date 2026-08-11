@@ -4,8 +4,8 @@ import type { NextRequest } from 'next/server';
 import { RELEASES_PAGE, getLatestRelease } from '@/features/marketing/download/releases';
 
 /**
- * CLI binary redirector: /download/cli/darwin-arm64 → the `kortix-darwin-arm64`
- * asset. The published binaries are named exactly `kortix-<goos>-<arch>`, so the
+ * CLI binary redirector: /download/cli/darwin-arm64 → the `zed-darwin-arm64`
+ * asset. The published binaries are named exactly `zed-<goos>-<arch>`, so the
  * URL segment IS the target triple and no mapping table is needed.
  *
  * Only the four published targets resolve; everything else falls back to the
@@ -23,6 +23,6 @@ export async function GET(
   if (!TARGETS.has(normalized)) return NextResponse.redirect(RELEASES_PAGE, 302);
 
   const release = await getLatestRelease();
-  const asset = release?.assets.find((a) => a.name.toLowerCase() === `kortix-${normalized}`);
+  const asset = release?.assets.find((a) => a.name.toLowerCase() === `zed-${normalized}`);
   return NextResponse.redirect(asset?.url ?? RELEASES_PAGE, 302);
 }

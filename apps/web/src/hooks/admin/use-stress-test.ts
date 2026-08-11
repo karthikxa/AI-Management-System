@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getEnv } from '@/lib/env-config';
-import { openStressTestStream } from '@kortix/sdk';
+import { openStressTestStream } from '@zed/sdk';
 
 export interface StressTestConfig {
   num_requests: number;

@@ -3,8 +3,8 @@
 # Fast self-host schema-bootstrap regression gate.
 #
 # Brings up ONLY the data plane (Postgres + Supabase Auth/REST/Kong + the
-# kortix-migrate one-shot + the API) and asserts that a FRESH database is fully
-# provisioned: the migrate one-shot installs the non-kortix prerequisites
+# zed-migrate one-shot + the API) and asserts that a FRESH database is fully
+# provisioned: the migrate one-shot installs the non-zed prerequisites
 # and applies all migrations, the API serves, an owner can be
 # bootstrapped, and authenticated reads resolve an account.
 #
@@ -13,7 +13,7 @@
 # It does NOT exercise the frontend, llm-gateway, or the agent sandbox path;
 # run.sh covers those.
 #
-# Requires: the API image to exist locally (default kortix/kortix-api:selfhost-local).
+# Requires: the API image to exist locally (default zed/zed-api:selfhost-local).
 
 set -Eeuo pipefail
 
@@ -22,10 +22,10 @@ CLI_ROOT=$(cd "$SCRIPT_DIR/../.." && pwd)
 CLI="bun run $CLI_ROOT/src/index.ts"
 
 INSTANCE=${INSTANCE:-selfhost-schema-$(date +%s)}
-API_IMAGE=${API_IMAGE:-kortix/kortix-api:selfhost-local}
-EMAIL=${EMAIL:-owner-$INSTANCE@kortix.local}
-PASSWORD=${PASSWORD:-kortix-schema-pass}
-CONFIG_DIR="$HOME/.config/kortix/self-host/$INSTANCE"
+API_IMAGE=${API_IMAGE:-zed/zed-api:selfhost-local}
+EMAIL=${EMAIL:-owner-$INSTANCE@zed.local}
+PASSWORD=${PASSWORD:-zed-schema-pass}
+CONFIG_DIR="$HOME/.config/zed/self-host/$INSTANCE"
 KEEP_ON_FAIL=${KEEP_ON_FAIL:-false}
 
 GREEN=$'\033[0;32m'; RED=$'\033[0;31m'; DIM=$'\033[2m'; BOLD=$'\033[1m'; RESET=$'\033[0m'
@@ -34,7 +34,7 @@ ok() { printf "  ${GREEN}✓${RESET} %s\n" "$1"; }
 note() { printf "  ${DIM}%s${RESET}\n" "$1"; }
 die() { printf "  ${RED}✗${RESET} %s\n" "$1" >&2; exit 1; }
 
-compose() { docker compose --project-name "kortix-$INSTANCE" --env-file "$CONFIG_DIR/.env" -f "$CONFIG_DIR/docker-compose.yml" "$@"; }
+compose() { docker compose --project-name "zed-$INSTANCE" --env-file "$CONFIG_DIR/.env" -f "$CONFIG_DIR/docker-compose.yml" "$@"; }
 psqls() { compose exec -T supabase-db psql -v ON_ERROR_STOP=0 -tAU postgres -d postgres "$@" 2>&1; }
 
 container_id() { compose ps -aq "$1"; }
@@ -98,8 +98,8 @@ section "CLI Self-host Setup"
 # locally-built image via --local-images + --tag instead.
 API_TAG="${API_IMAGE##*:}"
 case "$API_IMAGE" in
-  kortix/kortix-api:*) ;;
-  *) die "API_IMAGE must be kortix/kortix-api:<tag> (got '$API_IMAGE') — init derives images from the tag" ;;
+  zed/zed-api:*) ;;
+  *) die "API_IMAGE must be zed/zed-api:<tag> (got '$API_IMAGE') — init derives images from the tag" ;;
 esac
 $CLI self-host init --instance "$INSTANCE" --local-images --tag "$API_TAG" >/dev/null
 # Schema-only gate: this never provisions a sandbox. `self-host init` defaults
@@ -128,30 +128,30 @@ wait_healthy supabase-db 120
 compose up -d --no-deps supabase-auth supabase-rest
 wait_healthy supabase-auth 120
 wait_healthy supabase-rest 120
-compose up -d --no-deps kortix-migrate
-wait_completed kortix-migrate 180
+compose up -d --no-deps zed-migrate
+wait_completed zed-migrate 180
 compose up -d --no-deps supabase-kong
 wait_healthy supabase-kong 120
-compose up -d --no-deps kortix-api
+compose up -d --no-deps zed-api
 ok "compose up"
 
 section "Schema Bootstrap (migrate one-shot)"
-MIGRATE_EXIT=$(docker inspect -f '{{.State.ExitCode}}' "kortix-$INSTANCE-kortix-migrate-1" 2>/dev/null || echo missing)
-[ "$MIGRATE_EXIT" = "0" ] || { compose logs kortix-migrate 2>&1 | tail -30 >&2; die "kortix-migrate one-shot failed (exit=$MIGRATE_EXIT)"; }
-ok "kortix-migrate one-shot completed (exit 0)"
+MIGRATE_EXIT=$(docker inspect -f '{{.State.ExitCode}}' "zed-$INSTANCE-zed-migrate-1" 2>/dev/null || echo missing)
+[ "$MIGRATE_EXIT" = "0" ] || { compose logs zed-migrate 2>&1 | tail -30 >&2; die "zed-migrate one-shot failed (exit=$MIGRATE_EXIT)"; }
+ok "zed-migrate one-shot completed (exit 0)"
 
-KTABLES=$(psqls -c "select count(*) from information_schema.tables where table_schema='kortix'" | tr -d '[:space:]')
-[ "${KTABLES:-0}" -ge 50 ] || die "expected >=50 kortix tables, got '$KTABLES'"
-ok "kortix schema provisioned ($KTABLES tables)"
-[ "$(psqls -c "select to_regclass('kortix.account_members')")" = "kortix.account_members" ] || die "kortix.account_members missing"
-ok "kortix account tables present"
+KTABLES=$(psqls -c "select count(*) from information_schema.tables where table_schema='zed'" | tr -d '[:space:]')
+[ "${KTABLES:-0}" -ge 50 ] || die "expected >=50 zed tables, got '$KTABLES'"
+ok "zed schema provisioned ($KTABLES tables)"
+[ "$(psqls -c "select to_regclass('zed.account_members')")" = "zed.account_members" ] || die "zed.account_members missing"
+ok "zed account tables present"
 [ "$(psqls -c "select count(*) from pg_trigger t join pg_class c on c.oid=t.tgrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='auth' and c.relname='users' and t.tgname='on_auth_user_created'")" = "0" ] || die "legacy basejump signup trigger still installed"
-ok "no basejump signup trigger (accounts are kortix-native)"
+ok "no basejump signup trigger (accounts are zed-native)"
 
 section "API Health"
 START=$(date +%s)
 until curl -fsS "http://localhost:$API_PORT/v1/health" >/dev/null 2>&1; do
-  [ $(( $(date +%s) - START )) -ge 120 ] && { compose logs kortix-api 2>&1 | tail -30 >&2; die "API never became healthy"; }
+  [ $(( $(date +%s) - START )) -ge 120 ] && { compose logs zed-api 2>&1 | tail -30 >&2; die "API never became healthy"; }
   sleep 2
 done
 ok "API healthy"

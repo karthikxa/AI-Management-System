@@ -4,7 +4,7 @@
  * The SDK's `ApiError` carries the parsed body on `data` / `details`, lifts
  * `code` to the top level, and has **no `body` field at all**
  * (`core/http/api/errors.ts`). Demo code that read `err.body` therefore never
- * fired: every Kortix-as-a-Backend refusal — the connector prompt, the agent
+ * fired: every Zed-as-a-Backend refusal — the connector prompt, the agent
  * switch conflict, or connector refusal — collapsed into one generic message,
  * and the classifiers written to handle them were dead code.
  *

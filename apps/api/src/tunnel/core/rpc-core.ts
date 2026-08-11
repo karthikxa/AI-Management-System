@@ -11,7 +11,7 @@
  * The computer helpers (`listAccountComputers`, `executeComputerCall`) sit here
  * too. A connector profile supplies an allowlist of account-owned tunnel ids.
  */
-import { tunnelConnections, tunnelPermissionRequests } from '@kortix/db';
+import { tunnelConnections, tunnelPermissionRequests } from '@zed/db';
 import {
   type TunnelCapability,
   TunnelErrorCode,

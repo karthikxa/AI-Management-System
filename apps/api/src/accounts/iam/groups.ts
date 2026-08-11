@@ -3,7 +3,7 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { json, errors, auth } from '../../openapi';
 import { and, asc, eq } from 'drizzle-orm';
-import { projectGroupGrants, projects } from '@kortix/db';
+import { projectGroupGrants, projects } from '@zed/db';
 import { db } from '../../shared/db';
 import { ACCOUNT_ACTIONS, assertAuthorized } from '../../iam';
 import {

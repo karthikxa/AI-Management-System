@@ -306,7 +306,7 @@ const deepseekRates = {
 };
 
 const lookup: ModelPricingLookup = (providerID, modelID) => {
-  if (providerID === 'kortix' && modelID === 'deepseek-v4-pro') return deepseekRates;
+  if (providerID === 'zed' && modelID === 'deepseek-v4-pro') return deepseekRates;
   return null;
 };
 
@@ -328,7 +328,7 @@ function assistantInfo(overrides: Partial<CostAssistantInfo['info']> = {}): Cost
     info: {
       id: 'msg-assistant-1',
       role: 'assistant',
-      providerID: 'kortix',
+      providerID: 'zed',
       modelID: 'deepseek-v4-pro',
       ...overrides,
     },

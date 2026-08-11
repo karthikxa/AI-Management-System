@@ -35,7 +35,7 @@ function clientIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
-  if (!process.env.KORTIX_API_KEY) {
+  if (!process.env.ZED_API_KEY) {
     return Response.json({ error: 'Wrapper mode is not enabled on this server.' }, { status: 500 });
   }
 

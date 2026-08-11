@@ -130,9 +130,9 @@ export async function revokeProjectAccess(projectId: string, userId: string) {
 }
 
 /** Two-shape response:
- *  - User had a Kortix account already → ProjectAccessMember row was
+ *  - User had a Zed account already → ProjectAccessMember row was
  *    inserted/updated; UI refreshes the access list and shows them.
- *  - User had no Kortix account → an account invitation was created
+ *  - User had no Zed account → an account invitation was created
  *    with a bootstrap_grant. UI shows "invitation sent" and skips the
  *    access-list refresh (the user won't appear until they accept). */
 export type InviteProjectMemberResult =
@@ -172,7 +172,7 @@ export async function inviteProjectMember(
   );
 }
 
-// ── Pending project invites (non-Kortix users who haven't signed up yet) ──
+// ── Pending project invites (non-Zed users who haven't signed up yet) ──
 
 /** Pending account-invitation that bootstraps into THIS project on accept.
  *  Shape mirrors the backend GET /access/pending-invites response.
@@ -403,7 +403,7 @@ export async function listPendingApprovals(projectId: string, options?: { showEr
 }
 
 /** Per-session pending-approval summary for the sidebar "needs input" badge:
- *  `sessions` maps a (Kortix) session id → count of actions awaiting a decision.
+ *  `sessions` maps a (Zed) session id → count of actions awaiting a decision.
  *  A manager sees every session; others only the ones they launched. */
 export interface SessionsNeedingInputResponse {
   total: number;

@@ -5,8 +5,8 @@ import { isBillingEnabled } from '@/lib/config';
 import { isSilentTimeoutError } from '@/lib/timeout-toast-policy';
 import { useAccountSettingsModalStore } from '@/stores/account-settings-modal-store';
 import { useUpgradeDialogStore } from '@/stores/upgrade-dialog-store';
-import type { BillingState } from '@kortix/sdk';
-import { BillingError, formatBillingErrorForUI, isBillingError } from '@kortix/sdk/react';
+import type { BillingState } from '@zed/sdk';
+import { BillingError, formatBillingErrorForUI, isBillingError } from '@zed/sdk/react';
 import * as Sentry from '@sentry/nextjs';
 
 const MANAGE_PLAN_LABEL = 'Manage plan';
@@ -174,7 +174,7 @@ export const handleApiError = (error: any, context?: ErrorContext): void => {
   // deadline — packages/sdk/src/core/http/api-client.ts) is intentionally NOT
   // captured here. It is the frontend mirror of the API's request-deadline 503
   // (apps/api/src/middleware/request-deadline.ts, de-noised from Sentry by
-  // https://github.com/kortix-ai/suna/pull/4524): the API has a 25s server
+  // https://github.com/zed-ai/suna/pull/4524): the API has a 25s server
   // deadline that returns a clean 503 + Retry-After, and react-query retries
   // background polls, so a 30s client abort is an EXPECTED, retryable
   // degradation under momentary API saturation — not an actionable bug. The
@@ -295,7 +295,7 @@ export const handleApiError = (error: any, context?: ErrorContext): void => {
     if (!shouldSuppressDuplicate(v2Status, title)) {
       warningToast(title, {
         description:
-          'Upgrade your plan for a higher limit, or contact the Kortix team to raise it for your account.',
+          'Upgrade your plan for a higher limit, or contact the Zed team to raise it for your account.',
         duration: 6000,
         button: (
           <Button

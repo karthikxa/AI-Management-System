@@ -1,4 +1,4 @@
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { and, desc, eq } from 'drizzle-orm';
 
 import { db } from '../../shared/db';

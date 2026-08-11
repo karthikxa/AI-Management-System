@@ -15,14 +15,14 @@ mock.module('../../http/auth', () => ({
 }));
 
 const { getInvite, acceptInvite, declineInvite } = await import('./invites');
-const { configureKortix } = await import('../../http/config');
+const { configureZed } = await import('../../http/config');
 
 let calls: { url: string; method: string }[] = [];
 let nextResponse: { status: number; body: unknown } = { status: 200, body: {} };
 
 beforeEach(() => {
   delete process.env.BACKEND_URL;
-  configureKortix({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://backend.local/v1', getToken: async () => 'tok' });
   calls = [];
   nextResponse = { status: 200, body: {} };
   globalThis.fetch = mock(async (url: unknown, opts: RequestInit = {}) => {

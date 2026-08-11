@@ -8,7 +8,7 @@
  * core module (./change-requests.ts). See docs/REVIEW_CENTER_DESIGN.md.
  */
 
-import { changeRequests, connectorCalls, reviewItems } from '@kortix/db';
+import { changeRequests, connectorCalls, reviewItems } from '@zed/db';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { captureException } from '../lib/sentry';
 import { db } from '../shared/db';

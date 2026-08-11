@@ -22,7 +22,7 @@
  * the NEXT request succeeds instead of every subsequent one failing until a
  * human intervenes.
  *
- * Lowering KORTIX_SANDBOX_AUTOARCHIVE_MINUTES (see config.ts) is the actual
+ * Lowering ZED_SANDBOX_AUTOARCHIVE_MINUTES (see config.ts) is the actual
  * fix for steady-state pressure; this is the backstop for whatever gets past
  * it (organic growth, a stuck error-state backlog, a future misconfig).
  */

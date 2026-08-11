@@ -4,7 +4,7 @@ import { configEntitySourcePath } from './config-entity-source-path';
 
 describe('configEntitySourcePath', () => {
   test('removes a manifest anchor from the file API path', () => {
-    expect(configEntitySourcePath('kortix.yaml#agents.codex')).toBe('kortix.yaml');
+    expect(configEntitySourcePath('zed.yaml#agents.codex')).toBe('zed.yaml');
   });
 
   test('keeps a normal source path unchanged', () => {

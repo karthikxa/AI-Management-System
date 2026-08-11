@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray } from 'drizzle-orm';
-import { chatInstalls, chatThreads, projects } from '@kortix/db';
+import { chatInstalls, chatThreads, projects } from '@zed/db';
 import { db } from '../../shared/db';
 import { loadSlackTokenForProject } from '../install-store';
 import { publishHomeView } from '../slack-api';
@@ -39,10 +39,10 @@ export async function publishHomeForUser(teamId: string, userId: string): Promis
 }
 
 const HOME_EXAMPLES: Array<{ emoji: string; prompt: string }> = [
-  { emoji: '🔍', prompt: '@Kortix scan this codebase and write me a one-pager' },
-  { emoji: '🔧', prompt: '@Kortix open a PR that switches our logger to pino' },
-  { emoji: '📊', prompt: '@Kortix what changed on main this week?' },
-  { emoji: '📦', prompt: '@Kortix pull yesterday\'s sign-ups, group them by source, drop the CSV here' },
+  { emoji: '🔍', prompt: '@Zed scan this codebase and write me a one-pager' },
+  { emoji: '🔧', prompt: '@Zed open a PR that switches our logger to pino' },
+  { emoji: '📊', prompt: '@Zed what changed on main this week?' },
+  { emoji: '📦', prompt: '@Zed pull yesterday\'s sign-ups, group them by source, drop the CSV here' },
 ];
 
 const PROJECT_COVERS = [
@@ -66,18 +66,18 @@ const DEFAULT_HOME_HERO_URL =
   'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&h=480&fit=crop&q=80&auto=format';
 
 function buildHomeView(input: { projects: HomeProjectRow[]; recent: HomeRecentRow[] }): Record<string, unknown> {
-  const dashboardBase = (config.FRONTEND_URL || 'https://kortix.com').replace(/\/$/, '');
+  const dashboardBase = (config.FRONTEND_URL || 'https://zed.com').replace(/\/$/, '');
   const heroUrl = config.SLACK_HOME_HERO_URL || DEFAULT_HOME_HERO_URL;
   const blocks: Array<Record<string, unknown>> = [];
 
   blocks.push({
     type: 'image',
     image_url: heroUrl,
-    alt_text: 'Kortix — AI command center for your company',
+    alt_text: 'Zed — AI command center for your company',
   });
   blocks.push({
     type: 'header',
-    text: { type: 'plain_text', text: '👋  Welcome to Kortix', emoji: true },
+    text: { type: 'plain_text', text: '👋  Welcome to Zed', emoji: true },
   });
   blocks.push({
     type: 'section',
@@ -105,7 +105,7 @@ function buildHomeView(input: { projects: HomeProjectRow[]; recent: HomeRecentRo
   if (input.projects.length === 0) {
     blocks.push({
       type: 'section',
-      text: { type: 'mrkdwn', text: '*No projects connected yet.*\nHead to your Kortix dashboard to link a project to this workspace.' },
+      text: { type: 'mrkdwn', text: '*No projects connected yet.*\nHead to your Zed dashboard to link a project to this workspace.' },
       accessory: {
         type: 'button',
         text: { type: 'plain_text', text: 'Open dashboard' },
@@ -204,7 +204,7 @@ function buildHomeView(input: { projects: HomeProjectRow[]; recent: HomeRecentRo
   blocks.push({
     type: 'context',
     elements: [
-      { type: 'mrkdwn', text: `🪐  Managed by Kortix  ·  <${dashboardBase}|kortix.com>  ·  <${dashboardBase}/docs|Docs>  ·  <${dashboardBase}/settings|Settings>` },
+      { type: 'mrkdwn', text: `🪐  Managed by Zed  ·  <${dashboardBase}|zed.com>  ·  <${dashboardBase}/docs|Docs>  ·  <${dashboardBase}/settings|Settings>` },
     ],
   });
 

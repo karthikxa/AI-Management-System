@@ -62,13 +62,13 @@ async function main() {
   const result = await db.execute(sql`
     SELECT s.sandbox_id, s.session_id, s.external_id, s.provider,
            round(extract(epoch from (now() - s.created_at)) / 3600)::int AS age_hours,
-           (SELECT max(u.created_at)::text FROM kortix.usage_events u
+           (SELECT max(u.created_at)::text FROM zed.usage_events u
              WHERE u.session_id = s.session_id) AS last_usage_at
-      FROM kortix.session_sandboxes s
+      FROM zed.session_sandboxes s
      WHERE s.status = 'active'
        AND s.external_id IS NOT NULL
        AND NOT EXISTS (
-             SELECT 1 FROM kortix.usage_events u
+             SELECT 1 FROM zed.usage_events u
               WHERE u.session_id = s.session_id
                 AND u.created_at > now() - make_interval(hours => ${IDLE_HOURS}))
      ORDER BY s.created_at ASC`);

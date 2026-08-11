@@ -13,7 +13,7 @@ describe('connector approval handoff', () => {
           status: 'pending_approval',
           execution_id: 'exec-1',
           retryable: false,
-          approval_url: 'https://app.kortix.test/approve/token',
+          approval_url: 'https://app.zed.test/approve/token',
           approval_summary: 'to: finance@example.com',
         };
       },
@@ -24,6 +24,6 @@ describe('connector approval handoff', () => {
     });
 
     expect(calls).toBe(1);
-    expect(result.approval_url).toBe('https://app.kortix.test/approve/token');
+    expect(result.approval_url).toBe('https://app.zed.test/approve/token');
   });
 });

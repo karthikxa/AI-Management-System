@@ -8,7 +8,7 @@
 // (the orchestrator) so the original ordering is preserved.
 
 import { z } from '@hono/zod-openapi';
-import { accountGroupMembers, accountMembers } from '@kortix/db';
+import { accountGroupMembers, accountMembers } from '@zed/db';
 import { and, eq, inArray } from 'drizzle-orm';
 import type { Context } from 'hono';
 import { scimAuth } from '../middleware/scim-auth';

@@ -29,7 +29,7 @@ describe('self-host required-secrets warning (fast, no Docker)', () => {
     expect(code).toBe(0);
     expect(stdout.toLowerCase()).toContain('daytona');
     expect(stdout).toContain('Proceeding with required secrets missing');
-    expect(stdout).toContain('kortix self-host env set DAYTONA_API_KEY');
+    expect(stdout).toContain('zed self-host env set DAYTONA_API_KEY');
     // Managed git / LLM are dashboard-configured now — the warning must NOT
     // claim they're required.
     expect(stdout.toLowerCase()).not.toContain('managed git');
@@ -66,8 +66,8 @@ describe('self-host required-secrets warning (fast, no Docker)', () => {
       'set',
       'DAYTONA_API_KEY=dtn-test-key',
       'MANAGED_GIT_GITHUB_OWNER=acme-corp',
-      'KORTIX_GITHUB_APP_ID=12345',
-      'KORTIX_GITHUB_APP_PRIVATE_KEY=-----BEGIN KEY-----test-----END KEY-----',
+      'ZED_GITHUB_APP_ID=12345',
+      'ZED_GITHUB_APP_PRIVATE_KEY=-----BEGIN KEY-----test-----END KEY-----',
       'MANAGED_GIT_GITHUB_INSTALL_ID=67890',
     ]);
 

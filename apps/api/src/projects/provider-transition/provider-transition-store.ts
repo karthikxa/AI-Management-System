@@ -15,7 +15,7 @@
  *    superseded/cancelled rows never block a fresh switch.
  */
 import { and, desc, eq, inArray, isNull, lt, ne, or, sql } from 'drizzle-orm';
-import { providerTransitions, projects, type Database } from '@kortix/db';
+import { providerTransitions, projects, type Database } from '@zed/db';
 import { metadataMerge } from '../lib/metadata-merge';
 import {
   LIVE_TRANSITION_STATUSES,
@@ -37,14 +37,14 @@ export const ACTIVE_EXTERNAL_ID_META_KEY = 'active_sandbox_external_template_id'
 /** FIX-K-lite: the exact ppwarm image NAME activation pinned. Written together
  *  with the external id (activation only), so the snapshot-GC pinned-image guard
  *  can cross-check reap targets by NAME — the id activation records is the
- *  provider's external template id, not the `kortix-ppwarm-…` name the reaper
+ *  provider's external template id, not the `zed-ppwarm-…` name the reaper
  *  deletes by. A stale build MARKER can overwrite the transition marker's
  *  snapshot_name, but this key is touched ONLY on activation, so it stays a
  *  reliable record of the live pinned image. */
 export const ACTIVE_SNAPSHOT_NAME_META_KEY = 'active_sandbox_snapshot_name';
 /** Compact marker mirrored into project metadata so the existing project
  *  response (which passes `metadata` through) is pollable without a schema
- *  change to @kortix/api-contract. */
+ *  change to @zed/api-contract. */
 export const TRANSITION_META_KEY = 'sandbox_provider_transition';
 
 function asMeta(v: unknown): Record<string, unknown> {

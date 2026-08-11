@@ -28,10 +28,10 @@ test("source freeze requires maintenance and an exact confirmation", () => {
 });
 
 test("source freeze covers ECS, EKS, autoscaling, worker flags, and cron", () => {
-  assert.match(sourceWriters, /kortix-prod-gateway\|kortix-prod-gateway/);
-  assert.match(sourceWriters, /SOURCE_EKS_DEPLOYMENTS=\("kortix-api" "kortix-gateway"\)/);
+  assert.match(sourceWriters, /zed-prod-gateway\|zed-prod-gateway/);
+  assert.match(sourceWriters, /SOURCE_EKS_DEPLOYMENTS=\("zed-api" "zed-gateway"\)/);
   assert.match(sourceWriters, /application-autoscaling register-scalable-target/);
-  assert.match(sourceWriters, /\.KORTIX_WORKERS_ENABLED = "false"/);
+  assert.match(sourceWriters, /\.ZED_WORKERS_ENABLED = "false"/);
   assert.match(sourceWriters, /cron\.unschedule\(jobid\)/);
 });
 
@@ -41,7 +41,7 @@ test("rollback refuses disabled replication or enabled US writers", () => {
 });
 
 test("final database workflow consumes the source freeze marker", () => {
-  assert.match(finalWorkflow, /FREEZE_MARKER_PARAMETER: \/kortix\/prod-use2\/source-freeze/);
+  assert.match(finalWorkflow, /FREEZE_MARKER_PARAMETER: \/zed\/prod-use2\/source-freeze/);
   assert.match(finalWorkflow, /action == 'finalize-frozen'/);
   assert.match(finalWorkflow, /repair-shadow-mutations/);
   assert.match(finalWorkflow, /reconcile-counts/);

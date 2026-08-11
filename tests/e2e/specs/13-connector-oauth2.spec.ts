@@ -23,7 +23,7 @@ test.describe('13 — Custom connector OAuth2', () => {
   let projectId: string;
 
   test.beforeAll(async () => {
-    const email = `e2e-connector-oauth-${Date.now()}@kortix.test`;
+    const email = `e2e-connector-oauth-${Date.now()}@zed.test`;
     user = await createAuthUser(email, authOptions);
     session = await signIn(email, authOptions);
 

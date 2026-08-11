@@ -187,11 +187,11 @@ function CreateSheet({ accountId, onCreated, onClose, isDark }: { accountId: str
         <TouchableOpacity onPress={() => { haptics.tap(); onClose(); }} hitSlop={8} style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', alignItems: 'center', justifyContent: 'center' }}><X size={17} color={c.muted} /></TouchableOpacity>
       </View>
       <BottomSheetScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <Text style={{ fontSize: 12.5, lineHeight: 18, color: c.muted, marginBottom: 16 }}>Each event is POSTed to the URL with an X-Kortix-Signature header (HMAC-SHA256 of the body).</Text>
+        <Text style={{ fontSize: 12.5, lineHeight: 18, color: c.muted, marginBottom: 16 }}>Each event is POSTed to the URL with an X-Zed-Signature header (HMAC-SHA256 of the body).</Text>
         <Text style={{ fontSize: 12, fontFamily: 'Roobert-Medium', color: c.muted, marginBottom: 6 }}>Name</Text>
         <BottomSheetTextInput value={name} onChangeText={setName} placeholder="Splunk production" placeholderTextColor={c.muted} style={input} />
         <Text style={{ fontSize: 12, fontFamily: 'Roobert-Medium', color: c.muted, marginTop: 14, marginBottom: 6 }}>Destination URL</Text>
-        <BottomSheetTextInput value={url} onChangeText={setUrl} placeholder="https://siem.corp.example/kortix/audit" placeholderTextColor={c.muted} autoCapitalize="none" autoCorrect={false} keyboardType="url" style={[input, { fontFamily: MONO, fontSize: 13 }]} />
+        <BottomSheetTextInput value={url} onChangeText={setUrl} placeholder="https://siem.corp.example/zed/audit" placeholderTextColor={c.muted} autoCapitalize="none" autoCorrect={false} keyboardType="url" style={[input, { fontFamily: MONO, fontSize: 13 }]} />
         <Text style={{ fontSize: 12, fontFamily: 'Roobert-Medium', color: c.muted, marginTop: 14, marginBottom: 8 }}>Action prefix <Text style={{ color: c.muted, opacity: 0.7 }}>(optional)</Text></Text>
         <BottomSheetTextInput value={prefix} onChangeText={setPrefix} placeholder="iam." placeholderTextColor={c.muted} autoCapitalize="none" autoCorrect={false} style={[input, { fontFamily: MONO, fontSize: 13 }]} />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 10 }}>

@@ -63,7 +63,7 @@ export function FactorRow({
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <Badge variant={factor.status === 'verified' ? 'kortix' : 'outline'} size="xs">
+        <Badge variant={factor.status === 'verified' ? 'zed' : 'outline'} size="xs">
           {factor.status}
         </Badge>
         <Button
@@ -168,7 +168,7 @@ export function SecurityTab() {
             </p>
           </div>
           {verified.length > 0 && (
-            <Badge variant={sessionVerified ? 'kortix' : 'outline'} size="sm" className="shrink-0">
+            <Badge variant={sessionVerified ? 'zed' : 'outline'} size="sm" className="shrink-0">
               <ShieldCheck />
               {sessionVerified ? 'Session verified' : 'Enrolled'}
             </Badge>

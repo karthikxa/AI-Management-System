@@ -12,7 +12,7 @@ describe('GitHub installation presentation', () => {
   });
 
   test('labels the managed PAT fallback as a server connection', () => {
-    expect(githubInstallationLabel('pat', 'kortixd')).toBe('Managed GitHub · github.com/kortixd');
+    expect(githubInstallationLabel('pat', 'zedd')).toBe('Managed GitHub · github.com/zedd');
     expect(githubInstallationLabel('123456', 'acme')).toBe('github.com/acme');
   });
 });
@@ -35,7 +35,7 @@ describe('GitHub account connection surfaces', () => {
 
   test('presents the three repository sources as one visible decision', () => {
     expect(projectModalSource).toContain('aria-label="Repository source"');
-    expect(projectModalSource).toContain('Kortix managed');
+    expect(projectModalSource).toContain('Zed managed');
     expect(projectModalSource).toContain('Create in GitHub');
     expect(projectModalSource).toContain('Import from GitHub');
     expect(projectModalSource).not.toContain('Use managed repository');

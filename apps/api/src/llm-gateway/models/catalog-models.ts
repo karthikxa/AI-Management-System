@@ -5,7 +5,7 @@ import {
   type CatalogModel,
   type CatalogReasoningOption,
   catalogModelForWireModel as catalogModelForWireModelCanonical,
-} from '@kortix/llm-catalog';
+} from '@zed/llm-catalog';
 import { resolveCatalogUpstream } from './provider-registry';
 import { codexModelIds } from './codex-models';
 import { runtimeModelCatalog } from './runtime-catalog';
@@ -15,8 +15,8 @@ import { SERVED_MANAGED_MODELS } from './served-managed-models';
 // under `codex/<id>` — kept as one named constant so this file, the sandbox
 // agent server, and the web picker can never drift on the string.
 const CODEX_PROVIDER_ID = 'codex';
-// The real upstream "provider" for every Kortix-managed model.
-const KORTIX_PROVIDER_ID = 'kortix';
+// The real upstream "provider" for every Zed-managed model.
+const ZED_PROVIDER_ID = 'zed';
 
 interface GatewayModel {
   name: string;
@@ -24,9 +24,9 @@ interface GatewayModel {
   release_date?: string | null;
   family?: string;
   // The REAL upstream provider this model resolves against ('anthropic',
-  // 'openai', 'codex', 'kortix', ...). Every model here is registered under
-  // the single synthetic `kortix` opencode provider (see the sandbox agent
-  // server's `buildKortixProvider`) — this is the one field a client can
+  // 'openai', 'codex', 'zed', ...). Every model here is registered under
+  // the single synthetic `zed` opencode provider (see the sandbox agent
+  // server's `buildZedProvider`) — this is the one field a client can
   // group/brand by without parsing `<provider>/<model>` out of the wire id.
   // See apps/web/src/features/session/model-selector.tsx's `pickerGroupId`.
   provider?: string;
@@ -161,7 +161,7 @@ export function capabilitiesForModel(
 
 // The full catalog capability record (reasoning_options, temperature,
 // limit.output, ...) for a gateway WIRE model id — the lookup
-// `@kortix/llm-catalog`'s generation-controls capability functions
+// `@zed/llm-catalog`'s generation-controls capability functions
 // (`generationControlCapabilities`/`clampGenerationConfig`) need but
 // `capabilitiesForModel` above doesn't carry (it only ever returned the two
 // booleans transports needed). Used by the generation-controls UI's
@@ -169,7 +169,7 @@ export function capabilitiesForModel(
 // default is never sent to a model that can't honor it, whether it's a BYOK
 // catalog entry, a `codex/<id>`, or a managed slug.
 //
-// The wire-id → CatalogModel resolution itself lives in @kortix/llm-catalog
+// The wire-id → CatalogModel resolution itself lives in @zed/llm-catalog
 // (the single source of truth, reachable by the standalone gateway transport
 // too); this is a thin wrapper that only supplies the LIVE models.dev snapshot
 // as the catalog default, so the host-side clamp sees fresh capabilities.
@@ -180,7 +180,7 @@ export const catalogModelForWireModel = (
 
 export function managedModels(): Record<string, GatewayModel> {
   const out: Record<string, GatewayModel> = {};
-  // SERVED_MANAGED_MODELS is empty when KORTIX_MANAGED_PROVIDER_ENABLED is off,
+  // SERVED_MANAGED_MODELS is empty when ZED_MANAGED_PROVIDER_ENABLED is off,
   // and drops any configured model whose transport credential is absent — the
   // catalog must never advertise a model that request-time resolution refuses.
   if (SERVED_MANAGED_MODELS.length === 0) return out;
@@ -202,7 +202,7 @@ export function managedModels(): Record<string, GatewayModel> {
       : undefined;
     out[m.id] = {
       name: m.name,
-      provider: m.providerBrand ?? KORTIX_PROVIDER_ID,
+      provider: m.providerBrand ?? ZED_PROVIDER_ID,
       reasoning: true,
       tool_call: true,
       attachment: m.vision,
@@ -224,7 +224,7 @@ export function gatewayModelsAll(
     for (const model of provider.models) {
       // BYOK models ARE catalog entries — capabilities come straight from models.dev.
       // `provider` is the REAL upstream id (e.g. "anthropic") — every model here
-      // is registered under the single synthetic `kortix` opencode provider, so
+      // is registered under the single synthetic `zed` opencode provider, so
       // this is what the picker groups/brands by instead of parsing the wire id.
       out[`${provider.id}/${model.id}`] = {
         name: model.name,
@@ -304,7 +304,7 @@ function refreshedCatalogs(): {
 
 // `projectId` gates BYOK/codex visibility (anonymous callers see managed only).
 // `freeManagedOnly` (a free-tier account with internal billing on) hides every
-// managed Kortix model. A free user's own connected provider keys still work,
+// managed Zed model. A free user's own connected provider keys still work,
 // but there is no unreliable platform-managed free default.
 export function gatewayModelCatalog(
   projectId: string | undefined,

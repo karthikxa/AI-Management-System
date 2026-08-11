@@ -1,13 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 
-const DEFAULT_AGENT_ENV_SH = '/dev/shm/kortix/agent-env.sh';
+const DEFAULT_AGENT_ENV_SH = '/dev/shm/zed/agent-env.sh';
 
 const SANDBOX_ENV_KEYS = [
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_FRONTEND_URL',
-  'KORTIX_PROJECT_ID',
+  'ZED_CLI_TOKEN',
+  'ZED_API_URL',
+  'ZED_FRONTEND_URL',
+  'ZED_PROJECT_ID',
 ] as const;
 
 type SandboxEnvKey = (typeof SANDBOX_ENV_KEYS)[number];
@@ -15,7 +15,7 @@ type SandboxEnvKey = (typeof SANDBOX_ENV_KEYS)[number];
 const ALLOWED_KEYS = new Set<string>(SANDBOX_ENV_KEYS);
 
 function candidatePaths(): string[] {
-  if (process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE === '1') return [];
+  if (process.env.ZED_DISABLE_SANDBOX_ENV_FILE === '1') return [];
   const paths: string[] = [];
   if (process.env.BASH_ENV && basename(process.env.BASH_ENV) === 'agent-env.sh') {
     paths.push(process.env.BASH_ENV);

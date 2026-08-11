@@ -59,8 +59,8 @@ describe('gatewayModelId', () => {
     );
   });
 
-  test('managed Kortix provider stays bare (single-segment)', () => {
-    expect(gatewayModelId({ id: 'kortix', managed: true }, 'claude-opus-4.8')).toBe(
+  test('managed Zed provider stays bare (single-segment)', () => {
+    expect(gatewayModelId({ id: 'zed', managed: true }, 'claude-opus-4.8')).toBe(
       'claude-opus-4.8',
     );
   });

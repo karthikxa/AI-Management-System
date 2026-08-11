@@ -6,7 +6,7 @@ import { buildRuntimeArtifactFingerprint } from '../snapshots/runtime-fingerprin
 
 describe('buildRuntimeArtifactFingerprint', () => {
   test('is deterministic for the same runtime artifacts', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'kortix-runtime-fingerprint-'));
+    const root = await mkdtemp(join(tmpdir(), 'zed-runtime-fingerprint-'));
     try {
       await writeFile(join(root, 'agent'), 'agent-v1');
       await writeFile(join(root, 'entrypoint'), 'entrypoint-v1');
@@ -17,9 +17,9 @@ describe('buildRuntimeArtifactFingerprint', () => {
         sandboxVersion: 'dev-test',
         opencodeVersion: '1.2.3',
         artifacts: [
-          { label: 'kortix-agent', path: join(root, 'agent') },
-          { label: 'kortix-entrypoint', path: join(root, 'entrypoint') },
-          { label: 'kortix-slack-cli', path: join(root, 'cli') },
+          { label: 'zed-agent', path: join(root, 'agent') },
+          { label: 'zed-entrypoint', path: join(root, 'entrypoint') },
+          { label: 'zed-slack-cli', path: join(root, 'cli') },
         ],
       };
 
@@ -30,14 +30,14 @@ describe('buildRuntimeArtifactFingerprint', () => {
       });
 
       expect(a).toBe(b);
-      expect(a.startsWith('kortix-runtime:dev-test:artifacts:')).toBe(true);
+      expect(a.startsWith('zed-runtime:dev-test:artifacts:')).toBe(true);
     } finally {
       await rm(root, { recursive: true, force: true });
     }
   });
 
   test('excludeNames skips matching dir entries (e.g. node_modules) so install state does not flip the fingerprint', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'kortix-runtime-fingerprint-'));
+    const root = await mkdtemp(join(tmpdir(), 'zed-runtime-fingerprint-'));
     try {
       await mkdir(join(root, 'pkg'));
       await writeFile(join(root, 'pkg', 'index.ts'), 'src-v1');
@@ -69,15 +69,15 @@ describe('buildRuntimeArtifactFingerprint', () => {
   });
 
   test('changes when a copied runtime artifact changes', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'kortix-runtime-fingerprint-'));
+    const root = await mkdtemp(join(tmpdir(), 'zed-runtime-fingerprint-'));
     try {
       await writeFile(join(root, 'agent'), 'agent-v1');
       await mkdir(join(root, 'cli'));
       await writeFile(join(root, 'cli', 'index.ts'), 'cli-v1');
 
       const artifacts = [
-        { label: 'kortix-agent', path: join(root, 'agent') },
-        { label: 'kortix-slack-cli', path: join(root, 'cli') },
+        { label: 'zed-agent', path: join(root, 'agent') },
+        { label: 'zed-slack-cli', path: join(root, 'cli') },
       ];
 
       const before = await buildRuntimeArtifactFingerprint({

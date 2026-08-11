@@ -57,7 +57,7 @@ export const MOCK_ITEMS: ReviewItem[] = [
         { label: 'Preview ready', tone: 'info' },
         { label: 'Tests passed', tone: 'success' },
       ],
-      previewUrl: 'https://preview.kortix.dev/pricing-refresh',
+      previewUrl: 'https://preview.zed.dev/pricing-refresh',
       advanced: {
         headRef: 'session/8f1c2a90-pricing-refresh',
         baseRef: 'main',
@@ -169,7 +169,7 @@ export const MOCK_ITEMS: ReviewItem[] = [
     detail: {
       artifactKind: 'page',
       artifactLabel: 'Landing page',
-      previewUrl: 'https://preview.kortix.dev/q3-landing',
+      previewUrl: 'https://preview.zed.dev/q3-landing',
       note: 'I built the Q3 launch landing page from your brief. Want to look before it goes live? I can publish it the moment you approve.',
       preview:
         'Hero: “Ship faster with Acme.” · 3 feature blocks · social proof row · pricing CTA · FAQ · footer.',
@@ -361,7 +361,7 @@ export const MOCK_ITEMS: ReviewItem[] = [
     id: 'rv-decision-2',
     kind: 'decision',
     title: 'Brand accent color for the new dashboard',
-    summary: 'You chose “Kortix blue”',
+    summary: 'You chose “Zed blue”',
     risk: 'none',
     status: 'done',
     source: 'web',
@@ -373,7 +373,7 @@ export const MOCK_ITEMS: ReviewItem[] = [
     detail: {
       question: 'Pick the dashboard accent color.',
       options: [
-        { id: 'c1', label: 'Kortix blue', recommended: true },
+        { id: 'c1', label: 'Zed blue', recommended: true },
         { id: 'c2', label: 'Emerald' },
         { id: 'c3', label: 'Violet' },
       ],

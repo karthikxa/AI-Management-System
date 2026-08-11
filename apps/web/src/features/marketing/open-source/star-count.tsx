@@ -95,7 +95,7 @@ function useCountUp(target: number | null, start: boolean): number | null {
  * nothing reflows when the digits land.
  *
  * The hook takes no arguments here on purpose: the route is hardcoded to
- * `kortix-ai/suna` server-side and its `owner` / `repo` parameters are ignored.
+ * `zed-ai/suna` server-side and its `owner` / `repo` parameters are ignored.
  */
 export function StarCount({ caption, className }: { caption: string; className?: string }): ReactNode {
   const { stars } = useGitHubStars();

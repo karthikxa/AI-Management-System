@@ -1,7 +1,7 @@
 /**
  * The "let me check" line, and why it is a fixed string rather than a prompt.
  *
- * When `send_prompt` hands work to Kortix, the room needs to hear something
+ * When `send_prompt` hands work to Zed, the room needs to hear something
  * immediately or the silence reads as the agent having died. That ack used to be
  * produced by RETURNING AN INSTRUCTION to the model ("Say one short sentence
  * that you are checking, then stop talking") — so the model composed it, and one
@@ -13,9 +13,9 @@
  *
  * Nothing had said anything about dogs — a stray transcription artifact seeded
  * it. But once spoken, that claim sat in the model's own conversation history as
- * established fact, so every correct answer Kortix sent back contradicted what
- * it believed, and it kept handing the contradiction BACK to Kortix to resolve.
- * Each of those is a real, paid Kortix turn. It ran until a human hung up.
+ * established fact, so every correct answer Zed sent back contradicted what
+ * it believed, and it kept handing the contradiction BACK to Zed to resolve.
+ * Each of those is a real, paid Zed turn. It ran until a human hung up.
  *
  * The cure is to take the sentence away from the model entirely. These strings
  * are spoken with `session.say()`, which is literal TTS with no LLM step (see

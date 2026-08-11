@@ -1,8 +1,8 @@
-// Kortix API + gateway router — the blue/green cutover switch in front of both
+// Zed API + gateway router — the blue/green cutover switch in front of both
 // public services. One worker per env handles BOTH hostnames:
 //
-//   api.kortix.com          → API      → EKS | EU ECS | US ECS   (ACTIVE_BACKEND)
-//   gateway.kortix.com      → gateway  → EKS | EU ECS | US ECS   (GATEWAY_ACTIVE_BACKEND)
+//   api.zed.com          → API      → EKS | EU ECS | US ECS   (ACTIVE_BACKEND)
+//   gateway.zed.com      → gateway  → EKS | EU ECS | US ECS   (GATEWAY_ACTIVE_BACKEND)
 //   (staging-/dev- variants route to the "staging"/"dev" worker envs)
 //
 // The service is chosen by hostname (anything containing "gateway" is the LLM
@@ -35,7 +35,7 @@ const AUTOMATIC_MAINTENANCE = {
   level: 'blocking',
   title: 'Service maintenance',
   message:
-    'Kortix is temporarily unavailable. Service will resume automatically.',
+    'Zed is temporarily unavailable. Service will resume automatically.',
 };
 
 function addSecurityHeaders(response) {
@@ -60,7 +60,7 @@ async function readMaintenanceConfig(env) {
       title: env.MAINTENANCE_TITLE_OVERRIDE || 'Scheduled maintenance',
       message:
         env.MAINTENANCE_MESSAGE_OVERRIDE ||
-        'Kortix is temporarily unavailable for maintenance.',
+        'Zed is temporarily unavailable for maintenance.',
       updatedAt: new Date().toISOString(),
     };
   }
@@ -115,7 +115,7 @@ function maintenanceResponse(config, active, isGateway, request) {
         error: 'MAINTENANCE_MODE',
         message:
           config.message ||
-          'Kortix is temporarily unavailable for maintenance.',
+          'Zed is temporarily unavailable for maintenance.',
         maintenance: config,
       }),
       { status: 503, headers },
@@ -238,7 +238,7 @@ export default {
     // `manual` so backend 3xx responses are passed straight through to the
     // browser. With `follow`, the worker would chase a browser-facing redirect
     // server-side (no client cookies) — e.g. the Slack OAuth callback's
-    // `302 → kortix.com/projects/...` got followed here, kortix.com bounced to
+    // `302 → zed.com/projects/...` got followed here, zed.com bounced to
     // /auth, and the worker returned that /auth HTML as a 200, so the browser
     // never saw the redirect (blank page, URL stuck on the callback).
     const modifiedRequest = new Request(targetUrl, {

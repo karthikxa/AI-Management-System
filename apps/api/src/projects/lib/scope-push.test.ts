@@ -15,7 +15,7 @@ import { afterAll, beforeEach, describe, expect, mock, test } from 'bun:test';
 import * as realSecrets from '../secrets';
 import * as realSecretGrant from './secret-grant';
 
-process.env.KORTIX_URL = 'https://api.example.com';
+process.env.ZED_URL = 'https://api.example.com';
 
 let posted: Array<{
   revision?: string;
@@ -47,11 +47,11 @@ let gatewayEnabled = false;
 function freshSessionRow(): typeof SESSION_ROW {
   return {
     createdBy: 'user-1',
-    agentName: 'kortix',
+    agentName: 'zed',
     secretsAllowlist: null,
     repoUrl: 'https://example.test/acme/repo.git',
     defaultBranch: 'main',
-    manifestPath: 'kortix.yaml',
+    manifestPath: 'zed.yaml',
     accountId: 'acct-1',
   };
 }
@@ -204,7 +204,7 @@ describe('pushSessionScopeToSandbox', () => {
 
   test('stamps the LLM-gateway strip alongside the snapshot when gateway is on', async () => {
     // The 42/47-vs-47/47 split between opencode and shells comes from
-    // KORTIX_OPENCODE_DENY_ENV. The scope push must re-stamp it so a respin
+    // ZED_OPENCODE_DENY_ENV. The scope push must re-stamp it so a respin
     // does not silently drop the gateway routing back to native provider keys.
     gatewayEnabled = true;
     const result = await pushSessionScopeToSandbox(INPUT);

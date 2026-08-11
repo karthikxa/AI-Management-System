@@ -26,7 +26,7 @@ function platinumBase(): string {
 // here sit on the exact same reaper hot path, so this is bounded by default.
 // A caller that needs a longer/no bound (e.g. a deliberately long-poll) can
 // still pass its own `init.signal` — this only fills in a default.
-const DEFAULT_CALL_TIMEOUT_MS = configuredTimeoutMs('KORTIX_PLATINUM_CALL_TIMEOUT_MS', 20_000, 1_000);
+const DEFAULT_CALL_TIMEOUT_MS = configuredTimeoutMs('ZED_PLATINUM_CALL_TIMEOUT_MS', 20_000, 1_000);
 
 async function platinumFetch(path: string, init: RequestInit = {}): Promise<Response> {
   if (!config.PLATINUM_API_KEY) throw new Error('Missing PLATINUM_API_KEY');

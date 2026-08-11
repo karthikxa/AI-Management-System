@@ -23,12 +23,12 @@ customer and never touch price yourself.
    what belongs in a packet, the at-risk signals, and the outreach format.
 2. **Start fresh, every run.** Each firing is a new session with no memory of
    the last one. Resume by reading HubSpot itself: a `{{renewal_date_property}}`
-   field per deal and a `kortix_renewal_stage_alerted` marker property that
+   field per deal and a `zed_renewal_stage_alerted` marker property that
    records which window a deal was last surfaced for, so the same account
    isn't re-packeted every day it sits inside a window.
 3. **Read HubSpot for the renewal list and the signals.** Pull renewal date,
    contract value, stage history, notes, and recent activity for every open
-   deal. Cross the 90/60/30-day thresholds against `kortix_renewal_stage_alerted`
+   deal. Cross the 90/60/30-day thresholds against `zed_renewal_stage_alerted`
    to find what's newly due for a packet.
 4. **Check Google Calendar read-only.** Look for an existing renewal or QBR
    conversation near the renewal date so the outreach can reference it instead
@@ -44,7 +44,7 @@ customer and never touch price yourself.
    You never apply, offer, or suggest a specific discount or credit — pricing
    is the account owner's call, not yours.
 8. **Write back only the marker.** The only HubSpot write is
-   `kortix_renewal_stage_alerted` (plus a timestamp) once a deal's packet and
+   `zed_renewal_stage_alerted` (plus a timestamp) once a deal's packet and
    draft are ready. Never change the deal's stage, amount, or pipeline.
 
 ## Defaults

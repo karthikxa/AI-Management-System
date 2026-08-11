@@ -34,13 +34,13 @@ import { parseLocalhostUrl } from '@/lib/utils/sandbox-url';
 import {
   useClearFocusedToolCall,
   useFocusedToolCallId,
-  useKortixComputerStore,
-} from '@/stores/kortix-computer-store';
+  useZedComputerStore,
+} from '@/stores/zed-computer-store';
 import { usePresentationViewerStore } from '@/stores/presentation-viewer-store';
 import { useSessionBrowserStore } from '@/stores/session-browser-store';
 import { useSessionComposerPrefillStore } from '@/stores/session-composer-prefill-store';
 import type { MessageWithParts } from '@/ui';
-import { SANDBOX_PORTS } from '@kortix/sdk';
+import { SANDBOX_PORTS } from '@zed/sdk';
 import { FileTextIcon as FileText } from '@phosphor-icons/react';
 import {
   createContext,
@@ -205,21 +205,21 @@ export function SessionPanelProvider({
   // through `openDetail` — so fullscreen survives the move from one deliverable
   // to the next, and so does the panel width when both sides measure (see
   // `openDetail`'s `measures` check).
-  const setIsExpanded = useKortixComputerStore((s) => s.setIsExpanded);
+  const setIsExpanded = useZedComputerStore((s) => s.setIsExpanded);
   // Split override: a presentation deliverable grows the panel to its widest
   // split (70/30, Marko's feedback) and the terminal layer to an even 50/50,
   // instead of the default — see `isWideDeliverable`/`handleOpenOutput`/
   // `openTerminal` below. `panelSplit` mirrors `isExpanded`'s shape exactly
   // (same store, same `animate` opt, same `skipNextExpandAnimation` flag) —
   // see the store's doc comment.
-  const setPanelSplit = useKortixComputerStore((s) => s.setPanelSplit);
+  const setPanelSplit = useZedComputerStore((s) => s.setPanelSplit);
   // The measured shape of whatever document is open, which outranks
   // `panelSplit` once it lands (see `resolveSideSize`). Cleared in lockstep
   // with every `panelSplit` write below — a ratio that outlives the document
   // it was measured from would silently win over the split the new layer
   // asked for, so the two states are never allowed to disagree.
-  const setPanelAspect = useKortixComputerStore((s) => s.setPanelAspect);
-  const setIsSidePanelOpen = useKortixComputerStore((s) => s.setIsSidePanelOpen);
+  const setPanelAspect = useZedComputerStore((s) => s.setPanelAspect);
+  const setIsSidePanelOpen = useZedComputerStore((s) => s.setIsSidePanelOpen);
 
   const closeDetail = useCallback(() => {
     setDetail(null);
@@ -258,7 +258,7 @@ export function SessionPanelProvider({
 
   // Publish "a detail is showing" (a detail OR the terminal layer) to the
   // store. Panel close and session switch reset the flag store-side.
-  const setDetailOpen = useKortixComputerStore((s) => s.setDetailOpen);
+  const setDetailOpen = useZedComputerStore((s) => s.setDetailOpen);
   useEffect(() => {
     setDetailOpen(detail !== null || terminalOpen);
   }, [detail, terminalOpen, setDetailOpen]);
@@ -274,7 +274,7 @@ export function SessionPanelProvider({
   // makes the next press restore it. Keyed by session because sessions kept in
   // background tabs stay mounted, so an unkeyed flag would have the last
   // provider to render answer for all of them.
-  const setDetailContent = useKortixComputerStore((s) => s.setDetailContent);
+  const setDetailContent = useZedComputerStore((s) => s.setDetailContent);
   useEffect(() => {
     setDetailContent(sessionId, detail !== null || terminalOpen);
   }, [sessionId, detail, terminalOpen, setDetailContent]);
@@ -292,7 +292,7 @@ export function SessionPanelProvider({
   // Firing on mount is harmless and intentional — `detail` is null then, so
   // both updates are no-ops. Functional updates keep this depending on the
   // session change alone, so it cannot loop through its own state.
-  const activeSessionId = useKortixComputerStore((s) => s._activeSessionId);
+  const activeSessionId = useZedComputerStore((s) => s._activeSessionId);
   useEffect(() => {
     setDetail((current) => (current ? null : current));
     setTerminalOpen((open) => (open ? false : open));
@@ -304,7 +304,7 @@ export function SessionPanelProvider({
   // so the teardown cannot capture a stale action, and so it runs on unmount
   // ONLY, never on a content change.
   useEffect(
-    () => () => useKortixComputerStore.getState().setDetailContent(sessionId, null),
+    () => () => useZedComputerStore.getState().setDetailContent(sessionId, null),
     [sessionId],
   );
 
@@ -370,7 +370,7 @@ export function SessionPanelProvider({
   // proxied base URL the viewer can build its PDF/PPTX export and Google
   // Slides upload requests against (`${sandboxUrl}/presentation/convert-to-*`
   // — the /presentation router the sandbox agent server mounts at its root,
-  // i.e. Kortix Master, port 8000). It is never a raw sandbox host: every
+  // i.e. Zed Master, port 8000). It is never a raw sandbox host: every
   // sandbox surface here (AppPreview, browser/desktop tabs) reaches its port
   // through this same proxy.
   const { getServiceUrl } = useSandboxProxy();
@@ -457,8 +457,8 @@ export function SessionPanelProvider({
       const present =
         output.kind === 'presentation' && output.presentationName
           ? () => {
-              const kortixMasterPort = Number.parseInt(SANDBOX_PORTS.KORTIX_MASTER, 10);
-              const sandboxBaseUrl = getServiceUrl(kortixMasterPort)?.replace(/\/+$/, '');
+              const zedMasterPort = Number.parseInt(SANDBOX_PORTS.ZED_MASTER, 10);
+              const sandboxBaseUrl = getServiceUrl(zedMasterPort)?.replace(/\/+$/, '');
               if (!sandboxBaseUrl) return;
               track('present_opened');
               usePresentationViewerStore
@@ -618,10 +618,10 @@ export function SessionPanelProvider({
   // deliverable. Subscribe to the pending-request VALUE, not the (stable)
   // consume action — see this file's header note 1. `consumePrimaryOpen` keeps
   // it one-shot.
-  const pendingPrimaryOpenSessionId = useKortixComputerStore((s) => s.pendingPrimaryOpenSessionId);
+  const pendingPrimaryOpenSessionId = useZedComputerStore((s) => s.pendingPrimaryOpenSessionId);
   useEffect(() => {
     if (pendingPrimaryOpenSessionId !== sessionId) return;
-    if (!useKortixComputerStore.getState().consumePrimaryOpen(sessionId)) return;
+    if (!useZedComputerStore.getState().consumePrimaryOpen(sessionId)) return;
     // Unfiltered (unlike the payoff effect above): the chip was already
     // earned by a real finish, possibly in an earlier render than this one —
     // the stale fallback is this path's legitimate purpose, so a user who
@@ -647,7 +647,7 @@ export function SessionPanelProvider({
     handleOpenOutput(pathOutput(fileOpenRequest.path), undefined, 'row');
   }, [fileOpenRequest, handleOpenOutput]);
 
-  const pendingQuickView = useKortixComputerStore((s) => s.pendingQuickView);
+  const pendingQuickView = useZedComputerStore((s) => s.pendingQuickView);
 
   /**
    * A tool call clicked in the CHAT opens that tool's real view in the panel.
@@ -763,7 +763,7 @@ export function SessionPanelProvider({
   // deliberate no-op: there's nothing to drill into yet.
   useEffect(() => {
     if (pendingQuickView?.sessionId !== sessionId) return;
-    const request = useKortixComputerStore.getState().consumeQuickView(sessionId);
+    const request = useZedComputerStore.getState().consumeQuickView(sessionId);
     if (!request) return;
     const { view, target } = request;
     if (view === 'terminal') {

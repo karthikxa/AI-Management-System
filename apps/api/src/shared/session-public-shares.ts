@@ -4,7 +4,7 @@ import {
   projectSessionConnectorBindings,
   projectSessionPublicShares,
   sessionSandboxes,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, desc, eq } from 'drizzle-orm';
 import { db } from './db';
 import { OPENCODE_PORTS } from './opencode-ports';

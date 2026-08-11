@@ -8,7 +8,7 @@
  * starts claiming a product we do not ship. Every role file is bound by this:
  *
  *  - MERGE IS DEFAULT-DENY. Work lands through a change request. An admin can
- *    grant `project.cr.merge` in `kortix.yaml`; widening it is itself a
+ *    grant `project.cr.merge` in `zed.yaml`; widening it is itself a
  *    reviewed change. Never write "only a human can merge" and never write
  *    "the agent deploys".
  *  - APPROVAL GATES ARE OFF BY DEFAULT. `policy.default_mode` falls back to
@@ -29,7 +29,7 @@
  *    channels, in any tense.
  *  - NEVER claim egress is controlled at the network. NEVER claim microVM
  *    isolation as a blanket fact (true for the Platinum provider only).
- *  - SELF-HOSTING IS NOT AIR-GAPPED. `kortix self-host start` pulls images
+ *  - SELF-HOSTING IS NOT AIR-GAPPED. `zed self-host start` pulls images
  *    from docker.io. Route isolated topologies to Enterprise.
  *  - NEVER name a license — say "open source" and stop. NEVER claim a
  *    certification; link to /security instead of asserting compliance.

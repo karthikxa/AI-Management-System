@@ -33,7 +33,7 @@
  * e2e-stuck-session-reconcile.test.ts. Skipped otherwise.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { type Database, accounts, createDb, projects } from '@kortix/db';
+import { type Database, accounts, createDb, projects } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import type { GitHubRepo } from '../github';
 import { normalizeProjectIcon } from './project-icon';
@@ -42,8 +42,8 @@ import { registerGitHubLinkedProject, registerPatLinkedProject } from './project
 const TEST_DB_CONFIRMATION = 'I_UNDERSTAND_THIS_DELETES_TEST_DATA';
 const HAS_CONFIRMED_TEST_DB = Boolean(
   process.env.TEST_DATABASE_URL &&
-    process.env.KORTIX_TEST_DB_CONFIRM === TEST_DB_CONFIRMATION &&
-    process.env.INTERNAL_KORTIX_ENV !== 'prod',
+    process.env.ZED_TEST_DB_CONFIRM === TEST_DB_CONFIRMATION &&
+    process.env.INTERNAL_ZED_ENV !== 'prod',
 );
 const describeWithDb = HAS_CONFIRMED_TEST_DB ? describe : describe.skip;
 
@@ -114,7 +114,7 @@ describeWithDb(
         installation: fakeInstallation,
         name: 'icon-ok',
         defaultBranch: 'main',
-        manifestPath: 'kortix.yaml',
+        manifestPath: 'zed.yaml',
         ...(icon ? { projectMetadata: { icon } } : {}), // exact r2.ts spread
       });
 
@@ -142,7 +142,7 @@ describeWithDb(
         installation: fakeInstallation,
         name: 'icon-bad',
         defaultBranch: 'main',
-        manifestPath: 'kortix.yaml',
+        manifestPath: 'zed.yaml',
         ...(icon ? { projectMetadata: { icon } } : {}),
       });
 
@@ -162,7 +162,7 @@ describeWithDb(
         installation: fakeInstallation,
         name: 'icon-absent',
         defaultBranch: 'main',
-        manifestPath: 'kortix.yaml',
+        manifestPath: 'zed.yaml',
         ...(icon ? { projectMetadata: { icon } } : {}),
       });
 
@@ -181,7 +181,7 @@ describeWithDb(
         token: 'fake-pat-token-never-used-for-network-io',
         name: 'icon-pat-ok',
         defaultBranch: 'main',
-        manifestPath: 'kortix.yaml',
+        manifestPath: 'zed.yaml',
         ...(icon ? { projectMetadata: { icon } } : {}),
       });
 
@@ -205,7 +205,7 @@ describeWithDb(
         token: 'fake-pat-token-never-used-for-network-io',
         name: 'icon-pat-bad',
         defaultBranch: 'main',
-        manifestPath: 'kortix.yaml',
+        manifestPath: 'zed.yaml',
         ...(icon ? { projectMetadata: { icon } } : {}),
       });
 

@@ -1,7 +1,7 @@
 // format=csv on the cost list routes runs the same filtered query as the
 // JSON response, then serializes it here instead of returning a JSON body.
 // Capped so a finance export can't walk an unbounded account: the cap is
-// reported in x-kortix-row-cap so the caller can warn instead of silently
+// reported in x-zed-row-cap so the caller can warn instead of silently
 // truncating.
 export const CSV_ROW_CAP = 10_000;
 

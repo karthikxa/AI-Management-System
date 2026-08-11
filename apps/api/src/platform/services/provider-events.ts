@@ -1,5 +1,5 @@
 import { db } from '../../shared/db';
-import { providerEvents } from '@kortix/db';
+import { providerEvents } from '@zed/db';
 
 export type ProviderEventInput = {
   provider: string;

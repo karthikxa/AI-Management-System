@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { kortix } from '@/lib/kortix';
+import { zed } from '@/lib/zed';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Shield, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -44,7 +44,7 @@ export function PoliciesTab({ projectId }: { projectId: string }) {
 
   const policies = useQuery({
     queryKey: key,
-    queryFn: () => kortix.project(projectId).policies.list(),
+    queryFn: () => zed.project(projectId).policies.list(),
   });
 
   const [rules, setRules] = useState<Rule[]>([]);
@@ -62,7 +62,7 @@ export function PoliciesTab({ projectId }: { projectId: string }) {
 
   const save = useMutation({
     mutationFn: () =>
-      kortix.project(projectId).policies.set(
+      zed.project(projectId).policies.set(
         rules.filter((r) => r.match.trim()),
         defaultMode,
       ),

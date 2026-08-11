@@ -1,5 +1,5 @@
-import { PLATFORM_DEFAULT_MODEL_ID } from '@kortix/llm-catalog';
-import { hydrateEnvironmentSecret } from '@kortix/shared';
+import { PLATFORM_DEFAULT_MODEL_ID } from '@zed/llm-catalog';
+import { hydrateEnvironmentSecret } from '@zed/shared';
 import { z } from 'zod';
 import { SLACK_BOT_SCOPES } from './channels/slack-manifest';
 import {
@@ -21,7 +21,7 @@ export const SANDBOX_VERSION = process.env.SANDBOX_VERSION || 'unknown';
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export type SandboxProviderName = 'daytona' | 'platinum' | 'e2b' | 'local';
-type InternalKortixEnv = 'dev' | 'staging' | 'prod' | 'preview';
+type InternalZedEnv = 'dev' | 'staging' | 'prod' | 'preview';
 
 // ─── Zod Helpers ────────────────────────────────────────────────────────────
 
@@ -79,7 +79,7 @@ const optBoolFalse = z
   .default('false')
   .transform((v) => ['true', '1', 'yes', 'on'].includes(v.trim().toLowerCase()));
 /** Tri-state boolean: stays `undefined` when unset so a deployment-aware
- * default can be derived after parsing (see KORTIX_MANAGED_PROVIDER_ENABLED,
+ * default can be derived after parsing (see ZED_MANAGED_PROVIDER_ENABLED,
  * which follows the billing flag when not explicitly set). */
 const optBoolUnset = z
   .string()
@@ -107,7 +107,7 @@ const optFallbackPolicies = z
 
 // ─── Env Schema ─────────────────────────────────────────────────────────────
 //
-// Every env var that kortix-api reads is declared here.
+// Every env var that zed-api reads is declared here.
 // Categories:
 //   - REQUIRED:    server will not start without these
 //   - CONDITIONAL: required when a related feature is enabled
@@ -133,15 +133,15 @@ const envSchema = z.object({
   // ── Internal Deployment Controls (optional, safe defaults for self-hosted) ─
   // `preview` = ephemeral per-PR API on EKS (shares the dev data plane, never
   // migrates it, workers off, allows preview frontends in CORS). See ensure-schema.ts + the CORS block in index.ts.
-  INTERNAL_KORTIX_ENV: z.enum(['dev', 'staging', 'prod', 'preview']).optional().default('dev'),
+  INTERNAL_ZED_ENV: z.enum(['dev', 'staging', 'prod', 'preview']).optional().default('dev'),
   // Master switch: turns on real billing (Stripe + credit ledger), makes
-  // KORTIX_URL fatal-required, mounts the proxy-auth gate, hides /v1/setup.
+  // ZED_URL fatal-required, mounts the proxy-auth gate, hides /v1/setup.
   // Set to true on managed/cloud deployments; leave false for self-host + dev.
-  KORTIX_BILLING_INTERNAL_ENABLED: optBoolFalse,
+  ZED_BILLING_INTERNAL_ENABLED: optBoolFalse,
   // Global background-worker switch. API-only and migration-shadow deployments
   // keep request handling active while disabling every recurring write loop.
-  KORTIX_WORKERS_ENABLED: optBoolTrue,
-  // Kortix-owned session titles: the moment a session's first prompt text is
+  ZED_WORKERS_ENABLED: optBoolTrue,
+  // Zed-owned session titles: the moment a session's first prompt text is
   // known server-side (at create when it carries one, else on the first HTTP
   // prompt), generate the title ourselves via the internal LLM gateway instead
   // of relying on the harness summarizer. On by default; the kill-switch
@@ -151,7 +151,7 @@ const envSchema = z.object({
   // EXPERIMENTAL: the "Use this template" install feature — the /v1/templates
   // routes plus the use-case-page button + install wizard. Single kill-switch;
   // off by default so it stays hidden in prod while templates are authored.
-  KORTIX_TEMPLATES_ENABLED: optBoolTrue,
+  ZED_TEMPLATES_ENABLED: optBoolTrue,
   // Serve the public OpenAPI spec (/v1/openapi.json) + Scalar docs UI (/v1/docs).
   // On by default — the base API surface is meant to be discoverable. Internal
   // routers (/v1/admin, /v1/ops) are ALWAYS stripped from the spec regardless
@@ -159,7 +159,7 @@ const envSchema = z.object({
   // deployment turn the whole docs/spec surface OFF so no route shapes publish.
   OPENAPI_PUBLIC_DOCS: optBoolTrue,
   // Self-host enterprise license: when the operator has purchased/holds a
-  // Kortix Enterprise license, this bypasses the sales-assigned `enterprise`
+  // Zed Enterprise license, this bypasses the sales-assigned `enterprise`
   // tier check and unlocks every enterprise entitlement (SSO, SCIM, RBAC,
   // audit access) regardless of the account's billing tier — see
   // getAccountEntitlements()/accountHasEntitlement() in
@@ -169,9 +169,9 @@ const envSchema = z.object({
   ENTERPRISE_LICENSE_AVAILABLE: optBoolFalse,
   // Self-host account-creation restriction: when true, POST /v1/accounts
   // (creating an ADDITIONAL/org account) is blocked with 403 for everyone
-  // except a platform admin (KORTIX_PLATFORM_ADMIN_EMAILS — see
+  // except a platform admin (ZED_PLATFORM_ADMIN_EMAILS — see
   // shared/platform-roles.ts's isPlatformAdmin). Deliberately narrower than
-  // the removed KORTIX_SINGLE_ACCOUNT_MODE: signups still work, teams/orgs
+  // the removed ZED_SINGLE_ACCOUNT_MODE: signups still work, teams/orgs
   // still fully function, SSO/JIT still lands users in their org — only the
   // CREATION of new accounts by ordinary users is gated. The personal-account
   // bootstrap path (bootstrapPersonalAccount, called directly from GET
@@ -180,9 +180,9 @@ const envSchema = z.object({
   // unaffected); the self-host CLI defaults this to 'true'
   // (SHARED_FEATURE_FLAG_DEFAULTS) since a VPS operator usually wants to be
   // the only one who can spin up new organizations. The frontend mirrors this
-  // with KORTIX_PUBLIC_RESTRICT_ACCOUNT_CREATION to hide "New account" UI for
+  // with ZED_PUBLIC_RESTRICT_ACCOUNT_CREATION to hide "New account" UI for
   // non-admins.
-  KORTIX_RESTRICT_ACCOUNT_CREATION: optBoolFalse,
+  ZED_RESTRICT_ACCOUNT_CREATION: optBoolFalse,
 
   // ── Search Providers (optional — features degrade gracefully) ────────────
   TAVILY_API_URL: optUrl('https://api.tavily.com'),
@@ -203,8 +203,8 @@ const envSchema = z.object({
   // ── Managed git (provider-agnostic via the git proxy) ────────────────────
   // MANAGED_GIT_PROVIDER selects the backend NEW managed repos provision on
   // ('github' default). The GitHub backend creates repos under
-  // MANAGED_GIT_GITHUB_OWNER (a Kortix-owned org) via the Kortix App
-  // installed there (MANAGED_GIT_GITHUB_INSTALL_ID). Reuses KORTIX_GITHUB_APP_*
+  // MANAGED_GIT_GITHUB_OWNER (a Zed-owned org) via the Zed App
+  // installed there (MANAGED_GIT_GITHUB_INSTALL_ID). Reuses ZED_GITHUB_APP_*
   // for the App JWT. Each backend's isConfigured() checks its own vars, so
   // leaving these blank keeps the managed-git path inert.
   MANAGED_GIT_PROVIDER: optStr,
@@ -233,15 +233,15 @@ const envSchema = z.object({
   // Git remote host for clone/push URLs. Defaults to `<CODE_STORAGE_ORG>.code.storage`
   // when blank.
   CODE_STORAGE_GIT_HOST: optStr,
-  // When true, runtime clients (sandbox + `kortix` CLI) use the Kortix git
-  // proxy as their git origin (auth = KORTIX_TOKEN) instead of the real host —
+  // When true, runtime clients (sandbox + `zed` CLI) use the Zed git
+  // proxy as their git origin (auth = ZED_TOKEN) instead of the real host —
   // so a real GitHub credential never reaches a sandbox. Requires a
-  // daemon snapshot that returns KORTIX_TOKEN for the proxy host (back-compat:
+  // daemon snapshot that returns ZED_TOKEN for the proxy host (back-compat:
   // OFF leaves the direct clone-credential token flow untouched).
-  KORTIX_GIT_PROXY: optBoolFalse,
+  ZED_GIT_PROXY: optBoolFalse,
   // ── Pause / resume tuning ─────────────────────────────────────────────────
   // The sandbox idle→stop / stop→archive / →delete intervals live below as
-  // KORTIX_SANDBOX_AUTOSTOP_MINUTES / AUTOARCHIVE_MINUTES / AUTODELETE_MINUTES
+  // ZED_SANDBOX_AUTOSTOP_MINUTES / AUTOARCHIVE_MINUTES / AUTODELETE_MINUTES
   // (consumed by daytonaLifecycle()). Main's 3-day auto-archive default already
   // keeps a hibernated box in the fast-resume "stopped" tier far longer than the
   // earlier 120m, so the pause/resume win is subsumed there.
@@ -252,15 +252,15 @@ const envSchema = z.object({
   // false-positives on new sessions (the picker can send the first agent in the
   // list before the session's real default resolves). TODO(marko): re-enable once
   // the connector token is re-minted per requested agent before tool execution.
-  KORTIX_ENFORCE_SESSION_AGENT_LOCK: optBoolFalse,
+  ZED_ENFORCE_SESSION_AGENT_LOCK: optBoolFalse,
 
   // Optional strict lock for operators that require one immutable secret grant
   // per sandbox. OFF by default: an in-session agent switch re-resolves the
   // running agent's grant, replaces the OpenCode env, and re-mints the session
-  // token's connector/Kortix-CLI grant before the prompt is forwarded. Enabling
+  // token's connector/Zed-CLI grant before the prompt is forwarded. Enabling
   // this flag refuses only switches whose secret grants differ. See
   // projects/lib/secret-grant.ts.
-  KORTIX_ENFORCE_AGENT_SECRET_GRANT_LOCK: optBoolFalse,
+  ZED_ENFORCE_AGENT_SECRET_GRANT_LOCK: optBoolFalse,
 
   // Mandatory declared agents (docs/specs/2026-07-05-agent-first-config-unification.md
   // §2.1/§3 Phase 2). GATED OFF platform-wide by default — flipping it on would
@@ -273,7 +273,7 @@ const envSchema = z.object({
   // permissive null grant), and the `default` sentinel must resolve to a
   // *declared* default_agent. Non-subject projects keep the v1 adopt-to-govern
   // behavior (absence of `[[agents]]` → unrestricted) untouched.
-  KORTIX_REQUIRE_DECLARED_AGENTS: optBoolFalse,
+  ZED_REQUIRE_DECLARED_AGENTS: optBoolFalse,
 
   // Supabase Storage bucket holding the durable per-sandbox backup bundle
   // (workspace files + OpenCode chat-history store). Source for rehydrate.
@@ -294,8 +294,8 @@ const envSchema = z.object({
   // Optional banner image rendered at the top of the App Home tab. Must be a
   // public HTTPS URL Slack can fetch (no auth). Recommended 1600×400 PNG.
   SLACK_HOME_HERO_URL: optStr,
-  // Per-Slack-user identity. Default-on: each sender must link their own Kortix
-  // account via `/kortix login` and the agent runs AS them; unlinked senders
+  // Per-Slack-user identity. Default-on: each sender must link their own Zed
+  // account via `/zed login` and the agent runs AS them; unlinked senders
   // are blocked. Set explicitly to "false" only for legacy fallback where
   // Slack messages should run as the bound project owner.
   SLACK_REQUIRE_USER_IDENTITY: optBoolTrue,
@@ -306,7 +306,7 @@ const envSchema = z.object({
   AGENTMAIL_WEBHOOK_SECRET: optStr,
 
   // ── Channels — Microsoft Teams adapter (optional) ────────────────────────
-  // One Kortix-owned multi-tenant Azure AD bot app. The same app id/password
+  // One Zed-owned multi-tenant Azure AD bot app. The same app id/password
   // serve every tenant; the per-conversation tenant id arrives on each inbound
   // activity. Outbound auth is a short-lived AAD token minted per scope at call
   // time (channels/teams-auth.ts) — there is no static bot token to store.
@@ -323,12 +323,12 @@ const envSchema = z.object({
   TEAMS_REQUIRE_USER_IDENTITY: optBoolTrue,
   // Whether the Teams channel is offered is NOT an operator env var — it is the
   // per-project `teams` feature flag (feature-flags/registry.ts).
-  TEAMS_APP_NAME: optStrDefault('Kortix'),
+  TEAMS_APP_NAME: optStrDefault('Zed'),
 
   // ── LLM Providers (optional — only needed in cloud mode) ─────────────────
   OPENROUTER_API_URL: optUrl('https://openrouter.ai/api/v1'),
   // Single OpenRouter key for BOTH the router (/v1/router) and the managed LLM
-  // gateway (/v1/llm). The gateway used to read a separate KORTIX_OPENROUTER_API_KEY
+  // gateway (/v1/llm). The gateway used to read a separate ZED_OPENROUTER_API_KEY
   // — consolidated onto this one var.
   OPENROUTER_API_KEY: optStr,
   // AsterLab OpenAI-compatible endpoint for the managed GLM 5.2 route.
@@ -336,23 +336,23 @@ const envSchema = z.object({
   // Manager bundle. Self-host deployments leave it unset.
   ASTER_API_URL: optUrl('https://api.asterlab.ai/v1'),
   ASTER_API_KEY: optStr,
-  // Managed LLM gateway (/v1/llm) — the `kortix` OpenCode provider routes every
+  // Managed LLM gateway (/v1/llm) — the `zed` OpenCode provider routes every
   // sandbox model call here. Off by default.
   LLM_GATEWAY_ENABLED: optBoolFalse,
-  // CLOUD-ONLY. Whether KORTIX's own managed model lineup exists on this
-  // deployment. The lineup routes through Kortix's shared Bedrock, AsterLab,
-  // and OpenRouter credentials. Kortix bills each route as platform credits.
+  // CLOUD-ONLY. Whether ZED's own managed model lineup exists on this
+  // deployment. The lineup routes through Zed's shared Bedrock, AsterLab,
+  // and OpenRouter credentials. Zed bills each route as platform credits.
   // This flag is independent of
   // LLM_GATEWAY_ENABLED above: a self-host still runs the gateway for its own
   // BYOK routing (every sandbox model call goes through `/v1/llm`), it just
-  // must never see or route to Kortix's shared credentials. When unset it
-  // follows KORTIX_BILLING_INTERNAL_ENABLED (derived below): billing on =
+  // must never see or route to Zed's shared credentials. When unset it
+  // follows ZED_BILLING_INTERNAL_ENABLED (derived below): billing on =
   // managed cloud where the managed lineup is the product; billing off =
   // self-host where it must stay dark. An explicit true/false always wins.
   // See RUNTIME_MANAGED_MODELS (managed-models.ts) and managedCandidates()
   // (descriptors.ts) — both are gated on this and read no managed credentials
   // when off.
-  KORTIX_MANAGED_PROVIDER_ENABLED: optBoolUnset,
+  ZED_MANAGED_PROVIDER_ENABLED: optBoolUnset,
   // Fleet default for projects with no explicit per-project override. Defaults
   // ON: wherever the gateway is available (master switch above), the managed
   // gateway is the default routing mechanism and every project inherits it
@@ -361,7 +361,7 @@ const envSchema = z.object({
   // this value — and an operator can set LLM_GATEWAY_DEFAULT_ENABLED=false to
   // opt a whole environment back to native-by-default.
   LLM_GATEWAY_DEFAULT_ENABLED: optBoolTrue,
-  // Empty = the in-API gateway at `${KORTIX_URL}/v1/llm`. Set to a standalone
+  // Empty = the in-API gateway at `${ZED_URL}/v1/llm`. Set to a standalone
   // gateway's public base (…/v1/llm) to route every sandbox model call there.
   LLM_GATEWAY_BASE_URL: optStr,
   // Runtime routing is control-plane configuration, not a model-catalog
@@ -379,17 +379,17 @@ const envSchema = z.object({
   LLM_GATEWAY_CATALOG_URL: optUrl('https://models.dev/api.json'),
   // BYOK resilience: when a user's own provider key hits a rate-limit / quota /
   // billing error (429/402/403), fall over to THIS managed model (billed as
-  // Kortix credits) so the turn survives instead of erroring. Empty disables.
+  // Zed credits) so the turn survives instead of erroring. Empty disables.
   LLM_GATEWAY_BYOK_FALLBACK_MODEL: optStrDefault('claude-sonnet-4.6'),
   // Dev: reverse-proxy /v1/llm-gateway/* to a standalone gateway on this port,
   // so sandboxes reach it through the API's own tunnel (no separate tunnel).
   LLM_GATEWAY_PROXY_PORT: optInt(0),
   // Where the /v1/llm-gateway/* reverse-proxy forwards. Defaults to
   // 127.0.0.1:LLM_GATEWAY_PROXY_PORT (local, gateway same host). In K8s set to
-  // the in-cluster gateway service, e.g. http://kortix-gateway:8090, so the
+  // the in-cluster gateway service, e.g. http://zed-gateway:8090, so the
   // gateway stays internal and sandboxes reach it via the API's public origin.
   LLM_GATEWAY_PROXY_TARGET: optStr,
-  // AWS Bedrock — the managed ("Kortix") models route here via a Bedrock API key
+  // AWS Bedrock — the managed ("Zed") models route here via a Bedrock API key
   // (bearer). Region selects the bedrock-runtime endpoint; the key is an IAM
   // service-specific credential for bedrock.amazonaws.com.
   AWS_BEDROCK_REGION: optStr,
@@ -438,11 +438,11 @@ const envSchema = z.object({
   // leaving it for the lazy, pressure-gated quota GC. Keeps steady state at ~1
   // snapshot per lineage so the org-wide 100-snapshot quota can't fill with
   // stale builds (dev auto-deploys churn the default ~20×/day). Best-effort;
-  // only deletes managed (kortix-default-/tpl-/wproj-) names that no other
+  // only deletes managed (zed-default-/tpl-/wproj-) names that no other
   // template row still references. On by default; boot auto-heal covers the rare
   // cross-env race where another env's row pointed at the reaped (identical) name.
-  KORTIX_SNAPSHOT_REAP_PREDECESSOR: optBoolTrue,
-  // Optional per-project accelerator. When enabled, Kortix bakes the project's
+  ZED_SNAPSHOT_REAP_PREDECESSOR: optBoolTrue,
+  // Optional per-project accelerator. When enabled, Zed bakes the project's
   // default-branch repository into a derivative of the shared platform image.
   // A disabled or failed accelerator never blocks a session. Sessions boot from
   // the shared image and clone the repository into /workspace instead.
@@ -450,7 +450,7 @@ const envSchema = z.object({
   // This switch controls only automatic session-miss and managed-git-push
   // bakes. Provider transitions still prepare their target image explicitly.
   // Default OFF keeps the session path on one shared image per provider.
-  KORTIX_WARM_SNAPSHOT_ENABLED: optBoolFalse,
+  ZED_WARM_SNAPSHOT_ENABLED: optBoolFalse,
   // Per-provider allowlist for per-project warm images of CUSTOM (non-default-
   // slug) templates — see `perProjectWarmEligible` in builder.ts. Defaults to
   // 'platinum' only: Platinum's per-project templates warm-miss 100% of the
@@ -460,13 +460,13 @@ const envSchema = z.object({
   // Daytona custom-template counts. Comma-separated, same syntax and parser as
   // ALLOWED_SANDBOX_PROVIDERS; a provider listed here that isn't itself in
   // ALLOWED_SANDBOX_PROVIDERS is a no-op (intersected below).
-  KORTIX_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS: optStrDefault('platinum'),
+  ZED_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS: optStrDefault('platinum'),
 
   // ── Platinum — Sandbox provisioning (conditional: required if platinum provider enabled) ──
   // Platinum is our own Cloud Hypervisor microVM API. PLATINUM_API_KEY is a
   // pt_live_… key; PLATINUM_API_URL is the control-plane base
   // (https://api.platinum.dev). PLATINUM_TEMPLATE is a ready Platinum template
-  // id to boot sessions from (e.g. kortix-computer) — used as the fallback when
+  // id to boot sessions from (e.g. zed-computer) — used as the fallback when
   // a session hasn't built its own per-project Platinum template.
   PLATINUM_API_KEY: optStr,
   PLATINUM_API_URL: optStr,
@@ -486,7 +486,7 @@ const envSchema = z.object({
 
   // ── Sandbox Platform ──────────────────────────────────────────────────────
   // Public API base URL, without a route suffix. Auto-derived from PORT in local mode.
-  KORTIX_URL: optStr,
+  ZED_URL: optStr,
   ALLOWED_SANDBOX_PROVIDERS: optStrDefault('daytona'),
 
   // ── Sandbox lifecycle (Daytona auto-stop / auto-archive / auto-delete) ────
@@ -516,20 +516,20 @@ const envSchema = z.object({
   //   autodelete → NEVER (-1). A sandbox is only ever removed when a user
   //                explicitly deletes the session — auto-stop + cold archive
   //                make an idle box nearly free, so we never destroy disk.
-  KORTIX_SANDBOX_AUTOSTOP_MINUTES: optInt(15),
-  KORTIX_SANDBOX_TRIGGER_AUTOSTOP_MINUTES: optInt(5),
-  KORTIX_SANDBOX_AUTOARCHIVE_MINUTES: optInt(720), // 12 hours
-  KORTIX_SANDBOX_AUTODELETE_MINUTES: optInt(-1), // never auto-delete
+  ZED_SANDBOX_AUTOSTOP_MINUTES: optInt(15),
+  ZED_SANDBOX_TRIGGER_AUTOSTOP_MINUTES: optInt(5),
+  ZED_SANDBOX_AUTOARCHIVE_MINUTES: optInt(720), // 12 hours
+  ZED_SANDBOX_AUTODELETE_MINUTES: optInt(-1), // never auto-delete
   // The PROVIDER-NATIVE idle timer (Daytona autoStopInterval / Platinum
   // auto_stop_minutes) — a LAST-RESORT backstop for boxes this API can no
   // longer reach, NOT the primary stop. It used to be derived from
-  // KORTIX_SANDBOX_AUTOSTOP_MINUTES above, which welded an idle-policy knob to
+  // ZED_SANDBOX_AUTOSTOP_MINUTES above, which welded an idle-policy knob to
   // a provider-safety knob; see providerAutoStopBackstopMinutes() in
   // platform/providers/index.ts for why the two must move independently.
   // Unrelated to AUTOARCHIVE_MINUTES despite the shared 720: that one is
   // measured from the moment a box STOPS, this one from its last inbound
   // request while running.
-  KORTIX_SANDBOX_PROVIDER_AUTOSTOP_MINUTES: optInt(720), // 12 hours
+  ZED_SANDBOX_PROVIDER_AUTOSTOP_MINUTES: optInt(720), // 12 hours
 
   // ── Internal Service Key (auto-generated if missing — never fails) ───────
   INTERNAL_SERVICE_KEY: optStr,
@@ -560,20 +560,20 @@ const envSchema = z.object({
   TUNNEL_MAX_WS_MESSAGE_SIZE: optInt(5 * 1024 * 1024),
 
   // ── Abuse controls (optional, all have sane defaults) ────────────────────
-  KORTIX_INVITE_ACCEPT_REQS_PER_MIN: optInt(20),
-  KORTIX_PUBLIC_SESSION_SHARE_REQS_PER_MIN: optInt(60),
-  KORTIX_DEMO_REQUEST_REQS_PER_MIN: optInt(10),
-  KORTIX_VOICE_JOIN_LINK_REQS_PER_MIN: optInt(30),
+  ZED_INVITE_ACCEPT_REQS_PER_MIN: optInt(20),
+  ZED_PUBLIC_SESSION_SHARE_REQS_PER_MIN: optInt(60),
+  ZED_DEMO_REQUEST_REQS_PER_MIN: optInt(10),
+  ZED_VOICE_JOIN_LINK_REQS_PER_MIN: optInt(30),
   // Higher than the resolve step above on purpose: the /voice page polls the
   // call transcript for the whole call, so this is per-listener-per-minute
   // traffic, not a one-shot handshake.
-  KORTIX_VOICE_TRANSCRIPT_REQS_PER_MIN: optInt(120),
-  KORTIX_LLM_ROUTER_REQS_PER_MIN_FREE: optInt(60),
-  KORTIX_LLM_ROUTER_REQS_PER_MIN_PAID: optInt(600),
-  KORTIX_PROXY_REQS_PER_MIN: optInt(600),
-  KORTIX_TRIGGER_MAX_PROVISIONING_SESSIONS_PER_PROJECT: optInt(3),
-  KORTIX_TRIGGER_SCHEDULER_ENABLED: optBoolTrue,
-  KORTIX_TRIGGER_SCHEDULER_INTERVAL_MS: optInt(1_000),
+  ZED_VOICE_TRANSCRIPT_REQS_PER_MIN: optInt(120),
+  ZED_LLM_ROUTER_REQS_PER_MIN_FREE: optInt(60),
+  ZED_LLM_ROUTER_REQS_PER_MIN_PAID: optInt(600),
+  ZED_PROXY_REQS_PER_MIN: optInt(600),
+  ZED_TRIGGER_MAX_PROVISIONING_SESSIONS_PER_PROJECT: optInt(3),
+  ZED_TRIGGER_SCHEDULER_ENABLED: optBoolTrue,
+  ZED_TRIGGER_SCHEDULER_INTERVAL_MS: optInt(1_000),
 
   // ── Version / GitHub (optional) ───────────────────────────────────────────
   SANDBOX_VERSION: optStr, // dev override: skip npm registry lookup for latest version
@@ -583,7 +583,7 @@ const envSchema = z.object({
   // Every provider is optional; the transport tries each configured one in
   // EMAIL_PROVIDER_ORDER and falls through on failure. See lib/email/transport.ts.
   EMAIL_PROVIDER_ORDER: optStrDefault('ses,resend,mailtrap'),
-  // AWS SES (SigV4-signed SESv2 HTTP API; IAM user kortix-ses-sender).
+  // AWS SES (SigV4-signed SESv2 HTTP API; IAM user zed-ses-sender).
   AWS_SES_REGION: optStrDefault('us-east-2'),
   AWS_SES_ACCESS_KEY_ID: optStr,
   AWS_SES_SECRET_ACCESS_KEY: optStr,
@@ -594,15 +594,15 @@ const envSchema = z.object({
   // address is preserved as Reply-To.
   RESEND_FROM_EMAIL: optStr,
   MAILTRAP_API_TOKEN: optStr,
-  MAILTRAP_FROM_EMAIL: optStrDefault('noreply@kortix.com'),
-  MAILTRAP_FROM_NAME: optStrDefault('Kortix'),
+  MAILTRAP_FROM_EMAIL: optStrDefault('noreply@zed.com'),
+  MAILTRAP_FROM_NAME: optStrDefault('Zed'),
   // Where public demo-request / "book a demo" lead notifications are sent.
   // Comma-separated list; every address gets every submission.
-  DEMO_LEAD_NOTIFY_EMAIL: optStrDefault('marko@kortix.ai,hey@kortix.ai'),
-  // Sender for those notifications. kortix.ai (not the global MAILTRAP_FROM_
-  // EMAIL on kortix.com) so the send is DKIM-aligned with the kortix.ai
-  // recipient inboxes — the kortix.com sender was landing in spam.
-  DEMO_LEAD_FROM_EMAIL: optStrDefault('hi@kortix.ai'),
+  DEMO_LEAD_NOTIFY_EMAIL: optStrDefault('marko@zed.ai,hey@zed.ai'),
+  // Sender for those notifications. zed.ai (not the global MAILTRAP_FROM_
+  // EMAIL on zed.com) so the send is DKIM-aligned with the zed.ai
+  // recipient inboxes — the zed.com sender was landing in spam.
+  DEMO_LEAD_FROM_EMAIL: optStrDefault('hi@zed.ai'),
 
   // ── Mailtrap contact sync (signup → automation lists) ─────────────────────
   // The email automations themselves live in Mailtrap's Automations UI; the
@@ -621,9 +621,9 @@ const envSchema = z.object({
 
   // ── Stray env vars used directly in other files (centralized here) ───────
   CORS_ALLOWED_ORIGINS: optStr,
-  KORTIX_MASTER_URL: optStr,
+  ZED_MASTER_URL: optStr,
   OPENCODE_URL: optStr,
-  KORTIX_DATA_DIR: optStr,
+  ZED_DATA_DIR: optStr,
 });
 
 // ─── Validation + Conditional Checks ────────────────────────────────────────
@@ -645,7 +645,7 @@ export const KNOWN_PROVIDERS: readonly SandboxProviderName[] = [
  * returned both when `raw` is empty and when every entry in it is unrecognised
  * — kept as a parameter (rather than hardcoding `['daytona']`) so callers whose
  * empty/all-invalid answer should mean "nothing enabled" (e.g.
- * KORTIX_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS) don't silently inherit
+ * ZED_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS) don't silently inherit
  * ALLOWED_SANDBOX_PROVIDERS' "default to daytona" safety belt.
  */
 export function parseAllowedProviders(
@@ -695,12 +695,12 @@ function validateEnv(): z.infer<typeof envSchema> {
   // a clear error until the key lands.
   const providers = parseAllowedProviders((raw as any).ALLOWED_SANDBOX_PROVIDERS || '');
   const billingOn =
-    (raw as any).KORTIX_BILLING_INTERNAL_ENABLED === 'true' ||
-    (raw as any).KORTIX_BILLING_INTERNAL_ENABLED === true;
+    (raw as any).ZED_BILLING_INTERNAL_ENABLED === 'true' ||
+    (raw as any).ZED_BILLING_INTERNAL_ENABLED === true;
   const providerKeyLevel: 'error' | 'warn' = billingOn ? 'error' : 'warn';
   const providerKeySuffix = billingOn
     ? ''
-    : ' — agent sessions will fail until it is set (kortix self-host env set ...)';
+    : ' — agent sessions will fail until it is set (zed self-host env set ...)';
   if (providers.includes('daytona')) {
     if (!raw.DAYTONA_API_KEY)
       issues.push({
@@ -745,19 +745,19 @@ function validateEnv(): z.infer<typeof envSchema> {
 
   // ── Conditional: Billing enabled → need Stripe keys ────────────────────
   const billingWillBeEnabled =
-    (raw as any).KORTIX_BILLING_INTERNAL_ENABLED === 'true' ||
-    (raw as any).KORTIX_BILLING_INTERNAL_ENABLED === true;
+    (raw as any).ZED_BILLING_INTERNAL_ENABLED === 'true' ||
+    (raw as any).ZED_BILLING_INTERNAL_ENABLED === true;
   if (billingWillBeEnabled) {
     if (!raw.STRIPE_SECRET_KEY)
       issues.push({
         var: 'STRIPE_SECRET_KEY',
-        message: 'Required when KORTIX_BILLING_INTERNAL_ENABLED=true',
+        message: 'Required when ZED_BILLING_INTERNAL_ENABLED=true',
         level: 'error',
       });
     if (!raw.STRIPE_WEBHOOK_SECRET)
       issues.push({
         var: 'STRIPE_WEBHOOK_SECRET',
-        message: 'Required when KORTIX_BILLING_INTERNAL_ENABLED=true',
+        message: 'Required when ZED_BILLING_INTERNAL_ENABLED=true',
         level: 'error',
       });
   }
@@ -773,27 +773,27 @@ function validateEnv(): z.infer<typeof envSchema> {
     });
   }
 
-  // ── Conditional: KORTIX_URL — required for sandbox routing ──────────────
+  // ── Conditional: ZED_URL — required for sandbox routing ──────────────
   // Auto-derive from PORT for self-host/dev — fatal when billing is enabled
   // (you can't bill against an unreachable origin).
-  if (!raw.KORTIX_URL) {
+  if (!raw.ZED_URL) {
     const port = (raw as any).PORT || '8008';
     if (billingWillBeEnabled) {
       issues.push({
-        var: 'KORTIX_URL',
+        var: 'ZED_URL',
         message:
-          'Required when KORTIX_BILLING_INTERNAL_ENABLED=true — sandbox routing and health checks will break',
+          'Required when ZED_BILLING_INTERNAL_ENABLED=true — sandbox routing and health checks will break',
         level: 'error',
       });
     } else {
-      // Auto-derive so dev/self-host "just works". KORTIX_URL is the public
+      // Auto-derive so dev/self-host "just works". ZED_URL is the public
       // API origin/base; individual callers append /v1, /v1/router, etc.
       const derived = `http://localhost:${port}`;
-      process.env.KORTIX_URL = derived;
-      if (result.success) (result.data as any).KORTIX_URL = derived;
-      console.warn(`[config] KORTIX_URL not set — auto-derived: ${derived}`);
+      process.env.ZED_URL = derived;
+      if (result.success) (result.data as any).ZED_URL = derived;
+      console.warn(`[config] ZED_URL not set — auto-derived: ${derived}`);
       issues.push({
-        var: 'KORTIX_URL',
+        var: 'ZED_URL',
         message: `Not set — auto-derived to ${derived} (add to .env to silence this)`,
         level: 'warn',
       });
@@ -824,7 +824,7 @@ function validateEnv(): z.infer<typeof envSchema> {
   if (warnings.length > 0) {
     console.warn('');
     console.warn('\x1b[33m' + '='.repeat(70) + '\x1b[0m');
-    console.warn('\x1b[33m  kortix-api: Environment warnings\x1b[0m');
+    console.warn('\x1b[33m  zed-api: Environment warnings\x1b[0m');
     console.warn('\x1b[33m' + '='.repeat(70) + '\x1b[0m');
     for (const w of warnings) {
       console.warn(`\x1b[33m  ${w.var.padEnd(40)} ${w.message}\x1b[0m`);
@@ -837,7 +837,7 @@ function validateEnv(): z.infer<typeof envSchema> {
     console.error('');
     console.error('\x1b[31m' + '='.repeat(70) + '\x1b[0m');
     console.error(
-      '\x1b[31m  kortix-api: Environment validation FAILED — server cannot start\x1b[0m',
+      '\x1b[31m  zed-api: Environment validation FAILED — server cannot start\x1b[0m',
     );
     console.error('\x1b[31m' + '='.repeat(70) + '\x1b[0m');
     for (const e of errors) {
@@ -872,7 +872,7 @@ const allowedProviders = parseAllowedProviders(env.ALLOWED_SANDBOX_PROVIDERS);
 // Intersected with `allowedProviders`: a provider listed here that isn't itself
 // enabled globally must never become "enabled for custom-template warming only".
 const customTemplateWarmProviders = parseAllowedProviders(
-  env.KORTIX_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS,
+  env.ZED_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS,
   ['platinum'],
 ).filter((p) => allowedProviders.includes(p));
 
@@ -882,15 +882,15 @@ export const config = {
   PORT: env.PORT,
 
   // ─── Internal Deployment Controls ─────────────────────────────────────────
-  INTERNAL_KORTIX_ENV: env.INTERNAL_KORTIX_ENV as InternalKortixEnv,
+  INTERNAL_ZED_ENV: env.INTERNAL_ZED_ENV as InternalZedEnv,
   // Single master switch — see schema docstring above.
-  KORTIX_BILLING_INTERNAL_ENABLED: env.KORTIX_BILLING_INTERNAL_ENABLED,
-  KORTIX_WORKERS_ENABLED: env.KORTIX_WORKERS_ENABLED,
+  ZED_BILLING_INTERNAL_ENABLED: env.ZED_BILLING_INTERNAL_ENABLED,
+  ZED_WORKERS_ENABLED: env.ZED_WORKERS_ENABLED,
   SESSION_TITLE_GENERATION_ENABLED: env.SESSION_TITLE_GENERATION_ENABLED,
-  KORTIX_TEMPLATES_ENABLED: env.KORTIX_TEMPLATES_ENABLED,
+  ZED_TEMPLATES_ENABLED: env.ZED_TEMPLATES_ENABLED,
   OPENAPI_PUBLIC_DOCS: env.OPENAPI_PUBLIC_DOCS,
   ENTERPRISE_LICENSE_AVAILABLE: env.ENTERPRISE_LICENSE_AVAILABLE,
-  KORTIX_RESTRICT_ACCOUNT_CREATION: env.KORTIX_RESTRICT_ACCOUNT_CREATION,
+  ZED_RESTRICT_ACCOUNT_CREATION: env.ZED_RESTRICT_ACCOUNT_CREATION,
 
   // ─── Database ──────────────────────────────────────────────────────────────
   DATABASE_URL: env.DATABASE_URL,
@@ -935,10 +935,10 @@ export const config = {
   CODE_STORAGE_PRIVATE_KEY: env.CODE_STORAGE_PRIVATE_KEY,
   CODE_STORAGE_API_BASE: env.CODE_STORAGE_API_BASE,
   CODE_STORAGE_GIT_HOST: env.CODE_STORAGE_GIT_HOST,
-  KORTIX_GIT_PROXY: env.KORTIX_GIT_PROXY,
-  KORTIX_ENFORCE_SESSION_AGENT_LOCK: env.KORTIX_ENFORCE_SESSION_AGENT_LOCK,
-  KORTIX_ENFORCE_AGENT_SECRET_GRANT_LOCK: env.KORTIX_ENFORCE_AGENT_SECRET_GRANT_LOCK,
-  KORTIX_REQUIRE_DECLARED_AGENTS: env.KORTIX_REQUIRE_DECLARED_AGENTS,
+  ZED_GIT_PROXY: env.ZED_GIT_PROXY,
+  ZED_ENFORCE_SESSION_AGENT_LOCK: env.ZED_ENFORCE_SESSION_AGENT_LOCK,
+  ZED_ENFORCE_AGENT_SECRET_GRANT_LOCK: env.ZED_ENFORCE_AGENT_SECRET_GRANT_LOCK,
+  ZED_REQUIRE_DECLARED_AGENTS: env.ZED_REQUIRE_DECLARED_AGENTS,
 
   // ─── Legacy migration ─────────────────────────────────────────────────────
   LEGACY_MIGRATION_BACKUP_BUCKET: env.LEGACY_MIGRATION_BACKUP_BUCKET,
@@ -975,8 +975,8 @@ export const config = {
   LLM_GATEWAY_ENABLED: env.LLM_GATEWAY_ENABLED,
   // Unset → follow billing (cloud keeps its revenue lineup even if the env
   // blob misses the var; self-host stays off). Explicit value always wins.
-  KORTIX_MANAGED_PROVIDER_ENABLED:
-    env.KORTIX_MANAGED_PROVIDER_ENABLED ?? env.KORTIX_BILLING_INTERNAL_ENABLED,
+  ZED_MANAGED_PROVIDER_ENABLED:
+    env.ZED_MANAGED_PROVIDER_ENABLED ?? env.ZED_BILLING_INTERNAL_ENABLED,
   LLM_GATEWAY_DEFAULT_ENABLED: env.LLM_GATEWAY_DEFAULT_ENABLED,
   LLM_GATEWAY_BASE_URL: env.LLM_GATEWAY_BASE_URL,
   LLM_GATEWAY_DEFAULT_MODEL: env.LLM_GATEWAY_DEFAULT_MODEL,
@@ -1014,15 +1014,15 @@ export const config = {
   DAYTONA_SERVER_URL: env.DAYTONA_SERVER_URL,
   DAYTONA_TARGET: env.DAYTONA_TARGET,
   DAYTONA_WEBHOOK_SECRET: env.DAYTONA_WEBHOOK_SECRET,
-  KORTIX_SNAPSHOT_REAP_PREDECESSOR: env.KORTIX_SNAPSHOT_REAP_PREDECESSOR,
-  KORTIX_WARM_SNAPSHOT_ENABLED: env.KORTIX_WARM_SNAPSHOT_ENABLED,
+  ZED_SNAPSHOT_REAP_PREDECESSOR: env.ZED_SNAPSHOT_REAP_PREDECESSOR,
+  ZED_WARM_SNAPSHOT_ENABLED: env.ZED_WARM_SNAPSHOT_ENABLED,
 
   // Sandbox lifecycle intervals (minutes) — see schema comment above.
-  KORTIX_SANDBOX_AUTOSTOP_MINUTES: env.KORTIX_SANDBOX_AUTOSTOP_MINUTES,
-  KORTIX_SANDBOX_TRIGGER_AUTOSTOP_MINUTES: env.KORTIX_SANDBOX_TRIGGER_AUTOSTOP_MINUTES,
-  KORTIX_SANDBOX_AUTOARCHIVE_MINUTES: env.KORTIX_SANDBOX_AUTOARCHIVE_MINUTES,
-  KORTIX_SANDBOX_AUTODELETE_MINUTES: env.KORTIX_SANDBOX_AUTODELETE_MINUTES,
-  KORTIX_SANDBOX_PROVIDER_AUTOSTOP_MINUTES: env.KORTIX_SANDBOX_PROVIDER_AUTOSTOP_MINUTES,
+  ZED_SANDBOX_AUTOSTOP_MINUTES: env.ZED_SANDBOX_AUTOSTOP_MINUTES,
+  ZED_SANDBOX_TRIGGER_AUTOSTOP_MINUTES: env.ZED_SANDBOX_TRIGGER_AUTOSTOP_MINUTES,
+  ZED_SANDBOX_AUTOARCHIVE_MINUTES: env.ZED_SANDBOX_AUTOARCHIVE_MINUTES,
+  ZED_SANDBOX_AUTODELETE_MINUTES: env.ZED_SANDBOX_AUTODELETE_MINUTES,
+  ZED_SANDBOX_PROVIDER_AUTOSTOP_MINUTES: env.ZED_SANDBOX_PROVIDER_AUTOSTOP_MINUTES,
 
   PLATINUM_API_KEY: env.PLATINUM_API_KEY,
   PLATINUM_API_URL: env.PLATINUM_API_URL,
@@ -1032,19 +1032,19 @@ export const config = {
   E2B_DOMAIN: env.E2B_DOMAIN,
   E2B_TEMPLATE: env.E2B_TEMPLATE,
   // ─── Sandbox Provisioning (Platform) ──────────────────────────────────────
-  KORTIX_URL: env.KORTIX_URL,
+  ZED_URL: env.ZED_URL,
   ALLOWED_SANDBOX_PROVIDERS: allowedProviders,
-  KORTIX_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS: customTemplateWarmProviders,
+  ZED_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS: customTemplateWarmProviders,
 
   /**
-   * INTERNAL_SERVICE_KEY -- direction: kortix-api -> sandbox.
+   * INTERNAL_SERVICE_KEY -- direction: zed-api -> sandbox.
    *
-   * This is how kortix-api authenticates itself TO the sandbox. Every request
-   * from kortix-api to the sandbox (proxy, cron, health, queue drain, etc.)
+   * This is how zed-api authenticates itself TO the sandbox. Every request
+   * from zed-api to the sandbox (proxy, cron, health, queue drain, etc.)
    * includes `Authorization: Bearer <INTERNAL_SERVICE_KEY>`. The sandbox's
-   * kortix-master middleware validates it.
+   * zed-master middleware validates it.
    *
-   * Counterpart: KORTIX_TOKEN goes the other direction (sandbox -> kortix-api).
+   * Counterpart: ZED_TOKEN goes the other direction (sandbox -> zed-api).
    *
    * Auto-generated at startup if not provided -- always present.
    * Persisted to .env so the same key survives process restarts.
@@ -1106,18 +1106,18 @@ export const config = {
   TUNNEL_MAX_WS_MESSAGE_SIZE: env.TUNNEL_MAX_WS_MESSAGE_SIZE,
 
   // ─── Abuse Controls ───────────────────────────────────────────────────────
-  KORTIX_INVITE_ACCEPT_REQS_PER_MIN: env.KORTIX_INVITE_ACCEPT_REQS_PER_MIN,
-  KORTIX_PUBLIC_SESSION_SHARE_REQS_PER_MIN: env.KORTIX_PUBLIC_SESSION_SHARE_REQS_PER_MIN,
-  KORTIX_DEMO_REQUEST_REQS_PER_MIN: env.KORTIX_DEMO_REQUEST_REQS_PER_MIN,
-  KORTIX_VOICE_JOIN_LINK_REQS_PER_MIN: env.KORTIX_VOICE_JOIN_LINK_REQS_PER_MIN,
-  KORTIX_VOICE_TRANSCRIPT_REQS_PER_MIN: env.KORTIX_VOICE_TRANSCRIPT_REQS_PER_MIN,
-  KORTIX_LLM_ROUTER_REQS_PER_MIN_FREE: env.KORTIX_LLM_ROUTER_REQS_PER_MIN_FREE,
-  KORTIX_LLM_ROUTER_REQS_PER_MIN_PAID: env.KORTIX_LLM_ROUTER_REQS_PER_MIN_PAID,
-  KORTIX_PROXY_REQS_PER_MIN: env.KORTIX_PROXY_REQS_PER_MIN,
-  KORTIX_TRIGGER_MAX_PROVISIONING_SESSIONS_PER_PROJECT:
-    env.KORTIX_TRIGGER_MAX_PROVISIONING_SESSIONS_PER_PROJECT,
-  KORTIX_TRIGGER_SCHEDULER_ENABLED: env.KORTIX_TRIGGER_SCHEDULER_ENABLED,
-  KORTIX_TRIGGER_SCHEDULER_INTERVAL_MS: env.KORTIX_TRIGGER_SCHEDULER_INTERVAL_MS,
+  ZED_INVITE_ACCEPT_REQS_PER_MIN: env.ZED_INVITE_ACCEPT_REQS_PER_MIN,
+  ZED_PUBLIC_SESSION_SHARE_REQS_PER_MIN: env.ZED_PUBLIC_SESSION_SHARE_REQS_PER_MIN,
+  ZED_DEMO_REQUEST_REQS_PER_MIN: env.ZED_DEMO_REQUEST_REQS_PER_MIN,
+  ZED_VOICE_JOIN_LINK_REQS_PER_MIN: env.ZED_VOICE_JOIN_LINK_REQS_PER_MIN,
+  ZED_VOICE_TRANSCRIPT_REQS_PER_MIN: env.ZED_VOICE_TRANSCRIPT_REQS_PER_MIN,
+  ZED_LLM_ROUTER_REQS_PER_MIN_FREE: env.ZED_LLM_ROUTER_REQS_PER_MIN_FREE,
+  ZED_LLM_ROUTER_REQS_PER_MIN_PAID: env.ZED_LLM_ROUTER_REQS_PER_MIN_PAID,
+  ZED_PROXY_REQS_PER_MIN: env.ZED_PROXY_REQS_PER_MIN,
+  ZED_TRIGGER_MAX_PROVISIONING_SESSIONS_PER_PROJECT:
+    env.ZED_TRIGGER_MAX_PROVISIONING_SESSIONS_PER_PROJECT,
+  ZED_TRIGGER_SCHEDULER_ENABLED: env.ZED_TRIGGER_SCHEDULER_ENABLED,
+  ZED_TRIGGER_SCHEDULER_INTERVAL_MS: env.ZED_TRIGGER_SCHEDULER_INTERVAL_MS,
 
   // ─── Version / GitHub ──────────────────────────────────────────────────────
   /** Dev override: force a specific sandbox version via env var. */
@@ -1144,9 +1144,9 @@ export const config = {
 
   // ─── Stray env vars (centralized from other files) ────────────────────────
   CORS_ALLOWED_ORIGINS: env.CORS_ALLOWED_ORIGINS,
-  KORTIX_MASTER_URL: env.KORTIX_MASTER_URL,
+  ZED_MASTER_URL: env.ZED_MASTER_URL,
   OPENCODE_URL: env.OPENCODE_URL,
-  KORTIX_DATA_DIR: env.KORTIX_DATA_DIR,
+  ZED_DATA_DIR: env.ZED_DATA_DIR,
 
   // ─── Helper Methods ────────────────────────────────────────────────────────
 
@@ -1203,18 +1203,18 @@ export const config = {
    * time, so this alone is the full gate.
    */
   isCustomTemplateWarmEligible(provider: SandboxProviderName): boolean {
-    return this.KORTIX_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS.includes(provider);
+    return this.ZED_WARM_SNAPSHOT_CUSTOM_TEMPLATE_PROVIDERS.includes(provider);
   },
 };
 
 // ─── Billing Markup Constants ────────────────────────────────────────────────
 //
 // Two pricing modes based on whose API key is used:
-//   * Kortix keys (user uses our keys):  1.2x provider cost (20% markup)
+//   * Zed keys (user uses our keys):  1.2x provider cost (20% markup)
 //   * User's own keys (passthrough):     0.1x provider cost (10% platform fee)
 
-/** Markup when Kortix provides the API key. */
-export const KORTIX_MARKUP = 1.2;
+/** Markup when Zed provides the API key. */
+export const ZED_MARKUP = 1.2;
 
 /** Platform fee when user provides their own API key. */
 export const PLATFORM_FEE_MARKUP = 0.1;

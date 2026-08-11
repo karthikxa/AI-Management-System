@@ -4,7 +4,7 @@
 set lock_timeout = '2s';
 -- Deliberately raised from the 30s template default. The predicate below reads
 -- metadata->>'ledger_type', which no index covers, so this is a sequential scan
--- of kortix.credit_ledger. The scan itself blocks nothing: it takes ACCESS SHARE,
+-- of zed.credit_ledger. The scan itself blocks nothing: it takes ACCESS SHARE,
 -- and the UPDATE takes ROW EXCLUSIVE plus row locks on the ~1,609 matched rows
 -- only. Neither conflicts with ordinary INSERT/UPDATE traffic from the API, so a
 -- long statement here costs wall-clock, not availability. lock_timeout stays at
@@ -15,7 +15,7 @@ set statement_timeout = '300s';
 -- WHY
 --
 -- On 2026-07-30 a hand-run entitlement reconciliation wrote clawback rows into
--- kortix.credit_ledger with type = 'usage' while stamping
+-- zed.credit_ledger with type = 'usage' while stamping
 -- metadata->>'ledger_type' = 'admin_debit'. The row therefore says two different
 -- things about the same money.
 --
@@ -71,7 +71,7 @@ DO $$
 DECLARE
   v_updated bigint;
 BEGIN
-  UPDATE kortix.credit_ledger
+  UPDATE zed.credit_ledger
   SET type = 'admin_debit'
   WHERE type = 'usage'
     AND metadata ->> 'ledger_type' = 'admin_debit';

@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { KortixLoader } from '@/components/ui/kortix-loader';
+import { ZedLoader } from '@/components/ui/zed-loader';
 import { cn } from '@/lib/utils';
 import {
   FileXlsIcon as FileSpreadsheet,
@@ -106,7 +106,7 @@ export function XlsxRenderer({
   if (!src) {
     return (
       <div className={cn('flex h-full w-full items-center justify-center', className)}>
-        <KortixLoader size="medium" />
+        <ZedLoader size="medium" />
       </div>
     );
   }

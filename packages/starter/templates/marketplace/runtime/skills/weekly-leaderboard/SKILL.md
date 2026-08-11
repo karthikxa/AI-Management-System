@@ -12,7 +12,7 @@ streaks and deltas, and a standup thread prompt for async input. Git and Slack
 are the evidence; the output leads with outcomes but includes hard numbers.
 
 The `leaderboard` agent is a thin wrapper around this skill, fired by the
-`weekly-leaderboard` cron in `kortix.yaml`.
+`weekly-leaderboard` cron in `zed.yaml`.
 </overview>
 
 <window>
@@ -62,7 +62,7 @@ done
 
 ### 2. Prior week (deltas + streaks)
 
-Read `.kortix/memory/weekly-digests.md` — the `### PR Leaderboard` and
+Read `.zed/memory/weekly-digests.md` — the `### PR Leaderboard` and
 `### Streaks` of the most recent entry — for last week's per-person counts
 (compute `+N` / `-N`) and current streak counts.
 
@@ -127,7 +127,7 @@ didn't map to a PR.
 
 <ledger>
 After posting, append a `## Week of YYYY-MM-DD` entry to
-`.kortix/memory/weekly-digests.md` with: a **PR Leaderboard** table
+`.zed/memory/weekly-digests.md` with: a **PR Leaderboard** table
 (Person | PRs | Delta | Streak) + a bot/agent line, a **Streaks** list, the
 **standup thread ts** (+ channel id), and short **Product / Decisions / Open
 questions** notes. Keep the last **8 weeks**; drop the oldest when you exceed it.
@@ -141,7 +141,7 @@ Post to {{slack_channel}}. Resolve the id and join if needed:
 chan=$(slack channels --limit 1000 | grep -i "$(echo '{{slack_channel}}' | tr -d '#')" | awk '{print $1}' | head -1)
 slack join --channel "$chan" 2>/dev/null || true
 ```
-**Main post:** Block Kit with sections 1–5 + 7. Load `kortix-slack` for the exact
+**Main post:** Block Kit with sections 1–5 + 7. Load `zed-slack` for the exact
 `slack send --channel <id> --blocks-file <path> --text <fallback>` mechanics.
 Pass `--channel` explicitly (cron session, no active Slack turn); always include a
 plain `--text` fallback. **Standup thread:** capture the sent message `ts`, then

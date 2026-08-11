@@ -3,8 +3,8 @@
  * process — see runtime.ts's file header) calls back into.
  *
  * Auth here is completely different from every other route on `projectsApp`:
- * the caller is the LiveKit worker process, not a Kortix session, so it
- * authenticates with the per-call `kortix_api_token` minted in `startCall`
+ * the caller is the LiveKit worker process, not a Zed session, so it
+ * authenticates with the per-call `zed_api_token` minted in `startCall`
  * and handed to it via the room's metadata (see runtime.ts's
  * `VoiceRoomMetadata`) — never session/PAT auth. `verifyCallApiToken`
  * (worker-token.ts) is the whole check: it's an HMAC over the call id, and
@@ -13,20 +13,20 @@
  *
  * `voiceMcpRoutes` is mounted standalone BEFORE `projectsApp` (see
  * index.ts's comment) specifically so this route skips `projectsApp`'s
- * `.use('/*', supabaseAuth)` — a worker token is not a Kortix session and
+ * `.use('/*', supabaseAuth)` — a worker token is not a Zed session and
  * `resolveProjectPrincipal` would 401 it regardless of validity. There used
- * to be a SECOND, Kortix-agent-facing MCP route here too
+ * to be a SECOND, Zed-agent-facing MCP route here too
  * (`/:projectId/mcp/voice`, session/PAT-authed, guarded by its own
  * `voiceMcpRoutes.use('/:projectId/mcp/voice', supabaseAuth)`) for the
  * agent's own voice_spawn/voice_read/send_prompt/run_command/voice_end
- * tools; that moved to the `kortix_voice` channel connector
+ * tools; that moved to the `zed_voice` channel connector
  * (connector/channels.ts, connector/db-deps.ts's executeVoiceCall) so it runs
  * through the connector gateway like every other connector call — policies,
  * approvals, and the audit trail included, none of which a direct MCP route
  * ever had. This file and mcp.ts are now exclusively the worker's way in. If
  * a second, differently-authed MCP ever needs to live here again, give it
  * its own path rather than layering another `.use()` onto this one: reusing
- * a path that also carries `supabaseAuth` for a caller that isn't a Kortix
+ * a path that also carries `supabaseAuth` for a caller that isn't a Zed
  * session is exactly the mistake that used to 401 a perfectly valid worker
  * token against `resolveProjectPrincipal`.
  */
@@ -35,7 +35,7 @@ import type { Context } from 'hono';
 import { errors, json, makeOpenApiApp } from '../../openapi';
 import { roomNameForCall } from './livekit';
 import { handleVoiceMcp, type VoiceMcpContext } from './mcp';
-import { appendTurn, askKortix, type VoiceCall } from './runtime';
+import { appendTurn, askZed, type VoiceCall } from './runtime';
 import { runCommandInSandbox } from './run-command';
 import { verifyCallApiToken } from './worker-token';
 
@@ -44,7 +44,7 @@ export const voiceMcpRoutes = makeOpenApiApp();
 /**
  * Builds the worker's MCP context straight from the request: the HMAC proves
  * this caller owns this call, and projectId/sessionId are both in the path —
- * which is everything askKortix/runCommandInSandbox/appendTurn use. The call
+ * which is everything askZed/runCommandInSandbox/appendTurn use. The call
  * id IS the session id and the room name derives from it, so there is
  * nothing to look up (no in-process call registry — see runtime.ts's
  * `isCallLive` doc for why one used to exist and why it was wrong).
@@ -69,7 +69,7 @@ function buildWorkerContext(c: Context, projectId: string, sessionId: string): V
     projectId,
     sessionId,
     callId,
-    askKortix: (request: string) => askKortix(call, request),
+    askZed: (request: string) => askZed(call, request),
     runCommand: (command: string, cwd?: string) => runCommandInSandbox(sessionId, command, cwd),
     postTurn: (role, text, speaker) => appendTurn({ callId, projectId, sessionId }, role, text, speaker),
   };

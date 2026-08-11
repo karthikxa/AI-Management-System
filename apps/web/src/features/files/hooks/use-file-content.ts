@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRuntimeStore } from '@kortix/sdk/react';
+import { useRuntimeStore } from '@zed/sdk/react';
 import { readFile } from '../api/runtime-files';
 import type { FileContent } from '@/features/file-browser/types';
 import { fileReadRetryDelayMs, shouldRetryFileRead } from './file-read-retry';

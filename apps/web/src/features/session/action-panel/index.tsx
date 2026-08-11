@@ -11,7 +11,7 @@
  * panel state for both surfaces.
  */
 
-import { useKortixComputerStore } from '@/stores/kortix-computer-store';
+import { useZedComputerStore } from '@/stores/zed-computer-store';
 import { type PanelMode, useUserPreferencesStore } from '@/stores/user-preferences-store';
 import { useEffect } from 'react';
 // import { AdvancedPanel } from './advanced/advanced-panel'; // ADVANCED PANEL TEMPORARILY DISABLED
@@ -45,13 +45,13 @@ export function ActionPanel() {
   // Hooks can't be conditional, so these subscribe unconditionally and only
   // act when `shouldDiscardPendingPrimaryOpen` says so (i.e. mode is
   // 'advanced' and the pending request belongs to this session).
-  const pendingPrimaryOpenSessionId = useKortixComputerStore(
+  const pendingPrimaryOpenSessionId = useZedComputerStore(
     (s) => s.pendingPrimaryOpenSessionId,
   );
   useEffect(() => {
     if (!sessionId) return;
     if (!shouldDiscardPendingPrimaryOpen(mode, pendingPrimaryOpenSessionId, sessionId)) return;
-    useKortixComputerStore.getState().consumePrimaryOpen(sessionId);
+    useZedComputerStore.getState().consumePrimaryOpen(sessionId);
   }, [mode, pendingPrimaryOpenSessionId, sessionId]);
 
   // Same discard contract for the palette's quick-view request: only the Easy
@@ -59,11 +59,11 @@ export function ActionPanel() {
   // mode switch and replay a Terminal/Audit open the user never asked that
   // render for. (Advanced handles the palette command directly via
   // session-browser-store — see command-palette.tsx.)
-  const pendingQuickView = useKortixComputerStore((s) => s.pendingQuickView);
+  const pendingQuickView = useZedComputerStore((s) => s.pendingQuickView);
   useEffect(() => {
     if (!sessionId) return;
     if (mode !== 'advanced' || pendingQuickView?.sessionId !== sessionId) return;
-    useKortixComputerStore.getState().consumeQuickView(sessionId);
+    useZedComputerStore.getState().consumeQuickView(sessionId);
   }, [mode, pendingQuickView, sessionId]);
 
   // ADVANCED PANEL TEMPORARILY DISABLED — Easy is the one panel presentation

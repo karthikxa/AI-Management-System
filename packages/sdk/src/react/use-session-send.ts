@@ -40,7 +40,7 @@ import { getClient } from '../core/runtime/client';
 import { SESSION_SYNC_PAGE_SIZE } from '../core/session-sync/session-sync-controller';
 import { ascendingId, useSyncStore } from '../browser/stores/sync-store';
 import type { MessageError } from '../browser/stores/sync-store/types';
-import { classifySendError, type KortixSendError } from './use-session';
+import { classifySendError, type ZedSendError } from './use-session';
 import {
   promptOpenCodeMessage,
   useAbortOpenCodeSession,
@@ -149,11 +149,11 @@ export interface SendRecoveryOptions {
    * the SDK's `getClient` — inject a stub in tests, or a different client in
    * a host that doesn't use the singleton runtime client. */
   getClient?: () => OpenCodeMessagesClient;
-  /** Classify the raw error into a `KortixSendError`. Defaults to
+  /** Classify the raw error into a `ZedSendError`. Defaults to
    * `classifySendError` — a host with richer message formatting (e.g.
    * apps/web's `ProviderModelNotFoundError` special-casing) injects its own
    * classifier that wraps it. */
-  classify?: (error: unknown) => KortixSendError;
+  classify?: (error: unknown) => ZedSendError;
 }
 
 /**
@@ -170,7 +170,7 @@ export function recoverFromSendFailure(
   messageId: string,
   error: unknown,
   options: SendRecoveryOptions = {},
-): KortixSendError {
+): ZedSendError {
   const classify = options.classify ?? classifySendError;
   const resolveClient = options.getClient ?? (getClient as unknown as () => OpenCodeMessagesClient);
   const classified = classify(error);
@@ -216,12 +216,12 @@ export interface SendAndRecoverArgs {
   parts: PromptPart[];
   options?: SendMessageOptions;
   getClient?: () => OpenCodeMessagesClient;
-  classify?: (error: unknown) => KortixSendError;
+  classify?: (error: unknown) => ZedSendError;
 }
 
 export type SendAndRecoverResult =
   | { ok: true }
-  | { ok: false; error: KortixSendError; cause: unknown };
+  | { ok: false; error: ZedSendError; cause: unknown };
 
 /**
  * Send already-built parts via `promptOpenCodeMessage` (which owns network
@@ -366,11 +366,11 @@ export interface StartStashReplayOptions<TReady> {
    * restoring pending file uploads, resetting an "already handled" flag,
    * surfacing the classified error).
    */
-  onFailure?: (stash: StartStash, error: unknown, classified: KortixSendError) => void;
+  onFailure?: (stash: StartStash, error: unknown, classified: ZedSendError) => void;
   /** Called after the runtime acknowledges the prompt. */
   onSuccess?: (stash: StartStash) => void;
   getClient?: () => OpenCodeMessagesClient;
-  classify?: (error: unknown) => KortixSendError;
+  classify?: (error: unknown) => ZedSendError;
   timers?: StashReplayTimers;
 }
 
@@ -494,7 +494,7 @@ export function replayStartStash<TReady>(
 
 export interface UseSessionSendOptions {
   getClient?: () => OpenCodeMessagesClient;
-  classify?: (error: unknown) => KortixSendError;
+  classify?: (error: unknown) => ZedSendError;
 }
 
 export interface SendCallOptions {
@@ -522,7 +522,7 @@ export interface UseSessionSendResult {
   isSending: boolean;
   isStopping: boolean;
   /** Last `send` failure, or null. Reset on every new `send` call. */
-  sendError: KortixSendError | null;
+  sendError: ZedSendError | null;
 }
 
 export function useSessionSend(
@@ -530,7 +530,7 @@ export function useSessionSend(
   options: UseSessionSendOptions = {},
 ): UseSessionSendResult {
   const { getClient: getClientOpt, classify } = options;
-  const [sendError, setSendError] = useState<KortixSendError | null>(null);
+  const [sendError, setSendError] = useState<ZedSendError | null>(null);
   const [isSending, setIsSending] = useState(false);
   const abortMutation = useAbortOpenCodeSession();
 

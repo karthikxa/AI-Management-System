@@ -24,7 +24,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Text } from '@/components/ui/text';
-import { KortixLogo } from '@/components/ui/KortixLogo';
+import { ZedLogo } from '@/components/ui/ZedLogo';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { AuthInput } from '@/components/auth/AuthInput';
 import { useAuthContext } from '@/contexts';
@@ -260,9 +260,9 @@ export default function AuthScreen() {
           style={{ paddingTop: insets.top, paddingBottom: insets.bottom + 32 }}>
           {/* Logo + heading */}
           <View className="mb-8 items-start">
-            <KortixLogo variant="symbol" size={36} color={isDark ? 'dark' : 'light'} />
+            <ZedLogo variant="symbol" size={36} color={isDark ? 'dark' : 'light'} />
             <Text className="mt-5 font-roobert-semibold text-[28px] leading-tight text-foreground">
-              {awaitingCode ? 'Check your\nemail' : 'Sign in to\nKortix'}
+              {awaitingCode ? 'Check your\nemail' : 'Sign in to\nZed'}
             </Text>
             <Text className="mt-2 font-roobert text-[15px] text-muted-foreground">
               {awaitingCode
@@ -453,7 +453,7 @@ export default function AuthScreen() {
               <View
                 style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 24, gap: 5 }}>
                 <Text style={{ fontSize: 13, fontFamily: 'Roobert', color: muted }}>
-                  New to Kortix?
+                  New to Zed?
                 </Text>
                 <TouchableOpacity onPress={openWebRegister}>
                   <Text style={{ fontSize: 13, fontFamily: 'Roobert-Medium', color: fg }}>

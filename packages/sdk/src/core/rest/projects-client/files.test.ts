@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { listProjectFiles, readProjectFile } from './files';
 
 let calls: { url: string; method: string; body: unknown }[] = [];
@@ -21,7 +21,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 const last = () => calls[calls.length - 1];
 
 test('listProjectFiles GETs /projects/:id/files with ref/path query', async () => {
@@ -36,13 +36,13 @@ test('listProjectFiles is a silent background read — a 403 never hits the glob
   // project.file.read is editor-tier: a member deep-linking to the files page
   // legitimately 403s. The files view renders its own error state, no toast.
   const onError = mock(() => {});
-  configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok', onError });
+  configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok', onError });
   try {
     nextResponse = { status: 403, body: { message: 'forbidden' } };
     await expect(listProjectFiles('P1')).rejects.toBeTruthy();
     expect(onError).not.toHaveBeenCalled();
   } finally {
-    configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+    configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
   }
 });
 
@@ -59,12 +59,12 @@ test('readProjectFile is a silent background read — a 403 never hits the globa
   // detail/skill/command modal reading one file legitimately 403s for a
   // plain member, and renders its own inline error state — never a toast.
   const onError = mock(() => {});
-  configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok', onError });
+  configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok', onError });
   try {
     nextResponse = { status: 403, body: { message: 'forbidden' } };
     await expect(readProjectFile('P1', 'a.md')).rejects.toBeTruthy();
     expect(onError).not.toHaveBeenCalled();
   } finally {
-    configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+    configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
   }
 });

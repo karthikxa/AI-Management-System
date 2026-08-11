@@ -1,12 +1,12 @@
-// CLI PAT minting — account-scoped personal access tokens (`kortix_pat_...`)
+// CLI PAT minting — account-scoped personal access tokens (`zed_pat_...`)
 // and their project-scoped siblings. Both mint via the same backend
 // repository (`repositories/account-tokens.ts`); the project-scoped route
 // additionally binds the minted token to one `project_id` (the auth
 // middleware then rejects it outside that project). These are the tokens
-// the CLI / "Kortix as a Backend" hosts use to authenticate without a human
+// the CLI / "Zed as a Backend" hosts use to authenticate without a human
 // Supabase session — the account variant is minted by a human from
 // account settings, the project variant is auto-minted at session-create
-// time and injected into the sandbox as `KORTIX_TOKEN`.
+// time and injected into the sandbox as `ZED_TOKEN`.
 
 import { backendApi } from '../../http/api-client';
 import { unwrap } from './shared';
@@ -32,7 +32,7 @@ export interface CreateAccountTokenInput {
   accountId?: string;
   /** ISO-8601. Omit for a non-expiring token. */
   expiresAt?: string;
-  /** Scope the minted token to a single project (still a "kortix_pat_..." token,
+  /** Scope the minted token to a single project (still a "zed_pat_..." token,
    *  but the auth middleware rejects it outside this project). */
   projectId?: string;
 }
@@ -79,7 +79,7 @@ export async function revokeAccountToken(tokenId: string, accountId?: string) {
 
 // ── Project-scoped CLI tokens ────────────────────────────────────────────────
 // These are PATs bound to a single project — auto-minted at session-create
-// time and injected into the sandbox as `KORTIX_TOKEN`, so the in-container
+// time and injected into the sandbox as `ZED_TOKEN`, so the in-container
 // CLI works with zero config. Minting/revoking is a human/`manage` operation;
 // an agent-session token is denied outright server-side (privilege-escalation
 // guard — see apps/api/src/projects/routes/r3.ts).

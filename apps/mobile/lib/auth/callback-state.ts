@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const AUTH_CALLBACK_STATE_KEY = '@kortix_auth_callback_state';
-const WEB_REGISTRATION_HANDOFF_KEY = '@kortix_web_registration_handoff';
+const AUTH_CALLBACK_STATE_KEY = '@zed_auth_callback_state';
+const WEB_REGISTRATION_HANDOFF_KEY = '@zed_web_registration_handoff';
 const AUTH_CALLBACK_STATE_TTL_MS = 10 * 60 * 1000;
 
 function randomState(): string {
@@ -36,7 +36,7 @@ export async function createAuthCallbackRedirect(
     if (value === undefined || value === false) continue;
     search.set(key, value === true ? 'true' : value);
   }
-  return `kortix://auth/callback?${search.toString()}`;
+  return `zed://auth/callback?${search.toString()}`;
 }
 
 export async function consumeAuthCallbackState(state: string | null | undefined): Promise<boolean> {

@@ -1,5 +1,5 @@
 /**
- * Home — Main app screen for Kortix Computer Mobile.
+ * Home — Main app screen for Zed Computer Mobile.
  *
  * Uses a drawer layout:
  * - Drawer: Session list + "New Session" button
@@ -75,7 +75,7 @@ import { SessionRenameSheet } from '@/components/session/SessionRenameSheet';
 import { SessionShareSheet } from '@/components/session/SessionShareSheet';
 import { ProjectsPage } from '@/components/pages/ProjectsPage';
 import { ProjectDetailPage } from '@/components/pages/ProjectDetailPage';
-import { useKortixProjects, type KortixProject } from '@/lib/kortix';
+import { useZedProjects, type ZedProject } from '@/lib/zed';
 import { LegacyChatsSection } from '@/components/menu/LegacyChatsSection';
 import { haptics } from '@/lib/haptics';
 import { useGlobalSandboxUpdate } from '@/hooks/useSandboxUpdate';
@@ -158,12 +158,12 @@ import {
 } from 'lucide-react-native';
 import type { BottomBarMenuItem } from '@/components/session/BottomBar';
 import { log } from '@/lib/logger';
-import { chalkColors } from '@kortix/shared';
+import { chalkColors } from '@zed/shared';
 import Svg, { Circle } from 'react-native-svg';
-import { KortixLogo } from '@/components/ui/KortixLogo';
+import { ZedLogo } from '@/components/ui/ZedLogo';
 import { PageHeader } from '@/components/ui/page-header';
-import BrandmarkBlack from '@/assets/brand/kortix-symbol-scale-effect-black.svg';
-import BrandmarkWhite from '@/assets/brand/kortix-symbol-scale-effect-white.svg';
+import BrandmarkBlack from '@/assets/brand/zed-symbol-scale-effect-black.svg';
+import BrandmarkWhite from '@/assets/brand/zed-symbol-scale-effect-white.svg';
 import { useTabScreenshotStore, validatePersistedScreenshots } from '@/stores/tab-screenshot-store';
 
 // Safe import of react-native-view-shot — requires native rebuild.
@@ -331,7 +331,7 @@ function ConnectingToWorkspace({
         paddingHorizontal: 40,
       }}>
       <View style={{ flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-        <KortixLogo size={22} variant="symbol" color={isDark ? 'dark' : 'light'} />
+        <ZedLogo size={22} variant="symbol" color={isDark ? 'dark' : 'light'} />
         <Text
           style={{
             fontSize: 13,
@@ -704,7 +704,7 @@ function ProjectSessionListItem({
 
 /**
  * Build a map from parent session ID → array of child session IDs.
- * Ported from childMapByParent() in @kortix/sdk/turns.
+ * Ported from childMapByParent() in @zed/sdk/turns.
  */
 function buildChildMap(sessions: Session[]): Map<string, string[]> {
   const map = new Map<string, string[]>();
@@ -822,7 +822,7 @@ function SessionGroup({
 
 /**
  * Probe a session sandbox's runtime health THROUGH the backend proxy — the same
- * `${sandboxUrl}/kortix/health` the web's useSandboxConnection polls. Beyond
+ * `${sandboxUrl}/zed/health` the web's useSandboxConnection polls. Beyond
  * reporting readiness, hitting the proxy keeps the sandbox routed/warm; the
  * backend's ensure-opencode probe alone doesn't, so without this a freshly-woken
  * sandbox can stay unreachable. Returns 'ready' once OpenCode reports up.
@@ -831,7 +831,7 @@ type SandboxHealth = {
   status: 'ready' | 'starting' | 'unreachable';
   /**
    * Fatal runtime boot failure (e.g. repo materialization / git clone failed),
-   * verbatim from /kortix/health `boot_error`. Null while healthy or still
+   * verbatim from /zed/health `boot_error`. Null while healthy or still
    * booting — the sandbox only populates it on an actual failure, so it's a
    * safe "stop waiting" signal (see sandbox routes/health.ts).
    */
@@ -843,7 +843,7 @@ async function probeSandboxHealth(sandboxUrl: string): Promise<SandboxHealth> {
     const token = await getAuthToken();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15_000);
-    const res = await fetch(`${sandboxUrl.replace(/\/$/, '')}/kortix/health`, {
+    const res = await fetch(`${sandboxUrl.replace(/\/$/, '')}/zed/health`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       signal: controller.signal,
     });
@@ -867,7 +867,7 @@ async function probeSandboxHealth(sandboxUrl: string): Promise<SandboxHealth> {
  * Deliver the composer's first prompt into a session's OpenCode root, once it
  * exists. Web parity: the project home stashes the prompt and sends it after the
  * session connects rather than passing `initial_prompt` to createProjectSession
- * (the boot-time KORTIX_INITIAL_PROMPT path can leave OpenCode perpetually
+ * (the boot-time ZED_INITIAL_PROMPT path can leave OpenCode perpetually
  * not-ready). Fire-and-forget — SessionPage's sync surfaces the message/reply.
  */
 async function sendOpencodePrompt(
@@ -976,7 +976,7 @@ export default function ProjectSessionScreen() {
       // Check if we previously completed setup (persisted across app restarts).
       // If so, keep polling longer before showing wizard — the sandbox is likely
       // just booting and the env isn't populated yet.
-      const SETUP_DONE_KEY = 'kortix-instance-setup-done';
+      const SETUP_DONE_KEY = 'zed-instance-setup-done';
       const wasSetupDone = (await AsyncStorage.getItem(SETUP_DONE_KEY)) === '1';
       const maxWaitMs = wasSetupDone ? 90_000 : 60_000;
       const pollMs = 3_000;
@@ -1115,7 +1115,7 @@ export default function ProjectSessionScreen() {
 
   const handleSetupComplete = useCallback(() => {
     // Persist that setup completed so we don't show wizard on next boot
-    AsyncStorage.setItem('kortix-instance-setup-done', '1').catch(() => {});
+    AsyncStorage.setItem('zed-instance-setup-done', '1').catch(() => {});
     setSetupState('onboarding');
   }, []);
 
@@ -1133,7 +1133,7 @@ export default function ProjectSessionScreen() {
   const renameSessionSheetRef = useRef<BottomSheetModal>(null);
   const shareSessionSheetRef = useRef<BottomSheetModal>(null);
   const [themePreference, setThemePreference] = useState<ThemePreference>('light');
-  // The sandbox-update badge polls the GLOBAL sandbox (${sandboxUrl}/kortix/health)
+  // The sandbox-update badge polls the GLOBAL sandbox (${sandboxUrl}/zed/health)
   // — a legacy-shell concept that 403s on the repo-first project screen (sessions
   // get their own sandboxes). Disabled here; the badge still works on /home.
   const hasUpdate = false;
@@ -1249,18 +1249,18 @@ export default function ProjectSessionScreen() {
   // Only touch a sandbox once a session is actually open (its sandbox is switched
   // in via connectToProjectSession). On the dashboard there is no authorized
   // sandbox — the global one is the stale repo-first default — so the legacy
-  // OpenCode/Kortix proxy hooks must stay disabled to avoid 403s
+  // OpenCode/Zed proxy hooks must stay disabled to avoid 403s
   // ("Not authorized to access this sandbox").
   const sessionSandboxUrl = activeSessionId ? sandboxUrl : undefined;
   const { data: sessions = [], isLoading: sessionsLoading } = useSessions(sessionSandboxUrl);
-  const { data: kortixProjects } = useKortixProjects(sessionSandboxUrl);
+  const { data: zedProjects } = useZedProjects(sessionSandboxUrl);
   const sortedProjects = useMemo(() => {
-    if (!kortixProjects || !Array.isArray(kortixProjects)) return [];
-    return [...kortixProjects].sort(
-      (a: KortixProject, b: KortixProject) =>
+    if (!zedProjects || !Array.isArray(zedProjects)) return [];
+    return [...zedProjects].sort(
+      (a: ZedProject, b: ZedProject) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  }, [kortixProjects]);
+  }, [zedProjects]);
   const createSession = useCreateSession(sandboxUrl);
   const deleteSession = useDeleteSession(sandboxUrl);
   const archiveSession = useArchiveSession(sandboxUrl);
@@ -1654,10 +1654,10 @@ export default function ProjectSessionScreen() {
   // restart; it's cleared once re-provision resolves so ensureAndOpen runs.
   // The active tab's project-session row. The tab store's activeSessionId is
   // the OPENCODE root id (connectToProjectSession navigates with
-  // ps.opencode_session_id), so resolve back to the Kortix row through the pin
-  // — every /projects/:id/sessions/:sid API call needs the Kortix UUID. The
+  // ps.opencode_session_id), so resolve back to the Zed row through the pin
+  // — every /projects/:id/sessions/:sid API call needs the Zed UUID. The
   // session_id fallback covers the brief pre-connect window where a tab can
-  // still carry the Kortix id (the two id shapes can't collide).
+  // still carry the Zed id (the two id shapes can't collide).
   const activeProjectSession = useMemo(
     () =>
       activeSessionId
@@ -1683,7 +1683,7 @@ export default function ProjectSessionScreen() {
 
     haptics.tap();
     const baseRef = ps.base_ref || 'main';
-    const prompt = `Load the kortix-system skill and read about Versions & Change Requests. Then review the changes in this session, commit them, and open a change request to merge into \`${baseRef}\`. Give it a clear title and a description of what changed and why.`;
+    const prompt = `Load the zed-system skill and read about Versions & Change Requests. Then review the changes in this session, commit them, and open a change request to merge into \`${baseRef}\`. Give it a clear title and a description of what changed and why.`;
     const sent = await sendOpencodePrompt(targetSandboxUrl, targetSessionId, prompt);
 
     if (sent) {
@@ -1694,8 +1694,8 @@ export default function ProjectSessionScreen() {
   }, [activeProjectSession, sandboxUrl, activeSessionId]);
 
   const handleRestartActiveSession = useCallback(() => {
-    // Kortix id — restartProjectSession, the connecting screen, and
-    // ensureAndOpen all operate in the Kortix id space, not the OpenCode one.
+    // Zed id — restartProjectSession, the connecting screen, and
+    // ensureAndOpen all operate in the Zed id space, not the OpenCode one.
     const sid = activeProjectSession?.session_id;
     if (!sid || restartingSession) return;
     Alert.alert(
@@ -1733,7 +1733,7 @@ export default function ProjectSessionScreen() {
   }, [activeProjectSession, restartingSession, projectId, ensureAndOpen]);
 
   // Delete the active session (web parity: deleteProjectSession — destroys the
-  // sandbox, the git branch is preserved server-side). API takes the Kortix
+  // sandbox, the git branch is preserved server-side). API takes the Zed
   // UUID; the tab is keyed by the OpenCode id, and closeTab (not just
   // deselect) so no dead pill survives in the persisted tab strip.
   const handleDeleteActiveSession = useCallback(() => {
@@ -1779,7 +1779,7 @@ export default function ProjectSessionScreen() {
     void ensureAndOpen(connectingProjectSessionId);
   }, [connectingProjectSessionId, ensureAndOpen]);
 
-  const handleProjectPress = useCallback((project: KortixProject) => {
+  const handleProjectPress = useCallback((project: ZedProject) => {
     const pageId = `page:project:${project.id}`;
     useTabStore.getState().setTabState(pageId, { projectName: project.name });
     useTabStore.getState().navigateToPage(pageId);
@@ -1787,7 +1787,7 @@ export default function ProjectSessionScreen() {
   }, []);
 
   // Back to the projects list (the post-login landing). Used by the drawer's
-  // Kortix logo + "Projects" item.
+  // Zed logo + "Projects" item.
   const goToProjects = useCallback(() => {
     haptics.tap();
     setDrawerOpen(false);
@@ -1992,7 +1992,7 @@ export default function ProjectSessionScreen() {
 
   const handleSignOut = useCallback(() => {
     if (isSigningOut) return;
-    Alert.alert('Sign out', 'Sign out of Kortix?', [
+    Alert.alert('Sign out', 'Sign out of Zed?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Sign out',
@@ -2018,13 +2018,13 @@ export default function ProjectSessionScreen() {
 
     return (
       <View className="flex-1 bg-chrome-background" style={{ paddingTop: insets.top }}>
-        {/* Kortix wordmark — tap to go back to the projects list */}
+        {/* Zed wordmark — tap to go back to the projects list */}
         <View className="flex-row items-center justify-between px-5 pb-4 pt-3">
           <TouchableOpacity
             onPress={goToProjects}
             activeOpacity={0.6}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 12 }}>
-            <KortixLogo variant="logomark" size={18} color={isDark ? 'dark' : 'light'} />
+            <ZedLogo variant="logomark" size={18} color={isDark ? 'dark' : 'light'} />
           </TouchableOpacity>
         </View>
 
@@ -2088,7 +2088,7 @@ export default function ProjectSessionScreen() {
 
             <AnimatedCollapsible expanded={projectsExpanded}>
               <View className="px-2 pb-2">
-                {sortedProjects.map((project: KortixProject) => (
+                {sortedProjects.map((project: ZedProject) => (
                   <TouchableOpacity
                     key={project.id}
                     onPress={() => {
@@ -2936,7 +2936,7 @@ export default function ProjectSessionScreen() {
                       opacity: isDashboardSending ? 0.3 : 1,
                     }}
                     className="items-center justify-center bg-background px-8">
-                    {/* Kortix brandmark wallpaper — faded symbol behind the hero,
+                    {/* Zed brandmark wallpaper — faded symbol behind the hero,
                     clipped by the card (web parity: ProjectHome brandmark). */}
                     <View
                       pointerEvents="none"

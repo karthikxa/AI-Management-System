@@ -17,7 +17,7 @@ import { resolveScopedAccountId } from '../../shared/resolve-account';
 import type { AppEnv } from '../../types';
 import { json, errors, auth, ErrorSchema } from '../../openapi';
 import { startSunaMigration, latestSunaMigration, PHASE_ORDER } from './suna-migration-runner';
-import { sunaAccountMigrations, type Database } from '@kortix/db';
+import { sunaAccountMigrations, type Database } from '@zed/db';
 import { withTimeout } from '../../shared/with-timeout';
 
 type Row = typeof sunaAccountMigrations.$inferSelect;

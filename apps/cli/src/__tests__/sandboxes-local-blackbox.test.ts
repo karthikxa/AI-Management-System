@@ -1,6 +1,6 @@
 /**
- * Black-box coverage for the pre-push gate: `kortix validate`'s Dockerfile lint
- * and `kortix sandboxes build --local`.
+ * Black-box coverage for the pre-push gate: `zed validate`'s Dockerfile lint
+ * and `zed sandboxes build --local`.
  *
  * NOTHING here talks to a real Docker daemon (no test in this repo does, and a
  * test that pulls ubuntu:24.04 and runs apt for 20 minutes would be a test
@@ -15,11 +15,11 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 
 const CLI_ENTRY = join(resolve(import.meta.dir, '..', '..'), 'src', 'index.ts');
 const SANDBOX_ENV_OVERRIDES = [
-  'KORTIX_API_URL',
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_FRONTEND_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_TOKEN',
+  'ZED_API_URL',
+  'ZED_CLI_TOKEN',
+  'ZED_FRONTEND_URL',
+  'ZED_PROJECT_ID',
+  'ZED_TOKEN',
   'BASH_ENV',
 ] as const;
 
@@ -30,12 +30,12 @@ let dockerLog: string;
 /** A minimal manifest that PASSES the schema, so any error is the lint's. */
 const MANIFEST = (extra: string) =>
   [
-    'kortix_version: 2',
-    'default_agent: kortix',
+    'zed_version: 2',
+    'default_agent: zed',
     'project:',
     '  name: fixture',
     'agents:',
-    '  kortix: {}',
+    '  zed: {}',
     extra,
     '',
   ].join('\n');
@@ -43,10 +43,10 @@ const MANIFEST = (extra: string) =>
 async function runCli(args: string[], cwd = tmp) {
   const env: Record<string, string | undefined> = {
     ...process.env,
-    KORTIX_NO_UPDATE_CHECK: '1',
+    ZED_NO_UPDATE_CHECK: '1',
     NO_COLOR: '1',
     FORCE_COLOR: '0',
-    KORTIX_DISABLE_SANDBOX_ENV_FILE: '1',
+    ZED_DISABLE_SANDBOX_ENV_FILE: '1',
     // Stub docker first on PATH: nothing in this suite may reach a real daemon.
     PATH: `${join(tmp, 'bin')}:${process.env.PATH}`,
   };
@@ -62,7 +62,7 @@ async function runCli(args: string[], cwd = tmp) {
 }
 
 beforeEach(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'kortix-local-build-'));
+  tmp = mkdtempSync(join(tmpdir(), 'zed-local-build-'));
   mkdirSync(join(tmp, 'bin'));
   dockerLog = join(tmp, 'docker-was-called');
   writeFileSync(
@@ -77,10 +77,10 @@ afterEach(() => {
   rmSync(tmp, { recursive: true, force: true });
 });
 
-describe('kortix sandboxes build --local --print', () => {
+describe('zed sandboxes build --local --print', () => {
   beforeEach(() => {
     writeFileSync(
-      join(tmp, 'kortix.yaml'),
+      join(tmp, 'zed.yaml'),
       MANIFEST('sandbox:\n  templates:\n    - slug: ml\n      dockerfile: Dockerfile.ml'),
       'utf8',
     );
@@ -92,12 +92,12 @@ describe('kortix sandboxes build --local --print', () => {
     expect(r.code).toBe(0);
     // The user's Dockerfile, verbatim and first.
     expect(r.stdout.startsWith('FROM ubuntu:24.04\nRUN echo hello\n')).toBe(true);
-    // The Kortix toolchain layer, including checksum-verified runtime artifacts.
-    expect(r.stdout).toContain('Kortix runtime layer (auto-injected)');
+    // The Zed toolchain layer, including checksum-verified runtime artifacts.
+    expect(r.stdout).toContain('Zed runtime layer (auto-injected)');
     expect(r.stdout).toContain('sha256sum -c -');
     expect(r.stdout).toContain('uv python install --default');
     expect(r.stdout).toContain('pnpm runtime set node');
-    expect(r.stdout).not.toContain('/opt/kortix/pyfloor');
+    expect(r.stdout).not.toContain('/opt/zed/pyfloor');
     // …but not the artifact tail.
     expect(r.stdout).not.toContain('scaffold.git');
     expect(r.stdout).not.toContain('ENTRYPOINT');
@@ -143,7 +143,7 @@ describe('kortix sandboxes build --local --print', () => {
   });
 
   test('needs no login — the whole point of a pre-push gate', async () => {
-    // runCli strips every KORTIX_* credential and there's no config.json in tmp,
+    // runCli strips every ZED_* credential and there's no config.json in tmp,
     // so this asserts the command routes above resolveProjectContext.
     const r = await runCli(['sandboxes', 'build', '--local', '--print']);
     expect(r.code).toBe(0);
@@ -151,7 +151,7 @@ describe('kortix sandboxes build --local --print', () => {
   });
 });
 
-describe('kortix sandboxes --help', () => {
+describe('zed sandboxes --help', () => {
   test('renders the local build section', async () => {
     const r = await runCli(['sandboxes', '--help']);
     expect(r.code).toBe(0);
@@ -161,24 +161,24 @@ describe('kortix sandboxes --help', () => {
       '--platform <p>',
       '--no-layer',
       '--print',
-      'kortix-local/<slug>:latest',
+      'zed-local/<slug>:latest',
     ]) {
       expect(r.stdout).toContain(fragment);
     }
   });
 });
 
-describe('kortix validate — sandbox Dockerfile lint', () => {
+describe('zed validate — sandbox Dockerfile lint', () => {
   beforeEach(() => {
     writeFileSync(
-      join(tmp, 'kortix.yaml'),
+      join(tmp, 'zed.yaml'),
       MANIFEST('sandbox:\n  templates:\n    - slug: ml\n      dockerfile: Dockerfile.ml'),
       'utf8',
     );
     // Incident (a): the repo is never in the build context.
     writeFileSync(
       join(tmp, 'Dockerfile.ml'),
-      'FROM ubuntu:24.04\nCOPY requirements-kortix.txt ./\n',
+      'FROM ubuntu:24.04\nCOPY requirements-zed.txt ./\n',
       'utf8',
     );
   });
@@ -187,7 +187,7 @@ describe('kortix validate — sandbox Dockerfile lint', () => {
     const r = await runCli(['validate']);
     expect(r.code).not.toBe(0);
     const all = r.stdout + r.stderr;
-    expect(all).toContain('requirements-kortix.txt');
+    expect(all).toContain('requirements-zed.txt');
     expect(all).toContain('Dockerfile.ml');
   });
 
@@ -203,7 +203,7 @@ describe('kortix validate — sandbox Dockerfile lint', () => {
     expect(report.valid).toBe(false);
     const hit = report.issues.find((i: { path: string }) => i.path === 'Dockerfile.ml');
     expect(hit.severity).toBe('error');
-    expect(hit.message).toContain('requirements-kortix.txt');
+    expect(hit.message).toContain('requirements-zed.txt');
     expect(hit.line).toBe(2);
   });
 

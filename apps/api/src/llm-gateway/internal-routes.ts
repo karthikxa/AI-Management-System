@@ -3,8 +3,8 @@ import type {
   GatewayTrace,
   ModelRouteInput,
   UsageEvent,
-} from '@kortix/llm-gateway';
-import { GatewayResolutionError } from '@kortix/llm-gateway';
+} from '@zed/llm-gateway';
+import { GatewayResolutionError } from '@zed/llm-gateway';
 import { Hono } from 'hono';
 import { logger } from '../lib/logger';
 import { checkBudget } from './budgets';

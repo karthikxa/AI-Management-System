@@ -1,4 +1,4 @@
-// Reachability for the self-host `kortix-api` service: how a cloud (Daytona)
+// Reachability for the self-host `zed-api` service: how a cloud (Daytona)
 // sandbox — which runs on a remote VM outside the operator's network — calls
 // back to this instance's API. Three modes (see reachabilityMode below):
 //
@@ -10,7 +10,7 @@
 //              stable alternative: a NAMED tunnel — set CLOUDFLARE_TUNNEL_TOKEN
 //              (+ CLOUDFLARE_TUNNEL_HOSTNAME, the DNS hostname bound to that
 //              tunnel in the Cloudflare Zero Trust dashboard) and the hostname
-//              itself becomes KORTIX_URL, no log-scraping needed.
+//              itself becomes ZED_URL, no log-scraping needed.
 //   - local:   loopback only. Agent sandboxes and any other external caller
 //              (webhooks, Slack/Teams OAuth, git-proxy clone URLs) cannot
 //              reach this instance. Browser-local flows (e.g. creating a
@@ -24,18 +24,18 @@
 export type ReachabilityMode = 'domain' | 'tunnel' | 'local';
 
 /**
- * Resolve the ACTUAL reachability mode for a given env snapshot. KORTIX_DOMAIN
+ * Resolve the ACTUAL reachability mode for a given env snapshot. ZED_DOMAIN
  * being set always wins (domain mode) regardless of any persisted preference —
- * mirrors how KORTIX_APP_REPLICAS/Caddy already treat KORTIX_DOMAIN as the
+ * mirrors how ZED_APP_REPLICAS/Caddy already treat ZED_DOMAIN as the
  * single source of truth for "is this a public-domain deployment". Otherwise
- * falls back to the persisted KORTIX_REACHABILITY_MODE preference (only
+ * falls back to the persisted ZED_REACHABILITY_MODE preference (only
  * meaningful choice left is tunnel vs. local), defaulting to local — the safe,
  * backward-compatible default matching every self-host instance created
  * before this feature existed.
  */
 export function reachabilityMode(env: Record<string, string | undefined>): ReachabilityMode {
-  if (env.KORTIX_DOMAIN?.trim()) return 'domain';
-  if (env.KORTIX_REACHABILITY_MODE === 'tunnel') return 'tunnel';
+  if (env.ZED_DOMAIN?.trim()) return 'domain';
+  if (env.ZED_REACHABILITY_MODE === 'tunnel') return 'tunnel';
   return 'local';
 }
 
@@ -43,7 +43,7 @@ export function reachabilityMode(env: Record<string, string | undefined>): Reach
  * A stable NAMED tunnel is configured when both the token (authenticates
  * cloudflared to run that specific tunnel) and its bound public hostname
  * (assigned to the tunnel in the Cloudflare dashboard) are set. When true,
- * KORTIX_URL is derived directly from the hostname — no log-scraping, and the
+ * ZED_URL is derived directly from the hostname — no log-scraping, and the
  * URL never changes across restarts, unlike the zero-config quick tunnel.
  */
 export function namedTunnelConfigured(env: Record<string, string | undefined>): boolean {
@@ -65,9 +65,9 @@ const QUICK_TUNNEL_URL_PATTERN = /https:\/\/[a-z0-9-]+\.trycloudflare\.com/g;
  * `docker restart cloudflared`) rather than recreated, those logs still
  * contain the previous, now-dead quick-tunnel URL followed by the fresh one
  * cloudflared mints on every boot. Taking the first match would silently pin
- * KORTIX_URL to a tunnel that no longer exists — this is confirmed live: a
+ * ZED_URL to a tunnel that no longer exists — this is confirmed live: a
  * bare `docker restart` of the cloudflared container followed by
- * `kortix self-host start` used to re-resolve the STALE pre-restart URL.
+ * `zed self-host start` used to re-resolve the STALE pre-restart URL.
  */
 export function parseQuickTunnelUrl(logText: string): string | null {
   const matches = logText.match(QUICK_TUNNEL_URL_PATTERN);
@@ -81,7 +81,7 @@ export interface TunnelUrlResult {
 }
 
 /**
- * Resolve the public KORTIX_URL for tunnel-reachability mode.
+ * Resolve the public ZED_URL for tunnel-reachability mode.
  *
  * - Named tunnel (CLOUDFLARE_TUNNEL_TOKEN + CLOUDFLARE_TUNNEL_HOSTNAME): the
  *   hostname IS the URL, resolved instantly — cloudflared is authenticating to
@@ -112,9 +112,9 @@ export async function resolveTunnelUrl(
   return {
     ok: false,
     error:
-      'Timed out waiting for the Cloudflare quick tunnel URL. Check `kortix self-host logs cloudflared` — ' +
+      'Timed out waiting for the Cloudflare quick tunnel URL. Check `zed self-host logs cloudflared` — ' +
       'cloudflared may still be pulling its image, or may be missing/blocked. Agent sandboxes will not be ' +
-      'reachable until this resolves; re-run `kortix self-host start` once it is.',
+      'reachable until this resolves; re-run `zed self-host start` once it is.',
   };
 }
 

@@ -16,12 +16,12 @@ export interface StartStash {
 }
 
 export function startStashKey(sessionId: string): string {
-  return `kortix:start:${sessionId}`;
+  return `zed:start:${sessionId}`;
 }
 
 function sanitizeStartModel(model: StartStash['model']): StartStash['model'] {
   if (!model) return null;
-  if (model.modelID === 'auto' || model.modelID === 'kortix/auto') return null;
+  if (model.modelID === 'auto' || model.modelID === 'zed/auto') return null;
   return model;
 }
 

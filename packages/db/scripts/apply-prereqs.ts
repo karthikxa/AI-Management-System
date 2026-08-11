@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import pg from 'pg';
 
 async function main() {
-  const url = process.env.DATABASE_URL || 'postgresql://kortix_local_user:W5B8bT37stp2tGgZCOGfbqzCHSZ67kzg@dpg-d9rkpd5bedkc73bve5v0-a.oregon-postgres.render.com/kortix_local?sslmode=require';
+  const url = process.env.DATABASE_URL || 'postgresql://zed_local_user:W5B8bT37stp2tGgZCOGfbqzCHSZ67kzg@dpg-d9rkpd5bedkc73bve5v0-a.oregon-postgres.render.com/zed_local?sslmode=require';
   const client = new pg.Client({ connectionString: url });
   await client.connect();
   const sql = readFileSync(join(import.meta.dir, 'test-prereqs.sql'), 'utf-8');

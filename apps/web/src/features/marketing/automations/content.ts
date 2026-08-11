@@ -28,7 +28,7 @@ export const hero = {
   ctaPrimaryHref: '/auth',
   ctaSecondary: 'Read the docs',
   ctaSecondaryHref: '/docs/connect/triggers',
-  microline: 'Two types · Declared in kortix.yaml · Reviewed like everything else',
+  microline: 'Two types · Declared in zed.yaml · Reviewed like everything else',
   /** Four mono facts under the fold. Every value has to be defensible. */
   specs: [
     { k: 'Types', v: 'cron and webhook' },
@@ -53,13 +53,13 @@ export const types = {
       id: 'webhook',
       kind: 'webhook',
       title: 'It fires on an event',
-      body: 'An external service POSTs to the trigger URL. Kortix checks the signature, renders the payload into the prompt, and starts the session. A payload that fails your filter is accepted and ignored.',
+      body: 'An external service POSTs to the trigger URL. Zed checks the signature, renders the payload into the prompt, and starts the session. A payload that fails your filter is accepted and ignored.',
     },
   ],
   notes: [
     'Both types name the agent they run as, and inherit that agent’s deny-by-default reach.',
     'Both carry a prompt template that becomes the session’s first message.',
-    'Both are entries in kortix.yaml, so both have a history and an author.',
+    'Both are entries in zed.yaml, so both have a history and an author.',
   ],
 } as const;
 
@@ -73,7 +73,7 @@ export const schedule = {
       slug: 'daily-digest',
       cron: '0 0 9 * * 1-5',
       tz: 'America/Los_Angeles',
-      agent: 'kortix',
+      agent: 'zed',
       mode: 'fresh',
       reads: 'Weekdays at 09:00',
     },
@@ -129,15 +129,15 @@ export const schedule = {
 export const declared = {
   eyebrow: 'Declared in the repo',
   title: 'An automation is a file, not a dashboard setting.',
-  sub: 'Triggers live in kortix.yaml next to your agents and sandbox images. Each one names its agent, its schedule or its secret, and the prompt template that becomes the session’s first message.',
+  sub: 'Triggers live in zed.yaml next to your agents and sandbox images. Each one names its agent, its schedule or its secret, and the prompt template that becomes the session’s first message.',
   yaml: {
-    title: 'kortix.yaml',
+    title: 'zed.yaml',
     lines: [
       '# fires on the clock',
       'triggers:',
       '  - slug: daily-digest',
       '    type: cron',
-      '    agent: kortix',
+      '    agent: zed',
       '    cron: "0 0 9 * * 1-5"',
       '    timezone: America/Los_Angeles',
       '    session_mode: fresh',
@@ -156,21 +156,21 @@ export const declared = {
     ],
   },
   shell: {
-    title: 'kortix triggers',
+    title: 'zed triggers',
     lines: [
       '# add it, ship it, and the schedule is live',
-      '$ kortix triggers add daily-digest --type cron \\',
+      '$ zed triggers add daily-digest --type cron \\',
       '    --cron "0 0 9 * * 1-5" \\',
       '    --timezone America/Los_Angeles \\',
       '    --prompt "Summarize yesterday. Open a CR."',
-      '$ kortix ship',
-      '→ kortix.yaml pushed. daily-digest is scheduled.',
+      '$ zed ship',
+      '→ zed.yaml pushed. daily-digest is scheduled.',
       '',
       '# see every trigger and when it last fired',
-      '$ kortix triggers ls',
+      '$ zed triggers ls',
       '',
       '# do not wait for 09:00 to find out',
-      '$ kortix triggers fire daily-digest',
+      '$ zed triggers fire daily-digest',
       '→ session started',
     ],
   },
@@ -185,11 +185,11 @@ export const webhook = {
   title: 'Signed, or it does not fire.',
   sub: 'Every webhook trigger names a project secret that signs it. A trigger without one is rejected at validation — there is no unauthenticated webhook to forget to lock down later.',
   endpoint: 'POST /v1/webhooks/projects/{projectId}/{slug}',
-  header: 'X-Kortix-Signature: sha256=<hmac>',
+  header: 'X-Zed-Signature: sha256=<hmac>',
   headerNote:
     'HMAC-SHA256 over the raw request body, compared in constant time. The GitHub-compatible X-Hub-Signature-256 header works too, so a repo webhook needs no adapter.',
   rows: [
-    { code: '202', v: 'Signature valid. The session fired, queued behind the concurrency limit, or deduped against a delivery Kortix already saw.' },
+    { code: '202', v: 'Signature valid. The session fired, queued behind the concurrency limit, or deduped against a delivery Zed already saw.' },
     { code: '200', v: 'Valid, and deliberately skipped — the project is paused, or the payload did not match the trigger’s filter.' },
     { code: '401', v: 'Signature and token both missing or wrong. Nothing runs.' },
     { code: '404', v: 'No such trigger, or it is disabled, or it is not a webhook trigger.' },
@@ -202,7 +202,7 @@ export const webhook = {
 export const session = {
   eyebrow: 'Session strategy',
   title: 'Which session a fire lands in.',
-  sub: 'By default every fire is a clean slate. When the work is a running thread rather than a fresh errand, a trigger can re-prompt a session it already owns. Kortix tries the modes in order and falls through on failure, so a fire never simply disappears.',
+  sub: 'By default every fire is a clean slate. When the work is a running thread rather than a fresh errand, a trigger can re-prompt a session it already owns. Zed tries the modes in order and falls through on failure, so a fire never simply disappears.',
   steps: [
     {
       n: '01',
@@ -237,7 +237,7 @@ export const review = {
     {
       id: 'agent',
       k: 'It runs as an agent',
-      v: 'A trigger names an agent, and inherits exactly that agent’s grants — the connectors, secrets and skills its block in kortix.yaml lists, and nothing else. An agent with no grants gets no access.',
+      v: 'A trigger names an agent, and inherits exactly that agent’s grants — the connectors, secrets and skills its block in zed.yaml lists, and nothing else. An agent with no grants gets no access.',
     },
     {
       id: 'sandbox',
@@ -260,7 +260,7 @@ export const review = {
 export const closing = {
   eyebrow: 'Automate it',
   title: 'Write the schedule. Read the change request.',
-  sub: 'Open source and self-hostable. Any model, your keys. Kortix Cloud, your own VPC, or fully on-prem.',
+  sub: 'Open source and self-hostable. Any model, your keys. Zed Cloud, your own VPC, or fully on-prem.',
   ctaPrimary: 'Start a session',
   ctaPrimaryHref: '/auth',
   ctaSecondary: 'Read the trigger docs',

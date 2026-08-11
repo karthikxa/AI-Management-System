@@ -1,11 +1,11 @@
-// Change Requests — Kortix-native PR layer, version diffs, commit-push.
+// Change Requests — Zed-native PR layer, version diffs, commit-push.
 
 import { backendApi } from '../../http/api-client';
 import { unwrap } from './shared';
 import type { ProjectCommitFile } from './git-history';
 
 // ---------------------------------------------------------------------------
-// Change Requests — Kortix-native PR layer. Backend-agnostic: the underlying
+// Change Requests — Zed-native PR layer. Backend-agnostic: the underlying
 // merge runs via apps/api/.../git.ts against whichever git host the project's
 // repo URL points to.
 //

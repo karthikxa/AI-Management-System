@@ -10,7 +10,7 @@
 - Target disk: 500 GB gp3 with 3,000 IOPS and 125 MiB/s throughput.
 - Target PITR: 7 days.
 - Target dedicated IPv4: enabled.
-- Target credentials: AWS Secrets Manager secret `kortix/prod-us-east-2-migration`.
+- Target credentials: AWS Secrets Manager secret `zed/prod-us-east-2-migration`.
 - Target database password: rotated on 2026-07-25.
 - Migration and runtime database URLs: updated after the password rotation.
 - US API and gateway tasks: restarted after the password rotation.
@@ -39,23 +39,23 @@
 - Replication credential: rotated after the initial copy.
 - Storage copied: all 79 `avatars` objects with byte and SHA-256 verification.
 - Legacy Storage copied: none.
-- US API shadow: two healthy ECS tasks on image `kortix/kortix-api:0.10.14`.
+- US API shadow: two healthy ECS tasks on image `zed/zed-api:0.10.14`.
 - US gateway shadow: two healthy ECS tasks on image
-  `kortix/kortix-gateway:0.10.14`.
-- US API task definition: `kortix-prod-use2:3`.
-- US gateway task definition: `kortix-prod-use2-gateway:3`.
+  `zed/zed-gateway:0.10.14`.
+- US API task definition: `zed-prod-use2:3`.
+- US gateway task definition: `zed-prod-use2-gateway:3`.
 - Cloudflare CI credential: scoped repository secret
   `CLOUDFLARE_API_TOKEN`.
 - GitHub copies of `CLOUDFLARE_GLOBAL_API_KEY`: zero.
 - Shadow Terraform state: `prod-us-east-2-shadow/ecs-api.tfstate`.
 - Shadow Terraform state bucket:
-  `kortix-terraform-state-us-east-2-935064898258` in `us-east-2`.
-- Shadow Terraform lock table: `kortix-terraform-locks-us-east-2`.
+  `zed-terraform-state-us-east-2-935064898258` in `us-east-2`.
+- Shadow Terraform lock table: `zed-terraform-locks-us-east-2`.
 - Shadow Terraform state and lock data use customer-managed KMS encryption.
 - Shadow Terraform state keeps noncurrent versions for 365 days.
 - Shadow verification hosts:
-  - `api-use2-shadow.kortix.com`
-  - `gateway-use2-shadow.kortix.com`
+  - `api-use2-shadow.zed.com`
+  - `gateway-use2-shadow.zed.com`
 - Target Auth email rate limit: 30,000 per hour, equal to the source.
 - Production release workflow: deploys and verifies the US shadow.
 - Runtime database endpoint: regional session pooler
@@ -64,7 +64,7 @@
   `db.uhrwvisbqjfxhxjvoofd.supabase.co:5432`.
 - US frontend project: `suna-us-east-2-shadow`.
 - US frontend deployment: `dpl_9Fs1dXprKoGqVPro17GTZtWxqeWL`.
-- US frontend host: `https://us.kortix.com`.
+- US frontend host: `https://us.zed.com`.
 - US frontend function region: Vercel `cle1`.
 - Cloudflare contains inactive US East 2 API and gateway origins.
 - Cloudflare active backend values remain `ecs-fargate`.
@@ -96,7 +96,7 @@ Do not print or copy secret values into this document, shell output, or Git.
 | MFA factors         |                8,606 |
 | Auth refresh tokens |            9,538,250 |
 | `public` schema     |               250 GB |
-| `kortix` schema     |                29 GB |
+| `zed` schema     |                29 GB |
 | `auth` schema       |                11 GB |
 | `cron` schema       |                33 GB |
 | `net` schema        |               2.7 GB |
@@ -127,12 +127,12 @@ The same counters distinguish the retired and current credit tables:
 | ------------------------ | ----------------: |
 | `public.credit_accounts` |                 0 |
 | `public.credit_ledger`   |                 1 |
-| `kortix.credit_accounts` |         4,475,763 |
-| `kortix.credit_ledger`   |           311,776 |
+| `zed.credit_accounts` |         4,475,763 |
+| `zed.credit_ledger`   |           311,776 |
 
 The application also called the public credit RPC functions at least 295,678
-times since the reset. These functions operate on `kortix.credit_accounts` and
-`kortix.credit_ledger`.
+times since the reset. These functions operate on `zed.credit_accounts` and
+`zed.credit_ledger`.
 
 The current control-table row counts are:
 
@@ -149,7 +149,7 @@ the approved retention policy.
 
 ### Always migrate
 
-1. All `kortix` schema data.
+1. All `zed` schema data.
 2. All Supabase Auth users, identities, MFA factors, and required Auth data.
 3. The current `avatars` Storage bucket.
 4. These `public` control tables:
@@ -161,8 +161,8 @@ the approved retention policy.
 
 5. The `public` credit functions and Auth signup trigger from
    `packages/db/drizzle/0000_bootstrap.sql`.
-6. The `kortix_global_tick` cron job created by
-   `kortix.configure_scheduler(...)` after source writers stop at cutover.
+6. The `zed_global_tick` cron job created by
+   `zed.configure_scheduler(...)` after source writers stop at cutover.
 
 ### Do not migrate as live runtime data
 
@@ -170,9 +170,9 @@ the approved retention policy.
 2. `net._http_response`.
 3. `net.http_request_queue`.
 4. The 3,537 legacy jobs named `trigger_<uuid>`.
-5. Legacy `public` billing tables superseded by `kortix.credit_accounts` and
-   `kortix.credit_ledger`.
-6. Legacy `public` API keys superseded by `kortix.api_keys`.
+5. Legacy `public` billing tables superseded by `zed.credit_accounts` and
+   `zed.credit_ledger`.
+6. Legacy `public` API keys superseded by `zed.api_keys`.
 7. Legacy operational and analytics tables with no current repository
    dependency.
 
@@ -216,7 +216,7 @@ Migration policy:
 2. Do not copy `public.resources`.
 3. Do not copy `public.threads`.
 4. Do not copy `public.messages`.
-5. Keep `KORTIX_SUNA_MIGRATION_WORKER_ENABLED=false` on the US shadow.
+5. Keep `ZED_SUNA_MIGRATION_WORKER_ENABLED=false` on the US shadow.
 6. Keep the EU source unchanged through cutover and rollback.
 
 The API treats a missing `public.projects` relation as zero eligible projects.
@@ -255,7 +255,7 @@ Request these actions:
 
 4. Validate the imported source HS256 compatibility key.
 5. Validate PostgreSQL 15.8 to 17.6 compatibility.
-6. Coordinate the `supa.kortix.com` custom-domain transfer.
+6. Coordinate the `supa.zed.com` custom-domain transfer.
 7. Confirm the write-freeze, final synchronization, and rollback procedure.
 8. Confirm that no platform action is required for the completed `avatars`
    object copy.
@@ -344,7 +344,7 @@ The cleanup check covers:
 - `auth.refresh_tokens`
 - `auth.sessions`
 - `auth.users`
-- `kortix.audit_events`
+- `zed.audit_events`
 
 The source refresh-token smoke returns:
 
@@ -390,7 +390,7 @@ The US shadow endpoints return:
 - Gateway `/health`: HTTP `200`, API dependency `up`.
 - Frontend `/`: HTTP `200` from Vercel `fra1::cle1`.
 - Frontend runtime `BACKEND_URL` is
-  `https://api-use2-shadow.kortix.com/v1`.
+  `https://api-use2-shadow.zed.com/v1`.
 - Frontend HTML contains the target project ref `uhrwvisbqjfxhxjvoofd`.
 
 ### Database connection requirement
@@ -399,7 +399,7 @@ The direct target database endpoint accepts connections from the migration
 host. A Fargate probe returned `ECONNREFUSED` for the same endpoint.
 
 The regional session pooler accepted the Fargate connection. The
-`kortix-prod-us-east-2-env` secret therefore uses the session pooler on port
+`zed-prod-us-east-2-env` secret therefore uses the session pooler on port
 `5432` with user `postgres.uhrwvisbqjfxhxjvoofd`.
 
 Keep the stored pooler URL compatible with both `psql` and Node. Store
@@ -408,7 +408,7 @@ shadow workflow adds `uselibpqcompat=true` only for the `node-postgres`
 migration process.
 
 Do not replace the runtime `DATABASE_URL` with the direct database endpoint.
-Keep the direct endpoint in `kortix/prod-us-east-2-migration` for logical
+Keep the direct endpoint in `zed/prod-us-east-2-migration` for logical
 replication and migration administration.
 
 ## Target preparation
@@ -496,7 +496,7 @@ bash scripts/prod-us-east-2/frontend-auth-smoke.sh
 
 The frontend Auth smoke verifies the runtime API and Supabase URLs, password
 grant, visible login form, authenticated application shell, and Google and
-GitHub OAuth initiation on `https://us.kortix.com`. The provider gate fails when
+GitHub OAuth initiation on `https://us.zed.com`. The provider gate fails when
 either provider rejects the target Supabase callback URI.
 
 Run the source refresh-token compatibility smoke:
@@ -531,8 +531,8 @@ The cutover cannot complete until all gates pass.
 8. Signed Storage URLs and public object URLs succeed on the target.
 9. Credit use, credit add, and renewal idempotency succeed on the target.
 10. New-user signup fires the welcome webhook once.
-11. API-key authentication uses `kortix.api_keys`.
-12. `kortix_global_tick` fires once per minute after source writers stop.
+11. API-key authentication uses `zed.api_keys`.
+12. `zed_global_tick` fires once per minute after source writers stop.
 13. Logical replication lag reaches zero.
 14. The target passes the production smoke suite before DNS changes.
 
@@ -570,7 +570,7 @@ FREEZE_SOURCE_WRITERS_CONFIRM=freeze:prod-eu-west-2 \
 
 The command stops both EU ECS services and both EU EKS deployments. It suspends
 their autoscalers. It disables source worker flags. It removes
-`kortix_global_tick`. It publishes the guarded SSM freeze marker required by the
+`zed_global_tick`. It publishes the guarded SSM freeze marker required by the
 final database workflow.
 
 After the command returns `Source writers are frozen.`, dispatch
@@ -588,7 +588,7 @@ If Supabase Support does not perform the custom-domain transfer, use this
 self-service sequence under blocking maintenance:
 
 ```bash
-SUPABASE_DOMAIN_CONFIRM=detach-source:supa.kortix.com \
+SUPABASE_DOMAIN_CONFIRM=detach-source:supa.zed.com \
   bash scripts/prod-us-east-2/custom-domain.sh detach-source
 ```
 
@@ -600,7 +600,7 @@ Dispatch `Cut Over Prod US East 2` with:
 Then run:
 
 ```bash
-SUPABASE_DOMAIN_CONFIRM=attach-target:supa.kortix.com \
+SUPABASE_DOMAIN_CONFIRM=attach-target:supa.zed.com \
   bash scripts/prod-us-east-2/custom-domain.sh attach-target
 ```
 
@@ -610,7 +610,7 @@ custom domain before it returns.
 
 1. Confirm all pre-cutover blockers are closed.
 2. Raise the production maintenance notice.
-3. Block new API, gateway, and `supa.kortix.com` requests at Cloudflare.
+3. Block new API, gateway, and `supa.zed.com` requests at Cloudflare.
 4. Stop EU ECS and EKS application writers.
 5. Disable the source scheduler, trigger scheduler, channels, workers, and cron
    writers.
@@ -622,12 +622,12 @@ custom domain before it returns.
 11. Copy application and Auth sequence state.
 12. Run the final complete `avatars` synchronization and SHA-256 verification.
 13. Disable both target subscriptions only after all final checks pass.
-14. Transfer `supa.kortix.com` to the target project with Supabase Support.
+14. Transfer `supa.zed.com` to the target project with Supabase Support.
 15. Update the production application secret to the target Supabase URLs and
     keys.
 16. Confirm all production secret values contain no source project reference.
 17. Roll the US API and gateway with worker flags still disabled.
-18. Switch `api.kortix.com` and `gateway.kortix.com` to the US ECS origins.
+18. Switch `api.zed.com` and `gateway.zed.com` to the US ECS origins.
 19. Run authenticated API, web, Auth, Storage, billing, OAuth, MFA, scheduler,
     trigger, and gateway checks.
 20. Enable US schedulers and workers one group at a time.
@@ -668,7 +668,7 @@ If the target custom domain was activated, restore it before the writer
 rollback:
 
 ```bash
-SUPABASE_DOMAIN_CONFIRM=detach-target:supa.kortix.com \
+SUPABASE_DOMAIN_CONFIRM=detach-target:supa.zed.com \
   bash scripts/prod-us-east-2/custom-domain.sh detach-target
 ```
 
@@ -680,14 +680,14 @@ Dispatch `Cut Over Prod US East 2` with:
 Then run:
 
 ```bash
-SUPABASE_DOMAIN_CONFIRM=attach-source:supa.kortix.com \
+SUPABASE_DOMAIN_CONFIRM=attach-source:supa.zed.com \
   bash scripts/prod-us-east-2/custom-domain.sh attach-source
 ```
 
 1. Keep the source project unchanged until all target checks pass.
 2. Keep target schedulers and workers disabled during validation.
 3. If a target check fails, restore the production application secret.
-4. Point `api.kortix.com`, `gateway.kortix.com`, and `supa.kortix.com` back to
+4. Point `api.zed.com`, `gateway.zed.com`, and `supa.zed.com` back to
    their source origins.
 5. Start EU ECS and EKS application services.
 6. Re-enable source schedulers, workers, channels, and cron.

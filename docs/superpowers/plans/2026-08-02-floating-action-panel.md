@@ -26,7 +26,7 @@
 
 | File | Responsibility |
 |---|---|
-| `stores/kortix-computer-store.ts` | `isActionPanelOpen` + per-session persistence; chip clear |
+| `stores/zed-computer-store.ts` | `isActionPanelOpen` + per-session persistence; chip clear |
 | **new** `features/session/action-panel/session-panel-provider.tsx` | all detail/terminal state, openers, consume-effects; `useOptionalSessionPanel` |
 | **new** `features/session/action-panel/session-detail-panel.tsx` | side-panel host: `DetailLayer` + persistent terminal |
 | **new** `features/session/session-action-panel-overlay.tsx` | floating container + chevron toggle |
@@ -41,12 +41,12 @@
 
 ### Task 1: Store — two independent flags
 
-**Files:** Modify `apps/web/src/stores/kortix-computer-store.ts`; Test `apps/web/src/stores/kortix-computer-store.test.ts`
+**Files:** Modify `apps/web/src/stores/zed-computer-store.ts`; Test `apps/web/src/stores/zed-computer-store.test.ts`
 
 **Produces:** `isActionPanelOpen: boolean`, `setIsActionPanelOpen(open: boolean): void`, `toggleActionPanel(): void`, `useIsActionPanelOpen(): boolean`
 
 - [ ] **Step 1: Failing test** — `setIsActionPanelOpen(true)` leaves `isSidePanelOpen` false; `setIsSidePanelOpen(true)` leaves `isActionPanelOpen` false; `setActiveSession` round-trips both per session; `setIsActionPanelOpen(true)` clears this session's ready chip.
-- [ ] **Step 2: Run** `bun test src/stores/kortix-computer-store.test.ts` → FAIL, `setIsActionPanelOpen is not a function`.
+- [ ] **Step 2: Run** `bun test src/stores/zed-computer-store.test.ts` → FAIL, `setIsActionPanelOpen is not a function`.
 - [ ] **Step 3: Implement.** Add `isActionPanelOpen` and `_actionPanelOpenBySession` to state + `initialState`. `setIsActionPanelOpen` mirrors `setIsSidePanelOpen`'s per-session write but writes **no** width state — `panelSplit`/`panelAspect`/`isExpanded`/`detailOpen` describe a detail's width and the floating panel has none. Extend `setActiveSession` to save/restore `_actionPanelOpenBySession`.
 - [ ] **Step 4: Run** → PASS.
 

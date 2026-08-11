@@ -12,21 +12,21 @@ source "${SCRIPT_DIR}/../scripts/junit.sh"
 
 junit_init "migration.schema"
 
-# 1. Schema is non-empty: there is at least one table in the kortix schema.
-table_count="$(psql_query "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'kortix'")"
+# 1. Schema is non-empty: there is at least one table in the zed schema.
+table_count="$(psql_query "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'zed'")"
 if [ "${table_count:-0}" -gt 0 ]; then
-  junit_case "kortix schema is non-empty (${table_count} tables)" pass
+  junit_case "zed schema is non-empty (${table_count} tables)" pass
 else
-  junit_case "kortix schema is non-empty" fail "expected >0 tables, got ${table_count:-0}"
+  junit_case "zed schema is non-empty" fail "expected >0 tables, got ${table_count:-0}"
 fi
 
 # 2. Key tables exist. Adjust this list as the schema evolves.
 KEY_TABLES=(
-  "kortix.accounts"
-  "kortix.account_members"
-  "kortix.api_keys"
-  "kortix.sandboxes"
-  "kortix.credit_ledger"
+  "zed.accounts"
+  "zed.account_members"
+  "zed.api_keys"
+  "zed.sandboxes"
+  "zed.credit_ledger"
 )
 for fq in "${KEY_TABLES[@]}"; do
   schema="${fq%%.*}"
@@ -40,19 +40,19 @@ for fq in "${KEY_TABLES[@]}"; do
 done
 
 # 3. Enums from the bootstrap migration are present.
-enum_count="$(psql_query "SELECT count(*) FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'kortix' AND t.typtype = 'e'")"
+enum_count="$(psql_query "SELECT count(*) FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'zed' AND t.typtype = 'e'")"
 if [ "${enum_count:-0}" -gt 0 ]; then
-  junit_case "kortix enum types exist (${enum_count})" pass
+  junit_case "zed enum types exist (${enum_count})" pass
 else
-  junit_case "kortix enum types exist" fail "expected >0 enum types, got ${enum_count:-0}"
+  junit_case "zed enum types exist" fail "expected >0 enum types, got ${enum_count:-0}"
 fi
 
-# 4. Supabase grant roles can see kortix tables (table_grants migration applied).
-grant_ok="$(psql_query "SELECT 1 FROM information_schema.role_table_grants WHERE table_schema = 'kortix' AND grantee = 'service_role' LIMIT 1")"
+# 4. Supabase grant roles can see zed tables (table_grants migration applied).
+grant_ok="$(psql_query "SELECT 1 FROM information_schema.role_table_grants WHERE table_schema = 'zed' AND grantee = 'service_role' LIMIT 1")"
 if [ "${grant_ok}" = "1" ]; then
-  junit_case "service_role has grants on kortix tables" pass
+  junit_case "service_role has grants on zed tables" pass
 else
-  junit_case "service_role has grants on kortix tables" fail "no grants found for service_role"
+  junit_case "service_role has grants on zed tables" fail "no grants found for service_role"
 fi
 
 # 5. Functions reached from triggers on service_role-written tables carry
@@ -66,11 +66,11 @@ TRIGGER_FNS=(
   "apply_credit_ledger_lifetime_rollup"
 )
 for fn in "${TRIGGER_FNS[@]}"; do
-  fn_grant="$(psql_query "SELECT 1 FROM pg_proc p, LATERAL aclexplode(p.proacl) a WHERE p.pronamespace = 'kortix'::regnamespace AND p.proname = '${fn}' AND a.grantee::regrole::text = 'service_role' LIMIT 1")"
+  fn_grant="$(psql_query "SELECT 1 FROM pg_proc p, LATERAL aclexplode(p.proacl) a WHERE p.pronamespace = 'zed'::regnamespace AND p.proname = '${fn}' AND a.grantee::regrole::text = 'service_role' LIMIT 1")"
   if [ "${fn_grant}" = "1" ]; then
-    junit_case "service_role can execute kortix.${fn}" pass
+    junit_case "service_role can execute zed.${fn}" pass
   else
-    junit_case "service_role can execute kortix.${fn}" fail "no explicit EXECUTE grant for service_role on kortix.${fn}"
+    junit_case "service_role can execute zed.${fn}" fail "no explicit EXECUTE grant for service_role on zed.${fn}"
   fi
 done
 

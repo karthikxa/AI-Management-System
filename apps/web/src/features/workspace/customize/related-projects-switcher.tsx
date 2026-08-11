@@ -3,14 +3,14 @@
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { groupProjectsByRepository } from '@/features/projects/project-repository-groups';
-import type { KortixProject } from '@kortix/sdk';
-import { listProjectsForAccount } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+import type { ZedProject } from '@zed/sdk';
+import { listProjectsForAccount } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import { GitBranchIcon as GitBranch } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-export function RelatedProjectsSwitcher({ project }: { project: KortixProject }) {
+export function RelatedProjectsSwitcher({ project }: { project: ZedProject }) {
   const router = useRouter();
   const projectsQuery = useQuery({
     queryKey: qk.projects.list(project.account_id),

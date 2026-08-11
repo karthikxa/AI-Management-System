@@ -1,4 +1,4 @@
-import type { AdminConnector, DiscoverConnector, PipedreamApp } from '@kortix/sdk';
+import type { AdminConnector, DiscoverConnector, PipedreamApp } from '@zed/sdk';
 
 import { groupIntoSections, POPULAR_SECTION } from './connector-categories';
 import { sortByPicks } from './connector-picks';
@@ -47,7 +47,7 @@ export function computersCatalogEntry(): CatalogEntry {
     key: 'computer:computers',
     slug: 'computers',
     name: 'Computers',
-    description: 'Use selected local machines through the secure Kortix tunnel.',
+    description: 'Use selected local machines through the secure Zed tunnel.',
     icon: null,
     categories: ['developer-tools'],
     popularity: null,

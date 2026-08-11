@@ -1,7 +1,7 @@
 'use client';
 
-import type { ProviderListResponse } from '@kortix/sdk/react';
-import type { ModelCostRates, ModelPricingLookup } from '@kortix/sdk/turns';
+import type { ProviderListResponse } from '@zed/sdk/react';
+import type { ModelCostRates, ModelPricingLookup } from '@zed/sdk/turns';
 import { useEffect, useMemo, useState } from 'react';
 
 const MODELS_DEV_URL = 'https://models.dev/api.json';
@@ -112,7 +112,7 @@ export function createModelPricingLookup(
       return rates;
     }
 
-    if (providerID === 'kortix') {
+    if (providerID === 'zed') {
       return null;
     }
 

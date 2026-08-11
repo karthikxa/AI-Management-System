@@ -8,7 +8,7 @@ import { m } from 'motion/react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { Button } from '@/components/ui/button';
 import { InfoBanner } from '@/components/ui/info-banner';
 import Loading from '@/components/ui/loading';
@@ -20,7 +20,7 @@ import {
   declineAccountInvite,
   describeAccountInvite,
   type AccountInviteDescribe,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { PROJECT_LANDING_PATH } from '@/lib/onboarding/landing-destination';
 import { useAppHome } from '@/lib/onboarding/use-app-home';
 
@@ -211,7 +211,7 @@ export default function InvitePage() {
 
         <div className="border-foreground/[0.08] bg-foreground/[0.03] mt-5 flex items-center gap-3 rounded-2xl border px-4 py-3.5">
           <div className="bg-foreground/[0.05] text-foreground/60 flex size-10 shrink-0 items-center justify-center rounded-2xl">
-            <KortixLogo size={16} />
+            <ZedLogo size={16} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-foreground/85 truncate text-sm font-medium">{targetName}</div>
@@ -289,7 +289,7 @@ function InviteCard({ children, kicker }: { children: React.ReactNode; kicker: s
       className="w-full max-w-[380px]"
     >
       <div className="flex flex-col items-center gap-5">
-        <KortixLogo size={26} />
+        <ZedLogo size={26} />
         <div className="bg-background/80 dark:bg-background/75 border-foreground/[0.06] w-full rounded-2xl border px-7 py-7 backdrop-blur-2xl">
           <p className="text-foreground/30 mb-5 text-xs tracking-[0.2em] uppercase">{kicker}</p>
           {children}

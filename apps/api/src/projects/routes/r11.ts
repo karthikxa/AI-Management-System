@@ -5,7 +5,7 @@
 // in by adapters later. See docs/REVIEW_CENTER_DESIGN.md.
 
 import { createRoute, z } from '@hono/zod-openapi';
-import { connectorCalls, projectSessions } from '@kortix/db';
+import { connectorCalls, projectSessions } from '@zed/db';
 import { and, eq, inArray } from 'drizzle-orm';
 import { relayReviewCard } from '../../channels/turn-relay';
 import { requireFeatureFlag } from '../../feature-flags/gate';
@@ -16,7 +16,7 @@ import { db } from '../../shared/db';
 import { assertProjectCapability, loadProjectForUser } from '../lib/access';
 import { AnyObject, projectsApp } from '../lib/app';
 import { mayResolveApproval } from '../lib/approval-authority';
-import { callerKortixSessionId } from '../lib/caller-session';
+import { callerZedSessionId } from '../lib/caller-session';
 import { normalizeString, readBody } from '../lib/serializers';
 import { isAdaptedId } from '../review-adapters';
 import {
@@ -142,7 +142,7 @@ projectsApp.openapi(
               session?.createdBy ?? (execution.sessionId ? null : execution.actingUserId),
             callerUserId: loaded.userId,
             callerAuthType: (c.get('authType') as string | undefined) ?? null,
-            callerSessionId: callerKortixSessionId(c),
+            callerSessionId: callerZedSessionId(c),
           }).allowed;
         })
         .map((execution) => execution.executionId),

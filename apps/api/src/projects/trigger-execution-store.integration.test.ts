@@ -6,7 +6,7 @@ import {
   projectTriggerExecutions,
   projectTriggerRuntime,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { and, eq } from 'drizzle-orm';
 import {
   claimDueScheduleSlots,
@@ -19,8 +19,8 @@ import type { GitTriggerSpec } from './triggers';
 const CONFIRMATION = 'I_UNDERSTAND_THIS_DELETES_TEST_DATA';
 const HAS_CONFIRMED_TEST_DB = Boolean(
   process.env.TEST_DATABASE_URL &&
-    process.env.KORTIX_TEST_DB_CONFIRM === CONFIRMATION &&
-    process.env.INTERNAL_KORTIX_ENV !== 'prod',
+    process.env.ZED_TEST_DB_CONFIRM === CONFIRMATION &&
+    process.env.INTERNAL_ZED_ENV !== 'prod',
 );
 const describeWithDb = HAS_CONFIRMED_TEST_DB ? describe : describe.skip;
 
@@ -31,7 +31,7 @@ const REVISION = 'a'.repeat(64);
 
 const spec: GitTriggerSpec = {
   slug: SLUG,
-  path: 'kortix.yaml#triggers.scheduler-exact-proof',
+  path: 'zed.yaml#triggers.scheduler-exact-proof',
   name: 'Scheduler exact proof',
   type: 'cron',
   agent: 'default',

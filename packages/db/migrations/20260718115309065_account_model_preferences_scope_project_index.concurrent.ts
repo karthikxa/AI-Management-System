@@ -31,10 +31,10 @@
 export const shorthands = undefined;
 
 // Expand step 4/5 of the agent-model-pin project-scoping fix (see the doc
-// comment on accountModelPreferences in packages/db/src/schema/kortix.ts).
+// comment on accountModelPreferences in packages/db/src/schema/zed.ts).
 // Purely additive: this is the NEW arbiter index that lets two different
 // projects on the same account each hold their own scope='agent' pin for the
-// same agent name (e.g. the conventional 'kortix') without colliding -- the
+// same agent name (e.g. the conventional 'zed') without colliding -- the
 // bug this whole migration set exists to fix.
 
 /** @param {import('node-pg-migrate').MigrationBuilder} pgm */
@@ -49,7 +49,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create unique index concurrently if not exists idx_account_model_preferences_scope_project
-      on kortix.account_model_preferences (account_id, scope, scope_key, project_id)
+      on zed.account_model_preferences (account_id, scope, scope_key, project_id)
       where project_id is not null
   `);
 };

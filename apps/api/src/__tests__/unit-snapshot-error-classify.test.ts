@@ -18,17 +18,17 @@ describe('classifySnapshotError', () => {
 
   test('Dockerfile build failures', () => {
     expect(classifySnapshotError('failed to solve: process "/bin/sh -c apt-get install" did not complete successfully: exit code: 100')).toBe('dockerfile');
-    expect(classifySnapshotError('Empty Dockerfile at .kortix/Dockerfile (commit abcd1234)')).toBe('dockerfile');
+    expect(classifySnapshotError('Empty Dockerfile at .zed/Dockerfile (commit abcd1234)')).toBe('dockerfile');
     expect(classifySnapshotError('COPY failed: no such file or directory')).toBe('dockerfile');
   });
 
-  test('missing Kortix runtime artifacts', () => {
-    expect(classifySnapshotError('Required artifact missing: /path/kortix-agent. Set KORTIX_SNAPSHOT_AGENT_BIN_PATH')).toBe('runtime');
+  test('missing Zed runtime artifacts', () => {
+    expect(classifySnapshotError('Required artifact missing: /path/zed-agent. Set ZED_SNAPSHOT_AGENT_BIN_PATH')).toBe('runtime');
     expect(classifySnapshotError('Required directory missing: slack-cli')).toBe('runtime');
   });
 
   test('dead tunnel / unreachable callback', () => {
-    expect(classifySnapshotError('KORTIX_URL is a loopback address and unreachable from the sandbox')).toBe('tunnel');
+    expect(classifySnapshotError('ZED_URL is a loopback address and unreachable from the sandbox')).toBe('tunnel');
     expect(classifySnapshotError('cloudflared tunnel is down')).toBe('tunnel');
   });
 
@@ -43,7 +43,7 @@ describe('classifySnapshotError', () => {
     expect(classifySnapshotError('build timed out after 600s')).toBe('timeout');
   });
 
-  test('Kortix runtime layer failures outrank the generic dockerfile bucket', () => {
+  test('Zed runtime layer failures outrank the generic dockerfile bucket', () => {
     // The real incident: a project apt-installed gdal-bin → dpkg-owned
     // python3-numpy, and OUR injected pip floor tried to uninstall it. The user's
     // Dockerfile was CORRECT — classifying this as 'dockerfile' dispatched an
@@ -57,7 +57,7 @@ describe('classifySnapshotError', () => {
     expect(classifySnapshotError('error: externally-managed-environment')).toBe('layer');
     expect(classifySnapshotError('/bin/sh: 1: apt-get: not found')).toBe('layer');
     expect(classifySnapshotError(
-      'process "/bin/sh -c /opt/kortix/pyfloor/bin/pip install --no-cache-dir" did not complete successfully: exit code: 2',
+      'process "/bin/sh -c /opt/zed/pyfloor/bin/pip install --no-cache-dir" did not complete successfully: exit code: 2',
     )).toBe('layer');
   });
 
@@ -73,7 +73,7 @@ describe('classifySnapshotError', () => {
   test('Daytona provider / transport errors', () => {
     expect(classifySnapshotError('Your socket connection to the server was not read from or written to within the timeout period')).toBe('timeout'); // timeout wins, both non-fixable
     expect(classifySnapshotError('daytona snapshot.create failed: bad gateway 502')).toBe('provider');
-    expect(classifySnapshotError('Snapshot with name kortix-snap-22d94e6f-933a11278b8e not found')).toBe('provider');
+    expect(classifySnapshotError('Snapshot with name zed-snap-22d94e6f-933a11278b8e not found')).toBe('provider');
     expect(classifySnapshotError('ECONNRESET')).toBe('provider');
   });
 });
@@ -93,7 +93,7 @@ describe('describeSnapshotError fixability', () => {
     // A layer failure is OUR bug: never send an agent at the user's Dockerfile,
     // and say so in the hint.
     expect(describeSnapshotError('layer').fixableByAgent).toBe(false);
-    expect(describeSnapshotError('layer').hint).toContain('Kortix runtime layer');
+    expect(describeSnapshotError('layer').hint).toContain('Zed runtime layer');
   });
 
   test('classify + describe compose to a full descriptor', () => {

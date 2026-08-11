@@ -5,9 +5,9 @@ export const engineering: RoleContent = {
   slug: 'engineering',
   name: 'Engineering',
   navDescription: 'Reproduce it, patch it, open the change request',
-  seoTitle: 'Kortix for engineering teams',
+  seoTitle: 'Zed for engineering teams',
   seoDescription:
-    'Every Kortix session gets its own cloud computer and its own branch. The agent reproduces the bug, writes the patch, runs the tests, and opens a change request. Merge is default-deny for agents.',
+    'Every Zed session gets its own cloud computer and its own branch. The agent reproduces the bug, writes the patch, runs the tests, and opens a change request. Merge is default-deny for agents.',
 
   hero: {
     title: 'The work that never reaches the top of the queue.',
@@ -63,7 +63,7 @@ export const engineering: RoleContent = {
     sub: 'The output of an engineering session is the thing engineering already reviews. There is no new artifact to learn, no summary to trust — the change is the change, and the tests either passed on the machine that wrote it or they did not.',
     artifact: {
       kind: 'diff',
-      file: 'kortix/session-9f4c2b7e · retry backoff jitter',
+      file: 'zed/session-9f4c2b7e · retry backoff jitter',
       lines: [
         ' packages/queue/src/retry.ts',
         '-const delay = base * 2 ** attempt;',
@@ -110,7 +110,7 @@ export const engineering: RoleContent = {
       },
       {
         k: 'GitHub',
-        v: 'Read issues, comments and the state of a branch, and write back where you have allowed it. Kortix opens the change request itself; the connector is for everything around it.',
+        v: 'Read issues, comments and the state of a branch, and write back where you have allowed it. Zed opens the change request itself; the connector is for everything around it.',
       },
       {
         k: 'Linear',
@@ -122,7 +122,7 @@ export const engineering: RoleContent = {
       },
       {
         k: 'Your own services',
-        v: 'Point Kortix at an OpenAPI or Postman spec, a GraphQL endpoint, a remote MCP server, or a bare HTTP base URL. It reads the source, works out the authentication, and turns every operation into a tool the agent can call.',
+        v: 'Point Zed at an OpenAPI or Postman spec, a GraphQL endpoint, a remote MCP server, or a bare HTTP base URL. It reads the source, works out the authentication, and turns every operation into a tool the agent can call.',
       },
     ],
     footnote:
@@ -161,7 +161,7 @@ export const engineering: RoleContent = {
       {
         id: 'merge',
         k: 'Merge is default-deny',
-        v: 'An agent cannot merge to main. The permission exists — an admin can grant project.cr.merge — but the grant lives in kortix.yaml, so widening it is itself a change someone reviews. Nothing about that is a hidden default.',
+        v: 'An agent cannot merge to main. The permission exists — an admin can grant project.cr.merge — but the grant lives in zed.yaml, so widening it is itself a change someone reviews. Nothing about that is a hidden default.',
       },
       {
         id: 'gates',
@@ -176,7 +176,7 @@ export const engineering: RoleContent = {
       {
         id: 'creds',
         k: 'Connector credentials never enter the machine',
-        v: 'The sandbox carries one project-scoped Kortix token and no third-party keys. The gateway decrypts the real credential server-side and attaches it to the outbound call. A runtime secret you deliberately grant is different — that one is a real environment value the agent can read, and it is meant to be.',
+        v: 'The sandbox carries one project-scoped Zed token and no third-party keys. The gateway decrypts the real credential server-side and attaches it to the outbound call. A runtime secret you deliberately grant is different — that one is a real environment value the agent can read, and it is meant to be.',
       },
       {
         id: 'audit',
@@ -188,6 +188,6 @@ export const engineering: RoleContent = {
 
   closing: {
     title: 'Give it the ticket nobody picked up.',
-    sub: 'Open source and self-hostable. Any model, your keys. Kortix Cloud, your own VPC, or your own on-prem network.',
+    sub: 'Open source and self-hostable. Any model, your keys. Zed Cloud, your own VPC, or your own on-prem network.',
   },
 };

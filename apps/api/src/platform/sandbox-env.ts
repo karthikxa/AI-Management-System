@@ -4,16 +4,16 @@
  *
  * Hard rule: a sandbox NEVER holds a real upstream provider secret, and no
  * provider injects the per-service router URLs. The runtime needs only
- * `KORTIX_TOKEN` + `KORTIX_API_URL`; the tools derive every router endpoint
- * (`${KORTIX_API_URL}/v1/router/{service}`) from those two and authenticate
- * with `KORTIX_TOKEN`, and the kortix-api router injects the real upstream key
+ * `ZED_TOKEN` + `ZED_API_URL`; the tools derive every router endpoint
+ * (`${ZED_API_URL}/v1/router/{service}`) from those two and authenticate
+ * with `ZED_TOKEN`, and the zed-api router injects the real upstream key
  * server-side. The only credentials that legitimately live inside a sandbox
- * are that `KORTIX_TOKEN` (and its auth aliases) plus per-session tokens we
+ * are that `ZED_TOKEN` (and its auth aliases) plus per-session tokens we
  * mint explicitly.
  *
  * See router/config/proxy-services.ts for the upstream keys these map to.
  *
- * The sandbox is ALSO given `KORTIX_FRONTEND_URL` (a public, non-secret URL) so
+ * The sandbox is ALSO given `ZED_FRONTEND_URL` (a public, non-secret URL) so
  * the agent/CLI can build user-facing dashboard links without string-munging the
  * API host — see ./sandbox-frontend-url.ts. This module stays import-free of
  * `config` so its predicates remain pure/testable without booting the server.
@@ -25,16 +25,16 @@
  * matching a secret shape is stripped.
  */
 const SANDBOX_ALLOWED_CREDENTIALS: ReadonlySet<string> = new Set([
-  'KORTIX_TOKEN',
+  'ZED_TOKEN',
   'INTERNAL_SERVICE_KEY',
   'TUNNEL_TOKEN',
-  'KORTIX_CLI_TOKEN',
+  'ZED_CLI_TOKEN',
 ]);
 
 /**
  * Raw upstream provider secrets that must NEVER be injected into a sandbox.
- * These are reached through the router with `KORTIX_TOKEN`. Mirrors the
- * `getKortixApiKey` keys in router/config/proxy-services.ts.
+ * These are reached through the router with `ZED_TOKEN`. Mirrors the
+ * `getZedApiKey` keys in router/config/proxy-services.ts.
  */
 const SANDBOX_FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
   'OPENROUTER_API_KEY',

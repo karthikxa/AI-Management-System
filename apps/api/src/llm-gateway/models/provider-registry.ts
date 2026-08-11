@@ -1,4 +1,4 @@
-import { type ProviderKind, providerKindForNpm } from '@kortix/llm-gateway';
+import { type ProviderKind, providerKindForNpm } from '@zed/llm-gateway';
 import { runtimeModelCatalog } from './runtime-catalog';
 
 const BASE_URL_FALLBACKS: Record<string, string> = {

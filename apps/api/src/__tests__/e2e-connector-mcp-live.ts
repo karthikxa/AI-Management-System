@@ -4,7 +4,7 @@
  *
  *   seed a no-auth httpbin connector on a real project
  *   → mint a real project-scoped connector token
- *   → spawn the REAL `kortix connectors mcp` stdio server pointed at the LIVE gateway
+ *   → spawn the REAL `zed connectors mcp` stdio server pointed at the LIVE gateway
  *   → drive initialize → tools/list → connectors → discover → describe → call
  *   → assert the call made a real outbound request (httpbin echo)
  *   → assert an audit row was written to the live DB
@@ -15,7 +15,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { and, eq, desc, sql } from 'drizzle-orm';
 import { db } from '../shared/db';
-import { connectors, connectorActions, connectorCalls } from '@kortix/db';
+import { connectors, connectorActions, connectorCalls } from '@zed/db';
 import { createAccountToken } from '../repositories/account-tokens';
 
 const API_URL = process.env.LIVE_API_URL ?? 'http://localhost:8008/v1';
@@ -33,7 +33,7 @@ function check(name: string, cond: boolean, detail?: unknown) {
 
 async function seed(): Promise<string> {
   const [proj] = await db.execute<{ account_id: string }>(
-    sql`select account_id from kortix.projects where project_id = ${PROJECT_ID} limit 1`,
+    sql`select account_id from zed.projects where project_id = ${PROJECT_ID} limit 1`,
   ).then((r) => ((r as any).rows ?? r) as { account_id: string }[]);
   if (!proj) throw new Error(`project ${PROJECT_ID} not found`);
   const accountId = proj.account_id;
@@ -55,7 +55,7 @@ async function seed(): Promise<string> {
   });
 
   const member = (await db.execute<{ user_id: string; account_id: string }>(
-    sql`select user_id, account_id from kortix.account_members where account_id = ${accountId} order by joined_at limit 1`,
+    sql`select user_id, account_id from zed.account_members where account_id = ${accountId} order by joined_at limit 1`,
   ).then((r) => ((r as any).rows ?? r)))[0];
   if (!member) throw new Error(`no account_members for account ${accountId}`);
 
@@ -69,7 +69,7 @@ async function driveMcp(token: string) {
   const proc = Bun.spawn({
     cmd: ['bun', CLI_ENTRY, 'connectors', 'mcp'],
     cwd: REPO_ROOT,
-    env: { PATH: process.env.PATH, HOME: process.env.HOME, KORTIX_API_URL: API_URL, KORTIX_CLI_TOKEN: token },
+    env: { PATH: process.env.PATH, HOME: process.env.HOME, ZED_API_URL: API_URL, ZED_CLI_TOKEN: token },
     stdin: 'pipe', stdout: 'pipe', stderr: 'pipe',
   });
   const reader = proc.stdout.getReader();
@@ -91,7 +91,7 @@ async function driveMcp(token: string) {
   }
   try {
     const init = await rpc(1, 'initialize', { protocolVersion: '2025-06-18' });
-    check('initialize → serverInfo kortix-connectors', init?.serverInfo?.name === 'kortix-connectors', init?.serverInfo);
+    check('initialize → serverInfo zed-connectors', init?.serverInfo?.name === 'zed-connectors', init?.serverInfo);
 
     const listed = await rpc(2, 'tools/list');
     const names = (listed.tools ?? []).map((t: { name: string }) => t.name);

@@ -1,8 +1,8 @@
 /**
  * Presentation metadata for Review Center items — the single place that maps a
- * kind / risk / status / source to its icon, Kortix tone, and label. Mirrors the
- * tinted-icon-tile pattern from changes-view.tsx: a faint Kortix-token fill behind
- * a solid Kortix-token icon.
+ * kind / risk / status / source to its icon, Zed tone, and label. Mirrors the
+ * tinted-icon-tile pattern from changes-view.tsx: a faint Zed-token fill behind
+ * a solid Zed-token icon.
  */
 
 import type { StatusTone } from '@/components/ui/status';
@@ -42,7 +42,7 @@ function filled(IconComponent: IconCmp): IconCmp {
   };
 }
 type BadgeVariant =
-  'success' | 'warning' | 'destructive' | 'secondary' | 'muted' | 'kortix' | 'outline';
+  'success' | 'warning' | 'destructive' | 'secondary' | 'muted' | 'zed' | 'outline';
 
 export const KIND_META: Record<
   ReviewKind,
@@ -51,47 +51,47 @@ export const KIND_META: Record<
   change: {
     label: 'Change',
     icon: GitPullRequest,
-    tile: 'bg-kortix-blue/15',
-    iconColor: 'text-kortix-blue',
-    bar: 'before:bg-kortix-blue',
+    tile: 'bg-zed-blue/15',
+    iconColor: 'text-zed-blue',
+    bar: 'before:bg-zed-blue',
   },
   approval: {
     label: 'Approval',
     icon: filled(ShieldCheckSolid),
-    tile: 'bg-kortix-orange/15',
-    iconColor: 'text-kortix-orange',
-    bar: 'before:bg-kortix-orange',
+    tile: 'bg-zed-orange/15',
+    iconColor: 'text-zed-orange',
+    bar: 'before:bg-zed-orange',
   },
   output: {
     label: 'Output',
     icon: filled(SparklesSolid),
-    tile: 'bg-kortix-purple/15',
-    iconColor: 'text-kortix-purple',
-    bar: 'before:bg-kortix-purple',
+    tile: 'bg-zed-purple/15',
+    iconColor: 'text-zed-purple',
+    bar: 'before:bg-zed-purple',
   },
   decision: {
     label: 'Question',
     icon: filled(QuestionCircleSolid),
-    tile: 'bg-kortix-yellow/15',
-    // Darker than the tile hue — kortix-yellow (oklch L≈0.73) is the palette's
+    tile: 'bg-zed-yellow/15',
+    // Darker than the tile hue — zed-yellow (oklch L≈0.73) is the palette's
     // lowest-contrast token for a glyph on a light tint. See a11y note.
-    iconColor: 'text-yellow-600 dark:text-kortix-yellow',
-    bar: 'before:bg-kortix-yellow',
+    iconColor: 'text-yellow-600 dark:text-zed-yellow',
+    bar: 'before:bg-zed-yellow',
   },
   batch: {
     label: 'Finished',
     icon: filled(CheckCircleSolid),
-    tile: 'bg-kortix-green/15',
-    iconColor: 'text-kortix-green',
-    bar: 'before:bg-kortix-green',
+    tile: 'bg-zed-green/15',
+    iconColor: 'text-zed-green',
+    bar: 'before:bg-zed-green',
   },
 };
 
 /** Left-accent-bar class for the segment's risk tone (Needs-you escalation). */
 export const RISK_BAR: Record<ReviewRisk, string> = {
-  none: 'before:bg-kortix-green',
-  low: 'before:bg-kortix-green',
-  medium: 'before:bg-kortix-orange',
+  none: 'before:bg-zed-green',
+  low: 'before:bg-zed-green',
+  medium: 'before:bg-zed-orange',
   high: 'before:bg-destructive',
 };
 

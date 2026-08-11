@@ -1,13 +1,13 @@
 # electron-builder packaging config. Replaces the Tauri bundle:
-# same appId/identifier, the kortix:// protocol, macOS ATS exceptions, and the
+# same appId/identifier, the zed:// protocol, macOS ATS exceptions, and the
 # installer formats the web /download route resolves (.dmg / .exe / .AppImage).
 #
 # Icons live in build/ (icon.icns / icon.ico / icon.png) and are auto-detected.
 # Code signing / notarization are env-driven (CSC_LINK / APPLE_* / WIN_CSC_*) so
 # unsigned local builds work for testing; CI injects the secrets.
-appId: com.kortix.desktop
-productName: Kortix
-copyright: © Kortix
+appId: com.zed.desktop
+productName: Zed
+copyright: © Zed
 
 # Publish target. We never auto-publish from electron-builder (CI uploads the
 # artifacts itself with --publish never), but a concrete provider is REQUIRED:
@@ -15,7 +15,7 @@ copyright: © Kortix
 # crashes generating update metadata (computeChannelNames → channel of null).
 publish:
   provider: github
-  owner: kortix-ai
+  owner: zed-ai
   repo: suna
 
 directories:
@@ -29,11 +29,11 @@ files:
   - assets/**/*
   - package.json
 
-# Registers the kortix:// deep-link scheme (auth callbacks) in the OS bundle.
+# Registers the zed:// deep-link scheme (auth callbacks) in the OS bundle.
 protocols:
-  - name: Kortix
+  - name: Zed
     schemes:
-      - kortix
+      - zed
 
 mac:
   category: public.app-category.productivity
@@ -64,9 +64,9 @@ mac:
       NSAllowsLocalNetworking: true
 
 # Per-arch dmg name so the /download route can pick the right one
-# (e.g. Kortix-0.9.82-arm64.dmg / Kortix-0.9.82-x64.dmg).
+# (e.g. Zed-0.9.82-arm64.dmg / Zed-0.9.82-x64.dmg).
 dmg:
-  title: Kortix ${version}
+  title: Zed ${version}
   artifactName: ${productName}-${version}-${arch}.${ext}
 
 win:

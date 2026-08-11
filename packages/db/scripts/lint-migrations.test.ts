@@ -7,7 +7,7 @@ describe('lintMigration', () => {
   test('a well-formed migration produces no errors', () => {
     const { errors } = lintMigration(
       GOOD_NAME,
-      'ALTER TABLE kortix.accounts ADD COLUMN note text;\n',
+      'ALTER TABLE zed.accounts ADD COLUMN note text;\n',
     );
     expect(errors).toEqual([]);
   });
@@ -36,23 +36,23 @@ describe('lintMigration', () => {
   });
 
   test('warns on a destructive DROP in the up migration', () => {
-    const { warnings } = lintMigration(GOOD_NAME, 'DROP TABLE kortix.widgets;');
+    const { warnings } = lintMigration(GOOD_NAME, 'DROP TABLE zed.widgets;');
     expect(warnings.some((w) => w.includes('destructive'))).toBe(true);
   });
 
   test('does not warn when the DROP is only in the down section', () => {
     const sql =
-      '-- Up Migration\nCREATE TABLE kortix.w (id int);\n-- Down Migration\nDROP TABLE kortix.w;';
+      '-- Up Migration\nCREATE TABLE zed.w (id int);\n-- Down Migration\nDROP TABLE zed.w;';
     expect(lintMigration(GOOD_NAME, sql).warnings).toEqual([]);
   });
 
   test('warns on DELETE without a WHERE clause', () => {
-    const { warnings } = lintMigration(GOOD_NAME, 'DELETE FROM kortix.widgets;');
+    const { warnings } = lintMigration(GOOD_NAME, 'DELETE FROM zed.widgets;');
     expect(warnings.some((w) => w.includes('DELETE without a WHERE'))).toBe(true);
   });
 
   test('does not warn on DELETE that has a WHERE clause', () => {
-    const { warnings } = lintMigration(GOOD_NAME, "DELETE FROM kortix.widgets WHERE id = '1';");
+    const { warnings } = lintMigration(GOOD_NAME, "DELETE FROM zed.widgets WHERE id = '1';");
     expect(warnings).toEqual([]);
   });
 });
@@ -81,18 +81,18 @@ describe('CONCURRENTLY in a plain .sql migration', () => {
   test('rejects CREATE INDEX CONCURRENTLY in a plain .sql file', () => {
     const { errors } = lintMigration(
       GOOD_NAME,
-      'CREATE INDEX CONCURRENTLY idx_x ON kortix.widgets (name);\n',
+      'CREATE INDEX CONCURRENTLY idx_x ON zed.widgets (name);\n',
     );
     expect(errors.some((e) => e.includes('CONCURRENTLY') && e.includes('--concurrent'))).toBe(true);
   });
 
   test('rejects DROP INDEX CONCURRENTLY in a plain .sql file (squawk alone misses this)', () => {
-    const { errors } = lintMigration(GOOD_NAME, 'DROP INDEX CONCURRENTLY kortix.idx_x;\n');
+    const { errors } = lintMigration(GOOD_NAME, 'DROP INDEX CONCURRENTLY zed.idx_x;\n');
     expect(errors.some((e) => e.includes('CONCURRENTLY'))).toBe(true);
   });
 
   test('does not fire on a normal migration', () => {
-    const { errors } = lintMigration(GOOD_NAME, 'CREATE INDEX idx_x ON kortix.widgets (name);\n');
+    const { errors } = lintMigration(GOOD_NAME, 'CREATE INDEX idx_x ON zed.widgets (name);\n');
     expect(errors.some((e) => e.includes('batch transaction'))).toBe(false);
   });
 });
@@ -101,20 +101,20 @@ describe('mixed-version guard (the 20260713220001000 class)', () => {
   test('rejects an unannotated unique index drop', () => {
     const { errors } = lintMigration(
       GOOD_NAME,
-      'DROP INDEX kortix.idx_projects_account_repo;\n',
+      'DROP INDEX zed.idx_projects_account_repo;\n',
     );
     expect(errors.some((e) => e.includes('mixed-version'))).toBe(true);
   });
 
   test('rejects an unannotated DROP TABLE', () => {
-    const { errors } = lintMigration(GOOD_NAME, 'DROP TABLE kortix.widgets;\n');
+    const { errors } = lintMigration(GOOD_NAME, 'DROP TABLE zed.widgets;\n');
     expect(errors.some((e) => e.includes('mixed-version'))).toBe(true);
   });
 
   test('rejects an unannotated DROP CONSTRAINT', () => {
     const { errors } = lintMigration(
       GOOD_NAME,
-      'ALTER TABLE kortix.widgets DROP CONSTRAINT widgets_name_key;\n',
+      'ALTER TABLE zed.widgets DROP CONSTRAINT widgets_name_key;\n',
     );
     expect(errors.some((e) => e.includes('mixed-version'))).toBe(true);
   });
@@ -122,7 +122,7 @@ describe('mixed-version guard (the 20260713220001000 class)', () => {
   test('rejects an unannotated column rename', () => {
     const { errors } = lintMigration(
       GOOD_NAME,
-      'ALTER TABLE kortix.widgets RENAME COLUMN old_name TO new_name;\n',
+      'ALTER TABLE zed.widgets RENAME COLUMN old_name TO new_name;\n',
     );
     expect(errors.some((e) => e.includes('mixed-version'))).toBe(true);
   });
@@ -130,18 +130,18 @@ describe('mixed-version guard (the 20260713220001000 class)', () => {
   test('accepts a unique index drop WITH the mixed-version-safe annotation', () => {
     const { errors } = lintMigration(
       GOOD_NAME,
-      '-- mixed-version-safe: branch-isolated projects made this index redundant; no code reads it\nDROP INDEX kortix.idx_projects_account_repo;\n',
+      '-- mixed-version-safe: branch-isolated projects made this index redundant; no code reads it\nDROP INDEX zed.idx_projects_account_repo;\n',
     );
     expect(errors.some((e) => e.includes('mixed-version'))).toBe(false);
   });
 
   test('does not fire on an unrelated additive migration', () => {
-    const { errors } = lintMigration(GOOD_NAME, 'ALTER TABLE kortix.accounts ADD COLUMN note text;\n');
+    const { errors } = lintMigration(GOOD_NAME, 'ALTER TABLE zed.accounts ADD COLUMN note text;\n');
     expect(errors.some((e) => e.includes('mixed-version'))).toBe(false);
   });
 
   test('grandfathered pre-existing migrations are exempt', () => {
-    const { errors } = lintMigration(GOOD_NAME, 'DROP TABLE kortix.widgets;\n', {
+    const { errors } = lintMigration(GOOD_NAME, 'DROP TABLE zed.widgets;\n', {
       grandfathered: true,
     });
     expect(errors.some((e) => e.includes('mixed-version'))).toBe(false);
@@ -152,7 +152,7 @@ describe('enum-value-addition guard (the sandbox_provider "platinum" drift class
   test('rejects an unannotated ADD VALUE', () => {
     const { errors } = lintMigration(
       GOOD_NAME,
-      "ALTER TYPE kortix.sandbox_provider ADD VALUE 'platinum';\n",
+      "ALTER TYPE zed.sandbox_provider ADD VALUE 'platinum';\n",
     );
     expect(errors.some((e) => e.includes('enum-value-checked') || e.includes('faked'))).toBe(true);
   });
@@ -160,7 +160,7 @@ describe('enum-value-addition guard (the sandbox_provider "platinum" drift class
   test('accepts an ADD VALUE with the enum-value-checked annotation', () => {
     const { errors } = lintMigration(
       GOOD_NAME,
-      "-- enum-value-checked: confirmed present via migrate:status on dev and prod after this PR merges\nALTER TYPE kortix.sandbox_provider ADD VALUE 'platinum';\n",
+      "-- enum-value-checked: confirmed present via migrate:status on dev and prod after this PR merges\nALTER TYPE zed.sandbox_provider ADD VALUE 'platinum';\n",
     );
     expect(errors.some((e) => e.includes('enum-value-checked') || e.includes('faked'))).toBe(false);
   });
@@ -168,7 +168,7 @@ describe('enum-value-addition guard (the sandbox_provider "platinum" drift class
   test('grandfathered pre-existing migrations are exempt', () => {
     const { errors } = lintMigration(
       GOOD_NAME,
-      "ALTER TYPE kortix.sandbox_provider ADD VALUE 'e2b';\n",
+      "ALTER TYPE zed.sandbox_provider ADD VALUE 'e2b';\n",
       { grandfathered: true },
     );
     expect(errors.some((e) => e.includes('enum-value-checked'))).toBe(false);
@@ -184,7 +184,7 @@ describe('.concurrent.ts escape hatch', () => {
       [
         'export const up = (pgm) => {',
         '  pgm.noTransaction();',
-        "  pgm.sql('CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_widgets_name ON kortix.widgets (name);');",
+        "  pgm.sql('CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_widgets_name ON zed.widgets (name);');",
         '};',
         'export const down = false;',
       ].join('\n'),
@@ -197,7 +197,7 @@ describe('.concurrent.ts escape hatch', () => {
       CONCURRENT_NAME,
       [
         'export const up = (pgm) => {',
-        "  pgm.sql('CREATE INDEX CONCURRENTLY idx_widgets_name ON kortix.widgets (name);');",
+        "  pgm.sql('CREATE INDEX CONCURRENTLY idx_widgets_name ON zed.widgets (name);');",
         '};',
       ].join('\n'),
     );
@@ -228,7 +228,7 @@ describe('.concurrent.ts escape hatch', () => {
       [
         'export const up = (pgm) => {',
         '  pgm.noTransaction();',
-        "  pgm.sql(`set lock_timeout = '2s'; create index concurrently idx_x on kortix.widgets (name);`);",
+        "  pgm.sql(`set lock_timeout = '2s'; create index concurrently idx_x on zed.widgets (name);`);",
         '};',
       ].join('\n'),
     );
@@ -242,7 +242,7 @@ describe('.concurrent.ts escape hatch', () => {
         'export const up = (pgm) => {',
         '  pgm.noTransaction();',
         "  pgm.sql(`set lock_timeout = '2s'`);",
-        "  pgm.sql(`create index concurrently if not exists idx_widgets_name on kortix.widgets (name)`);",
+        "  pgm.sql(`create index concurrently if not exists idx_widgets_name on zed.widgets (name)`);",
         '};',
       ].join('\n'),
     );
@@ -255,7 +255,7 @@ describe('.concurrent.ts escape hatch', () => {
       [
         'export const up = (pgm) => {',
         '  pgm.noTransaction();',
-        "  pgm.sql('create index concurrently if not exists idx_TODO_ON_TODO_TABLE on kortix.TODO_TABLE (TODO_COLUMN);');",
+        "  pgm.sql('create index concurrently if not exists idx_TODO_ON_TODO_TABLE on zed.TODO_TABLE (TODO_COLUMN);');",
         '};',
       ].join('\n'),
     );
@@ -268,7 +268,7 @@ describe('.concurrent.ts escape hatch', () => {
       [
         'export const up = (pgm) => {',
         '  pgm.noTransaction();',
-        "  pgm.sql('drop index concurrently if exists kortix.idx_projects_account_repo');",
+        "  pgm.sql('drop index concurrently if exists zed.idx_projects_account_repo');",
         '};',
       ].join('\n'),
     );
@@ -282,7 +282,7 @@ describe('.concurrent.ts escape hatch', () => {
         '// mixed-version-safe: redundant index, no code path relies on it',
         'export const up = (pgm) => {',
         '  pgm.noTransaction();',
-        "  pgm.sql('drop index concurrently if exists kortix.idx_projects_account_repo');",
+        "  pgm.sql('drop index concurrently if exists zed.idx_projects_account_repo');",
         '};',
       ].join('\n'),
     );

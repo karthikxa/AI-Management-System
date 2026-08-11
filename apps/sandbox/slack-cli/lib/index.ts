@@ -10,8 +10,8 @@ export {
 export {
   getEnv,
   requireEnv,
-  kortixProjectId,
-  kortixSessionId,
-  kortixWorkspace,
+  zedProjectId,
+  zedSessionId,
+  zedWorkspace,
 } from './env';
-export { kortixGet, kortixPost, kortixDelete, kortixConnectorCall } from './api';
+export { zedGet, zedPost, zedDelete, zedConnectorCall } from './api';

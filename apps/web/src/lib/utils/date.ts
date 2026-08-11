@@ -1,4 +1,4 @@
-export { fullDate, relativeTime } from '@/lib/kortix/task-meta';
+export { fullDate, relativeTime } from '@/lib/zed/task-meta';
 
 export function formatDate(t?: string | number | Date | null): string {
   if (!t) return '';

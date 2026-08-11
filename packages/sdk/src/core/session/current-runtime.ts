@@ -11,7 +11,7 @@
  * stream re-subscribes to the new daemon.
  *
  * This module is part of the isomorphic core (reachable from the root
- * `@kortix/sdk` export), so it is a plain hand-rolled store — no zustand, no
+ * `@zed/sdk` export), so it is a plain hand-rolled store — no zustand, no
  * React. The React selector hook lives at `react/use-current-runtime`.
  */
 export interface CurrentRuntimeState {

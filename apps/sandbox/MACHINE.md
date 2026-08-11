@@ -1,10 +1,10 @@
-# Kortix Sandbox
+# Zed Sandbox
 
 This machine is an isolated Linux sandbox.
 
 ## General Env
 
-The runtime user is `kortix`. It has passwordless `sudo` access.
+The runtime user is `zed`. It has passwordless `sudo` access.
 The project repository and its configuration are in `/workspace`.
 
 Use `pnpm` for JavaScript and TypeScript dependencies. Use `pnpm dlx` for temporary package commands.
@@ -16,7 +16,7 @@ Use Bun only when a project requires it.
 
 ## Installed tools
 
-- Node.js, npm, pnpm, Python, uv, Bun, OpenCode, and the `kortix` CLI are on
+- Node.js, npm, pnpm, Python, uv, Bun, OpenCode, and the `zed` CLI are on
   `PATH`.
 - Bundled Python tools run on the pre-installed package floor with plain `python3`.
 - `agent-browser` and Chromium are installed for accessing local pages.

@@ -8,7 +8,7 @@ const getApiUrl = () => platformConfig().backendUrl || '';
 // Ported from web's error-handler. User-facing error handling is routed
 // through platformConfig().onError?.() instead of web's handleApiError.
 // The error classes live in ./api/errors â€” re-exported here so both the
-// root barrel and the `@kortix/sdk/api-client` subpath expose them.
+// root barrel and the `@zed/sdk/api-client` subpath expose them.
 export {
   ApiError,
   AuthError,
@@ -136,7 +136,7 @@ const isAbortError = (error: unknown): boolean =>
 
 // Platform-admin read-only bypass toggle (web only). In-memory, per-tab â€” never
 // persisted â€” so it resets on reload and can't linger silently. When on, every
-// request from this client carries `x-kortix-admin-bypass: 1`; the API only
+// request from this client carries `x-zed-admin-bypass: 1`; the API only
 // honors it for a real platform admin/super_admin on a `read` action (see
 // apps/api/src/projects/lib/access.ts), so this is safe to set unconditionally
 // here rather than threading it through every call site.
@@ -174,7 +174,7 @@ async function makeRequest<T = any>(
     }, timeout);
 
     const token = process.env.NEXT_PUBLIC_MOCK_AUTH === 'true'
-      ? 'kortix-local-dev'
+      ? 'zed-local-dev'
       : await getSupabaseAccessTokenWithRetry();
 
     // Don't set Content-Type for FormData - browser will set it automatically with boundary
@@ -190,14 +190,14 @@ async function makeRequest<T = any>(
 
     const clientSource = normalizeClientSource(platformConfig().clientSource);
     const hasClientSource = Object.keys(headers).some(
-      (name) => name.toLowerCase() === 'x-kortix-client',
+      (name) => name.toLowerCase() === 'x-zed-client',
     );
     if (clientSource && !hasClientSource) {
-      headers['X-Kortix-Client'] = clientSource;
+      headers['X-Zed-Client'] = clientSource;
     }
 
     if (adminBypassEnabled) {
-      headers['x-kortix-admin-bypass'] = '1';
+      headers['x-zed-admin-bypass'] = '1';
     }
 
     if (token) {
@@ -315,7 +315,7 @@ async function makeRequest<T = any>(
         typeof window.dispatchEvent === 'function'
       ) {
         try {
-          window.dispatchEvent(new CustomEvent('kortix:mfa-required'));
+          window.dispatchEvent(new CustomEvent('zed:mfa-required'));
         } catch {
           // Never let telemetry-grade signaling break the error path.
         }

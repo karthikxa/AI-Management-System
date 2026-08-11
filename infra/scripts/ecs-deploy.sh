@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# ecs-deploy.sh — roll a Kortix service onto ECS Fargate with a task-def rendered
+# ecs-deploy.sh — roll a Zed service onto ECS Fargate with a task-def rendered
 # fresh from Secrets Manager, so the ECS env can never drift from the EKS env.
 #
 # The env contract lives in ONE place per environment: the Secrets Manager blob
-# `kortix-<env>-env`. ECS injects the complete JSON document through one stable
+# `zed-<env>-env`. ECS injects the complete JSON document through one stable
 # selector. Application startup expands it into process.env. Adding or removing
 # an optional JSON key cannot invalidate an already-registered task definition.
 #
@@ -13,14 +13,14 @@
 #                 [--database-migrated] [--no-wait] [--dry-run]
 #
 #   env        dev | staging | prod | prod-use2-shadow
-#   image      full image ref to pin, e.g. kortix/kortix-api:dev-481dc551
-#   --version  explicit KORTIX_VERSION to stamp into the task-def env. When
+#   image      full image ref to pin, e.g. zed/zed-api:dev-481dc551
+#   --version  explicit ZED_VERSION to stamp into the task-def env. When
 #              omitted, it is DERIVED from the image tag if the tag is a clean
 #              release version (X.Y.Z). Why: prod release images are RETAGGED
-#              staging manifests, so their baked KORTIX_VERSION is the staging
+#              staging manifests, so their baked ZED_VERSION is the staging
 #              string (e.g. 0.9.109-staging.<sha8>) — without this stamp, ECS
 #              /v1/health reports that instead of the released X.Y.Z while EKS
-#              (which stamps kortixVersion via Helm values) reports the clean
+#              (which stamps zedVersion via Helm values) reports the clean
 #              version. The stamp keeps both backends' reported versions
 #              IDENTICAL, which is what lets deploy-prod's verify-live-version
 #              job assert the public endpoint serves the released version.
@@ -46,14 +46,14 @@ derive_version_from_image() {
   fi
 }
 
-# Allow sourcing for tests: `KORTIX_ECS_DEPLOY_LIB=1 source ecs-deploy.sh`.
-if [ "${KORTIX_ECS_DEPLOY_LIB:-}" = "1" ]; then
+# Allow sourcing for tests: `ZED_ECS_DEPLOY_LIB=1 source ecs-deploy.sh`.
+if [ "${ZED_ECS_DEPLOY_LIB:-}" = "1" ]; then
   # shellcheck disable=SC2317 # `exit` is the non-sourced fallback for `return`
   return 0 2>/dev/null || exit 0
 fi
 
 ENV="${1:?env required: dev|staging|prod|prod-use2-shadow}"
-IMAGE="${2:?image required, e.g. kortix/kortix-api:dev-481dc551}"
+IMAGE="${2:?image required, e.g. zed/zed-api:dev-481dc551}"
 shift 2
 
 SVC_KIND="api"
@@ -78,23 +78,23 @@ done
 case "$ENV" in
   dev)
     REGION="us-west-2"
-    SERVICE_PREFIX="kortix-dev"
-    SECRET_NAME="kortix-dev-env"
+    SERVICE_PREFIX="zed-dev"
+    SECRET_NAME="zed-dev-env"
     ;;
   staging)
     REGION="us-west-2"
-    SERVICE_PREFIX="kortix-staging"
-    SECRET_NAME="kortix-staging-env"
+    SERVICE_PREFIX="zed-staging"
+    SECRET_NAME="zed-staging-env"
     ;;
   prod)
     REGION="eu-west-2"
-    SERVICE_PREFIX="kortix-prod"
-    SECRET_NAME="kortix-prod-env"
+    SERVICE_PREFIX="zed-prod"
+    SECRET_NAME="zed-prod-env"
     ;;
   prod-use2-shadow)
     REGION="us-east-2"
-    SERVICE_PREFIX="kortix-prod-use2"
-    SECRET_NAME="kortix-prod-us-east-2-env"
+    SERVICE_PREFIX="zed-prod-use2"
+    SECRET_NAME="zed-prod-us-east-2-env"
     ;;
   *) echo "unknown env: $ENV" >&2; exit 2 ;;
 esac
@@ -122,9 +122,9 @@ fi
 echo "▶ env=$ENV region=$REGION cluster=$CLUSTER service=$SERVICE container=$CONTAINER"
 echo "▶ image=$IMAGE  secrets<-$SECRET_NAME"
 if [ -n "$VERSION_OVERRIDE" ]; then
-  echo "▶ KORTIX_VERSION=$VERSION_OVERRIDE (task-def env stamp)"
+  echo "▶ ZED_VERSION=$VERSION_OVERRIDE (task-def env stamp)"
 else
-  echo "▶ KORTIX_VERSION: no override (non-release tag) — image's baked version reports"
+  echo "▶ ZED_VERSION: no override (non-release tag) — image's baked version reports"
 fi
 
 # ── skip gracefully if this env's ECS service isn't built yet ────────────────
@@ -149,8 +149,8 @@ SECRET_VALUE="$(aws secretsmanager get-secret-value --region "$REGION" \
 KEYCOUNT="$(printf '%s' "$SECRET_VALUE" | jq 'if type == "object" and all(.[]; type == "string") then length else error("secret must be a JSON object of strings") end')"
 [ "$KEYCOUNT" -gt 0 ] || { echo "blob $SECRET_NAME has 0 keys — refusing to deploy" >&2; exit 1; }
 unset SECRET_VALUE
-SECRETS_JSON="$(jq -cn --arg arn "$SECRET_ARN" '[{name: "KORTIX_ENV_JSON", valueFrom: $arn}]')"
-echo "▶ wired $KEYCOUNT environment values through KORTIX_ENV_JSON from $SECRET_NAME"
+SECRETS_JSON="$(jq -cn --arg arn "$SECRET_ARN" '[{name: "ZED_ENV_JSON", valueFrom: $arn}]')"
+echo "▶ wired $KEYCOUNT environment values through ZED_ENV_JSON from $SECRET_NAME"
 
 # ── base task-def = the service's current one, with runtime fields stripped ──
 CURRENT_TD="$(aws ecs describe-services --region "$REGION" --cluster "$CLUSTER" \
@@ -165,8 +165,8 @@ NEW_TD_JSON="$(aws ecs describe-task-definition --region "$REGION" \
       del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
           .compatibilities, .registeredAt, .registeredBy, .deregisteredAt)
       # Override image + full secrets on the target container. Stamp
-      # KORTIX_VERSION as explicit container env so ECS reports the same clean
-      # version EKS reports. Always remove KORTIX_COMMIT from the task
+      # ZED_VERSION as explicit container env so ECS reports the same clean
+      # version EKS reports. Always remove ZED_COMMIT from the task
       # definition. The immutable image contains the source commit. Preserving
       # a task-definition override can make a new image report an old commit.
       # On non-release tags ($ver == ""), remove any stale version stamp so the
@@ -177,9 +177,9 @@ NEW_TD_JSON="$(aws ecs describe-task-definition --region "$REGION" \
             | .secrets = $secrets
             | .environment = (
                 ((.environment // []) | map(
-                  select(.name != "KORTIX_VERSION" and .name != "KORTIX_COMMIT")
+                  select(.name != "ZED_VERSION" and .name != "ZED_COMMIT")
                 ))
-                + (if $ver == "" then [] else [{name: "KORTIX_VERSION", value: $ver}] end))
+                + (if $ver == "" then [] else [{name: "ZED_VERSION", value: $ver}] end))
           else . end)')"
 
 if [ "$DRY_RUN" = "1" ]; then

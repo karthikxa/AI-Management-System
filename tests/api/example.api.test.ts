@@ -10,7 +10,7 @@ describe("api/example: GET /health", () => {
 
     const body = (await res.json()) as { status?: string; service?: string };
     expect(body.status).toBe("ok");
-    expect(body.service).toBe("kortix-api");
+    expect(body.service).toBe("zed-api");
   });
 
   it("serves the versioned health route too", async () => {

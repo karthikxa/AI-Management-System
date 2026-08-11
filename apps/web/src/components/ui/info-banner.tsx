@@ -21,9 +21,9 @@ const infoBannerVariants = cva(
     variants: {
       tone: {
         neutral: 'border-border border ',
-        info: 'border-kortix-yellow/25 ',
-        success: 'border-kortix-green/25 ',
-        warning: 'border-kortix-orange/25 ',
+        info: 'border-zed-yellow/25 ',
+        success: 'border-zed-green/25 ',
+        warning: 'border-zed-orange/25 ',
         destructive: 'border-border border',
       },
     },
@@ -40,10 +40,10 @@ const infoBannerMediaVariants = cva(
     variants: {
       tone: {
         neutral: 'text-muted-foreground border-border',
-        info: 'bg-kortix-yellow/10 text-kortix-yellow',
-        success: 'bg-kortix-green/10 text-kortix-green',
-        warning: 'bg-kortix-orange/10 text-kortix-orange',
-        destructive: 'bg-kortix-red/10 text-kortix-red',
+        info: 'bg-zed-yellow/10 text-zed-yellow',
+        success: 'bg-zed-green/10 text-zed-green',
+        warning: 'bg-zed-orange/10 text-zed-orange',
+        destructive: 'bg-zed-red/10 text-zed-red',
       },
     },
     defaultVariants: {

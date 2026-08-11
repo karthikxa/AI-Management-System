@@ -180,7 +180,7 @@ export function OutputRows({
                 {o.title ?? o.name}
               </span>
               {o.fresh && (
-                <span className="text-kortix-green shrink-0 text-xs font-medium">
+                <span className="text-zed-green shrink-0 text-xs font-medium">
                   {o.fresh === 'new' ? 'New' : 'Updated'}
                 </span>
               )}

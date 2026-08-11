@@ -1,5 +1,5 @@
 // Single source of truth for every runtime secret the self-host `.env` holds:
-// which service category it belongs to (for `kortix self-host env ls`),
+// which service category it belongs to (for `zed self-host env ls`),
 // whether the CLI generates it or an operator supplies it, whether it can be
 // rotated, and which Compose services actually consume it (so `env set`/
 // `env rotate` can restart only what changed instead of the whole stack).
@@ -47,7 +47,7 @@ export interface SecretDef {
   kind: 'generated' | 'operator';
   /** Core functionality breaks/degrades without this set. */
   required: boolean;
-  /** Eligible for `kortix self-host env rotate <KEY>` / `--all-generated`. */
+  /** Eligible for `zed self-host env rotate <KEY>` / `--all-generated`. */
   rotatable?: boolean;
 }
 
@@ -125,20 +125,20 @@ export const SECRET_DEFS: SecretDef[] = [
   { key: 'MANAGED_GIT_GITHUB_OWNER', category: 'managed_git', kind: 'operator', required: false },
   { key: 'MANAGED_GIT_GITHUB_TOKEN', category: 'managed_git', kind: 'operator', required: false },
   { key: 'MANAGED_GIT_GITHUB_INSTALL_ID', category: 'managed_git', kind: 'operator', required: false },
-  { key: 'KORTIX_GITHUB_APP_ID', category: 'managed_git', kind: 'operator', required: false },
-  { key: 'KORTIX_GITHUB_APP_PRIVATE_KEY', category: 'managed_git', kind: 'operator', required: false },
-  { key: 'KORTIX_GITHUB_APP_SLUG', category: 'managed_git', kind: 'operator', required: false },
+  { key: 'ZED_GITHUB_APP_ID', category: 'managed_git', kind: 'operator', required: false },
+  { key: 'ZED_GITHUB_APP_PRIVATE_KEY', category: 'managed_git', kind: 'operator', required: false },
+  { key: 'ZED_GITHUB_APP_SLUG', category: 'managed_git', kind: 'operator', required: false },
   // Minted alongside the App by `connect-github`'s manifest-conversion
   // exchange. Not read by the API today (installation-token auth doesn't need
   // them) — kept so the App can be managed/re-verified later without
   // regenerating it from scratch.
-  { key: 'KORTIX_GITHUB_APP_CLIENT_ID', category: 'managed_git', kind: 'operator', required: false },
-  { key: 'KORTIX_GITHUB_APP_CLIENT_SECRET', category: 'managed_git', kind: 'operator', required: false },
-  { key: 'KORTIX_GITHUB_APP_WEBHOOK_SECRET', category: 'managed_git', kind: 'operator', required: false },
+  { key: 'ZED_GITHUB_APP_CLIENT_ID', category: 'managed_git', kind: 'operator', required: false },
+  { key: 'ZED_GITHUB_APP_CLIENT_SECRET', category: 'managed_git', kind: 'operator', required: false },
+  { key: 'ZED_GITHUB_APP_WEBHOOK_SECRET', category: 'managed_git', kind: 'operator', required: false },
   // Signs the GitHub App install-state HMAC (buildGitHubAppInstallState in
   // apps/api/src/projects/github.ts). `connect-github` generates this once
   // (if unset) alongside the App credentials.
-  { key: 'KORTIX_GITHUB_APP_STATE_SECRET', category: 'managed_git', kind: 'generated', required: false, rotatable: true },
+  { key: 'ZED_GITHUB_APP_STATE_SECRET', category: 'managed_git', kind: 'generated', required: false, rotatable: true },
 
   // LLM — NOT init-required: BYOK via the frontend's model picker after
   // `start`, not collected by the CLI.
@@ -182,25 +182,25 @@ export const ROTATABLE_GENERATED_KEYS: string[] = SECRET_DEFS.filter(
 
 /**
  * Runtime keys the auto-updater/`init` recompute on every run (image tags,
- * the tracked version, the replica count derived from KORTIX_DOMAIN). They
+ * the tracked version, the replica count derived from ZED_DOMAIN). They
  * are not independent settings — hand-setting one is silently clobbered by
  * the next `init`/`update`/`configure`, which is confusing rather than
  * useful — so `env set` refuses to touch them.
  * Use `--tag`/`--channel`/`--release` (which drive these) instead.
  */
 export const UPDATER_MANAGED_RUNTIME_KEYS: ReadonlySet<string> = new Set([
-  'KORTIX_VERSION',
+  'ZED_VERSION',
   'FRONTEND_IMAGE',
   'API_IMAGE',
   'GATEWAY_IMAGE',
-  'KORTIX_APP_REPLICAS',
+  'ZED_APP_REPLICAS',
   // The instance directory's absolute HOST path — recomputed from
   // instanceDir() on every render (see normalizeFullSupabaseEnv() in
   // commands/self-host.ts). Hand-setting it to anything other than where the
   // instance's docker-compose.yml/.env actually live would break the
-  // in-compose auto-updater's bind mount (see the KORTIX_INSTANCE_DIR field's
+  // in-compose auto-updater's bind mount (see the ZED_INSTANCE_DIR field's
   // doc comment on SelfHostEnv), and the very next render clobbers it anyway.
-  'KORTIX_INSTANCE_DIR',
+  'ZED_INSTANCE_DIR',
 ]);
 
 export function isUpdaterManagedKey(key: string): boolean {
@@ -212,8 +212,8 @@ export function isUpdaterManagedKey(key: string): boolean {
  * by both `env set` (restart only what a changed key affects) and
  * `env ls` (nothing reads this directly, but keeping one map means the
  * restart behavior can never drift from the docs). Unlisted keys default to
- * ['kortix-api'] in `servicesForKeys` below — kortix-api loads every `.env`
- * key via `env_file:` (see kortix-compose.yml), so it is always a safe,
+ * ['zed-api'] in `servicesForKeys` below — zed-api loads every `.env`
+ * key via `env_file:` (see zed-compose.yml), so it is always a safe,
  * conservative default for anything not explicitly mapped.
  */
 export const KEY_SERVICE_MAP: Record<string, readonly string[]> = {
@@ -221,15 +221,15 @@ export const KEY_SERVICE_MAP: Record<string, readonly string[]> = {
   POSTGRES_PASSWORD: [
     'supabase-db', 'supabase-auth', 'supabase-rest', 'supabase-realtime',
     'supabase-storage', 'supabase-meta', 'supabase-functions', 'supabase-supavisor',
-    'supabase-analytics', 'kortix-api',
+    'supabase-analytics', 'zed-api',
   ],
   SUPABASE_JWT_SECRET: [
     'supabase-db', 'supabase-kong', 'supabase-auth', 'supabase-rest', 'supabase-realtime',
     'supabase-storage', 'supabase-meta', 'supabase-functions', 'supabase-analytics',
-    'kortix-api', 'frontend',
+    'zed-api', 'frontend',
   ],
-  SUPABASE_ANON_KEY: ['supabase-kong', 'supabase-realtime', 'supabase-storage', 'supabase-meta', 'supabase-functions', 'frontend', 'kortix-api'],
-  SUPABASE_SERVICE_ROLE_KEY: ['supabase-kong', 'supabase-realtime', 'supabase-storage', 'supabase-meta', 'supabase-functions', 'kortix-api'],
+  SUPABASE_ANON_KEY: ['supabase-kong', 'supabase-realtime', 'supabase-storage', 'supabase-meta', 'supabase-functions', 'frontend', 'zed-api'],
+  SUPABASE_SERVICE_ROLE_KEY: ['supabase-kong', 'supabase-realtime', 'supabase-storage', 'supabase-meta', 'supabase-functions', 'zed-api'],
   DASHBOARD_USERNAME: ['supabase-kong'],
   DASHBOARD_PASSWORD: ['supabase-kong'],
   S3_PROTOCOL_ACCESS_KEY_ID: ['supabase-storage'],
@@ -251,55 +251,55 @@ export const KEY_SERVICE_MAP: Record<string, readonly string[]> = {
   SAML_PRIVATE_KEY: ['supabase-auth'],
 
   // Agent sandbox — all three interchangeable providers
-  DAYTONA_API_KEY: ['kortix-api'],
-  DAYTONA_SERVER_URL: ['kortix-api'],
-  DAYTONA_TARGET: ['kortix-api'],
-  E2B_API_KEY: ['kortix-api'],
-  PLATINUM_API_KEY: ['kortix-api'],
-  PLATINUM_API_URL: ['kortix-api'],
-  PLATINUM_TEMPLATE: ['kortix-api'],
-  PLATINUM_WEBHOOK_SECRET: ['kortix-api'],
+  DAYTONA_API_KEY: ['zed-api'],
+  DAYTONA_SERVER_URL: ['zed-api'],
+  DAYTONA_TARGET: ['zed-api'],
+  E2B_API_KEY: ['zed-api'],
+  PLATINUM_API_KEY: ['zed-api'],
+  PLATINUM_API_URL: ['zed-api'],
+  PLATINUM_TEMPLATE: ['zed-api'],
+  PLATINUM_WEBHOOK_SECRET: ['zed-api'],
 
   // Managed git
-  MANAGED_GIT_GITHUB_OWNER: ['kortix-api'],
-  MANAGED_GIT_GITHUB_TOKEN: ['kortix-api'],
-  MANAGED_GIT_GITHUB_INSTALL_ID: ['kortix-api'],
-  KORTIX_GITHUB_APP_ID: ['kortix-api'],
-  KORTIX_GITHUB_APP_PRIVATE_KEY: ['kortix-api'],
-  KORTIX_GITHUB_APP_SLUG: ['kortix-api'],
-  KORTIX_GITHUB_APP_CLIENT_ID: ['kortix-api'],
-  KORTIX_GITHUB_APP_CLIENT_SECRET: ['kortix-api'],
-  KORTIX_GITHUB_APP_WEBHOOK_SECRET: ['kortix-api'],
-  KORTIX_GITHUB_APP_STATE_SECRET: ['kortix-api'],
-  KORTIX_GITHUB_TOKEN: ['kortix-api'],
-  KORTIX_GITHUB_OWNER: ['kortix-api'],
+  MANAGED_GIT_GITHUB_OWNER: ['zed-api'],
+  MANAGED_GIT_GITHUB_TOKEN: ['zed-api'],
+  MANAGED_GIT_GITHUB_INSTALL_ID: ['zed-api'],
+  ZED_GITHUB_APP_ID: ['zed-api'],
+  ZED_GITHUB_APP_PRIVATE_KEY: ['zed-api'],
+  ZED_GITHUB_APP_SLUG: ['zed-api'],
+  ZED_GITHUB_APP_CLIENT_ID: ['zed-api'],
+  ZED_GITHUB_APP_CLIENT_SECRET: ['zed-api'],
+  ZED_GITHUB_APP_WEBHOOK_SECRET: ['zed-api'],
+  ZED_GITHUB_APP_STATE_SECRET: ['zed-api'],
+  ZED_GITHUB_TOKEN: ['zed-api'],
+  ZED_GITHUB_OWNER: ['zed-api'],
 
   // LLM
-  OPENROUTER_API_KEY: ['kortix-api'],
-  AWS_BEDROCK_API_KEY: ['kortix-api'],
-  AWS_BEDROCK_REGION: ['kortix-api'],
+  OPENROUTER_API_KEY: ['zed-api'],
+  AWS_BEDROCK_API_KEY: ['zed-api'],
+  AWS_BEDROCK_REGION: ['zed-api'],
 
   // Connectors
-  PIPEDREAM_CLIENT_ID: ['kortix-api'],
-  PIPEDREAM_CLIENT_SECRET: ['kortix-api'],
-  PIPEDREAM_PROJECT_ID: ['kortix-api'],
-  POSTMAN_API_KEY: ['kortix-api'],
-  PIPEDREAM_ENVIRONMENT: ['kortix-api'],
-  PIPEDREAM_WEBHOOK_SECRET: ['kortix-api'],
+  PIPEDREAM_CLIENT_ID: ['zed-api'],
+  PIPEDREAM_CLIENT_SECRET: ['zed-api'],
+  PIPEDREAM_PROJECT_ID: ['zed-api'],
+  POSTMAN_API_KEY: ['zed-api'],
+  PIPEDREAM_ENVIRONMENT: ['zed-api'],
+  PIPEDREAM_WEBHOOK_SECRET: ['zed-api'],
 
   // Reachability
   CLOUDFLARE_TUNNEL_TOKEN: ['cloudflared'],
   CLOUDFLARE_TUNNEL_HOSTNAME: ['cloudflared'],
 
   // Internal tokens
-  GATEWAY_INTERNAL_TOKEN: ['kortix-api', 'llm-gateway'],
-  INTERNAL_SERVICE_KEY: ['kortix-api'],
-  API_KEY_SECRET: ['kortix-api'],
-  TUNNEL_SIGNING_SECRET: ['kortix-api'],
+  GATEWAY_INTERNAL_TOKEN: ['zed-api', 'llm-gateway'],
+  INTERNAL_SERVICE_KEY: ['zed-api'],
+  API_KEY_SECRET: ['zed-api'],
+  TUNNEL_SIGNING_SECRET: ['zed-api'],
 };
 
 /** Safe fallback for any key not explicitly mapped above. */
-const DEFAULT_SERVICES: readonly string[] = ['kortix-api'];
+const DEFAULT_SERVICES: readonly string[] = ['zed-api'];
 
 /** Union of the services a set of changed keys affects, sorted + deduped. */
 export function servicesForKeys(keys: readonly string[]): string[] {
@@ -338,7 +338,7 @@ export interface SecretCategoryGroup {
 }
 
 /** Group every declared secret by category against a live env snapshot, for
- *  `kortix self-host env ls`. Preserves CATEGORY_ORDER / SECRET_DEFS order. */
+ *  `zed self-host env ls`. Preserves CATEGORY_ORDER / SECRET_DEFS order. */
 export function groupSecretsByCategory(env: Record<string, string>): SecretCategoryGroup[] {
   const byCategory = new Map<SecretCategory, SecretRow[]>();
   for (const category of CATEGORY_ORDER) byCategory.set(category, []);

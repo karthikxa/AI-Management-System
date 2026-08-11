@@ -141,7 +141,7 @@ describe('GET /v1/usage/cost-by-project', () => {
     // format is absent: the JSON envelope, content-type and headers must be
     // byte-identical to what this route returned before format=csv existed.
     expect(response.headers.get('content-type')).toContain('application/json');
-    expect(response.headers.get('x-kortix-row-cap')).toBeNull();
+    expect(response.headers.get('x-zed-row-cap')).toBeNull();
     expect(response.headers.get('content-disposition')).toBeNull();
     expect(await response.json()).toEqual({
       projects: [project],
@@ -231,9 +231,9 @@ describe('GET /v1/usage/cost-by-project?format=csv', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('text/csv; charset=utf-8');
     expect(response.headers.get('content-disposition')).toBe(
-      'attachment; filename="kortix-cost-by-project.csv"',
+      'attachment; filename="zed-cost-by-project.csv"',
     );
-    expect(response.headers.get('x-kortix-row-cap')).toBe('10000');
+    expect(response.headers.get('x-zed-row-cap')).toBe('10000');
   });
 
   test('queries CSV_ROW_CAP rows at offset 0, ignoring any limit/offset params', async () => {

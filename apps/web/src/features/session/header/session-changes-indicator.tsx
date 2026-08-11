@@ -55,7 +55,7 @@ export function SessionChangesIndicator({ sessionId }: { sessionId: string }) {
           <span className="relative inline-flex">
             <FileDiff className="text-foreground size-4" />
             <span
-              className="bg-kortix-orange ring-background absolute -top-1 -right-1 size-2 rounded-full ring-2"
+              className="bg-zed-orange ring-background absolute -top-1 -right-1 size-2 rounded-full ring-2"
               aria-hidden
             />
           </span>

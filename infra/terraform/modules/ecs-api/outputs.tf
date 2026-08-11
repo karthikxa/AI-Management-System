@@ -1,5 +1,5 @@
 output "alb_dns_name" {
-  description = "ALB DNS name — point the api.kortix.com CNAME / Cloudflare record here."
+  description = "ALB DNS name — point the api.zed.com CNAME / Cloudflare record here."
   value       = aws_lb.this.dns_name
 }
 

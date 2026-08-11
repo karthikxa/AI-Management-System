@@ -94,7 +94,7 @@ import { InfoBanner } from '@/components/ui/info-banner';
 import { InlineMeta } from '@/components/ui/inline-meta';
 import { Input } from '@/components/ui/input';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
-import { IconInbox } from '@/components/ui/kortix-icons';
+import { IconInbox } from '@/components/ui/zed-icons';
 import { Label } from '@/components/ui/label';
 import { List, ListRow } from '@/components/ui/list';
 import Loading from '@/components/ui/loading';
@@ -665,7 +665,7 @@ function Hex({ value }: { value: string }) {
 function LogoCard({ asset, fmt }: { asset: LogoAsset; fmt: LogoFormat }) {
   const isWide = asset.label !== 'Symbol';
   const downloadHref = fmt === 'png' ? asset.pngSrc : asset.svgSrc;
-  const downloadName = `kortix-${asset.label.toLowerCase()}-${asset.variant.toLowerCase()}.${fmt}`;
+  const downloadName = `zed-${asset.label.toLowerCase()}-${asset.variant.toLowerCase()}.${fmt}`;
 
   return (
     <div className="group relative">
@@ -681,7 +681,7 @@ function LogoCard({ asset, fmt }: { asset: LogoAsset; fmt: LogoFormat }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={asset.svgSrc}
-          alt={`Kortix ${asset.label} ${asset.variant}`}
+          alt={`Zed ${asset.label} ${asset.variant}`}
           className={cn(
             'object-contain',
             isWide ? 'max-h-8 w-full md:max-h-10' : 'max-h-10 w-auto md:max-h-12',
@@ -708,7 +708,7 @@ function LogoCard({ asset, fmt }: { asset: LogoAsset; fmt: LogoFormat }) {
 }
 
 function SocialCard({ asset }: { asset: SocialAsset }) {
-  const downloadName = `kortix-avatar-${asset.variant.toLowerCase()}.png`;
+  const downloadName = `zed-avatar-${asset.variant.toLowerCase()}.png`;
 
   return (
     <div className="group relative">
@@ -721,7 +721,7 @@ function SocialCard({ asset }: { asset: SocialAsset }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={asset.pngSrc}
-          alt={`Kortix avatar ${asset.variant}`}
+          alt={`Zed avatar ${asset.variant}`}
           className="size-full object-cover"
         />
 
@@ -770,7 +770,7 @@ function WallpaperCard({ wallpaper }: { wallpaper: WallpaperDownload }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={wallpaper.preview}
-          alt={`Kortix ${wallpaper.name} wallpaper, ${wallpaper.theme}`}
+          alt={`Zed ${wallpaper.name} wallpaper, ${wallpaper.theme}`}
           className="size-full object-cover"
           loading="lazy"
         />
@@ -1460,7 +1460,7 @@ export default function BrandPage() {
                   Product
                 </h3>
                 <p className="text-muted-foreground mb-6 text-base leading-relaxed">
-                  The wallpapers you can set on a Kortix home. Five of the six are live shader
+                  The wallpapers you can set on a Zed home. Five of the six are live shader
                   compositions, so each one is rendered at full size in a browser and captured as a
                   still. Desktop is 5120&times;2880 and downsamples cleanly to 4K and 1440p; the
                   phone file is its own portrait render, not a crop.
@@ -1590,7 +1590,7 @@ export default function BrandPage() {
                       <p
                         className={cn('text-foreground text-3xl tracking-tight md:text-5xl', s.cls)}
                       >
-                        {tHardcodedUi.raw('appHomeDesignSystemPage.line871JsxTextKortixComputer')}
+                        {tHardcodedUi.raw('appHomeDesignSystemPage.line871JsxTextZedComputer')}
                       </p>
                     </div>
                   ))}
@@ -1601,7 +1601,7 @@ export default function BrandPage() {
                     {tHardcodedUi.raw('appHomeDesignSystemPage.line880JsxTextRoobertMono')}
                   </span>
                   <p className="font-mono text-lg tracking-tight md:text-2xl">
-                    {tHardcodedUi.raw('appHomeDesignSystemPage.line883JsxTextConstAgentNewKortix')}
+                    {tHardcodedUi.raw('appHomeDesignSystemPage.line883JsxTextConstAgentNewZed')}
                   </p>
                   <p className="mt-4 font-mono text-xs text-neutral-600">
                     {tHardcodedUi.raw(
@@ -1823,7 +1823,7 @@ export default function BrandPage() {
                       <div>
                         <p className="text-muted-foreground mb-3 text-xs tracking-wider uppercase">
                           {tHardcodedUi.raw(
-                            'appHomeDesignSystemPage.line1051JsxTextKortixVariants',
+                            'appHomeDesignSystemPage.line1051JsxTextZedVariants',
                           )}
                         </p>
                         <div className="flex flex-wrap gap-2">
@@ -1966,7 +1966,7 @@ export default function BrandPage() {
                               'autoAppPublicMarketingDesignSystemPageJsxTextBadgeSuccessef599436',
                             )}
                           </Badge>
-                          <Badge variant="kortix">Update</Badge>
+                          <Badge variant="zed">Update</Badge>
                           <Badge variant="warning">Warning</Badge>
                           <Badge variant="info">Info</Badge>
                           <Badge variant="muted">Muted</Badge>
@@ -2902,11 +2902,11 @@ export default function BrandPage() {
                     <Accordion type="single" collapsible className="w-full">
                       <AccordionItem value="item-1">
                         <AccordionTrigger>
-                          {tHardcodedUi.raw('appHomeDesignSystemPage.line1691JsxTextWhatIsKortix')}
+                          {tHardcodedUi.raw('appHomeDesignSystemPage.line1691JsxTextWhatIsZed')}
                         </AccordionTrigger>
                         <AccordionContent>
                           {tHardcodedUi.raw(
-                            'appHomeDesignSystemPage.line1694JsxTextKortixIsAnAiPoweredPlatformForBuilding',
+                            'appHomeDesignSystemPage.line1694JsxTextZedIsAnAiPoweredPlatformForBuilding',
                           )}
                         </AccordionContent>
                       </AccordionItem>
@@ -2918,7 +2918,7 @@ export default function BrandPage() {
                         </AccordionTrigger>
                         <AccordionContent>
                           {tHardcodedUi.raw(
-                            'appHomeDesignSystemPage.line1705JsxTextKortixUsesAMonochromaticDesignSystemWithStrategic',
+                            'appHomeDesignSystemPage.line1705JsxTextZedUsesAMonochromaticDesignSystemWithStrategic',
                           )}
                         </AccordionContent>
                       </AccordionItem>
@@ -2966,17 +2966,17 @@ export default function BrandPage() {
                       </div>
                       <div className="border-border/50 mt-2 rounded-md border px-4 py-2 text-sm">
                         {tHardcodedUi.raw(
-                          'appHomeDesignSystemPage.line1751JsxTextKortixDesignSystem',
+                          'appHomeDesignSystemPage.line1751JsxTextZedDesignSystem',
                         )}
                       </div>
                       <CollapsibleContent className="mt-2 space-y-2">
                         <div className="border-border/50 rounded-md border px-4 py-2 text-sm">
                           {tHardcodedUi.raw(
-                            'appHomeDesignSystemPage.line1755JsxTextKortixComponents',
+                            'appHomeDesignSystemPage.line1755JsxTextZedComponents',
                           )}
                         </div>
                         <div className="border-border/50 rounded-md border px-4 py-2 text-sm">
-                          {tHardcodedUi.raw('appHomeDesignSystemPage.line1758JsxTextKortixTokens')}
+                          {tHardcodedUi.raw('appHomeDesignSystemPage.line1758JsxTextZedTokens')}
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
@@ -3340,7 +3340,7 @@ export default function BrandPage() {
               >
                 <p className="text-muted-foreground mb-8 text-base leading-relaxed">
                   {tHardcodedUi.raw(
-                    'appHomeDesignSystemPage.line2073JsxTextHowKortixListManagementPagesAreBuiltThese',
+                    'appHomeDesignSystemPage.line2073JsxTextHowZedListManagementPagesAreBuiltThese',
                   )}
                   <code className="font-mono text-xs">/scheduled-tasks</code>,{' '}
                   <code className="font-mono text-xs">/tunnel</code>
@@ -3647,20 +3647,20 @@ export default function BrandPage() {
                       </span>
                       <UserAvatar
                         email={tHardcodedUi.raw(
-                          'appHomeDesignSystemPage.line2330JsxAttrEmailAdaKortixAi',
+                          'appHomeDesignSystemPage.line2330JsxAttrEmailAdaZedAi',
                         )}
                         name="Ada Lovelace"
                         size="sm"
                       />
                       <UserAvatar
                         email={tHardcodedUi.raw(
-                          'appHomeDesignSystemPage.line2331JsxAttrEmailGraceKortixAi',
+                          'appHomeDesignSystemPage.line2331JsxAttrEmailGraceZedAi',
                         )}
                         name="Grace Hopper"
                       />
                       <UserAvatar
                         email={tHardcodedUi.raw(
-                          'appHomeDesignSystemPage.line2332JsxAttrEmailAlanKortixAi',
+                          'appHomeDesignSystemPage.line2332JsxAttrEmailAlanZedAi',
                         )}
                         name="Alan Turing"
                         size="lg"
@@ -3676,7 +3676,7 @@ export default function BrandPage() {
                         )}
                         size="sm"
                       />
-                      <EntityAvatar label="Kortix" />
+                      <EntityAvatar label="Zed" />
                       <EntityAvatar icon={FolderGit2} />
                       <EntityAvatar icon={Users} size="lg" />
                     {/* `emoji` beats both the icon and the initial, and drops the
@@ -3722,13 +3722,13 @@ export default function BrandPage() {
                           leading={
                             <UserAvatar
                               email={tHardcodedUi.raw(
-                                'appHomeDesignSystemPage.line2361JsxAttrEmailGraceKortixAi',
+                                'appHomeDesignSystemPage.line2361JsxAttrEmailGraceZedAi',
                               )}
                               name="Grace Hopper"
                             />
                           }
                           title={tHardcodedUi.raw(
-                            'appHomeDesignSystemPage.line2362JsxAttrTitleGraceKortixAi',
+                            'appHomeDesignSystemPage.line2362JsxAttrTitleGraceZedAi',
                           )}
                           badges={
                             <Badge variant="outline" size="sm">
@@ -3763,13 +3763,13 @@ export default function BrandPage() {
                           leading={
                             <UserAvatar
                               email={tHardcodedUi.raw(
-                                'appHomeDesignSystemPage.line2381JsxAttrEmailAlanKortixAi',
+                                'appHomeDesignSystemPage.line2381JsxAttrEmailAlanZedAi',
                               )}
                               name="Alan Turing"
                             />
                           }
                           title={tHardcodedUi.raw(
-                            'appHomeDesignSystemPage.line2382JsxAttrTitleAlanKortixAi',
+                            'appHomeDesignSystemPage.line2382JsxAttrTitleAlanZedAi',
                           )}
                           subtitle={
                             <InlineMeta>

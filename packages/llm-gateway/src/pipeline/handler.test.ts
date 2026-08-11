@@ -249,7 +249,7 @@ describe("gateway.chatCompletions", () => {
   test("200 success records usage and a full trace", async () => {
     const { hooks, usage, traces } = makeHooks();
     const fetchImpl = okFetch({
-      model: "kortix/x",
+      model: "zed/x",
       choices: [{ message: { content: "ok" } }],
       usage: { prompt_tokens: 100, completion_tokens: 50, cost: 0.01 },
     });
@@ -259,7 +259,7 @@ describe("gateway.chatCompletions", () => {
       { fetchImpl },
     ).chatCompletions({
       authorization: "Bearer good",
-      rawBody: '{"model":"kortix/x","metadata":{"tag":"demo"},"messages":[{"role":"user","content":"hi"}]}',
+      rawBody: '{"model":"zed/x","metadata":{"tag":"demo"},"messages":[{"role":"user","content":"hi"}]}',
     });
     expect(res.status).toBe(200);
     await flush();
@@ -641,7 +641,7 @@ describe("gateway.chatCompletions — combined authorize hook", () => {
       },
     });
     const fetchImpl = okFetch({
-      model: "kortix/x",
+      model: "zed/x",
       choices: [{ message: { content: "ok" } }],
       usage: { prompt_tokens: 10, completion_tokens: 5 },
     });
@@ -651,7 +651,7 @@ describe("gateway.chatCompletions — combined authorize hook", () => {
       { fetchImpl },
     ).chatCompletions({
       authorization: "Bearer good",
-      rawBody: '{"model":"kortix/x","messages":[{"role":"user","content":"hi"}]}',
+      rawBody: '{"model":"zed/x","messages":[{"role":"user","content":"hi"}]}',
     });
     expect(res.status).toBe(200);
     await flush();
@@ -1718,7 +1718,7 @@ describe("gateway.chatCompletions — BILLING-CORRECTNESS: discarded-attempt usa
     );
   }
 
-  test("non-streaming: a discarded empty-completion candidate that carried real usage is folded into the eventual billed usage — Kortix doesn't eat the upstream cost silently", async () => {
+  test("non-streaming: a discarded empty-completion candidate that carried real usage is folded into the eventual billed usage — Zed doesn't eat the upstream cost silently", async () => {
     // A malformed/empty completion that STILL reports real usage (the exact
     // OpenRouter/z-ai pattern the empty-completion retry loop exists for) —
     // the upstream may have already charged for it even though `choices` is

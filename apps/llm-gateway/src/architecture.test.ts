@@ -22,15 +22,15 @@ describe('gateway catalog boundary', () => {
         dependencies?: Record<string, string>;
         devDependencies?: Record<string, string>;
       };
-      expect(pkg.dependencies?.['@kortix/llm-catalog']).toBeUndefined();
-      expect(pkg.devDependencies?.['@kortix/llm-catalog']).toBeUndefined();
+      expect(pkg.dependencies?.['@zed/llm-catalog']).toBeUndefined();
+      expect(pkg.devDependencies?.['@zed/llm-catalog']).toBeUndefined();
     }
   });
 
   test('core and standalone source never import the product catalog', () => {
     const offenders = [join(appRoot, 'src'), join(coreRoot, 'src')]
       .flatMap(sourceFiles)
-      .filter((file) => /(?:from\s*|import\s*)[('"`]@kortix\/llm-catalog/.test(
+      .filter((file) => /(?:from\s*|import\s*)[('"`]@zed\/llm-catalog/.test(
         readFileSync(file, 'utf8'),
       ));
     expect(offenders).toEqual([]);

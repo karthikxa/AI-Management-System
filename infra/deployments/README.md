@@ -1,14 +1,14 @@
 # infra/deployments
 
-Kortix-internal live Terraform roots — actual running boxes we operate,
+Zed-internal live Terraform roots — actual running boxes we operate,
 not the user-facing self-host distribution (that's [`self-host/`](../../self-host/)
 at the repo root: a thin, one-README, bring-your-own-box template anyone can
 copy). Each subdirectory here is a real instance:
 
-- `vps-demo/` — the demo box at `ec2-vps-demo.kortix.cloud`.
+- `vps-demo/` — the demo box at `ec2-vps-demo.zed.cloud`.
 
 `vps-demo` instantiates the shared [`infra/terraform/modules/selfhost-ec2`](../terraform/modules/selfhost-ec2)
-module — same as `self-host/terraform`, just with Kortix-specific
+module — same as `self-host/terraform`, just with Zed-specific
 `terraform.tfvars` already filled in and committed instead of left as
 `.example`.
 

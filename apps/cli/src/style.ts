@@ -1,5 +1,5 @@
 /**
- * Central styling primitives for the Kortix CLI.
+ * Central styling primitives for the Zed CLI.
  */
 
 const ENABLED = process.stdout.isTTY === true && !process.env.NO_COLOR;
@@ -49,14 +49,14 @@ export function rule(width = 56): string {
   return `  ${C.faded}${'─'.repeat(width)}${C.reset}`;
 }
 
-/** "  Kortix CLI  v0.1.0" header style. */
+/** "  Zed CLI  v0.1.0" header style. */
 export function header(title: string, version: string): string {
   return `  ${C.white}${C.bold}${title}${C.reset}  ${C.faded}v${version}${C.reset}`;
 }
 
 // ── Help text formatting ────────────────────────────────────────────────────
 // Subcommand help is authored as a plain `Usage: …` block; `formatHelp` gives
-// it the same visual language as the root `kortix` help (styled title + rule,
+// it the same visual language as the root `zed` help (styled title + rule,
 // bold-white section headers, dim descriptions, faded <args>/[opts], cyan
 // `code`) without the author having to hand-style anything. Text is preserved
 // line-for-line — only ANSI color and a title rule are added — so it degrades
@@ -76,7 +76,7 @@ export function formatHelp(raw: string): string {
   let sawUsage = false;
 
   for (const line of lines) {
-    // First `Usage: kortix …` line → styled title (bold command, faded args)
+    // First `Usage: zed …` line → styled title (bold command, faded args)
     // followed by a rule, mirroring the root help's header.
     if (!sawUsage) {
       const usage = line.match(/^Usage:\s+(.*)$/);

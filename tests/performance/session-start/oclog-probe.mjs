@@ -1,7 +1,7 @@
 // Deep boot probe: create a session, then read opencode's OWN log + the baked vs
 // runtime dep versions through the daemon /file proxy (which allows /opt, /home,
 // /tmp, /workspace). Use this to attribute the spawn->session-created window:
-// the gap between opencode "loading <workspace>/.kortix/opencode/opencode.jsonc"
+// the gap between opencode "loading <workspace>/.zed/opencode/opencode.jsonc"
 // and "init" is the plugin load/install phase. Comparing the baked vs workspace
 // @opencode-ai/plugin version reveals whether opencode re-installed it over the
 // network (version mismatch => baked deps must pin the OPENCODE binary version).
@@ -36,11 +36,11 @@ const praw = async (t, ext, path) => {
     await sleep(300);
   }
   if (ext) {
-    const log = await praw(t, ext, '/opt/kortix/home/.local/share/opencode/log/opencode.log');
+    const log = await praw(t, ext, '/opt/zed/home/.local/share/opencode/log/opencode.log');
     console.log(`\n=== opencode.log (status ${log.status}) ===\n` + log.text.slice(-7000));
     for (const p of [
-      '/opt/kortix/opencode-config-deps/node_modules/@opencode-ai/plugin/package.json',
-      '/workspace/.kortix/opencode/node_modules/@opencode-ai/plugin/package.json',
+      '/opt/zed/opencode-config-deps/node_modules/@opencode-ai/plugin/package.json',
+      '/workspace/.zed/opencode/node_modules/@opencode-ai/plugin/package.json',
     ]) {
       const r = await praw(t, ext, p);
       const v = (() => { try { return JSON.parse(r.text).version; } catch { return r.text.slice(0, 120); } })();

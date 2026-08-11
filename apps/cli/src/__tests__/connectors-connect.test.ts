@@ -6,11 +6,11 @@ const ORIGINAL_FETCH = globalThis.fetch;
 const ORIGINAL_STDOUT_WRITE = process.stdout.write;
 const ORIGINAL_STDERR_WRITE = process.stderr.write;
 const ENV_KEYS = [
-  'KORTIX_CLI_TOKEN',
-  'KORTIX_API_URL',
-  'KORTIX_PROJECT_ID',
-  'KORTIX_SESSION_ID',
-  'KORTIX_DISABLE_SANDBOX_ENV_FILE',
+  'ZED_CLI_TOKEN',
+  'ZED_API_URL',
+  'ZED_PROJECT_ID',
+  'ZED_SESSION_ID',
+  'ZED_DISABLE_SANDBOX_ENV_FILE',
 ] as const;
 
 let saved: Record<string, string | undefined>;
@@ -23,11 +23,11 @@ beforeEach(() => {
     saved[key] = process.env[key];
     delete process.env[key];
   }
-  process.env.KORTIX_CLI_TOKEN = 'kortix_pat_test';
-  process.env.KORTIX_API_URL = 'https://api.test/v1';
-  process.env.KORTIX_PROJECT_ID = 'project-1';
-  process.env.KORTIX_SESSION_ID = 'session-1';
-  process.env.KORTIX_DISABLE_SANDBOX_ENV_FILE = '1';
+  process.env.ZED_CLI_TOKEN = 'zed_pat_test';
+  process.env.ZED_API_URL = 'https://api.test/v1';
+  process.env.ZED_PROJECT_ID = 'project-1';
+  process.env.ZED_SESSION_ID = 'session-1';
+  process.env.ZED_DISABLE_SANDBOX_ENV_FILE = '1';
 
   stdout = '';
   requests = [];
@@ -58,7 +58,7 @@ afterEach(() => {
   }
 });
 
-describe('kortix connectors connect', () => {
+describe('zed connectors connect', () => {
   test('always mints one auto-finalizing connection URL', async () => {
     const code = await runConnectors(['connect', 'github', '--json']);
 
@@ -84,7 +84,7 @@ describe('kortix connectors connect', () => {
   });
 });
 
-describe('kortix connectors show', () => {
+describe('zed connectors show', () => {
   test('uses the provider-specific empty-catalog remedy', async () => {
     globalThis.fetch = (async () =>
       new Response(
@@ -113,7 +113,7 @@ describe('kortix connectors show', () => {
   });
 });
 
-describe('kortix connectors connections', () => {
+describe('zed connectors connections', () => {
   test('lists canonical connections as JSON', async () => {
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       requests.push({ url: String(input), method: init?.method ?? 'GET', body: undefined });

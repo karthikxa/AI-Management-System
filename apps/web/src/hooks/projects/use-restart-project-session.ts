@@ -3,8 +3,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { errorToast } from '@/components/ui/toast';
-import { restartProjectSession, sessionStartKey } from '@kortix/sdk';
-import { clearRuntimeEnsureGuard, qk } from '@kortix/sdk/react';
+import { restartProjectSession, sessionStartKey } from '@zed/sdk';
+import { clearRuntimeEnsureGuard, qk } from '@zed/sdk/react';
 
 /** The optimistic `/start` payload a restart puts in the cache on click. */
 export function restartPendingStartSeed() {
@@ -36,7 +36,7 @@ export function restartFailureMessage(error: unknown): string {
  *    the button read as dead and invited repeat clicks.
  * 2. **Never swallow the rejection.** `POST /restart` answers 400 (unsupported
  *    provider), 403 (not the owner), 409 (`SESSION_RUNTIME_IDENTITY_UNAVAILABLE`)
- *    and 503 (`KORTIX_URL_UNREACHABLE`). With no `onError` the spinner blinked
+ *    and 503 (`ZED_URL_UNREACHABLE`). With no `onError` the spinner blinked
  *    and nothing else happened — literally "nothing happens when you click
  *    restart". Now the optimistic seed is rolled back and the reason is toasted
  *    AND returned as `errorMessage` for the card's `detail` line.

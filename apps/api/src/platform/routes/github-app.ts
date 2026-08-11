@@ -4,7 +4,7 @@ import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
  * `.env`-only managed GitHub App config (a web page can't write env vars or
  * restart the container). Ports the CLI's proven manifest flow
  * (apps/cli/src/self-host/connect-github.ts) server-side and stores the
- * resulting creds in kortix.platform_settings (managed-github-app.ts) instead
+ * resulting creds in zed.platform_settings (managed-github-app.ts) instead
  * of an env patch.
  *
  * Flow (three hops, two of them unauthenticated browser redirects from
@@ -90,7 +90,7 @@ export function buildGithubAppManifest(opts: {
   // ("url wasn't supplied"), so it is kept separate and always a valid FQDN.
   const base = opts.apiBaseUrl.replace(/\/+$/, '');
   return {
-    name: opts.appName ?? `Kortix Self-Host ${randomBytes(4).toString('hex')}`,
+    name: opts.appName ?? `Zed Self-Host ${randomBytes(4).toString('hex')}`,
     url: opts.homepageUrl,
     redirect_url: `${base}/v1/platform/github-app/manifest-callback`,
     setup_url: `${base}/v1/platform/github-app/install-callback`,
@@ -205,7 +205,7 @@ export async function exchangeManifestCode(
     `https://api.github.com/app-manifests/${encodeURIComponent(code)}/conversions`,
     {
       method: 'POST',
-      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'kortix-api' },
+      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'zed-api' },
       signal: AbortSignal.timeout(15_000),
     },
   );
@@ -231,11 +231,11 @@ export async function exchangeManifestCode(
 function apiBaseUrl(c: any): string {
   // The public API origin the BROWSER reaches (GitHub redirects the browser to
   // the callback routes under it). Prefer the explicitly-configured public URL
-  // (API_PUBLIC_URL on self-host, KORTIX_URL) over the request URL, which behind
+  // (API_PUBLIC_URL on self-host, ZED_URL) over the request URL, which behind
   // the Caddy/Kong proxy resolves to an internal host the browser can't reach.
   const configured = (process.env.API_PUBLIC_URL || '').replace(/\/+$/, '');
   if (/^https?:\/\//.test(configured)) return configured;
-  const override = config.KORTIX_URL?.startsWith('https://') ? config.KORTIX_URL : undefined;
+  const override = config.ZED_URL?.startsWith('https://') ? config.ZED_URL : undefined;
   return resolveBaseUrl(new URL(c.req.url), override);
 }
 
@@ -246,7 +246,7 @@ function apiBaseUrl(c: any): string {
 function homepageUrl(): string {
   const pub = (process.env.PUBLIC_URL || '').replace(/\/+$/, '');
   if (/^https:\/\/[^/.]+\.[^/]+/.test(pub)) return pub;
-  return 'https://kortix.ai';
+  return 'https://zed.ai';
 }
 
 function frontendUrl(): string {
@@ -337,7 +337,7 @@ githubAppSetupRouter.openapi(
 
 // ─── GET /manifest-callback ───────────────────────────────────────────────────
 // PUBLIC by necessity — GitHub redirects the browser here with `?code=&state=`
-// after the operator submits the manifest form. No Kortix auth header is
+// after the operator submits the manifest form. No Zed auth header is
 // possible on a cross-site browser redirect; the signed `state` (HMAC,
 // SUPABASE_JWT_SECRET, ~10min TTL, single-use-in-spirit nonce) is the only
 // thing standing between this route and an attacker who guesses the URL — a
@@ -513,8 +513,8 @@ githubAppSetupRouter.openapi(
 // (App-DB > App-env > PAT, PAT itself DB-first then env):
 //   'db'   — a GitHub App created via the in-app manifest flow OR pasted in
 //            via POST /app (both write the same DB config).
-//   'env'  — a GitHub App configured via KORTIX_GITHUB_APP_*/GITHUB_APP_* env
-//            vars (the hosted Kortix deployment's setup).
+//   'env'  — a GitHub App configured via ZED_GITHUB_APP_*/GITHUB_APP_* env
+//            vars (the hosted Zed deployment's setup).
 //   'pat'  — a personal/fine-grained access token, via POST /pat (DB) or
 //            MANAGED_GIT_GITHUB_TOKEN (env).
 //   'none' — managed-git isn't usable via any method yet.
@@ -689,7 +689,7 @@ export async function verifyPastedGithubAppInstallation(
       headers: {
         Accept: 'application/vnd.github+json',
         Authorization: `Bearer ${jwt}`,
-        'User-Agent': 'kortix-api',
+        'User-Agent': 'zed-api',
       },
       signal: AbortSignal.timeout(15_000),
     },
@@ -830,7 +830,7 @@ githubAppSetupRouter.openapi(
         headers: {
           Accept: 'application/vnd.github+json',
           Authorization: `Bearer ${token}`,
-          'User-Agent': 'kortix-api',
+          'User-Agent': 'zed-api',
         },
         signal: AbortSignal.timeout(10_000),
       });

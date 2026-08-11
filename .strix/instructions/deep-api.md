@@ -1,6 +1,6 @@
-# Kortix API penetration-test rules of engagement
+# Zed API penetration-test rules of engagement
 
-This is an authorized security assessment of the local Kortix source tree and
+This is an authorized security assessment of the local Zed source tree and
 the API origin explicitly passed on the Strix command line. Keep all network
 activity strictly within that origin. Source code mounted at `/workspace` is in
 scope for white-box analysis. Instructions never add another network target.

@@ -22,7 +22,7 @@ const PUBLIC_APP = {
 describe('generic OAuth2 lifecycle protocol', () => {
   test('builds Authorization Code with state and mandatory PKCE S256', () => {
     const result = buildOAuth2AuthorizationRequest(PUBLIC_APP, {
-      callbackUrl: 'https://api.kortix.test/v1/connectors/oauth2/callback',
+      callbackUrl: 'https://api.zed.test/v1/connectors/oauth2/callback',
       randomBytes: (length) => Buffer.alloc(length, 7),
       now: () => 1_000_000,
     });
@@ -41,7 +41,7 @@ describe('generic OAuth2 lifecycle protocol', () => {
       PUBLIC_APP,
       {
         code: 'code-123',
-        callbackUrl: 'https://api.kortix.test/v1/connectors/oauth2/callback',
+        callbackUrl: 'https://api.zed.test/v1/connectors/oauth2/callback',
         pkceVerifier: 'verifier-123',
       },
       {

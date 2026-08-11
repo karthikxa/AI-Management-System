@@ -18,7 +18,7 @@ export const useCurrentAccountStore = create<CurrentAccountState>()(
       setSelectedAccountId: (selectedAccountId) => set({ selectedAccountId }),
     }),
     {
-      name: 'kortix.currentAccount',
+      name: 'zed.currentAccount',
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),

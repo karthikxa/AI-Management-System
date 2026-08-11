@@ -30,7 +30,7 @@ describe('envSpecFromManifest', () => {
 describe('lintManifest', () => {
   test('a clean starter-shaped manifest has no errors', () => {
     const issues = lintToml(`
-      kortix_version = 1
+      zed_version = 1
       [project]
       name = "x"
       [env]
@@ -40,29 +40,29 @@ describe('lintManifest', () => {
     expect(issues.errors).toEqual([]);
   });
 
-  test('errors when kortix_version is missing', () => {
+  test('errors when zed_version is missing', () => {
     const issues = lintToml(`[project]\nname = "x"\n`);
-    expect(issues.errors.some((e) => e.includes('kortix_version'))).toBe(true);
+    expect(issues.errors.some((e) => e.includes('zed_version'))).toBe(true);
   });
 
-  test('errors on non-numeric kortix_version', () => {
-    const issues = lintToml(`kortix_version = "one"\n`);
-    expect(issues.errors.some((e) => e.includes('kortix_version'))).toBe(true);
+  test('errors on non-numeric zed_version', () => {
+    const issues = lintToml(`zed_version = "one"\n`);
+    expect(issues.errors.some((e) => e.includes('zed_version'))).toBe(true);
   });
 
   test('errors when [env] required is not an array', () => {
-    const issues = lintToml(`kortix_version = 1\n[env]\nrequired = "NOPE"\n`);
+    const issues = lintToml(`zed_version = 1\n[env]\nrequired = "NOPE"\n`);
     expect(issues.errors.some((e) => /env\.required.*array/i.test(e))).toBe(true);
   });
 
   test('errors on an invalid env var name', () => {
-    const issues = lintToml(`kortix_version = 1\n[env]\nrequired = ["1bad"]\n`);
+    const issues = lintToml(`zed_version = 1\n[env]\nrequired = ["1bad"]\n`);
     expect(issues.errors.some((e) => /not a valid env-var name/i.test(e))).toBe(true);
   });
 
   test('accepts a valid cron trigger', () => {
     const issues = lintToml(`
-      kortix_version = 1
+      zed_version = 1
       [[triggers]]
       slug = "nightly"
       type = "cron"
@@ -74,7 +74,7 @@ describe('lintManifest', () => {
 
   test('flags a missing slug, bad type, empty prompt, and missing cron', () => {
     const issues = lintToml(`
-      kortix_version = 1
+      zed_version = 1
       [[triggers]]
       type = "weekly"
       prompt = ""
@@ -86,7 +86,7 @@ describe('lintManifest', () => {
 
   test('flags duplicate trigger slugs', () => {
     const issues = lintToml(`
-      kortix_version = 1
+      zed_version = 1
       [[triggers]]
       slug = "dup"
       type = "cron"
@@ -103,7 +103,7 @@ describe('lintManifest', () => {
 
   test('webhook trigger requires a secret_env', () => {
     const issues = lintToml(`
-      kortix_version = 1
+      zed_version = 1
       [[triggers]]
       slug = "hook"
       type = "webhook"
@@ -116,20 +116,20 @@ describe('lintManifest', () => {
 describe('loadLocalManifest', () => {
   let dir: string;
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'kortix-manifest-'));
+    dir = mkdtempSync(join(tmpdir(), 'zed-manifest-'));
   });
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  test('returns null when there is no kortix.toml', () => {
+  test('returns null when there is no zed.toml', () => {
     expect(loadLocalManifest(dir)).toBeNull();
   });
 
   test('parses a manifest and extracts the env spec', () => {
     writeFileSync(
-      join(dir, 'kortix.toml'),
-      `kortix_version = 1\n[env]\nrequired = ["FOO"]\noptional = ["bar"]\n`,
+      join(dir, 'zed.toml'),
+      `zed_version = 1\n[env]\nrequired = ["FOO"]\noptional = ["bar"]\n`,
     );
     const m = loadLocalManifest(dir);
     expect(m).not.toBeNull();
@@ -138,31 +138,31 @@ describe('loadLocalManifest', () => {
   });
 
   test('throws on a TOML syntax error', () => {
-    writeFileSync(join(dir, 'kortix.toml'), `kortix_version = = 1\n`);
+    writeFileSync(join(dir, 'zed.toml'), `zed_version = = 1\n`);
     expect(() => loadLocalManifest(dir)).toThrow();
   });
 
-  test('reads a kortix.yaml and reports its format', () => {
+  test('reads a zed.yaml and reports its format', () => {
     writeFileSync(
-      join(dir, 'kortix.yaml'),
-      `kortix_version: 1\nenv:\n  required: [FOO]\n  optional: [bar]\n`,
+      join(dir, 'zed.yaml'),
+      `zed_version: 1\nenv:\n  required: [FOO]\n  optional: [bar]\n`,
     );
     const m = loadLocalManifest(dir);
     expect(m).not.toBeNull();
     expect(m!.format).toBe('yaml');
-    expect(m!.path.endsWith('kortix.yaml')).toBe(true);
+    expect(m!.path.endsWith('zed.yaml')).toBe(true);
     expect(m!.env.required).toEqual(['FOO']);
     expect(m!.env.optional).toEqual(['BAR']);
   });
 
   test('validates a loaded v2 YAML manifest using its on-disk format', () => {
     writeFileSync(
-      join(dir, 'kortix.yaml'),
+      join(dir, 'zed.yaml'),
       [
-        'kortix_version: 2',
-        'default_agent: kortix',
+        'zed_version: 2',
+        'default_agent: zed',
         'agents:',
-        '  kortix:',
+        '  zed:',
         '    enabled: true',
         '',
       ].join('\n'),
@@ -172,9 +172,9 @@ describe('loadLocalManifest', () => {
     expect(lintManifest(m!.data, m!.format).errors).toEqual([]);
   });
 
-  test('prefers kortix.yaml when both files exist', () => {
-    writeFileSync(join(dir, 'kortix.toml'), `kortix_version = 1\n[project]\nname = "from-toml"\n`);
-    writeFileSync(join(dir, 'kortix.yaml'), `kortix_version: 1\nproject:\n  name: from-yaml\n`);
+  test('prefers zed.yaml when both files exist', () => {
+    writeFileSync(join(dir, 'zed.toml'), `zed_version = 1\n[project]\nname = "from-toml"\n`);
+    writeFileSync(join(dir, 'zed.yaml'), `zed_version: 1\nproject:\n  name: from-yaml\n`);
     const m = loadLocalManifest(dir);
     expect(m!.format).toBe('yaml');
     expect((m!.data.project as { name: string }).name).toBe('from-yaml');
@@ -184,7 +184,7 @@ describe('loadLocalManifest', () => {
 describe('manifest-edit — TOML (existing text-surgery behavior, unchanged)', () => {
   let dir: string;
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'kortix-edit-toml-'));
+    dir = mkdtempSync(join(tmpdir(), 'zed-edit-toml-'));
   });
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
@@ -192,14 +192,14 @@ describe('manifest-edit — TOML (existing text-surgery behavior, unchanged)', (
 
   test('appendArrayBlock adds a [[section]] block', async () => {
     const { appendArrayBlock, arrayEntryExists } = await import('../manifest-edit');
-    writeFileSync(join(dir, 'kortix.toml'), `kortix_version = 1\n`);
+    writeFileSync(join(dir, 'zed.toml'), `zed_version = 1\n`);
     appendArrayBlock('triggers', { slug: 'nightly', type: 'cron' }, dir);
     expect(arrayEntryExists('triggers', 'slug', 'nightly', dir)).toBe(true);
   });
 
   test('removeArrayBlock excises a matching block and leaves others intact', async () => {
     const { appendArrayBlock, removeArrayBlock, arrayEntryExists } = await import('../manifest-edit');
-    writeFileSync(join(dir, 'kortix.toml'), `kortix_version = 1\n`);
+    writeFileSync(join(dir, 'zed.toml'), `zed_version = 1\n`);
     appendArrayBlock('triggers', { slug: 'nightly', type: 'cron' }, dir);
     appendArrayBlock('triggers', { slug: 'weekly', type: 'cron' }, dir);
     expect(removeArrayBlock('triggers', 'slug', 'nightly', dir)).toBe(true);
@@ -209,14 +209,14 @@ describe('manifest-edit — TOML (existing text-surgery behavior, unchanged)', (
 
   test('removeArrayBlock returns false when no block matches', async () => {
     const { appendArrayBlock, removeArrayBlock } = await import('../manifest-edit');
-    writeFileSync(join(dir, 'kortix.toml'), `kortix_version = 1\n`);
+    writeFileSync(join(dir, 'zed.toml'), `zed_version = 1\n`);
     appendArrayBlock('triggers', { slug: 'nightly', type: 'cron' }, dir);
     expect(removeArrayBlock('triggers', 'slug', 'nope', dir)).toBe(false);
   });
 
   test('setScalarInArrayBlock updates a scalar inside the matched block', async () => {
     const { appendArrayBlock, setScalarInArrayBlock, readArrayEntry } = await import('../manifest-edit');
-    writeFileSync(join(dir, 'kortix.toml'), `kortix_version = 1\n`);
+    writeFileSync(join(dir, 'zed.toml'), `zed_version = 1\n`);
     appendArrayBlock('triggers', { slug: 'nightly', type: 'cron', enabled: true }, dir);
     expect(setScalarInArrayBlock('triggers', 'slug', 'nightly', 'enabled', false, dir)).toBe(true);
     expect(readArrayEntry('triggers', 'slug', 'nightly', dir)?.enabled).toBe(false);
@@ -225,7 +225,7 @@ describe('manifest-edit — TOML (existing text-surgery behavior, unchanged)', (
   test('setTableScalar creates the table when absent, then updates it in place', async () => {
     const { setTableScalar, manifestFile } = await import('../manifest-edit');
     const { readFileSync } = await import('node:fs');
-    writeFileSync(join(dir, 'kortix.toml'), `kortix_version = 1\n`);
+    writeFileSync(join(dir, 'zed.toml'), `zed_version = 1\n`);
     setTableScalar('policy', 'default_mode', 'ask', dir);
     expect(readFileSync(manifestFile(dir), 'utf8')).toContain('[policy]');
     setTableScalar('policy', 'default_mode', 'allow', dir);
@@ -238,14 +238,14 @@ describe('manifest-edit — TOML (existing text-surgery behavior, unchanged)', (
 describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', () => {
   let dir: string;
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'kortix-edit-yaml-'));
+    dir = mkdtempSync(join(tmpdir(), 'zed-edit-yaml-'));
   });
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
   });
 
   const FIXTURE = [
-    'kortix_version: 1',
+    'zed_version: 1',
     'project:',
     '  name: demo',
     '',
@@ -261,7 +261,7 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
   test('appendArrayBlock adds an entry and preserves existing comments', async () => {
     const { appendArrayBlock, arrayEntryExists, manifestFile } = await import('../manifest-edit');
     const { readFileSync } = await import('node:fs');
-    writeFileSync(join(dir, 'kortix.yaml'), FIXTURE);
+    writeFileSync(join(dir, 'zed.yaml'), FIXTURE);
     appendArrayBlock('triggers', { slug: 'weekly', type: 'cron', cron: '0 0 * * 0', prompt: 'weekly run' }, dir);
     expect(arrayEntryExists('triggers', 'slug', 'weekly', dir)).toBe(true);
     expect(arrayEntryExists('triggers', 'slug', 'nightly', dir)).toBe(true);
@@ -273,7 +273,7 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
   test('removeArrayBlock excises the matching entry and preserves the surviving entry\'s comment', async () => {
     const { appendArrayBlock, removeArrayBlock, arrayEntryExists, manifestFile } = await import('../manifest-edit');
     const { readFileSync } = await import('node:fs');
-    writeFileSync(join(dir, 'kortix.yaml'), FIXTURE);
+    writeFileSync(join(dir, 'zed.yaml'), FIXTURE);
     appendArrayBlock('triggers', { slug: 'weekly', type: 'cron', cron: '0 0 * * 0', prompt: 'weekly run' }, dir);
     expect(removeArrayBlock('triggers', 'slug', 'weekly', dir)).toBe(true);
     expect(arrayEntryExists('triggers', 'slug', 'weekly', dir)).toBe(false);
@@ -285,14 +285,14 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
 
   test('removeArrayBlock returns false when no entry matches', async () => {
     const { removeArrayBlock } = await import('../manifest-edit');
-    writeFileSync(join(dir, 'kortix.yaml'), FIXTURE);
+    writeFileSync(join(dir, 'zed.yaml'), FIXTURE);
     expect(removeArrayBlock('triggers', 'slug', 'nope', dir)).toBe(false);
   });
 
   test('setScalarInArrayBlock updates a scalar in place and preserves comments', async () => {
     const { setScalarInArrayBlock, readArrayEntry, manifestFile } = await import('../manifest-edit');
     const { readFileSync } = await import('node:fs');
-    writeFileSync(join(dir, 'kortix.yaml'), FIXTURE);
+    writeFileSync(join(dir, 'zed.yaml'), FIXTURE);
     expect(setScalarInArrayBlock('triggers', 'slug', 'nightly', 'enabled', false, dir)).toBe(true);
     expect(readArrayEntry('triggers', 'slug', 'nightly', dir)?.enabled).toBe(false);
     const text = readFileSync(manifestFile(dir), 'utf8');
@@ -302,14 +302,14 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
 
   test('setScalarInArrayBlock returns false when no entry matches', async () => {
     const { setScalarInArrayBlock } = await import('../manifest-edit');
-    writeFileSync(join(dir, 'kortix.yaml'), FIXTURE);
+    writeFileSync(join(dir, 'zed.yaml'), FIXTURE);
     expect(setScalarInArrayBlock('triggers', 'slug', 'nope', 'enabled', false, dir)).toBe(false);
   });
 
   test('setTableScalar creates a new table, then updates it in place, preserving comments', async () => {
     const { setTableScalar, manifestFile } = await import('../manifest-edit');
     const { readFileSync } = await import('node:fs');
-    writeFileSync(join(dir, 'kortix.yaml'), FIXTURE);
+    writeFileSync(join(dir, 'zed.yaml'), FIXTURE);
     setTableScalar('policy', 'default_mode', 'ask', dir);
     let text = readFileSync(manifestFile(dir), 'utf8');
     expect(text).toContain('default_mode: ask');
@@ -323,15 +323,15 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
 
   test('appendArrayBlock auto-creates a nested dotted section (sandbox.templates)', async () => {
     const { appendArrayBlock, arrayEntryExists } = await import('../manifest-edit');
-    writeFileSync(join(dir, 'kortix.yaml'), FIXTURE);
-    appendArrayBlock('sandbox.templates', { slug: 'gpu', image: 'kortix/gpu:latest' }, dir);
+    writeFileSync(join(dir, 'zed.yaml'), FIXTURE);
+    appendArrayBlock('sandbox.templates', { slug: 'gpu', image: 'zed/gpu:latest' }, dir);
     expect(arrayEntryExists('sandbox.templates', 'slug', 'gpu', dir)).toBe(true);
   });
 
-  test('prefers kortix.yaml over kortix.toml when both exist (no guard-throw)', async () => {
+  test('prefers zed.yaml over zed.toml when both exist (no guard-throw)', async () => {
     const { appendArrayBlock, arrayEntryExists } = await import('../manifest-edit');
-    writeFileSync(join(dir, 'kortix.toml'), `kortix_version = 1\n`);
-    writeFileSync(join(dir, 'kortix.yaml'), FIXTURE);
+    writeFileSync(join(dir, 'zed.toml'), `zed_version = 1\n`);
+    writeFileSync(join(dir, 'zed.yaml'), FIXTURE);
     appendArrayBlock('triggers', { slug: 'weekly', type: 'cron' }, dir);
     expect(arrayEntryExists('triggers', 'slug', 'weekly', dir)).toBe(true);
   });
@@ -340,7 +340,7 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
     const { setScalarInArrayBlock, manifestFile } = await import('../manifest-edit');
     const { readFileSync } = await import('node:fs');
     const before = [
-      'kortix_version: 1',
+      'zed_version: 1',
       'metadata: { owner: "ops", labels: [alpha,beta] } # exact flow style',
       '',
       'triggers:',
@@ -351,7 +351,7 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
       'tail:  value   # exact spaces',
       '',
     ].join('\n');
-    writeFileSync(join(dir, 'kortix.yaml'), before);
+    writeFileSync(join(dir, 'zed.yaml'), before);
 
     expect(setScalarInArrayBlock('triggers', 'slug', 'nightly', 'enabled', false, dir)).toBe(true);
 
@@ -363,7 +363,7 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
     const { appendArrayBlock, manifestFile } = await import('../manifest-edit');
     const { readFileSync } = await import('node:fs');
     const before = [
-      'kortix_version: 1',
+      'zed_version: 1',
       'metadata: { owner: "ops", labels: [alpha,beta] } # exact flow style',
       '',
       'connectors:',
@@ -373,7 +373,7 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
       'tail:  value   # exact spaces',
       '',
     ].join('\n');
-    writeFileSync(join(dir, 'kortix.yaml'), before);
+    writeFileSync(join(dir, 'zed.yaml'), before);
 
     appendArrayBlock('connectors', { slug: 'second', provider: 'mcp', url: 'https://mcp.test' }, dir);
 
@@ -390,7 +390,7 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
     const { removeArrayBlock, manifestFile } = await import('../manifest-edit');
     const { readFileSync } = await import('node:fs');
     const before = [
-      'kortix_version: 1',
+      'zed_version: 1',
       'connectors:',
       '  - slug: first # keep inline',
       '    provider: http',
@@ -400,7 +400,7 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
       'tail:  [x,y] # exact tail',
       '',
     ].join('\n');
-    writeFileSync(join(dir, 'kortix.yaml'), before);
+    writeFileSync(join(dir, 'zed.yaml'), before);
 
     expect(removeArrayBlock('connectors', 'slug', 'second', dir)).toBe(true);
 
@@ -414,13 +414,13 @@ describe('manifest-edit — YAML (Document-AST editing, comment-preserving)', ()
     const { setTableScalar, manifestFile } = await import('../manifest-edit');
     const { readFileSync } = await import('node:fs');
     const before = [
-      'kortix_version: 1',
+      'zed_version: 1',
       'policy:',
       '  default_mode: ask # keep this comment',
       'tail:  [x,y] # exact tail',
       '',
     ].join('\n');
-    writeFileSync(join(dir, 'kortix.yaml'), before);
+    writeFileSync(join(dir, 'zed.yaml'), before);
 
     setTableScalar('policy', 'default_mode', 'allow_all', dir);
     expect(readFileSync(manifestFile(dir), 'utf8')).toBe(

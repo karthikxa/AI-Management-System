@@ -5,7 +5,7 @@ import {
   getLlmProviderCatalogRevision,
   subscribeLlmProviderCatalog,
 } from '@/lib/llm-providers';
-import { getProjectLlmCatalogProviders } from '@kortix/sdk';
+import { getProjectLlmCatalogProviders } from '@zed/sdk';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useSyncExternalStore } from 'react';
 

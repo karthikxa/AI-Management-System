@@ -16,7 +16,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRuntimeStore } from '@kortix/sdk/react';
+import { useRuntimeStore } from '@zed/sdk/react';
 import { findText } from '../api/runtime-files';
 import type { FindMatch } from '@/features/file-browser/types';
 import {

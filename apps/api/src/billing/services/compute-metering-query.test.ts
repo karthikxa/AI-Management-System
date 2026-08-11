@@ -10,10 +10,10 @@ const client = postgres('postgres://user:pass@127.0.0.1:5432/never-connected', {
 // This suite only renders SQL, so every config export the import graph pulls in
 // can be a stub — but they must exist statically for ESM named-export resolution.
 mock.module('../../config', () => ({
-  config: { KORTIX_BILLING_INTERNAL_ENABLED: true },
+  config: { ZED_BILLING_INTERNAL_ENABLED: true },
   SANDBOX_VERSION: '0.0.0-test',
   KNOWN_PROVIDERS: [],
-  KORTIX_MARKUP: 1,
+  ZED_MARKUP: 1,
   PLATFORM_FEE_MARKUP: 1,
   getToolCost: () => 0,
   parseAllowedProviders: () => [],

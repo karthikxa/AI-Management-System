@@ -1,6 +1,6 @@
 import { createInterface } from 'node:readline';
 
-import { CATALOG, isProviderAuthSatisfied, primaryAuthEnvVars } from '@kortix/llm-catalog';
+import { CATALOG, isProviderAuthSatisfied, primaryAuthEnvVars } from '@zed/llm-catalog';
 
 import { ApiError } from '../api/client.ts';
 import type {
@@ -19,9 +19,9 @@ import {
 } from '../command-helpers.ts';
 import { C, help, pad, status } from '../style.ts';
 
-const HELP = help`Usage: kortix providers <subcommand> [options]
+const HELP = help`Usage: zed providers <subcommand> [options]
 
-Configure LLM providers for the linked Kortix project. Two paths:
+Configure LLM providers for the linked Zed project. Two paths:
 
   • OAuth (zero config) — uses the upstream provider's device-code flow
     (ChatGPT Pro/Plus, GitHub Copilot). Tokens land encrypted on the
@@ -56,27 +56,27 @@ Known API-key providers (provider → project secret(s)):
 
 Global options:
   --project <id>     Operate on this project id (default: linked).
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   --region <region>  (set bedrock) AWS region, e.g. us-east-1.
   --enterprise <url> (login github-copilot) Enterprise GHE URL.
   -h, --help         Show this help.
 `;
 
-const LOGIN_HELP = help`Usage: kortix providers login <provider> [options]
+const LOGIN_HELP = help`Usage: zed providers login <provider> [options]
 
 Start the OAuth device-code flow for openai or github-copilot.
 
 Options:
   --enterprise <url>  GitHub Enterprise URL for github-copilot.
   --project <id>      Operate on this project id (default: linked).
-  --host <name>       Operate against a non-default Kortix host.
+  --host <name>       Operate against a non-default Zed host.
   -h, --help          Show this help without starting OAuth.
 `;
 
 // ── provider → required project-secret(s) for the API-key flow ────────────
-// Sourced from @kortix/llm-catalog's Kortix-owned auth requirement — NOT the
+// Sourced from @zed/llm-catalog's Zed-owned auth requirement — NOT the
 // raw models.dev env list, which for some providers (Bedrock) includes an
-// auth method (SigV4 access keys) Kortix's transport doesn't implement. See
+// auth method (SigV4 access keys) Zed's transport doesn't implement. See
 // packages/llm-catalog/src/auth-requirements.ts for the full rationale; this
 // is the single declaration the web connect modal, the connected-provider
 // gate, and this CLI all derive from, so they can't drift.
@@ -192,8 +192,8 @@ async function providersLs(opts: CtxOpts, json = false): Promise<number> {
   if (oauthList.items.length === 0 && setSecretNames.size === 0) {
     process.stdout.write(
       `  ${C.dim}No providers configured. Try:${C.reset}\n` +
-        `    ${C.cyan}kortix providers login openai${C.reset}\n` +
-        `    ${C.cyan}kortix providers set anthropic sk-ant-...${C.reset}\n\n`,
+        `    ${C.cyan}zed providers login openai${C.reset}\n` +
+        `    ${C.cyan}zed providers set anthropic sk-ant-...${C.reset}\n\n`,
     );
     return 0;
   }
@@ -239,14 +239,14 @@ async function providersLogin(
 ): Promise<number> {
   if (!provider) {
     process.stderr.write(
-      `${status.err('Pass a provider: kortix providers login <openai|github-copilot>')}\n`,
+      `${status.err('Pass a provider: zed providers login <openai|github-copilot>')}\n`,
     );
     return 2;
   }
   if (!OAUTH_PROVIDERS.has(provider)) {
     process.stderr.write(
       `${status.err(`OAuth not supported for "${provider}".`)}\n` +
-        `  ${C.dim}Try \`kortix providers set ${provider} <key>\` instead.${C.reset}\n`,
+        `  ${C.dim}Try \`zed providers set ${provider} <key>\` instead.${C.reset}\n`,
     );
     return 2;
   }
@@ -295,7 +295,7 @@ async function providersLogin(
       const exp = resp.credential.expires_in_ms;
       if (exp !== null) {
         process.stdout.write(
-          `  ${C.dim}Token refresh in ${formatDuration(exp)} (handled by Kortix on next sandbox boot).${C.reset}\n\n`,
+          `  ${C.dim}Token refresh in ${formatDuration(exp)} (handled by Zed on next sandbox boot).${C.reset}\n\n`,
         );
       } else {
         process.stdout.write('\n');
@@ -327,7 +327,7 @@ async function providersSet(
 ): Promise<number> {
   if (!provider) {
     process.stderr.write(
-      `${status.err('Pass a provider: kortix providers set <provider> [<key>]')}\n`,
+      `${status.err('Pass a provider: zed providers set <provider> [<key>]')}\n`,
     );
     return 2;
   }
@@ -336,7 +336,7 @@ async function providersSet(
     process.stderr.write(
       `${status.err(`Unknown provider "${provider}".`)}\n` +
         `  ${C.dim}Known: ${Object.keys(PROVIDER_ENV_VARS).join(', ')}${C.reset}\n` +
-        `  ${C.dim}Or set a custom env directly: \`kortix secrets set NAME=value\`${C.reset}\n`,
+        `  ${C.dim}Or set a custom env directly: \`zed secrets set NAME=value\`${C.reset}\n`,
     );
     return 2;
   }
@@ -366,7 +366,7 @@ async function providersSet(
     if (!region) {
       process.stderr.write(
         `${status.err(`${provider} also needs a region: pass --region <region>.`)}\n` +
-          `  ${C.dim}Example: kortix providers set bedrock <token> --region us-east-1${C.reset}\n`,
+          `  ${C.dim}Example: zed providers set bedrock <token> --region us-east-1${C.reset}\n`,
       );
       return 2;
     }

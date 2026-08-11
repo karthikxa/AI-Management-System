@@ -22,7 +22,7 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from '../home/theme-toggle';
-import { KortixLogo } from '../sidebar/kortix-logo';
+import { ZedLogo } from '../sidebar/zed-logo';
 
 const helpData = {
   navMain: [
@@ -40,7 +40,7 @@ const helpData = {
       items: [
         {
           title: 'GitHub Repository',
-          url: 'https://github.com/kortix-ai/suna',
+          url: 'https://github.com/zed-ai/suna',
           external: true,
         },
         {
@@ -71,7 +71,7 @@ export function HelpSidebar({ onSearchClick, ...props }: HelpSidebarProps) {
       {...props}
     >
       <SidebarHeader className="space-y-3 bg-transparent p-6 px-6">
-        <KortixLogo size={24} />
+        <ZedLogo size={24} />
         {onSearchClick && (
           <Button
             variant="outline"

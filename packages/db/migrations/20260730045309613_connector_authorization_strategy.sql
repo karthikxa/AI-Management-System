@@ -11,5 +11,5 @@ set statement_timeout = '30s';
 --   [x] New API versions read existing rows as project authorization.
 --   [x] No index, constraint validation, drop, rename, or backfill is required.
 
-CREATE TYPE "kortix"."executor_connector_authorization_strategy" AS ENUM('project', 'user');--> statement-breakpoint
-ALTER TABLE "kortix"."executor_connectors" ADD COLUMN "authorization_strategy" "kortix"."executor_connector_authorization_strategy" DEFAULT 'project' NOT NULL;
+CREATE TYPE "zed"."executor_connector_authorization_strategy" AS ENUM('project', 'user');--> statement-breakpoint
+ALTER TABLE "zed"."executor_connectors" ADD COLUMN "authorization_strategy" "zed"."executor_connector_authorization_strategy" DEFAULT 'project' NOT NULL;

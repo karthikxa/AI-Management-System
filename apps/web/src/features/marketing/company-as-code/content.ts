@@ -8,8 +8,8 @@
  * Voice rules: the `comms` skill.
  * ACCURACY GATE for this page specifically:
  *  - Every line of YAML, every path and every CLI command on this page is real.
- *    Ground truth: `packages/starter/templates/base/kortix.yaml`, the same
- *    template's `.kortix/` tree, `packages/manifest-schema/src/index.v2.ts`,
+ *    Ground truth: `packages/starter/templates/base/zed.yaml`, the same
+ *    template's `.zed/` tree, `packages/manifest-schema/src/index.v2.ts`,
  *    and `apps/web/content/docs/project/manifest.mdx`. Do not invent a field.
  *  - `channels:` is NOT a manifest key in schema version 2 — the validator
  *    rejects it. Channel routing is live project state; connecting a channel
@@ -28,12 +28,12 @@
 export const hero = {
   eyebrow: 'Company as code',
   title: 'A company is going to be a git repository.',
-  sub: 'Not as a metaphor. A Kortix project is a git repo, and that repo is the company: its agents, the skills it has built up, everything it has learned, and the definition of the machines all of it runs on. Versioned. Diffable. Owned outright.',
+  sub: 'Not as a metaphor. A Zed project is a git repo, and that repo is the company: its agents, the skills it has built up, everything it has learned, and the definition of the machines all of it runs on. Versioned. Diffable. Owned outright.',
   ctaPrimary: 'Start a project',
   ctaPrimaryHref: '/auth',
   ctaSecondary: 'Read the manifest spec',
   ctaSecondaryHref: '/docs/project/manifest',
-  microline: 'kortix init · kortix ship · one repo · any model',
+  microline: 'zed init · zed ship · one repo · any model',
   /** Four mono facts the rest of the page proves. Every value is defensible. */
   specs: [
     { k: 'Configuration', v: 'Files in a repo you own' },
@@ -46,24 +46,24 @@ export const hero = {
 export const definition = {
   eyebrow: 'The definition',
   title: 'Two files define the company.',
-  sub: 'kortix.yaml is the Kortix layer: the machine sessions boot on, the connectors, the triggers, the secret names, and what each agent is allowed to touch. The OpenCode config is the runtime the agents think in. Everything past those two is files in the repo.',
+  sub: 'zed.yaml is the Zed layer: the machine sessions boot on, the connectors, the triggers, the secret names, and what each agent is allowed to touch. The OpenCode config is the runtime the agents think in. Everything past those two is files in the repo.',
   yaml: {
-    title: 'kortix.yaml',
-    caption: 'The Kortix layer — one file, at the repo root.',
+    title: 'zed.yaml',
+    caption: 'The Zed layer — one file, at the repo root.',
     lines: [
       '# Schema version 2. The runtime is OpenCode.',
-      'kortix_version: 2',
+      'zed_version: 2',
       'runtime: opencode',
       '',
       'project:',
       '  name: Northwind',
       '',
       '# The agent that answers when nothing names one.',
-      'default_agent: kortix',
+      'default_agent: zed',
       '',
       '# Where the runtime config lives. Past this: files.',
       'opencode:',
-      '  config_dir: .kortix/opencode',
+      '  config_dir: .zed/opencode',
       '',
       '# Secret NAMES only. The values are encrypted in the',
       '# platform and injected when the machine boots.',
@@ -91,29 +91,29 @@ export const definition = {
       '# Governance: what each agent may touch — never what',
       '# it says. An omitted grant resolves to none.',
       'agents:',
-      '  kortix:',
+      '  zed:',
       '    connectors: all',
       '    secrets: all',
       '    skills: all',
-      '    kortix_cli: all',
+      '    zed_cli: all',
       '',
       '  invoice-clerk:',
       '    sandbox: python',
       '    connectors: [gmail-read]',
       '    secrets: [STRIPE_API_KEY]',
       '    skills: [reconcile-invoices]',
-      '    kortix_cli: [project.cr.open]',
+      '    zed_cli: [project.cr.open]',
     ],
   },
   runtime: {
-    title: '.kortix/opencode/opencode.jsonc',
+    title: '.zed/opencode/opencode.jsonc',
     caption: 'The runtime — models, tools, permissions.',
     lines: [
       '{',
       '  // Docs: https://opencode.ai/docs/',
       '  "$schema": "https://opencode.ai/config.json",',
       '  "theme": "system",',
-      '  "default_agent": "kortix",',
+      '  "default_agent": "zed",',
       '  // The session is already an isolated machine on a',
       '  // throwaway branch, so the agent starts wide open.',
       '  // Tighten per tool here when you want a stricter',
@@ -123,7 +123,7 @@ export const definition = {
     ],
   },
   agentFile: {
-    title: '.kortix/opencode/agents/invoice-clerk.md',
+    title: '.zed/opencode/agents/invoice-clerk.md',
     caption: 'The agent — a stock OpenCode agent file. What it says lives here.',
     lines: [
       '---',
@@ -143,8 +143,8 @@ export const definition = {
   /** The split between the two files. Keep this exactly three points. */
   notes: [
     {
-      id: 'kortix-layer',
-      title: 'kortix.yaml grants',
+      id: 'zed-layer',
+      title: 'zed.yaml grants',
       body: 'Which machine, which connectors, which secrets, which skills, which CLI verbs. Governance only. Omit a grant and it resolves to none — an agent gets what you gave it and nothing else.',
     },
     {
@@ -170,14 +170,14 @@ export const repo = {
   /** Real paths from the shipped starter template. Do not invent a directory. */
   tree: [
     { path: 'northwind/', note: 'the repo, and the company', depth: 0 },
-    { path: 'kortix.yaml', note: 'the Kortix layer', depth: 1 },
-    { path: '.kortix/', note: '', depth: 1 },
+    { path: 'zed.yaml', note: 'the Zed layer', depth: 1 },
+    { path: '.zed/', note: '', depth: 1 },
     { path: 'memory/', note: '', depth: 2 },
     { path: 'MEMORY.md', note: 'what the company has learned', depth: 3 },
     { path: 'opencode/', note: '', depth: 2 },
     { path: 'opencode.jsonc', note: 'the runtime agents think in', depth: 3 },
     { path: 'agents/', note: 'one OpenCode agent per file', depth: 3 },
-    { path: 'kortix.md', note: '', depth: 4 },
+    { path: 'zed.md', note: '', depth: 4 },
     { path: 'invoice-clerk.md', note: '', depth: 4 },
     { path: 'skills/', note: 'how this company does a job', depth: 3 },
     { path: 'reconcile-invoices/', note: '', depth: 4 },
@@ -215,16 +215,16 @@ export const grep = {
     title: 'northwind — main',
     lines: [
       '# what does the company believe about pricing?',
-      '$ grep -ri "annual" .kortix/memory',
+      '$ grep -ri "annual" .zed/memory',
       'MEMORY.md: never quote annual before the security review',
       '',
       '# who is allowed to touch the Stripe key?',
-      '$ grep -n "STRIPE_API_KEY" kortix.yaml',
+      '$ grep -n "STRIPE_API_KEY" zed.yaml',
       '18:  required: [STRIPE_API_KEY]',
       '48:    secrets: [STRIPE_API_KEY]',
       '',
       '# who changed the invoice clerk, and when?',
-      '$ git log --oneline .kortix/opencode/agents/',
+      '$ git log --oneline .zed/opencode/agents/',
       '8f2a1c4  invoice-clerk: stop guessing at refunds',
       '1d90b73  invoice-clerk: first draft of the persona',
     ],
@@ -257,7 +257,7 @@ export const change = {
     title: 'skill: reconcile-invoices — handle partial refunds',
     author: 'opened by invoice-clerk',
     branch: '9f4c2b7e → main',
-    file: '.kortix/opencode/skills/reconcile-invoices/SKILL.md',
+    file: '.zed/opencode/skills/reconcile-invoices/SKILL.md',
     /** `kind`: 'ctx' | 'del' | 'add'. Monochrome by design — no diff colours. */
     diff: [
       { kind: 'ctx', text: '## Matching a payment to an invoice' },
@@ -294,13 +294,13 @@ export const selfImprove = {
   title: 'The company files patches against itself.',
   sub: 'An agent can read its own configuration, edit it, and propose the change. Put that on a schedule and the repo gets better at being your company while everyone is asleep.',
   yaml: {
-    title: 'kortix.yaml — triggers',
+    title: 'zed.yaml — triggers',
     caption: 'From the starter template. Every new project ships with it, switched off.',
     lines: [
       'agents:',
       '  memory-reflector:',
       '    # it may open a change request. Nothing else.',
-      '    kortix_cli: [project.cr.open]',
+      '    zed_cli: [project.cr.open]',
       '',
       'triggers:',
       '  - slug: memory-reflector',
@@ -314,7 +314,7 @@ export const selfImprove = {
       '      Reflect on the last 24 hours of project',
       '      activity. Review git history, merged change',
       '      requests and session digests. Update',
-      '      .kortix/memory/ and open one change request',
+      '      .zed/memory/ and open one change request',
       '      titled `memory: ...`. Exit without one when',
       '      there is no durable knowledge.',
     ],
@@ -333,7 +333,7 @@ export const selfImprove = {
     {
       n: '02',
       title: 'It edits the company',
-      body: 'It reads the git history and the sessions of the last day, then writes what it learned into .kortix/memory/ as plain markdown.',
+      body: 'It reads the git history and the sessions of the last day, then writes what it learned into .zed/memory/ as plain markdown.',
     },
     {
       n: '03',
@@ -350,17 +350,17 @@ export const portable = {
   shell: {
     title: 'any directory, any machine',
     lines: [
-      '# turn any directory into a Kortix',
-      '$ kortix init',
+      '# turn any directory into a Zed',
+      '$ zed init',
       '',
       '# check it compiles, ask for the missing secrets,',
       '# push it up, and bring the whole thing live',
-      '$ kortix ship',
+      '$ zed ship',
       '',
       '# from here it is just a repo',
       '$ git clone git@github.com:northwind/northwind.git',
       '$ git revert 8f2a1c4',
-      '$ kortix cr',
+      '$ zed cr',
     ],
   },
   rows: [
@@ -372,7 +372,7 @@ export const portable = {
     {
       id: 'same-everywhere',
       k: 'The same on a laptop as in the cloud',
-      v: 'kortix init scaffolds it, kortix ship brings it live. It is the same repo doing the same thing, so local development and the live system stopped being different categories.',
+      v: 'zed init scaffolds it, zed ship brings it live. It is the same repo doing the same thing, so local development and the live system stopped being different categories.',
     },
     {
       id: 'models',
@@ -382,7 +382,7 @@ export const portable = {
     {
       id: 'hosting',
       k: 'Open source and self-hostable',
-      v: 'Run it on Kortix Cloud, in your own VPC, or fully on-prem. Read the code, fork it, audit it. Nobody rents your company back to you.',
+      v: 'Run it on Zed Cloud, in your own VPC, or fully on-prem. Read the code, fork it, audit it. Nobody rents your company back to you.',
     },
   ],
 } as const;
@@ -390,7 +390,7 @@ export const portable = {
 export const closing = {
   eyebrow: 'One repo',
   title: 'Turn a directory into a company.',
-  sub: 'kortix init makes any directory a Kortix. kortix ship brings it live. From then on it is one repo you own — versioned, diffable, and improving itself one reviewed change at a time.',
+  sub: 'zed init makes any directory a Zed. zed ship brings it live. From then on it is one repo you own — versioned, diffable, and improving itself one reviewed change at a time.',
   ctaPrimary: 'Start a project',
   ctaPrimaryHref: '/auth',
   ctaSecondary: 'Read the docs',

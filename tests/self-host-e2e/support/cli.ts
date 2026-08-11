@@ -36,7 +36,7 @@ export interface RunResult {
 }
 
 /** A throwaway config root + CLI config file, isolated per test via a unique
- *  tmpdir — never touches a real `~/.config/kortix` instance, so this is safe
+ *  tmpdir — never touches a real `~/.config/zed` instance, so this is safe
  *  to run alongside any live self-host stacks on the same machine. */
 export class SelfHostSandbox {
   readonly tmp: string;
@@ -45,15 +45,15 @@ export class SelfHostSandbox {
   private readonly cliConfigFile: string;
 
   constructor() {
-    this.tmp = mkdtempSync(join(tmpdir(), 'kortix-self-host-e2e-'));
+    this.tmp = mkdtempSync(join(tmpdir(), 'zed-self-host-e2e-'));
     this.configRoot = join(this.tmp, 'self-host');
     this.cliConfigFile = join(this.tmp, 'cli-config.json');
     // Compose identity is derived only from --instance, not configRoot. Using
     // the default instance here would make `env set` inspect (and potentially
-    // recreate) a developer's real `kortix-default` stack even though every
+    // recreate) a developer's real `zed-default` stack even though every
     // file lives in this throwaway directory. Keep every black-box sandbox on
     // a globally unique Compose project so the no-Docker suite is truly inert.
-    this.instance = `kortixtest${randomUUID().replaceAll('-', '')}`;
+    this.instance = `zedtest${randomUUID().replaceAll('-', '')}`;
   }
 
   async run(args: string[], extraEnv: Record<string, string> = {}): Promise<RunResult> {
@@ -63,9 +63,9 @@ export class SelfHostSandbox {
       cwd: this.tmp,
       env: {
         ...process.env,
-        KORTIX_SELF_HOST_CONFIG_DIR: this.configRoot,
-        KORTIX_CONFIG_FILE: this.cliConfigFile,
-        KORTIX_NO_UPDATE_CHECK: '1',
+        ZED_SELF_HOST_CONFIG_DIR: this.configRoot,
+        ZED_CONFIG_FILE: this.cliConfigFile,
+        ZED_NO_UPDATE_CHECK: '1',
         NO_COLOR: '1',
         FORCE_COLOR: '0',
         ...extraEnv,

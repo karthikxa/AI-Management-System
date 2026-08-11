@@ -1236,7 +1236,7 @@ describe("useSyncStore — session retention (memory eviction)", () => {
 		expect(useSyncStore.getState().parts["msg_orphan_keep"]).toHaveLength(1);
 	});
 
-	// An id that can never hold runtime data — an empty string here, a Kortix
+	// An id that can never hold runtime data — an empty string here, a Zed
 	// route UUID at the hook boundary — must not take one of the three slots.
 	// Parking one evicts a real transcript a navigation early.
 	test("an empty session id never takes a slot in the window", () => {

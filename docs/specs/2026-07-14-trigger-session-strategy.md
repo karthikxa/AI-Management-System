@@ -23,7 +23,7 @@ Investigated 2026-07-14 (two codebase sweeps). There are **3 trigger UIs backed 
 disconnected systems**:
 
 - **System A — git-manifest** (`apps/api` `/v1/projects/:id/triggers`; config lives in
-  the repo `kortix.yaml`/`.toml` manifest, runtime state in `project_trigger_runtime`).
+  the repo `zed.yaml`/`.toml` manifest, runtime state in `project_trigger_runtime`).
   This is the robust, platform-level, CR-gated system. It **already implements
   `sessionMode: 'fresh'|'reuse'`** end-to-end at the API/fire layer
   (`apps/api/src/projects/lib/triggers.ts:674-797`, reuse lookup `:648-666`).
@@ -32,7 +32,7 @@ disconnected systems**:
   client types (`packages/sdk/src/core/rest/projects-client/triggers.ts:64-100`) don't
   even carry `session_mode`, so every trigger created here is locked to the `fresh`
   default despite the backend supporting `reuse`.
-- **System B — sandbox daemon** (`${sandbox}/kortix/triggers`; per-sandbox, daemon
+- **System B — sandbox daemon** (`${sandbox}/zed/triggers`; per-sandbox, daemon
   source not in this repo). Frontend surfaces: the global `/scheduled-tasks` page
   (`scheduled-tasks-page.tsx`) and the project-settings **Triggers tab**
   (`triggers-tab.tsx`), both via `use-scheduled-tasks.ts`. These **do render a working
@@ -82,7 +82,7 @@ owns, not a per-sandbox daemon concept). Plan:
 
 1. **DB** — add `session_id text` (nullable, FK `project_sessions.session_id`
    `onDelete set null`) to `project_trigger_runtime`
-   (`packages/db/src/schema/kortix.ts:683-713`) + a `packages/db/migrations` migration
+   (`packages/db/src/schema/zed.ts:683-713`) + a `packages/db/migrations` migration
    (use the `migration` skill). This row is already keyed `(project_id, slug)` → natural
    home for the pin.
 2. **DSL / manifest** — extend `GitTriggerSpec.sessionMode` to `'fresh'|'reuse'|'pinned'`

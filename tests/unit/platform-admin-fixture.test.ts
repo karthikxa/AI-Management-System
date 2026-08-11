@@ -4,13 +4,13 @@ import { grantEphemeralPlatformAdmin, type OpenRoleDb } from '../src/fixtures/pl
 
 function env(overrides: Partial<Env> = {}): Env {
   return {
-    apiUrl: 'https://staging-api.kortix.com/v1',
-    baseUrl: 'https://staging.kortix.com',
-    gatewayUrl: 'https://gateway-staging.kortix.com',
+    apiUrl: 'https://staging-api.zed.com/v1',
+    baseUrl: 'https://staging.zed.com',
+    gatewayUrl: 'https://gateway-staging.zed.com',
     supabaseUrl: 'https://example.supabase.co',
     supabaseAnonKey: null,
     supabaseServiceRoleKey: null,
-    databaseUrl: 'postgresql://staging.example/kortix',
+    databaseUrl: 'postgresql://staging.example/zed',
     ownerEmail: null,
     ownerPassword: null,
     adminToken: null,
@@ -30,7 +30,7 @@ function env(overrides: Partial<Env> = {}): Env {
       internalCron: false,
       funded: false,
     },
-    testEmailDomain: 'ke2e.kortix.test',
+    testEmailDomain: 'ke2e.zed.test',
     ...overrides,
   };
 }
@@ -47,9 +47,9 @@ describe('ephemeral platform-admin fixture', () => {
 
     expect(open).toHaveBeenCalledTimes(2);
     expect(query).toHaveBeenCalledTimes(2);
-    expect(query.mock.calls[0]?.[0]).toContain('INSERT INTO kortix.platform_user_roles');
+    expect(query.mock.calls[0]?.[0]).toContain('INSERT INTO zed.platform_user_roles');
     expect(query.mock.calls[0]?.[1]).toEqual([accountId]);
-    expect(query.mock.calls[1]?.[0]).toContain('DELETE FROM kortix.platform_user_roles');
+    expect(query.mock.calls[1]?.[0]).toContain('DELETE FROM zed.platform_user_roles');
     expect(query.mock.calls[1]?.[1]).toEqual([accountId]);
     expect(end).toHaveBeenCalledTimes(2);
   });

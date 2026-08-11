@@ -8,7 +8,7 @@ set lock_timeout = '2s';
 set statement_timeout = '30s';
 
 -- REVIEW THE GENERATED SQL BELOW. drizzle-kit writes it from the diff between
--- kortix.ts and the snapshot; it knows the target shape, not how to reach it
+-- zed.ts and the snapshot; it knows the target shape, not how to reach it
 -- without downtime. Check the same list `migrate:create` prints:
 --   [ ] Bare NOT NULL added to an existing populated table (needs a backfill first).
 --   [ ] Plain CREATE INDEX / DROP INDEX on an EXISTING table -- move it to
@@ -27,16 +27,16 @@ set statement_timeout = '30s';
 
 -- The prior migration validated app_deployments_created_by_not_null. PostgreSQL
 -- uses that proof to avoid scanning app_deployments while holding this lock.
-ALTER TABLE "kortix"."app_deployments"
+ALTER TABLE "zed"."app_deployments"
   -- squawk-ignore adding-not-nullable-field
   ALTER COLUMN "created_by" SET NOT NULL;
 
 -- The prior migration validated app_deployments_actor_type_not_null.
-ALTER TABLE "kortix"."app_deployments"
+ALTER TABLE "zed"."app_deployments"
   -- squawk-ignore adding-not-nullable-field
   ALTER COLUMN "actor_type" SET NOT NULL;
 
-ALTER TABLE "kortix"."app_deployments"
+ALTER TABLE "zed"."app_deployments"
   DROP CONSTRAINT IF EXISTS "app_deployments_created_by_not_null";
-ALTER TABLE "kortix"."app_deployments"
+ALTER TABLE "zed"."app_deployments"
   DROP CONSTRAINT IF EXISTS "app_deployments_actor_type_not_null";

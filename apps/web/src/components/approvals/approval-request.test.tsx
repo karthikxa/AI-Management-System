@@ -8,8 +8,8 @@ const request = {
   projectName: 'Approval proof',
   requestedAt: '2026-08-06T00:00:00.000Z',
   argsPreview: {
-    to: ['marko@kortix.ai'],
-    cc: ['audit@kortix.ai'],
+    to: ['marko@zed.ai'],
+    cc: ['audit@zed.ai'],
     subject: 'Review this exact email',
     body: 'The approver must see the complete email content.',
     access_token: '[redacted]',
@@ -25,8 +25,8 @@ describe('ApprovalRequest', () => {
     );
 
     expect(html).toContain('gmail.send_email');
-    expect(html).toContain('marko@kortix.ai');
-    expect(html).toContain('audit@kortix.ai');
+    expect(html).toContain('marko@zed.ai');
+    expect(html).toContain('audit@zed.ai');
     expect(html).toContain('Review this exact email');
     expect(html).toContain('The approver must see the complete email content.');
     expect(html).toContain('Hidden credential');

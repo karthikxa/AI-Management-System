@@ -36,10 +36,10 @@ export interface GitHubAppManifest {
   hook_attributes: { url: string; active: boolean };
 }
 
-/** "Kortix Self-Host <suffix>" — the suffix keeps the name globally unique on
+/** "Zed Self-Host <suffix>" — the suffix keeps the name globally unique on
  *  GitHub (app names collide across ALL of GitHub, not just one org). */
 export function generateAppName(randomSuffix: () => string = () => randomBytes(4).toString('hex')): string {
-  return `Kortix Self-Host ${randomSuffix()}`;
+  return `Zed Self-Host ${randomSuffix()}`;
 }
 
 /** CSRF-style nonce round-tripped through GitHub on the manifest-creation
@@ -157,11 +157,11 @@ export function parseInstalledCallback(url: string): InstalledCallback {
 /**
  * Everything to persist the instant the manifest code is exchanged for real
  * App credentials — written immediately (before install even happens) so a
- * mid-flow abort doesn't lose the freshly-minted app. `KORTIX_GITHUB_APP_ID`
+ * mid-flow abort doesn't lose the freshly-minted app. `ZED_GITHUB_APP_ID`
  * / `_PRIVATE_KEY` / `_SLUG` are the exact keys `apps/api/src/projects/github.ts`
  * reads; client id/secret/webhook secret aren't read by the API today but are
  * kept so the App can be managed later without regenerating it. The state
- * secret backs `KORTIX_GITHUB_APP_STATE_SECRET`-signed install links
+ * secret backs `ZED_GITHUB_APP_STATE_SECRET`-signed install links
  * (`buildGitHubAppInstallState`) — generated once, left alone if already set.
  */
 export function buildAppCredentialsEnvPatch(opts: {
@@ -175,15 +175,15 @@ export function buildAppCredentialsEnvPatch(opts: {
   generateStateSecret?: () => string;
 }): Record<string, string> {
   const patch: Record<string, string> = {
-    KORTIX_GITHUB_APP_ID: opts.appId,
-    KORTIX_GITHUB_APP_SLUG: opts.slug,
-    KORTIX_GITHUB_APP_PRIVATE_KEY: pemToEnvEscaped(opts.privateKeyPem),
-    KORTIX_GITHUB_APP_CLIENT_ID: opts.clientId,
-    KORTIX_GITHUB_APP_CLIENT_SECRET: opts.clientSecret,
-    KORTIX_GITHUB_APP_WEBHOOK_SECRET: opts.webhookSecret,
+    ZED_GITHUB_APP_ID: opts.appId,
+    ZED_GITHUB_APP_SLUG: opts.slug,
+    ZED_GITHUB_APP_PRIVATE_KEY: pemToEnvEscaped(opts.privateKeyPem),
+    ZED_GITHUB_APP_CLIENT_ID: opts.clientId,
+    ZED_GITHUB_APP_CLIENT_SECRET: opts.clientSecret,
+    ZED_GITHUB_APP_WEBHOOK_SECRET: opts.webhookSecret,
   };
   if (!opts.currentStateSecret?.trim()) {
-    patch.KORTIX_GITHUB_APP_STATE_SECRET = (opts.generateStateSecret ?? (() => randomBytes(32).toString('hex')))();
+    patch.ZED_GITHUB_APP_STATE_SECRET = (opts.generateStateSecret ?? (() => randomBytes(32).toString('hex')))();
   }
   return patch;
 }
@@ -200,8 +200,8 @@ export function buildManagedGitEnvPatch(opts: { owner: string; installationId: s
     MANAGED_GIT_GITHUB_OWNER: opts.owner,
     MANAGED_GIT_GITHUB_INSTALL_ID: opts.installationId,
     MANAGED_GIT_GITHUB_TOKEN: '',
-    KORTIX_GITHUB_TOKEN: '',
-    KORTIX_GITHUB_OWNER: opts.owner,
+    ZED_GITHUB_TOKEN: '',
+    ZED_GITHUB_OWNER: opts.owner,
   };
 }
 
@@ -222,14 +222,14 @@ export function renderStartPageHtml(opts: { manifest: GitHubAppManifest; createU
   const manifestJson = escapeHtmlAttr(JSON.stringify(opts.manifest));
   return `<!doctype html>
 <html>
-<head><meta charset="utf-8"><title>Connecting Kortix to GitHub…</title></head>
+<head><meta charset="utf-8"><title>Connecting Zed to GitHub…</title></head>
 <body>
-<p>Redirecting to GitHub to create your Kortix GitHub App…</p>
-<form id="kortix-github-manifest" method="post" action="${escapeHtmlAttr(opts.createUrl)}">
+<p>Redirecting to GitHub to create your Zed GitHub App…</p>
+<form id="zed-github-manifest" method="post" action="${escapeHtmlAttr(opts.createUrl)}">
   <input type="hidden" name="manifest" value="${manifestJson}" />
   <noscript><button type="submit">Continue to GitHub</button></noscript>
 </form>
-<script>document.getElementById('kortix-github-manifest').submit();</script>
+<script>document.getElementById('zed-github-manifest').submit();</script>
 </body>
 </html>
 `;
@@ -292,7 +292,7 @@ export async function exchangeManifestCode(
     method: 'POST',
     headers: {
       Accept: 'application/vnd.github+json',
-      'User-Agent': 'kortix-self-host-cli',
+      'User-Agent': 'zed-self-host-cli',
     },
   });
   if (!res.ok) {
@@ -325,7 +325,7 @@ export async function fetchAppInstallation(opts: {
     headers: {
       Accept: 'application/vnd.github+json',
       Authorization: `Bearer ${jwt}`,
-      'User-Agent': 'kortix-self-host-cli',
+      'User-Agent': 'zed-self-host-cli',
     },
   });
   if (!res.ok) return { login: null, type: null };
@@ -358,7 +358,7 @@ export interface ConnectGithubDeps {
    *  local-forward hint, and accept pasted-back code/installation_id. */
   manual: boolean;
   publicUrl: string;
-  /** Current `KORTIX_GITHUB_APP_STATE_SECRET`, if any — only generate a new
+  /** Current `ZED_GITHUB_APP_STATE_SECRET`, if any — only generate a new
    *  one when unset. */
   currentStateSecret?: string;
   /** Merge + persist an env patch immediately (before the rest of the flow
@@ -406,7 +406,7 @@ export async function runConnectGithubFlow(deps: ConnectGithubDeps): Promise<Con
   const port = await deps.findFreePort();
   const state = generateState();
   const appName = generateAppName();
-  const manifest = buildAppManifest({ appName, homepageUrl: deps.publicUrl || 'https://kortix.ai', port });
+  const manifest = buildAppManifest({ appName, homepageUrl: deps.publicUrl || 'https://zed.ai', port });
   const createUrl = buildCreateAppUrl({ org: deps.org, state });
 
   let resolveCreated: ((v: CreatedCallback) => void) | null = null;
@@ -431,7 +431,7 @@ export async function runConnectGithubFlow(deps: ConnectGithubDeps): Promise<Con
       res.end(
         renderClosePageHtml(
           'GitHub App created',
-          callback.code ? 'Kortix received the app.' : 'Something went wrong — no code was returned.',
+          callback.code ? 'Zed received the app.' : 'Something went wrong — no code was returned.',
         ),
       );
       if (callback.code && resolveCreated) {
@@ -447,7 +447,7 @@ export async function runConnectGithubFlow(deps: ConnectGithubDeps): Promise<Con
         renderClosePageHtml(
           'GitHub App installed',
           callback.installationId
-            ? 'Kortix received the installation.'
+            ? 'Zed received the installation.'
             : 'Something went wrong — no installation_id was returned.',
         ),
       );
@@ -506,7 +506,7 @@ export async function runConnectGithubFlow(deps: ConnectGithubDeps): Promise<Con
     deps.print(`  Created GitHub App "${appName}" (${conversion.slug}).`);
 
     const installUrl = buildInstallUrl(conversion.slug);
-    deps.print(`\n  Install it on the repo(s) you want Kortix to manage: ${installUrl}`);
+    deps.print(`\n  Install it on the repo(s) you want Zed to manage: ${installUrl}`);
     deps.print(`  Pick "Only select repositories" to scope it to just one repo, or install on all.`);
     if (deps.manual) {
       deps.print(`  (Same port-forward as above works here too.)`);

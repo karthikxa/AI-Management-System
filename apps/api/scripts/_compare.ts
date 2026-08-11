@@ -1,6 +1,6 @@
 import { createAccountToken } from '../src/repositories/account-tokens';
 import { db } from '../src/shared/db';
-import { sessionSandboxes } from '@kortix/db';
+import { sessionSandboxes } from '@zed/db';
 import { eq } from 'drizzle-orm';
 
 const ACC = 'fbea71d0-9655-4ab4-aca5-1b68e1ae7f71';
@@ -23,14 +23,14 @@ async function row(sessionId: string) {
   return x as any;
 }
 
-// Poll the proxy /kortix/health until runtimeReady=true (uniform across providers)
+// Poll the proxy /zed/health until runtimeReady=true (uniform across providers)
 let lastHealth = '';
 async function waitRuntimeReady(baseUrl: string, deadlineMs: number): Promise<boolean> {
   const end = now() + deadlineMs;
   lastHealth = '';
   while (now() < end) {
     try {
-      const r = await fetch(`${baseUrl}/kortix/health`, { headers: H, signal: AbortSignal.timeout(8000) });
+      const r = await fetch(`${baseUrl}/zed/health`, { headers: H, signal: AbortSignal.timeout(8000) });
       const body = await r.text(); lastHealth = `${r.status}:${body.slice(0,140)}`;
       if (r.ok) { let j: any = {}; try { j = JSON.parse(body); } catch {} if (j?.runtimeReady === true) return true; }
     } catch (e: any) { lastHealth = `ERR ${e?.name||e}`; }
@@ -61,7 +61,7 @@ for (const prov of PROVIDERS) {
     let readyMs = -1;
     if (running && r0?.baseUrl) { const rdy = await waitRuntimeReady(r0.baseUrl, 90000); readyMs = rdy ? now() - t0 : -1; }
     // proxy round-trip
-    let rtt = -1; if (r0?.baseUrl) { const tr = now(); try { await fetch(`${r0.baseUrl}/kortix/health`, { headers:H, signal: AbortSignal.timeout(8000) }); rtt = now()-tr; } catch {} }
+    let rtt = -1; if (r0?.baseUrl) { const tr = now(); try { await fetch(`${r0.baseUrl}/zed/health`, { headers:H, signal: AbortSignal.timeout(8000) }); rtt = now()-tr; } catch {} }
     runs.push({ runMs, readyMs, rtt, ext: r0?.externalId });
     console.log(`  [#${n}] create→running=${s(runMs)}s  create→runtimeReady=${readyMs<0?'TIMEOUT':s(readyMs)+'s'}  proxyRTT=${rtt<0?'ERR':rtt+'ms'}  ${r0?.externalId??''}`);
     if (readyMs < 0 && running) console.log(`        ↳ last health: ${lastHealth}`);

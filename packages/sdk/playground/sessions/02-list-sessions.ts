@@ -1,16 +1,16 @@
 /**
  * 02 — given a project, can I read its sessions?
- * Project selection: argv[2] → KORTIX_PROJECT_ID → first project.
+ * Project selection: argv[2] → ZED_PROJECT_ID → first project.
  *
  * Run (from packages/sdk):  bun run playground/sessions/02-list-sessions.ts [projectId]
  */
-import { makeKortix, pickProjectId, run } from "../_shared";
+import { makeZed, pickProjectId, run } from "../_shared";
 
 run("list-sessions", async () => {
-  const kortix = makeKortix();
-  const projectId = await pickProjectId(kortix, process.argv[2]);
+  const zed = makeZed();
+  const projectId = await pickProjectId(zed, process.argv[2]);
 
-  const sessions = await kortix.projects.sessions(projectId);
+  const sessions = await zed.projects.sessions(projectId);
 
   console.log(
     `✓ projects.sessions(${projectId}) returned ${sessions.length} session(s):\n`,
@@ -24,6 +24,6 @@ run("list-sessions", async () => {
 
   if (sessions.length > 0) {
     console.log("pin one for the chat scripts:");
-    console.log(`  export KORTIX_SESSION_ID=${sessions[0]!.session_id}`);
+    console.log(`  export ZED_SESSION_ID=${sessions[0]!.session_id}`);
   }
 });

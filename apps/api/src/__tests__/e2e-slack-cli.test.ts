@@ -1,6 +1,6 @@
 /**
  * End-to-end coverage for the in-sandbox `slack` CLI surface. The test runs the
- * real Bun entrypoint against a live fake Kortix API so command parsing,
+ * real Bun entrypoint against a live fake Zed API so command parsing,
  * project-explicit Connector routing, turn-stream relays, file upload/download,
  * and manifest fetching are all exercised without touching real Slack.
  */
@@ -17,7 +17,7 @@ const CONNECTOR_CLI_ENTRY = resolve(REPO_ROOT, 'apps/cli/src/index.ts');
 
 const PROJECT = 'proj-slack-cli';
 const SESSION = 'sess-slack-cli';
-const TOKEN = 'kortix_test_slack_cli';
+const TOKEN = 'zed_test_slack_cli';
 
 interface World {
   connector: Array<{ connector: string; action: string; args: Record<string, unknown> }>;
@@ -81,8 +81,8 @@ function slackDataFor(action: string, args: Record<string, unknown>): unknown {
       return {
         ok: true,
         user_id: 'Ubot',
-        user: 'kortix',
-        team: 'Kortix',
+        user: 'zed',
+        team: 'Zed',
         team_id: 'T1',
         bot_id: 'B1',
       };
@@ -108,11 +108,11 @@ async function runSlack(args: string[], opts: { ok?: boolean } = {}): Promise<Cl
     env: {
       PATH: process.env.PATH,
       HOME: process.env.HOME,
-      KORTIX_API_URL: apiUrl,
-      KORTIX_CLI_TOKEN: TOKEN,
-      KORTIX_PROJECT_ID: PROJECT,
-      KORTIX_SESSION_ID: SESSION,
-      KORTIX_CLI_BIN: CONNECTOR_CLI_ENTRY,
+      ZED_API_URL: apiUrl,
+      ZED_CLI_TOKEN: TOKEN,
+      ZED_PROJECT_ID: PROJECT,
+      ZED_SESSION_ID: SESSION,
+      ZED_CLI_BIN: CONNECTOR_CLI_ENTRY,
     },
     stdout: 'pipe',
     stderr: 'pipe',
@@ -132,7 +132,7 @@ async function runSlack(args: string[], opts: { ok?: boolean } = {}): Promise<Cl
 }
 
 beforeEach(() => {
-  tempDir = mkdtempSync(join(tmpdir(), 'kortix-slack-cli-test-'));
+  tempDir = mkdtempSync(join(tmpdir(), 'zed-slack-cli-test-'));
   world = {
     connector: [],
     turns: [],
@@ -191,7 +191,7 @@ beforeEach(() => {
 
       if (url.pathname === `/v1/webhooks/slack/${PROJECT}/manifest`) {
         world.manifests.push(url.searchParams.get('name') ?? '');
-        return json({ display_information: { name: url.searchParams.get('name') ?? 'Kortix' } });
+        return json({ display_information: { name: url.searchParams.get('name') ?? 'Zed' } });
       }
 
       return json({ error: `unexpected ${url.pathname}` }, 404);
@@ -374,7 +374,7 @@ describe('slack CLI', () => {
     expect(world.manifests).toEqual(['Test Slack App']);
   });
 
-  test('manifest reports one /v1 mount when KORTIX_API_URL already includes /v1', async () => {
+  test('manifest reports one /v1 mount when ZED_API_URL already includes /v1', async () => {
     const origin = apiUrl;
     apiUrl = `${origin}/v1`;
 

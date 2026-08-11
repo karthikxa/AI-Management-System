@@ -5,7 +5,7 @@ import { latestScimSyncAt, scimSyncFreshness } from './scim-sync';
 const token = (over: Partial<ScimToken>): ScimToken => ({
   token_id: 't1',
   name: 'Test',
-  public_prefix: 'kortix_scim_AbCd…',
+  public_prefix: 'zed_scim_AbCd…',
   status: 'active',
   created_at: '2026-07-01T00:00:00Z',
   last_used_at: null,

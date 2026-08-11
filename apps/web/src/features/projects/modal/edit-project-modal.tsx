@@ -18,8 +18,8 @@ import {
 } from '@/components/ui/modal';
 import { errorToast, successToast } from '@/components/ui/toast';
 import type { GlyphSelection } from '@/components/ui/glyph-picker';
-import { updateProject, type ProjectInput } from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+import { updateProject, type ProjectInput } from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 
 import {
   renameOnError,

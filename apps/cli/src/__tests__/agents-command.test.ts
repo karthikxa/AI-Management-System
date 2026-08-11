@@ -51,18 +51,18 @@ function startServer(): string {
 async function runCli(args: string[], configFile?: string) {
   const env: Record<string, string | undefined> = {
     ...process.env,
-    KORTIX_NO_UPDATE_CHECK: '1',
+    ZED_NO_UPDATE_CHECK: '1',
     NO_COLOR: '1',
     FORCE_COLOR: '0',
-    KORTIX_DISABLE_SANDBOX_ENV_FILE: '1',
-    KORTIX_CONFIG_FILE: configFile,
+    ZED_DISABLE_SANDBOX_ENV_FILE: '1',
+    ZED_CONFIG_FILE: configFile,
   };
   for (const key of [
-    'KORTIX_API_URL',
-  'KORTIX_CLI_TOKEN',
-    'KORTIX_FRONTEND_URL',
-    'KORTIX_PROJECT_ID',
-    'KORTIX_TOKEN',
+    'ZED_API_URL',
+  'ZED_CLI_TOKEN',
+    'ZED_FRONTEND_URL',
+    'ZED_PROJECT_ID',
+    'ZED_TOKEN',
     'BASH_ENV',
   ]) {
     delete env[key];
@@ -83,9 +83,9 @@ async function runCli(args: string[], configFile?: string) {
   return { code, stdout, stderr };
 }
 
-describe('kortix agents command', () => {
+describe('zed agents command', () => {
   beforeEach(() => {
-    tmp = mkdtempSync(join(tmpdir(), 'kortix-agents-command-'));
+    tmp = mkdtempSync(join(tmpdir(), 'zed-agents-command-'));
     process.env = { ...ORIGINAL_ENV };
   });
 

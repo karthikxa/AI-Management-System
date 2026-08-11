@@ -201,7 +201,7 @@ test.describe('08 — Accounts, invites, and project access', () => {
       account.account_id,
       owner.id,
       initialProjectName,
-      `https://github.com/kortix-ai/e2e-${runId}.git`,
+      `https://github.com/zed-ai/e2e-${runId}.git`,
     );
     expect(project.name).toBe(initialProjectName);
     expect(project.project_role).toBe('manager');
@@ -313,7 +313,7 @@ test.describe('08 — Accounts, invites, and project access', () => {
     await page.getByRole('button', { name: 'Customize' }).first().click();
     await expect(page.getByRole('dialog', { name: /Customize/i })).toBeVisible();
     await expect(page.locator('a[href*="/instances"], a[href*="/dashboard"], a[href^="/sessions/"]')).toHaveCount(0);
-    expect(projectRepoWebUrl).toContain('github.com/kortix-ai/');
+    expect(projectRepoWebUrl).toContain('github.com/zed-ai/');
 
     await selectAccountForUi(page, account.account_id);
     await page.goto('/projects', { waitUntil: 'domcontentloaded' });

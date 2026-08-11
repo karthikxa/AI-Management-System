@@ -5,7 +5,7 @@
 
 ## 1. What this was
 
-An enterprise audit + hardening of the Kortix test estate. The codebase already had an ambitious, well-documented suite (the `ke2e` flow framework, Playwright e2e, k6, security lanes, Allure portal). The audit found the problem was **integrity, not absence**: the load-bearing gates were bypassed, vacuous, or non-blocking. This pass made the existing strategy real and enforced, filled the untested packages, and removed the structural foot-guns — without rebuilding what already worked.
+An enterprise audit + hardening of the Zed test estate. The codebase already had an ambitious, well-documented suite (the `ke2e` flow framework, Playwright e2e, k6, security lanes, Allure portal). The audit found the problem was **integrity, not absence**: the load-bearing gates were bypassed, vacuous, or non-blocking. This pass made the existing strategy real and enforced, filled the untested packages, and removed the structural foot-guns — without rebuilding what already worked.
 
 ## 2. Headline result
 
@@ -13,7 +13,7 @@ An enterprise audit + hardening of the Kortix test estate. The codebase already 
 - **5 previously-untested packages now covered** — `db`, `shared`, the Connector client, `manifest-schema`, `starter` (18 new test files; all typecheck clean).
 - **10 pre-existing red/bitrotted tests discovered and fixed** — they were red precisely because they were excluded from CI (the audit's central thesis, now proven).
 - **Every package and app is wired to a `test` script and run in CI** via a new pnpm-cached `package-tests` lane.
-- The `kortix-api` runner no longer silently skips 12 files or fails-fast.
+- The `zed-api` runner no longer silently skips 12 files or fails-fast.
 
 ## 3. Coverage delta
 
@@ -24,7 +24,7 @@ An enterprise audit + hardening of the Kortix test estate. The codebase already 
 | `packages/sdk` Connector client | untested | 39 tests (client, URL norm, error mapping, discovery) |
 | `packages/manifest-schema` | 1 file | 116 tests (schema validation, grants, triggers, sandbox bounds) |
 | `packages/starter` | 1 file | 27 tests (template layers, interpolation, skill listing) |
-| `apps/web`, `apps/cli`, `apps/kortix-sandbox-agent-server`, `apps/mobile`, `packages/agent-tunnel` | orphaned (no `test` script) | wired + green in CI |
+| `apps/web`, `apps/cli`, `apps/zed-sandbox-agent-server`, `apps/mobile`, `packages/agent-tunnel` | orphaned (no `test` script) | wired + green in CI |
 
 ## 4. Discovered defects fixed (all caused by CI exclusion / bitrot)
 
@@ -32,7 +32,7 @@ An enterprise audit + hardening of the Kortix test estate. The codebase already 
 |---|---|---|---|
 | `packages/agent-tunnel` `config.ts` (3 tests) | `loadConfig` never validated `apiUrl`/`wsPath` | Added `normalizeApiUrl` (reject non-http, strip query/hash) + `absoluteWsPath`, wired into `loadConfig` | **Product** (security-positive) |
 | `packages/shared` `credit-formatter.ts` (2) | test imported `CREDITS_PER_DOLLAR`, `creditsToDollars`, `formatDollarsAsCredits` that didn't exist | Added the three exports | **Product** (additive) |
-| `apps/cli` `manifest.test.ts` (1) | missing `kortix_version` became an **error**, test still expected a warning | Updated test to assert the stricter behaviour | Test |
+| `apps/cli` `manifest.test.ts` (1) | missing `zed_version` became an **error**, test still expected a warning | Updated test to assert the stricter behaviour | Test |
 | `apps/cli` `scaffold.test.ts` (2) | `BASE_STARTER_PATHS` pinned an exact file list that drifted | Replaced brittle list with invariant + minimal⊆full subset assertions (derived at runtime) | Test (de-brittled) |
 | `apps/web` `local-time.test.ts` (1) | exact ICU string (`", "` vs `" at "`) is runtime-dependent | Assert the stable invariant (contains Sun / Jun 7 / 11:30 PM) | Test (determinism) |
 | `apps/web` `use-authenticated-preview-url.test.ts` (1) | eager env-validation on import threw; and the test asserted pre-hardening cross-origin behaviour | Added deterministic Bun preload (env scrub) + rewrote the test to lock the **current origin-allowlist security check** | Test + isolation (security-positive) |
@@ -48,15 +48,15 @@ Every product change is additive or security-strengthening; none weakens behavio
 
 ## 6. CI / perf
 
-- **`.github/workflows/package-tests.yml`** (new, PR-blocking): runs all co-located `bun:test` suites across packages + apps, **pnpm-store cached** (the audit found no caching), a **focused-test guard** (fails on any committed `.only(`), an **env-gated `kortix-api` job** (runs when `DOTENV_PRIVATE_KEY` is present), and an **advisory Biome ratchet**.
-- **Performance regression gate** — `tests/performance/compare-baseline.mjs` + `baseline.json` + `make perf-regression`; fails on >10% p95/error-rate regression vs the committed baseline (SKIPs until a baseline is captured with `pnpm --filter @kortix/tests test:perf:baseline`).
+- **`.github/workflows/package-tests.yml`** (new, PR-blocking): runs all co-located `bun:test` suites across packages + apps, **pnpm-store cached** (the audit found no caching), a **focused-test guard** (fails on any committed `.only(`), an **env-gated `zed-api` job** (runs when `DOTENV_PRIVATE_KEY` is present), and an **advisory Biome ratchet**.
+- **Performance regression gate** — `tests/performance/compare-baseline.mjs` + `baseline.json` + `make perf-regression`; fails on >10% p95/error-rate regression vs the committed baseline (SKIPs until a baseline is captured with `pnpm --filter @zed/tests test:perf:baseline`).
 
 ## 7. How to run
 
 ```bash
 pnpm test                         # all co-located unit suites
-pnpm --filter @kortix/shared test # one package
-pnpm --filter kortix-api test     # api (needs dotenvx-decrypted env)
+pnpm --filter @zed/shared test # one package
+pnpm --filter zed-api test     # api (needs dotenvx-decrypted env)
 make fast                         # lint + typecheck + unit + smoke (cross-cutting)
 make gates                        # quality gates over test-results/
 pnpm lint:biome                   # lint the TS surface
@@ -72,7 +72,7 @@ make perf-regression              # k6 regression vs baseline
 
 ## 9. Known gaps / next steps (prioritised)
 
-1. **Flip the coverage gate to product code** — run `kortix-api test:coverage` in CI with secrets, merge with Vitest v8, enforce 80% on the merged report (replaces the example-only gate, audit F-4).
+1. **Flip the coverage gate to product code** — run `zed-api test:coverage` in CI with secrets, merge with Vitest v8, enforce 80% on the merged report (replaces the example-only gate, audit F-4).
 2. **Promote the scaffold layers** — `tests/{unit,integration,api,contract,mutation}` still exercise example helpers; point them at real product modules (audit F-7) and retarget Stryker off `_support`.
 3. **Capture the perf baseline** — first clean k6 run → `test:perf:baseline` → commit, then the regression gate enforces.
 4. **Biome ratchet → blocking** — run `pnpm lint:biome:fix`, resolve residue, make `make lint` fail on findings.

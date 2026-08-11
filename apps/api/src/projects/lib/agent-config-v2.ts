@@ -2,19 +2,19 @@
  * Read/write helpers for the v2 `agents.<name>` GOVERNANCE block (spec
  * docs/specs/2026-07-05-agent-first-config-unification.md §2.2, redirected
  * 2026-07-05 — "one home per concern"). `AgentBlockV2` here is governance
- * ONLY: connectors/secrets/skills/kortix_cli/workspace/enabled. OpenCode
+ * ONLY: connectors/secrets/skills/zed_cli/workspace/enabled. OpenCode
  * BEHAVIOR (mode/model/temperature/top_p/steps/variant/color/hidden/
  * permission/prompt) lives entirely in the agent's own native
- * `.kortix/opencode/agents/<name>.md` frontmatter + body — see
+ * `.zed/opencode/agents/<name>.md` frontmatter + body — see
  * `./agent-markdown.ts` (parse/serialize) and `./compile-agent-config.ts`
  * (`agentMarkdownPath`, the conventional-path join). The dashboard's agent
  * editor route (`../routes/agent-config.ts`) is what merges this governance
  * half with the `.md` behavior half into one wire response/request — this
- * module only ever touches kortix.yaml.
+ * module only ever touches zed.yaml.
  *
  * Distinct from `../agents.ts` (`AgentSpec` / `extractAgents`): that module
  * resolves the platform GRANT the session token carries (a narrower view —
- * connectors/secrets/kortix_cli reduced to the wire `AgentGrant` shape).
+ * connectors/secrets/zed_cli reduced to the wire `AgentGrant` shape).
  * This module instead reads/writes the agent's declared governance block
  * verbatim so the editor can present (and persist) the complete governance
  * field space, not just the grant subset. Pure — no I/O; callers own
@@ -26,11 +26,11 @@ import {
   SLUG_RE,
   validateManifest,
   type ManifestIssue,
-} from '@kortix/manifest-schema';
+} from '@zed/manifest-schema';
 import type { ParsedManifest } from '../triggers';
 
 /** Slug rule for an agent name — same as every other manifest slug. Reuses
- *  `@kortix/manifest-schema`'s exported `SLUG_RE` directly (it used to be
+ *  `@zed/manifest-schema`'s exported `SLUG_RE` directly (it used to be
  *  re-derived here as a local copy under the mistaken assumption that the
  *  regex wasn't exported). */
 export function isValidAgentName(name: string): boolean {
@@ -202,7 +202,7 @@ export function applyDefaultAgentV2(
     return {
       ok: false,
       error:
-        'This project must use kortix_version 2 (kortix.yaml) to set a project default agent.',
+        'This project must use zed_version 2 (zed.yaml) to set a project default agent.',
     };
   }
   if (!isValidAgentName(agentName)) {
@@ -230,7 +230,7 @@ export function applyDefaultAgentV2(
  * replace, upsert-by-name — same "read whole file, mutate one entry,
  * validate, commit" shape as `applyAgentScope`), and shape-validate the
  * RESULT through the real `validateManifest` before the caller commits —
- * a malformed permission tree, unknown enum, or ungrantable `kortix_cli`
+ * a malformed permission tree, unknown enum, or ungrantable `zed_cli`
  * action is a clean rejection here, never a broken manifest on disk.
  *
  * Refuses outright on a v1 manifest — the full v2 field space (permission
@@ -248,7 +248,7 @@ export function applyAgentBlockV2(
     return {
       ok: false,
       error:
-        'This project uses a kortix_version 1 manifest. Upgrade to kortix_version 2 (kortix.yaml) to edit the full agent configuration.',
+        'This project uses a zed_version 1 manifest. Upgrade to zed_version 2 (zed.yaml) to edit the full agent configuration.',
     };
   }
   return applyAgentMapBlock(manifest, agentName, block as Record<string, unknown>);
@@ -264,7 +264,7 @@ export function applyAgentBlockV2(
  *
  * Two v2 semantics the v1 path gets wrong: (1) v1's wire `env` is v2's `secrets`
  * key; (2) v2 is deny-by-default, so a none/`[]` selection is written by OMITTING
- * the key (matching hand-authored kortix.yaml), NOT by v1's env-default-is-'all'
+ * the key (matching hand-authored zed.yaml), NOT by v1's env-default-is-'all'
  * omit rule. `notFound` distinguishes "agent not declared" (route → 404) from a
  * validation failure (route → 400) — this path scopes an existing agent, it
  * never creates one.
@@ -282,7 +282,7 @@ export function applyAgentScopeV2(
     return {
       ok: false,
       error:
-        'This project must use kortix_version 2 (kortix.yaml) to edit agent scope.',
+        'This project must use zed_version 2 (zed.yaml) to edit agent scope.',
     };
   }
   const rawAgents = manifest.raw.agents;
@@ -294,7 +294,7 @@ export function applyAgentScopeV2(
     return {
       ok: false,
       notFound: true,
-      error: `No agent "${agentName}" declared in ${manifest.path || 'kortix.yaml'}`,
+      error: `No agent "${agentName}" declared in ${manifest.path || 'zed.yaml'}`,
     };
   }
   if (typeof existing !== 'object' || Array.isArray(existing)) {

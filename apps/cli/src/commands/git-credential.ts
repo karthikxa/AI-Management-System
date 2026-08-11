@@ -47,10 +47,10 @@ export interface ResolvedGitCredential {
 export async function resolveGitCredentialForProject(input: {
   requestUrl: string;
   project: ProjectSummary;
-  kortixToken: string;
+  zedToken: string;
   mintManagedToken: () => Promise<{ push_token: string; git_username?: string }>;
 }): Promise<ResolvedGitCredential | null> {
-  const target = resolveProjectCloneTarget(input.project, input.kortixToken);
+  const target = resolveProjectCloneTarget(input.project, input.zedToken);
   if (canonicalGitUrl(target.repoUrl) !== canonicalGitUrl(input.requestUrl)) return null;
 
   let token = target.token;
@@ -83,7 +83,7 @@ export async function runGitCredential(argv: string[]): Promise<number> {
   const auth = link.host ? loadAuthForHost(link.host) : loadAuth();
   if (!auth?.token) {
     const hint = link.host ? ` --host ${link.host}` : '';
-    process.stderr.write(`Kortix Git needs login. Run: kortix login${hint}\n`);
+    process.stderr.write(`Zed Git needs login. Run: zed login${hint}\n`);
     process.stdout.write('quit=true\n\n');
     return 0;
   }
@@ -93,7 +93,7 @@ export async function runGitCredential(argv: string[]): Promise<number> {
   try {
     project = await client.get<ProjectSummary>(`/projects/${link.project_id}`);
   } catch (error) {
-    process.stderr.write(`Kortix Git could not load the linked project: ${(error as Error).message}\n`);
+    process.stderr.write(`Zed Git could not load the linked project: ${(error as Error).message}\n`);
     process.stdout.write('quit=true\n\n');
     return 0;
   }
@@ -103,14 +103,14 @@ export async function runGitCredential(argv: string[]): Promise<number> {
     credential = await resolveGitCredentialForProject({
       requestUrl,
       project,
-      kortixToken: auth.token,
+      zedToken: auth.token,
       mintManagedToken: () =>
         client.post<{ push_token: string; git_username?: string }>(
           `/projects/${project.project_id}/git-token`,
         ),
     });
   } catch (error) {
-    process.stderr.write(`Kortix Git could not mint a repository credential: ${(error as Error).message}\n`);
+    process.stderr.write(`Zed Git could not mint a repository credential: ${(error as Error).message}\n`);
     process.stdout.write('quit=true\n\n');
     return 0;
   }

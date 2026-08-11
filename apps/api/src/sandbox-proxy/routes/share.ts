@@ -1,7 +1,7 @@
 /**
  * Public URL Share Endpoints — /v1/p/share
  *
- * Proxies to the sandbox's /kortix/share endpoints so the frontend can create,
+ * Proxies to the sandbox's /zed/share endpoints so the frontend can create,
  * list, and revoke share links without talking to the sandbox directly.
  *
  * Provider-neutral: every session resolves through the session sandbox
@@ -18,13 +18,13 @@ import { makeOpenApiApp, json, errors, auth } from '../../openapi'
 const shareApp = makeOpenApiApp()
 type ResolvedProvider = NonNullable<Awaited<ReturnType<typeof resolveProvider>>>
 
-// Share results are whatever the sandbox daemon's /kortix/share endpoint
+// Share results are whatever the sandbox daemon's /zed/share endpoint
 // returns (opaque), or our own { error } envelope — model permissively.
 const ShareResultSchema = z.record(z.string(), z.any()).openapi('ShareResult')
 
 function buildSandboxShareBaseUrl(resolved: ResolvedProvider): string | null {
   if (resolved.baseUrl) {
-    return `${resolved.baseUrl}/kortix/share`
+    return `${resolved.baseUrl}/zed/share`
   }
   return null
 }

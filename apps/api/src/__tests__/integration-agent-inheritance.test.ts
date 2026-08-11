@@ -26,7 +26,7 @@ const FREE_AGENT = `free-agent-${SUFFIX.toLowerCase()}`;
 
 beforeAll(async () => {
   const rows = (await db.execute(
-    sql`select project_id, account_id from kortix.projects limit 1`,
+    sql`select project_id, account_id from zed.projects limit 1`,
   )) as unknown as Array<{ project_id: string; account_id: string }>;
   if (!rows[0]) return;
   ctx = { projectId: rows[0].project_id, accountId: rows[0].account_id };
@@ -47,7 +47,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!ctx) return;
   for (const id of grantCleanup) {
-    await db.execute(sql`delete from kortix.iam_resource_grants where grant_id = ${id}`);
+    await db.execute(sql`delete from zed.iam_resource_grants where grant_id = ${id}`);
   }
 });
 

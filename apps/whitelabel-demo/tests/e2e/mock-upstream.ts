@@ -1,16 +1,16 @@
 /**
- * Mock Kortix upstream — a tiny `Bun.serve` HTTP server implementing exactly
- * the endpoints `src/app/api/kortix/[...path]/route.ts`,
+ * Mock Zed upstream — a tiny `Bun.serve` HTTP server implementing exactly
+ * the endpoints `src/app/api/zed/[...path]/route.ts`,
  * `src/app/api/preview-url/route.ts`, and `src/app/api/session-costs/route.ts` call
- * out to. Everything is namespaced under `/v1` (matching `KORTIX_UPSTREAM`
- * including its `/v1` suffix, the same shape as `NEXT_PUBLIC_KORTIX_API_URL`).
+ * out to. Everything is namespaced under `/v1` (matching `ZED_UPSTREAM`
+ * including its `/v1` suffix, the same shape as `NEXT_PUBLIC_ZED_API_URL`).
  *
  * Two jobs beyond serving canned responses:
  *  1. Record every request (method, path, headers, body) so tests can assert
- *     on what actually reached "Kortix" — in particular, that `Authorization`
+ *     on what actually reached "Zed" — in particular, that `Authorization`
  *     is ALWAYS `Bearer <the wrapper key>`, never an end-user session token,
  *     and that the wrapper's own `lumen_session` cookie never leaks upstream.
- *  2. Behave like a real (if minimal) Kortix API: a projects store, secrets,
+ *  2. Behave like a real (if minimal) Zed API: a projects store, secrets,
  *     session cost rows, cli-token minting, and the `/p/...` sandbox-runtime
  *     proxy surface (generic passthrough + one SSE stream + one echoing
  *     "message" endpoint) — enough surface for every flow the whitelabel app
@@ -62,7 +62,7 @@ export interface MockConnection {
 }
 
 export interface MockUpstream {
-  /** Base URL WITHOUT `/v1` — pass `${url}/v1` as `KORTIX_UPSTREAM`. */
+  /** Base URL WITHOUT `/v1` — pass `${url}/v1` as `ZED_UPSTREAM`. */
   url: string;
   requests: RecordedRequest[];
   /** Any request whose Authorization header didn't match the expected wrapper key. */
@@ -107,7 +107,7 @@ export function createMockUpstream(expectedAuthToken: string): MockUpstream {
 
   function makeProject(overrides: Partial<MockProject> = {}): MockProject {
     projectCounter += 1;
-    // UUID-shaped like real Kortix project ids — the app validates ids with
+    // UUID-shaped like real Zed project ids — the app validates ids with
     // isValidProjectId before recording ownership or building upstream URLs,
     // so a non-UUID mock id would be (correctly) rejected.
     const id =
@@ -118,9 +118,9 @@ export function createMockUpstream(expectedAuthToken: string): MockUpstream {
       project_id: id,
       account_id: 'acct_test',
       name: overrides.name ?? `Mock Project ${projectCounter}`,
-      repo_url: `https://git.kortix.test/${id}`,
+      repo_url: `https://git.zed.test/${id}`,
       default_branch: 'main',
-      manifest_path: 'kortix.yaml',
+      manifest_path: 'zed.yaml',
       status: 'active',
       metadata: {},
       created_at: now,
@@ -239,7 +239,7 @@ export function createMockUpstream(expectedAuthToken: string): MockUpstream {
           return Response.json({ token_id: `tok_${tokenCounter}` });
         }
         return Response.json({
-          secret_key: `kortix_pat_test_${id}_${tokenCounter}`,
+          secret_key: `zed_pat_test_${id}_${tokenCounter}`,
           token_id: `tok_${tokenCounter}`,
         });
       }
@@ -253,7 +253,7 @@ export function createMockUpstream(expectedAuthToken: string): MockUpstream {
         const externalId = `session-${sessionId}`;
         return Response.json({
           stage: 'ready',
-          agent_name: 'kortix',
+          agent_name: 'zed',
           retriable: true,
           runtime_transport: 'rest',
           runtime_url: `/p/${externalId}/8000`,

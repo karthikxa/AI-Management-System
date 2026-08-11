@@ -155,7 +155,7 @@ describe('answerQuestion', () => {
     expect(useOpenCodePendingStore.getState().questions['q1']).toBeUndefined();
   });
 
-  test('failure keeps the pending entry and throws a typed KortixSendError', async () => {
+  test('failure keeps the pending entry and throws a typed ZedSendError', async () => {
     seedQuestion('q1');
     questionReplyImpl = async () => ({ error: { message: 'boom' } });
 
@@ -325,7 +325,7 @@ describe('buildSessionCommandInput', () => {
     expect(
       buildSessionCommandInput('ses_root', 'review', 'src', {
         agent: 'coder',
-        model: { providerID: 'kortix', modelID: 'anthropic/claude-sonnet-4-6' },
+        model: { providerID: 'zed', modelID: 'anthropic/claude-sonnet-4-6' },
         variant: 'high',
       }),
     ).toEqual({
@@ -333,7 +333,7 @@ describe('buildSessionCommandInput', () => {
       command: 'review',
       args: 'src',
       agent: 'coder',
-      model: 'kortix/anthropic/claude-sonnet-4-6',
+      model: 'zed/anthropic/claude-sonnet-4-6',
       variant: 'high',
     });
   });

@@ -12,7 +12,7 @@ import {
   InputGroupSearchInput,
 } from '@/components/ui/input-group';
 import { cn } from '@/lib/utils';
-import { PROJECT_GLYPH_COLORS, PROJECT_GLYPH_NAMES, type ProjectGlyphColor } from '@kortix/shared';
+import { PROJECT_GLYPH_COLORS, PROJECT_GLYPH_NAMES, type ProjectGlyphColor } from '@zed/shared';
 
 export interface GlyphSelection {
   name: string;
@@ -41,7 +41,7 @@ export interface GlyphSelection {
  * shipped with an 8-category sub-grid (sticky header per category) first;
  * review feedback was that the categories added scannable structure but no
  * function — nothing filters, sorts, or navigates by category — so they were
- * cut. `PROJECT_GLYPH_GROUPS` (in `@kortix/shared`) still owns the grouping
+ * cut. `PROJECT_GLYPH_GROUPS` (in `@zed/shared`) still owns the grouping
  * and the ordering; `PROJECT_GLYPH_NAMES` is that same catalogue flattened in
  * declaration order, so related glyphs stay adjacent even with the headers
  * gone. Flattening it a second time here, instead of importing the flat

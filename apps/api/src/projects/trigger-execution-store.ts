@@ -1,4 +1,4 @@
-import { projectTriggerExecutions, projectTriggerRuntime, projects } from '@kortix/db';
+import { projectTriggerExecutions, projectTriggerRuntime, projects } from '@zed/db';
 import { and, asc, eq, gte, isNull, lt, lte, or, sql } from 'drizzle-orm';
 import { db } from '../shared/db';
 import { nextTriggerScheduleSlot } from './trigger-schedule';

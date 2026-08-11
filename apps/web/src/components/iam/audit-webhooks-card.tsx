@@ -169,7 +169,7 @@ export function AuditWebhooksCard({ accountId, canManage }: AuditWebhooksCardPro
                   <span>Last delivered {relative(h.last_delivered_at)}</span>
                 </div>
                 {h.last_error && (
-                  <p className="text-kortix-red mt-1 text-xs wrap-break-word">
+                  <p className="text-zed-red mt-1 text-xs wrap-break-word">
                     {relative(h.last_error_at)}: {h.last_error}
                   </p>
                 )}
@@ -298,7 +298,7 @@ function CreateAuditWebhookDialog({
           <ModalDescription>
             {created
               ? 'Save the signing secret now. You will not see it again — to rotate, delete this webhook and create a new one.'
-              : 'Each event is POSTed to the URL with an X-Kortix-Signature header (HMAC-SHA256 of the body using the secret).'}
+              : 'Each event is POSTed to the URL with an X-Zed-Signature header (HMAC-SHA256 of the body using the secret).'}
           </ModalDescription>
         </ModalHeader>
 
@@ -375,7 +375,7 @@ function CreateAuditWebhookDialog({
                   id="hook-url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://siem.corp.example/kortix/audit"
+                  placeholder="https://siem.corp.example/zed/audit"
                   type="url"
                   required
                   disabled={mutation.isPending}

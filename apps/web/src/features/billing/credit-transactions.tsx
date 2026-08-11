@@ -24,7 +24,7 @@ import {
 import { useTransactions } from '@/hooks/billing/use-transactions';
 import { isBillingEnabled } from '@/lib/config';
 import { cn } from '@/lib/utils';
-import { formatCredits, formatCreditsWithSign } from '@kortix/shared';
+import { formatCredits, formatCreditsWithSign } from '@zed/shared';
 import { CoinsIcon as Coins, ArrowClockwiseIcon as RefreshCw } from '@phosphor-icons/react';
 import { useState } from 'react';
 
@@ -40,7 +40,7 @@ export default function CreditTransactions({ accountId }: Props) {
   const billingActive = isBillingEnabled();
 
   // Billing disabled on this deployment (e.g. self-host with
-  // KORTIX_BILLING_INTERNAL_ENABLED=false): there is no credit ledger to show.
+  // ZED_BILLING_INTERNAL_ENABLED=false): there is no credit ledger to show.
   // Skip the fetch entirely — the endpoint 404s "Billing is not enabled" and
   // that raw error has no business reaching the UI — and render a friendly
   // "not available" state instead.
@@ -218,7 +218,7 @@ export default function CreditTransactions({ accountId }: Props) {
                     <TableCell
                       className={cn(
                         'text-right font-mono font-medium tabular-nums',
-                        tx.amount >= 0 ? 'text-kortix-green' : 'text-kortix-red',
+                        tx.amount >= 0 ? 'text-zed-green' : 'text-zed-red',
                       )}
                     >
                       {formatCreditsWithSign(tx.amount, { showDecimals: true })}

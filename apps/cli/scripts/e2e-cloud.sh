@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# End-to-end test for the cloud-aware `kortix` CLI.
+# End-to-end test for the cloud-aware `zed` CLI.
 #
 # Drives every project-scoped command against a live API + DB:
 #
@@ -16,7 +16,7 @@
 # Cleans every secret it creates and removes the test PAT at exit.
 #
 # Required services:
-#   * Kortix API on $KORTIX_API_URL (default http://localhost:8008)
+#   * Zed API on $ZED_API_URL (default http://localhost:8008)
 #   * Postgres on $E2E_DATABASE_URL
 #     (default postgres://postgres:postgres@127.0.0.1:54322/postgres)
 #
@@ -29,15 +29,15 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 CLI_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 SUNA_ROOT=$(cd "$CLI_ROOT/../.." && pwd)
 
-KORTIX_API_URL=${KORTIX_API_URL:-http://localhost:8008}
+ZED_API_URL=${ZED_API_URL:-http://localhost:8008}
 E2E_DATABASE_URL=${E2E_DATABASE_URL:-postgres://postgres:postgres@127.0.0.1:54322/postgres}
-AUTH_FILE=/tmp/kortix-e2e-auth-$$.json
-WORK_DIR=/tmp/kortix-e2e-work-$$
-PUSH_FILE=/tmp/kortix-e2e-push-$$.env
+AUTH_FILE=/tmp/zed-e2e-auth-$$.json
+WORK_DIR=/tmp/zed-e2e-work-$$
+PUSH_FILE=/tmp/zed-e2e-push-$$.env
 
-unset KORTIX_TOKEN KORTIX_CLI_TOKEN KORTIX_PROJECT_ID
-export KORTIX_API_URL
-export KORTIX_AUTH_FILE="$AUTH_FILE"
+unset ZED_TOKEN ZED_CLI_TOKEN ZED_PROJECT_ID
+export ZED_API_URL
+export ZED_AUTH_FILE="$AUTH_FILE"
 
 CLI="bun run $CLI_ROOT/src/index.ts"
 
@@ -86,7 +86,7 @@ cleanup() {
   local rc=$?
   set +e
   rm -rf "$WORK_DIR" "$AUTH_FILE" "$PUSH_FILE"
-  psql "$E2E_DATABASE_URL" -c "delete from kortix.account_tokens where name like 'cli-e2e-%' or name = 'cli-smoke'" >/dev/null 2>&1
+  psql "$E2E_DATABASE_URL" -c "delete from zed.account_tokens where name like 'cli-e2e-%' or name = 'cli-smoke'" >/dev/null 2>&1
   if [ ${rc} -ne 0 ] && [ ${FAIL} -eq 0 ]; then
     printf "\n${RED}aborted with exit $rc (no assertions failed yet)${RESET}\n"
   fi
@@ -98,16 +98,16 @@ trap cleanup EXIT
 
 section "Preflight"
 
-curl -fsS -o /dev/null "$KORTIX_API_URL/" 2>/dev/null
+curl -fsS -o /dev/null "$ZED_API_URL/" 2>/dev/null
 if [ $? -ne 0 ]; then
   # The root may 404 but the server is up — try a known route to confirm.
-  curl -fsS -o /dev/null "$KORTIX_API_URL/v1/accounts" 2>/dev/null
+  curl -fsS -o /dev/null "$ZED_API_URL/v1/accounts" 2>/dev/null
   if [ $? -ne 22 ] && [ $? -ne 0 ]; then
-    bad "API not reachable at $KORTIX_API_URL"
+    bad "API not reachable at $ZED_API_URL"
     exit 1
   fi
 fi
-ok "API reachable at $KORTIX_API_URL"
+ok "API reachable at $ZED_API_URL"
 
 psql "$E2E_DATABASE_URL" -t -c "select 1" >/dev/null 2>&1 || { bad "Postgres not reachable"; exit 1; }
 ok "Postgres reachable"
@@ -120,13 +120,13 @@ ok "Workdir prepared: $WORK_DIR"
 section "Mint PAT"
 
 PAT=$(cd "$SUNA_ROOT/apps/api" && bun run src/__tests__/e2e-mint-cli-token.ts 2>/dev/null | tail -1)
-if [ -z "$PAT" ] || [[ "$PAT" != kortix_pat_* ]]; then
+if [ -z "$PAT" ] || [[ "$PAT" != zed_pat_* ]]; then
   bad "Could not mint a PAT — got: $PAT"
   exit 1
 fi
 # Rename the row so cleanup targets us specifically.
 psql "$E2E_DATABASE_URL" -c \
-  "update kortix.account_tokens set name = 'cli-e2e-suite' where name = 'cli-smoke'" >/dev/null
+  "update zed.account_tokens set name = 'cli-e2e-suite' where name = 'cli-smoke'" >/dev/null
 ok "Minted PAT ${PAT:0:18}…"
 
 # ─── auth ──────────────────────────────────────────────────────────────────
@@ -161,13 +161,13 @@ assert_contains "projects ls prints header" "NAME" "$out"
 PROJECT_ID=$(python3 <<PY
 import json, urllib.request
 req = urllib.request.Request(
-    "$KORTIX_API_URL/v1/projects",
+    "$ZED_API_URL/v1/projects",
     headers={"Authorization": "Bearer $PAT"},
 )
 projects = json.loads(urllib.request.urlopen(req).read())
 for p in projects:
     sreq = urllib.request.Request(
-        f"$KORTIX_API_URL/v1/projects/{p['project_id']}/sessions",
+        f"$ZED_API_URL/v1/projects/{p['project_id']}/sessions",
         headers={"Authorization": "Bearer $PAT"},
     )
     try:
@@ -195,22 +195,22 @@ assert_contains "projects info shows project_id" "$PROJECT_ID" "$out"
 
 cd "$WORK_DIR"
 
-# projects link now refuses to scatter `.kortix/` into a random dir. The
-# work dir is not a Kortix project, so link should fail cleanly first…
+# projects link now refuses to scatter `.zed/` into a random dir. The
+# work dir is not a Zed project, so link should fail cleanly first…
 out=$($CLI projects link "$PROJECT_ID" 2>&1)
 rc=$?
-assert_exit "projects link in non-Kortix dir exits 1" 1 "$rc"
-assert_contains "projects link refuses with hint" "Not a Kortix project" "$out"
+assert_exit "projects link in non-Zed dir exits 1" 1 "$rc"
+assert_contains "projects link refuses with hint" "Not a Zed project" "$out"
 
-# …then scaffold a Kortix project so link CAN succeed.
+# …then scaffold a Zed project so link CAN succeed.
 $CLI init --name "$(basename "$WORK_DIR")" --primary codex --yes >/dev/null
-[ -f kortix.yaml ] && ok "init scaffold wrote kortix.yaml" || bad "kortix.yaml missing after init"
+[ -f zed.yaml ] && ok "init scaffold wrote zed.yaml" || bad "zed.yaml missing after init"
 
 out=$($CLI projects link "$PROJECT_ID" 2>&1)
 rc=$?
 assert_exit "projects link <id> returns 0" 0 "$rc"
 assert_contains "projects link writes link.json" "Linked" "$out"
-[ -f .kortix/link.json ] && ok ".kortix/link.json exists" || bad ".kortix/link.json missing after link"
+[ -f .zed/link.json ] && ok ".zed/link.json exists" || bad ".zed/link.json missing after link"
 
 # Now projects info (no arg) should use the linked project.
 out=$($CLI projects info 2>&1)
@@ -305,7 +305,7 @@ rc=$?
 assert_exit "sessions ls returns 0" 0 "$rc"
 
 # Pick a session id if any exist for info test.
-SESSION_ID=$(curl -fsS -H "Authorization: Bearer $PAT" "$KORTIX_API_URL/v1/projects/$PROJECT_ID/sessions" | \
+SESSION_ID=$(curl -fsS -H "Authorization: Bearer $PAT" "$ZED_API_URL/v1/projects/$PROJECT_ID/sessions" | \
   python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['session_id'] if d else '')")
 if [ -n "$SESSION_ID" ]; then
   out=$($CLI sessions info "$SESSION_ID" 2>&1)
@@ -333,7 +333,7 @@ rc=$?
 assert_exit "triggers ls returns 0" 0 "$rc"
 
 # If any trigger exists, run an info on it.
-TRIGGER_SLUG=$(curl -fsS -H "Authorization: Bearer $PAT" "$KORTIX_API_URL/v1/projects/$PROJECT_ID/triggers" | \
+TRIGGER_SLUG=$(curl -fsS -H "Authorization: Bearer $PAT" "$ZED_API_URL/v1/projects/$PROJECT_ID/triggers" | \
   python3 -c "import json,sys; d=json.load(sys.stdin).get('triggers', []); print(d[0]['slug'] if d else '')" 2>/dev/null)
 if [ -n "$TRIGGER_SLUG" ]; then
   out=$($CLI triggers info "$TRIGGER_SLUG" 2>&1)
@@ -355,7 +355,7 @@ section "--project flag override"
 
 # Unlink so the flag is the only way to resolve the project.
 $CLI projects unlink >/dev/null
-[ ! -f .kortix/link.json ] && ok "unlink removed link.json" || bad "unlink left link.json behind"
+[ ! -f .zed/link.json ] && ok "unlink removed link.json" || bad "unlink left link.json behind"
 
 # secrets ls without flag → should error.
 out=$($CLI secrets ls 2>&1)
@@ -368,10 +368,10 @@ out=$($CLI secrets ls --project "$PROJECT_ID" 2>&1)
 rc=$?
 assert_exit "secrets ls --project <id> returns 0" 0 "$rc"
 
-# KORTIX_PROJECT_ID env → succeeds.
-out=$(KORTIX_PROJECT_ID="$PROJECT_ID" $CLI secrets ls 2>&1)
+# ZED_PROJECT_ID env → succeeds.
+out=$(ZED_PROJECT_ID="$PROJECT_ID" $CLI secrets ls 2>&1)
 rc=$?
-assert_exit "secrets ls with KORTIX_PROJECT_ID env returns 0" 0 "$rc"
+assert_exit "secrets ls with ZED_PROJECT_ID env returns 0" 0 "$rc"
 
 # ─── error paths ───────────────────────────────────────────────────────────
 
@@ -386,19 +386,19 @@ assert_contains "unknown subcommand suggests usage" "Usage:" "$out"
 # Bad token via --token.
 out=$($CLI login --token "not-a-pat" 2>&1)
 rc=$?
-assert_exit "login --token without kortix_pat_ prefix exits 1" 1 "$rc"
-assert_contains "login bad token mentions prefix" "kortix_pat_" "$out"
+assert_exit "login --token without zed_pat_ prefix exits 1" 1 "$rc"
+assert_contains "login bad token mentions prefix" "zed_pat_" "$out"
 
 # Pretend we're logged in with a junk PAT and watch /me reject.
 rm -f "$AUTH_FILE"
 cat > "$AUTH_FILE" <<EOF
-{"api_base":"$KORTIX_API_URL","token":"kortix_pat_definitelyNotARealOneThough123","user_id":"x","user_email":"","account_id":"","logged_in_at":"$(date -u +%Y-%m-%dT%H:%M:%SZ)"}
+{"api_base":"$ZED_API_URL","token":"zed_pat_definitelyNotARealOneThough123","user_id":"x","user_email":"","account_id":"","logged_in_at":"$(date -u +%Y-%m-%dT%H:%M:%SZ)"}
 EOF
 chmod 0600 "$AUTH_FILE"
 out=$($CLI whoami 2>&1)
 rc=$?
 assert_exit "whoami with bogus PAT exits 1" 1 "$rc"
-assert_contains "whoami with bogus PAT says to re-auth" "kortix login" "$out"
+assert_contains "whoami with bogus PAT says to re-auth" "zed login" "$out"
 
 # ─── logout ────────────────────────────────────────────────────────────────
 
@@ -418,7 +418,7 @@ assert_contains "logout confirms removal" "Logged out" "$out"
 out=$($CLI whoami 2>&1)
 rc=$?
 assert_exit "whoami after logout exits 1" 1 "$rc"
-assert_contains "whoami after logout says to login" "kortix login" "$out"
+assert_contains "whoami after logout says to login" "zed login" "$out"
 
 # ─── summary ───────────────────────────────────────────────────────────────
 

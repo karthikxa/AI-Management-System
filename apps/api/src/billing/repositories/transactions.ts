@@ -1,10 +1,10 @@
 import { eq, desc, sql, and, gte, inArray } from 'drizzle-orm';
-import { creditLedger, creditUsage, creditPurchases } from '@kortix/db';
+import { creditLedger, creditUsage, creditPurchases } from '@zed/db';
 import { db } from '../../shared/db';
 import { assertLedgerTypeHonesty } from '../ledger-type-honesty';
 
 /**
- * The ONLY Drizzle write path into kortix.credit_ledger (the other writer is the
+ * The ONLY Drizzle write path into zed.credit_ledger (the other writer is the
  * atomic_use_credits / atomic_add_credits RPC pair, in SQL).
  *
  * Every row passes assertLedgerTypeHonesty first: a row may not claim one kind

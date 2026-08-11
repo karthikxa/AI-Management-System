@@ -14,8 +14,8 @@
  * extraction. The result is a poisoned image: 262 `._*` files inside
  * `/workspace` (including `._.git` and `.git/objects/pack/._pack-*.idx`, which
  * makes git itself log `index file … is too small`) and 423 more under
- * `/opt/kortix`. OpenCode's ToolRegistry then tries to BUNDLE `._tools` /
- * `._kortix.md` as source, hits their NUL bytes, and every `session/prompt`
+ * `/opt/zed`. OpenCode's ToolRegistry then tries to BUNDLE `._tools` /
+ * `._zed.md` as source, hits their NUL bytes, and every `session/prompt`
  * dies with `BuildMessage: Unexpected NUL` — memoized for the process
  * lifetime, so the sandbox never recovers. Proven on sandbox
  * sbx_01KYR3WB727W48MD6A9AR8VW7Q: deleting the sidecars and restarting the

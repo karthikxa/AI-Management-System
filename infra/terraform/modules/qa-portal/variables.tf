@@ -3,15 +3,15 @@
 # straight through from the calling environment, exactly like modules/eks/irsa.
 
 variable "name" {
-  description = "Name prefix for the IAM role/policy (e.g. kortix-qa-portal)."
+  description = "Name prefix for the IAM role/policy (e.g. zed-qa-portal)."
   type        = string
-  default     = "kortix-qa-portal"
+  default     = "zed-qa-portal"
 }
 
 variable "bucket_name" {
   description = "S3 bucket that stores Allure results + generated reports. Globally unique."
   type        = string
-  default     = "kortix-qa-reports"
+  default     = "zed-qa-reports"
 }
 
 # ── IRSA wiring (read role for the portal pod) ────────────────────────────────
@@ -28,7 +28,7 @@ variable "oidc_provider_url" {
 variable "namespace" {
   description = "Kubernetes namespace the portal pod runs in."
   type        = string
-  default     = "kortix-qa"
+  default     = "zed-qa"
 }
 
 variable "service_account" {
@@ -66,17 +66,17 @@ variable "noncurrent_version_retention_days" {
 }
 
 # ── DNS (optional, single record) ─────────────────────────────────────────────
-# When the portal Ingress is up, point qa.kortix.com at the ALB. external-dns can
+# When the portal Ingress is up, point qa.zed.com at the ALB. external-dns can
 # also do this from the Ingress annotations (the chart sets them); set
 # manage_dns_record = true only if you want Terraform to own the record instead.
 variable "manage_dns_record" {
-  description = "If true, create the qa.kortix.com Cloudflare record here. Leave false to let the chart's external-dns annotation manage it."
+  description = "If true, create the qa.zed.com Cloudflare record here. Leave false to let the chart's external-dns annotation manage it."
   type        = bool
   default     = false
 }
 
 variable "dns_zone_id" {
-  description = "Cloudflare zone ID for kortix.com (only used when manage_dns_record = true)."
+  description = "Cloudflare zone ID for zed.com (only used when manage_dns_record = true)."
   type        = string
   default     = ""
 }
@@ -84,11 +84,11 @@ variable "dns_zone_id" {
 variable "host" {
   description = "Public FQDN for the portal."
   type        = string
-  default     = "qa.kortix.com"
+  default     = "qa.zed.com"
 }
 
 variable "alb_hostname" {
-  description = "ALB DNS name the qa.kortix.com record should CNAME to (from `kubectl -n kortix-qa get ingress`). Only used when manage_dns_record = true."
+  description = "ALB DNS name the qa.zed.com record should CNAME to (from `kubectl -n zed-qa get ingress`). Only used when manage_dns_record = true."
   type        = string
   default     = ""
 }
@@ -100,7 +100,7 @@ variable "tags" {
 
 # ── Cloudflare Access gate (optional) ─────────────────────────────────────────
 variable "enable_access" {
-  description = "Put qa.kortix.com behind Cloudflare Access (Zero Trust). Denies by default; only the allowlist below can open reports."
+  description = "Put qa.zed.com behind Cloudflare Access (Zero Trust). Denies by default; only the allowlist below can open reports."
   type        = bool
   default     = true
 }
@@ -120,13 +120,13 @@ variable "cloudflare_account_id" {
 variable "access_app_name" {
   description = "Display name of the Cloudflare Access application."
   type        = string
-  default     = "QA Reports (qa.kortix.com)"
+  default     = "QA Reports (qa.zed.com)"
 }
 
 variable "access_allowed_email_domains" {
   description = "Email domains allowed through the Access gate."
   type        = list(string)
-  default     = ["kortix.com"]
+  default     = ["zed.com"]
 }
 
 variable "access_allowed_emails" {

@@ -31,7 +31,7 @@
  */
 
 import { and, asc, eq, inArray, lt, or, sql } from 'drizzle-orm';
-import { chatTurnStreams, projectSessions, sessionSandboxes, usageEvents } from '@kortix/db';
+import { chatTurnStreams, projectSessions, sessionSandboxes, usageEvents } from '@zed/db';
 import { db } from '../../shared/db';
 import { pauseComputeSession } from '../../billing/services/compute-metering';
 import { ACTIVE_SESSION_STATUSES } from '../lib/session-status';
@@ -43,7 +43,7 @@ const STUCK_SESSION_BATCH = 200;
  *  Shares the idle-grace knob — the same question asked of a session rather
  *  than of a box. */
 function stuckSessionCutoffMs(): number {
-  return Math.max(1, config.KORTIX_SANDBOX_AUTOSTOP_MINUTES || 15) * 60_000;
+  return Math.max(1, config.ZED_SANDBOX_AUTOSTOP_MINUTES || 15) * 60_000;
 }
 
 export async function reconcileStuckActiveSessions(

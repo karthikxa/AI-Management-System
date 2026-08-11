@@ -22,17 +22,17 @@ import {
 } from '@/components/ui/modal';
 import { Switch } from '@/components/ui/switch';
 import { errorToast, successToast } from '@/components/ui/toast';
-import { useRuntimeSession } from '@kortix/sdk/react';
+import { useRuntimeSession } from '@zed/sdk/react';
 import {
   loadSessionTranscriptMessages,
   useSessionSync,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 import {
   DEFAULT_TRANSCRIPT_OPTIONS,
   formatTranscript,
   getTranscriptFilename,
   type TranscriptOptions,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import {
   CheckIcon as Check,
   CopyIcon as Copy,
@@ -46,14 +46,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface ExportTranscriptModalProps {
   sessionId: string;
-  kortixSessionScope?: string;
+  zedSessionScope?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function ExportTranscriptModal({
   sessionId,
-  kortixSessionScope,
+  zedSessionScope,
   open,
   onOpenChange,
 }: ExportTranscriptModalProps) {
@@ -62,7 +62,7 @@ export function ExportTranscriptModal({
   const [copied, setCopied] = useState(false);
 
   const { data: session } = useRuntimeSession(sessionId);
-  const { messages: visibleMessages } = useSessionSync(sessionId, { kortixSessionScope });
+  const { messages: visibleMessages } = useSessionSync(sessionId, { zedSessionScope });
   const [messages, setMessages] = useState(visibleMessages);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const visibleMessagesRef = useRef(visibleMessages);

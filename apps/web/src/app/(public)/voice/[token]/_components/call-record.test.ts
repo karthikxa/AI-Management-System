@@ -46,28 +46,28 @@ describe('toCallRecordEntries — who actually said it', () => {
     expect(anonymous).toMatchObject({ kind: 'human', name: 'Guest' });
   });
 
-  test('role=agent + speaker=kortix is the KORTIX agent, not the voice', () => {
+  test('role=agent + speaker=zed is the ZED agent, not the voice', () => {
     const [e] = toCallRecordEntries([
-      turn({ cursor: 1, role: 'agent', speaker: 'kortix', text: 'The deploy finished.' }),
+      turn({ cursor: 1, role: 'agent', speaker: 'zed', text: 'The deploy finished.' }),
     ]);
-    expect(e).toMatchObject({ kind: 'kortix', name: 'Kortix agent', text: 'The deploy finished.' });
+    expect(e).toMatchObject({ kind: 'zed', name: 'Zed agent', text: 'The deploy finished.' });
   });
 
   test('role=agent with any other speaker is the voice itself', () => {
     const [named, anonymous] = toCallRecordEntries([
-      turn({ cursor: 1, role: 'agent', speaker: 'Kortix Voice', text: 'Sure thing.' }),
+      turn({ cursor: 1, role: 'agent', speaker: 'Zed Voice', text: 'Sure thing.' }),
       turn({ cursor: 2, role: 'agent', speaker: null, text: 'Sure thing.' }),
     ]);
-    expect(named).toMatchObject({ kind: 'voice', name: 'Kortix Voice' });
-    expect(anonymous).toMatchObject({ kind: 'voice', name: 'Kortix' });
+    expect(named).toMatchObject({ kind: 'voice', name: 'Zed Voice' });
+    expect(anonymous).toMatchObject({ kind: 'voice', name: 'Zed' });
   });
 
   test('the two agent-side sources stay distinguishable — the whole point of reading speaker', () => {
     const entries = toCallRecordEntries([
-      turn({ cursor: 1, role: 'agent', speaker: 'kortix', text: 'Tests are green.' }),
-      turn({ cursor: 2, role: 'agent', speaker: 'Kortix Voice', text: 'Good news, tests are green!' }),
+      turn({ cursor: 1, role: 'agent', speaker: 'zed', text: 'Tests are green.' }),
+      turn({ cursor: 2, role: 'agent', speaker: 'Zed Voice', text: 'Good news, tests are green!' }),
     ]);
-    expect(entries.map((e) => e.kind)).toEqual(['kortix', 'voice']);
+    expect(entries.map((e) => e.kind)).toEqual(['zed', 'voice']);
   });
 
   test('drops rows with no text rather than rendering an empty bubble', () => {
@@ -102,15 +102,15 @@ describe('toCallRecordEntries — tool calls are not speech', () => {
     });
   }
 
-  test('ask_kortix has no outcome and keeps its whole request', () => {
+  test('ask_zed has no outcome and keeps its whole request', () => {
     const [e] = toCallRecordEntries([
-      turn({ cursor: 1, role: 'tool', speaker: 'ask_kortix', text: 'ask_kortix: what broke the build?' }),
+      turn({ cursor: 1, role: 'tool', speaker: 'ask_zed', text: 'ask_zed: what broke the build?' }),
     ]);
-    expect(e).toMatchObject({ kind: 'tool', name: 'ask_kortix', text: 'what broke the build?', outcome: null });
+    expect(e).toMatchObject({ kind: 'tool', name: 'ask_zed', text: 'what broke the build?', outcome: null });
   });
 
   test('the settle row that closes a hand-off renders as name + outcome, nothing doubled', () => {
-    // `ask_kortix_done` is written by apps/api's `settleAsk` when a hand-off
+    // `ask_zed_done` is written by apps/api's `settleAsk` when a hand-off
     // finishes, however it finishes — it is what lets the call ask again
     // (channels/voice/ask-ledger.ts). It follows the same `<tool>: <detail>`
     // convention as every other tool row precisely so it needs no special case
@@ -120,11 +120,11 @@ describe('toCallRecordEntries — tool calls are not speech', () => {
         turn({
           cursor: 1,
           role: 'tool',
-          speaker: 'ask_kortix_done',
-          text: `ask_kortix_done: ${outcome}`,
+          speaker: 'ask_zed_done',
+          text: `ask_zed_done: ${outcome}`,
         }),
       ]);
-      expect(e).toMatchObject({ kind: 'tool', name: 'ask_kortix_done', text: outcome });
+      expect(e).toMatchObject({ kind: 'tool', name: 'ask_zed_done', text: outcome });
     }
   });
 
@@ -132,7 +132,7 @@ describe('toCallRecordEntries — tool calls are not speech', () => {
     // The bug the fixed outcome vocabulary exists to prevent: "arrow" is not a
     // result, so the request must survive whole.
     const [e] = toCallRecordEntries([
-      turn({ cursor: 1, role: 'tool', speaker: 'ask_kortix', text: 'ask_kortix: rename a → b in the schema' }),
+      turn({ cursor: 1, role: 'tool', speaker: 'ask_zed', text: 'ask_zed: rename a → b in the schema' }),
     ]);
     expect(e!.text).toBe('rename a → b in the schema');
     expect(e!.outcome).toBeNull();
@@ -215,11 +215,11 @@ describe('unrecordedLive — the tail must not repeat the record', () => {
     expect(unrecordedLive(live, record)).toHaveLength(1);
   });
 
-  test("the Kortix agent's own recorded line retires the voice echo of it", () => {
+  test("the Zed agent's own recorded line retires the voice echo of it", () => {
     // Both are role 'agent' server-side; either one landing means the words
     // are in the record, so the live copy is redundant.
-    const live = [utterance({ id: 's1', text: 'The deploy finished.', isLocal: false, name: 'Kortix' })];
-    const record = [entry({ cursor: 1, kind: 'kortix', name: 'Kortix agent', text: 'The deploy finished.' })];
+    const live = [utterance({ id: 's1', text: 'The deploy finished.', isLocal: false, name: 'Zed' })];
+    const record = [entry({ cursor: 1, kind: 'zed', name: 'Zed agent', text: 'The deploy finished.' })];
     expect(unrecordedLive(live, record)).toEqual([]);
   });
 });

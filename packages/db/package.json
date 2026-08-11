@@ -1,7 +1,7 @@
 {
-  "name": "@kortix/db",
+  "name": "@zed/db",
   "version": "1.0.0",
-  "description": "Kortix Database - Drizzle ORM schemas and client",
+  "description": "Zed Database - Drizzle ORM schemas and client",
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",

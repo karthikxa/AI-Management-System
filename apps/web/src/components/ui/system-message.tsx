@@ -12,8 +12,8 @@ const systemMessageVariants = cva(
     variants: {
       variant: {
         action: 'text-muted-foreground',
-        error: 'text-kortix-red',
-        warning: 'text-kortix-orange',
+        error: 'text-zed-red',
+        warning: 'text-zed-orange',
       },
       fill: {
         true: 'border-transparent',
@@ -22,11 +22,11 @@ const systemMessageVariants = cva(
     },
     compoundVariants: [
       { variant: 'action', fill: true, class: 'bg-muted' },
-      { variant: 'error', fill: true, class: 'bg-kortix-red/10' },
-      { variant: 'warning', fill: true, class: 'bg-kortix-orange/10' },
+      { variant: 'error', fill: true, class: 'bg-zed-red/10' },
+      { variant: 'warning', fill: true, class: 'bg-zed-orange/10' },
       { variant: 'action', fill: false, class: 'border-border' },
-      { variant: 'error', fill: false, class: 'border-kortix-red/30' },
-      { variant: 'warning', fill: false, class: 'border-kortix-orange/30' },
+      { variant: 'error', fill: false, class: 'border-zed-red/30' },
+      { variant: 'warning', fill: false, class: 'border-zed-orange/30' },
     ],
     defaultVariants: {
       variant: 'action',

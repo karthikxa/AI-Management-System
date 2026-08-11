@@ -1,20 +1,20 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
-import { getStarterFiles, type StarterFile, type StarterTemplateId } from '@kortix/starter';
+import { getStarterFiles, type StarterFile, type StarterTemplateId } from '@zed/starter';
 
 export interface ScaffoldInput {
   /** Absolute path of the destination directory. Must already exist. */
   repoRoot: string;
-  /** Display name written into kortix.yaml + README. */
+  /** Display name written into zed.yaml + README. */
   projectName: string;
   /** Optional "owner/repo" placeholder for README clone URL. */
   repoFullName?: string;
-  /** Starter variant. Defaults to the minimal Kortix runtime floor. */
+  /** Starter variant. Defaults to the minimal Zed runtime floor. */
   template?: StarterTemplateId;
   /**
    * If true, skip writing any file whose path already exists at the
-   * destination. Used by `kortix init` against a repo that may already
+   * destination. Used by `zed init` against a repo that may already
    * have a partial layout (e.g. an existing `.opencode/`). Default is
    * false — overwrite everything.
    */
@@ -27,7 +27,7 @@ export interface ScaffoldResult {
 }
 
 /**
- * Walk the bundled `@kortix/starter` template and write every file into
+ * Walk the bundled `@zed/starter` template and write every file into
  * `repoRoot`. Respects `preserveExisting` so the `init` command can
  * scaffold without clobbering a user's in-progress edits.
  */

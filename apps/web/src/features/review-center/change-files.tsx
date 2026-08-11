@@ -51,9 +51,9 @@ const STATUS_CHAR: Record<string, string> = {
   typechange: 'T',
 };
 const STATUS_COLOR: Record<string, string> = {
-  added: 'text-kortix-green',
-  deleted: 'text-kortix-red',
-  renamed: 'text-kortix-blue',
+  added: 'text-zed-green',
+  deleted: 'text-zed-red',
+  renamed: 'text-zed-blue',
 };
 
 function ChangeFilesSection({ crId }: { crId: string }) {
@@ -97,7 +97,7 @@ function ChangeFilesSection({ crId }: { crId: string }) {
                 <span
                   className={cn(
                     'shrink-0 font-mono text-xs font-semibold',
-                    STATUS_COLOR[f.status] ?? 'text-kortix-yellow',
+                    STATUS_COLOR[f.status] ?? 'text-zed-yellow',
                   )}
                 >
                   {STATUS_CHAR[f.status] ?? 'M'}

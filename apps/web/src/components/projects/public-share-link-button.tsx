@@ -8,7 +8,7 @@ import Hint from '@/components/ui/hint';
 import Loading from '@/components/ui/loading';
 import { usePublicShareLink } from '@/hooks/use-public-share-link';
 import { cn } from '@/lib/utils';
-import type { CreateSessionPublicShareInput } from '@kortix/sdk';
+import type { CreateSessionPublicShareInput } from '@zed/sdk';
 
 export function PublicShareLinkButton({
   projectId,
@@ -63,7 +63,7 @@ export function PublicShareLinkButton({
                 className="absolute inset-0 inline-flex items-center justify-center"
               >
                 {share.copied ? (
-                  <Check className={cn(iconClassName, 'text-kortix-green')} />
+                  <Check className={cn(iconClassName, 'text-zed-green')} />
                 ) : (
                   <LinkSimpleIcon className={iconClassName} />
                 )}

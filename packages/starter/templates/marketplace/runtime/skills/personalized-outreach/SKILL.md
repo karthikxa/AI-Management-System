@@ -15,7 +15,7 @@ HubSpot, and holds the batch in {{approval_channel}} for a person to approve
 and send — capped at {{daily_cap}} contacts per run.
 
 Fresh session per sweep — state lives on the HubSpot contact record itself (a
-`kortix_outreach_drafted` property + timestamp marks a contact handled), not
+`zed_outreach_drafted` property + timestamp marks a contact handled), not
 in a local ledger file. A single sweep can find several new contacts at once;
 handle each one as an independent unit — a research or drafting failure on one
 contact is logged and skipped, and never blocks or corrupts the draft for any
@@ -51,7 +51,7 @@ GET /crm/v3/lists/{listId}/memberships?limit=100&after={after}
 ```
 
 Collect the `recordId`s this returns, then batch-read those contacts and drop
-anything already carrying `kortix_outreach_drafted`:
+anything already carrying `zed_outreach_drafted`:
 
 ```
 POST /crm/v3/objects/contacts/batch/read
@@ -59,7 +59,7 @@ POST /crm/v3/objects/contacts/batch/read
   inputs: [{ id: recordId }, ...]   // the memberships page(s) above
 ```
 
-Anything already carrying `kortix_outreach_drafted` was handled by a prior
+Anything already carrying `zed_outreach_drafted` was handled by a prior
 run — skip it, even if it hasn't been sent yet. Sending is a human decision,
 not a signal to re-draft. Take at most {{daily_cap}} contacts this run, oldest
 or highest-priority first, so the batch stays a size a person can actually
@@ -96,7 +96,7 @@ sends or if a human edits the draft first.
 
 Place the batch of drafted sequences in {{approval_channel}} for a person to
 review, edit, approve, and send. Do not send anything yourself. Set
-`kortix_outreach_drafted = true` (with a timestamp) on each contact you
+`zed_outreach_drafted = true` (with a timestamp) on each contact you
 drafted this run so the next sweep skips them.
 
 </workflow>
@@ -108,9 +108,9 @@ drafted this run so the next sweep skips them.
   of how large {{hubspot_list}} is — volume never outruns what a person can
   review.
 - **HubSpot writes are scoped** to research notes, drafted sequence content,
-  and the `kortix_outreach_drafted` marker. Never change deal stage,
+  and the `zed_outreach_drafted` marker. Never change deal stage,
   pipeline, or lifecycle stage.
-- **No duplicate drafts.** Always check the `kortix_outreach_drafted` marker
+- **No duplicate drafts.** Always check the `zed_outreach_drafted` marker
   before researching or writing — a contact drafted once is never re-drafted,
   even across many sweeps.
 - **Scoped secrets.** HubSpot and enrichment credentials are injected by the

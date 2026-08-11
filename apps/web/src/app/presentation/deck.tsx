@@ -15,7 +15,7 @@ import { useTranslations } from 'next-intl';
  */
 
 import { ThemeToggle } from '@/components/home/theme-toggle';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { cn } from '@/lib/utils';
 import {
   CaretLeftIcon as ChevronLeft,
@@ -165,7 +165,7 @@ export function Deck({
 
         {/* ── Chrome (navbar-style) ───────────────────────────────────── */}
         <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between px-6 py-5 sm:px-8">
-          <KortixLogo variant="logomark" size={22} className="text-foreground" />
+          <ZedLogo variant="logomark" size={22} className="text-foreground" />
           <div className="pointer-events-auto flex items-center gap-3">
             {altDeck ? (
               <Link
@@ -235,7 +235,7 @@ export function Deck({
           >
             <div className="flex items-center justify-between px-8 py-6">
               <span className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
-                {tI18nHardcoded.raw('autoAppPresentationDeckJsxTextKortix28fe100d')}
+                {tI18nHardcoded.raw('autoAppPresentationDeckJsxTextZed28fe100d')}
                 {total} slides
               </span>
               <button

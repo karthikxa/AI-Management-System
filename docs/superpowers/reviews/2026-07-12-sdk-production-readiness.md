@@ -1,4 +1,4 @@
-# @kortix/sdk — end-to-end production-readiness review
+# @zed/sdk — end-to-end production-readiness review
 
 **Date:** 2026-07-12 · **Branch:** `feat/sdk-v2-structure-and-distribution` (41 commits vs `main`, base `808fadfc8`) · **Reviewer:** Claude (fresh two-axis review + live verification), on Jay's request before merging to production.
 
@@ -14,12 +14,12 @@ Jay can make (below); neither is a code defect.
 
 | Gate | Result |
 |---|---|
-| `pnpm --filter @kortix/sdk typecheck` (incl. `examples/tsconfig.json`) | clean, exit 0 |
-| `pnpm --filter @kortix/sdk test` (full suite) | **1066 pass / 0 fail**, 70 files, 5023 expects |
-| `pnpm --filter @kortix/sdk run build:bundles` | `kortix.esm.min.js` 189.90 KB, `kortix.global.js` 190.88 KB |
-| `pnpm --filter @kortix/sdk run smoke:install` | pack → install tarballs → Node ESM import: OK |
-| **D2a** — streaming through the `window.Kortix` IIFE global | **PASS** — real Chromium loaded `examples/08-cdn.html` via `<script src>` against the live local stack (fresh session `4f2953bc…`, project t1): `sent — streaming…` followed by `· message.part.updated` ×7 through `· session.idle`. |
-| **D3** — `instanceof Kortix.ApiError` under the IIFE bundle | **PASS** — a bundle-thrown `ApiError` ("Session runtime not ready", `kortix.ts:681`) satisfied `error instanceof Kortix.ApiError` in page script and printed via that branch. A bad-PAT run threw `SessionStartError` and correctly took the non-ApiError branch (it extends `Error` by design). |
+| `pnpm --filter @zed/sdk typecheck` (incl. `examples/tsconfig.json`) | clean, exit 0 |
+| `pnpm --filter @zed/sdk test` (full suite) | **1066 pass / 0 fail**, 70 files, 5023 expects |
+| `pnpm --filter @zed/sdk run build:bundles` | `zed.esm.min.js` 189.90 KB, `zed.global.js` 190.88 KB |
+| `pnpm --filter @zed/sdk run smoke:install` | pack → install tarballs → Node ESM import: OK |
+| **D2a** — streaming through the `window.Zed` IIFE global | **PASS** — real Chromium loaded `examples/08-cdn.html` via `<script src>` against the live local stack (fresh session `4f2953bc…`, project t1): `sent — streaming…` followed by `· message.part.updated` ×7 through `· session.idle`. |
+| **D3** — `instanceof Zed.ApiError` under the IIFE bundle | **PASS** — a bundle-thrown `ApiError` ("Session runtime not ready", `zed.ts:681`) satisfied `error instanceof Zed.ApiError` in page script and printed via that branch. A bad-PAT run threw `SessionStartError` and correctly took the non-ApiError branch (it extends `Error` by design). |
 
 D2a/D3 were the ledger's sole "NOT YET shippable" reason (`PROGRESS.md`) — the plan
 gated them on a human ("awaiting Jay"). They are now machine-verified end to end;
@@ -33,7 +33,7 @@ claim left.
 1. **[Important] The public-surface snapshot omits every type-only export.**
    `public-surface.test.ts` snapshots runtime namespaces (`Object.keys(import(entry))`),
    which contain no `export type` bindings — `SessionHandle`, `ClassifiedPart`,
-   `KortixProject`, `Kortix`, `ProjectHandle`, `SessionModel`, `TurnError` are all
+   `ZedProject`, `Zed`, `ProjectHandle`, `SessionModel`, `TurnError` are all
    absent from the snapshot. A type rename — the exact consumer break
    `packages/sdk/AGENTS.md` warns about hardest — passes CI green.
    → **Fixed this session (F5):** new `public-type-surface.test.ts` + committed
@@ -42,7 +42,7 @@ claim left.
    → **Fixed this session (F2).**
 
 Verified compliant: version field untouched; alias-never-replace honored (20
-deprecated shims, `KortixProject`→`KortixMasterProject` aliased); export three-edit
+deprecated shims, `ZedProject`→`ZedMasterProject` aliased); export three-edit
 rule enforced by tests; react/react-query stay optional peers; framework-free
 tripwires strengthened; no RN-streaming claims in docs.
 
@@ -70,16 +70,16 @@ tripwires strengthened; no RN-streaming claims in docs.
 Both export maps set-equal (asserted by `package-exports.test.ts`); stage script
 promotes **and validates** `browser`/`unpkg`/`jsdelivr` CDN fields;
 `publish-npm-package.sh` builds the tsup bundles before staging (plus
-`prepublishOnly` defense-in-depth); `deploy-prod.yml` publishes `@kortix/llm-catalog`
+`prepublishOnly` defense-in-depth); `deploy-prod.yml` publishes `@zed/llm-catalog`
 before the SDK so the pinned `workspace:*` rewrite resolves; root `VERSION` stamps
 the lockstep version. CI on every PR: SDK typecheck (incl. examples), bundle build
 **before** `bun test` so `bundle.test.ts` actually runs, and the pack→install→import
-smoke. Docs: `api.kortix.com` everywhere (0 `.ai` remnants); CDN filenames match
+smoke. Docs: `api.zed.com` everywhere (0 `.ai` remnants); CDN filenames match
 tsup output; CHANGELOG covers this release; no false RN-streaming claims.
 
 ## New finding from live verification: CORS bounds the CDN story
 
-The API's CORS allowlist is static (`apps/api/src/index.ts:151-202`): kortix.com
+The API's CORS allowlist is static (`apps/api/src/index.ts:151-202`): zed.com
 domains + `localhost:3000/3010` + `CORS_ALLOWED_ORIGINS` env. A browser page on any
 other origin using the CDN bundle is blocked at preflight — my first D2a attempt
 from `localhost:8099` failed exactly this way (the plan's own Step 6 procedure hits
@@ -107,7 +107,7 @@ Full fix detail + RED evidence + gate output: `.superpowers/sdd/fix-wave-2-repor
 ## Remaining items — decisions only Jay can make
 
 1. **Public CORS policy for the CDN use-case.** If third parties are meant to use
-   the `<script>`/CDN bundle from their own origins against `api.kortix.com`, the
+   the `<script>`/CDN bundle from their own origins against `api.zed.com`, the
    API needs a deliberate CORS decision (e.g. reflect any origin for
    PAT-authenticated routes, or a per-account origin allowlist). Until then the CDN
    story is real but only for allowlisted origins. Not an SDK defect; ship the SDK
@@ -115,7 +115,7 @@ Full fix detail + RED evidence + gate output: `.superpowers/sdd/fix-wave-2-repor
 2. **npm publish credentials**: `publish-npm-package.sh:27-30` exits 0 with a
    warning when neither OIDC Trusted Publishing nor `NODE_AUTH_TOKEN` is present —
    a misconfiguration skips the publish silently rather than failing the release.
-   Confirm Trusted Publishing is wired for the `@kortix` org before relying on the
+   Confirm Trusted Publishing is wired for the `@zed` org before relying on the
    next prod deploy (one-time infra check, outside the repo).
 
 ## Follow-ups (non-blocking, for the backlog)

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { tunnelAuditLogs } from '@kortix/db';
+import { tunnelAuditLogs } from '@zed/db';
 import type { TunnelCapability } from 'agent-tunnel';
 import { eq } from 'drizzle-orm';
 import { getRequestContext } from '../../lib/request-context';

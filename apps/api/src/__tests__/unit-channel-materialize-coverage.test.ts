@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { CHANNEL_PLATFORMS } from '@kortix/manifest-schema';
+import { CHANNEL_PLATFORMS } from '@zed/manifest-schema';
 
 /**
  * Connecting a channel writes an install; synthesizeChannelConnectors is what

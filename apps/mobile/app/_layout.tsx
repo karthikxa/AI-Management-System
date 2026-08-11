@@ -43,7 +43,7 @@ import { log } from '@/lib/logger';
 import { useAppearanceStore } from '@/stores/appearance-store';
 import { useThemeStore } from '@/stores/theme-store';
 import { installHapticsGate } from '@/lib/haptics';
-import { configureKortix } from '@kortix/sdk';
+import { configureZed } from '@zed/sdk';
 import { API_URL, getAuthToken } from '@/api/config';
 import {
   clearWebRegistrationHandoff,
@@ -62,13 +62,13 @@ installHapticsGate();
 // Wire the SDK's single app-specific seam once at startup, before any screen
 // mounts. `backendUrl`/`getToken` reuse mobile's own env resolution and
 // Supabase token source (api/config.ts) unchanged — this just injects them
-// into @kortix/sdk so `lib/projects/projects-client.ts` and friends can call
+// into @zed/sdk so `lib/projects/projects-client.ts` and friends can call
 // through to `backendApi`/`projects-client` instead of hand-rolling fetch.
-configureKortix({
+configureZed({
   backendUrl: API_URL,
   getToken: getAuthToken,
   onError: (error, context) => {
-    log.error('❌ [kortix-sdk] request failed:', error, context);
+    log.error('❌ [zed-sdk] request failed:', error, context);
   },
 });
 

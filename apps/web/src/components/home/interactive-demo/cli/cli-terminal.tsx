@@ -1,10 +1,10 @@
 'use client';
 
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, type HTMLAttributes } from 'react';
-import { KORTIX_CMD_CLASS, KORTIX_CMD_STYLE, LineView } from './terminal';
+import { ZED_CMD_CLASS, ZED_CMD_STYLE, LineView } from './terminal';
 import type { DemoDirector } from './use-demo-director';
 
 /* The floating CLI overlay. A non-interactive terminal that renders the
@@ -43,9 +43,9 @@ export function CliTerminal({
           <span className="size-2.5 rounded-full bg-emerald-400/80" />
         </div>
         <span className="text-muted-foreground ml-1.5 inline-flex items-center gap-1 text-[11px] font-medium">
-          <KortixLogo size={12} />
+          <ZedLogo size={12} />
           {tI18nHardcoded.raw(
-            'autoComponentsHomeInteractiveDemoCliCliTerminalJsxTextKortix1390795b',
+            'autoComponentsHomeInteractiveDemoCliCliTerminalJsxTextZed1390795b',
           )}
         </span>
         <span className="ml-auto inline-flex items-center gap-2">
@@ -80,8 +80,8 @@ export function CliTerminal({
           <div className="flex items-center whitespace-pre">
             {!typingNote && <span className="text-muted-foreground/45">$ </span>}
             <span
-              className={typingNote ? 'text-muted-foreground/45' : KORTIX_CMD_CLASS}
-              style={typingNote ? undefined : KORTIX_CMD_STYLE}
+              className={typingNote ? 'text-muted-foreground/45' : ZED_CMD_CLASS}
+              style={typingNote ? undefined : ZED_CMD_STYLE}
             >
               {typed}
             </span>

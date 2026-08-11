@@ -9,8 +9,8 @@ import Loading from '@/components/ui/loading';
 import { successToast } from '@/components/ui/toast';
 import { ProviderLogo } from '@/features/providers/provider-branding';
 import type { LlmProviderEntry } from '@/lib/llm-providers';
-import { upsertProjectSecret } from '@kortix/sdk';
-import { qk, refreshProjectProviderState } from '@kortix/sdk/react';
+import { upsertProjectSecret } from '@zed/sdk';
+import { qk, refreshProjectProviderState } from '@zed/sdk/react';
 import {
   CaretLeftIcon as ChevronLeft,
   ArrowSquareOutIcon as ExternalLink,

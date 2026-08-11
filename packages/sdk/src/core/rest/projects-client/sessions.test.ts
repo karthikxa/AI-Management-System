@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import { isSessionFresh } from '../../http/fresh-sessions';
 import type { CreateProjectSessionInput, ProjectSession } from './sessions';
 import {
@@ -45,7 +45,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 const last = () => calls[calls.length - 1];
 
 type IsNever<T> = [T] extends [never] ? true : false;
@@ -204,7 +204,7 @@ test('claimWarmProjectSession POSTs the selected warm session and create options
 
 test('claimWarmProjectSession keeps recoverable claim conflicts out of the global error sink', async () => {
   const onError = mock(() => {});
-  configureKortix({
+  configureZed({
     backendUrl: 'http://test.local',
     getToken: async () => 'tok',
     onError,
@@ -229,7 +229,7 @@ test('claimWarmProjectSession keeps recoverable claim conflicts out of the globa
     });
     expect(onError).not.toHaveBeenCalled();
   } finally {
-    configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+    configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
   }
 });
 
@@ -413,7 +413,7 @@ test('neither config call routes failures to the host global error handler', asy
   // and the POST's 409 is a question the caller answers with a confirm dialog,
   // not an error to announce over it.
   const errors: unknown[] = [];
-  configureKortix({
+  configureZed({
     backendUrl: 'http://test.local',
     getToken: async () => 'tok',
     onError: (err: unknown) => errors.push(err),
@@ -427,7 +427,7 @@ test('neither config call routes failures to the host global error handler', asy
   expect(errors).toEqual([]);
 
   // Leave the shared config as the rest of this file expects it.
-  configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+  configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 });
 
 test('reloadProjectSessionConfig surfaces the 409 code and reason for the confirm step', async () => {

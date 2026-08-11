@@ -1,5 +1,5 @@
 /**
- * Explicit Kortix API operations for host boundaries.
+ * Explicit Zed API operations for host boundaries.
  *
  * Browser code normally uses the configured SDK client. Server actions,
  * anonymous pages, downloads, and streaming endpoints need request-scoped
@@ -8,7 +8,7 @@
  */
 
 export interface HostRequestOptions {
-  /** Kortix API base URL. Both `https://host` and `https://host/v1` are valid. */
+  /** Zed API base URL. Both `https://host` and `https://host/v1` are valid. */
   backendUrl: string;
   accessToken?: string | null;
   signal?: AbortSignal;

@@ -12,8 +12,8 @@ import { useAuth } from '@/features/providers/auth-provider';
 import { useAdminRole } from '@/hooks/admin/use-admin-role';
 import { isAccountCreationRestricted } from '@/lib/config';
 import { useCurrentAccountStore } from '@/stores/current-account-store';
-import { listAccounts, type KortixAccount } from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+import { listAccounts, type ZedAccount } from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 import {
   CaretRightIcon as ChevronRight,
   PlusIcon as Plus,
@@ -33,7 +33,7 @@ export default function AccountsPage() {
   const { data: adminRole } = useAdminRole();
   // Self-host: hide "New account" affordances for non-admins when account
   // creation is restricted — admins are exempt from the gate (see
-  // isAccountCreationRestricted()/KORTIX_RESTRICT_ACCOUNT_CREATION). The
+  // isAccountCreationRestricted()/ZED_RESTRICT_ACCOUNT_CREATION). The
   // backend 403 (account_creation_restricted) is the authoritative gate;
   // this only avoids showing an affordance a non-admin can't use.
   const canCreateAccount = !isAccountCreationRestricted() || Boolean(adminRole?.isAdmin);
@@ -136,7 +136,7 @@ export default function AccountsPage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={(account) => {
-          queryClient.setQueryData<KortixAccount[]>(['accounts'], (accounts) => {
+          queryClient.setQueryData<ZedAccount[]>(['accounts'], (accounts) => {
             const current = accounts ?? [];
             return current.some((item) => item.account_id === account.account_id)
               ? current.map((item) => (item.account_id === account.account_id ? account : item))
@@ -165,7 +165,7 @@ function AccountRow({
   active,
   onClick,
 }: {
-  account: KortixAccount;
+  account: ZedAccount;
   active: boolean;
   onClick: () => void;
 }) {

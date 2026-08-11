@@ -27,8 +27,8 @@ import { usePermission } from '@/lib/use-permission';
 import { cn } from '@/lib/utils';
 import { useAccountSettingsModalStore } from '@/stores/account-settings-modal-store';
 import { useCurrentAccountStore } from '@/stores/current-account-store';
-import { listAccounts, type KortixAccount } from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+import { listAccounts, type ZedAccount } from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 import {
   CheckCircleIcon as CheckCircleSolid,
   CaretUpDownIcon as ChevronsUpDown,
@@ -100,7 +100,7 @@ export function AccountSwitcher({
     requestAnimationFrame(() => fn());
   };
 
-  const switchAccount = (account: KortixAccount) => {
+  const switchAccount = (account: ZedAccount) => {
     setSelectedAccountId(account.account_id);
     close();
     if (pathname?.startsWith('/accounts/')) {
@@ -195,7 +195,7 @@ export function AccountSwitcher({
                   {active && (
                     <CheckCircleSolid
                       weight="fill"
-                      className="text-kortix-green size-3.5 shrink-0"
+                      className="text-zed-green size-3.5 shrink-0"
                     />
                   )}
                 </DropdownMenuItem>
@@ -273,8 +273,8 @@ export function AccountSwitcher({
       <CreateAccountModal
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onCreated={(account: KortixAccount) => {
-          queryClient.setQueryData<KortixAccount[]>(['accounts'], (accounts) => {
+        onCreated={(account: ZedAccount) => {
+          queryClient.setQueryData<ZedAccount[]>(['accounts'], (accounts) => {
             const current = accounts ?? [];
             return current.some((item) => item.account_id === account.account_id)
               ? current.map((item) => (item.account_id === account.account_id ? account : item))

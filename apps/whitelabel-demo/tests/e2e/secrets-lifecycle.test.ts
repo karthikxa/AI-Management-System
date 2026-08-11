@@ -1,4 +1,4 @@
-import type { ProjectSecret } from '@kortix/sdk';
+import type { ProjectSecret } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 import { pendingKeyCollision } from '../../src/lib/secret-collisions';
 import {

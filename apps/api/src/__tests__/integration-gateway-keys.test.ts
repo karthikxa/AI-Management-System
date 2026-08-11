@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { accounts, gatewayApiKeys, projects } from '@kortix/db';
+import { accounts, gatewayApiKeys, projects } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { hashSecretKey } from '../shared/crypto';
 import { db } from '../shared/db';
@@ -22,7 +22,7 @@ async function seedKey(opts: {
   createdBy?: string | null;
 }) {
   n += 1;
-  const secretKey = `kortix_gw_test_${n}_${crypto.randomUUID()}`;
+  const secretKey = `zed_gw_test_${n}_${crypto.randomUUID()}`;
   const [row] = await db
     .insert(gatewayApiKeys)
     .values({
@@ -93,7 +93,7 @@ describe('validateGatewayKey', () => {
   });
 
   test('rejects an unknown secret', async () => {
-    expect(await validateGatewayKey(`kortix_gw_${crypto.randomUUID()}`)).toBeNull();
+    expect(await validateGatewayKey(`zed_gw_${crypto.randomUUID()}`)).toBeNull();
   });
 
   test('the internal title key is DELETED, never hidden from the key list', async () => {

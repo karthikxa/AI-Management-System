@@ -11,7 +11,7 @@ import {
 const adminUrl = process.env.MIGRATION_REPAIR_ADMIN_URL;
 const suite = adminUrl ? describe : describe.skip;
 const migrationsDir = join(import.meta.dir, '..', 'migrations');
-const databaseName = `kortix_migration_repair_${process.pid}_${Date.now()}`;
+const databaseName = `zed_migration_repair_${process.pid}_${Date.now()}`;
 const databaseUrl = adminUrl ? new URL(adminUrl) : null;
 if (databaseUrl) databaseUrl.pathname = `/${databaseName}`;
 
@@ -27,12 +27,12 @@ suite('migration ledger rename repair', () => {
     await client.connect();
     try {
       await client.query(`
-        create schema kortix;
-        create schema kortix_migrations;
-        create table kortix.executor_connection_policies (id integer);
-        create table kortix.executor_connector_policies (id integer);
-        create table kortix.executor_project_policies (id integer);
-        create table kortix_migrations.pgmigrations (
+        create schema zed;
+        create schema zed_migrations;
+        create table zed.executor_connection_policies (id integer);
+        create table zed.executor_connector_policies (id integer);
+        create table zed.executor_project_policies (id integer);
+        create table zed_migrations.pgmigrations (
           id serial primary key,
           name varchar(255) not null,
           run_on timestamp not null
@@ -48,13 +48,13 @@ suite('migration ledger rename repair', () => {
 
       for (const [index, name] of migrationNames.slice(0, connectorIndex).entries()) {
         await client.query(
-          `insert into kortix_migrations.pgmigrations (name, run_on)
+          `insert into zed_migrations.pgmigrations (name, run_on)
            values ($1, $2::timestamptz)`,
           [name, new Date(Date.UTC(2026, 6, 1, 0, 0, index)).toISOString()],
         );
       }
       await client.query(
-        `insert into kortix_migrations.pgmigrations (name, run_on)
+        `insert into zed_migrations.pgmigrations (name, run_on)
          values
            ('20260729181733802_sandbox_deadline', '2026-07-29T16:46:37.325Z'),
            ('20260729181804675_sandbox_deadline_index.concurrent', '2026-07-29T16:46:39.752Z')`,
@@ -74,7 +74,7 @@ suite('migration ledger rename repair', () => {
       databaseUrl: databaseUrl?.toString(),
       dir: migrationsDir,
       migrationsTable: 'pgmigrations',
-      migrationsSchema: 'kortix_migrations',
+      migrationsSchema: 'zed_migrations',
       createMigrationsSchema: true,
       singleTransaction: true,
       logger: console,
@@ -122,7 +122,7 @@ suite('migration ledger rename repair', () => {
     try {
       const ledger = await client.query<{ name: string }>(
         `select name
-           from kortix_migrations.pgmigrations
+           from zed_migrations.pgmigrations
           order by run_on, id`,
       );
       expect(ledger.rows.slice(-3).map((row) => row.name)).toEqual([
@@ -134,7 +134,7 @@ suite('migration ledger rename repair', () => {
       const columns = await client.query<{ count: number }>(
         `select count(*)::int
            from information_schema.columns
-          where table_schema = 'kortix'
+          where table_schema = 'zed'
             and table_name like 'executor_%_policies'
             and column_name = 'conditions'`,
       );

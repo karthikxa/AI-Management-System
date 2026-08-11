@@ -1,4 +1,4 @@
-import { FEATURE_DISABLED_CODE } from '@kortix/sdk';
+import { FEATURE_DISABLED_CODE } from '@zed/sdk';
 
 import { loadAuth, loadAuthForHost, type Auth } from './api/auth.ts';
 import { activeHostName, hasEnvTokenHost, listHosts } from './api/config.ts';
@@ -9,7 +9,7 @@ import { C, status } from './style.ts';
 import type { MeResponse, ProjectSession, ProjectSummary } from './api/types.ts';
 
 interface ProjectContextOpts {
-  /** Override project via --project flag or KORTIX_PROJECT_ID env. */
+  /** Override project via --project flag or ZED_PROJECT_ID env. */
   projectArg?: string;
   /** Override active host for this invocation via --host flag. */
   hostArg?: string;
@@ -32,11 +32,11 @@ interface ProjectContextOpts {
  *
  * Host resolution order:
  *   1. --host flag (per-invocation override)
- *   2. KORTIX_CLI_TOKEN (platform-injected sandbox
+ *   2. ZED_CLI_TOKEN (platform-injected sandbox
  *      auth — resolved through `loadAuth()`; a committed link host has no
  *      credentials inside a sandbox, so the env token must win)
- *   3. .kortix/link.json's `host` field (per-repo binding)
- *   4. globally active host (~/.config/kortix/config.json)
+ *   3. .zed/link.json's `host` field (per-repo binding)
+ *   4. globally active host (~/.config/zed/config.json)
  *
  * Backward-compatible call shape: callers that pass a string get the
  * `(projectArg)` behavior; callers that need --host pass an object.
@@ -59,13 +59,13 @@ export async function resolveProjectContext(
   const auth = hostName ? loadAuthForHost(hostName) : loadAuth();
   if (!auth?.token) {
     if (hostName) {
-      const source = opts.hostArg ? '(--host)' : '(from .kortix/link.json)';
+      const source = opts.hostArg ? '(--host)' : '(from .zed/link.json)';
       process.stderr.write(
         `${status.err(`Host "${hostName}" ${source} is not logged in.`)} Run ` +
-          `${C.cyan}kortix login --host ${hostName}${C.reset}.\n`,
+          `${C.cyan}zed login --host ${hostName}${C.reset}.\n`,
       );
     } else {
-      process.stderr.write(`${status.err('Not logged in. Run `kortix login`.')}\n`);
+      process.stderr.write(`${status.err('Not logged in. Run `zed login`.')}\n`);
     }
     return null;
   }
@@ -73,7 +73,7 @@ export async function resolveProjectContext(
   if (!projectId) {
     // The always-bound invariant: recover by binding a default project right
     // here instead of dead-ending. (Inside a sandbox the env-token host
-    // always carries KORTIX_PROJECT_ID, so this never fires there; on a
+    // always carries ZED_PROJECT_ID, so this never fires there; on a
     // non-TTY it degrades to a hint and the error below.)
     const outcome = await ensureDefaultProjectBinding(auth, {
       promptTitle: 'No project bound — pick one for this command',
@@ -84,8 +84,8 @@ export async function resolveProjectContext(
   if (!projectId) {
     if (!opts.quietWhenUnresolved) {
       process.stderr.write(
-        `${status.err('No project linked.')} Run \`kortix projects use\`, ` +
-          `\`kortix projects link\`, or pass ${C.cyan}--project <id>${C.reset}.\n`,
+        `${status.err('No project linked.')} Run \`zed projects use\`, ` +
+          `\`zed projects link\`, or pass ${C.cyan}--project <id>${C.reset}.\n`,
       );
     }
     return null;
@@ -105,7 +105,7 @@ export function emitJson(data: unknown): void {
 
 // ── Cross-host/account/project resource discovery ───────────────────────────
 //
-// Every session/project route is scoped to a specific Kortix host (a project
+// Every session/project route is scoped to a specific Zed host (a project
 // id or session id only exists in one Postgres) — so an id from a different
 // host, or a different account on the same host, than the one currently
 // active/linked 404s even though it's real and reachable with the same (or a
@@ -137,7 +137,7 @@ export interface LocatedSession {
  * scanned too before giving up and moving on. With neither flag, every
  * other logged-in host is scanned as well. `retryCommand` builds the full
  * CLI invocation to suggest for a host without stored credentials (e.g.
- * `(host) => \`kortix sessions connect ${id} --host ${host}\``). Prints its
+ * `(host) => \`zed sessions connect ${id} --host ${host}\``). Prints its
  * own progress/error messages; returns null on failure.
  */
 export async function locateSessionAnywhere(
@@ -235,7 +235,7 @@ export async function locateProjectAnywhere(
 
   if (!primaryAuth?.token && pinned) {
     process.stderr.write(
-      `${status.err(`Host "${opts.hostArg}" is not logged in.`)} Run ${C.cyan}kortix login --host ${opts.hostArg}${C.reset}.\n`,
+      `${status.err(`Host "${opts.hostArg}" is not logged in.`)} Run ${C.cyan}zed login --host ${opts.hostArg}${C.reset}.\n`,
     );
     return null;
   }
@@ -289,7 +289,7 @@ function printHostRetryHints(retryCommand: (hostName: string) => string): void {
     `  ${C.dim}Not logged in on those hosts yet. If it lives on one of them:${C.reset}\n`,
   );
   for (const name of names) {
-    process.stderr.write(`    ${C.cyan}kortix login --host ${name} && ${retryCommand(name)}${C.reset}\n`);
+    process.stderr.write(`    ${C.cyan}zed login --host ${name} && ${retryCommand(name)}${C.reset}\n`);
   }
 }
 
@@ -418,7 +418,7 @@ async function probeConcurrently<Item, Result>(
  * The gate is one shape on the wire — 403 `{ error, code: 'feature_disabled',
  * feature }` (apps/api/src/feature-flags/gate.ts) — but reaches the CLI as two
  * error classes: the CLI's own `ApiError` keeps the parsed body in `.body`,
- * while an SDK `ApiError` thrown by a `kortix.*` handle keeps it in
+ * while an SDK `ApiError` thrown by a `zed.*` handle keeps it in
  * `.details`/`.data` and lifts `code` onto the error. Both are read
  * structurally here, and the status is deliberately NOT checked, so a future
  * status carrying the same code still surfaces the same message.
@@ -460,7 +460,7 @@ export function surfaceApiError(err: unknown): number {
   if (err instanceof ApiError) {
     if (err.status === 401) {
       process.stderr.write(
-        `${status.err('Token rejected. Run `kortix login` to re-authenticate.')}\n`,
+        `${status.err('Token rejected. Run `zed login` to re-authenticate.')}\n`,
       );
     } else if (err.status === 403) {
       // Surface the server's specific reason when it has one (e.g. the

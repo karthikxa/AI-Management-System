@@ -2,7 +2,7 @@
 
 /**
  * The full agent editor — every field of one `agents.<name>` block in a
- * kortix_version 2 manifest (agent-first spec §2.2).
+ * zed_version 2 manifest (agent-first spec §2.2).
  *
  * Mounted from the /projects/[id]/agent detail modal
  * (`capabilities/agents/agent-detail-aside.tsx` + `agents-page.tsx`):
@@ -14,16 +14,16 @@
  *   - v1 project (not editable) → renders the caller's `fallback` (the legacy
  *     model + scope cards) plus an "upgrade to v2" hint. We degrade, never crash.
  *
- * Saves round-trip the whole block to kortix.yaml via the agent-config route,
+ * Saves round-trip the whole block to zed.yaml via the agent-config route,
  * validated server-side against the manifest-schema validator before commit.
  *
  * ── How this is organised, and why it changed ──────────────────────────────
- * The editor used to open with two headings, "Kortix" and "OpenCode", each
+ * The editor used to open with two headings, "Zed" and "OpenCode", each
  * with an icon and a sentence naming the file it wrote to. That is a storage
  * taxonomy: to find "model" you first had to know that models are an OpenCode
  * concern. The sections are now the questions you actually ask about an agent
  * — Basics, Model, Access, Workspace, Tools — and every field still writes to
- * exactly the same place it always did. `set` writes the Kortix block, `setOc`
+ * exactly the same place it always did. `set` writes the Zed block, `setOc`
  * writes the nested runtime block; that split is a fact about the code, not a
  * heading in the UI.
  *
@@ -52,8 +52,8 @@ import {
   listProjectSecrets,
   type ProjectConfigSummary,
   type RuntimeAgentConfig,
-} from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import { XIcon } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, m } from 'motion/react';
@@ -66,7 +66,7 @@ export {
   AGENT_MODE_HELP,
   AGENT_MODE_LABEL,
   AGENT_MODES,
-  KORTIX_CLI_CATALOG,
+  ZED_CLI_CATALOG,
   PERMISSION_ACTION_LABEL,
   PERMISSION_ACTION_ONLY_GROUP_LABEL,
   PERMISSION_ACTION_ONLY_KEYS,
@@ -392,8 +392,8 @@ export function AgentConfigEditor({
       <div className="space-y-3">
         {fallback}
         <InfoBanner tone="info" title="Upgrade for the full agent editor">
-          This project uses a v1 manifest. Migrate to <span className="font-mono">kortix.yaml</span>{' '}
-          (kortix_version 2) to edit this agent's availability, model, tool permissions and access
+          This project uses a v1 manifest. Migrate to <span className="font-mono">zed.yaml</span>{' '}
+          (zed_version 2) to edit this agent's availability, model, tool permissions and access
           here.
         </InfoBanner>
       </div>
@@ -421,7 +421,7 @@ export function AgentConfigEditor({
     { key: 'skills', label: 'Skills', value: grantSummary(block.skills).label },
     { key: 'connectors', label: 'Connectors', value: grantSummary(block.connectors).label },
     { key: 'secrets', label: 'Secrets', value: grantSummary(block.secrets).label },
-    { key: 'kortix_cli', label: 'Project actions', value: grantSummary(block.kortix_cli).label },
+    { key: 'zed_cli', label: 'Project actions', value: grantSummary(block.zed_cli).label },
     { key: 'sandbox', label: 'Environment', value: block.sandbox ?? 'Project default' },
   ];
 

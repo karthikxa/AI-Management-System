@@ -28,7 +28,7 @@ export const useProjectsViewStore = create<ProjectsViewState>()(
       setViewMode: (mode) => set({ viewMode: mode }),
     }),
     {
-      name: 'kortix.projectsView',
+      name: 'zed.projectsView',
       storage: createSafeJSONStorage(),
       version: 1,
     },

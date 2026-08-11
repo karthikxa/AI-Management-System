@@ -3,7 +3,7 @@
 Two things to prove:
 
 1. **The inheritance pyramid** — resources (secrets + connectors) live on **agents**, never on people directly. You assign an **agent** to a member or a department, and they inherit every secret + connector that agent declares. No per-person secret sharing.
-2. **Azure AD / Entra directory-sync** — an Entra group claim on SSO login provisions the member, syncs their Kortix group membership, and the group's project grant confers a role — all enforced by `authorizeV2`. Remove them from the Entra group and access disappears on next login.
+2. **Azure AD / Entra directory-sync** — an Entra group claim on SSO login provisions the member, syncs their Zed group membership, and the group's project grant confers a role — all enforced by `authorizeV2`. Remove them from the Entra group and access disappears on next login.
 
 Both have **self-contained, self-cleaning integration tests that seed their own dummy data** against your local DB. That's the fastest proof. Manual CLI + dashboard walkthroughs follow for a hands-on check.
 
@@ -15,7 +15,7 @@ From `apps/api` (Node 22; secrets come from dotenvx):
 
 ```bash
 cd apps/api
-KORTIX_URL=https://localhost dotenvx run --quiet -- bun test \
+ZED_URL=https://localhost dotenvx run --quiet -- bun test \
   src/__tests__/integration-agent-inheritance.test.ts \
   src/__tests__/integration-iam-sso-sync.test.ts
 ```
@@ -26,7 +26,7 @@ What each asserts:
 
 **`integration-agent-inheritance.test.ts`** (the pyramid)
 - A secret the agent **declares** resolves for an assigned member **even when that secret is share-restricted to someone else** — inheritance bypasses per-user share scope for declared names.
-- Reserved (`KORTIX_*`) and connector-scoped secrets are **never** leaked by inheritance.
+- Reserved (`ZED_*`) and connector-scoped secrets are **never** leaked by inheritance.
 - Assignment must be **deliberate**: an unscoped agent grants nobody; only members named on the grant (or in an assigned department) inherit.
 - Department assignment works: a member of an assigned group inherits.
 - `resolveAssignedAgentNames` / `unionDeclaredResources` return exactly the union of what the assigned agents declare, with provenance.
@@ -40,31 +40,31 @@ What each asserts:
 
 ## 2. Manual walkthrough — the pyramid (CLI)
 
-The `kortix grants` command wraps the same `/projects/:id/resource-grants` routes the dashboard uses. It's the CLI edge of the pyramid.
+The `zed grants` command wraps the same `/projects/:id/resource-grants` routes the dashboard uses. It's the CLI edge of the pyramid.
 
 ```bash
 # See what's grantable + who's assigned to what.
 # Agents show the blast radius: "N secrets · all connectors" = what an assignee inherits.
-kortix grants ls
+zed grants ls
 
 # Assign an agent to a member by email (resolved to a user-id for you).
 # They now inherit every secret + connector that agent declares.
-kortix grants assign support-bot --to alice@corp.com
+zed grants assign support-bot --to alice@corp.com
 
 # Assign an agent to a DEPARTMENT (group) — everyone in it inherits.
-kortix grants assign support-bot --to <group-id> --group
+zed grants assign support-bot --to <group-id> --group
 
 # Scope a specific secret to a member directly (the share model, not the pyramid).
-kortix grants assign DB_URL --type secret --to alice@corp.com
+zed grants assign DB_URL --type secret --to alice@corp.com
 
 # Remove a grant.
-kortix grants revoke <grant-id>
+zed grants revoke <grant-id>
 
 # Machine-readable for scripting / assertions.
-kortix grants ls --json
+zed grants ls --json
 ```
 
-Prerequisite: a linked project (`kortix projects link`) whose `kortix.yaml` declares an agent with an `agents.<name>` scope (its `env` / `connectors`). `kortix grants ls` lists those agents as grantable and shows each agent's declared secret/connector counts.
+Prerequisite: a linked project (`zed projects link`) whose `zed.yaml` declares an agent with an `agents.<name>` scope (its `env` / `connectors`). `zed grants ls` lists those agents as grantable and shows each agent's declared secret/connector counts.
 
 **What to verify:** after `assign`, that member's next session picks up the declared secrets/connectors (and only those), even if the secret is otherwise restricted. That's the exact behavior the integration test asserts — the CLI just drives it by hand.
 
@@ -72,8 +72,8 @@ Prerequisite: a linked project (`kortix projects link`) whose `kortix.yaml` decl
 
 ## 3. Manual walkthrough — the pyramid (dashboard)
 
-- **Step 1 — put resources on an agent.** Agents section → pick an agent → **Access scope** card. Managers can now edit **Secrets** and **Connectors** here (All · Specific · None); it writes the `agents.<name>.env` / `.connectors` allowlists to `kortix.yaml` for you — no hand-editing. (Editing `kortix.yaml` directly still works and is equivalent.)
-- **Step 2 — assign people.** **Members → Resource access** assigns agents/skills to members/departments — the dashboard twin of `kortix grants assign`. Whoever you assign inherits exactly the secrets + connectors from step 1.
+- **Step 1 — put resources on an agent.** Agents section → pick an agent → **Access scope** card. Managers can now edit **Secrets** and **Connectors** here (All · Specific · None); it writes the `agents.<name>.env` / `.connectors` allowlists to `zed.yaml` for you — no hand-editing. (Editing `zed.yaml` directly still works and is equivalent.)
+- **Step 2 — assign people.** **Members → Resource access** assigns agents/skills to members/departments — the dashboard twin of `zed grants assign`. Whoever you assign inherits exactly the secrets + connectors from step 1.
 - **Secret / connector modals** now offer only **Project-wide** or **Private** — the direct "specific members/departments" picker is gone. Targeted access flows through agent assignment. (A legacy secret still stored as a direct member share shows an amber "switch it" note.)
 
 ---

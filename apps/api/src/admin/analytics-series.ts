@@ -73,7 +73,7 @@ export interface ActivityDay {
   activeProjects: number;
 }
 
-/** One `GROUP BY day` row from kortix.project_sessions. */
+/** One `GROUP BY day` row from zed.project_sessions. */
 export interface SessionDayRow {
   date: string;
   sessionsCreated: number;
@@ -82,7 +82,7 @@ export interface SessionDayRow {
   activeProjects: number;
 }
 
-/** One `GROUP BY day` row from kortix.accounts. */
+/** One `GROUP BY day` row from zed.accounts. */
 export interface AccountDayRow {
   date: string;
   newAccounts: number;

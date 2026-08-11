@@ -12,7 +12,7 @@
 
 - Work in the current primary checkout on branch `onboarding`.
 - Keep the decision lane at `520px` and the context rail at `340px` with a `32px` gap.
-- Use only semantic color tokens and `kortix-*` accents.
+- Use only semantic color tokens and `zed-*` accents.
 - Use `rounded-md` for app panels and rows.
 - Use Phosphor `*Icon` exports without `weight`, except existing solid status intent.
 - Use `Loading` for every pending spinner.
@@ -246,4 +246,4 @@ git commit -m "feat(web): redesign project onboarding"
 - [ ] **Step 3: Wait for required checks and fix failures**
 - [ ] **Step 4: Merge the PR**
 - [ ] **Step 5: Follow Deploy Dev and verify the merged SHA in the deployed artifact**
-- [ ] **Step 6: Repeat the browser assertions against `https://dev.kortix.com`**
+- [ ] **Step 6: Repeat the browser assertions against `https://dev.zed.com`**

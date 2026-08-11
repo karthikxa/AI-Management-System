@@ -9,29 +9,29 @@ let dir: string;
 
 const REQUIRED_BASE_PATHS = [
   '.gitignore',
-  '.kortix/memory/MEMORY.md',
-  '.kortix/opencode/agents/kortix.md',
-  // `kortix-cli` is the only managed skill scaffolded into a repo; the rest of
-  // the `kortix-*` family lives in templates/managed/ and is injected at boot.
-  '.kortix/opencode/skills/kortix-cli/SKILL.md',
-  '.kortix/opencode/tools/show.ts',
+  '.zed/memory/MEMORY.md',
+  '.zed/opencode/agents/zed.md',
+  // `zed-cli` is the only managed skill scaffolded into a repo; the rest of
+  // the `zed-*` family lives in templates/managed/ and is injected at boot.
+  '.zed/opencode/skills/zed-cli/SKILL.md',
+  '.zed/opencode/tools/show.ts',
   'README.md',
-  'kortix.yaml',
+  'zed.yaml',
 ];
 
 // A sample of the artifact floor the general-knowledge-worker layer adds on top
-// of base — a document, a deck, and a site. Not the full list; `@kortix/starter`
+// of base — a document, a deck, and a site. Not the full list; `@zed/starter`
 // owns that assertion.
 const GKW_SKILL_PATHS = [
-  '.kortix/opencode/skills/pdf/SKILL.md',
-  '.kortix/opencode/skills/presentations/SKILL.md',
-  '.kortix/opencode/skills/website-building/SKILL.md',
+  '.zed/opencode/skills/pdf/SKILL.md',
+  '.zed/opencode/skills/presentations/SKILL.md',
+  '.zed/opencode/skills/website-building/SKILL.md',
 ];
 
 const NATIVE_HARNESS_CONFIG_PATHS = ['.claude/CLAUDE.md', '.codex/AGENTS.md', '.pi/README.md'];
 
 function baseStarterPaths(): string[] {
-  const probe = mkdtempSync(join(tmpdir(), 'kortix-scaffold-base-'));
+  const probe = mkdtempSync(join(tmpdir(), 'zed-scaffold-base-'));
   try {
     return applyScaffold({ repoRoot: probe, projectName: 'Base', template: 'minimal' }).written.sort();
   } finally {
@@ -40,7 +40,7 @@ function baseStarterPaths(): string[] {
 }
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), 'kortix-scaffold-'));
+  dir = mkdtempSync(join(tmpdir(), 'zed-scaffold-'));
 });
 
 afterEach(() => {
@@ -59,7 +59,7 @@ function walk(root: string, relPrefix = ''): string[] {
 }
 
 describe('applyScaffold', () => {
-  test('writes the default (full) Kortix starter into a fresh directory', () => {
+  test('writes the default (full) Zed starter into a fresh directory', () => {
     const result = applyScaffold({ repoRoot: dir, projectName: 'Hello World' });
 
     // The one starter kit is the default — the full skill kit ships with it.
@@ -69,16 +69,16 @@ describe('applyScaffold', () => {
 
     expect(walk(dir)).toEqual(result.written.sort());
 
-    const manifest = readFileSync(join(dir, 'kortix.yaml'), 'utf8');
+    const manifest = readFileSync(join(dir, 'zed.yaml'), 'utf8');
     expect(manifest).toContain('name: "Hello World"');
     expect(manifest).not.toContain('{{projectName}}');
 
     expect(manifest).not.toMatch(/^sandbox:/m);
-    expect(manifest).toContain('config_dir: .kortix/opencode');
+    expect(manifest).toContain('config_dir: .zed/opencode');
 
-    expect(readFileSync(join(dir, '.kortix/opencode/agents/kortix.md'), 'utf8')).toContain('Hello World');
+    expect(readFileSync(join(dir, '.zed/opencode/agents/zed.md'), 'utf8')).toContain('Hello World');
     expect(result.written.some((p) => p.startsWith('app/'))).toBe(false);
-    expect(result.written).not.toContain('.kortix/memory/overview.md');
+    expect(result.written).not.toContain('.zed/memory/overview.md');
   });
 
   test('general-knowledge-worker template carries the full domain skill kit', () => {
@@ -92,7 +92,7 @@ describe('applyScaffold', () => {
     for (const path of GKW_SKILL_PATHS) expect(result.written).toContain(path);
   });
 
-  test('minimal template writes only the shared Kortix starter', () => {
+  test('minimal template writes only the shared Zed starter', () => {
     const base = baseStarterPaths();
     const result = applyScaffold({ repoRoot: dir, projectName: 'Minimal', template: 'minimal' });
 
@@ -104,8 +104,8 @@ describe('applyScaffold', () => {
 
   test('preserveExisting leaves prior files alone, fills in the rest', () => {
     // Pre-seed shipped files we expect to be preserved.
-    mkdirSync(join(dir, '.kortix/opencode/agents'), { recursive: true });
-    writeFileSync(join(dir, '.kortix/opencode/agents/kortix.md'), 'CUSTOM PERSONA', 'utf8');
+    mkdirSync(join(dir, '.zed/opencode/agents'), { recursive: true });
+    writeFileSync(join(dir, '.zed/opencode/agents/zed.md'), 'CUSTOM PERSONA', 'utf8');
     writeFileSync(join(dir, 'README.md'), 'CUSTOM README', 'utf8');
 
     const result = applyScaffold({
@@ -114,11 +114,11 @@ describe('applyScaffold', () => {
       preserveExisting: true,
     });
 
-    expect(result.skipped.sort()).toEqual(['.kortix/opencode/agents/kortix.md', 'README.md']);
-    expect(result.written).toContain('kortix.yaml');
-    expect(result.written).toContain('.kortix/memory/MEMORY.md');
+    expect(result.skipped.sort()).toEqual(['.zed/opencode/agents/zed.md', 'README.md']);
+    expect(result.written).toContain('zed.yaml');
+    expect(result.written).toContain('.zed/memory/MEMORY.md');
 
-    expect(readFileSync(join(dir, '.kortix/opencode/agents/kortix.md'), 'utf8')).toBe('CUSTOM PERSONA');
+    expect(readFileSync(join(dir, '.zed/opencode/agents/zed.md'), 'utf8')).toBe('CUSTOM PERSONA');
     expect(readFileSync(join(dir, 'README.md'), 'utf8')).toBe('CUSTOM README');
   });
 

@@ -53,14 +53,14 @@ interface BranchInfo {
   behind: number | null;
 }
 
-const HELP = help`Usage: kortix files <subcommand> [options]
+const HELP = help`Usage: zed files <subcommand> [options]
 
 Browse the project's git repo — the same read-only view the dashboard shows
 (Files tab + version history). Operates on the default branch unless --ref
 selects another branch, tag, or commit sha.
 
 For LIVE files inside a session's sandbox (uncommitted work, build outputs),
-use \`kortix sessions cp <session-id>:<path> <dst>\` instead.
+use \`zed sessions cp <session-id>:<path> <dst>\` instead.
 
 Subcommands:
   ls [<path>]                       List files (recursive) under a path.
@@ -81,7 +81,7 @@ Options:
   --json             Emit the raw API payload as JSON (machine-readable);
                      suppresses human output. Supported by every subcommand.
   --project <id>     Operate on this project id (default: linked).
-  --host <name>      Operate against a non-default Kortix host.
+  --host <name>      Operate against a non-default Zed host.
   -h, --help         Show this help.
 `;
 

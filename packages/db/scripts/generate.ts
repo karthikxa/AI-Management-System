@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { spawnSync } from 'node:child_process';
 /**
- * Thin handoff: drizzle-kit generates the SQL from kortix.ts; node-pg-migrate
+ * Thin handoff: drizzle-kit generates the SQL from zed.ts; node-pg-migrate
  * applies it. This script is the only glue between the two — it runs
  * `drizzle-kit generate`, then renames the produced file into migrations/ with
  * a node-pg-migrate-native 17-digit UTC timestamp (YYYYMMDDHHMMSSmmm).
@@ -60,7 +60,7 @@ set lock_timeout = '2s';
 set statement_timeout = '30s';
 
 -- REVIEW THE GENERATED SQL BELOW. drizzle-kit writes it from the diff between
--- kortix.ts and the snapshot; it knows the target shape, not how to reach it
+-- zed.ts and the snapshot; it knows the target shape, not how to reach it
 -- without downtime. Check the same list \`migrate:create\` prints:
 --   [ ] Bare NOT NULL added to an existing populated table (needs a backfill first).
 --   [ ] Plain CREATE INDEX / DROP INDEX on an EXISTING table -- move it to
@@ -98,7 +98,7 @@ if (res.status !== 0) process.exit(res.status ?? 1);
 
 const created = readdirSync(DRIZZLE_DIR).filter((f) => f.endsWith('.sql') && !before.has(f));
 if (created.length === 0) {
-  console.log('\nNo schema changes detected — kortix.ts matches the snapshot. Nothing generated.');
+  console.log('\nNo schema changes detected — zed.ts matches the snapshot. Nothing generated.');
   console.log(
     `For hand-written SQL: node-pg-migrate create ${slug} -m migrations -j sql --migration-filename-format utc`,
   );

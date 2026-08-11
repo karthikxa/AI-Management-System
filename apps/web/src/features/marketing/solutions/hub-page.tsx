@@ -30,7 +30,7 @@ export function SolutionsHubPage(): ReactNode {
       {/* ── hero ────────────────────────────────────────────────────────── */}
       <section className={cn(SOLUTIONS_MEASURE, 'relative pt-32 pb-12 sm:pt-36')}>
         <Reveal>
-          <Badge variant="kortix" className="rounded">
+          <Badge variant="zed" className="rounded">
             Solutions
           </Badge>
           <h1 className="text-foreground mt-6 max-w-4xl text-4xl font-medium tracking-tight text-balance sm:text-5xl lg:text-6xl">
@@ -121,7 +121,7 @@ export function SolutionsHubPage(): ReactNode {
                 },
                 {
                   k: 'Work lands through a change request',
-                  v: 'What an agent means to keep is committed on the session branch and proposed back toward main. Merge is default-deny for agents; an admin can grant project.cr.merge in kortix.yaml, and widening that grant is itself a reviewed change.',
+                  v: 'What an agent means to keep is committed on the session branch and proposed back toward main. Merge is default-deny for agents; an admin can grant project.cr.merge in zed.yaml, and widening that grant is itself a reviewed change.',
                 },
                 {
                   k: 'Approval gates are off until you set them',
@@ -129,11 +129,11 @@ export function SolutionsHubPage(): ReactNode {
                 },
                 {
                   k: 'Connector credentials never enter the machine',
-                  v: 'The sandbox carries one project-scoped Kortix token and no third-party keys. The real credential is decrypted server-side and attached to the outbound call. A runtime secret you deliberately grant is different: it is a real environment value the agent can read.',
+                  v: 'The sandbox carries one project-scoped Zed token and no third-party keys. The real credential is decrypted server-side and attached to the outbound call. A runtime secret you deliberately grant is different: it is a real environment value the agent can read.',
                 },
                 {
                   k: 'Everything is a file you own',
-                  v: 'Agents, skills, connectors, triggers and memory are text in a git repo. You can read the whole company, diff what changed, and revert it. Open source and self-hostable — Kortix Cloud, your own VPC, or your own on-prem network.',
+                  v: 'Agents, skills, connectors, triggers and memory are text in a git repo. You can read the whole company, diff what changed, and revert it. Open source and self-hostable — Zed Cloud, your own VPC, or your own on-prem network.',
                 },
               ]}
             />
@@ -159,14 +159,14 @@ export function SolutionsHubPage(): ReactNode {
       <Section id="cta">
         <Reveal>
           <div className="border-border bg-card flex flex-col items-start gap-6 rounded-sm border p-8 sm:p-12">
-            <Badge variant="kortix" className="rounded">
+            <Badge variant="zed" className="rounded">
               Get started
             </Badge>
             <h2 className="text-foreground max-w-2xl text-3xl leading-tight font-medium tracking-tight text-balance sm:text-4xl">
               Start with one team. The rest of the company is the same project.
             </h2>
             <p className="text-muted-foreground max-w-xl text-base leading-relaxed">
-              Open source and self-hostable. Any model, your keys. Kortix Cloud, your own VPC, or
+              Open source and self-hostable. Any model, your keys. Zed Cloud, your own VPC, or
               your own on-prem network.
             </p>
             <div className="flex flex-wrap gap-3">

@@ -122,7 +122,7 @@ export function AppProviders({
 }: AppProvidersProps) {
   // The default model is hydrated server-side now (useModelDefaults inside the
   // session hook seeds it from the account/agent defaults the gateway resolves),
-  // so the old per-sandbox /kortix/preferences/model round-trip is gone.
+  // so the old per-sandbox /zed/preferences/model round-trip is gone.
 
   // One-time sweep on app load: reclaim localStorage left over from older builds
   // that never evicted their per-sandbox caches. Ongoing growth is bounded by

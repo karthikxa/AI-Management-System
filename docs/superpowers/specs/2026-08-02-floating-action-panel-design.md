@@ -119,7 +119,7 @@ Mobile is unchanged: the terminal remains its own `Drawer`, as today.
 
 ## 3. Two independent states
 
-New store field in `kortix-computer-store.ts`, with the same per-session persistence the
+New store field in `zed-computer-store.ts`, with the same per-session persistence the
 existing panel flag uses (`_panelOpenBySession`):
 
 ```
@@ -150,21 +150,21 @@ worth reaching.
 
 **Ready chip — and a live bug the split would otherwise create.** The dot rides on that
 same `PanelRight` button (`session-site-header.tsx:293`), and it is cleared by
-`setIsSidePanelOpen(true)` at `kortix-computer-store.ts:298`. Both halves must move
+`setIsSidePanelOpen(true)` at `zed-computer-store.ts:298`. Both halves must move
 together: the dot moves to the chevron, and the clear moves to `setIsActionPanelOpen`.
 Moving only the dot leaves it announcing a deliverable that nothing can ever dismiss.
 
 The chip announces a finished deliverable, and deliverables are listed in the Outputs
 card, so the floating panel is the correct destination for the tap.
 
-Note `requestPrimaryOpen` / `pendingPrimaryOpenSessionId` (`kortix-computer-store.ts:405`)
+Note `requestPrimaryOpen` / `pendingPrimaryOpenSessionId` (`zed-computer-store.ts:405`)
 has **no production caller** — only `mode-gate.test.tsx:154` and
-`kortix-computer-store.test.ts:32`. The chip-consume effect at `easy-panel.tsx:500` is
+`zed-computer-store.test.ts:32`. The chip-consume effect at `easy-panel.tsx:500` is
 therefore unreachable in the shipped path today. It moves to the provider unchanged; this
 work neither revives nor removes it.
 
 `setIsSidePanelOpen`'s reset of `panelSplit` / `panelAspect` / `isExpanded` on close
-(`kortix-computer-store.ts:300+`) stays with the side panel — those states describe a
+(`zed-computer-store.ts:300+`) stays with the side panel — those states describe a
 detail's width, which the floating panel does not have.
 
 **Payoff.** `shouldAutoOpenPayoff` in `easy-panel-logic.ts:343` loses its `panelOpen`
@@ -216,7 +216,7 @@ With the cards gone, the side panel shows a detail whenever it is open. Conseque
 
 | File | Change |
 |---|---|
-| `stores/kortix-computer-store.ts` | add `isActionPanelOpen` + actions + per-session persistence; move the ready-chip clear off `setIsSidePanelOpen` |
+| `stores/zed-computer-store.ts` | add `isActionPanelOpen` + actions + per-session persistence; move the ready-chip clear off `setIsSidePanelOpen` |
 | **new** `features/session/action-panel/session-panel-provider.tsx` | hoisted state, openers, consume-effects, `useOptionalSessionPanel` |
 | **new** `features/session/session-action-panel-overlay.tsx` | floating container + chevron toggle |
 | `action-panel/easy/easy-panel.tsx` | reduce to cards-only; ~250 lines move to the provider |
@@ -231,7 +231,7 @@ With the cards gone, the side panel shows a detail whenever it is open. Conseque
 
 Unit / component:
 
-- `kortix-computer-store.test.ts` — writing `isActionPanelOpen` never moves
+- `zed-computer-store.test.ts` — writing `isActionPanelOpen` never moves
   `isSidePanelOpen`, and the reverse. Per-session persistence for both. The ready chip
   clears on `setIsActionPanelOpen(true)` and no longer on `setIsSidePanelOpen(true)`.
 - `detail-view.test.tsx` — `persistentSlot` stays mounted across a detail open/close

@@ -1,4 +1,4 @@
-import { connectorAttachments } from '@kortix/db';
+import { connectorAttachments } from '@zed/db';
 import { and, asc, eq, inArray, lt, or } from 'drizzle-orm';
 import { db } from '../shared/db';
 import { getSupabase } from '../shared/supabase';

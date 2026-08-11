@@ -180,45 +180,45 @@ describe('Compute cost calculation', () => {
 });
 
 describe('LLM gateway markup', () => {
-  const original = process.env.KORTIX_LLM_MARKUP;
+  const original = process.env.ZED_LLM_MARKUP;
   const restore = () => {
-    if (original === undefined) delete process.env.KORTIX_LLM_MARKUP;
-    else process.env.KORTIX_LLM_MARKUP = original;
+    if (original === undefined) delete process.env.ZED_LLM_MARKUP;
+    else process.env.ZED_LLM_MARKUP = original;
   };
 
   test('default markup is 1.2 (20% margin)', () => {
-    delete process.env.KORTIX_LLM_MARKUP;
+    delete process.env.ZED_LLM_MARKUP;
     expect(DEFAULT_LLM_PRICE_MARKUP).toBe(1.2);
     expect(llmPriceMarkup()).toBe(1.2);
     restore();
   });
 
   test('env override is honored', () => {
-    process.env.KORTIX_LLM_MARKUP = '1.35';
+    process.env.ZED_LLM_MARKUP = '1.35';
     expect(llmPriceMarkup()).toBeCloseTo(1.35, 5);
     restore();
   });
 
   test('values below 1 are rejected (never undercut OpenRouter)', () => {
-    process.env.KORTIX_LLM_MARKUP = '0.8';
+    process.env.ZED_LLM_MARKUP = '0.8';
     expect(llmPriceMarkup()).toBe(1.2);
-    process.env.KORTIX_LLM_MARKUP = '0';
+    process.env.ZED_LLM_MARKUP = '0';
     expect(llmPriceMarkup()).toBe(1.2);
-    process.env.KORTIX_LLM_MARKUP = '-2';
+    process.env.ZED_LLM_MARKUP = '-2';
     expect(llmPriceMarkup()).toBe(1.2);
     restore();
   });
 
   test('non-numeric values fall back to default', () => {
-    process.env.KORTIX_LLM_MARKUP = 'foo';
+    process.env.ZED_LLM_MARKUP = 'foo';
     expect(llmPriceMarkup()).toBe(1.2);
-    process.env.KORTIX_LLM_MARKUP = '';
+    process.env.ZED_LLM_MARKUP = '';
     expect(llmPriceMarkup()).toBe(1.2);
     restore();
   });
 
   test('markup of 1.5 yields 50% margin over upstream', () => {
-    process.env.KORTIX_LLM_MARKUP = '1.5';
+    process.env.ZED_LLM_MARKUP = '1.5';
     const upstreamCost = 0.10;
     expect(upstreamCost * llmPriceMarkup()).toBeCloseTo(0.15, 5);
     restore();

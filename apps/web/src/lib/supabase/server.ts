@@ -1,7 +1,7 @@
 'use server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { KORTIX_SUPABASE_AUTH_COOKIE } from './constants'
+import { ZED_SUPABASE_AUTH_COOKIE } from './constants'
 
 export async function createClient() {
   const cookieStore = await cookies()
@@ -17,11 +17,11 @@ export async function createClient() {
   const supabaseUrl =
     process.env.SUPABASE_SERVER_URL ||
     process.env.SUPABASE_URL ||
-    process.env.KORTIX_PUBLIC_SUPABASE_URL ||
+    process.env.ZED_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseAnonKey =
     process.env.SUPABASE_ANON_KEY ||
-    process.env.KORTIX_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.ZED_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
   return createServerClient(
@@ -29,7 +29,7 @@ export async function createClient() {
     supabaseAnonKey,
     {
       cookieOptions: {
-        name: KORTIX_SUPABASE_AUTH_COOKIE,
+        name: ZED_SUPABASE_AUTH_COOKIE,
         path: '/',
         sameSite: 'lax',
       },

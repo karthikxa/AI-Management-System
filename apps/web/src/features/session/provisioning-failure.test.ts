@@ -77,14 +77,14 @@ describe('startStashFromPendingSessionPrompt', () => {
       startStashFromPendingSessionPrompt({
         text: 'Map this parcel.',
         agent: 'gis',
-        model: { providerID: 'kortix', modelID: 'claude-sonnet-4-5' },
+        model: { providerID: 'zed', modelID: 'claude-sonnet-4-5' },
         variant: 'high',
         attachment_names: ['parcel.geojson'],
       }),
     ).toEqual({
       prompt: 'Map this parcel.',
       agent: 'gis',
-      model: { providerID: 'kortix', modelID: 'claude-sonnet-4-5' },
+      model: { providerID: 'zed', modelID: 'claude-sonnet-4-5' },
       variant: 'high',
     });
   });
@@ -97,7 +97,7 @@ describe('pendingSessionPromptFromMetadata', () => {
         pending_prompt: {
           text: 'Map this parcel.',
           agent: 'gis',
-          model: { providerID: 'kortix', modelID: 'claude-sonnet-4-5' },
+          model: { providerID: 'zed', modelID: 'claude-sonnet-4-5' },
           variant: 'high',
           attachment_names: ['parcel.geojson'],
         },
@@ -105,7 +105,7 @@ describe('pendingSessionPromptFromMetadata', () => {
     ).toEqual({
       text: 'Map this parcel.',
       agent: 'gis',
-      model: { providerID: 'kortix', modelID: 'claude-sonnet-4-5' },
+      model: { providerID: 'zed', modelID: 'claude-sonnet-4-5' },
       variant: 'high',
       attachment_names: ['parcel.geojson'],
     });
@@ -132,7 +132,7 @@ describe('pendingSessionPromptFromMetadata', () => {
     expect(pendingSessionPromptFromMetadata({ pending_prompt: { text: '   ' } })).toBeNull();
     expect(
       pendingSessionPromptFromMetadata({
-        pending_prompt: { text: 'Map this parcel.', model: { providerID: 'kortix' } },
+        pending_prompt: { text: 'Map this parcel.', model: { providerID: 'zed' } },
       }),
     ).toBeNull();
     expect(

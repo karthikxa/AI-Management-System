@@ -31,8 +31,8 @@ import { PROJECT_ACTIONS } from '@/lib/project-actions';
 import { useDeploymentCliInstallCommand } from '@/lib/use-deployment-cli-install-command';
 import { useProjectCan } from '@/lib/use-project-can';
 import { cn } from '@/lib/utils';
-import { getProject, inviteRepoCollaborator, isManagedGithubProject } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+import { getProject, inviteRepoCollaborator, isManagedGithubProject } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import CustomizeSectionWrapper from '../component/section-wrapper';
 
 export function DevView({ projectId }: { projectId: string }) {
@@ -139,7 +139,7 @@ function DevSteps({
       hint: tI18nHardcoded.raw(
         'autoComponentsProjectsCustomizeSectionsDevViewJsxAttrHintManages9608753c',
       ),
-      content: <CommandBlock lines={[installCommand, 'kortix login']} />,
+      content: <CommandBlock lines={[installCommand, 'zed login']} />,
     },
     {
       title: tI18nHardcoded.raw(
@@ -148,7 +148,7 @@ function DevSteps({
       hint: tI18nHardcoded.raw(
         'autoComponentsProjectsCustomizeSectionsDevViewJsxAttrHintWires03f7d392',
       ),
-      content: <CommandBlock lines={['kortix init --force']} />,
+      content: <CommandBlock lines={['zed init --force']} />,
     },
     {
       title: tI18nHardcoded.raw(
@@ -157,7 +157,7 @@ function DevSteps({
       hint: tI18nHardcoded.raw(
         'autoComponentsProjectsCustomizeSectionsDevViewJsxAttrHintWritese14f4d88',
       ),
-      content: <CommandBlock lines={['kortix env pull']} />,
+      content: <CommandBlock lines={['zed env pull']} />,
     },
     {
       title: tI18nHardcoded.raw(
@@ -182,7 +182,7 @@ function DevSteps({
               'git checkout -b my-change',
               'git commit -am "Describe your change"',
               `git push origin HEAD`,
-              'kortix cr open --title "Describe your change"',
+              'zed cr open --title "Describe your change"',
             ]}
           />
           <p className="text-muted-foreground mt-2 text-xs">

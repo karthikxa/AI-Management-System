@@ -1,4 +1,4 @@
-import { accountMembers, accounts } from '@kortix/db';
+import { accountMembers, accounts } from '@zed/db';
 import { eq } from 'drizzle-orm';
 
 import { initializeFreeTierAccount } from '../../billing/services/free-tier';
@@ -40,7 +40,7 @@ export async function bootstrapPersonalAccount(
       })
       .onConflictDoNothing();
 
-    if (config.KORTIX_BILLING_INTERNAL_ENABLED) {
+    if (config.ZED_BILLING_INTERNAL_ENABLED) {
       try {
         await initializeFreeTierAccount(userId);
       } catch (err) {

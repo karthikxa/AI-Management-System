@@ -1,7 +1,7 @@
 'use client';
 
 import { ProductMenu } from '@/components/home/product-menu';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { ZedLogo } from '@/components/sidebar/zed-logo';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -149,7 +149,7 @@ export function Navbar({ isAbsolute = false }: NavbarProps) {
   const isMobile = useIsMobile();
 
   const filteredNavLinks = siteConfig.nav.links;
-  const { stars, formattedStars, loading: starsLoading } = useGitHubStars('kortix-ai', 'kortix');
+  const { stars, formattedStars, loading: starsLoading } = useGitHubStars('zed-ai', 'zed');
   const openDemo = useRequestDemo();
 
   const isNavActive = useCallback(
@@ -250,16 +250,16 @@ export function Navbar({ isAbsolute = false }: NavbarProps) {
               <ContextMenuTrigger asChild>
                 <Link
                   href="/"
-                  aria-label="Kortix home"
+                  aria-label="Zed home"
                   className="hit-area-4 flex shrink-0 items-center"
                 >
-                  <KortixLogo size={18} variant="logomark" />
+                  <ZedLogo size={18} variant="logomark" />
                 </Link>
               </ContextMenuTrigger>
               <ContextMenuContent className="w-64">
                 <ContextMenuSub>
                   <ContextMenuSubTrigger className="gap-2 text-sm">
-                    <KortixLogo size={14} variant="symbol" className="text-foreground" />
+                    <ZedLogo size={14} variant="symbol" className="text-foreground" />
                     {tHardcodedUi.raw('componentsHomeNavbar.line221JsxTextDownloadSymbol')}
                   </ContextMenuSubTrigger>
                   <ContextMenuSubContent className="w-40">
@@ -267,22 +267,22 @@ export function Navbar({ isAbsolute = false }: NavbarProps) {
                       {
                         label: 'Black · SVG',
                         href: '/brandkit/Logo/Brandmark/SVG/Brandmark Black.svg',
-                        file: 'kortix-symbol-black.svg',
+                        file: 'zed-symbol-black.svg',
                       },
                       {
                         label: 'Black · PNG',
                         href: '/brandkit/Logo/Brandmark/PNG/Brandmark Black.png',
-                        file: 'kortix-symbol-black.png',
+                        file: 'zed-symbol-black.png',
                       },
                       {
                         label: 'White · SVG',
                         href: '/brandkit/Logo/Brandmark/SVG/Brandmark White.svg',
-                        file: 'kortix-symbol-white.svg',
+                        file: 'zed-symbol-white.svg',
                       },
                       {
                         label: 'White · PNG',
                         href: '/brandkit/Logo/Brandmark/PNG/Brandmark White.png',
-                        file: 'kortix-symbol-white.png',
+                        file: 'zed-symbol-white.png',
                       },
                     ].map((d) => (
                       <ContextMenuItem
@@ -310,22 +310,22 @@ export function Navbar({ isAbsolute = false }: NavbarProps) {
                       {
                         label: 'Black · SVG',
                         href: '/brandkit/Logo/Logomark/SVG/Logomark Black.svg',
-                        file: 'kortix-logo-black.svg',
+                        file: 'zed-logo-black.svg',
                       },
                       {
                         label: 'Black · PNG',
                         href: '/brandkit/Logo/Logomark/PNG/Logomark Black.png',
-                        file: 'kortix-logo-black.png',
+                        file: 'zed-logo-black.png',
                       },
                       {
                         label: 'White · SVG',
                         href: '/brandkit/Logo/Logomark/SVG/Logomark White.svg',
-                        file: 'kortix-logo-white.svg',
+                        file: 'zed-logo-white.svg',
                       },
                       {
                         label: 'White · PNG',
                         href: '/brandkit/Logo/Logomark/PNG/Logomark White.png',
-                        file: 'kortix-logo-white.png',
+                        file: 'zed-logo-white.png',
                       },
                     ].map((d) => (
                       <ContextMenuItem
@@ -429,7 +429,7 @@ export function Navbar({ isAbsolute = false }: NavbarProps) {
             {stars !== null && !starsLoading && (
               <Button variant="ghost" asChild className="hidden rounded-md sm:flex">
                 <Link
-                  href="https://github.com/kortix-ai/suna"
+                  href="https://github.com/zed-ai/suna"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -634,7 +634,7 @@ export function Navbar({ isAbsolute = false }: NavbarProps) {
                       }}
                       suppressHydrationWarning
                     >
-                      {tI18nHardcoded.raw('autoComponentsHomeNavbarJsxTextLaunchKortix5c2db556')}
+                      {tI18nHardcoded.raw('autoComponentsHomeNavbarJsxTextLaunchZed5c2db556')}
                     </Link>
                   </Button>
                 )}

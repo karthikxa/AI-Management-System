@@ -8,7 +8,7 @@ import {
  * Why a session create was refused, in words a wrapper's END-USER can act on.
  *
  * "Could not start a session" is true for every one of these and useful for
- * none of them. The refusals a Kortix-as-a-Backend wrapper actually hits are
+ * none of them. The refusals a Zed-as-a-Backend wrapper actually hits are
  * each somebody's job to fix — the end-user's, the operator's, or nobody's
  * (just wait) — and the whole point of the distinct `code` on each response is
  * that the wrapper can tell them apart.
@@ -118,7 +118,7 @@ export function sessionCreateFailure(err: unknown): SessionCreateFailure {
       return {
         title: 'Secret narrowing needs wrapper mode',
         detail:
-          'This deployment is talking to Kortix directly, where the per-session secret allowlist is not available.',
+          'This deployment is talking to Zed directly, where the per-session secret allowlist is not available.',
         retryable: false,
       };
     case 'INVALID_SESSION_MODEL':

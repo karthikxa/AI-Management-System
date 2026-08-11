@@ -5,17 +5,17 @@ import {
   type ManifestFormat,
   manifestCandidatePaths,
   parseManifestText,
-} from '@kortix/manifest-schema';
+} from '@zed/manifest-schema';
 
 type YamlDocument = ReturnType<typeof parseDocument>;
 
 /**
  * Local manifest editing — the CLI mutates config IN THE FILE (the source of
  * truth), not via a server round-trip. Edits are comment-preserving so the
- * heavily-commented scaffold survives intact. `kortix ship` then reconciles
+ * heavily-commented scaffold survives intact. `zed ship` then reconciles
  * the change.
  *
- * DUAL-FORMAT: reads resolve kortix.yaml OR kortix.toml (yaml preferred), and
+ * DUAL-FORMAT: reads resolve zed.yaml OR zed.toml (yaml preferred), and
  * both are writable. TOML edits are comment-preserving text surgery (append
  * or excise whole array-of-tables blocks, targeted scalar replacement)
  * rather than parse→stringify. YAML edits go through the `yaml` package's
@@ -23,8 +23,8 @@ type YamlDocument = ReturnType<typeof parseDocument>;
  * natively — see the `*Yaml` helpers below.
  */
 
-/** Resolve the on-disk manifest, preferring kortix.yaml. Returns the existing
- *  file (+ format), or the canonical kortix.yaml default when none exists. */
+/** Resolve the on-disk manifest, preferring zed.yaml. Returns the existing
+ *  file (+ format), or the canonical zed.yaml default when none exists. */
 function resolveManifest(cwd: string = process.cwd()): {
   path: string;
   format: ManifestFormat;
@@ -34,7 +34,7 @@ function resolveManifest(cwd: string = process.cwd()): {
     const abs = resolve(cwd, cand.path);
     if (existsSync(abs)) return { path: abs, format: cand.format, exists: true };
   }
-  return { path: resolve(cwd, 'kortix.yaml'), format: 'yaml', exists: false };
+  return { path: resolve(cwd, 'zed.yaml'), format: 'yaml', exists: false };
 }
 
 export function manifestFile(cwd: string = process.cwd()): string {
@@ -44,7 +44,7 @@ export function manifestFile(cwd: string = process.cwd()): string {
 export function readManifestText(cwd?: string): string {
   const m = resolveManifest(cwd);
   if (!m.exists) {
-    throw new Error('No kortix manifest here — run `kortix init` first (config is file-based).');
+    throw new Error('No zed manifest here — run `zed init` first (config is file-based).');
   }
   return readFileSync(m.path, 'utf8');
 }
@@ -53,7 +53,7 @@ export function readManifestText(cwd?: string): string {
 function readParsedManifest(cwd?: string): Record<string, unknown> {
   const m = resolveManifest(cwd);
   if (!m.exists) {
-    throw new Error('No kortix manifest here — run `kortix init` first (config is file-based).');
+    throw new Error('No zed manifest here — run `zed init` first (config is file-based).');
   }
   return parseManifestText(readFileSync(m.path, 'utf8'), m.format);
 }

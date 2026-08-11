@@ -1,7 +1,7 @@
 'use client';
 
-import { listAccounts, provisionProject } from '@kortix/sdk';
-import { qk } from '@kortix/sdk/react';
+import { listAccounts, provisionProject } from '@zed/sdk';
+import { qk } from '@zed/sdk/react';
 import {
   SignInIcon as LogIn,
   ChatsIcon as MessagesSquare,
@@ -29,9 +29,9 @@ import { useAuth } from '@/features/providers/auth-provider';
 import { installMarketplaceItemAsSession } from '@/lib/marketplace-client';
 import { isManagedGitUnavailableError } from '@/lib/onboarding/ensure-first-project';
 
-// First-party use-case templates ship in the bundled `kortix-starter` registry,
+// First-party use-case templates ship in the bundled `zed-starter` registry,
 // so a use-case slug maps to the catalog id the install-session resolves by.
-const TEMPLATE_CATALOG_NAMESPACE = 'kortix-starter';
+const TEMPLATE_CATALOG_NAMESPACE = 'zed-starter';
 
 // Same sentinel the unified AddToProjectModal uses: "create a project inline,
 // then install into it" as one Select choice next to the existing projects.

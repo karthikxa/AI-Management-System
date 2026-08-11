@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
 
-import { configureKortix } from '../../core/http/config';
+import { configureZed } from '../../core/http/config';
 import { clearSessionIDBCache, saveSessionToIDB } from './idb-sync-cache';
 
 describe('IndexedDB cache identity scope', () => {
@@ -10,7 +10,7 @@ describe('IndexedDB cache identity scope', () => {
 
   test('resolves the current user once across repeated transcript writes', async () => {
     let identityReads = 0;
-    configureKortix({
+    configureZed({
       backendUrl: 'https://api.example.test/v1',
       getToken: async () => null,
       getUserId: async () => {
@@ -31,7 +31,7 @@ describe('IndexedDB cache identity scope', () => {
 
   test('resolves the identity again after the session cache is cleared', async () => {
     let identityReads = 0;
-    configureKortix({
+    configureZed({
       backendUrl: 'https://api.example.test/v1',
       getToken: async () => null,
       getUserId: async () => {
@@ -49,7 +49,7 @@ describe('IndexedDB cache identity scope', () => {
 
   test('does not retain an unauthenticated scope', async () => {
     let identityReads = 0;
-    configureKortix({
+    configureZed({
       backendUrl: 'https://api.example.test/v1',
       getToken: async () => null,
       getUserId: async () => {

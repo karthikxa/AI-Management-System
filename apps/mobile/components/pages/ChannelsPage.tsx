@@ -415,7 +415,7 @@ function ChannelRow({ channel, isDark, onPress }: { channel: ChannelConfig; isDa
           <Text style={{ fontSize: 12, fontFamily: 'Roobert', color: muted, marginTop: 2 }} numberOfLines={1}>
             @{channel.bot_username || '?'}
             {modelShort ? ` · ${modelShort}` : ''}
-            {channel.default_agent && channel.default_agent !== 'kortix' ? ` · ${channel.default_agent}` : ''}
+            {channel.default_agent && channel.default_agent !== 'zed' ? ` · ${channel.default_agent}` : ''}
           </Text>
         </View>
         <ChevronRight size={16} color={muted} />
@@ -445,7 +445,7 @@ function ChannelDetailSheet({
   const updateChannel = useUpdateChannel();
 
   const [editName, setEditName] = useState('');
-  const [agentName, setAgentName] = useState('kortix');
+  const [agentName, setAgentName] = useState('zed');
   const [selectedModelIdx, setSelectedModelIdx] = useState(0);
   const [bridgeInstructions, setBridgeInstructions] = useState('');
   const [instructions, setInstructions] = useState('');
@@ -468,7 +468,7 @@ function ChannelDetailSheet({
   useEffect(() => {
     if (channel) {
       setEditName(channel.name);
-      setAgentName(channel.default_agent || channel.agentName || 'kortix');
+      setAgentName(channel.default_agent || channel.agentName || 'zed');
       setBridgeInstructions((channel as any).bridge_instructions || '');
       setInstructions(channel.instructions || '');
       setDirty(false);
@@ -910,7 +910,7 @@ function TelegramWizard({
 }) {
   const [botToken, setBotToken] = useState('');
   const [botInfo, setBotInfo] = useState<{ username: string; firstName: string } | null>(null);
-  const [agentName, setAgentName] = useState('kortix');
+  const [agentName, setAgentName] = useState('zed');
   const [selectedModelIdx, setSelectedModelIdx] = useState(0);
 
   const verifyMutation = useTelegramVerifyToken();
@@ -1123,7 +1123,7 @@ const BOT_NAMES = [
 ];
 
 function randomBotName(): string {
-  return `Kortix ${BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)]}`;
+  return `Zed ${BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)]}`;
 }
 
 function SlackWizard({
@@ -1142,7 +1142,7 @@ function SlackWizard({
 
   // Step 1: Configure
   const [botName, setBotName] = useState(() => randomBotName());
-  const [agentName, setAgentName] = useState('kortix');
+  const [agentName, setAgentName] = useState('zed');
   const [selectedModelIdx, setSelectedModelIdx] = useState(0);
 
   // Step 2: Manifest
@@ -1230,7 +1230,7 @@ function SlackWizard({
           <BottomSheetTextInput
             value={botName}
             onChangeText={setBotName}
-            placeholder="Kortix Agent"
+            placeholder="Zed Agent"
             placeholderTextColor={isDark ? 'rgba(248,248,248,0.25)' : 'rgba(18,18,21,0.3)'}
             style={{ ...inputStyle, marginBottom: 4 }}
           />

@@ -10,7 +10,7 @@ process.env.ALLOWED_SANDBOX_PROVIDERS = 'platinum';
 process.env.PLATINUM_API_KEY = 'pt_test_key';
 process.env.PLATINUM_API_URL = 'https://api.platinum.dev';
 process.env.PLATINUM_TEMPLATE = 'tpl_test';
-process.env.KORTIX_URL ??= 'https://api.example.com';
+process.env.ZED_URL ??= 'https://api.example.com';
 process.env.DATABASE_URL ??= 'postgres://x';
 
 // Capture the paths platinumJson is called with so we can assert the dead box
@@ -45,7 +45,7 @@ const baseOpts = {
   accountId: 'acc_1',
   userId: 'usr_1',
   name: 'test-box',
-  envVars: { KORTIX_SANDBOX_TOKEN: 'tok_test' },
+  envVars: { ZED_SANDBOX_TOKEN: 'tok_test' },
 };
 
 beforeEach(() => {
@@ -84,16 +84,16 @@ test("create() does NOT tear down a still-'provisioning' box (FE poll picks it u
   expect(deleted).toBe(false);
 });
 
-test('routeIngress() sends Kortix-native PTY websockets through the authenticated agent bridge', async () => {
+test('routeIngress() sends Zed-native PTY websockets through the authenticated agent bridge', async () => {
   const p = await makeProvider();
   expect(p.routeIngress({
     port: 8000,
     transport: 'websocket',
-    path: '/kortix/pty/kpty_test/connect',
+    path: '/zed/pty/kpty_test/connect',
   })).toEqual({
     effectivePort: 8000,
     websocket: {
-      userContextQueryParam: '__kortix_user_context',
+      userContextQueryParam: '__zed_user_context',
       queryDefaults: { cursor: '0' },
     },
   });

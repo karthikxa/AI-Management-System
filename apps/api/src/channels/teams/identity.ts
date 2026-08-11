@@ -1,5 +1,5 @@
 import { and, eq, isNull } from 'drizzle-orm';
-import { accountMembers, chatUserIdentities, projectAccessRequests, projects } from '@kortix/db';
+import { accountMembers, chatUserIdentities, projectAccessRequests, projects } from '@zed/db';
 import { db } from '../../shared/db';
 import { authorize } from '../../iam';
 import { PROJECT_ACTIONS } from '../../iam/actions';
@@ -205,7 +205,7 @@ export async function createTeamsAccessRequest(input: {
     projectId: input.projectId,
     requesterUserId: identity.userId,
     requesterEmail: email || identity.userId,
-    message: 'Requested from Microsoft Teams. Approve as Editor so they can run Kortix from Teams.',
+    message: 'Requested from Microsoft Teams. Approve as Editor so they can run Zed from Teams.',
   });
   return { status: 'created', ...base };
 }

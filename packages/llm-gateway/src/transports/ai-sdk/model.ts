@@ -215,7 +215,7 @@ export function openRouterCostMetadataExtractor(): MetadataExtractor {
 // caller providing a custom fetch (production middleware, or a test double)
 // gets it honored on the SOLE dispatch path exactly like the retired native
 // transport's `fetchImpl` did. `opts.extraHeaders` merges on top of
-// `descriptor.headers` — used to carry the `x-kortix-request-id` correlation
+// `descriptor.headers` — used to carry the `x-zed-request-id` correlation
 // header the native transport used to attach in `callUpstream` itself.
 export function resolveAiModel(
   descriptor: UpstreamDescriptor,

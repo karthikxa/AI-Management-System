@@ -5,9 +5,9 @@
 -- and their V1 shape differs from the tables below, so drop any leftover before
 -- recreating. IF EXISTS makes this a no-op where they were never present or were
 -- already dropped. iam_policies first (it FK'd iam_roles). Forward-only.
-DROP TABLE IF EXISTS "kortix"."iam_policies" CASCADE;--> statement-breakpoint
-DROP TABLE IF EXISTS "kortix"."iam_roles" CASCADE;--> statement-breakpoint
-CREATE TABLE "kortix"."iam_policies" (
+DROP TABLE IF EXISTS "zed"."iam_policies" CASCADE;--> statement-breakpoint
+DROP TABLE IF EXISTS "zed"."iam_roles" CASCADE;--> statement-breakpoint
+CREATE TABLE "zed"."iam_policies" (
 	"policy_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"account_id" uuid NOT NULL,
 	"principal_type" varchar(16) NOT NULL,
@@ -21,13 +21,13 @@ CREATE TABLE "kortix"."iam_policies" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "kortix"."iam_role_actions" (
+CREATE TABLE "zed"."iam_role_actions" (
 	"role_id" uuid NOT NULL,
 	"action" varchar(96) NOT NULL,
 	CONSTRAINT "iam_role_actions_role_id_action_pk" PRIMARY KEY("role_id","action")
 );
 --> statement-breakpoint
-CREATE TABLE "kortix"."iam_roles" (
+CREATE TABLE "zed"."iam_roles" (
 	"role_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"account_id" uuid NOT NULL,
 	"key" varchar(64) NOT NULL,
@@ -40,12 +40,12 @@ CREATE TABLE "kortix"."iam_roles" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "kortix"."iam_policies" ADD CONSTRAINT "iam_policies_account_id_accounts_account_id_fk" FOREIGN KEY ("account_id") REFERENCES "kortix"."accounts"("account_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "kortix"."iam_policies" ADD CONSTRAINT "iam_policies_role_id_iam_roles_role_id_fk" FOREIGN KEY ("role_id") REFERENCES "kortix"."iam_roles"("role_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "kortix"."iam_role_actions" ADD CONSTRAINT "iam_role_actions_role_id_iam_roles_role_id_fk" FOREIGN KEY ("role_id") REFERENCES "kortix"."iam_roles"("role_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "kortix"."iam_roles" ADD CONSTRAINT "iam_roles_account_id_accounts_account_id_fk" FOREIGN KEY ("account_id") REFERENCES "kortix"."accounts"("account_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "idx_iam_policies_account_principal" ON "kortix"."iam_policies" USING btree ("account_id","principal_type","principal_id");--> statement-breakpoint
-CREATE INDEX "idx_iam_policies_scope" ON "kortix"."iam_policies" USING btree ("scope_type","scope_id");--> statement-breakpoint
-CREATE INDEX "idx_iam_policies_role" ON "kortix"."iam_policies" USING btree ("role_id");--> statement-breakpoint
-CREATE INDEX "idx_iam_roles_account" ON "kortix"."iam_roles" USING btree ("account_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_iam_roles_account_key" ON "kortix"."iam_roles" USING btree ("account_id","key");
+ALTER TABLE "zed"."iam_policies" ADD CONSTRAINT "iam_policies_account_id_accounts_account_id_fk" FOREIGN KEY ("account_id") REFERENCES "zed"."accounts"("account_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "zed"."iam_policies" ADD CONSTRAINT "iam_policies_role_id_iam_roles_role_id_fk" FOREIGN KEY ("role_id") REFERENCES "zed"."iam_roles"("role_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "zed"."iam_role_actions" ADD CONSTRAINT "iam_role_actions_role_id_iam_roles_role_id_fk" FOREIGN KEY ("role_id") REFERENCES "zed"."iam_roles"("role_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "zed"."iam_roles" ADD CONSTRAINT "iam_roles_account_id_accounts_account_id_fk" FOREIGN KEY ("account_id") REFERENCES "zed"."accounts"("account_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "idx_iam_policies_account_principal" ON "zed"."iam_policies" USING btree ("account_id","principal_type","principal_id");--> statement-breakpoint
+CREATE INDEX "idx_iam_policies_scope" ON "zed"."iam_policies" USING btree ("scope_type","scope_id");--> statement-breakpoint
+CREATE INDEX "idx_iam_policies_role" ON "zed"."iam_policies" USING btree ("role_id");--> statement-breakpoint
+CREATE INDEX "idx_iam_roles_account" ON "zed"."iam_roles" USING btree ("account_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_iam_roles_account_key" ON "zed"."iam_roles" USING btree ("account_id","key");

@@ -5,10 +5,10 @@ import { InfoBanner } from '@/components/ui/info-banner';
 import { Input } from '@/components/ui/input';
 import Loading from '@/components/ui/loading';
 import { errorToast } from '@/components/ui/toast';
-import { purchaseCredits } from '@kortix/sdk';
+import { purchaseCredits } from '@zed/sdk';
 import { cn } from '@/lib/utils';
 import { useBillingAccountId } from '@/stores/billing-account-context';
-import { dollarsToCredits, formatCredits } from '@kortix/shared';
+import { dollarsToCredits, formatCredits } from '@zed/shared';
 import { useMemo, useState } from 'react';
 import { useBillingReturnUrl } from '@/features/billing/billing-return';
 

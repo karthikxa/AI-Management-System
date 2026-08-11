@@ -10,7 +10,7 @@ import {
   pipedreamFinalize,
   pipedreamFinalizeConnection,
   reconcileMemberConnection,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 
 import { errorToast, successToast, warningToast } from '@/components/ui/toast';
 import {

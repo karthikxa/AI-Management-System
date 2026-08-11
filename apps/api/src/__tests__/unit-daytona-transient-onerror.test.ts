@@ -22,7 +22,7 @@ setTestEnv('DAYTONA_API_KEY', 'test-daytona-key');
 setTestEnv('DAYTONA_SERVER_URL', 'https://daytona.example.test');
 setTestEnv('DAYTONA_TARGET', 'test-target');
 setTestEnv('FRONTEND_URL', 'http://localhost:3000');
-setTestEnv('INTERNAL_KORTIX_ENV', 'dev');
+setTestEnv('INTERNAL_ZED_ENV', 'dev');
 
 // Dynamic imports — resolved after setTestEnv has primed process.env, so the
 // `config` module (transitively pulled in by platinum.ts) sees the test values.
@@ -49,7 +49,7 @@ beforeAll(async () => {
 
 // Regression for Better Stack pattern `e98d61f1…`
 // `DaytonaError` with message `<html>…<h1>502 Bad Gateway</h1>…</html>`
-// (Kortix API prod, application_id 2346961). The Daytona API gateway 502-ed
+// (Zed API prod, application_id 2346961). The Daytona API gateway 502-ed
 // with an HTML error page on an unguarded provider call inside
 // `POST /v1/projects/:projectId/turn-stream` (kind: execution_lease_discover
 // → discoverExecutionKeepAliveEndpoint → provider.resolveEndpoint → Daytona

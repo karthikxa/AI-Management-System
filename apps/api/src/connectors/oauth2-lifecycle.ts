@@ -1,4 +1,4 @@
-import type { OAuth2ApplicationInput } from '@kortix/api-contract';
+import type { OAuth2ApplicationInput } from '@zed/api-contract';
 import {
   createHash,
   createPrivateKey,

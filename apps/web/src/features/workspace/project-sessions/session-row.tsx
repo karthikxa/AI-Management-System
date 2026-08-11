@@ -19,7 +19,7 @@ import {
   shortRelative,
 } from '@/features/workspace/project-sidebar/project-session-list-helpers';
 import { cn } from '@/lib/utils';
-import type { ProjectSession, ProjectSessionStatus } from '@kortix/sdk';
+import type { ProjectSession, ProjectSessionStatus } from '@zed/sdk';
 import {
   ArrowCounterClockwiseIcon,
   CalendarDotsIcon,
@@ -64,14 +64,14 @@ const SECONDARY_TILE: Pick<StatusTile, 'tile' | 'icon'> = {
 
 /**
  * Status colour on the source-icon tile. Deleted wins over lifecycle status.
- * Palette follows kortix design-system status tokens.
+ * Palette follows zed design-system status tokens.
  */
 function sessionStatusTile(
   status: ProjectSessionStatus,
   options: { deleted: boolean; metadataOnly: boolean },
 ): StatusTile {
   if (options.deleted) {
-    return { label: 'Deleted', tile: 'bg-kortix-red/15', icon: 'text-kortix-red' };
+    return { label: 'Deleted', tile: 'bg-zed-red/15', icon: 'text-zed-red' };
   }
   if (options.metadataOnly) {
     return { label: 'Metadata only', ...SECONDARY_TILE };
@@ -79,15 +79,15 @@ function sessionStatusTile(
 
   switch (status) {
     case 'running':
-      return { label: 'Running', tile: 'bg-kortix-green/15', icon: 'text-kortix-green' };
+      return { label: 'Running', tile: 'bg-zed-green/15', icon: 'text-zed-green' };
     case 'queued':
-      return { label: 'Queued', tile: 'bg-kortix-yellow/15', icon: 'text-kortix-yellow' };
+      return { label: 'Queued', tile: 'bg-zed-yellow/15', icon: 'text-zed-yellow' };
     case 'branching':
-      return { label: 'Branching', tile: 'bg-kortix-yellow/15', icon: 'text-kortix-yellow' };
+      return { label: 'Branching', tile: 'bg-zed-yellow/15', icon: 'text-zed-yellow' };
     case 'provisioning':
-      return { label: 'Provisioning', tile: 'bg-kortix-yellow/15', icon: 'text-kortix-yellow' };
+      return { label: 'Provisioning', tile: 'bg-zed-yellow/15', icon: 'text-zed-yellow' };
     case 'failed':
-      return { label: 'Failed', tile: 'bg-kortix-red/15', icon: 'text-kortix-red' };
+      return { label: 'Failed', tile: 'bg-zed-red/15', icon: 'text-zed-red' };
     case 'completed':
       return { label: 'Completed', ...SECONDARY_TILE };
     case 'stopped':
@@ -199,7 +199,7 @@ export function SessionRow({
           disabled={isDeleted}
           onCheckedChange={() => onToggleSelect(session.session_id)}
           aria-label={title}
-          // The stock checked state is `bg-kortix-blue`, the exact accent this
+          // The stock checked state is `bg-zed-blue`, the exact accent this
           // redesign removes; everything else about the control is inherited.
           className="data-[state=checked]:border-foreground data-[state=checked]:bg-foreground"
         />

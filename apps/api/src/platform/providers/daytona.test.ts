@@ -14,8 +14,8 @@ mock.module('../../config', () => ({
     DAYTONA_API_KEY: 'test-key',
     DAYTONA_SERVER_URL: '',
     DAYTONA_TARGET: '',
-    INTERNAL_KORTIX_ENV: 'test',
-    KORTIX_URL: 'https://api.example.com',
+    INTERNAL_ZED_ENV: 'test',
+    ZED_URL: 'https://api.example.com',
   },
   SANDBOX_VERSION: 'test-version',
 }));
@@ -52,7 +52,7 @@ mock.module('../sandbox-frontend-url', () => ({
 beforeEach(() => {
   // Below the code's own 1000ms floor (Math.max(1000, …)) would just get
   // clamped up — use a value comfortably above it.
-  process.env.KORTIX_DAYTONA_CALL_TIMEOUT_MS = '1200';
+  process.env.ZED_DAYTONA_CALL_TIMEOUT_MS = '1200';
   getDaytonaSandbox = () => new Promise<never>(() => {});
 });
 

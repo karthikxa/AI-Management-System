@@ -6,7 +6,7 @@
 // is the supported opt-out. See MIGRATIONS.md "Roll-forward safety".
 //
 // Why this index: GET /projects/:id/sessions now accepts ?end_user_ref=, so a
-// Kortix-as-a-Backend wrapper can ask for one end-user's sessions instead of
+// Zed-as-a-Backend wrapper can ask for one end-user's sessions instead of
 // pulling every session in the project and filtering client-side. That filter
 // spans ALL statuses (a wrapper wants the finished ones too), so the existing
 // idx_project_sessions_account_origin_active cannot serve it -- that one is
@@ -31,7 +31,7 @@ export const up = (pgm) => {
   pgm.sql(`set lock_timeout = '2s'`);
   pgm.sql(`
     create index concurrently if not exists idx_project_sessions_project_origin
-      on kortix.project_sessions (project_id, origin_ref)
+      on zed.project_sessions (project_id, origin_ref)
       where origin_ref is not null
   `);
 };

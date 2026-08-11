@@ -4,7 +4,7 @@ import { backendApi } from '../../http/api-client';
 import type { ApiError } from '../../http/api/errors';
 import { type AccountRole, type ServerTokenOptions, serverTokenGet, unwrap } from './shared';
 
-export interface KortixAccount {
+export interface ZedAccount {
   account_id: string;
   name: string;
   slug?: string;
@@ -116,11 +116,11 @@ export interface AccountInviteDescribeRedacted {
 export type AccountInviteDescribe = AccountInviteDescribeFull | AccountInviteDescribeRedacted;
 
 export async function listAccounts() {
-  return unwrap(await backendApi.get<KortixAccount[]>('/accounts'));
+  return unwrap(await backendApi.get<ZedAccount[]>('/accounts'));
 }
 
 export async function createAccount(input: { name: string }) {
-  return unwrap(await backendApi.post<KortixAccount>('/accounts', input));
+  return unwrap(await backendApi.post<ZedAccount>('/accounts', input));
 }
 
 export async function getAccount(accountId: string) {
@@ -212,13 +212,13 @@ export async function leaveAccount(accountId: string) {
  * Server-side / explicit-token variant of {@link listAccounts}. Next.js
  * server actions and route handlers (e.g. the post-signup first-project
  * bootstrap) run per-request and already hold the caller's access token —
- * they must not rely on the SDK's process-wide `configureKortix()` seam.
+ * they must not rely on the SDK's process-wide `configureZed()` seam.
  * Returns `null` on any failure.
  */
 export async function fetchAccountsWithToken(
   opts: ServerTokenOptions,
-): Promise<KortixAccount[] | null> {
-  return serverTokenGet<KortixAccount[]>(opts, '/v1/accounts');
+): Promise<ZedAccount[] | null> {
+  return serverTokenGet<ZedAccount[]>(opts, '/v1/accounts');
 }
 
 /** The identity `GET /accounts/me` resolves — the authenticated user + their account memberships. */
@@ -231,7 +231,7 @@ export interface AccountIdentity {
     session_id: string | null;
     agent: string | null;
     connectors: 'all' | string[] | null;
-    kortix_cli: 'all' | string[] | null;
+    zed_cli: 'all' | string[] | null;
   };
   accounts: Array<{ account_id: string; slug: string; name: string; role: string }>;
 }

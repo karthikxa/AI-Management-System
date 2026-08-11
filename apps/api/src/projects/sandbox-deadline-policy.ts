@@ -44,7 +44,7 @@ export const ABSOLUTE_RUN_CAP_MS = 24 * 3_600_000;
  * it is a BLOCKED one: the agent is waiting on a permission prompt or a
  * `question` the user has not answered. There is no observation for that today,
  * because the in-box relay that would report it (`relayQuestion` /
- * `relayTurnEndToApi` in kortix-sandbox-agent-server) returns early unless the
+ * `relayTurnEndToApi` in zed-sandbox-agent-server) returns early unless the
  * box has Slack context, so for a web session apps/api never learns a question is
  * pending. The browser's own traffic while the user reads the prompt lands on
  * port 8000/4096, which `isPreviewUseObservation` deliberately excludes. So a
@@ -54,13 +54,13 @@ export const ABSOLUTE_RUN_CAP_MS = 24 * 3_600_000;
  * plane a real "a question is pending" observation — is the fix, and it is a
  * change to the sandbox agent, not to this file.
  *
- * KILL SWITCH: set KORTIX_SANDBOX_TURN_GRANT_MINUTES=100000 and every extend
+ * KILL SWITCH: set ZED_SANDBOX_TURN_GRANT_MINUTES=100000 and every extend
  * out-runs the cap, so the LEAST clamps at active_since + 24h and the feature
  * is effectively neutralised without a rollback. That is also the mitigation for
  * the gap above if it turns out to bite real sessions before the relay lands.
  */
 export function turnGrantMs(): number {
-  return positiveEnvInt('KORTIX_SANDBOX_TURN_GRANT_MINUTES', 240) * 60_000;
+  return positiveEnvInt('ZED_SANDBOX_TURN_GRANT_MINUTES', 240) * 60_000;
 }
 
 /**
@@ -71,7 +71,7 @@ export function turnGrantMs(): number {
  * retaining a four-hour active-turn window.
  */
 export function turnDeliveryGraceMs(): number {
-  return positiveEnvInt('KORTIX_SANDBOX_TURN_DELIVERY_GRACE_MINUTES', 15) * 60_000;
+  return positiveEnvInt('ZED_SANDBOX_TURN_DELIVERY_GRACE_MINUTES', 15) * 60_000;
 }
 
 /**
@@ -91,7 +91,7 @@ export function turnDeliveryGraceMs(): number {
  * every bit as strong an observation as a prompt POST.
  */
 export function llmActivityGrantMs(): number {
-  return positiveEnvInt('KORTIX_SANDBOX_LLM_ACTIVITY_GRANT_MINUTES', 240) * 60_000;
+  return positiveEnvInt('ZED_SANDBOX_LLM_ACTIVITY_GRANT_MINUTES', 240) * 60_000;
 }
 
 /**
@@ -112,7 +112,7 @@ export function llmActivityGrantMs(): number {
  * bounds it absolutely either way.
  */
 export function previewGrantMs(): number {
-  return positiveEnvInt('KORTIX_SANDBOX_PREVIEW_GRANT_MINUTES', 30) * 60_000;
+  return positiveEnvInt('ZED_SANDBOX_PREVIEW_GRANT_MINUTES', 30) * 60_000;
 }
 
 /**
@@ -130,20 +130,20 @@ export function previewGrantMs(): number {
  * distracted, come back"; past that the box is waste and dies like anything else.
  */
 export function warmPoolGrantMs(): number {
-  return positiveEnvInt('KORTIX_SANDBOX_WARM_GRANT_MINUTES', 60) * 60_000;
+  return positiveEnvInt('ZED_SANDBOX_WARM_GRANT_MINUTES', 60) * 60_000;
 }
 
 /**
  * Granted on a sandbox-REPORTED terminal turn end: "die after 15 minutes of
- * inactivity". Reuses KORTIX_SANDBOX_AUTOSTOP_MINUTES, which is ALREADY 15 in
- * kortix-prod-env, so production needs no config change to get this behaviour.
+ * inactivity". Reuses ZED_SANDBOX_AUTOSTOP_MINUTES, which is ALREADY 15 in
+ * zed-prod-env, so production needs no config change to get this behaviour.
  *
  * The sandbox agent relays root turn-end events for web, CLI, and channel
  * sessions. A Task-tool child cannot shorten the root sandbox deadline. The
  * deadline remains the bound if a sandbox loses callback access.
  */
 export function idleGraceMs(): number {
-  return Math.max(1, config.KORTIX_SANDBOX_AUTOSTOP_MINUTES || 15) * 60_000;
+  return Math.max(1, config.ZED_SANDBOX_AUTOSTOP_MINUTES || 15) * 60_000;
 }
 
 /**
@@ -164,9 +164,9 @@ export function childIdleGraceMs(): number {
  *
  * Two credentials reach the control plane from inside a box, and BOTH must be
  * caught:
- *   - `kortix_sb_…`, the sandbox token, which sets apiKeyType 'sandbox';
- *   - a SESSION-SCOPED PAT (`kortix_pat_…`, injected as KORTIX_CLI_TOKEN
- *     and used by the in-box `kortix` CLI), whose auth
+ *   - `zed_sb_…`, the sandbox token, which sets apiKeyType 'sandbox';
+ *   - a SESSION-SCOPED PAT (`zed_pat_…`, injected as ZED_CLI_TOKEN
+ *     and used by the in-box `zed` CLI), whose auth
  *     branch never sets apiKeyType at all.
  * Testing apiKeyType alone therefore lets the box renew itself forever with its
  * own CLI token. A non-null session binding is the reliable signal: every

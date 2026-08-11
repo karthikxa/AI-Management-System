@@ -9,8 +9,8 @@ describe('resolveChannel', () => {
   });
 
   it('reads the baked channel', () => {
-    expect(resolveChannel({ kortixUpdateChannel: 'dev' })).toBe('dev');
-    expect(resolveChannel({ kortixUpdateChannel: 'stable' })).toBe('stable');
+    expect(resolveChannel({ zedUpdateChannel: 'dev' })).toBe('dev');
+    expect(resolveChannel({ zedUpdateChannel: 'stable' })).toBe('stable');
   });
 });
 

@@ -6,7 +6,7 @@
  */
 import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import { eq } from 'drizzle-orm';
-import { accountTokens, accounts, projects } from '@kortix/db';
+import { accountTokens, accounts, projects } from '@zed/db';
 import { db } from '../shared/db';
 import {
   revokeAllAccountTokensForUser,

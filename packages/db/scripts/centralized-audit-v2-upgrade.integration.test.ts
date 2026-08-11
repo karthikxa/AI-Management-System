@@ -69,7 +69,7 @@ function migrationOptions(url: string, directory: string) {
     databaseUrl: url,
     dir: directory,
     migrationsTable: 'pgmigrations',
-    migrationsSchema: 'kortix_migrations',
+    migrationsSchema: 'zed_migrations',
     createMigrationsSchema: true,
     checkOrder: true,
     singleTransaction: true,
@@ -130,11 +130,11 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — upgrade from the v1 ledg
         await legacy.connect();
         try {
           await legacy.query(
-            `INSERT INTO kortix.accounts(account_id, name)
+            `INSERT INTO zed.accounts(account_id, name)
              VALUES ('d7100000-0000-4000-a000-000000000001', 'audit-v2-upgrade')`,
           );
           await legacy.query(`
-            INSERT INTO kortix.audit_events(
+            INSERT INTO zed.audit_events(
               event_id, account_id, action, resource_type, project_id, session_id,
               actor_type, source, outcome, occurred_at
             ) VALUES
@@ -166,7 +166,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — upgrade from the v1 ledg
             integrity_hash: string | null;
           }>(`
             SELECT action, session_sequence, integrity_hash
-            FROM kortix.audit_events
+            FROM zed.audit_events
             WHERE session_id = 'legacy-session'
             ORDER BY session_sequence
           `);
@@ -180,7 +180,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — upgrade from the v1 ledg
             integrity_previous_hash: string | null;
             integrity_hash: string;
           }>(`
-            INSERT INTO kortix.audit_events(
+            INSERT INTO zed.audit_events(
               account_id, action, resource_type, project_id, session_id,
               actor_type, authoritative_source, outcome
             ) VALUES (
@@ -198,7 +198,7 @@ describe.skipIf(!databaseUrl)('centralized audit v2 — upgrade from the v1 ledg
             session_sequence: string;
             integrity_previous_hash: string | null;
           }>(`
-            INSERT INTO kortix.audit_events(
+            INSERT INTO zed.audit_events(
               account_id, action, resource_type, project_id, session_id,
               actor_type, authoritative_source, outcome
             ) VALUES (

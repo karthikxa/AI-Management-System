@@ -80,7 +80,7 @@ export function WebPanelWrapper({
           </span>
 
           {activeTab === 'memory' && (
-            <span className="text-kortix-green mr-3 text-xs font-medium">
+            <span className="text-zed-green mr-3 text-xs font-medium">
               {tI18nHardcoded.raw('autoFeaturesMarketingHowItWorkWebPanelWrapperJsxTexte9d63c73')}
             </span>
           )}

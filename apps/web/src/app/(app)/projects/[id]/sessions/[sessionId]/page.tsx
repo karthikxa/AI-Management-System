@@ -64,9 +64,9 @@ import {
   getProjectDetail,
   listProjectSessions,
   sessionStartKey,
-} from '@kortix/sdk';
-import { clearSessionFresh, isSessionFresh } from '@kortix/sdk/fresh-sessions';
-import { setActiveInstanceCookie } from '@kortix/sdk/instance-routes';
+} from '@zed/sdk';
+import { clearSessionFresh, isSessionFresh } from '@zed/sdk/fresh-sessions';
+import { setActiveInstanceCookie } from '@zed/sdk/instance-routes';
 import {
   type UseSessionResult,
   contract,
@@ -76,7 +76,7 @@ import {
   useRuntimeConnectionStore,
   useSession,
   writeStartStash,
-} from '@kortix/sdk/react';
+} from '@zed/sdk/react';
 
 /**
  * /projects/[id]/sessions/[sessionId] — project-scoped session view.
@@ -283,7 +283,7 @@ function ProjectSessionView({ projectId, sessionId }: { projectId: string; sessi
   // per-session reset to hand-roll: the route keys this component by session id.
   //
   // `readStartStash` is one check that sees a stash from every producer
-  // (canonical `kortix:start:<id>` or either legacy shape) without knowing which
+  // (canonical `zed:start:<id>` or either legacy shape) without knowing which
   // key it lives under — it replaced two raw legacy-key checks
   // (`opencode_pending_prompt:<id>` / `project_pending_prompt:<id>`).
   const [handoff] = useState(() => {
@@ -752,7 +752,7 @@ function ActiveSessionChat({
   const sessionsListed = sessionState.runtimeSessionsListed;
   // Gate on `phase`, not the raw field: `sessionState.runtimeError` can be a
   // benign 503 racing a live `/start` wake (a parked sandbox resuming), which
-  // `derivePhase` (@kortix/sdk) holds as `'starting'` until `/start` itself
+  // `derivePhase` (@zed/sdk) holds as `'starting'` until `/start` itself
   // settles or gives up (~61.5s worst case). Reading the raw field rendered
   // the panic card — and marked `chatShowable` below true, ending the loading
   // skeleton with nothing to show — for every such race; `phase === 'error'`

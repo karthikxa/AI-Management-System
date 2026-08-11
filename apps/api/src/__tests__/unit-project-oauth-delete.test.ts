@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import { projectSecrets } from '@kortix/db';
+import { projectSecrets } from '@zed/db';
 import * as realAccess from '../projects/lib/access';
 
 const PROJECT_ID = '33333333-3333-4333-8333-333333333333';

@@ -1,10 +1,10 @@
-import type { KortixProject } from '@kortix/sdk';
+import type { ZedProject } from '@zed/sdk';
 
 export interface ProjectRepositoryGroup {
   key: string;
   label: string;
   repoUrl: string | null;
-  projects: KortixProject[];
+  projects: ZedProject[];
 }
 
 function repositoryIdentity(repoUrl: string): { key: string; label: string } | null {
@@ -32,7 +32,7 @@ function repositoryIdentity(repoUrl: string): { key: string; label: string } | n
 }
 
 export function groupProjectsByRepository(
-  projects: readonly KortixProject[],
+  projects: readonly ZedProject[],
 ): ProjectRepositoryGroup[] {
   const groups = new Map<string, ProjectRepositoryGroup>();
 

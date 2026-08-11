@@ -22,7 +22,7 @@ export interface DaemonReadyDeps {
 }
 
 /**
- * Read the daemon's `/kortix/health` once. Returns the opencode/runtime state,
+ * Read the daemon's `/zed/health` once. Returns the opencode/runtime state,
  * or null when the probe itself failed (transient — the caller keeps polling).
  * Health is unauthenticated at the daemon and always answers 200, so a null
  * here means the preview link couldn't be reached, not "opencode down".
@@ -33,7 +33,7 @@ async function fetchDaemonOpencodeState(
   fetchImpl: typeof fetch,
 ): Promise<{ opencode: string | null; status: string | null } | null> {
   try {
-    const res = await fetchImpl(`${previewUrl.replace(/\/$/, '')}/kortix/health`, {
+    const res = await fetchImpl(`${previewUrl.replace(/\/$/, '')}/zed/health`, {
       method: 'GET',
       headers: providerHeaders,
       signal: AbortSignal.timeout(HEALTH_FETCH_TIMEOUT_MS),
@@ -53,7 +53,7 @@ async function fetchDaemonOpencodeState(
 }
 
 /**
- * Poll `/kortix/health` until opencode is serving again after a restart.
+ * Poll `/zed/health` until opencode is serving again after a restart.
  * Returns true once `opencode === 'ok'`, false if a boot error is reported
  * (waiting can't fix it) or the budget is exhausted.
  */

@@ -1,5 +1,5 @@
 {
-  "name": "@kortix/llm-gateway-server",
+  "name": "@zed/llm-gateway-server",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,8 +11,8 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@kortix/llm-gateway": "workspace:*",
-    "@kortix/shared": "workspace:*",
+    "@zed/llm-gateway": "workspace:*",
+    "@zed/shared": "workspace:*",
     "hono": "^4.6.0",
     "langfuse": "^3.38.20"
   },

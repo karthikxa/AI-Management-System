@@ -1,5 +1,5 @@
 import { beforeEach, expect, mock, test } from 'bun:test';
-import { configureKortix } from '../../http/config';
+import { configureZed } from '../../http/config';
 import {
   costExportUrl,
   fetchCostExportCsv,
@@ -28,7 +28,7 @@ beforeEach(() => {
   }) as unknown as typeof fetch;
 });
 
-configureKortix({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
+configureZed({ backendUrl: 'http://test.local', getToken: async () => 'tok' });
 const last = () => calls[calls.length - 1];
 
 const page = {
@@ -364,7 +364,7 @@ test('costExportUrl and fetchCostExportCsv reject the wrong kind\'s fields at co
 // Unlike costExportUrl, this DOES call fetch — it owns the whole
 // "authenticate, request, return a downloadable Blob" flow the way
 // fetchProjectArchive in ./files.ts does, per the architecture rule that
-// hosts never raw-fetch the Kortix API. Each test installs its own
+// hosts never raw-fetch the Zed API. Each test installs its own
 // globalThis.fetch mock (overriding the shared beforeEach one) so the
 // Authorization header actually sent can be inspected — the shared `calls`
 // array used by the tests above only ever recorded {url, method}.
@@ -377,7 +377,7 @@ test('fetchCostExportCsv requests the export URL with a Bearer token and parses 
     capturedHeaders = opts.headers;
     return new Response('session_id,total_cost\nsession-1,1.75\n', {
       status: 200,
-      headers: { 'content-type': 'text/csv', 'x-kortix-row-cap': '10000' },
+      headers: { 'content-type': 'text/csv', 'x-zed-row-cap': '10000' },
     });
   }) as unknown as typeof fetch;
 

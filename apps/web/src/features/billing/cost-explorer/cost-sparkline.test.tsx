@@ -89,21 +89,21 @@ describe('CostSparkline', () => {
 
   test('rising spend is red, because on a cost surface up is the alarming way', () => {
     const html = renderToStaticMarkup(<CostSparkline values={[1, 1, 8, 9]} label="Total" />);
-    expect(html).toContain('text-kortix-red');
-    expect(html).not.toContain('text-kortix-green');
+    expect(html).toContain('text-zed-red');
+    expect(html).not.toContain('text-zed-green');
   });
 
   test('falling spend is green', () => {
     const html = renderToStaticMarkup(<CostSparkline values={[9, 8, 1, 1]} label="Total" />);
-    expect(html).toContain('text-kortix-green');
-    expect(html).not.toContain('text-kortix-red');
+    expect(html).toContain('text-zed-green');
+    expect(html).not.toContain('text-zed-red');
   });
 
   test('a flat line stays neutral rather than reassuring or alarming', () => {
     const html = renderToStaticMarkup(<CostSparkline values={[4, 4, 4, 4]} label="LLM" />);
     expect(html).toContain('text-muted-foreground');
-    expect(html).not.toContain('text-kortix-green');
-    expect(html).not.toContain('text-kortix-red');
+    expect(html).not.toContain('text-zed-green');
+    expect(html).not.toContain('text-zed-red');
   });
 
   test('carries an accessible name naming the metric and the direction', () => {

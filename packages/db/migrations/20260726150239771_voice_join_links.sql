@@ -26,7 +26,7 @@ set statement_timeout = '30s';
 --       worth the coupling for what is ultimately a disposable, short-TTL row.
 --   [x] No DROP/RENAME/ALTER TYPE -- nothing for old code to trip over.
 
-CREATE TABLE "kortix"."voice_join_links" (
+CREATE TABLE "zed"."voice_join_links" (
 	"token_hash" text PRIMARY KEY NOT NULL,
 	"call_id" text NOT NULL,
 	"project_id" uuid NOT NULL,
@@ -35,4 +35,4 @@ CREATE TABLE "kortix"."voice_join_links" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX "idx_voice_join_links_call" ON "kortix"."voice_join_links" USING btree ("call_id");
+CREATE INDEX "idx_voice_join_links_call" ON "zed"."voice_join_links" USING btree ("call_id");

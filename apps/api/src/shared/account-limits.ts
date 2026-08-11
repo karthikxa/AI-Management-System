@@ -83,7 +83,7 @@ export async function resolveAccountTier(accountId: string): Promise<string | nu
 }
 
 /**
- * Whether to mount the premium LLM gateway (the `kortix` provider, with
+ * Whether to mount the premium LLM gateway (the `zed` provider, with
  * Claude/GPT/Gemini/…) for an account at sandbox-provision time. When false the
  * sandbox boots with only OpenCode's built-in Zen catalog.
  *
@@ -102,15 +102,15 @@ export async function resolveAccountTier(accountId: string): Promise<string | nu
  *   falls back to 'free' on error, so the safe default is "no gateway".
  */
 export async function accountEntitledToLlmGateway(accountId: string): Promise<boolean> {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return true;
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return true;
   // Single source of truth for "may this account use managed models" — trial
   // overlay and the operator managed_models_override included (entitlements.ts).
   return accountMayUseManagedModels(accountId);
 }
 
 export function sessionLlmPolicyForTier(tier: string | null | undefined): RateLimitPolicy {
-  const freeLimit = positiveInt((config as any).KORTIX_LLM_ROUTER_REQS_PER_MIN_FREE, 60);
-  const paidLimit = positiveInt((config as any).KORTIX_LLM_ROUTER_REQS_PER_MIN_PAID, 600);
+  const freeLimit = positiveInt((config as any).ZED_LLM_ROUTER_REQS_PER_MIN_FREE, 60);
+  const paidLimit = positiveInt((config as any).ZED_LLM_ROUTER_REQS_PER_MIN_PAID, 600);
   const multiplier = tierMultiplier(tier);
   return {
     limit: multiplier > 0 ? paidLimit * multiplier : freeLimit,
@@ -122,7 +122,7 @@ export function maxConcurrentSessionsForTier(tier: string | null | undefined) {
   // When billing isn't active (local / self-hosted), the tier system is
   // a no-op — return an effectively-unlimited cap so a missing
   // subscription doesn't kneecap session creation.
-  if (!(config as any).KORTIX_BILLING_INTERNAL_ENABLED) {
+  if (!(config as any).ZED_BILLING_INTERNAL_ENABLED) {
     return Number.MAX_SAFE_INTEGER;
   }
   // Tier definition is the source of truth for concurrent session caps.
@@ -149,7 +149,7 @@ export type AccountSessionLimit = {
  * override consistent across the deployment.
  */
 export async function resolveAccountSessionLimit(accountId: string): Promise<AccountSessionLimit> {
-  if (!(config as any).KORTIX_BILLING_INTERNAL_ENABLED) {
+  if (!(config as any).ZED_BILLING_INTERNAL_ENABLED) {
     return { tier: null, limit: Number.MAX_SAFE_INTEGER, source: 'billing_disabled' };
   }
   const { tier, sessionOverride } = await resolveAccountLimitInfo(accountId, { useCache: false });
@@ -169,7 +169,7 @@ export async function resolveAccountSessionLimit(accountId: string): Promise<Acc
  * kneecap project creation.
  */
 export async function maxProjectsForAccount(accountId: string): Promise<number> {
-  if (!(config as any).KORTIX_BILLING_INTERNAL_ENABLED) {
+  if (!(config as any).ZED_BILLING_INTERNAL_ENABLED) {
     return Number.MAX_SAFE_INTEGER;
   }
   const tier = (await resolveAccountTier(accountId)) ?? 'free';
@@ -204,7 +204,7 @@ export function effectiveTierForLimits(
  * just-revoked trial immediately across API tasks.
  */
 export async function resolveTrialSeatLimit(accountId: string): Promise<number | null> {
-  if (!config.KORTIX_BILLING_INTERNAL_ENABLED) return null;
+  if (!config.ZED_BILLING_INTERNAL_ENABLED) return null;
   try {
     const subscription = await getSubscriptionInfo(accountId);
     return activeTrialSeatLimit(subscription);

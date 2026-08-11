@@ -6,31 +6,31 @@
 
 ## Objective
 
-Make `apps/web` a thin consumer of `@kortix/sdk`.
+Make `apps/web` a thin consumer of `@zed/sdk`.
 
-The web application must not implement Kortix API transport, OpenCode runtime
+The web application must not implement Zed API transport, OpenCode runtime
 transport, session lifecycle, runtime state synchronization, or sandbox routing.
 
 This change keeps OpenCode REST as the SDK's internal runtime transport.
 
 ## Required boundary
 
-`apps/web` may use these Kortix data surfaces:
+`apps/web` may use these Zed data surfaces:
 
-- `@kortix/sdk`
-- `@kortix/sdk/react`
-- Explicit `@kortix/sdk/internal/*` imports only inside one SDK adapter module
+- `@zed/sdk`
+- `@zed/sdk/react`
+- Explicit `@zed/sdk/internal/*` imports only inside one SDK adapter module
   while published compatibility stores remain necessary
 
 `apps/web` must not:
 
 - Import `@opencode-ai/sdk`.
-- Import `@kortix/sdk/opencode-client`.
+- Import `@zed/sdk/opencode-client`.
 - Import a host-local module under `hooks/opencode`.
 - Import host-local runtime stores.
 - Construct OpenCode REST paths.
 - Construct `/v1/p/:sandbox/:port` runtime proxy URLs.
-- Call the Kortix API with `fetch`, `authenticatedFetch`, or `backendApi`.
+- Call the Zed API with `fetch`, `authenticatedFetch`, or `backendApi`.
 - Mount a second chat synchronization engine beside `useSession`.
 
 External HTTP calls remain valid. Examples include GitHub, models.dev, static
@@ -60,14 +60,14 @@ This branch does not make a breaking npm API change.
 
 ## Platform API contract
 
-Every Kortix API operation used by `apps/web` must exist as a typed SDK function
+Every Zed API operation used by `apps/web` must exist as a typed SDK function
 or facade method.
 
-Server-side Next.js code uses `@kortix/sdk/server` when request-scoped
+Server-side Next.js code uses `@zed/sdk/server` when request-scoped
 credentials are required. Browser code uses the configured SDK client.
 
 The host must not own endpoint paths, authorization headers, response parsing,
-retry policy, or Kortix API error conversion.
+retry policy, or Zed API error conversion.
 
 ## Enforcement
 
@@ -76,7 +76,7 @@ The repository adds a static boundary test and ESLint restrictions.
 The test scans production `apps/web` source files and reports each forbidden
 import or request construction with a file and line.
 
-The final allowlist must contain no runtime or Kortix API exceptions. Temporary
+The final allowlist must contain no runtime or Zed API exceptions. Temporary
 exceptions are permitted only while a numbered migration task is in progress.
 The branch cannot merge with temporary exceptions.
 

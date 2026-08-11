@@ -20,14 +20,14 @@ import {
   usageEvents,
   chatTurnStreams,
   type Database,
-} from '@kortix/db';
+} from '@zed/db';
 import { reconcileStuckActiveSessions } from '../projects/sandbox-reaper';
 
 const TEST_DB_CONFIRMATION = 'I_UNDERSTAND_THIS_DELETES_TEST_DATA';
 const HAS_CONFIRMED_TEST_DB = Boolean(
   process.env.TEST_DATABASE_URL &&
-  process.env.KORTIX_TEST_DB_CONFIRM === TEST_DB_CONFIRMATION &&
-  process.env.INTERNAL_KORTIX_ENV !== 'prod',
+  process.env.ZED_TEST_DB_CONFIRM === TEST_DB_CONFIRMATION &&
+  process.env.INTERNAL_ZED_ENV !== 'prod',
 );
 const describeWithDb = HAS_CONFIRMED_TEST_DB ? describe : describe.skip;
 
@@ -116,7 +116,7 @@ async function seed(now: Date) {
   // Recent LLM usage → meaningful activity within the TTL window.
   await d.insert(usageEvents).values({
     accountId: ACCOUNT_ID, projectId: PROJECT_ID, sessionId: S_RECENT_USAGE_KEEP,
-    provider: 'kortix', model: 'test', route: 'chat', createdAt: minsAgo(now, 2),
+    provider: 'zed', model: 'test', route: 'chat', createdAt: minsAgo(now, 2),
   });
   // An in-flight (unfinalized) turn → never reap.
   await d.insert(chatTurnStreams).values({

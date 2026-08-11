@@ -1,7 +1,7 @@
 import { createHash, createCipheriv, createDecipheriv, hkdfSync, randomBytes } from 'node:crypto';
-import { SESSION_SECRETS_ALLOWLIST_MAX_KEYS } from '@kortix/api-contract';
+import { SESSION_SECRETS_ALLOWLIST_MAX_KEYS } from '@zed/api-contract';
 import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
-import { projectSecrets, projectSessionSecretHandles, projectSessions, projects } from '@kortix/db';
+import { projectSecrets, projectSessionSecretHandles, projectSessions, projects } from '@zed/db';
 import { config } from '../config';
 import { recordAuditEvent } from '../shared/audit';
 import { db } from '../shared/db';
@@ -64,7 +64,7 @@ function projectSecretKey(projectId: string): Buffer {
     'sha256',
     Buffer.from(config.API_KEY_SECRET, 'utf8'),
     Buffer.from(projectId, 'utf8'),
-    Buffer.from('kortix-project-secret-v1', 'utf8'),
+    Buffer.from('zed-project-secret-v1', 'utf8'),
     32,
   );
   return Buffer.from(key);
@@ -145,7 +145,7 @@ export async function writeSharedProjectSecret(input: {
 
 /**
  * Decrypted KEY->value map of the project's SHARED runtime secrets
- * (owner_user_id IS NULL). Platform-reserved KORTIX_* rows are excluded so
+ * (owner_user_id IS NULL). Platform-reserved ZED_* rows are excluded so
  * legacy system secrets can never leak into the sandbox as user-controlled env
  * vars. Since a KEY is no longer unique (multiple identifiers may share one),
  * ties are broken deterministically: the row whose identifier equals the key
@@ -171,7 +171,7 @@ export async function listProjectSecrets(projectId: string): Promise<Record<stri
   const env: Record<string, string> = {};
   const winnerIsCanonical = new Set<string>();
   for (const row of rows) {
-    if (row.name.toUpperCase().startsWith('KORTIX_')) continue;
+    if (row.name.toUpperCase().startsWith('ZED_')) continue;
     // Connector credentials / Pipedream bindings are resolved server-side by the
     // Connector gateway — never injected into the sandbox env.
     if (row.scope === 'connector') continue;
@@ -208,7 +208,7 @@ export interface ResolvedProjectSecret {
 /**
  * Every runtime-scope project secret, resolved AS a specific user (their own
  * active override wins per identifier), grouped by IDENTIFIER — the unit an
- * agent's `secrets` grant addresses. KORTIX_* (reserved) and connector-scoped
+ * agent's `secrets` grant addresses. ZED_* (reserved) and connector-scoped
  * rows are never included. `userId` may be null for contexts with no acting
  * human (e.g. a webhook-triggered session) — only shared rows apply then.
  */
@@ -244,7 +244,7 @@ export async function listResolvedProjectSecrets(
   type Row = (typeof rows)[number];
   const byIdentifier = new Map<string, { shared?: Row; personal?: Row }>();
   for (const row of rows) {
-    if (row.name.toUpperCase().startsWith('KORTIX_')) continue;
+    if (row.name.toUpperCase().startsWith('ZED_')) continue;
     const slot = byIdentifier.get(row.identifier) ?? {};
     if (row.ownerUserId === null) slot.shared = row;
     else slot.personal = row;
@@ -351,7 +351,7 @@ export function resolveGrantedSecretEnv(
   return { env, identifiers };
 }
 
-// Single source of truth in @kortix/api-contract (route-contract validation);
+// Single source of truth in @zed/api-contract (route-contract validation);
 // re-exported here so internal callers keep the same import site.
 export { SESSION_SECRETS_ALLOWLIST_MAX_KEYS };
 
@@ -385,7 +385,7 @@ export function parseSessionSecretsAllowlist(
 }
 
 /**
- * Narrow an agent's secret grant by a per-session allowlist (Kortix-as-a-Backend).
+ * Narrow an agent's secret grant by a per-session allowlist (Zed-as-a-Backend).
  * The result is ALWAYS a subset of what `grant` alone would allow — this is a
  * pure NARROWING, never a widening, so it can be composed with the existing
  * agent-grant/reserved-name/connector-scope filters without weakening any of
@@ -580,7 +580,7 @@ export async function materializeSecretDelivery(
       row.consumer ??
       (delivery.strategy === 'runtime'
         ? 'sandbox'
-        : row.egressPolicy?.backend === 'kortix_fetch'
+        : row.egressPolicy?.backend === 'zed_fetch'
           ? 'http_broker'
           : (row.egressPolicy?.backend ?? null));
     if (delivery.emit === 'plaintext' && consumer === 'sandbox') continue;
@@ -588,7 +588,7 @@ export async function materializeSecretDelivery(
       delivery.emit === 'handle' &&
       delivery.strategy === 'broker' &&
       consumer === 'http_broker' &&
-      row.egressPolicy?.backend === 'kortix_fetch'
+      row.egressPolicy?.backend === 'zed_fetch'
     ) {
       env[row.key] = await input.mintHandleFor(row);
       continue;
@@ -860,7 +860,7 @@ export async function listProjectSecretNamesForConsumer(input: {
   const names = new Set<string>();
   for (const slot of byIdentifier.values()) {
     const selected = slot.personal?.active ? slot.personal : slot.shared;
-    if (!selected?.active || selected.name.toUpperCase().startsWith('KORTIX_')) continue;
+    if (!selected?.active || selected.name.toUpperCase().startsWith('ZED_')) continue;
     const policy = slot.shared ?? selected;
     const configured =
       input.consumer === 'connector'

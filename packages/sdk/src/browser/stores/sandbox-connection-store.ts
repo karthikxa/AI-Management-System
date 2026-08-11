@@ -26,13 +26,13 @@ interface SandboxConnectionStore {
 	reconnectAttempts: number;
 	/** Timestamp when status changed to unreachable/connecting (for "down since") */
 	disconnectedAt: number | null;
-	/** Current sandbox version from /kortix/health (e.g. "0.5.1") */
+	/** Current sandbox version from /zed/health (e.g. "0.5.1") */
 	sandboxVersion: string | null;
 	/** OpenCode server version from /global/health (e.g. "1.2.10") */
 	openCodeVersion: string | null;
 	/** Whether the OpenCode server reports healthy */
 	healthy: boolean | null;
-	/** Last runtime boot/readiness error reported by /kortix/health */
+	/** Last runtime boot/readiness error reported by /zed/health */
 	runtimeError: string | null;
 	recoveryPhase: SandboxRecoveryPhase;
 	restartRequestedAt: number | null;
@@ -43,14 +43,14 @@ interface SandboxConnectionStore {
 // On hard refresh, wasConnected resets to false which triggers a full-screen
 // blocking overlay. By persisting it, users who were previously connected
 // see the lightweight reconnect pill instead, making reconnection feel instant.
-const STORAGE_KEY = "kortix-runtime-was-connected";
-const PROVISION_VERIFIED_KEY = "kortix-runtime-provision-verified";
+const STORAGE_KEY = "zed-runtime-was-connected";
+const PROVISION_VERIFIED_KEY = "zed-runtime-provision-verified";
 // Stronger than PROVISION_VERIFIED: POST /start already resolved stage='ready',
 // which the backend only returns once it reached the daemon's /session (runtime
 // proven healthy server-side). When this flag is set, the new instance starts
 // optimistically connected+healthy so the chat shows WITHOUT waiting out an extra
-// client-side /kortix/health round-trip. The poller still runs and self-corrects.
-const RUNTIME_READY_VERIFIED_KEY = "kortix-runtime-ready";
+// client-side /zed/health round-trip. The poller still runs and self-corrects.
+const RUNTIME_READY_VERIFIED_KEY = "zed-runtime-ready";
 
 function loadWasConnected(): boolean {
 	try {
@@ -218,7 +218,7 @@ export function resetForServerSwitch() {
 		// (use-opencode-events) AND message sync (use-session-sync) both gate on this
 		// same `healthy` flag, so seeding null left the FE UNSUBSCRIBED until the
 		// ~350ms client health poll flipped it green — by which point the server-side
-		// first turn (KORTIX_INITIAL_PROMPT, delivered during boot) had accumulated
+		// first turn (ZED_INITIAL_PROMPT, delivered during boot) had accumulated
 		// and bulk-rendered AT ONCE instead of streaming. healthy=true subscribes at
 		// the switch, so part.updated events render token-by-token, and also reclaims
 		// the redundant health RTT. The 350ms poller still runs and self-corrects to

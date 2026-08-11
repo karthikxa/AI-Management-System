@@ -32,7 +32,7 @@ const smokeUserId = randomUUID();
 const smokeIdentityId = randomUUID();
 const smokeEmail =
   `refresh-compat-${Date.now()}-${smokeUserId.slice(0, 8)}` +
-  "@invalid.kortix.test";
+  "@invalid.zed.test";
 const smokePassword = `${randomBytes(24).toString("base64url")}aA1!`;
 const variables = {
   user_id: smokeUserId,
@@ -158,7 +158,7 @@ INSERT INTO auth.users (
   extensions.crypt(:'password', extensions.gen_salt('bf')),
   now(), '', '', '', '', '', '', '', '',
   '{"provider":"email","providers":["email"]}'::jsonb,
-  '{"kortix_migration_refresh_smoke":true}'::jsonb,
+  '{"zed_migration_refresh_smoke":true}'::jsonb,
   false, now(), now(), false, false
 );
 INSERT INTO auth.identities (

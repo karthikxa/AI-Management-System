@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * ke2e — Kortix end-to-end REST API test runner.
+ * ke2e — Zed end-to-end REST API test runner.
  *
  *   ke2e run [--domain d] [--id ID] [--tag t] [--grep s] [--workers N]
  *            [--api-workers N] [--sandbox-workers N] [--smoke]

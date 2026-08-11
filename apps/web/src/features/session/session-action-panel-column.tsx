@@ -54,7 +54,7 @@ import {
   useReadyChip,
   useToggleActionPanel,
   useToggleRightPanel,
-} from '@/stores/kortix-computer-store';
+} from '@/stores/zed-computer-store';
 import { useTabStore } from '@/stores/tab-store';
 import { CaretDoubleLeftIcon, CaretDoubleRightIcon } from '@phosphor-icons/react';
 import { m, useReducedMotion } from 'motion/react';

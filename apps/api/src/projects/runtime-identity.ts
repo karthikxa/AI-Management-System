@@ -1,4 +1,4 @@
-import { projectSessions, sessionSandboxes } from '@kortix/db';
+import { projectSessions, sessionSandboxes } from '@zed/db';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 
 import { endComputeSession, reopenComputeForSandbox } from '../billing/services/compute-metering';

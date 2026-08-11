@@ -3,7 +3,7 @@
  *
  * Wraps the Daytona SDK calls used by the rest of the snapshot system: build
  * a snapshot from a composed Dockerfile, query its live state, and delete it.
- * The "layered Dockerfile" composition (user Dockerfile + Kortix runtime
+ * The "layered Dockerfile" composition (user Dockerfile + Zed runtime
  * layer) is the responsibility of the caller (snapshots/builder.ts) — this
  * adapter only knows about Daytona-specific request shapes and retries.
  */
@@ -17,7 +17,7 @@ import {
   DEFAULT_CPU,
   DEFAULT_DISK_GB,
   DEFAULT_MEMORY_GB,
-  KORTIX_ENTRYPOINT,
+  ZED_ENTRYPOINT,
   type StagedContext,
   stageBuildContext,
   stageAppBuildContext,
@@ -155,7 +155,7 @@ class DaytonaAdapter implements SandboxProviderAdapter {
           {
             name: input.snapshotName,
             image: Image.fromDockerfile(ctx.composedPath),
-            entrypoint: input.entrypoint ?? [KORTIX_ENTRYPOINT],
+            entrypoint: input.entrypoint ?? [ZED_ENTRYPOINT],
             resources,
           },
           {

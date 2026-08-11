@@ -2,29 +2,29 @@
 #
 # Standalone LLM gateway (apps/llm-gateway): an OpenAI-compatible proxy that
 # every sandbox model call routes through. Build from the repo root:
-#   docker build -f apps/llm-gateway/Dockerfile -t kortix-gateway .
+#   docker build -f apps/llm-gateway/Dockerfile -t zed-gateway .
 #
 # Far simpler than apps/api — no sandbox-agent/CLI stages, no migrations. Just
-# the Bun+Hono server plus its workspace packages (@kortix/llm-gateway →
-# @kortix/shared + @kortix/llm-catalog) and hono + langfuse.
+# the Bun+Hono server plus its workspace packages (@zed/llm-gateway →
+# @zed/shared + @zed/llm-catalog) and hono + langfuse.
 #
-# LOAD-BEARING: every @kortix/* package that appears anywhere in the gateway's
+# LOAD-BEARING: every @zed/* package that appears anywhere in the gateway's
 # transitive workspace dependency graph MUST be COPYed below. The synthetic
 # workspace root globs `packages/*`, but bun only sees the package dirs actually
 # copied into the image — a declared `workspace:*` dep whose directory is absent
 # fails install with "Workspace dependency not found", NOT a clear message. This
-# bit us once: the AI-SDK migration added @kortix/llm-catalog to
+# bit us once: the AI-SDK migration added @zed/llm-catalog to
 # packages/llm-gateway's deps but not here, and because the gateway image only
 # rebuilds when something under it changes, the break stayed invisible until the
-# next gateway change and then blocked that deploy. If you add a @kortix/* dep to
+# next gateway change and then blocked that deploy. If you add a @zed/* dep to
 # the gateway or any package it pulls in, add its COPY to BOTH stages here.
 
 ARG BUN_VERSION=1.2
 
 # ---- Deps Stage ----
 # A MINIMAL synthetic workspace (only the gateway + its two packages) so we don't
-# drag in the real root package.json's deps (@kortix/agent-tunnel, …). Same trick
-# the API Dockerfile uses for the CLI. bun resolves the @kortix/* workspaces to
+# drag in the real root package.json's deps (@zed/agent-tunnel, …). Same trick
+# the API Dockerfile uses for the CLI. bun resolves the @zed/* workspaces to
 # source + pulls hono + langfuse.
 FROM oven/bun:${BUN_VERSION}-slim AS deps
 
@@ -35,7 +35,7 @@ COPY packages/llm-gateway ./packages/llm-gateway
 COPY packages/shared ./packages/shared
 COPY packages/llm-catalog ./packages/llm-catalog
 
-RUN printf '{"name":"kortix-gateway-build","private":true,"workspaces":["apps/llm-gateway","packages/*"]}\n' > package.json \
+RUN printf '{"name":"zed-gateway-build","private":true,"workspaces":["apps/llm-gateway","packages/*"]}\n' > package.json \
     && bun install --no-save
 
 # ---- Runner Stage ----
@@ -46,13 +46,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Baked once at build; surfaced by /health and traces so we know which code is live.
-ARG KORTIX_VERSION=dev
-ARG KORTIX_COMMIT=unknown
-ENV KORTIX_VERSION=${KORTIX_VERSION}
-ENV KORTIX_COMMIT=${KORTIX_COMMIT}
+ARG ZED_VERSION=dev
+ARG ZED_COMMIT=unknown
+ENV ZED_VERSION=${ZED_VERSION}
+ENV ZED_COMMIT=${ZED_COMMIT}
 
 # Hoisted deps + the workspace package sources the app imports as
-# @kortix/llm-gateway (→ @kortix/shared). package.json "main"
+# @zed/llm-gateway (→ @zed/shared). package.json "main"
 # points at src, so bun runs the TypeScript directly — no separate build step.
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package.json ./package.json

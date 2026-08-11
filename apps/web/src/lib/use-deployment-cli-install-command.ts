@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 
-import { getDeploymentCliInstallCommand } from './kortix-cli';
+import { getDeploymentCliInstallCommand } from './zed-cli';
 
 const subscribeToOrigin = () => () => {};
 const getBrowserOrigin = () => window.location.origin;

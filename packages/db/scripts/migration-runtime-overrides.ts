@@ -65,7 +65,7 @@ export function materializeMigrationRuntimeDirectory(
     );
   }
 
-  const runtimeRoot = mkdtempSync(join(tmpdir(), 'kortix-migrations-'));
+  const runtimeRoot = mkdtempSync(join(tmpdir(), 'zed-migrations-'));
   const runtimeDirectory = join(runtimeRoot, 'migrations');
   try {
     cpSync(sourceDirectory, runtimeDirectory, { recursive: true });

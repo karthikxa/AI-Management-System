@@ -15,18 +15,18 @@ and **[A migration failed in prod](#a-migration-failed-in-prod)**.
 **There is exactly one blessed way to change the schema.** Two tools, not
 competing:
 
-- **drizzle-kit** *generates SQL* by diffing `src/schema/kortix.ts` against its
+- **drizzle-kit** *generates SQL* by diffing `src/schema/zed.ts` against its
   own snapshot (`drizzle/meta/`). It never touches a database and never
   applies anything.
 - **node-pg-migrate** *applies SQL*. It doesn't know or care that drizzle-kit
   exists — it just runs whatever `.sql` (or `.concurrent.ts`, see below) files
-  land in `migrations/`, in order, tracked in `kortix_migrations.pgmigrations`.
+  land in `migrations/`, in order, tracked in `zed_migrations.pgmigrations`.
 
 If you've heard "drizzle-kit generate is broken here, hand-write everything"
 — that was true from **2026-07-08 to 2026-07-16** and is fixed now (see
 [Why this needed fixing](#why-drizzle-kit-generate-needed-fixing-2026-07-16) for the
-evidence). `kortix.ts` + `drizzle-orm` were never broken — that's the app's
-live query layer (200+ files import `@kortix/db`), completely independent of
+evidence). `zed.ts` + `drizzle-orm` were never broken — that's the app's
+live query layer (200+ files import `@zed/db`), completely independent of
 whether the *migration-generation* tool worked. Only the generator was down.
 
 **Hand-writing SQL directly (`migrate:create`) is still first-class**, for
@@ -40,19 +40,19 @@ aren't a schema-shape diff.
 ## Mental model
 
 ```
-  packages/db/src/schema/kortix.ts        <- you edit this (schema shape)
+  packages/db/src/schema/zed.ts        <- you edit this (schema shape)
             │  pnpm migrate:generate <slug>   (drizzle-kit generate)
             ▼
   packages/db/migrations/<ts>_<slug>.sql   <- reviewed SQL, committed in a PR
             │  pnpm migrate   (node-pg-migrate runner(): advisory lock + transaction)
             ▼
-  Postgres  +  kortix_migrations.pgmigrations   <- one row per applied migration
+  Postgres  +  zed_migrations.pgmigrations   <- one row per applied migration
 ```
 
-- **Schema shape** is defined in `kortix.ts`. You edit the schema and *generate* the SQL — you don't hand-write schema DDL. (Data migrations, RLS, custom functions, and CONCURRENTLY operations are the exception — hand-written; see below.)
+- **Schema shape** is defined in `zed.ts`. You edit the schema and *generate* the SQL — you don't hand-write schema DDL. (Data migrations, RLS, custom functions, and CONCURRENTLY operations are the exception — hand-written; see below.)
 - **Migration files** in `packages/db/migrations/` are **immutable, timestamp-named** `YYYYMMDDHHMMSSmmm_slug.sql` (17-digit UTC — node-pg-migrate's native format; collision-safe across parallel branches). The one exception is the `.concurrent.ts` escape hatch, same timestamp prefix, different suffix — see [Roll-forward safety](#roll-forward-safety-transactions-per-file-and-the-concurrently-escape-hatch).
 - A merged migration that fails its first hosted deployment remains immutable. A runtime correction must live in `scripts/migration-runtime-overrides.ts`, match the exact committed SHA-256, change the minimum required statement, fail closed on drift, and have an integration test. The migration runner prints each applied override.
-- **Applied state** lives in `kortix_migrations.pgmigrations` (node-pg-migrate's table; one row per migration, by name — **not** the `public` schema, and not the same table CI/local dev might assume by default).
+- **Applied state** lives in `zed_migrations.pgmigrations` (node-pg-migrate's table; one row per migration, by name — **not** the `public` schema, and not the same table CI/local dev might assume by default).
 
 ### Tracking is by NAME, not checksum (known tradeoff)
 
@@ -88,12 +88,12 @@ From repo root (`DATABASE_URL` from env, or `--target=<env>` reads `<ENV>_DB_URL
 | `pnpm migrate:status` | List pending migrations (dry-run, writes nothing). Exit 1 if any pending. |
 | `pnpm migrate:create <slug>` | Scaffold a hand-written SQL migration with the house-rules template (lock_timeout/statement_timeout header, expand/contract checklist, annotation slots). |
 | `pnpm migrate:create <slug> --concurrent` | Scaffold the `.concurrent.ts` CONCURRENTLY escape hatch (`pgm.noTransaction()` pre-filled). |
-| `pnpm migrate:generate <slug>` | Generate SQL from a `kortix.ts` change (drizzle-kit) into a timestamped file. |
+| `pnpm migrate:generate <slug>` | Generate SQL from a `zed.ts` change (drizzle-kit) into a timestamped file. |
 | `pnpm migrate:fake` | Mark pending migrations as applied **without running them** (baseline existing envs). |
 | `pnpm migrate:down` | Roll back (only if the migration defines a `-- Down Migration` section; ours don't — see below). |
-| `pnpm --filter @kortix/db lint` | Run every deterministic local check: filename/structure lint + the mixed-version/enum-value guard + squawk. Run this before every push that touches `packages/db/migrations`. |
-| `pnpm --filter @kortix/db migrate:lint` | Just the filename/structure/mixed-version/enum-value checks (no squawk, no network). |
-| `pnpm --filter @kortix/db lint:squawk` | Just squawk, scoped to new (non-grandfathered) migrations. Auto-downloads a checksum-pinned binary on first run. |
+| `pnpm --filter @zed/db lint` | Run every deterministic local check: filename/structure lint + the mixed-version/enum-value guard + squawk. Run this before every push that touches `packages/db/migrations`. |
+| `pnpm --filter @zed/db migrate:lint` | Just the filename/structure/mixed-version/enum-value checks (no squawk, no network). |
+| `pnpm --filter @zed/db lint:squawk` | Just squawk, scoped to new (non-grandfathered) migrations. Auto-downloads a checksum-pinned binary on first run. |
 
 Target a specific DB (secrets never go through the shell): the adapter reads `DATABASE_URL`, or `--target=dev`/`--target=prod` resolves `DEV_DB_URL`/`PROD_DB_URL` from `apps/api/.env`. The prod deploy passes `DATABASE_URL` directly.
 
@@ -103,10 +103,10 @@ Target a specific DB (secrets never go through the shell): the adapter reads `DA
 
 **Schema change (table/column/index shape):**
 
-1. Edit `packages/db/src/schema/kortix.ts`.
+1. Edit `packages/db/src/schema/zed.ts`.
 2. `pnpm migrate:generate add_widget_table`
 3. **Read the generated SQL.** This is the human review gate before anything touches a DB.
-4. Run `pnpm --filter @kortix/db lint` (structure + mixed-version/enum-value guard + squawk).
+4. Run `pnpm --filter @zed/db lint` (structure + mixed-version/enum-value guard + squawk).
 5. Commit BOTH the new `.sql` file AND the updated `packages/db/drizzle/` snapshot.
 6. PR → on merge, CI applies it.
 
@@ -114,13 +114,13 @@ Target a specific DB (secrets never go through the shell): the adapter reads `DA
 
 1. `pnpm migrate:create backfill_widget_owner` → creates `migrations/<ts>_backfill_widget_owner.sql` with the house-rules template already filled in (lock_timeout/statement_timeout, expand/contract checklist, annotation slots).
 2. Write the SQL.
-3. Run `pnpm --filter @kortix/db lint`, review, commit, PR.
+3. Run `pnpm --filter @zed/db lint`, review, commit, PR.
 
 **CONCURRENTLY (index create/drop, reindex, partition detach):**
 
 1. `pnpm migrate:create widget_name_index --concurrent` → creates `migrations/<ts>_widget_name_index.concurrent.ts`. See [Roll-forward safety](#roll-forward-safety-transactions-per-file-and-the-concurrently-escape-hatch).
 2. Fill in the TODOs — **one statement per `pgm.sql()` call** (see the file's own comments for why).
-3. Run `pnpm --filter @kortix/db lint`, review, commit, PR.
+3. Run `pnpm --filter @zed/db lint`, review, commit, PR.
 
 **Rules (not suggestions):**
 
@@ -175,7 +175,7 @@ false, hence the incident) or split it into an expand/contract pair.
 
 A **faked baseline** (`migrate:fake`, used to onboard an existing environment
 without re-running DDL) was generated from a schema snapshot that predated an
-`ALTER TYPE kortix.sandbox_provider ADD VALUE 'platinum'` migration. The fake
+`ALTER TYPE zed.sandbox_provider ADD VALUE 'platinum'` migration. The fake
 marked that migration "applied" without ever running it, so that one
 environment's enum silently lacked the `platinum` value. The first insert
 using it failed with `22P02 invalid input value for enum`. The enum-value
@@ -282,7 +282,7 @@ in the reopened transaction. `scripts/lint-migrations.ts` flags any
 
 | Env | How | When |
 |---|---|---|
-| **local** | `ensureSchema()` at API boot (`KORTIX_LOCAL_DEV=1`/`ENV_MODE=local`), or `pnpm migrate` | every `pnpm dev` |
+| **local** | `ensureSchema()` at API boot (`ZED_LOCAL_DEV=1`/`ENV_MODE=local`), or `pnpm migrate` | every `pnpm dev` |
 | **dev** | CI/CD `migrate-db` job against `DEV_DATABASE_URL` | on merge to the dev branch, before new code serves |
 | **preview** | **never runs migrations** — previews share the dev DB and consume its schema | n/a |
 | **prod** | CI/CD `migrate-db` job against `PROD_DATABASE_URL` | every release, after build, before the new version boots |
@@ -295,7 +295,7 @@ By default a deployed app boot **never** applies migrations — concurrent repli
 The image bundles the migrations + the node-pg-migrate runner, so you don't need this repo or a CI pipeline. Apply migrations as a **one-shot**, before/with the app (the standard release-phase pattern):
 
 ```bash
-docker run --rm -e DATABASE_URL="postgres://…" kortix/kortix-api \
+docker run --rm -e DATABASE_URL="postgres://…" zed/zed-api \
   bun packages/db/scripts/migrate.ts up
 ```
 
@@ -322,7 +322,7 @@ mode we've actually hit:
 | `immutability` | Already-merged migration files are never modified | Silent schema drift between environments that ran the file at different times |
 | `sequence` | New migrations sort after every already-merged migration | The historical `_journal`/`pgmigrations` ordering-dedupe incident |
 | `shadow-db` | Every migration applies cleanly to a genuinely fresh Postgres | "The files don't reproduce reality" (a prior baseline built 71/93 tables) |
-| `schema-sync` | `kortix.ts` and the committed migrations agree (drizzle-kit generate must produce zero diff) | `kortix.ts` silently drifting from the real schema — see the note below, this job used to be a silent no-op |
+| `schema-sync` | `zed.ts` and the committed migrations agree (drizzle-kit generate must produce zero diff) | `zed.ts` silently drifting from the real schema — see the note below, this job used to be a silent no-op |
 
 **A subtlety worth knowing:** before 2026-07-16, `schema-sync` always reported
 success — but drizzle-kit's own snapshot lineage had forked (two snapshots
@@ -331,7 +331,7 @@ silently swallowing that error and exiting 0 with nothing generated. The
 "gate" was checking that an empty diff matched an empty diff. It's a real
 check again now that the lineage is fixed.
 
-Local: `pnpm --filter @kortix/db lint` runs the same `lint` + `squawk`
+Local: `pnpm --filter @zed/db lint` runs the same `lint` + `squawk`
 checks (not `immutability`/`sequence`, which need PR-diff context;
 not `shadow-db`/`schema-sync`, which need a database). There is no repo-wide
 git hook wired up (`.claude/skills/migration/SKILL.md` and this file are the
@@ -346,7 +346,7 @@ The migration step runs **before** the new version serves traffic, so a failure 
 
 1. **Read the error** in the deploy logs (the failing `migrate up` step).
 2. `pnpm migrate:status --target=prod` — anything pending?
-3. node-pg-migrate runs the pending set in a single transaction (`singleTransaction`), so a failure **rolls back atomically** — nothing was applied. *(Exception: if a `.concurrent.ts` migration in the batch already ran and committed before the failure — see [Roll-forward safety](#roll-forward-safety-transactions-per-file-and-the-concurrently-escape-hatch) — that one migration IS applied even though the batch reports failure. Check `kortix_migrations.pgmigrations` if a `.concurrent.ts` migration was in the pending set.)* Fix the migration (a NEW migration if the bad one is already applied elsewhere) and redeploy.
+3. node-pg-migrate runs the pending set in a single transaction (`singleTransaction`), so a failure **rolls back atomically** — nothing was applied. *(Exception: if a `.concurrent.ts` migration in the batch already ran and committed before the failure — see [Roll-forward safety](#roll-forward-safety-transactions-per-file-and-the-concurrently-escape-hatch) — that one migration IS applied even though the batch reports failure. Check `zed_migrations.pgmigrations` if a `.concurrent.ts` migration was in the pending set.)* Fix the migration (a NEW migration if the bad one is already applied elsewhere) and redeploy.
 4. **Do not** hand-edit prod schema and walk away. If you must intervene manually, make the DB match a migration file, then record it (next section).
 5. Roll back app code the normal way (previous image). Schema rollback is a **new forward migration**, not a down — most schema changes aren't losslessly reversible. (Our migrations don't define `-- Down Migration` sections by policy.)
 
@@ -365,7 +365,7 @@ If you applied a change by hand (emergency only):
 To put an existing DB (whose schema already matches the baseline) onto this system:
 
 1. Confirm the env's live schema matches the baseline (diff it).
-2. `pnpm migrate:fake --target=<env>` — creates `kortix_migrations.pgmigrations` and marks the baseline applied without running it.
+2. `pnpm migrate:fake --target=<env>` — creates `zed_migrations.pgmigrations` and marks the baseline applied without running it.
 3. `pnpm migrate:status --target=<env>` → "Up to date".
 
 This touches only the tracking table — never schema or data. **Careful:** a
@@ -393,8 +393,8 @@ Worse: `drizzle-kit` printed that error to stderr and **still exited 0** with
 "No schema changes detected — nothing generated" — so `scripts/generate.ts`
 (which only checks the exit code) never noticed, and the `schema-sync` CI job
 had been rubber-stamping success for weeks without ever computing a real
-diff. `kortix.ts` was in fact being kept in sync by hand in the same commits
-as the SQL (verified: 10 of the last 15 migrations touched `kortix.ts` in
+diff. `zed.ts` was in fact being kept in sync by hand in the same commits
+as the SQL (verified: 10 of the last 15 migrations touched `zed.ts` in
 their landing commit) — the humans were doing the job the tool was
 supposedly doing.
 
@@ -404,7 +404,7 @@ no runtime dependency except `0000_bootstrap.sql` (read by
 `apps/api/Dockerfile`; that file was kept as-is). Every other historical
 snapshot/SQL file in that directory was regenerable, disposable tooling
 state, so it was replaced with **one fresh baseline snapshot** of the current
-`kortix.ts` (`drizzle/20260716021754_rebaseline_kortix_schema_20260716.sql` +
+`zed.ts` (`drizzle/20260716021754_rebaseline_zed_schema_20260716.sql` +
 a matching, non-forked `meta/_journal.json`). This does not touch any applied
 migration, any runtime code path, or the ORM query layer — it only resets
 drizzle-kit's own diffing state so `pnpm migrate:generate` produces correct
@@ -416,10 +416,10 @@ it previously silently produced nothing.
 
 ## Known gaps / cleanup backlog
 
-- **`kortix.ts` adoption:** ~22 tables exist in the DB (e.g. `provider_events`, `executions`, `gateway_*`) captured by the baseline but not yet modelled in `kortix.ts`. Until adopted, they're baseline-managed (hand-written migrations), not drizzle-generated.
+- **`zed.ts` adoption:** ~22 tables exist in the DB (e.g. `provider_events`, `executions`, `gateway_*`) captured by the baseline but not yet modelled in `zed.ts`. Until adopted, they're baseline-managed (hand-written migrations), not drizzle-generated.
 - ~~**Duplicate function overloads:** `public.atomic_use_credits` and `atomic_grant_renewal_credits` each have a stale extra overload~~ — DONE in `20260730012238065_credit_use_credits_single_overload.sql`. `atomic_use_credits` is now a single 4-parameter function with defaults on `p_description`/`p_ledger_type`, so arities 2–4 all resolve to it; the dead 7-argument `atomic_grant_renewal_credits` overload is gone. `tests/migration/credit-rpc-overloads.test.ts` fails if any `public.atomic_*` function ever regains two overloads with overlapping callable arity — but it is **not wired into CI yet** (it spins up its own Postgres and needs docker). Run it by hand (`bun test tests/migration/credit-rpc-overloads.test.ts`) when touching a credit RPC; do not assume a green PR proves function uniqueness. **Note `packages/db/drizzle/0000_bootstrap.sql` still defines only the OLD 5-argument `atomic_use_credits`** — that is fine (bootstrap runs before the baseline and this migration corrects it), but do not treat the bootstrap file as the current shape.
-- **Legacy trackers:** `supabase_migrations.schema_migrations`, `drizzle.__drizzle_migrations`, `kortix.api_schema_migrations` are dead. Drop after prod is also cut over.
-- **No repo-wide git pre-push hook** wires `pnpm --filter @kortix/db lint` automatically yet — it's a documented, not enforced, local step (CI is the real gate).
+- **Legacy trackers:** `supabase_migrations.schema_migrations`, `drizzle.__drizzle_migrations`, `zed.api_schema_migrations` are dead. Drop after prod is also cut over.
+- **No repo-wide git pre-push hook** wires `pnpm --filter @zed/db lint` automatically yet — it's a documented, not enforced, local step (CI is the real gate).
 
 ---
 

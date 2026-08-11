@@ -1,4 +1,4 @@
-import type { AdminConnector } from '@kortix/sdk';
+import type { AdminConnector } from '@zed/sdk';
 import { describe, expect, test } from 'bun:test';
 
 import { CONNECTOR_TABS, connectorTabs } from './connector-tabs';

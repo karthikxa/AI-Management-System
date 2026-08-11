@@ -1,42 +1,42 @@
 /**
- * 03 — "Kortix as a Backend": a minimal multi-tenant server wrapper.
+ * 03 — "Zed as a Backend": a minimal multi-tenant server wrapper.
  *
- * The problem `@kortix/sdk/server` solves: `createKortix()`/`configureKortix()`
+ * The problem `@zed/sdk/server` solves: `createZed()`/`configureZed()`
  * store the platform config (crucially, the bearer token getter) in a single
  * process-wide module-global. That's fine for a browser tab or a CLI, but a
  * server handling CONCURRENT requests for different end users can't safely
- * call `configureKortix()` once per request — two in-flight requests with
+ * call `configureZed()` once per request — two in-flight requests with
  * different tokens race on the same global and the last write wins for both.
  *
- * `createScopedKortix(config)` fixes this with Node's `AsyncLocalStorage`:
+ * `createScopedZed(config)` fixes this with Node's `AsyncLocalStorage`:
  * the config passed to one call is visible only inside that call's own async
  * continuation, isolated from any other concurrent call in the same process.
  * This is the exact pattern a real wrapper backend uses — mint (or look up) a
- * per-end-user Kortix token, build a scoped client, use it for that request
+ * per-end-user Zed token, build a scoped client, use it for that request
  * only.
  *
  * Run (Bun only — this subpath statically imports node:async_hooks):
- *   KORTIX_API_URL=http://localhost:8008/v1 KORTIX_API_KEY=kortix_pat_... \
+ *   ZED_API_URL=http://localhost:8008/v1 ZED_API_KEY=zed_pat_... \
  *     bun run examples/03-server-wrapper.ts
  *   curl http://localhost:8787/projects -H 'x-end-user: alice'
  *   curl http://localhost:8787/projects -H 'x-end-user: bob'   # different token, same process, no cross-talk
  *
  * As an npm consumer:
- *   import { createScopedKortix } from '@kortix/sdk/server';
+ *   import { createScopedZed } from '@zed/sdk/server';
  */
-import { createScopedKortix } from '../src/node/server';
+import { createScopedZed } from '../src/node/server';
 
-const backendUrl = process.env.KORTIX_API_URL ?? 'http://localhost:8008/v1';
-const upstreamApiKey = process.env.KORTIX_API_KEY;
+const backendUrl = process.env.ZED_API_URL ?? 'http://localhost:8008/v1';
+const upstreamApiKey = process.env.ZED_API_KEY;
 
 if (!upstreamApiKey) {
-  console.error('Set KORTIX_API_KEY (the wrapper backend\'s own upstream credential) and re-run.');
+  console.error('Set ZED_API_KEY (the wrapper backend\'s own upstream credential) and re-run.');
   process.exit(1);
 }
 
 /**
  * Stand-in for "look up this end user's own token/session" — a real wrapper
- * would resolve a per-tenant Kortix PAT (or scope a shared one) from its own
+ * would resolve a per-tenant Zed PAT (or scope a shared one) from its own
  * auth/session store, keyed off the incoming request, never a hardcoded env var.
  */
 function tokenForEndUser(endUserId: string): string {
@@ -52,16 +52,16 @@ Bun.serve({
     const url = new URL(req.url);
     const endUserId = req.headers.get('x-end-user') ?? 'anonymous';
 
-    // One scoped client PER REQUEST — never a module-global `createKortix()`
+    // One scoped client PER REQUEST — never a module-global `createZed()`
     // call reused across requests. This is what makes two concurrent
     // requests for two different end users safe in the same process.
-    const kortix = createScopedKortix({
+    const zed = createScopedZed({
       backendUrl,
       getToken: async () => tokenForEndUser(endUserId),
     });
 
     if (url.pathname === '/projects' && req.method === 'GET') {
-      const projects = await kortix.projects.list();
+      const projects = await zed.projects.list();
       return Response.json({ endUserId, projects });
     }
 
@@ -69,4 +69,4 @@ Bun.serve({
   },
 });
 
-console.log('Kortix-as-a-Backend demo server listening on http://localhost:8787');
+console.log('Zed-as-a-Backend demo server listening on http://localhost:8787');

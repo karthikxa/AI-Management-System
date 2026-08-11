@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { validateManifest } from '@kortix/manifest-schema';
+import { validateManifest } from '@zed/manifest-schema';
 
 import {
   DEFAULT_STARTER_TEMPLATE_ID,
@@ -21,13 +21,13 @@ const NATIVE_HARNESS_CONFIG_PATHS = [
 function filesFor(template?: string) {
   return getStarterFiles({
     projectName: 'Harness Lab',
-    repoFullName: 'kortix/harness-lab',
+    repoFullName: 'zed/harness-lab',
     template: template as never,
   });
 }
 
 function manifestFor(template?: string): string {
-  return filesFor(template).find((file) => file.path === 'kortix.yaml')?.content ?? '';
+  return filesFor(template).find((file) => file.path === 'zed.yaml')?.content ?? '';
 }
 
 describe('one starter', () => {
@@ -48,8 +48,8 @@ describe('one starter', () => {
 });
 
 describe('the starter is OpenCode-native', () => {
-  test('scaffolds a kortix_version 2 manifest', () => {
-    expect(manifestFor()).toContain('kortix_version: 2');
+  test('scaffolds a zed_version 2 manifest', () => {
+    expect(manifestFor()).toContain('zed_version: 2');
   });
 
   test('declares no runtimes block and no non-opencode harness', () => {
@@ -65,12 +65,12 @@ describe('the starter is OpenCode-native', () => {
     const manifest = manifestFor();
 
     expect(manifest).toContain('opencode:');
-    expect(manifest).toContain('config_dir: .kortix/opencode');
+    expect(manifest).toContain('config_dir: .zed/opencode');
     expect(manifest).not.toContain('runtime:');
   });
 
   test('its default agent is the declared opencode agent', () => {
-    expect(manifestFor()).toContain('default_agent: kortix');
+    expect(manifestFor()).toContain('default_agent: zed');
   });
 
   test('the manifest advertises no other starter to switch to', () => {
@@ -106,8 +106,8 @@ describe('the starter is OpenCode-native', () => {
   test('keeps the general-knowledge skill kit', () => {
     const paths = filesFor().map((file) => file.path);
 
-    expect(paths).toContain('.kortix/opencode/skills/pdf/SKILL.md');
-    expect(paths).toContain('.kortix/opencode/agents/kortix.md');
+    expect(paths).toContain('.zed/opencode/skills/pdf/SKILL.md');
+    expect(paths).toContain('.zed/opencode/agents/zed.md');
   });
 });
 
@@ -138,13 +138,13 @@ describe('internal minimal build', () => {
   test('lays down the same OpenCode-native v2 floor', () => {
     const manifest = manifestFor('minimal');
 
-    expect(manifest).toContain('kortix_version: 2');
+    expect(manifest).toContain('zed_version: 2');
     expect(manifest).not.toContain('harness: claude');
   });
 
   test('carries no general-knowledge domain skill', () => {
     const paths = filesFor('minimal').map((file) => file.path);
 
-    expect(paths).not.toContain('.kortix/opencode/skills/pdf/SKILL.md');
+    expect(paths).not.toContain('.zed/opencode/skills/pdf/SKILL.md');
   });
 });

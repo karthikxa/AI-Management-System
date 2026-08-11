@@ -25,7 +25,7 @@
  */
 import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, isNull } from 'drizzle-orm';
-import { voiceJoinLinks } from '@kortix/db';
+import { voiceJoinLinks } from '@zed/db';
 import { db } from '../../shared/db';
 
 const TOKEN_PREFIX = 'vjl_';

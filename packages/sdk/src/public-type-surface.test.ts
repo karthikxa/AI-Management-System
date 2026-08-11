@@ -9,7 +9,7 @@ import ts from "typescript";
  *
  * Its sibling `public-surface.test.ts` snapshots `Object.keys(await import(entry))`,
  * which sees only the RUNTIME namespace: `export type` bindings erase at runtime,
- * so `SessionHandle`, `ClassifiedPart`, `KortixProject`, `Kortix`, `SessionModel`,
+ * so `SessionHandle`, `ClassifiedPart`, `ZedProject`, `Zed`, `SessionModel`,
  * `TurnError`, … never appear there. A renamed type-only export therefore sails
  * past that guard green — yet it breaks a consumer's `import type { … }` exactly
  * as hard as a renamed function. This snapshot closes that blind spot by reading

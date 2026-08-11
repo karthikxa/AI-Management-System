@@ -62,7 +62,7 @@ test.describe('12 — Sandbox templates UI', () => {
   let projectId: string;
 
   test.beforeAll(async () => {
-    const email = `e2e-sbx-${Date.now()}@kortix.test`;
+    const email = `e2e-sbx-${Date.now()}@zed.test`;
     user = await createAuthUser(email, authOptions);
     session = await signIn(email, authOptions);
     const projectName = `e2e-ui-tpl-${Math.floor(Date.now() / 1000)}`;
@@ -133,7 +133,7 @@ test.describe('12 — Sandbox templates UI', () => {
       {
         slug: customSlug,
         name: 'E2E image template',
-        image: 'kortix/kortix-sandbox:selfhost-local',
+        image: 'zed/zed-sandbox:selfhost-local',
       },
     );
     expect(created.status).toBe(201);

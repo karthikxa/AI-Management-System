@@ -32,9 +32,9 @@ import {
   revokeAccountToken,
   type AccountToken,
   type CreatedAccountToken,
-  type KortixProject,
-} from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+  type ZedProject,
+} from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import {
   CheckIcon as Check,
   CopyIcon as Copy,
@@ -74,7 +74,7 @@ function ScopeBadge({
   projects,
 }: {
   projectId: string | null;
-  projects: KortixProject[];
+  projects: ZedProject[];
 }) {
   if (!projectId) {
     return (
@@ -114,7 +114,7 @@ function TokenRow({
   onChange,
 }: {
   token: AccountToken;
-  projects: KortixProject[];
+  projects: ZedProject[];
   onChange: () => void;
 }) {
   const tI18nHardcoded = useTranslations('hardcodedUi');
@@ -275,7 +275,7 @@ export function CliTokensTab() {
   const active = tokens.filter((t) => t.status === 'active');
   const revoked = tokens.filter((t) => t.status !== 'active');
 
-  // Env-correct public API base (already includes /v1), e.g. https://api.kortix.com/v1.
+  // Env-correct public API base (already includes /v1), e.g. https://api.zed.com/v1.
   // BACKEND_URL can be root-relative in the sandbox-preview deploy mode ('/v1');
   // absolutize it against the current origin so the curl example is copy-pasteable.
   const rawApiBase = getEnv().BACKEND_URL || 'http://localhost:8008/v1';
@@ -373,9 +373,9 @@ export function CliTokensTab() {
           </span>
         </div>
         <pre className="bg-foreground text-background overflow-x-auto rounded-t-lg px-4 py-3 font-mono text-xs">
-          {`kortix login --token <paste-from-above>
-kortix whoami
-kortix projects ls`}
+          {`zed login --token <paste-from-above>
+zed whoami
+zed projects ls`}
         </pre>
       </div>
 
@@ -409,7 +409,7 @@ function InlineCreate({
   onClose,
   onCreated,
 }: {
-  projects: KortixProject[];
+  projects: ZedProject[];
   onClose: () => void;
   onCreated: () => void;
 }) {
@@ -446,7 +446,7 @@ function InlineCreate({
               )}{' '}
               <code className="bg-background rounded px-1 py-0.5 font-mono text-xs">
                 {tHardcodedUi.raw(
-                  'componentsSettingsCliTokensTab.line279JsxTextKortixLoginTokenLtPasteGt',
+                  'componentsSettingsCliTokensTab.line279JsxTextZedLoginTokenLtPasteGt',
                 )}
               </code>{' '}
               {tHardcodedUi.raw('componentsSettingsCliTokensTab.line281JsxTextInYourTerminal')}

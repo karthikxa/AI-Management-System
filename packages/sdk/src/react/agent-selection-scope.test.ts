@@ -25,13 +25,13 @@ describe('createAgentSelectionScope', () => {
       createAgentSelectionScope({
         projectId: 'project-1',
         sessionId: 'session-1',
-        boundAgentName: 'kortix',
+        boundAgentName: 'zed',
       }),
     ).not.toBe(
       createAgentSelectionScope({
         projectId: 'project-1',
         sessionId: 'session-2',
-        boundAgentName: 'kortix',
+        boundAgentName: 'zed',
       }),
     );
   });

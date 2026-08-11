@@ -18,11 +18,11 @@ export interface ModelConfig {
 }
 
 /**
- * Legacy Kortix model registry for the `/v1/router` passthrough.
+ * Legacy Zed model registry for the `/v1/router` passthrough.
  *
- * Emptied: opencode now talks to the LLM GATEWAY (KORTIX_LLM_BASE_URL) with the
- * managed catalog ids — it no longer sends the old `kortix/minimax-m27` /
- * `kortix/kimi` style aliases to `/v1/router`. The router is now a pure
+ * Emptied: opencode now talks to the LLM GATEWAY (ZED_LLM_BASE_URL) with the
+ * managed catalog ids — it no longer sends the old `zed/minimax-m27` /
+ * `zed/kimi` style aliases to `/v1/router`. The router is now a pure
  * OpenRouter passthrough: any model id is forwarded as-is with live pricing from
  * models.dev (registry metadata is only an optional fallback). Add an entry here
  * only if a client sends an alias OpenRouter wouldn't recognise.
@@ -107,7 +107,7 @@ export function getAllModels() {
   return Object.entries(MODELS).map(([id, cfg]) => ({
     id,
     object: 'model' as const,
-    owned_by: 'kortix',
+    owned_by: 'zed',
     context_window: cfg.contextWindow,
     pricing: {
       input: cfg.inputPer1M,

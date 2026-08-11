@@ -2,7 +2,7 @@ import { createAccountToken } from '../src/repositories/account-tokens';
 import { authorizeV2 } from '../src/iam/engine-v2';
 import { ACCOUNT_ACTIONS } from '../src/iam';
 import { db } from '../src/shared/db';
-import { accountTokens } from '@kortix/db';
+import { accountTokens } from '@zed/db';
 import { eq, desc } from 'drizzle-orm';
 
 const ACC = 'fbea71d0-9655-4ab4-aca5-1b68e1ae7f71';

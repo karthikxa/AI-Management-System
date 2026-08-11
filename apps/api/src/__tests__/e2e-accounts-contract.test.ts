@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import { accountInvitations, accountMembers, accounts, projectMembers, projects } from '@kortix/db';
+import { accountInvitations, accountMembers, accounts, projectMembers, projects } from '@zed/db';
 
 const OWNER_ID = '00000000-0000-4000-a000-000000000001';
 const MEMBER_ID = '00000000-0000-4000-a000-000000000002';

@@ -150,12 +150,12 @@ export function MarketplaceExplore({
 
   const searching = debounced.length > 0;
   const isAll = source === ALL_SOURCES;
-  const showProjects = !searching && (isAll || source === 'kortix');
+  const showProjects = !searching && (isAll || source === 'zed');
   const sourceLabel = isAll
     ? null
     : displayCompanyLabel(source, marketplaces.find((m) => m.id === source)?.label);
 
-  // Hide items that ship inside a project (e.g. the Kortix Starter skills) from
+  // Hide items that ship inside a project (e.g. the Zed Starter skills) from
   // the main grid — the project represents them here. They stay fully browseable
   // by id and addable individually (project detail, add-to-project), just not as
   // their own tiles on the landing grid.
@@ -215,7 +215,7 @@ export function MarketplaceExplore({
               Install a project, or add a skill
             </h1>
             <p className="text-muted-foreground text-sm leading-relaxed text-pretty">
-              Install a full, working Kortix project in one click — or add skills from every source
+              Install a full, working Zed project in one click — or add skills from every source
               into a project you already have.
             </p>
           </div>
@@ -285,7 +285,7 @@ export function MarketplaceExplore({
           <section className="scroll-mt-28">
             <SectionHeading
               title="Install a project"
-              subtitle="A full, working Kortix project — spun up as its own project and set up for you in one session."
+              subtitle="A full, working Zed project — spun up as its own project and set up for you in one session."
             />
             <MarketplaceProjectsGrid items={projectItems} query={debounced} size="featured" />
           </section>

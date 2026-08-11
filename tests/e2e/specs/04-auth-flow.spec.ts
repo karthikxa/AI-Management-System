@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { installBrowserSession, signIn } from '../helpers/session-auth';
 
-const ownerEmail = process.env.E2E_OWNER_EMAIL || 'test-e2e@kortix.ai';
+const ownerEmail = process.env.E2E_OWNER_EMAIL || 'test-e2e@zed.ai';
 const ownerPassword = process.env.E2E_OWNER_PASSWORD || 'e2e-testpass-123';
 const authOptions = {
   supabaseUrl: process.env.E2E_SUPABASE_URL || 'http://localhost:13740',
   password: ownerPassword,
-  envFiles: [`${process.env.HOME}/.kortix/.env`, 'apps/web/.env', 'apps/api/.env'],
+  envFiles: [`${process.env.HOME}/.zed/.env`, 'apps/web/.env', 'apps/api/.env'],
 };
 
 test.describe('04 — Authentication flow', () => {

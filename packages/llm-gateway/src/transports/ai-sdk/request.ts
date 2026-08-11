@@ -1,7 +1,7 @@
 import type { BedrockProviderOptions } from '@ai-sdk/amazon-bedrock';
 import type { AnthropicProviderOptions } from '@ai-sdk/anthropic';
 import type { OpenAIChatLanguageModelOptions } from '@ai-sdk/openai';
-import { type CatalogModel, clampGenerationConfig } from '@kortix/llm-catalog';
+import { type CatalogModel, clampGenerationConfig } from '@zed/llm-catalog';
 import {
   type JSONValue,
   type ModelMessage,
@@ -789,7 +789,7 @@ function normalizeRequest(
     (typeof body.max_completion_tokens === 'number' ? body.max_completion_tokens : undefined);
 
   // Gate ONCE against the resolved model's real capabilities, REUSING the
-  // canonical clamp from @kortix/llm-catalog — the exact gate the host already
+  // canonical clamp from @zed/llm-catalog — the exact gate the host already
   // runs on route DEFAULTS (see routing/resolve-route.ts), now applied to the
   // client-supplied values that path never touched. Only when a model is known:
   // `clampGenerationConfig` treats an unknown model as "supports nothing" and
@@ -995,7 +995,7 @@ export function buildAiSdkArgs(
     // comment above). Ignored for every other family.
     providerName?: string;
     // The resolved catalog model for this wire request (see index.ts, which
-    // resolves it via @kortix/llm-catalog's `catalogModelForWireModel`). When
+    // resolves it via @zed/llm-catalog's `catalogModelForWireModel`). When
     // present, the four capability-gated generation params are clamped against
     // its real models.dev capabilities in `normalizeRequest`. OPTIONAL: absent
     // → no gating (permissive parity — every param passes through unchanged).

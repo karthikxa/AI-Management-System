@@ -1,14 +1,14 @@
 /**
  * The two agent-facing tools: `send_prompt` (fire-and-forget hand-off to the
- * Kortix session) and `run_command` (short, waited-on sandbox check). See
+ * Zed session) and `run_command` (short, waited-on sandbox check). See
  * instructions.ts for how the model is told to use them, and
- * kortix-client.ts for the HTTP calls they wrap.
+ * zed-client.ts for the HTTP calls they wrap.
  */
 import { type FunctionTool, tool } from '@livekit/agents';
 import { z } from 'zod';
 import { nextAckLine } from './ack';
 import type { CallContext } from './call-context';
-import { runCommandInSandbox, sendPromptToKortix } from './kortix-client';
+import { runCommandInSandbox, sendPromptToZed } from './zed-client';
 
 const sendPromptParams = z.object({
   request: z
@@ -32,7 +32,7 @@ const runCommandParams = z.object({
   // consumer, before `execute()` below is ever invoked. That is exactly how
   // this tool went silent: the model calls it, the framework logs the
   // attempt, argument parsing throws, a ToolError goes back to the model,
-  // and `execute()` — and therefore the fetch in kortix-client.ts — never
+  // and `execute()` — and therefore the fetch in zed-client.ts — never
   // runs. See generation.js's `performToolExecutions` in the installed
   // @livekit/agents package for the parse-then-execute ordering.
   cwd: z
@@ -64,20 +64,20 @@ export function buildTools(): VoiceTools {
   const send_prompt = tool<CallContext, typeof sendPromptParams, string | undefined>({
     name: 'send_prompt',
     description:
-      'Hand a request to the Kortix agent for this project. Use for anything needing real ' +
+      'Hand a request to the Zed agent for this project. Use for anything needing real ' +
       'information, project files, connectors, memory, or actions. Asynchronous: returns the ' +
-      'instant the request is queued, not when Kortix has an answer. This tool SPEAKS the ' +
+      'instant the request is queued, not when Zed has an answer. This tool SPEAKS the ' +
       '"let me check" line itself — say nothing after a successful hand-off, and do not answer ' +
       'the question yourself. The answer arrives later as something to speak.',
     parameters: sendPromptParams,
     execute: async ({ request }, { ctx }) => {
       const call = ctx.userData;
-      const result = await sendPromptToKortix(call, request);
+      const result = await sendPromptToZed(call, request);
 
       if (!result.ok) {
         // Two genuinely different failures, and conflating them is how a
         // refusal ("you already asked — wait") got spoken as "I could not reach
-        // Kortix", which is false and invites an immediate retry.
+        // Zed", which is false and invites an immediate retry.
         //
         // Both return a STRING on purpose: a returned tool output is what makes
         // the framework generate a reply (see the success path below), and here
@@ -85,7 +85,7 @@ export function buildTools(): VoiceTools {
         // text is written by apps/api to be relayed as-is; it is guidance for
         // this model, not an error string.
         if (result.kind === 'refused') return result.error;
-        return `Could not reach Kortix (${result.error}). Tell the room you could not send that request right now.`;
+        return `Could not reach Zed (${result.error}). Tell the room you could not send that request right now.`;
       }
 
       // THE ACK IS SPOKEN HERE, LITERALLY — not returned as an instruction for
@@ -121,7 +121,7 @@ export function buildTools(): VoiceTools {
       console.log('[voice-agent] run_command execute() called', { command, cwd });
       const call = ctx.userData;
       // Normalize the schema's `null` (see the param doc above) to
-      // `undefined` for kortix-client.ts / apps/api, which only know `cwd`
+      // `undefined` for zed-client.ts / apps/api, which only know `cwd`
       // as "present" or "absent", never `null`.
       const result = await runCommandInSandbox(call, command, cwd ?? undefined);
       console.log('[voice-agent] run_command execute() got result', result);

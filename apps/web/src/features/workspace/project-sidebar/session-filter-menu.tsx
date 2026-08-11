@@ -25,7 +25,7 @@ import {
 import { Slack } from '@/features/icon/icons/slack';
 import { Telegram } from '@/features/icon/icons/telegram';
 import { EMPTY_LIST, useSessionFilterStore } from '@/stores/session-filter-store';
-import type { ProjectSession } from '@kortix/sdk';
+import type { ProjectSession } from '@zed/sdk';
 import {
   CalendarDotsIcon as CalendarClock,
   EnvelopeIcon as Mail,

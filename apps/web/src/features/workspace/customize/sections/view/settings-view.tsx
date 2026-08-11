@@ -46,10 +46,10 @@ import {
   listProjectTriggers,
   setProjectTriggersActivation,
   updateProject,
-  type KortixProject,
+  type ZedProject,
   type ProjectDetail,
-} from '@kortix/sdk';
-import { contract, invalidateProject, qk, refreshProjectProviderState } from '@kortix/sdk/react';
+} from '@zed/sdk';
+import { contract, invalidateProject, qk, refreshProjectProviderState } from '@zed/sdk/react';
 import { TrashIcon } from '@phosphor-icons/react';
 import {
   renameOnError,
@@ -180,7 +180,7 @@ export function SettingsView({ projectId }: { projectId: string }) {
   );
 }
 
-function RepositoryCard({ project, canManage }: { project: KortixProject; canManage: boolean }) {
+function RepositoryCard({ project, canManage }: { project: ZedProject; canManage: boolean }) {
   const tHardcodedUi = useTranslations('hardcodedUi');
   const queryClient = useQueryClient();
   const repoUrl = project.repo_url;

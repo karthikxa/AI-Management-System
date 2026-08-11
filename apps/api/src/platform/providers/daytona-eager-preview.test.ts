@@ -5,10 +5,10 @@ mock.module('../../config', () => ({
     DAYTONA_API_KEY: 'test-key',
     DAYTONA_SERVER_URL: '',
     DAYTONA_TARGET: '',
-    INTERNAL_KORTIX_ENV: 'test',
-    KORTIX_URL: 'https://api.example.com',
-    KORTIX_SANDBOX_AUTOARCHIVE_MINUTES: 4320,
-    KORTIX_SANDBOX_AUTODELETE_MINUTES: -1,
+    INTERNAL_ZED_ENV: 'test',
+    ZED_URL: 'https://api.example.com',
+    ZED_SANDBOX_AUTOARCHIVE_MINUTES: 4320,
+    ZED_SANDBOX_AUTODELETE_MINUTES: -1,
   },
   SANDBOX_VERSION: 'test-version',
 }));
@@ -55,8 +55,8 @@ const createOpts = {
   accountId: 'acc-1',
   userId: 'user-1',
   name: 'session-eager',
-  snapshot: 'kortix-default-test',
-  envVars: { KORTIX_SANDBOX_TOKEN: 'kortix_sb_test' },
+  snapshot: 'zed-default-test',
+  envVars: { ZED_SANDBOX_TOKEN: 'zed_sb_test' },
 } as never;
 
 const settle = () => new Promise((r) => setTimeout(r, 50));
@@ -109,12 +109,12 @@ test('provisioning does not wait on the warm — create resolves before the link
   };
 });
 
-test('App workload bootstrap starts kortix-appd through the Daytona toolbox', async () => {
+test('App workload bootstrap starts zed-appd through the Daytona toolbox', async () => {
   processCommands = [];
 
   await new DaytonaProvider().ensureAppRuntimeStarted('sbx-eager-1');
 
   expect(processCommands).toHaveLength(1);
-  expect(processCommands[0]?.command).toBe('/kortix/bin/kortix-appd --daemon');
+  expect(processCommands[0]?.command).toBe('/zed/bin/zed-appd --daemon');
   expect(processCommands[0]?.timeout).toBe(15);
 });

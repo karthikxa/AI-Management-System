@@ -21,7 +21,7 @@ import {
   lowestFreeSlot, sh, run, which, portInUse, repoRoot, defaultWorktreePath, branchExists,
   renderSupabaseProject, runMigrate, supa, supaStatusEnv, slotCredsFromStatus, apiLaunchEnv, webLaunchEnv, gatewayLaunchEnv,
   writeMarker, ensureDeps, checkDeps, supaWorkdir, slotDir, startTunnel, startStripeListen, WT_HOME, REGISTRY_PATH,
-  startSupabaseDb, startSupabaseFullStack, hasKortixSchema, ensureRuntimeArtifacts, dbModeOf,
+  startSupabaseDb, startSupabaseFullStack, hasZedSchema, ensureRuntimeArtifacts, dbModeOf,
   ensurePrimarySupabase, primaryCredsFromStatus, SHARED_SUPABASE_PORTS,
   killTree, stackRoots, stackPids, listenersOn, psTable, cwdTable,
   listenPorts, buildRows, sortRows, filterRows, renderRail, renderDetail, toJsonRows,
@@ -32,9 +32,9 @@ import { existsSync, rmSync } from 'node:fs';
 import * as clack from '@clack/prompts';
 import pc from 'picocolors';
 
-const API_FILTER = 'kortix-api';
-const WEB_FILTER = 'Kortix-Computer-Frontend';
-const GATEWAY_FILTER = '@kortix/llm-gateway-server';
+const API_FILTER = 'zed-api';
+const WEB_FILTER = 'Zed-Computer-Frontend';
+const GATEWAY_FILTER = '@zed/llm-gateway-server';
 
 const step = (s: string) => console.log(`\n${pc.cyan('▸')} ${pc.bold(s)}`);
 const sub = (s: string) => console.log(`  ${pc.dim(s)}`);
@@ -366,7 +366,7 @@ async function cmdCreate(a: Args) {
       if (tries === 5) die('could not find a free port block after 6 slots');
     }
     const ports = computePorts(slot);
-    const e: SlotEntry = { slot, projectId: `kortix-wt-${name}`, path: wtPath, branch, ports, dbMode: requestedDbMode, createdAt: new Date().toISOString(), status: 'created' };
+    const e: SlotEntry = { slot, projectId: `zed-wt-${name}`, path: wtPath, branch, ports, dbMode: requestedDbMode, createdAt: new Date().toISOString(), status: 'created' };
     reg.slots[name] = e; saveRegistry(reg);
     return e;
   });
@@ -403,7 +403,7 @@ async function cmdCreate(a: Args) {
   // isolated node_modules/.pnpm virtual layer (separate working tree), so a
   // sibling install can't touch it; the content store is concurrency-safe by
   // design. A per-worktree --store-dir defeats hardlink dedup and materialised
-  // a full ~2.8GB copy per worktree (91 of them once leaked 244GB into ~/.kortix).
+  // a full ~2.8GB copy per worktree (91 of them once leaked 244GB into ~/.zed).
   step('Installing dependencies (shared pnpm store)');
   if (await run(['pnpm', 'install'], { cwd: wtPath }) !== 0) die(`pnpm install failed — fix and re-run \`pnpm worktree create --name ${name}\``);
 
@@ -416,7 +416,7 @@ async function cmdCreate(a: Args) {
 
     step('Building schema (prereqs + pnpm migrate)');
     if (await runMigrate(wtPath, entry.ports) !== 0) die(`migrate failed — fix and re-run \`pnpm worktree create --name ${name}\``);
-    if (!hasKortixSchema(entry.ports)) die(`schema not built — \`pnpm migrate\` produced no kortix schema on branch "${branch}".\n  Check packages/db/migrations/*.sql exist on this branch and the Supabase prereqs applied (psql + Basejump).`);
+    if (!hasZedSchema(entry.ports)) die(`schema not built — \`pnpm migrate\` produced no zed schema on branch "${branch}".\n  Check packages/db/migrations/*.sql exist on this branch and the Supabase prereqs applied (psql + Basejump).`);
 
     step(`Starting isolated Supabase on api ${entry.ports.sbApi}`);
     if (await startSupabaseFullStack(name, entry.ports) !== 0) die('supabase start failed');
@@ -478,7 +478,7 @@ async function cmdStart(a: Args) {
     if (await startSupabaseDb(name) !== 0) die('supabase db start failed');
     step('Applying pending migrations (pnpm migrate)');
     if (await runMigrate(e.path, e.ports) !== 0) die('migrate failed');
-    if (!hasKortixSchema(e.ports)) die(`schema not built for "${name}"`);
+    if (!hasZedSchema(e.ports)) die(`schema not built for "${name}"`);
     if (!sh(['supabase', '--workdir', supaWorkdir(name), 'status']).ok) {
       step(`Starting Supabase for "${name}"`);
       if (await startSupabaseFullStack(name, e.ports) !== 0) die('supabase start failed');
@@ -495,8 +495,8 @@ async function cmdStart(a: Args) {
       die('primary Supabase credentials are unavailable. Start the primary local stack once with `pnpm dev`, or recreate this worktree with `--db` for an isolated database.');
     }
     const sharedSchemaPorts = { ...e.ports, ...SHARED_SUPABASE_PORTS };
-    if (!hasKortixSchema(sharedSchemaPorts)) {
-      die('the shared primary Supabase DB does not have the kortix schema. Run the primary stack once to initialize it, or recreate this worktree with `--db` for an isolated database.');
+    if (!hasZedSchema(sharedSchemaPorts)) {
+      die('the shared primary Supabase DB does not have the zed schema. Run the primary stack once to initialize it, or recreate this worktree with `--db` for an isolated database.');
     }
     sub(`${creds.supabaseUrl} · ${creds.dbUrl}`);
   }
@@ -510,7 +510,7 @@ async function cmdStart(a: Args) {
   if (!a.flags['no-tunnel']) {
     step('Cloudflare tunnel (cloud sandbox callback)');
     tunnel = await startTunnel(e.ports.api);
-    if (tunnel) sub(`KORTIX_URL → ${tunnel.url}`);
+    if (tunnel) sub(`ZED_URL → ${tunnel.url}`);
     else warn('no tunnel (cloudflared missing or timed out) — cloud sandboxes won’t be reachable; `brew install cloudflared` and restart, or pass --no-tunnel to silence');
   }
 
@@ -530,7 +530,7 @@ async function cmdStart(a: Args) {
   if (stripe) console.log(`${pc.dim('   billing')} ${pc.green('on')} ${pc.dim('· stripe webhooks → :' + e.ports.api)}`);
   console.log(pc.dim('   (Ctrl+C stops the dev servers cleanly)\n'));
 
-  const api = Bun.spawn(['pnpm', '--filter', API_FILTER, 'dev'], { cwd: e.path, env: { ...process.env, ...apiLaunchEnv(e.ports, creds, { kortixUrl: tunnel?.url, stripeWebhookSecret: stripe?.secret }) }, stdout: 'inherit', stderr: 'inherit' });
+  const api = Bun.spawn(['pnpm', '--filter', API_FILTER, 'dev'], { cwd: e.path, env: { ...process.env, ...apiLaunchEnv(e.ports, creds, { zedUrl: tunnel?.url, stripeWebhookSecret: stripe?.secret }) }, stdout: 'inherit', stderr: 'inherit' });
   const gateway = Bun.spawn(['pnpm', '--filter', GATEWAY_FILTER, 'dev'], { cwd: e.path, env: { ...process.env, ...gatewayLaunchEnv(e.ports) }, stdout: 'inherit', stderr: 'inherit' });
   const web = Bun.spawn(['pnpm', '--filter', WEB_FILTER, 'dev'], { cwd: e.path, env: { ...process.env, ...webLaunchEnv(e.ports, creds, { billing: !!stripe }) }, stdout: 'inherit', stderr: 'inherit' });
   void waitForGateway(e.ports.gateway, gateway);

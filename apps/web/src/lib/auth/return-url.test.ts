@@ -164,7 +164,7 @@ describe('resolveNewAccountReturnUrl', () => {
     ]) {
       const resolved = resolveNewAccountReturnUrl(crafted);
       // What the browser will actually open, not what the string looks like.
-      expect(new URL(`https://kortix.local${resolved}`).pathname).not.toContain('319395c1');
+      expect(new URL(`https://zed.local${resolved}`).pathname).not.toContain('319395c1');
       expect(resolved).toBe(PROJECT_LANDING_PATH);
     }
   });
@@ -175,7 +175,7 @@ describe('resolveAuthRedirectBaseUrl', () => {
     expect(resolveAuthRedirectBaseUrl('http://localhost:3000', 'https://staging.example.com')).toBe(
       'http://localhost:3000',
     );
-    expect(resolveAuthRedirectBaseUrl('https://kortix.com', 'https://kortix.com')).toBe('https://kortix.com');
+    expect(resolveAuthRedirectBaseUrl('https://zed.com', 'https://zed.com')).toBe('https://zed.com');
   });
 
   test('leaves loopback origins as-is so local dev stays on localhost', () => {
@@ -187,14 +187,14 @@ describe('resolveAuthRedirectBaseUrl', () => {
 
   test('falls back to APP_URL when the origin is a 0.0.0.0 wildcard bind (self-host behind proxy)', () => {
     // The exact live symptom: SSO on self-host landing on https://0.0.0.0:3000.
-    expect(resolveAuthRedirectBaseUrl('https://0.0.0.0:3000', 'https://essentia.kortix.cloud')).toBe(
-      'https://essentia.kortix.cloud',
+    expect(resolveAuthRedirectBaseUrl('https://0.0.0.0:3000', 'https://essentia.zed.cloud')).toBe(
+      'https://essentia.zed.cloud',
     );
-    expect(resolveAuthRedirectBaseUrl('http://0.0.0.0:3000', 'https://essentia.kortix.cloud/')).toBe(
-      'https://essentia.kortix.cloud',
+    expect(resolveAuthRedirectBaseUrl('http://0.0.0.0:3000', 'https://essentia.zed.cloud/')).toBe(
+      'https://essentia.zed.cloud',
     );
-    expect(resolveAuthRedirectBaseUrl('https://[::]:3000', 'https://essentia.kortix.cloud')).toBe(
-      'https://essentia.kortix.cloud',
+    expect(resolveAuthRedirectBaseUrl('https://[::]:3000', 'https://essentia.zed.cloud')).toBe(
+      'https://essentia.zed.cloud',
     );
   });
 

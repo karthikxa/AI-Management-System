@@ -61,7 +61,7 @@ interface AppResponse {
   desired_state: string;
 }
 
-test.describe("18 — Kortix Apps UI", () => {
+test.describe("18 — Zed Apps UI", () => {
   test("shows experimental Apps, enables it in place, and renders a read-only deployment index", async ({
     context,
     page,
@@ -211,7 +211,7 @@ test.describe("18 — Kortix Apps UI", () => {
       } else {
         const environmentPrefix = env.target === "prod" ? "prod" : env.target;
         expect(seededUrl.hostname).toMatch(
-          new RegExp(`^${environmentPrefix}-.+\\.apps\\.kortix\\.com$`),
+          new RegExp(`^${environmentPrefix}-.+\\.apps\\.zed\\.com$`),
         );
       }
 
@@ -239,7 +239,7 @@ test.describe("18 — Kortix Apps UI", () => {
         page.getByRole("main").getByText("Experimental", { exact: true }),
       ).toBeVisible();
       await expect(
-        page.getByText("kortix apps deploy .", { exact: true }),
+        page.getByText("zed apps deploy .", { exact: true }),
       ).toBeVisible();
       await expect(page.getByRole("button", { name: "New App" })).toHaveCount(
         0,
@@ -267,7 +267,7 @@ test.describe("18 — Kortix Apps UI", () => {
       ).toBeVisible();
       await expect
         .poll(() => page.evaluate(() => navigator.clipboard.readText()))
-        .toBe(`kortix apps deploy . --app ${seeded.app_id}`);
+        .toBe(`zed apps deploy . --app ${seeded.app_id}`);
 
       await seededRow.getByRole("button", { name: "Show versions" }).click();
       await expect(seededRow.getByText("No deployments yet.")).toBeVisible();

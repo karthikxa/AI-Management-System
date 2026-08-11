@@ -1,17 +1,17 @@
 /**
- * Speaking a Kortix answer back into the call.
+ * Speaking a Zed answer back into the call.
  *
- * The delivery half of Kortix→voice already works: `promptVoiceAgent` puts a
+ * The delivery half of Zed→voice already works: `promptVoiceAgent` puts a
  * message on the call's LiveKit data channel and the worker turns it into
  * speech, no human utterance required. What was missing was anything to TRIGGER
- * it — so `ask_kortix` handed work to the session and the room waited forever.
+ * it — so `ask_zed` handed work to the session and the room waited forever.
  *
  * The obvious trigger would be the sandbox's own turn relay, but that relay is
  * gated on Slack env vars (`slackRelayContext` in
- * apps/kortix-sandbox-agent-server/src/main.ts — it returns null unless
+ * apps/zed-sandbox-agent-server/src/main.ts — it returns null unless
  * SLACK_THREAD_TS/SLACK_CHANNEL_ID is set) and knows nothing about voice, so a
  * voice session's `step`/`answer`/`end` POSTs never leave the box. Fixing that
- * properly means changing the kortix-agent binary, which is BAKED INTO THE
+ * properly means changing the zed-agent binary, which is BAKED INTO THE
  * SANDBOX IMAGE — a rebuild plus a rollout, and every sandbox that already
  * exists keeps the old binary regardless.
  *
@@ -19,17 +19,17 @@
  * `opencode-mapping.ts` already uses to read a session's OpenCode state. That
  * works on sandboxes that exist TODAY and needs nothing rebuilt.
  *
- * Deliberately NOT on the request path: `askKortix` fires this and returns, so
- * the `ask_kortix` MCP tool still answers in milliseconds. Nothing here can
+ * Deliberately NOT on the request path: `askZed` fires this and returns, so
+ * the `ask_zed` MCP tool still answers in milliseconds. Nothing here can
  * block a turn.
  */
 import { eq } from 'drizzle-orm';
-import { projectSessions, sessionSandboxes } from '@kortix/db';
+import { projectSessions, sessionSandboxes } from '@zed/db';
 import { db } from '../../shared/db';
 import { sandboxOpencodeEndpoint } from '../../projects/opencode-mapping';
 import { sandboxRuntimeRequestHeaders } from '../../projects/sandbox-fetch';
 import { promptVoiceAgent, settleAsk } from './runtime';
-import { kortixError, kortixResult } from './utterance';
+import { zedError, zedResult } from './utterance';
 
 /**
  * How long to wait for a turn before giving up. Agent turns can be minutes.
@@ -171,7 +171,7 @@ function latestCompletedAssistantId(messages: OpencodeMessageLite[]): string | n
  * Every way this watch can end, in the words the transcript records.
  *
  * These are not decoration. This function owns the LIFETIME of one hand-off:
- * askKortix opens it (writing the ask row that blocks a second hand-off), and
+ * askZed opens it (writing the ask row that blocks a second hand-off), and
  * whichever of these outcomes happens closes it. Anything that ends the watch
  * without naming an outcome would leave the call unable to hand anything over
  * until ask-ledger.ts's expiry catches it minutes later.
@@ -261,7 +261,7 @@ async function watchForAnswer(callId: string, sessionId: string): Promise<WatchO
 
     const failure = errorMessage(message);
     if (failure) {
-      await promptVoiceAgent(callId, kortixError(failure)).catch(() => {});
+      await promptVoiceAgent(callId, zedError(failure)).catch(() => {});
       return 'failed';
     }
 
@@ -274,7 +274,7 @@ async function watchForAnswer(callId: string, sessionId: string): Promise<WatchO
       return 'nothing to say';
     }
 
-    await promptVoiceAgent(callId, kortixResult(text)).catch((err) =>
+    await promptVoiceAgent(callId, zedResult(text)).catch((err) =>
       console.error('[voice] failed to speak answer', err),
     );
     return 'answered';

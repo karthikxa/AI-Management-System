@@ -19,12 +19,12 @@ import { useState } from 'react';
 import { RadioGroup } from '@/components/ui/radio-group';
 import { flattenModels } from '@/features/session/session-chat-input';
 import { useModelConnectionGate } from '@/features/session/use-model-connection-gate';
-import { useRuntimeProviders } from '@kortix/sdk/react';
+import { useRuntimeProviders } from '@zed/sdk/react';
 
-import { Kortix } from '@/features/icon/icons/kortix';
+import { Zed } from '@/features/icon/icons/zed';
 import { SelectionRow, StepShell } from '../step-shell';
 
-type PlanChoice = 'kortix' | 'byok' | 'later';
+type PlanChoice = 'zed' | 'byok' | 'later';
 
 export function PlanStep({ onContinue }: { onContinue: () => void }) {
   const { data: providers } = useRuntimeProviders();
@@ -34,7 +34,7 @@ export function PlanStep({ onContinue }: { onContinue: () => void }) {
 
   // Nothing opens until Continue. This is the whole point of the step.
   const handleContinue = () => {
-    if (choice === 'kortix') openUpgrade();
+    if (choice === 'zed') openUpgrade();
     else if (choice === 'byok') openConnectProvider('providers');
     else onContinue();
   };
@@ -52,7 +52,7 @@ export function PlanStep({ onContinue }: { onContinue: () => void }) {
         // The label names what the button will actually do, so the modal that
         // opens is never a surprise.
         primaryLabel={
-          choice === 'kortix' ? 'See plans' : choice === 'byok' ? 'Add a key' : 'Continue'
+          choice === 'zed' ? 'See plans' : choice === 'byok' ? 'Add a key' : 'Continue'
         }
         onPrimary={handleContinue}
       >
@@ -66,10 +66,10 @@ export function PlanStep({ onContinue }: { onContinue: () => void }) {
         >
           {showUpgradeOption && (
             <SelectionRow
-              value="kortix"
-              label="Use Kortix models"
+              value="zed"
+              label="Use Zed models"
               description="Instant access, higher limits, nothing to configure"
-              leading={<Kortix className="size-5 shrink-0" />}
+              leading={<Zed className="size-5 shrink-0" />}
             />
           )}
           <SelectionRow

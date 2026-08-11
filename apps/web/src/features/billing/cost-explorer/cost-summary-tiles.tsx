@@ -1,4 +1,4 @@
-import type { CostSummary } from '@kortix/sdk';
+import type { CostSummary } from '@zed/sdk';
 
 import { Skeleton } from '@/components/ui/skeleton';
 

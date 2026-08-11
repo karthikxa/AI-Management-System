@@ -7,11 +7,11 @@ import {
 } from './builder';
 
 test('background snapshot build dedup is provider-qualified', () => {
-  expect(backgroundBuildKey('daytona', 'kortix-default-abc')).not.toBe(
-    backgroundBuildKey('e2b', 'kortix-default-abc'),
+  expect(backgroundBuildKey('daytona', 'zed-default-abc')).not.toBe(
+    backgroundBuildKey('e2b', 'zed-default-abc'),
   );
-  expect(backgroundBuildKey('e2b', 'kortix-default-abc')).toBe(
-    'e2b:kortix-default-abc',
+  expect(backgroundBuildKey('e2b', 'zed-default-abc')).toBe(
+    'e2b:zed-default-abc',
   );
 });
 
@@ -47,7 +47,7 @@ test('a second replica waits for an existing provider build instead of starting 
   let index = 0;
   const result = await waitForProviderBuild(
     { getSnapshotState: async () => states[Math.min(index++, states.length - 1)] },
-    'kortix-default-current',
+    'zed-default-current',
     { timeoutMs: 100, pollMs: 0 },
   );
   expect(result).toBe('active');
@@ -56,7 +56,7 @@ test('a second replica waits for an existing provider build instead of starting 
 test('a provider build that never settles remains building and is never duplicated', async () => {
   const result = await waitForProviderBuild(
     { getSnapshotState: async () => 'building' },
-    'kortix-default-current',
+    'zed-default-current',
     { timeoutMs: 0, pollMs: 0 },
   );
   expect(result).toBe('building');

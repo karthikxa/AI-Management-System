@@ -4,13 +4,13 @@ import { CliDemo } from '@/components/home/cli-demo';
 import { Reveal } from '@/components/home/reveal';
 import { HighlightedCode } from '@/components/markdown/code';
 import { Badge } from '@/components/ui/badge';
-import { KortixAsterisk } from '@/components/ui/kortix-asterisk';
+import { ZedAsterisk } from '@/components/ui/zed-asterisk';
 import { Button } from '@/components/ui/marketing/button';
-import KortixGrid from '@/components/ui/marketing/gridder';
-import { KortixLetterField } from '@/components/ui/marketing/kortix-letter-field';
+import ZedGrid from '@/components/ui/marketing/gridder';
+import { ZedLetterField } from '@/components/ui/marketing/zed-letter-field';
 import { Github } from '@/features/icon/icons/github';
 import { useCopy } from '@/hooks/use-copy';
-import { KORTIX_CLI_INSTALL_COMMAND } from '@/lib/kortix-cli';
+import { ZED_CLI_INSTALL_COMMAND } from '@/lib/zed-cli';
 import { cn } from '@/lib/utils';
 import {
   CheckIcon as AiOutlineCheck,
@@ -33,7 +33,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useCallback } from 'react';
 
-const GITHUB_URL = 'https://github.com/kortix-ai/suna';
+const GITHUB_URL = 'https://github.com/zed-ai/suna';
 const DOCS_URL = '/docs';
 const fav = (d: string) => `https://www.google.com/s2/favicons?domain=${d}&sz=128`;
 
@@ -107,7 +107,7 @@ function Working({ children }: { children: React.ReactNode }) {
   return (
     <Line className="items-center justify-start gap-2">
       <span className={C.s}>
-        <KortixAsterisk
+        <ZedAsterisk
           parentClass={tI18nHardcoded.raw(
             'autoAppPublicMarketingDevelopersPageJsxAttrParentClassAnimateSpin79162867',
           )}
@@ -166,52 +166,52 @@ const CLI_GROUPS: { label: string; icon: typeof TerminalIcon; cmds: [string, str
     label: 'Scaffold & ship',
     icon: TerminalIcon,
     cmds: [
-      ['kortix init', 'Scaffold kortix.yaml + .kortix/'],
-      ['kortix ship', 'Commit, push, link & go live'],
-      ['kortix validate', 'Type-check your manifest'],
+      ['zed init', 'Scaffold zed.yaml + .zed/'],
+      ['zed ship', 'Commit, push, link & go live'],
+      ['zed validate', 'Type-check your manifest'],
     ],
   },
   {
     label: 'Run & talk',
     icon: Workflow,
     cmds: [
-      ['kortix sessions', 'Spawn & manage sandbox sessions'],
-      ['kortix chat', "Talk to a session's agent"],
-      ['kortix files', 'Browse the repo, diffs & branches'],
+      ['zed sessions', 'Spawn & manage sandbox sessions'],
+      ['zed chat', "Talk to a session's agent"],
+      ['zed files', 'Browse the repo, diffs & branches'],
     ],
   },
   {
     label: 'Automate',
     icon: GitBranch,
     cmds: [
-      ['kortix triggers', 'Cron & webhook automations'],
-      ['kortix channels', 'Connect Slack & chat surfaces'],
+      ['zed triggers', 'Cron & webhook automations'],
+      ['zed channels', 'Connect Slack & chat surfaces'],
     ],
   },
   {
     label: 'Connect',
     icon: Plug,
     cmds: [
-      ['kortix connectors', 'Wire up 3,000+ tools'],
-      ['kortix secrets', 'Manage encrypted secrets'],
-      ['kortix env', 'Pull / push as dotenv'],
+      ['zed connectors', 'Wire up 3,000+ tools'],
+      ['zed secrets', 'Manage encrypted secrets'],
+      ['zed env', 'Pull / push as dotenv'],
     ],
   },
   {
     label: 'Review',
     icon: GitPullRequest,
     cmds: [
-      ['kortix cr', 'Open, review & merge change requests'],
-      ['kortix access', 'Invite, grant & revoke access'],
+      ['zed cr', 'Open, review & merge change requests'],
+      ['zed access', 'Invite, grant & revoke access'],
     ],
   },
   {
     label: 'Operate',
     icon: KeyRound,
     cmds: [
-      ['kortix self-host', 'Run your own Kortix cloud'],
-      ['kortix hosts use', 'Switch cloud ↔ local'],
-      ['kortix providers', 'Bring your own model keys'],
+      ['zed self-host', 'Run your own Zed cloud'],
+      ['zed hosts use', 'Switch cloud ↔ local'],
+      ['zed providers', 'Bring your own model keys'],
     ],
   },
 ];
@@ -221,7 +221,7 @@ const RUNS_ANYWHERE = [
     icon: Server,
     title: 'Self-host anywhere',
     // ACCURACY: not "air-gapped" — `self-host start` pulls images from docker.io.
-    desc: 'A laptop, a VPS, or your own VPC — the exact same stack as Kortix cloud.',
+    desc: 'A laptop, a VPS, or your own VPC — the exact same stack as Zed cloud.',
   },
   {
     icon: Cpu,
@@ -231,18 +231,18 @@ const RUNS_ANYWHERE = [
   {
     icon: KeyRound,
     title: 'Any model',
-    desc: 'Bring your own keys — Anthropic, OpenAI, or local models — or run on Kortix compute.',
+    desc: 'Bring your own keys — Anthropic, OpenAI, or local models — or run on Zed compute.',
   },
 ];
 
-const KORTIX_YAML_EXAMPLE = `kortix_version: 2
+const ZED_YAML_EXAMPLE = `zed_version: 2
 
 project:
   name: acme
 
 # the OpenCode runtime config dir
 opencode:
-  config_dir: .kortix/opencode
+  config_dir: .zed/opencode
 
 # a trigger runs itself, on a schedule
 triggers:
@@ -315,13 +315,13 @@ function Step({
               <div className="flex gap-3">
                 <span className="text-foreground font-mono text-sm">$ </span>
                 <span className="text-foreground font-mono text-sm select-all">
-                  {KORTIX_CLI_INSTALL_COMMAND}
+                  {ZED_CLI_INSTALL_COMMAND}
                 </span>
               </div>
               <Button
                 size="icon-sm"
                 variant="ghost"
-                onClick={() => copy(KORTIX_CLI_INSTALL_COMMAND)}
+                onClick={() => copy(ZED_CLI_INSTALL_COMMAND)}
               >
                 {copied ? <Check className="text-primary size-4" /> : <Copy className="size-4" />}
               </Button>
@@ -336,18 +336,18 @@ function Step({
   );
 }
 
-const KORTIX_YAML = `kortix_version: 2
+const ZED_YAML = `zed_version: 2
 
 project:
   name: acme-ops
 
 sandbox:
-  image: .kortix/Dockerfile
+  image: .zed/Dockerfile
 
 agents:
   support-triage:
     connectors: [slack, linear]
-    skills: [ticket-triage, kortix-memory]
+    skills: [ticket-triage, zed-memory]
 
 triggers:
   - type: cron
@@ -356,8 +356,8 @@ triggers:
 
 const REPO_TREE: [string, number, 'dir' | 'file' | 'accent'][] = [
   ['acme-ops', 0, 'dir'],
-  ['kortix.yaml', 1, 'accent'],
-  ['.kortix', 1, 'dir'],
+  ['zed.yaml', 1, 'accent'],
+  ['.zed', 1, 'dir'],
   ['opencode', 2, 'dir'],
   ['agents', 3, 'dir'],
   ['support-triage.md', 4, 'file'],
@@ -430,7 +430,7 @@ function ConnectorsRequestPath() {
         <div className="flex justify-center pb-1">
           <span className="border-border bg-background/70 text-muted-foreground inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1 font-mono text-[10px] sm:text-[11px]">
             <KeyRound className="size-3 shrink-0" />
-            KORTIX_TOKEN
+            ZED_TOKEN
           </span>
         </div>
 
@@ -440,7 +440,7 @@ function ConnectorsRequestPath() {
           <Server className="text-foreground size-4 shrink-0" />
           <span className="font-medium">
             {tI18nHardcoded.raw(
-              'autoAppPublicMarketingDevelopersPageJsxTextKortixConnector80880ab2',
+              'autoAppPublicMarketingDevelopersPageJsxTextZedConnector80880ab2',
             )}
           </span>
           <span className="text-muted-foreground ml-auto text-[10px] sm:text-[11px]">
@@ -500,7 +500,7 @@ function HeroWorkspace() {
                 <FileCode2
                   className={cn(
                     'size-3.5 shrink-0',
-                    kind === 'accent' ? 'text-kortix-green' : 'text-muted-foreground/60',
+                    kind === 'accent' ? 'text-zed-green' : 'text-muted-foreground/60',
                   )}
                 />
               )}
@@ -525,14 +525,14 @@ function HeroWorkspace() {
       <div className="border-card bg-background overflow-hidden rounded-[calc(var(--radius)+2px)] border-4">
         <div className="border-border/60 bg-muted/30 flex items-center gap-2 border-b px-4 py-2.5">
           <span className="bg-foreground text-background rounded px-2.5 py-0.5 font-mono text-xs font-medium">
-            kortix.yaml
+            zed.yaml
           </span>
           <span className="text-muted-foreground font-mono text-xs">
             {tI18nHardcoded.raw('autoAppPublicMarketingDevelopersPageJsxTextDeclareItOnce7b7c95e7')}
           </span>
         </div>
         <div className="text-foreground overflow-x-auto text-sm">
-          <HighlightedCode code={KORTIX_YAML} language="yaml" />
+          <HighlightedCode code={ZED_YAML} language="yaml" />
         </div>
       </div>
     </div>
@@ -555,13 +555,13 @@ export default function DevelopersPage() {
         className="relative w-full max-w-none overflow-hidden pt-32 pb-12 sm:pt-36"
       >
         <div className="absolute inset-0 z-0 mask-y-to-95%">
-          <KortixLetterField seed={3382} />
+          <ZedLetterField seed={3382} />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-0">
           <section className="w-full">
             <h1 className="text-foreground mt-5 text-4xl leading-[1.1] font-medium tracking-tight md:text-5xl">
               {tI18nHardcoded.raw(
-                'autoAppPublicMarketingDevelopersPageJsxTextOneKortixToml1138e741',
+                'autoAppPublicMarketingDevelopersPageJsxTextOneZedToml1138e741',
               )}
               <br />
               <span className="text-muted-foreground">
@@ -580,13 +580,13 @@ export default function DevelopersPage() {
                 <div className="flex gap-3">
                   <span className="text-foreground font-mono text-sm">$ </span>
                   <span className="text-foreground font-mono text-sm select-all">
-                    {KORTIX_CLI_INSTALL_COMMAND}
+                    {ZED_CLI_INSTALL_COMMAND}
                   </span>
                 </div>
                 <Button
                   size="icon-sm"
                   variant="ghost"
-                  onClick={() => copy(KORTIX_CLI_INSTALL_COMMAND)}
+                  onClick={() => copy(ZED_CLI_INSTALL_COMMAND)}
                 >
                   {copied ? <Check className="text-primary size-4" /> : <Copy className="size-4" />}
                 </Button>
@@ -689,11 +689,11 @@ export default function DevelopersPage() {
             <Terminal title="init">
               <Cmd>
                 {tI18nHardcoded.raw(
-                  'autoAppPublicMarketingDevelopersPageJsxTextKortixInit263fedee',
+                  'autoAppPublicMarketingDevelopersPageJsxTextZedInit263fedee',
                 )}
               </Cmd>
-              <Done>kortix.yaml</Done>
-              <Done>.kortix/opencode/</Done>
+              <Done>zed.yaml</Done>
+              <Done>.zed/opencode/</Done>
             </Terminal>
           </Step>
 
@@ -708,7 +708,7 @@ export default function DevelopersPage() {
             flip
           >
             <CodeFile
-              name=".kortix/opencode/agents/support.md"
+              name=".zed/opencode/agents/support.md"
               code={AGENT_MD}
               language="markdown"
             />
@@ -720,10 +720,10 @@ export default function DevelopersPage() {
               'autoAppPublicMarketingDevelopersPageJsxAttrTitleDeclareThed1672ddf',
             )}
             body={tI18nHardcoded.raw(
-              'autoAppPublicMarketingDevelopersPageJsxAttrBodyKortixToml8f2ef9df',
+              'autoAppPublicMarketingDevelopersPageJsxAttrBodyZedToml8f2ef9df',
             )}
           >
-            <CodeFile name="kortix.yaml" code={KORTIX_YAML_EXAMPLE} language="yaml" />
+            <CodeFile name="zed.yaml" code={ZED_YAML_EXAMPLE} language="yaml" />
           </Step>
 
           <Step
@@ -732,18 +732,18 @@ export default function DevelopersPage() {
               'autoAppPublicMarketingDevelopersPageJsxAttrTitleShipItfb312d97',
             )}
             body={tI18nHardcoded.raw(
-              'autoAppPublicMarketingDevelopersPageJsxAttrBodyKortixShipef9c33ee',
+              'autoAppPublicMarketingDevelopersPageJsxAttrBodyZedShipef9c33ee',
             )}
             flip
           >
             <Terminal
               title={tI18nHardcoded.raw(
-                'autoAppPublicMarketingDevelopersPageJsxAttrTitleKortixShip3674108d',
+                'autoAppPublicMarketingDevelopersPageJsxAttrTitleZedShip3674108d',
               )}
             >
               <Cmd>
                 {tI18nHardcoded.raw(
-                  'autoAppPublicMarketingDevelopersPageJsxTextKortixShip0f78d303',
+                  'autoAppPublicMarketingDevelopersPageJsxTextZedShip0f78d303',
                 )}
               </Cmd>
               <Done>
@@ -856,7 +856,7 @@ export default function DevelopersPage() {
                 {PROMPT}
                 <span className="text-foreground">
                   {tI18nHardcoded.raw(
-                    'autoAppPublicMarketingDevelopersPageJsxTextKortixProvidersLogind1e6302d',
+                    'autoAppPublicMarketingDevelopersPageJsxTextZedProvidersLogind1e6302d',
                   )}
                 </span>
               </Line>
@@ -878,7 +878,7 @@ export default function DevelopersPage() {
                 {PROMPT}
                 <span className="text-foreground">
                   {tI18nHardcoded.raw(
-                    'autoAppPublicMarketingDevelopersPageJsxTextKortixProvidersSetc86bed30',
+                    'autoAppPublicMarketingDevelopersPageJsxTextZedProvidersSetc86bed30',
                   )}
                 </span>
               </Line>
@@ -886,7 +886,7 @@ export default function DevelopersPage() {
                 {PROMPT}
                 <span className="text-foreground">
                   {tI18nHardcoded.raw(
-                    'autoAppPublicMarketingDevelopersPageJsxTextKortixProvidersSet4a7972ff',
+                    'autoAppPublicMarketingDevelopersPageJsxTextZedProvidersSet4a7972ff',
                   )}
                 </span>
               </Line>
@@ -974,14 +974,14 @@ export default function DevelopersPage() {
                 'Anything worth keeping comes back as a change request — and merges into main',
                 'Main is always the source of truth: every agent action is auditable Git history',
                 'It’s all Git under the hood — branch, diff, review, merge',
-                'The same Kortix CLI runs inside every sandbox — so running locally and in the cloud is identical',
+                'The same Zed CLI runs inside every sandbox — so running locally and in the cloud is identical',
                 'Isolated compute per session; one runaway agent can’t touch another',
               ].map((b, i) => (
                 <li
                   key={b}
                   className="text-muted-foreground flex gap-2.5 text-[15px] leading-relaxed"
                 >
-                  <KortixAsterisk index={i} />
+                  <ZedAsterisk index={i} />
                   <span>{b}</span>
                 </li>
               ))}
@@ -1058,7 +1058,7 @@ export default function DevelopersPage() {
             </h2>
             <p className="text-muted-foreground mt-4 max-w-md text-base leading-relaxed">
               {tI18nHardcoded.raw(
-                'autoAppPublicMarketingDevelopersPageJsxTextKortixConnectorsPut612736c1',
+                'autoAppPublicMarketingDevelopersPageJsxTextZedConnectorsPut612736c1',
               )}
             </p>
             <ul className="mt-6 max-w-md space-y-2.5">
@@ -1066,13 +1066,13 @@ export default function DevelopersPage() {
                 '3,000+ one-click apps via Pipedream — OAuth handled for you',
                 'Or bring any MCP, OpenAPI, GraphQL or HTTP endpoint — same interface',
                 'Credentials live server-side and never reach the sandbox',
-                'Agents hold one scoped Kortix token; connect once, shared org-wide, self-healing',
+                'Agents hold one scoped Zed token; connect once, shared org-wide, self-healing',
               ].map((b, i) => (
                 <li
                   key={b}
                   className="text-muted-foreground flex gap-2.5 text-[15px] leading-relaxed"
                 >
-                  <KortixAsterisk index={i} />
+                  <ZedAsterisk index={i} />
                   <span>{b}</span>
                 </li>
               ))}
@@ -1118,12 +1118,12 @@ export default function DevelopersPage() {
             {
               icon: GitPullRequest,
               title: 'Skills, git-backed and invisible',
-              body: 'Non-devs publish skills as markdown; Kortix handles the branch, PR and merge behind the scenes. Versioned, reviewable, auditable.',
+              body: 'Non-devs publish skills as markdown; Zed handles the branch, PR and merge behind the scenes. Versioned, reviewable, auditable.',
             },
             {
               icon: Plug,
               title: 'Self-healing connections',
-              body: 'When a token expires or a service blips, Kortix refreshes it or asks you to reconnect in plain language — never a cryptic error.',
+              body: 'When a token expires or a service blips, Zed refreshes it or asks you to reconnect in plain language — never a cryptic error.',
             },
             {
               icon: Cpu,
@@ -1174,7 +1174,7 @@ export default function DevelopersPage() {
                     )}{' '}
                     <span className="text-foreground font-mono text-sm">
                       {tI18nHardcoded.raw(
-                        'autoAppPublicMarketingDevelopersPageJsxTextKortixInit263fedee',
+                        'autoAppPublicMarketingDevelopersPageJsxTextZedInit263fedee',
                       )}
                     </span>
                     {tI18nHardcoded.raw(
@@ -1203,7 +1203,7 @@ export default function DevelopersPage() {
                 </div>
               </div>
               <div className="col-span-8 mask-y-from-90% mask-x-from-90%">
-                <KortixGrid count={58} seed={4228} />
+                <ZedGrid count={58} seed={4228} />
               </div>
             </div>
           </div>

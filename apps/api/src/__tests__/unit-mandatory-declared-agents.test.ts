@@ -12,7 +12,7 @@
  * granted the permissive null grant or silently default-denied-to-running.
  */
 import { describe, expect, test } from 'bun:test';
-import { DEFAULT_STARTER_TEMPLATE_ID, getStarterFiles } from '@kortix/starter';
+import { DEFAULT_STARTER_TEMPLATE_ID, getStarterFiles } from '@zed/starter';
 import { extractAgents, projectRequiresDeclaredAgents, resolveGovernedAgentGrant } from '../projects/agents';
 import { KNOWN_SCHEMA_VERSION, parseManifestString } from '../projects/triggers';
 
@@ -28,7 +28,7 @@ function declaredDefaultAgent(loaded: ReturnType<typeof extractAgents>): string 
 }
 
 function loadAgents(body: string) {
-  return extractAgents(parseManifestString(`kortix_version = ${KNOWN_SCHEMA_VERSION}\n[project]\nname="t"\n${body}`));
+  return extractAgents(parseManifestString(`zed_version = ${KNOWN_SCHEMA_VERSION}\n[project]\nname="t"\n${body}`));
 }
 
 describe('projectRequiresDeclaredAgents — subjectness', () => {
@@ -66,7 +66,7 @@ describe('resolveGovernedAgentGrant — non-subject preserves today\'s exact beh
     const loaded = loadAgents(`
 [[agents]]
 name = "release-bot"
-kortix_cli = ["project.trigger.create"]
+zed_cli = ["project.trigger.create"]
 `);
     const result = resolveGovernedAgentGrant('rogue-agent', loaded, {
       subject: false,
@@ -74,7 +74,7 @@ kortix_cli = ["project.trigger.create"]
     });
     expect(result).toEqual({
       ok: true,
-      grant: { agent: 'rogue-agent', connectors: [], kortixCli: [], env: [] },
+      grant: { agent: 'rogue-agent', connectors: [], zedCli: [], env: [] },
     });
   });
 
@@ -83,7 +83,7 @@ kortix_cli = ["project.trigger.create"]
 [[agents]]
 name = "veyris"
 connectors = "all"
-kortix_cli = "all"
+zed_cli = "all"
 `);
     const result = resolveGovernedAgentGrant('default', loaded, {
       subject: false,
@@ -98,7 +98,7 @@ describe('resolveGovernedAgentGrant — subject project rejects undeclared agent
 [[agents]]
 name = "support"
 connectors = ["github"]
-kortix_cli = ["project.cr.open"]
+zed_cli = ["project.cr.open"]
 
 [[agents]]
 name = "disabled-one"
@@ -112,7 +112,7 @@ enabled = false
     });
     expect(result).toEqual({
       ok: true,
-      grant: { agent: 'support', connectors: ['github'], kortixCli: ['project.cr.open'], env: 'all' },
+      grant: { agent: 'support', connectors: ['github'], zedCli: ['project.cr.open'], env: 'all' },
     });
   });
 
@@ -159,7 +159,7 @@ connectors = ["github"]
     });
     expect(result).toEqual({
       ok: true,
-      grant: { agent: 'support', connectors: ['github'], kortixCli: [], env: 'all' },
+      grant: { agent: 'support', connectors: ['github'], zedCli: [], env: 'all' },
     });
   });
 
@@ -181,30 +181,30 @@ connectors = ["github"]
   });
 });
 
-// kortix_version 2 — the runtime-wiring fix: extractAgents now reads a v2
+// zed_version 2 — the runtime-wiring fix: extractAgents now reads a v2
 // `agents:` map (not just v1's `[[agents]]` array), and the manifest's own
 // top-level `default_agent` (captured on `LoadedAgents.defaultAgent`) backs
 // `opts.projectDefaultAgent` when the DB-side project.metadata mirror isn't
 // separately set — which is the common case for a v2 project, since nothing
 // syncs the manifest's `default_agent` into project metadata today.
-describe('resolveGovernedAgentGrant — subject project, kortix_version 2 manifest', () => {
+describe('resolveGovernedAgentGrant — subject project, zed_version 2 manifest', () => {
   function loadV2(agentsBody: string, opts: { defaultAgent?: string } = {}) {
     const text = [
-      'kortix_version: 2',
+      'zed_version: 2',
       `default_agent: ${opts.defaultAgent ?? 'support'}`,
       'project:',
       '  name: t',
       'agents:',
       agentsBody,
     ].join('\n');
-    return extractAgents(parseManifestString(text, 'yaml', 'kortix.yaml'));
+    return extractAgents(parseManifestString(text, 'yaml', 'zed.yaml'));
   }
 
   test('a concrete declared v2 agent is FOUND, not rejected / default-denied', () => {
     const loaded = loadV2(`
   support:
     connectors: [github]
-    kortix_cli: [project.cr.open]
+    zed_cli: [project.cr.open]
 `);
     const result = resolveGovernedAgentGrant('support', loaded, {
       subject: true,
@@ -212,7 +212,7 @@ describe('resolveGovernedAgentGrant — subject project, kortix_version 2 manife
     });
     expect(result).toEqual({
       ok: true,
-      grant: { agent: 'support', connectors: ['github'], kortixCli: ['project.cr.open'], env: [] },
+      grant: { agent: 'support', connectors: ['github'], zedCli: ['project.cr.open'], env: [] },
     });
   });
 
@@ -227,7 +227,7 @@ describe('resolveGovernedAgentGrant — subject project, kortix_version 2 manife
     });
     expect(result).toEqual({
       ok: true,
-      grant: { agent: 'support', connectors: ['github'], kortixCli: [], env: [] },
+      grant: { agent: 'support', connectors: ['github'], zedCli: [], env: [] },
     });
   });
 
@@ -244,7 +244,7 @@ describe('resolveGovernedAgentGrant — subject project, kortix_version 2 manife
     });
     expect(result).toEqual({
       ok: true,
-      grant: { agent: 'billing', connectors: [], kortixCli: [], env: ['STRIPE_KEY'] },
+      grant: { agent: 'billing', connectors: [], zedCli: [], env: ['STRIPE_KEY'] },
     });
   });
 
@@ -267,7 +267,7 @@ describe('resolveGovernedAgentGrant — subject project, kortix_version 2 manife
 // project is ALWAYS subject to this gate from birth, with no DB-side
 // `metadata.default_agent` mirror set (sessions.ts's `projectDefaultAgent` is
 // `undefined`/null the very first time). The starter it seeds
-// (@kortix/starter, packages/starter/templates/base) MUST therefore ship a
+// (@zed/starter, packages/starter/templates/base) MUST therefore ship a
 // v2 manifest with a `default_agent` that resolves — otherwise
 // EVERY brand-new project's first session (agent 'default', the UI's
 // no-explicit-agent path) is rejected with AGENT_NOT_DECLARED before a sandbox
@@ -278,15 +278,15 @@ describe('resolveGovernedAgentGrant — the actual shipped starter satisfies its
     projectName: 'Acme Co',
     template: DEFAULT_STARTER_TEMPLATE_ID,
   });
-  const manifestFile = starterFiles.find((f) => f.path === 'kortix.yaml');
+  const manifestFile = starterFiles.find((f) => f.path === 'zed.yaml');
 
-  test('the starter ships a v2 kortix.yaml, not a v1 kortix.toml', () => {
+  test('the starter ships a v2 zed.yaml, not a v1 zed.toml', () => {
     expect(manifestFile).toBeDefined();
-    expect(starterFiles.some((f) => f.path === 'kortix.toml')).toBe(false);
+    expect(starterFiles.some((f) => f.path === 'zed.toml')).toBe(false);
   });
 
   test('a first session with no explicit agent ("default") RESOLVES — ok:true, not AGENT_NOT_DECLARED', () => {
-    const manifest = parseManifestString(manifestFile!.content, 'yaml', 'kortix.yaml');
+    const manifest = parseManifestString(manifestFile!.content, 'yaml', 'zed.yaml');
     expect(manifest.schemaVersion).toBe(2);
     const loaded = extractAgents(manifest);
     expect(loaded.errors).toEqual([]);
@@ -307,17 +307,17 @@ describe('resolveGovernedAgentGrant — the actual shipped starter satisfies its
     // configuration, so it must carry the full grant — a narrowed default is a
     // silently crippled first session.
     expect(governed.grant).toEqual({
-      agent: 'kortix',
+      agent: 'zed',
       connectors: 'all',
-      kortixCli: 'all',
+      zedCli: 'all',
       env: 'all',
     });
   });
 
-  test('the starter\'s declared "kortix" agent also resolves when named explicitly', () => {
-    const manifest = parseManifestString(manifestFile!.content, 'yaml', 'kortix.yaml');
+  test('the starter\'s declared "zed" agent also resolves when named explicitly', () => {
+    const manifest = parseManifestString(manifestFile!.content, 'yaml', 'zed.yaml');
     const loaded = extractAgents(manifest);
-    const governed = resolveGovernedAgentGrant('kortix', loaded, {
+    const governed = resolveGovernedAgentGrant('zed', loaded, {
       subject: true,
       projectDefaultAgent: null,
     });

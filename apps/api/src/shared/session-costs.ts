@@ -4,7 +4,7 @@ import {
   projects,
   sandboxComputeSessions,
   sessionSandboxes,
-} from '@kortix/db';
+} from '@zed/db';
 import {
   type SQL,
   type SQLWrapper,

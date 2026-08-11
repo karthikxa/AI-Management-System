@@ -1,6 +1,6 @@
 'use client';
 
-import { listDiscoverConnectors, listPipedreamApps } from '@kortix/sdk';
+import { listDiscoverConnectors, listPipedreamApps } from '@zed/sdk';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 

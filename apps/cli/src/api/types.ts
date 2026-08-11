@@ -17,7 +17,7 @@ export interface MeResponse {
     session_id: string | null;
     agent: string | null;
     connectors: string[] | 'all' | null;
-    kortix_cli: string[] | 'all' | null;
+    zed_cli: string[] | 'all' | null;
     env?: string[] | 'all' | null;
   };
   accounts: AccountMembership[];
@@ -28,7 +28,7 @@ export interface ProjectSummary {
   account_id: string;
   name: string;
   repo_url: string;
-  /** Universal Kortix git-proxy origin (auth = Kortix token). Falls back to repo_url. */
+  /** Universal Zed git-proxy origin (auth = Zed token). Falls back to repo_url. */
   git_origin_url?: string;
   default_branch: string;
   manifest_path: string;
@@ -57,7 +57,7 @@ export interface ProjectSecret {
   configured: boolean;
   /** Which value is effective for the requesting user. */
   effective_source: 'mine' | 'shared' | 'none';
-  /** How the secret can leave Kortix storage. */
+  /** How the secret can leave Zed storage. */
   strategy?: 'runtime' | 'egress' | 'broker' | 'denied';
   /** Service that consumes the secret. */
   consumer?:

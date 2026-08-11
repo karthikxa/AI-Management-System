@@ -9,8 +9,8 @@ import { UserAvatar } from '@/components/ui/user-avatar';
 import { Close } from '@/features/icon/icons/close';
 import { listGroups } from '@/lib/iam-client';
 import { cn } from '@/lib/utils';
-import { listProjectAccess } from '@kortix/sdk';
-import { contract, qk } from '@kortix/sdk/react';
+import { listProjectAccess } from '@zed/sdk';
+import { contract, qk } from '@zed/sdk/react';
 import {
   CheckCircleIcon as CheckCircleSolid,
   MagnifyingGlassIcon as Search,

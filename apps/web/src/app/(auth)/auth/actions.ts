@@ -20,7 +20,7 @@ import {
   fetchAccountStateWithToken,
   recordPlatformLogout,
   submitAccessRequest,
-} from '@kortix/sdk';
+} from '@zed/sdk';
 import { LAST_PROJECT_COOKIE } from '@/lib/onboarding/landing-destination';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';

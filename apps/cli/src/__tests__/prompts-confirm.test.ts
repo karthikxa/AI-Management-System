@@ -5,7 +5,7 @@
  * when the stream ends, so the awaited promise used to stay pending forever and
  * the process would exit AT the prompt — no answer, no error, no remaining
  * work. Anything that asks before doing something irreversible (the bare
- * `kortix` update prompt) has to be able to say what "nobody answered" means.
+ * `zed` update prompt) has to be able to say what "nobody answered" means.
  */
 import { afterEach, describe, expect, test } from 'bun:test';
 import { PassThrough } from 'node:stream';

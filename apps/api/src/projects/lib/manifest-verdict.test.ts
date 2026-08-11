@@ -6,13 +6,13 @@ import {
   restrictedManifestVerdict,
 } from './manifest-verdict';
 
-const V2_YAML = `kortix_version: 2
+const V2_YAML = `zed_version: 2
 default_agent: dev
 agents:
   dev: {}
 `;
 
-const V1_TOML = `kortix_version = 1
+const V1_TOML = `zed_version = 1
 
 [project]
 name = "acme-ops"
@@ -32,20 +32,20 @@ describe('resolveManifestVerdict — a v2 manifest is up to date', () => {
     const verdict = resolveManifestVerdict({
       raw: V2_YAML,
       format: 'yaml',
-      path: 'kortix.yaml',
+      path: 'zed.yaml',
     });
     expect(verdict.version).toBe(2);
     expect(verdict.migration_offered).toBe(false);
     expect(verdict.target_version).toBeNull();
     expect(verdict.unknown_reason).toBeNull();
-    expect(verdict.path).toBe('kortix.yaml');
+    expect(verdict.path).toBe('zed.yaml');
   });
 
   test('a version above the latest this platform knows still offers no migration', () => {
     const verdict = resolveManifestVerdict({
-      raw: 'kortix_version: 9\n',
+      raw: 'zed_version: 9\n',
       format: 'yaml',
-      path: 'kortix.yaml',
+      path: 'zed.yaml',
     });
     expect(verdict.version).toBe(9);
     expect(verdict.migration_offered).toBe(false);
@@ -53,25 +53,25 @@ describe('resolveManifestVerdict — a v2 manifest is up to date', () => {
   });
 });
 
-describe('resolveManifestVerdict — a real v1 kortix.toml is offered a migration', () => {
+describe('resolveManifestVerdict — a real v1 zed.toml is offered a migration', () => {
   test('reports version 1 and targets the version the migration actually produces', () => {
     const verdict = resolveManifestVerdict({
       raw: V1_TOML,
       format: 'toml',
-      path: 'kortix.toml',
+      path: 'zed.toml',
     });
     expect(verdict.version).toBe(1);
     expect(verdict.migration_offered).toBe(true);
     expect(verdict.target_version).toBe(2);
     expect(verdict.unknown_reason).toBeNull();
-    expect(verdict.path).toBe('kortix.toml');
+    expect(verdict.path).toBe('zed.toml');
   });
 
   test('a quoted string version still reads as v1', () => {
     const verdict = resolveManifestVerdict({
-      raw: 'kortix_version: "1"\n',
+      raw: 'zed_version: "1"\n',
       format: 'yaml',
-      path: 'kortix.yaml',
+      path: 'zed.yaml',
     });
     expect(verdict.version).toBe(1);
     expect(verdict.migration_offered).toBe(true);
@@ -84,7 +84,7 @@ describe('resolveManifestVerdict — v2 has no implemented upgrade path', () => 
     const verdict = resolveManifestVerdict({
       raw: V2_YAML,
       format: 'yaml',
-      path: 'kortix.yaml',
+      path: 'zed.yaml',
     });
     expect(verdict.version).toBe(2);
     expect(verdict.latest_version).toBe(2);
@@ -106,20 +106,20 @@ describe('resolveManifestVerdict — unknown never becomes "needs migrating"', (
 
   test('an unparseable manifest is unparsable, not v1', () => {
     const verdict = resolveManifestVerdict({
-      raw: 'kortix_version = = 1\n[[[broken',
+      raw: 'zed_version = = 1\n[[[broken',
       format: 'toml',
-      path: 'kortix.toml',
+      path: 'zed.toml',
     });
     expect(verdict.version).toBeNull();
     expect(verdict.unknown_reason).toBe('unparsable');
     expect(verdict.migration_offered).toBe(false);
   });
 
-  test('a manifest that parses but declares no kortix_version is undeclared, not v1', () => {
+  test('a manifest that parses but declares no zed_version is undeclared, not v1', () => {
     const verdict = resolveManifestVerdict({
       raw: 'project:\n  name: acme\n',
       format: 'yaml',
-      path: 'kortix.yaml',
+      path: 'zed.yaml',
     });
     expect(verdict.version).toBeNull();
     expect(verdict.unknown_reason).toBe('undeclared');
@@ -127,20 +127,20 @@ describe('resolveManifestVerdict — unknown never becomes "needs migrating"', (
     expect(verdict.target_version).toBeNull();
   });
 
-  test('a non-numeric kortix_version is undeclared, not v1', () => {
+  test('a non-numeric zed_version is undeclared, not v1', () => {
     const verdict = resolveManifestVerdict({
-      raw: 'kortix_version: one\n',
+      raw: 'zed_version: one\n',
       format: 'yaml',
-      path: 'kortix.yaml',
+      path: 'zed.yaml',
     });
     expect(verdict.version).toBeNull();
     expect(verdict.unknown_reason).toBe('undeclared');
     expect(verdict.migration_offered).toBe(false);
   });
 
-  test('a zero or negative kortix_version is undeclared, not v1', () => {
-    for (const raw of ['kortix_version: 0\n', 'kortix_version: -2\n']) {
-      const verdict = resolveManifestVerdict({ raw, format: 'yaml', path: 'kortix.yaml' });
+  test('a zero or negative zed_version is undeclared, not v1', () => {
+    for (const raw of ['zed_version: 0\n', 'zed_version: -2\n']) {
+      const verdict = resolveManifestVerdict({ raw, format: 'yaml', path: 'zed.yaml' });
       expect(verdict.version).toBeNull();
       expect(verdict.unknown_reason).toBe('undeclared');
       expect(verdict.migration_offered).toBe(false);

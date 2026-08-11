@@ -1,4 +1,4 @@
-import { kortixFromAuth } from '../api/sdk.ts';
+import { zedFromAuth } from '../api/sdk.ts';
 import {
   emitJson,
   locateSessionAnywhere,
@@ -8,12 +8,12 @@ import {
 } from '../command-helpers.ts';
 import { C, help, status } from '../style.ts';
 
-const HELP = help`Usage: kortix sessions wait-for <session-id> [options]
+const HELP = help`Usage: zed sessions wait-for <session-id> [options]
 
 Block until the session's agent finishes its current work (the agent loop
 is idle), instead of polling with sleeps. Also returns early when the agent
 is blocked on a tool-permission ask or a question, so a coordinator can
-answer it (\`kortix sessions pending\`) instead of waiting out the timeout.
+answer it (\`zed sessions pending\`) instead of waiting out the timeout.
 
 Exit codes:
   0    settled — the agent is idle (work finished)
@@ -23,7 +23,7 @@ Exit codes:
 Options:
   --timeout <seconds>   Give up after this long (default 300).
   --project <id>        Operate on this project id (default: linked).
-  --host <name>         Operate against a non-default Kortix host.
+  --host <name>         Operate against a non-default Zed host.
   --json                Print {settled, blocked, waited_ms} as JSON.
   -h, --help            Show this help.
 `;
@@ -90,7 +90,7 @@ export async function runSessionsWaitFor(argv: string[]): Promise<number> {
   const found = await locateSessionAnywhere(
     sessionId,
     { projectArg, hostArg },
-    (host) => `kortix sessions wait-for ${sessionId} --host ${host}`,
+    (host) => `zed sessions wait-for ${sessionId} --host ${host}`,
   );
   if (!found) return 1;
   const resolved = {
@@ -116,7 +116,7 @@ export async function runSessionsWaitFor(argv: string[]): Promise<number> {
     return 0;
   }
 
-  const handle = kortixFromAuth(resolved.auth).session(
+  const handle = zedFromAuth(resolved.auth).session(
     resolved.ctx.projectId,
     resolved.session.session_id,
   );
@@ -159,7 +159,7 @@ export async function runSessionsWaitFor(argv: string[]): Promise<number> {
         else {
           process.stdout.write(
             `${status.err('Agent is blocked on a pending ask.')}\n` +
-              `  ${C.dim}Answer it: \`kortix sessions pending ${resolved.session.session_id}\`.${C.reset}\n`,
+              `  ${C.dim}Answer it: \`zed sessions pending ${resolved.session.session_id}\`.${C.reset}\n`,
           );
         }
         return 3;
@@ -189,7 +189,7 @@ export async function runSessionsWaitFor(argv: string[]): Promise<number> {
   else {
     process.stdout.write(
       `${status.err(`Still working after ${Math.round(waited / 1000)}s — timed out.`)}\n` +
-        `  ${C.dim}Peek: \`kortix sessions status\` · wait longer: \`--timeout ${Math.round((timeoutMs / 1000) * 2)}\`.${C.reset}\n`,
+        `  ${C.dim}Peek: \`zed sessions status\` · wait longer: \`--timeout ${Math.round((timeoutMs / 1000) * 2)}\`.${C.reset}\n`,
     );
   }
   return 124;

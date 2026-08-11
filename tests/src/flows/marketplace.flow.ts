@@ -24,7 +24,7 @@ const NOPE = '00000000-0000-4000-a000-000000000000';
 // A stable, real catalog item shipped from packages/starter/templates — part
 // of the product's own source tree, not user-generated content, so safe to
 // pin as a fixture id.
-const KNOWN_ITEM_ID = 'kortix-starter:access-policy-skill';
+const KNOWN_ITEM_ID = 'zed-starter:access-policy-skill';
 const KNOWN_ITEM_FILE_TARGET = '@skills/access-policy/SKILL.md';
 // One of the curated, vetted, public, read-only FEATURED_MARKETPLACES
 // addresses (apps/api/src/marketplace/catalog.ts) — any signed-in user may
@@ -128,9 +128,9 @@ flow(
       const body = r.json();
       if (
         !Array.isArray(body.marketplaces) ||
-        !body.marketplaces.some((m: any) => m.id === 'kortix')
+        !body.marketplaces.some((m: any) => m.id === 'zed')
       ) {
-        throw new Error('expected the built-in "kortix" marketplace in the list');
+        throw new Error('expected the built-in "zed" marketplace in the list');
       }
     });
   },

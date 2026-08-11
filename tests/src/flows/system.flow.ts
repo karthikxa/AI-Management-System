@@ -7,11 +7,11 @@ import { flow } from "../core/flow";
 flow("SYS-1", { domain: "system", tags: ["smoke", "health"], routes: ["GET /health", "GET /v1/health"] }, async (ctx) => {
   await ctx.step("GET /health", async () => {
     const r = await ctx.client.get("/health");
-    r.status(200).body().has("$.status", "ok").has("$.service", "kortix-api").exists("$.version");
+    r.status(200).body().has("$.status", "ok").has("$.service", "zed-api").exists("$.version");
   });
   await ctx.step("GET /v1/health", async () => {
     const r = await ctx.client.get("/v1/health");
-    r.status(200).body().has("$.status", "ok").has("$.service", "kortix-api");
+    r.status(200).body().has("$.status", "ok").has("$.service", "zed-api");
   });
 });
 
@@ -45,7 +45,7 @@ flow("SYS-7", { domain: "system", tags: ["smoke"], routes: ["POST /v1/system/dem
     // the target env — the request is still accepted (graceful skip).
     const r = await ctx.client.post("/v1/system/demo-request", {
       name: "ke2e probe",
-      email: `probe-${Date.now()}@ke2e.kortix.test`,
+      email: `probe-${Date.now()}@ke2e.zed.test`,
       company_name: "KE2E Labs",
       company_size: "51-200",
       source: "ke2e",
@@ -68,7 +68,7 @@ flow("DOCS-1", { domain: "system", tags: ["smoke"], routes: ["GET /v1/openapi.js
 flow("SYS-4", { domain: "system", tags: ["smoke", "health"], routes: ["GET /v1/router/health"] }, async (ctx) => {
   await ctx.step("GET /v1/router/health", async () => {
     const r = await ctx.client.get("/v1/router/health");
-    r.status(200).body().has("$.status", "ok").has("$.service", "kortix-router");
+    r.status(200).body().has("$.status", "ok").has("$.service", "zed-router");
   });
 });
 
@@ -121,7 +121,7 @@ flow("ACC-2", { domain: "access", tags: [], routes: ["POST /v1/access/check-emai
     r.status(400);
   });
   await ctx.step("POST /v1/access/check-email (valid) → 200 with flow mode", async () => {
-    const r = await ctx.client.post("/v1/access/check-email", { email: `probe-${Date.now()}@ke2e.kortix.test` });
+    const r = await ctx.client.post("/v1/access/check-email", { email: `probe-${Date.now()}@ke2e.zed.test` });
     r.status(200).body().exists("$.allowed").exists("$.mode");
   });
 });
@@ -139,7 +139,7 @@ flow("ACC-3", { domain: "access", tags: [], routes: ["POST /v1/access/request-ac
   });
   await ctx.step("POST /v1/access/request-access (valid, fresh throwaway email) → 200", async () => {
     const r = await ctx.client.post("/v1/access/request-access", {
-      email: `ke2e-access-${Date.now()}@ke2e.kortix.test`,
+      email: `ke2e-access-${Date.now()}@ke2e.zed.test`,
       company: "KE2E Labs",
       useCase: "automated e2e coverage probe",
     });

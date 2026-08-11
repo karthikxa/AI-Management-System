@@ -77,7 +77,7 @@
     "guest": {
       "label": "Ospite",
       "title": "Browse Without\nan Account",
-      "description": "Try Kortix with limited features. No signup required!",
+      "description": "Try Zed with limited features. No signup required!",
       "continue": "Continue as Guest",
       "signUp": "Sign Up Instead",
       "agreement": "By continuing, you agree to our",
@@ -93,7 +93,7 @@
     "resetFailed": "Impossibile inviare l'email. Riprova.",
     "passwordsDontMatch": "Le password non corrispondono",
     "passwordTooShort": "La password deve avere almeno 8 caratteri",
-    "welcomeTitle": "Assumi Kortix per",
+    "welcomeTitle": "Assumi Zed per",
     "rotatingPhrases": {
       "presentations": "presentazioni",
       "writing": "scrittura",
@@ -138,12 +138,12 @@
     "browseAsGuest": "Sfoglia come ospite"
   },
   "onboarding": {
-    "welcome": "Scopri cosa può fare Kortix",
+    "welcome": "Scopri cosa può fare Zed",
     "welcomeSubtitle": "Il tuo assistente IA che agisce",
     "skip": "Salta",
     "next": "Avanti",
     "getStarted": "Inizia",
-    "kortixComputer": "Kortix Computer",
+    "zedComputer": "Zed Computer",
     "ready": "Pronto",
     "examples": {
       "presentations": {
@@ -265,8 +265,8 @@
   },
   "chat": {
     "newChat": "Nuova Chat",
-    "placeholder": "Dai a Kortix un compito...",
-    "inputPlaceholder": "Chiedi qualsiasi cosa a Kortix...",
+    "placeholder": "Dai a Zed un compito...",
+    "inputPlaceholder": "Chiedi qualsiasi cosa a Zed...",
     "recording": "Registrazione...",
     "cancelRecording": "Annulla registrazione",
     "stopRecording": "Interrompi registrazione",
@@ -279,7 +279,7 @@
     "rateThisResult": "Valuta questo risultato",
     "feedbackHelpsImprove": "Il tuo feedback ci aiuta a migliorare",
     "additionalFeedbackOptional": "Feedback aggiuntivo (opzionale)",
-    "helpKortixImprove": "Aiuta Kortix a migliorare con il mio feedback",
+    "helpZedImprove": "Aiuta Zed a migliorare con il mio feedback",
     "submit": "Invia",
     "submitting": "Invio in corso...",
     "suggestedFollowUps": "Suggerimenti di follow-up",
@@ -294,7 +294,7 @@
     "newWorker": "Nuovo Worker",
     "myWorkers": "I miei Workers",
     "searchAgents": "Cerca workers",
-    "defaultAgent": "Kortix",
+    "defaultAgent": "Zed",
     "defaultDescription": "IA generica per tutti i compiti",
     "superWorker": "Super Worker",
     "coder": "Coder",
@@ -503,8 +503,8 @@
   "billing": {
     "loadingPaywall": "Caricamento piani...",
     "checkoutUnavailable": "Checkout mobile non disponibile",
-    "checkoutUnavailableMessage": "Per abbonarti a un piano, visita kortix.com sul web.",
-    "goToWeb": "Vai su kortix.com",
+    "checkoutUnavailableMessage": "Per abbonarti a un piano, visita zed.com sul web.",
+    "goToWeb": "Vai su zed.com",
     "billingStatus": "Stato Fatturazione",
     "loading": "Caricamento informazioni di fatturazione...",
     "error": "Errore nel caricamento delle informazioni di fatturazione",
@@ -553,12 +553,12 @@
   "beta": {
     "title": "Funzionalità Beta",
     "webSupportTitle": "Completamente Supportato sul Web",
-    "webSupportDescription": "Disponibile su Kortix.com. In arrivo su mobile presto—ancora in sviluppo qui.",
-    "visitKortix": "Visita Kortix.com",
+    "webSupportDescription": "Disponibile su Zed.com. In arrivo su mobile presto—ancora in sviluppo qui.",
+    "visitZed": "Visita Zed.com",
     "advancedFeatures": "Funzionalità Avanzate",
     "mobileBeta": "Beta Mobile",
     "pleaseNote": "Nota Bene",
-    "mobileWarning": "In sviluppo su mobile e potrebbe avere problemi. Per la migliore esperienza, usa Kortix.com."
+    "mobileWarning": "In sviluppo su mobile e potrebbe avere problemi. Per la migliore esperienza, usa Zed.com."
   },
   "accountDeletion": {
     "title": "Elimina Account",
@@ -595,7 +595,7 @@
     "mode": "Modalità"
   },
   "placeholders": {
-    "default": "Dai a Kortix un compito...",
+    "default": "Dai a Zed un compito...",
     "search": "Cerca...",
     "searchConversations": "Cerca chat",
     "searchAgents": "Cerca workers",

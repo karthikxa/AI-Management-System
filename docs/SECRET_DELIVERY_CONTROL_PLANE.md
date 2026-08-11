@@ -5,16 +5,16 @@
 
 ## Problem and contract
 
-Encryption at rest does not protect a secret after Kortix places its plaintext
+Encryption at rest does not protect a secret after Zed places its plaintext
 value in a sandbox. Agent code can read, print, copy, or forward every runtime
 environment variable.
 
-Kortix therefore separates four decisions:
+Zed therefore separates four decisions:
 
 1. **Identifier:** The stable handle used by grants and session allowlists.
 2. **Key:** The environment variable or provider key, such as
    `ANTHROPIC_API_KEY`. Several identifiers can use the same key.
-3. **Consumer:** The only Kortix subsystem allowed to use the decrypted value.
+3. **Consumer:** The only Zed subsystem allowed to use the decrypted value.
 4. **Strategy:** The delivery method, or a decision to deliver nothing.
 
 The system contract is:
@@ -29,9 +29,9 @@ The product term is **Secret**. An environment variable is one delivery form.
 | Strategy | Consumer | Sandbox receives | Current behavior |
 | --- | --- | --- | --- |
 | `runtime` | `sandbox` | Plaintext value | Available for code that must read the value locally |
-| `broker` | `llm_gateway` | Nothing | Kortix authenticates provider requests server-side |
-| `broker` | `connector` | Nothing | Kortix resolves automation and channel credentials server-side |
-| `broker` | `http_broker` | Opaque session handle | Kortix makes one policy-bound HTTPS request |
+| `broker` | `llm_gateway` | Nothing | Zed authenticates provider requests server-side |
+| `broker` | `connector` | Nothing | Zed resolves automation and channel credentials server-side |
+| `broker` | `http_broker` | Opaque session handle | Zed makes one policy-bound HTTPS request |
 | `broker` | `git_proxy` | Nothing | Git uses its separate encrypted credential path |
 | `egress` | `network` | Opaque placeholder | Unavailable and rejected with `409` |
 | `denied` | none | Nothing | Stored but disabled |
@@ -45,7 +45,7 @@ audit requirements.
 
 Transparent `egress` remains unavailable because the enabled sandbox providers
 do not yet expose one verified, provider-independent substitution contract.
-Kortix rejects it instead of presenting a false security boundary.
+Zed rejects it instead of presenting a false security boundary.
 
 ## Access flow
 
@@ -73,7 +73,7 @@ stored strategy AND configured consumer
 For session-bound access, an empty session allowlist grants zero project
 secrets. The API intersects the immutable agent grant with the current session
 allowlist before it materializes runtime values or HTTP broker handles.
-Reserved `KORTIX_*` names cannot come from project secret rows.
+Reserved `ZED_*` names cannot come from project secret rows.
 
 The secret consumer resolver performs these steps:
 
@@ -83,7 +83,7 @@ The secret consumer resolver performs these steps:
 4. Write `secret.consumer.used`, `denied`, `missing`, or `invalid`.
 5. Return the value only to the named server subsystem.
 
-The sandbox uses its session-scoped `KORTIX_TOKEN` to call Kortix. Provider,
+The sandbox uses its session-scoped `ZED_TOKEN` to call Zed. Provider,
 connector, Git, and automation credentials do not need to enter the sandbox.
 
 ## Creation defaults and migration
@@ -106,7 +106,7 @@ rotation because an earlier sandbox can retain plaintext.
 
 A switch away from `runtime` updates active sandboxes immediately where the
 provider supports environment synchronization. Rotation is still required to
-invalidate copies that may already exist outside Kortix control.
+invalidate copies that may already exist outside Zed control.
 
 ## Multiple credentials and provider fallback
 
@@ -122,7 +122,7 @@ The LLM gateway tries credentials in this order:
 
 1. The canonical identifier that equals the key.
 2. Other identifiers by most recent update time, then identifier.
-3. The managed Kortix provider, when configured.
+3. The managed Zed provider, when configured.
 
 An active personal override replaces its matching shared identifier. It does
 not remove other identifiers from the fallback list.
@@ -135,7 +135,7 @@ error. Existing provider and model fallback rules still handle their defined
 
 ## HTTPS broker
 
-The HTTP broker is for credentials that Kortix can inject into one controlled
+The HTTP broker is for credentials that Zed can inject into one controlled
 HTTPS request. Its policy contains:
 
 - one or more exact approved hosts;
@@ -161,7 +161,7 @@ response bodies, query values, injected headers, handles, or secret values.
 The CLI exposes this path through:
 
 ```bash
-kortix secrets delivery API_KEY broker \
+zed secrets delivery API_KEY broker \
   --consumer http-broker \
   --allow-host api.example.com \
   --allow-method POST \
@@ -169,7 +169,7 @@ kortix secrets delivery API_KEY broker \
   --inject-header Authorization \
   --template 'Bearer {{secret}}'
 
-kortix secrets call API_KEY https://api.example.com/v1/resource \
+zed secrets call API_KEY https://api.example.com/v1/resource \
   --method POST \
   --data '{"input":"value"}'
 ```
@@ -184,18 +184,18 @@ credential.
 Configure the policy, then bind the connector:
 
 ```bash
-kortix secrets delivery API_KEY broker --consumer connector
-kortix connectors secret crm API_KEY
+zed secrets delivery API_KEY broker --consumer connector
+zed connectors secret crm API_KEY
 ```
 
-Use `kortix connectors secret crm --clear` before selecting a different secret
+Use `zed connectors secret crm --clear` before selecting a different secret
 or storing a connector credential. Synchronizing the connector catalog keeps
 the binding. Deleting the secret or changing its delivery policy returns `409`
 until every connector binding is removed.
 
 The web secret editor exposes the same binding as a connector checklist. It
 never reads or copies the secret value. Connector calls resolve the current
-value inside Kortix and send it only through the connector's declared
+value inside Zed and send it only through the connector's declared
 authentication scheme.
 
 ## Product surfaces
@@ -215,8 +215,8 @@ The web editor provides these choices:
 The UI shows transparent network delivery as unavailable. It does not imply
 that an opaque handle provides network-boundary substitution.
 
-The CLI supports the same available consumers through `kortix secrets
-delivery`. `kortix connectors secret` manages connector bindings. `kortix
+The CLI supports the same available consumers through `zed secrets
+delivery`. `zed connectors secret` manages connector bindings. `zed
 secrets ls --json` returns the stored delivery metadata.
 
 The SDK exposes:
@@ -233,7 +233,7 @@ await project.secrets.upsert({
 await project.secrets.setStrategy("WEBHOOK_TOKEN", "broker", {
   consumer: "http_broker",
   egress_policy: {
-    backend: "kortix_fetch",
+    backend: "zed_fetch",
     rules: [{ host: "api.example.com", methods: ["POST"], path: "/v1/" }],
     inject: { kind: "header", name: "Authorization", template: "Bearer {{secret}}" },
   },
@@ -241,7 +241,7 @@ await project.secrets.setStrategy("WEBHOOK_TOKEN", "broker", {
 ```
 
 Session-scoped agents call the HTTP broker route directly with their
-`KORTIX_TOKEN`. Human project tokens can configure policy but cannot execute a
+`ZED_TOKEN`. Human project tokens can configure policy but cannot execute a
 session-bound broker request.
 
 ## Audit and revocation
@@ -310,7 +310,7 @@ Every change to this control plane must prove these paths:
 8. API, SDK, CLI, and web behavior agree on the stored policy.
 
 Transparent network substitution needs a separate provider-adapter design,
-live exfiltration tests, and fail-closed capability detection before Kortix can
+live exfiltration tests, and fail-closed capability detection before Zed can
 enable `egress`.
 
 ## Related specifications

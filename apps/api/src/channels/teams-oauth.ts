@@ -18,7 +18,7 @@ interface OauthState {
 }
 
 function stateKey(): string {
-  return config.MICROSOFT_APP_PASSWORD ?? 'kortix-dev-teams-oauth-key';
+  return config.MICROSOFT_APP_PASSWORD ?? 'zed-dev-teams-oauth-key';
 }
 
 function callbackRedirectUri(baseUrl: string): string {
@@ -128,7 +128,7 @@ export function teamsOrgConsentUrl(input: {
 export const teamsOauthApp = makeOpenApiApp();
 
 teamsOauthApp.get('/callback', async (c: any) => {
-  const frontend = (config.FRONTEND_URL || 'https://kortix.com').replace(/\/+$/, '');
+  const frontend = (config.FRONTEND_URL || 'https://zed.com').replace(/\/+$/, '');
   const state = verifyState(c.req.query('state'));
   if (!state) return c.redirect(`${frontend}/?teams_error=expired`, 302);
 

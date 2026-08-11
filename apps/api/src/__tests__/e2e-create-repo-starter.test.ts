@@ -6,7 +6,7 @@ import {
   projectGitConnections,
   projectMembers,
   projects,
-} from '@kortix/db';
+} from '@zed/db';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 
@@ -15,7 +15,7 @@ import { mockIamEngineAllowAll, mockIamMembershipSyncNoop } from './helpers/iam-
 const USER_ID = '00000000-0000-4000-a000-000000000001';
 const ACCOUNT_ID = '00000000-0000-4000-a000-000000000101';
 const PROJECT_ID = '00000000-0000-4000-a000-000000000201';
-const TEST_AUTH_KEY = '__KORTIX_E2E_AUTH__';
+const TEST_AUTH_KEY = '__ZED_E2E_AUTH__';
 
 // The starter is a folder under `packages/starter/templates/base/` —
 // `getStarterFiles()` walks it and returns the files sorted by path
@@ -25,37 +25,37 @@ const TEST_AUTH_KEY = '__KORTIX_E2E_AUTH__';
 // -worker skill pack). Ordered by `path.localeCompare` to match getStarterFiles'
 // stable sort. Regenerate from `packages/starter/templates/base` when the base
 // scaffold changes.
-// The starter floor ships the core Kortix OpenCode files plus default runtime
+// The starter floor ships the core Zed OpenCode files plus default runtime
 // tools/plugins. Optional skills (agent-browser and knowledge-work skills) are
 // marketplace installable instead.
 const BASE_STARTER_PATHS = [
   '.gitignore',
-  '.kortix/memory/MEMORY.md',
-  '.kortix/opencode/agents/harness-reflector.md',
-  '.kortix/opencode/agents/kortix.md',
-  '.kortix/opencode/agents/session-reviewer.md',
-  '.kortix/opencode/bun.lock',
-  '.kortix/opencode/opencode.jsonc',
-  '.kortix/opencode/package.json',
-  '.kortix/opencode/plugins/opencode-pty/src/plugin/constants.ts',
-  '.kortix/opencode/plugins/opencode-pty/src/plugin/pty/buffer.ts',
-  '.kortix/opencode/plugins/opencode-pty/src/plugin/pty/formatters.ts',
-  '.kortix/opencode/plugins/opencode-pty/src/plugin/pty/manager.ts',
-  '.kortix/opencode/plugins/opencode-pty/src/plugin/pty/permissions.ts',
-  '.kortix/opencode/plugins/opencode-pty/src/plugin/pty/session-lifecycle.ts',
-  '.kortix/opencode/plugins/opencode-pty/src/plugin/pty/types.ts',
-  '.kortix/opencode/plugins/opencode-pty/src/plugin/pty/wildcard.ts',
-  '.kortix/opencode/plugins/opencode-pty/src/plugin/types.ts',
-  '.kortix/opencode/plugins/opencode-pty/src/shared/constants.ts',
-  '.kortix/opencode/plugins/pty.ts',
-  '.kortix/opencode/skills/kortix-cli/SKILL.md',
-  '.kortix/opencode/tools/image_search.ts',
-  '.kortix/opencode/tools/lib/get-env.ts',
-  '.kortix/opencode/tools/memory.ts',
-  '.kortix/opencode/tools/scrape_webpage.ts',
-  '.kortix/opencode/tools/show.ts',
-  '.kortix/opencode/tools/web_search.ts',
-  'kortix.yaml',
+  '.zed/memory/MEMORY.md',
+  '.zed/opencode/agents/harness-reflector.md',
+  '.zed/opencode/agents/zed.md',
+  '.zed/opencode/agents/session-reviewer.md',
+  '.zed/opencode/bun.lock',
+  '.zed/opencode/opencode.jsonc',
+  '.zed/opencode/package.json',
+  '.zed/opencode/plugins/opencode-pty/src/plugin/constants.ts',
+  '.zed/opencode/plugins/opencode-pty/src/plugin/pty/buffer.ts',
+  '.zed/opencode/plugins/opencode-pty/src/plugin/pty/formatters.ts',
+  '.zed/opencode/plugins/opencode-pty/src/plugin/pty/manager.ts',
+  '.zed/opencode/plugins/opencode-pty/src/plugin/pty/permissions.ts',
+  '.zed/opencode/plugins/opencode-pty/src/plugin/pty/session-lifecycle.ts',
+  '.zed/opencode/plugins/opencode-pty/src/plugin/pty/types.ts',
+  '.zed/opencode/plugins/opencode-pty/src/plugin/pty/wildcard.ts',
+  '.zed/opencode/plugins/opencode-pty/src/plugin/types.ts',
+  '.zed/opencode/plugins/opencode-pty/src/shared/constants.ts',
+  '.zed/opencode/plugins/pty.ts',
+  '.zed/opencode/skills/zed-cli/SKILL.md',
+  '.zed/opencode/tools/image_search.ts',
+  '.zed/opencode/tools/lib/get-env.ts',
+  '.zed/opencode/tools/memory.ts',
+  '.zed/opencode/tools/scrape_webpage.ts',
+  '.zed/opencode/tools/show.ts',
+  '.zed/opencode/tools/web_search.ts',
+  'zed.yaml',
   'README.md',
 ];
 
@@ -85,7 +85,7 @@ function getTestAuth() {
 }
 
 // This repo's local `.env` (loaded automatically by `bun test`) sets real
-// MANAGED_GIT_GITHUB_*/KORTIX_GITHUB_APP_* values for interactive dev use.
+// MANAGED_GIT_GITHUB_*/ZED_GITHUB_APP_* values for interactive dev use.
 // The "GitHub App installation" scenarios below assert the pure App-only
 // not-connected state (no managed-git PAT fallback, see
 // serializeGitHubInstallations) — left in place, the real dev values would
@@ -116,7 +116,7 @@ function resetState() {
       installationRowId: '00000000-0000-4000-a000-000000000041',
       accountId: ACCOUNT_ID,
       installationId: '42',
-      ownerLogin: 'kortix-org',
+      ownerLogin: 'zed-org',
       ownerType: 'Organization',
       repositorySelection: 'all',
       permissions: { contents: 'write' },
@@ -192,14 +192,14 @@ mock.module('../projects/git', () => ({
 // fire-and-forget snapshot kickoff in the create paths is a no-op here.
 mock.module('../snapshots/builder', () => ({
   ensureSandboxImage: async () => ({
-    snapshotName: 'kortix-default-test',
+    snapshotName: 'zed-default-test',
     slug: 'default',
     contentHash: 'a'.repeat(64),
     built: false,
     isDefault: true,
   }),
   ensureMetaSandboxImage: async () => ({
-    snapshotName: 'kortix-meta-test',
+    snapshotName: 'zed-meta-test',
     slug: 'meta',
     contentHash: 'b'.repeat(64),
     built: false,
@@ -207,7 +207,7 @@ mock.module('../snapshots/builder', () => ({
   }),
   deleteSandboxImage: async () => ({
     deleted: false,
-    snapshotName: 'kortix-default-test',
+    snapshotName: 'zed-default-test',
     slug: 'default',
   }),
   listSnapshotBuilds: async () => [],
@@ -221,7 +221,7 @@ mock.module('../snapshots/builder', () => ({
   reconcileProjectTemplates: async () => {},
   resolveCommitSha: async () => 'a'.repeat(40),
   ensurePerProjectWarmImage: async () => ({
-    snapshotName: 'kortix-ppwarm-test',
+    snapshotName: 'zed-ppwarm-test',
     tip: 'a'.repeat(40),
     built: false,
     provider: 'daytona',
@@ -230,7 +230,7 @@ mock.module('../snapshots/builder', () => ({
 }));
 
 mock.module('../projects/github', () => ({
-  buildGitHubAppInstallUrl: () => 'https://github.com/apps/kortix-test/installations/new',
+  buildGitHubAppInstallUrl: () => 'https://github.com/apps/zed-test/installations/new',
   verifyGitHubAppInstallState: (state: string) =>
     state === 'valid-install-state' ? ACCOUNT_ID : null,
   verifyGitHubAppInstallStatePayload: (state: string) =>
@@ -263,11 +263,11 @@ mock.module('../projects/github', () => ({
     return {
       id: 7,
       name: 'company-os',
-      full_name: 'kortix-org/company-os',
+      full_name: 'zed-org/company-os',
       private: true,
-      html_url: 'https://github.com/kortix-org/company-os',
-      clone_url: 'https://github.com/kortix-org/company-os.git',
-      ssh_url: 'git@github.com:kortix-org/company-os.git',
+      html_url: 'https://github.com/zed-org/company-os',
+      clone_url: 'https://github.com/zed-org/company-os.git',
+      ssh_url: 'git@github.com:zed-org/company-os.git',
       default_branch: 'main',
       description: null,
     };
@@ -277,7 +277,7 @@ mock.module('../projects/github', () => ({
     return input.path === 'README.md' ? 'existing-readme-sha' : null;
   },
   getGitHubAppInstallation: async () => ({
-    account: { login: 'kortix-org', type: 'Organization' },
+    account: { login: 'zed-org', type: 'Organization' },
     repository_selection: 'all',
     permissions: { contents: 'write' },
   }),
@@ -407,9 +407,9 @@ async function selectRowsForTable(table: unknown) {
         projectId: PROJECT_ID,
         accountId: ACCOUNT_ID,
         name: 'Company OS',
-        repoUrl: 'https://github.com/kortix-org/company-os.git',
+        repoUrl: 'https://github.com/zed-org/company-os.git',
         defaultBranch: 'main',
-        manifestPath: 'kortix.yaml',
+        manifestPath: 'zed.yaml',
         status: 'active',
         metadata: {},
         lastOpenedAt: null,
@@ -610,7 +610,7 @@ describe('create-repo starter scaffold contract', () => {
   test('builds exactly the minimal starter scaffold', () => {
     const files = buildStarterFiles({
       projectName: 'Company OS',
-      repoFullName: 'kortix-org/company-os',
+      repoFullName: 'zed-org/company-os',
       template: 'minimal',
     });
 
@@ -620,16 +620,16 @@ describe('create-repo starter scaffold contract', () => {
 
     // The repository ships runtime tools, project skills, and agents. Managed
     // system skills are injected at session boot.
-    expect(files.find((file) => file.path === '.kortix/opencode/tools/show.ts')).toBeDefined();
+    expect(files.find((file) => file.path === '.zed/opencode/tools/show.ts')).toBeDefined();
     expect(
-      files.find((file) => file.path === '.kortix/opencode/skills/kortix-cli/SKILL.md'),
+      files.find((file) => file.path === '.zed/opencode/skills/zed-cli/SKILL.md'),
     ).toBeDefined();
     expect(
-      files.find((file) => file.path === '.kortix/opencode/skills/kortix-system/SKILL.md'),
+      files.find((file) => file.path === '.zed/opencode/skills/zed-system/SKILL.md'),
     ).toBeUndefined();
-    expect(files.find((file) => file.path === '.kortix/opencode/agents/kortix.md')).toBeDefined();
+    expect(files.find((file) => file.path === '.zed/opencode/agents/zed.md')).toBeDefined();
     // The manifest IS shipped and names the project.
-    const manifest = files.find((file) => file.path === 'kortix.yaml');
+    const manifest = files.find((file) => file.path === 'zed.yaml');
     expect(manifest?.content).toContain('name: "Company OS"');
     expect(files.some((file) => file.path.includes('/agent-tunnel/'))).toBe(false);
   });
@@ -637,19 +637,19 @@ describe('create-repo starter scaffold contract', () => {
   test('defaults to the general knowledge worker starter', () => {
     const files = buildStarterFiles({
       projectName: 'Company OS',
-      repoFullName: 'kortix-org/company-os',
+      repoFullName: 'zed-org/company-os',
     });
     const paths = files.map((file) => file.path);
     const explicitPaths = buildStarterFiles({
       projectName: 'Company OS',
-      repoFullName: 'kortix-org/company-os',
+      repoFullName: 'zed-org/company-os',
       template: 'general-knowledge-worker',
     }).map((file) => file.path);
 
     expect(paths).toEqual(explicitPaths);
     for (const path of BASE_STARTER_PATHS) expect(paths).toContain(path);
-    expect(paths).toContain('.kortix/opencode/skills/agent-browser/SKILL.md');
-    expect(paths).toContain('.kortix/opencode/skills/pdf/SKILL.md');
+    expect(paths).toContain('.zed/opencode/skills/agent-browser/SKILL.md');
+    expect(paths).toContain('.zed/opencode/skills/pdf/SKILL.md');
     expect(new Set(paths).size).toBe(paths.length);
     expect(paths.some((path) => path.includes('/agent-tunnel/'))).toBe(false);
   });
@@ -657,14 +657,14 @@ describe('create-repo starter scaffold contract', () => {
   test('minimal starter remains an explicit internal option', () => {
     const files = buildStarterFiles({
       projectName: 'Company OS',
-      repoFullName: 'kortix-org/company-os',
+      repoFullName: 'zed-org/company-os',
       template: 'minimal',
     });
     const paths = files.map((file) => file.path);
 
     expect(paths).toEqual(BASE_STARTER_PATHS);
-    expect(paths).not.toContain('.kortix/opencode/skills/agent-browser/SKILL.md');
-    expect(paths).not.toContain('.kortix/opencode/skills/pdf/SKILL.md');
+    expect(paths).not.toContain('.zed/opencode/skills/agent-browser/SKILL.md');
+    expect(paths).not.toContain('.zed/opencode/skills/pdf/SKILL.md');
     expect(new Set(paths).size).toBe(paths.length);
   });
 
@@ -681,7 +681,7 @@ describe('create-repo starter scaffold contract', () => {
       configured: true,
       requires_installation: false,
       installation_id: '42',
-      owner_login: 'kortix-org',
+      owner_login: 'zed-org',
       owner_type: 'Organization',
     });
 
@@ -698,7 +698,7 @@ describe('create-repo starter scaffold contract', () => {
     expect(await upsert.json()).toMatchObject({
       installed: true,
       installation_id: '42',
-      owner_login: 'kortix-org',
+      owner_login: 'zed-org',
       permissions: { contents: 'write' },
     });
 
@@ -715,7 +715,7 @@ describe('create-repo starter scaffold contract', () => {
     expect(await replay.json()).toMatchObject({
       installed: true,
       installation_id: '42',
-      owner_login: 'kortix-org',
+      owner_login: 'zed-org',
     });
 
     const disconnect = await app.request(
@@ -737,7 +737,7 @@ describe('create-repo starter scaffold contract', () => {
       installed: false,
       configured: true,
       requires_installation: true,
-      install_url: 'https://github.com/apps/kortix-test/installations/new',
+      install_url: 'https://github.com/apps/zed-test/installations/new',
     });
   });
 
@@ -771,7 +771,7 @@ describe('create-repo starter scaffold contract', () => {
       expect.arrayContaining([
         expect.objectContaining({
           installation_id: '42',
-          owner_login: 'kortix-org',
+          owner_login: 'zed-org',
         }),
         expect.objectContaining({ installation_id: '84', owner_login: 'acme' }),
       ]),
@@ -849,7 +849,7 @@ describe('create-repo starter scaffold contract', () => {
   });
 
   test('forwards bounded search options to the managed GitHub repository lister', async () => {
-    process.env.MANAGED_GIT_GITHUB_OWNER = 'managed-kortix';
+    process.env.MANAGED_GIT_GITHUB_OWNER = 'managed-zed';
     process.env.MANAGED_GIT_GITHUB_TOKEN = 'managed-token';
     platformAdmin = true;
 
@@ -862,7 +862,7 @@ describe('create-repo starter scaffold contract', () => {
     expect(response.status).toBe(200);
     expect(ownerRepoListCalls).toEqual([
       expect.objectContaining({
-        owner: 'managed-kortix',
+        owner: 'managed-zed',
         search: 'customer portal',
         limit: 25,
       }),
@@ -871,7 +871,7 @@ describe('create-repo starter scaffold contract', () => {
 
   test('does not expose the server managed PAT to a normal account user', async () => {
     installationRows = [];
-    process.env.MANAGED_GIT_GITHUB_OWNER = 'managed-kortix';
+    process.env.MANAGED_GIT_GITHUB_OWNER = 'managed-zed';
     process.env.MANAGED_GIT_GITHUB_TOKEN = 'managed-token';
 
     const app = createApp();
@@ -899,7 +899,7 @@ describe('create-repo starter scaffold contract', () => {
       body: JSON.stringify({
         account_id: ACCOUNT_ID,
         installation_id: 'pat',
-        repo_full_name: 'managed-kortix/private-repo',
+        repo_full_name: 'managed-zed/private-repo',
       }),
     });
     expect(linked.status).toBe(403);
@@ -924,7 +924,7 @@ describe('create-repo starter scaffold contract', () => {
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.project_id).toBe(PROJECT_ID);
-    expect(body.repo_url).toBe('https://github.com/kortix-org/company-os.git');
+    expect(body.repo_url).toBe('https://github.com/zed-org/company-os.git');
     expect(body.metadata.github.auth_source).toBe('app_installation');
 
     expect(repoCreateCalls).toHaveLength(1);
@@ -935,7 +935,7 @@ describe('create-repo starter scaffold contract', () => {
       auth: {
         token: 'installation-token',
         source: 'app_installation',
-        owner: 'kortix-org',
+        owner: 'zed-org',
         ownerType: 'Organization',
         installationId: '42',
       },
@@ -944,7 +944,7 @@ describe('create-repo starter scaffold contract', () => {
 
     expect(fileShaCalls.map((call) => call.path)).toEqual(['README.md']);
     expect(fileShaCalls[0]).toMatchObject({
-      owner: 'kortix-org',
+      owner: 'zed-org',
       repo: 'company-os',
       branch: 'main',
       auth: { token: 'installation-token', source: 'app_installation' },
@@ -952,8 +952,8 @@ describe('create-repo starter scaffold contract', () => {
 
     const committedPaths = commitCalls.map((call) => call.path);
     for (const path of BASE_STARTER_PATHS) expect(committedPaths).toContain(path);
-    expect(committedPaths).toContain('.kortix/opencode/skills/agent-browser/SKILL.md');
-    expect(committedPaths).toContain('.kortix/opencode/skills/pdf/SKILL.md');
+    expect(committedPaths).toContain('.zed/opencode/skills/agent-browser/SKILL.md');
+    expect(committedPaths).toContain('.zed/opencode/skills/pdf/SKILL.md');
     expect(commitCalls.every((call) => call.auth?.token === 'installation-token')).toBe(true);
     expect(commitCalls.every((call) => call.branch === 'main')).toBe(true);
     expect(commitCalls.every((call) => call.message === `chore: scaffold ${call.path}`)).toBe(true);
@@ -968,14 +968,14 @@ describe('create-repo starter scaffold contract', () => {
     expect(insertedProject).toMatchObject({
       accountId: ACCOUNT_ID,
       name: 'Company OS',
-      repoUrl: 'https://github.com/kortix-org/company-os.git',
+      repoUrl: 'https://github.com/zed-org/company-os.git',
       defaultBranch: 'main',
-      manifestPath: 'kortix.yaml',
+      manifestPath: 'zed.yaml',
       status: 'active',
       metadata: {
         github: {
-          full_name: 'kortix-org/company-os',
-          html_url: 'https://github.com/kortix-org/company-os',
+          full_name: 'zed-org/company-os',
+          html_url: 'https://github.com/zed-org/company-os',
           private: true,
           auth_source: 'app_installation',
         },
@@ -987,8 +987,8 @@ describe('create-repo starter scaffold contract', () => {
       expect.objectContaining({
         projectId: PROJECT_ID,
         provider: 'github',
-        repoUrl: 'https://github.com/kortix-org/company-os.git',
-        repoOwner: 'kortix-org',
+        repoUrl: 'https://github.com/zed-org/company-os.git',
+        repoOwner: 'zed-org',
         repoName: 'company-os',
         externalRepoId: '7',
         authMethod: 'github_app',
@@ -1017,15 +1017,15 @@ describe('create-repo starter scaffold contract', () => {
         name: 'company-os',
         project_name: 'Company OS',
         private: true,
-        source_item_id: 'kortix-projects:starter',
+        source_item_id: 'zed-projects:starter',
       }),
     });
 
     expect(res.status).toBe(201);
     expect(commitCalls.map((call) => call.path)).toContain(
-      '.kortix/opencode/skills/agent-browser/SKILL.md',
+      '.zed/opencode/skills/agent-browser/SKILL.md',
     );
-    expect(commitCalls.find((call) => call.path === 'kortix.yaml')?.content).toContain(
+    expect(commitCalls.find((call) => call.path === 'zed.yaml')?.content).toContain(
       'name: "Company OS"',
     );
     expect(gitConnectionRows).toContainEqual(
@@ -1047,12 +1047,12 @@ describe('create-repo starter scaffold contract', () => {
         name: 'seo-team',
         project_name: 'Acme SEO',
         private: true,
-        source_item_id: 'kortix-projects:seo-department',
+        source_item_id: 'zed-projects:seo-department',
       }),
     });
 
     // The department templates were retired; the marketplace now leads with the
-    // single Kortix Starter project. Asking for a gone id must fail outright
+    // single Zed Starter project. Asking for a gone id must fail outright
     // rather than create a repo and commit a partial tree into it.
     expect(res.status).not.toBe(201);
     expect(commitCalls.length).toBe(0);
@@ -1066,13 +1066,13 @@ describe('create-repo starter scaffold contract', () => {
       body: JSON.stringify({
         account_id: ACCOUNT_ID,
         name: 'internal-project',
-        source_item_id: 'kortix-projects:web-studio',
+        source_item_id: 'zed-projects:web-studio',
       }),
     });
 
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
-      error: 'Unknown or non-cloneable project item "kortix-projects:web-studio"',
+      error: 'Unknown or non-cloneable project item "zed-projects:web-studio"',
     });
     expect(repoCreateCalls).toHaveLength(0);
   });

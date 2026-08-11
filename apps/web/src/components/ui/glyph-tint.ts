@@ -11,7 +11,7 @@
  * of its own, so the colour the user picked has to be visible somewhere the eye
  * lands, and a 1px ring alone is too quiet to carry it.
  */
-import { PROJECT_GLYPH_COLORS, type ProjectGlyphColor } from '@kortix/shared';
+import { PROJECT_GLYPH_COLORS, type ProjectGlyphColor } from '@zed/shared';
 
 /**
  * Every class below is a LITERAL string. Do not build one with a template

@@ -8,7 +8,7 @@
  *   logger.error('Stream disconnected', { runId, attempt: 3 });
  */
 
-import { logRuntimeEvent } from '@kortix/sdk/react';
+import { logRuntimeEvent } from '@zed/sdk/react';
 
 const SERVICE_NAME = 'frontend';
 

@@ -22,7 +22,7 @@ import { Database } from 'bun:sqlite';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { projectSessions } from '@kortix/db';
+import { projectSessions } from '@zed/db';
 import { eq } from 'drizzle-orm';
 import { logger as appLogger } from '../lib/logger';
 import { getDaytona } from '../shared/daytona';
@@ -78,16 +78,16 @@ export function rekeyOpencodeDb(dbPath: string, newProjectId: string): { session
   }
 }
 
-/** The current snapshot serves opencode as user `kortix` (HOME=/home/kortix);
- *  older snapshots used /opt/kortix/home. Resolve at runtime inside the box. */
+/** The current snapshot serves opencode as user `zed` (HOME=/home/zed);
+ *  older snapshots used /opt/zed/home. Resolve at runtime inside the box. */
 const RESOLVE_STORE_SH =
-  'if [ -d /home/kortix ]; then DEST=/home/kortix/.local/share/opencode; OWNER=/home/kortix; ' +
-  'else DEST=/opt/kortix/home/.local/share/opencode; OWNER=/opt/kortix/home; fi';
+  'if [ -d /home/zed ]; then DEST=/home/zed/.local/share/opencode; OWNER=/home/zed; ' +
+  'else DEST=/opt/zed/home/.local/share/opencode; OWNER=/opt/zed/home; fi';
 
 export function buildRestoreScript(): string {
   return [
     RESOLVE_STORE_SH,
-    'PORT=$(cat /var/run/kortix/opencode-port 2>/dev/null || echo 4096)',
+    'PORT=$(cat /var/run/zed/opencode-port 2>/dev/null || echo 4096)',
     'mkdir -p "$DEST"',
     'cnt=0',
     'for i in $(seq 1 8); do',
@@ -144,7 +144,7 @@ export async function rehydrateSessionChat(input: RehydrateInput): Promise<void>
   }
 
   // 3. Re-key locally and ship one checkpointed file.
-  const workDir = mkdtempSync(join(tmpdir(), 'kortix-rehydrate-'));
+  const workDir = mkdtempSync(join(tmpdir(), 'zed-rehydrate-'));
   let dbBuf: Buffer;
   try {
     writeFileSync(join(workDir, 'oc.tar.gz'), tarball);
@@ -205,7 +205,7 @@ async function waitForOpencodeProjectId(
   while (Date.now() < deadline) {
     try {
       const res = await sandbox.process.executeCommand(
-        'P=$(cat /var/run/kortix/opencode-port 2>/dev/null || echo 4096); ' +
+        'P=$(cat /var/run/zed/opencode-port 2>/dev/null || echo 4096); ' +
           'curl -s -X POST "http://127.0.0.1:$P/session?directory=/workspace" 2>/dev/null',
         undefined,
         undefined,

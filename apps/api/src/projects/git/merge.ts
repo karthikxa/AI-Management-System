@@ -58,7 +58,7 @@ export interface BranchAheadState {
 
 /**
  * Resolve both branch tips and decide whether head is ahead of base. The
- * mirror serves refs up to KORTIX_GIT_REFRESH_INTERVAL_MS stale and the
+ * mirror serves refs up to ZED_GIT_REFRESH_INTERVAL_MS stale and the
  * caller (CR open) typically runs moments after the author's `git push` —
  * so when the cached refs say "not ahead", force ONE fetch and re-check
  * before answering: a just-pushed branch must never read as empty.
@@ -373,8 +373,8 @@ export async function mergeBranches(
   }
 
   const message = options.message || `Merge branch '${headRef}' into '${baseRef}'`;
-  const authorName = options.authorName || 'Kortix';
-  const authorEmail = options.authorEmail || 'noreply@kortix.ai';
+  const authorName = options.authorName || 'Zed';
+  const authorEmail = options.authorEmail || 'noreply@zed.ai';
 
   const commitResult = await runGit(
     ['commit-tree', treeSha, '-p', baseShaBefore, '-p', headSha, '-m', message],
