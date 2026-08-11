@@ -89,14 +89,14 @@ const MARKETING_RECORDS: PublicContentRecord[] = [
   {
     kind: 'marketing',
     slug: 'contact',
-    title: 'Contact Kortix',
-    description: 'Request a tailored Kortix walkthrough for cloud, VPC, or on-prem deployment.',
+    title: 'Contact Zed',
+    description: 'Request a tailored Zed walkthrough for cloud, VPC, or on-prem deployment.',
     htmlPath: '/contact',
   },
   {
     kind: 'marketing',
     slug: 'about',
-    title: 'About Kortix',
+    title: 'About Zed',
     description:
       'We build self-driving companies. Humans verify, steer, and govern while agent teams do work across engineering, product, operations, finance, support, and growth.',
     htmlPath: '/about',
@@ -105,55 +105,55 @@ const MARKETING_RECORDS: PublicContentRecord[] = [
   {
     kind: 'marketing',
     slug: 'legal',
-    title: 'Kortix legal',
-    description: 'Kortix terms of service and privacy policy.',
+    title: 'Zed legal',
+    description: 'Zed terms of service and privacy policy.',
     htmlPath: '/legal',
   },
   {
     kind: 'marketing',
     slug: 'marketplace',
-    title: 'Kortix Marketplace',
+    title: 'Zed Marketplace',
     description:
-      'Browse skills, agents, and commands from every source. Add them to a Kortix project in one click.',
+      'Browse skills, agents, and commands from every source. Add them to a Zed project in one click.',
     htmlPath: '/marketplace',
   },
   {
     kind: 'marketing',
     slug: 'developers',
-    title: 'Kortix for developers',
+    title: 'Zed for developers',
     description:
-      'Build with Kortix from the terminal: drive projects, sessions, and agents through the CLI and SDK, wire triggers and connectors, and land every change through a reviewed change request.',
+      'Build with Zed from the terminal: drive projects, sessions, and agents through the CLI and SDK, wire triggers and connectors, and land every change through a reviewed change request.',
     htmlPath: '/developers',
     markdownPath: '/markdown/developers.md',
   },
   {
     kind: 'marketing',
     slug: 'careers',
-    title: 'Careers at Kortix',
+    title: 'Careers at Zed',
     description:
-      'Open positions at Kortix — Marketing / Content, Sales, FDE / Services, Product / Eng, Product / R&D. Belgrade, Serbia and San Francisco. We hire for prolonged ownership.',
+      'Open positions at Zed — Marketing / Content, Sales, FDE / Services, Product / Eng, Product / R&D. Belgrade, Serbia and San Francisco. We hire for prolonged ownership.',
     htmlPath: '/careers',
   },
   {
     kind: 'marketing',
     slug: 'changelog',
-    title: 'Kortix Changelog',
+    title: 'Zed Changelog',
     description:
-      'Every Kortix release, straight from the source. New features, fixes, and improvements — versioned and dated.',
+      'Every Zed release, straight from the source. New features, fixes, and improvements — versioned and dated.',
     htmlPath: '/changelog',
   },
   {
     kind: 'marketing',
     slug: 'blog',
-    title: 'Kortix Blog',
+    title: 'Zed Blog',
     description:
-      'Field notes on building, running, and governing AI agents that do real work — from the team building the Kortix command center.',
+      'Field notes on building, running, and governing AI agents that do real work — from the team building the Zed command center.',
     htmlPath: '/blog',
   },
   {
     kind: 'marketing',
     slug: 'use-cases',
-    title: 'Kortix Use Cases',
+    title: 'Zed Use Cases',
     description:
       'How teams put a workforce of AI agents to work — the loops they engineer, the deliverables they ship, and the reviewed changes that make the company better every day.',
     htmlPath: '/use-cases',
@@ -161,29 +161,29 @@ const MARKETING_RECORDS: PublicContentRecord[] = [
   {
     kind: 'marketing',
     slug: 'download',
-    title: 'Download Kortix',
-    description: 'Get Kortix for macOS, Windows, Linux, iOS, and Android.',
+    title: 'Download Zed',
+    description: 'Get Zed for macOS, Windows, Linux, iOS, and Android.',
     htmlPath: '/download',
   },
   {
     kind: 'marketing',
     slug: 'help',
-    title: 'Kortix Help Center',
-    description: 'Guides for billing, credits, and everyday Kortix questions.',
+    title: 'Zed Help Center',
+    description: 'Guides for billing, credits, and everyday Zed questions.',
     htmlPath: '/help',
   },
   {
     kind: 'marketing',
     slug: 'help/credits',
-    title: 'Kortix credits explained',
+    title: 'Zed credits explained',
     description:
-      'What credits are, how Kortix sessions consume them, and how to manage your balance and subscription.',
+      'What credits are, how Zed sessions consume them, and how to manage your balance and subscription.',
     htmlPath: '/help/credits',
   },
   {
     kind: 'marketing',
     slug: 'enterprise',
-    title: 'Kortix Enterprise',
+    title: 'Zed Enterprise',
     description: PRICING_PLANS.find((plan) => plan.id === 'enterprise')?.note,
     htmlPath: '/enterprise',
     markdownPath: '/markdown/enterprise.md',
@@ -191,7 +191,7 @@ const MARKETING_RECORDS: PublicContentRecord[] = [
   {
     kind: 'marketing',
     slug: 'pricing',
-    title: 'Kortix pricing',
+    title: 'Zed pricing',
     description: 'Current plans and included features.',
     htmlPath: '/pricing',
     markdownPath: '/markdown/pricing.md',
@@ -199,8 +199,8 @@ const MARKETING_RECORDS: PublicContentRecord[] = [
   {
     kind: 'marketing',
     slug: 'support',
-    title: 'Kortix support',
-    description: 'Support resources and contact information for Kortix.',
+    title: 'Zed support',
+    description: 'Support resources and contact information for Zed.',
     htmlPath: '/support',
   },
   // The product pages. Each one's layout.tsx reads its title/description back
@@ -212,36 +212,36 @@ const MARKETING_RECORDS: PublicContentRecord[] = [
   {
     kind: 'marketing',
     slug: 'agent-computer',
-    title: 'Kortix Agent Computer',
+    title: 'Zed Agent Computer',
     description:
-      'Every Kortix session gets its own computer: an isolated Linux machine that clones your repo, cuts a branch named after the session, and runs OpenCode. Work lands through a change request a person approves.',
+      'Every Zed session gets its own computer: an isolated Linux machine that clones your repo, cuts a branch named after the session, and runs OpenCode. Work lands through a change request a person approves.',
     htmlPath: '/agent-computer',
     markdownPath: '/markdown/agent-computer.md',
   },
   {
     kind: 'marketing',
     slug: 'agents-and-skills',
-    title: 'Kortix Agents & Skills',
+    title: 'Zed Agents & Skills',
     description:
-      'A Kortix agent is a markdown persona with a deny-by-default reach into connectors, secrets and skills. A skill is the markdown that encodes how your company does one job. Both are files in your repo, versioned and reviewed.',
+      'A Zed agent is a markdown persona with a deny-by-default reach into connectors, secrets and skills. A skill is the markdown that encodes how your company does one job. Both are files in your repo, versioned and reviewed.',
     htmlPath: '/agents-and-skills',
     markdownPath: '/markdown/agents-and-skills.md',
   },
   {
     kind: 'marketing',
     slug: 'automations',
-    title: 'Kortix Automations',
+    title: 'Zed Automations',
     description:
-      'Cron schedules and signed webhooks start Kortix sessions with nobody present. Each trigger names the agent it runs as, carries a prompt template, and lands its work through a change request a person approves.',
+      'Cron schedules and signed webhooks start Zed sessions with nobody present. Each trigger names the agent it runs as, carries a prompt template, and lands its work through a change request a person approves.',
     htmlPath: '/automations',
     markdownPath: '/markdown/automations.md',
   },
   {
     kind: 'marketing',
     slug: 'channels',
-    title: 'Kortix Channels',
+    title: 'Zed Channels',
     description:
-      'Connect Slack or Microsoft Teams to a Kortix project and a message in a thread starts a session. The agent works on its own cloud computer and replies in the same thread. Email and voice are in preview.',
+      'Connect Slack or Microsoft Teams to a Zed project and a message in a thread starts a session. The agent works on its own cloud computer and replies in the same thread. Email and voice are in preview.',
     htmlPath: '/channels',
     markdownPath: '/markdown/channels.md',
   },
@@ -250,14 +250,14 @@ const MARKETING_RECORDS: PublicContentRecord[] = [
     slug: 'company-as-code',
     title: 'Company as Code',
     description:
-      'A Kortix project is a git repo, and that repo is the company. kortix.yaml and the OpenCode config define it; agents, skills and memory are files beside your code. Every change is a commit a person approves.',
+      'A Zed project is a git repo, and that repo is the company. kortix.yaml and the OpenCode config define it; agents, skills and memory are files beside your code. Every change is a commit a person approves.',
     htmlPath: '/company-as-code',
     markdownPath: '/markdown/company-as-code.md',
   },
   {
     kind: 'marketing',
     slug: 'connectors',
-    title: 'Kortix connectors',
+    title: 'Zed connectors',
     description:
       'Connect 3,000+ apps, MCP servers, OpenAPI, GraphQL and raw HTTP once for the whole company. Agents reach them through one scoped token — credentials stay server-side, every action is allowed, gated, or blocked, and every call is logged.',
     htmlPath: '/connectors',
@@ -271,18 +271,18 @@ const MARKETING_RECORDS: PublicContentRecord[] = [
     // inside the session, readable by any command the agent runs
     // (docs/ENV_SECRET_EXPOSURE_BASELINE.md), and the default sandbox provider
     // is not a microVM. The narrower claims below are the true ones.
-    title: 'Kortix Security',
+    title: 'Zed Security',
     description:
-      'How Kortix is built to survive a security review: an isolated machine per session, connector credentials brokered server-side that never enter that machine, permissions for people and agents, human approval gates, and a change request between an agent and main.',
+      'How Zed is built to survive a security review: an isolated machine per session, connector credentials brokered server-side that never enter that machine, permissions for people and agents, human approval gates, and a change request between an agent and main.',
     htmlPath: '/security',
     markdownPath: '/markdown/security.md',
   },
   {
     kind: 'marketing',
     slug: 'self-hosted',
-    title: 'Self-host Kortix',
+    title: 'Self-host Zed',
     description:
-      'Run the same Kortix on your own box. One Docker Compose stack, the same images the managed cloud runs, your database and your files on disk you control. kortix self-host start, then kortix hosts use selfhost.',
+      'Run the same Zed on your own box. One Docker Compose stack, the same images the managed cloud runs, your database and your files on disk you control. kortix self-host start, then kortix hosts use selfhost.',
     htmlPath: '/self-hosted',
     markdownPath: '/markdown/self-hosted.md',
   },
@@ -296,7 +296,7 @@ const MARKETING_RECORDS: PublicContentRecord[] = [
   {
     kind: 'marketing',
     slug: 'solutions',
-    title: 'Kortix Solutions by role',
+    title: 'Zed Solutions by role',
     description:
       'One platform, eight teams with completely different work. What sales, marketing, product, engineering, finance, people, IT and data science can each hand off — and what comes back.',
     htmlPath: '/solutions',
@@ -625,11 +625,11 @@ function blocksToMarkdown(blocks: Block[]): string {
             .map((item) => `- ${item.name} (${item.domain})`)
             .join('\n')}`;
         case 'verdict':
-          return `### Choose ${block.themLabel} if\n\n${block.them}\n\n### Choose Kortix if\n\n${block.kortix}`;
+          return `### Choose ${block.themLabel} if\n\n${block.them}\n\n### Choose Zed if\n\n${block.kortix}`;
         case 'compare': {
           const escapeCell = (value: string) => value.replaceAll('|', '\\|').replaceAll('\n', ' ');
           return [
-            `| Dimension | ${escapeCell(block.them)} | Kortix |`,
+            `| Dimension | ${escapeCell(block.them)} | Zed |`,
             '| --- | --- | --- |',
             ...block.rows.map(
               (row) =>
