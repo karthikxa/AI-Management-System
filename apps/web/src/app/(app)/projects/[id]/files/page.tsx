@@ -1,22 +1,21 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useParams } from 'next/navigation';
-
 import { ProjectFilesView } from '@/features/workspace/project-layout/project-files-view';
+import { ProjectFilesSkeleton } from '@/features/workspace/project-layout/project-files-skeleton';
 
 /**
- * /projects/[id]/files — the standalone Files page (Google-Drive-style browser
- * over the project repo). A regular routed page inside the project shell, NOT
- * a Customize section. Requires `project.file.read` (editor-tier): the sidebar
- * entry hides for floor members and the API 403s their reads (silently — the
- * view shows its own empty/error state, never a global toast).
+ * /projects/[id]/files — Google-Drive-style file explorer over the project repository.
  */
 export default function ProjectFilesPage() {
   const { id: projectId } = useParams<{ id: string }>();
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <ProjectFilesView projectId={projectId} />
-      </div>
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-background">
+      <Suspense fallback={<ProjectFilesSkeleton />}>
+        <ProjectFilesView projectId={projectId || 'default'} />
+      </Suspense>
+    </div>
   );
 }

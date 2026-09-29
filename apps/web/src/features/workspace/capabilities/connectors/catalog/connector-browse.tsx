@@ -6,6 +6,7 @@ import { ArrowLeftIcon, GlobeIcon, MonitorIcon, PlusIcon } from '@phosphor-icons
 import { memo, useCallback } from 'react';
 
 import { Badge } from '@/components/ui/badge';
+import { EntityAvatar } from '@/components/ui/entity-avatar';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/loading';
 import { EmptyState } from '@/features/layout/section/empty-state';

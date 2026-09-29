@@ -357,39 +357,102 @@ const GLOBAL_PROJECT_FILES: Map<string, StoredFile> = new Map([
     'README.md',
     {
       path: 'README.md',
-      content: '# Kortix Lead Generation Workspace\n\nThis workspace stores automated crawler campaigns and discovered prospect files.\n\nCheck the `campaigns/` directory for stored campaigns.\n',
+      content: `# Zed Lead Generation & Scraper Workspace
+
+Automated prospect discovery, Google Maps extraction, and omnichannel cold outreach campaigns.`,
       size: 180,
     },
   ],
   [
-    'campaigns/jakarta-coffee-leads.json',
+    'scrapers/google_maps_scraper.py',
     {
-      path: 'campaigns/jakarta-coffee-leads.json',
+      path: 'scrapers/google_maps_scraper.py',
+      content: `import os
+import json
+from playwright.sync_api import sync_playwright
+
+def scrape_google_maps(query="Specialty Coffee Jakarta", limit=50):
+    """Scrapes verified B2B leads, websites, and phones from Google Maps."""
+    print(f"[*] Launching Google Maps Scraper for: {query}")
+    leads = []
+    # Playwright extraction
+    return leads
+
+if __name__ == "__main__":
+    scrape_google_maps()
+`,
+      size: 420,
+    },
+  ],
+  [
+    'scrapers/instantly_apollo_sync.ts',
+    {
+      path: 'scrapers/instantly_apollo_sync.ts',
+      content: `export async function syncApolloToInstantly(campaignId: string) {
+  console.log(\`[*] Syncing Apollo.io verified contacts to Instantly campaign: \${campaignId}\`);
+  return { synced: 50, status: 'ready' };
+}`,
+      size: 210,
+    },
+  ],
+  [
+    'campaigns/jakarta_coffee_leads.csv',
+    {
+      path: 'campaigns/jakarta_coffee_leads.csv',
+      content: `Name,Category,Phone,Website,Address,Rating,Status
+% Arabica Jakarta,Specialty Coffee,+62 21 57973000,https://arabica.coffee,Ashta District 8 SCBD,4.8,Verified
+Guten Morgen Coffee Lab,Florist & Cafe,+62 812 8000 1289,https://gutenmorgencoffee.id,Tomang Jakarta Barat,4.7,Verified
+Common Grounds Coffee,Roastery,+62 21 29922448,https://commongrounds.co.id,Citywalk Sudirman,4.6,Active
+One Fifteenth Coffee,Specialty Roaster,+62 21 7225678,https://115coffee.com,Gandaria Jakarta Selatan,4.7,Contacted
+`,
+      size: 512,
+    },
+  ],
+  [
+    'campaigns/b2b_saas_leads.json',
+    {
+      path: 'campaigns/b2b_saas_leads.json',
       content: JSON.stringify([
         {
-          id: 'lead-1',
-          name: 'Tanamera Coffee Roastery Thamrin',
-          email: 'info@tanameracoffee.com',
-          category: 'Coffee shop',
-          address: 'Thamrin City Office Park AA07, Jl. Kebon Kacang Raya, Jakarta Pusat',
-          phone: '+62 21 2962 5599',
-          website: 'https://tanameracoffee.com',
-          status: 'Verified',
-          campaign: 'Jakarta Coffee Leads'
+          "name": "Sarah Jenkins",
+          "title": "Founder & CEO",
+          "company": "CloudFlow Systems",
+          "email": "sarah@cloudflow.io",
+          "location": "San Francisco, CA",
+          "funding": "Series A ($12M)",
+          "verified": true
         },
         {
-          id: 'lead-2',
-          name: 'Guten Morgen Coffee Lab & Florist',
-          email: 'gutenmorgen.id@gmail.com',
-          category: 'Cafe',
-          address: 'Jl. Mandala Utara No.29C, Tomang, Jakarta Barat',
-          phone: '+62 812 8000 1289',
-          website: 'https://gutenmorgencoffee.id',
-          status: 'New',
-          campaign: 'Jakarta Coffee Leads'
+          "name": "Marcus Vance",
+          "title": "Head of Growth",
+          "company": "DataPulse AI",
+          "email": "m.vance@datapulse.ai",
+          "location": "New York, NY",
+          "funding": "Series B ($28M)",
+          "verified": true
         }
       ], null, 2),
-      size: 920,
+      size: 480,
+    },
+  ],
+  [
+    'outreach/cold_email_sequence.md',
+    {
+      path: 'outreach/cold_email_sequence.md',
+      content: `# 3-Step Outbound Cold Outreach Sequence
+
+### Step 1: Initial Hook
+Subject: Quick question about {{company}}'s lead pipeline
+
+Hi {{firstName}},
+I noticed {{company}} is scaling sales outbound. We automated lead scraping from Google Maps & Apollo...
+
+### Step 2: Value Demonstration
+Subject: Re: {{company}} lead pipeline
+
+Hey {{firstName}}, following up with a quick sample of 10 verified leads in your industry.
+`,
+      size: 440,
     },
   ],
 ]);
@@ -407,6 +470,104 @@ const MOCK_ACCOUNTS = [
     account_role: 'owner',
     is_primary_owner: true,
   },
+];
+
+const MOCK_CONNECTED_CONNECTORS = [
+  {
+    slug: 'google-maps-scraper',
+    name: 'Google Maps Scraper',
+    provider: 'pipedream',
+    platform: null,
+    iconUrl: 'https://api.iconify.design/logos:google-maps.svg',
+    status: 'active',
+    credentialMode: 'shared',
+    authorizationStrategy: 'project_shared',
+    sensitive: false,
+    secretSet: true,
+    authSecret: 'gmaps_active_token',
+    actions: [
+      {
+        path: 'scrape_places',
+        name: 'Scrape Google Maps Places & Leads',
+        description: 'Extract B2B local business leads, phones, ratings, websites, and verified emails directly from Google Maps',
+        risk: 'read',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: { type: 'string', description: 'Search term e.g. Specialty Coffee Jakarta' },
+            limit: { type: 'number', default: 50 }
+          },
+          required: ['query']
+        }
+      }
+    ]
+  },
+  {
+    slug: 'browser',
+    name: 'Playwright Web Browser',
+    provider: 'computer',
+    platform: null,
+    iconUrl: 'https://api.iconify.design/logos:playwright.svg',
+    status: 'active',
+    credentialMode: 'shared',
+    authorizationStrategy: 'project_shared',
+    sensitive: false,
+    secretSet: true,
+    authSecret: null,
+    actions: [
+      {
+        path: 'navigate',
+        name: 'Navigate to URL',
+        description: 'Open a URL in automated Chromium sandbox',
+        risk: 'read',
+        inputSchema: {}
+      }
+    ]
+  },
+  {
+    slug: 'terminal',
+    name: 'Sandbox Terminal',
+    provider: 'computer',
+    platform: null,
+    iconUrl: 'https://api.iconify.design/logos:bash-icon.svg',
+    status: 'active',
+    credentialMode: 'shared',
+    authorizationStrategy: 'project_shared',
+    sensitive: false,
+    secretSet: true,
+    authSecret: null,
+    actions: [
+      {
+        path: 'execute',
+        name: 'Execute Command',
+        description: 'Run shell commands in isolated container sandbox',
+        risk: 'write',
+        inputSchema: {}
+      }
+    ]
+  },
+  {
+    slug: 'gmail',
+    name: 'Gmail',
+    provider: 'pipedream',
+    platform: 'email',
+    iconUrl: 'https://api.iconify.design/logos:google-gmail.svg',
+    status: 'active',
+    credentialMode: 'shared',
+    authorizationStrategy: 'project_shared',
+    sensitive: false,
+    secretSet: true,
+    authSecret: 'gmail_connected_token',
+    actions: [
+      {
+        path: 'send_email',
+        name: 'Send Email',
+        description: 'Send personalized cold outreach email via Google Workspace',
+        risk: 'write',
+        inputSchema: {}
+      }
+    ]
+  }
 ];
 
 const MOCK_PROJECT = {
@@ -770,9 +931,14 @@ export async function GET(
     });
   }
 
-  // Generic connectors list (installed / project connectors)
+    // Generic connectors list (installed / project connectors)
   if (path.endsWith('/connectors') || path === 'connectors') {
-    return NextResponse.json([]);
+    return NextResponse.json({
+      connectors: MOCK_CONNECTED_CONNECTORS,
+      required: [],
+      optional: [],
+      total: MOCK_CONNECTED_CONNECTORS.length,
+    });
   }
   if (path.endsWith('/connections') || path === 'connections') {
     return NextResponse.json([]);
